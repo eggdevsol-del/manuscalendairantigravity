@@ -17,7 +17,7 @@ import {
   ArrowLeft,
   Clock
 } from "lucide-react";
-import { BottomSheet, LoadingState } from "@/components/ui/ssot";
+import { BottomSheet, LoadingState, PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
 import { DialogTitle } from "@/components/ui/dialog";
 
 import { useEffect, useState } from "react";
@@ -397,10 +397,9 @@ export default function Calendar() {
   };
 
   return (
-    <div className="fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden">
-
+    <PageShell>
       {/* 1. Page Header (Fixed) */}
-      <header className="px-4 py-4 z-10 shrink-0 flex items-center justify-between">
+      <PageHeader variant="transparent" className="justify-between">
         <h1 className="text-2xl font-bold text-foreground">Calendar</h1>
         <Button
           size="sm"
@@ -410,7 +409,7 @@ export default function Calendar() {
         >
           Today
         </Button>
-      </header>
+      </PageHeader>
 
       {/* 2. Top Context Area (Date Display) */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
@@ -423,10 +422,7 @@ export default function Calendar() {
       </div>
 
       {/* 3. Sheet Container */}
-      <div className="flex-1 z-20 flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative">
-
-        {/* Top Edge Highlight */}
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none" />
+      <GlassSheet className="bg-white/5">
 
         {/* Sheet Header: Controls */}
         <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5 space-y-4">
@@ -585,7 +581,7 @@ export default function Calendar() {
             )}
           </div>
         </div>
-      </div>
+      </GlassSheet>
 
       {/* Appointment Creation Sheet (Gold Standard) */}
       <BottomSheet 
@@ -879,6 +875,6 @@ export default function Calendar() {
           </div>
         )}
       </ModalShell>
-    </div>
+    </PageShell>
   );
 }
