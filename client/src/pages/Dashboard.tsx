@@ -91,31 +91,30 @@ export default function Dashboard() {
     };
 
     return (
-        <PageShell className="bg-[radial-gradient(circle_at_top_right,rgba(88,28,135,0.4),rgba(2,6,23,1)_60%)]">
-
+        <PageShell>
             {/* 1. Page Header */}
             <PageHeader variant="transparent" className="justify-between mt-2">
-                <h1 className="text-xl font-bold text-white tracking-wide">Dashboard</h1>
+                <h1 className="text-xl font-bold text-foreground tracking-wide">Dashboard</h1>
                 <div className="flex items-center gap-3">
                     {/* Settings Trigger - Matching reference right icon */}
-                    <Button variant="ghost" size="icon" onClick={() => setShowSettingsSheet(true)} className="text-white/50 hover:text-white">
+                    <Button variant="ghost" size="icon" onClick={() => setShowSettingsSheet(true)} className="text-muted-foreground hover:text-foreground">
                         <Smartphone className="w-5 h-5" />
                     </Button>
                 </div>
             </PageHeader>
 
             {/* 2. Top Context Area (Date) */}
-            <div className="px-8 pt-6 pb-8 z-10 shrink-0 flex flex-col justify-start h-[25vh] relative text-left">
-                <p className="text-6xl font-extralight text-white/90 tracking-tight leading-none mb-1">
+            <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
+                <p className="text-4xl font-light text-foreground/90 tracking-tight">
                     {selectedDate.toLocaleDateString("en-US", { weekday: "long" })}
                 </p>
-                <p className="text-white/50 text-lg font-light tracking-wide pl-1">
+                <p className="text-lg font-medium text-muted-foreground mt-1">
                     {selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
                 </p>
             </div>
 
             {/* 3. Sheet Container (Matched to Calendar.tsx) */}
-            <GlassSheet className="bg-slate-950/80">
+            <GlassSheet className="bg-white/5">
 
                 {/* Sheet Header Tabs */}
                 <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5">
