@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useDashboardTasks } from "@/features/dashboard/useDashboardTasks";
 import { CHALLENGE_TEMPLATES, DashboardTask } from "@/features/dashboard/DashboardTaskRegister";
-import { ActionSheet } from "@/components/ui/ssot";
+import { ActionSheet, PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
 import { DialogTitle } from "@/components/ui/dialog";
 import { X, Check, Clock, ExternalLink, MessageSquare, Mail, Play, Plus, Trash2, Smartphone, Monitor } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -91,10 +91,10 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(88,28,135,0.4),rgba(2,6,23,1)_60%)]">
+        <PageShell className="bg-[radial-gradient(circle_at_top_right,rgba(88,28,135,0.4),rgba(2,6,23,1)_60%)]">
 
             {/* 1. Page Header */}
-            <header className="px-6 py-4 z-10 shrink-0 flex justify-between items-center relative mt-2">
+            <PageHeader variant="transparent" className="justify-between mt-2">
                 <h1 className="text-xl font-bold text-white tracking-wide">Dashboard</h1>
                 <div className="flex items-center gap-3">
                     {/* Settings Trigger - Matching reference right icon */}
@@ -102,7 +102,7 @@ export default function Dashboard() {
                         <Smartphone className="w-5 h-5" />
                     </Button>
                 </div>
-            </header>
+            </PageHeader>
 
             {/* 2. Top Context Area (Date) */}
             <div className="px-8 pt-6 pb-8 z-10 shrink-0 flex flex-col justify-start h-[25vh] relative text-left">
@@ -115,10 +115,7 @@ export default function Dashboard() {
             </div>
 
             {/* 3. Sheet Container (Matched to Calendar.tsx) */}
-            <div className="flex-1 z-20 flex flex-col bg-slate-950/80 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative">
-
-                {/* Top Edge Highlight */}
-                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none" />
+            <GlassSheet className="bg-slate-950/80">
 
                 {/* Sheet Header Tabs */}
                 <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5">
@@ -175,7 +172,7 @@ export default function Dashboard() {
                         </motion.div>
                     </AnimatePresence>
                 </div>
-            </div>
+            </GlassSheet>
 
 
             {/* --- ACTION SHEET --- */}
@@ -323,7 +320,7 @@ export default function Dashboard() {
                         </div>
             </ActionSheet>
 
-        </div>
+        </PageShell>
     );
 }
 
