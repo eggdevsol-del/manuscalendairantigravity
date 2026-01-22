@@ -399,17 +399,14 @@ export default function Calendar() {
   return (
     <PageShell>
       {/* 1. Page Header (Fixed) */}
-      <PageHeader variant="transparent" className="justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Calendar</h1>
-        <Button
-          size="sm"
-          variant="default"
-          onClick={goToToday}
-          className="tap-target"
-        >
-          Today
-        </Button>
-      </PageHeader>
+      <PageHeader 
+        title="Calendar" 
+        rightAction={
+          <Button size="sm" variant="default" onClick={goToToday} className="tap-target">
+            Today
+          </Button>
+        }
+      />
 
       {/* 2. Top Context Area (Date Display) */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">

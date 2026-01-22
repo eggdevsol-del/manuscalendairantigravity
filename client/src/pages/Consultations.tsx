@@ -96,12 +96,14 @@ export default function Consultations() {
   return (
     <PageShell>
       {/* 1. Page Header (Fixed) */}
-      <PageHeader variant="transparent" className="justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Consultations</h1>
-        <Button size="icon" variant="ghost" className="rounded-full bg-white/5 hover:bg-white/10 text-foreground" onClick={() => setShowNewDialog(true)}>
-          <Plus className="w-5 h-5" />
-        </Button>
-      </PageHeader>
+      <PageHeader 
+        title="Consultations" 
+        rightAction={
+          <Button size="icon" variant="ghost" className="rounded-full bg-white/5 hover:bg-white/10 text-foreground" onClick={() => setShowNewDialog(true)}>
+            <Plus className="w-5 h-5" />
+          </Button>
+        }
+      />
 
       {/* 2. Top Context Area (Stats/Info) */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">

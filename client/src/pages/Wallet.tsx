@@ -9,11 +9,7 @@ export default function Wallet() {
     return (
         <PageShell>
             {/* 1. Page Header */}
-            <PageHeader variant="transparent">
-                <h1 className="text-2xl font-bold text-foreground">
-                    {isArtist ? "Vouchers" : "Wallet"}
-                </h1>
-            </PageHeader>
+            <PageHeader title={isArtist ? "Vouchers" : "Wallet"} />
 
             {/* 2. Top Context Area */}
             <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">

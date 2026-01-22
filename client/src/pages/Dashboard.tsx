@@ -92,15 +92,14 @@ export default function Dashboard() {
     return (
         <PageShell>
             {/* 1. Page Header */}
-            <PageHeader variant="transparent" className="justify-between mt-2">
-                <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-                <div className="flex items-center gap-3">
-                    {/* Settings Trigger - Matching reference right icon */}
+            <PageHeader 
+                title="Dashboard" 
+                rightAction={
                     <Button variant="ghost" size="icon" onClick={() => setShowSettingsSheet(true)} className="text-muted-foreground hover:text-foreground">
                         <Smartphone className="w-5 h-5" />
                     </Button>
-                </div>
-            </PageHeader>
+                }
+            />
 
             {/* 2. Top Context Area (Date) */}
             <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">

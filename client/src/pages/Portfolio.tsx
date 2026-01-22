@@ -42,11 +42,7 @@ export default function Portfolio() {
     return (
         <PageShell>
             {/* 1. Page Header (Fixed) */}
-            <PageHeader variant="transparent">
-                <h1 className="text-2xl font-bold text-foreground">
-                    {isArtist ? "My Portfolio" : "Explore"}
-                </h1>
-            </PageHeader>
+            <PageHeader title={isArtist ? "My Portfolio" : "Explore"} />
 
             {/* 2. Top Context Area (Non-interactive) */}
             <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">

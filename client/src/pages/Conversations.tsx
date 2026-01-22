@@ -94,14 +94,14 @@ export default function Conversations() {
   return (
     <PageShell>
       {/* 1. Page Header (Fixed) */}
-      <PageHeader variant="transparent" className="justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Messages</h1>
-        <div className="flex items-center gap-2">
+      <PageHeader 
+        title="Messages" 
+        rightAction={
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
             <User className="w-5 h-5 text-primary" />
           </div>
-        </div>
-      </PageHeader>
+        }
+      />
 
       {/* 2. Top Context Area (Non-interactive) */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">

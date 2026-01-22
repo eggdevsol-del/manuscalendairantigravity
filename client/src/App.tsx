@@ -38,7 +38,7 @@ function Router() {
   return (
     <div className={`min-h-screen ${shouldShowBottomNav ? "pb-16" : ""}`}>
       <Switch>
-        <Route path="/" component={Home} />
+        <Route path="/" component={Login} />
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
 
