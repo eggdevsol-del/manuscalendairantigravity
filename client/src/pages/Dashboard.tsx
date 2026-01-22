@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useDashboardTasks } from "@/features/dashboard/useDashboardTasks";
 import { CHALLENGE_TEMPLATES, DashboardTask } from "@/features/dashboard/DashboardTaskRegister";
-import { ActionSheet, PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
-import { DialogTitle } from "@/components/ui/dialog";
+import { PageShell, PageHeader, GlassSheet, HalfSheet, FullScreenSheet } from "@/components/ui/ssot";
 import { X, Check, Clock, ExternalLink, MessageSquare, Mail, Play, Plus, Trash2, Smartphone, Monitor } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -174,152 +173,140 @@ export default function Dashboard() {
             </GlassSheet>
 
 
-            {/* --- ACTION SHEET --- */}
-            <ActionSheet open={showTaskSheet} onOpenChange={setShowTaskSheet} title="Task Actions">
-                        <div className="mx-auto w-12 h-1.5 rounded-full bg-white/20 mb-2" />
-
-                        {selectedTask && (
-                            <>
-                                <div className="space-y-1">
-                                    <DialogTitle className="text-2xl font-bold">{selectedTask.title}</DialogTitle>
-                                    <p className="text-muted-foreground">{selectedTask.context}</p>
-                                </div>
-
-                                <div className="grid gap-3">
-                                    {/* Primary Action */}
-                                    {selectedTask.actionType !== 'none' && (
-                                        <Button
-                                            size="lg"
-                                            className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-primary/20"
-                                            onClick={() => executeAction(selectedTask)}
-                                        >
-                                            {selectedTask.actionType === 'sms' && <MessageSquare className="mr-2 w-5 h-5" />}
-                                            {selectedTask.actionType === 'email' && <Mail className="mr-2 w-5 h-5" />}
-                                            {selectedTask.actionType === 'social' && <ExternalLink className="mr-2 w-5 h-5" />}
-                                            {selectedTask.actionType === 'internal' && <Play className="mr-2 w-5 h-5" />}
-                                            Execute Action
-                                        </Button>
-                                    )}
-
-                                    {/* Task Management Actions */}
-                                    <Button
-                                        variant="secondary"
-                                        size="lg"
-                                        className="w-full h-14 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5"
-                                        onClick={() => { actions.markDone(selectedTask.id); setShowTaskSheet(false); }}
-                                    >
-                                        <Check className="mr-2 w-5 h-5 text-green-500" />
-                                        Mark Completed
-                                    </Button>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <Button
-                                            variant="outline"
-                                            className="h-12 rounded-xl border-white/10 bg-transparent hover:bg-white/5"
-                                            onClick={() => { actions.snooze(selectedTask.id); setShowTaskSheet(false); }}
-                                        >
-                                            <Clock className="mr-2 w-4 h-4" />
-                                            Snooze 24h
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            className="h-12 rounded-xl border-white/10 bg-transparent hover:bg-white/5 text-muted-foreground"
-                                            onClick={() => { actions.dismiss(selectedTask.id); setShowTaskSheet(false); }}
-                                        >
-                                            <X className="mr-2 w-4 h-4" />
-                                            Dismiss
-                                        </Button>
-                                    </div>
-
-                                    {/* Stop Challenge (Personal Only) */}
-                                    {selectedTask.domain === 'personal' && stats.activeChallengeId && (
-                                        <Button
-                                            variant="ghost"
-                                            className="w-full h-12 text-red-500 hover:text-red-400 hover:bg-red-500/10"
-                                            onClick={() => { actions.stopChallenge(); setShowTaskSheet(false); }}
-                                        >
-                                            <Trash2 className="mr-2 w-4 h-4" />
-                                            Stop Challenge
-                                        </Button>
-                                    )}
-                                </div>
-                            </>
-                        )}
-            </ActionSheet>
-
-            {/* --- CHALLENGE SHEET --- */}
-            <ActionSheet 
-                open={showChallengeSheet} 
-                onOpenChange={setShowChallengeSheet} 
-                title="Select a Challenge"
-                maxHeight="85vh"
-                className="p-0 bg-slate-950/95"
+            {/* --- TASK SHEET (HalfSheet) --- */}
+            <HalfSheet
+                open={showTaskSheet}
+                onClose={() => setShowTaskSheet(false)}
+                title={selectedTask?.title || "Task"}
+                subtitle={selectedTask?.context}
             >
-                        <div className="px-6 py-4 border-b border-white/5 shrink-0">
-                            <div className="mx-auto w-12 h-1.5 rounded-full bg-white/20 mb-4" />
-                            <DialogTitle className="text-xl font-bold">Select a Challenge</DialogTitle>
-                            <p className="text-sm text-muted-foreground">Commit to a new personal growth goal.</p>
+                {selectedTask && (
+                    <div className="grid gap-3">
+                        {/* Primary Action */}
+                        {selectedTask.actionType !== 'none' && (
+                            <Button
+                                size="lg"
+                                className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-primary/20"
+                                onClick={() => executeAction(selectedTask)}
+                            >
+                                {selectedTask.actionType === 'sms' && <MessageSquare className="mr-2 w-5 h-5" />}
+                                {selectedTask.actionType === 'email' && <Mail className="mr-2 w-5 h-5" />}
+                                {selectedTask.actionType === 'social' && <ExternalLink className="mr-2 w-5 h-5" />}
+                                {selectedTask.actionType === 'internal' && <Play className="mr-2 w-5 h-5" />}
+                                Execute Action
+                            </Button>
+                        )}
+
+                        {/* Task Management Actions */}
+                        <Button
+                            variant="secondary"
+                            size="lg"
+                            className="w-full h-14 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5"
+                            onClick={() => { actions.markDone(selectedTask.id); setShowTaskSheet(false); }}
+                        >
+                            <Check className="mr-2 w-5 h-5 text-green-500" />
+                            Mark Completed
+                        </Button>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <Button
+                                variant="outline"
+                                className="h-12 rounded-xl border-white/10 bg-transparent hover:bg-white/5"
+                                onClick={() => { actions.snooze(selectedTask.id); setShowTaskSheet(false); }}
+                            >
+                                <Clock className="mr-2 w-4 h-4" />
+                                Snooze 24h
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="h-12 rounded-xl border-white/10 bg-transparent hover:bg-white/5 text-muted-foreground"
+                                onClick={() => { actions.dismiss(selectedTask.id); setShowTaskSheet(false); }}
+                            >
+                                <X className="mr-2 w-4 h-4" />
+                                Dismiss
+                            </Button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                            {CHALLENGE_TEMPLATES.map(template => (
-                                <Card
-                                    key={template.id}
-                                    onClick={() => {
-                                        actions.startChallenge(template);
-                                        setShowChallengeSheet(false);
-                                    }}
-                                    className="p-4 border-white/10 bg-white/5 hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer rounded-xl flex items-center justify-between group"
-                                >
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="font-bold text-lg">{template.title}</h3>
-                                            <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/20 text-primary px-2 py-0.5 rounded-full">
-                                                {template.durationDays} Days
-                                            </span>
-                                        </div>
-                                        <p className="text-sm text-muted-foreground">{template.description}</p>
-                                    </div>
-                                    <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-muted-foreground group-hover:border-primary group-hover:text-primary transition-colors">
-                                        <Plus className="w-4 h-4" />
-                                    </div>
-                                </Card>
-                            ))}
-                        </div>
-            </ActionSheet>
+                        {/* Stop Challenge (Personal Only) */}
+                        {selectedTask.domain === 'personal' && stats.activeChallengeId && (
+                            <Button
+                                variant="ghost"
+                                className="w-full h-12 text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                                onClick={() => { actions.stopChallenge(); setShowTaskSheet(false); }}
+                            >
+                                <Trash2 className="mr-2 w-4 h-4" />
+                                Stop Challenge
+                            </Button>
+                        )}
+                    </div>
+                )}
+            </HalfSheet>
 
-            {/* --- SETTINGS SHEET --- */}
-            <ActionSheet open={showSettingsSheet} onOpenChange={setShowSettingsSheet} title="Preferences">
-                        <div className="mx-auto w-12 h-1.5 rounded-full bg-white/20 mb-2" />
-                        <div className="space-y-1">
-                            <DialogTitle className="text-2xl font-bold">Preferences</DialogTitle>
-                            <p className="text-muted-foreground">Configure your dashboard experience.</p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label>Device Platform (For SMS/Sharing)</Label>
-                                <Select value={config.comms.platform} onValueChange={(val: any) => actions.setCommsPlatform(val)}>
-                                    <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ios">
-                                            <div className="flex items-center gap-2"><Smartphone className="w-4 h-4" /> iOS (iPhone)</div>
-                                        </SelectItem>
-                                        <SelectItem value="android">
-                                            <div className="flex items-center gap-2"><Smartphone className="w-4 h-4" /> Android</div>
-                                        </SelectItem>
-                                        <SelectItem value="desktop">
-                                            <div className="flex items-center gap-2"><Monitor className="w-4 h-4" /> Desktop / Web</div>
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
+            {/* --- CHALLENGE SHEET (FullScreenSheet) --- */}
+            <FullScreenSheet
+                open={showChallengeSheet}
+                onClose={() => setShowChallengeSheet(false)}
+                title="Challenges"
+                contextTitle="Select a Challenge"
+                contextSubtitle="Commit to a new personal growth goal."
+            >
+                <div className="space-y-3">
+                    {CHALLENGE_TEMPLATES.map(template => (
+                        <Card
+                            key={template.id}
+                            onClick={() => {
+                                actions.startChallenge(template);
+                                setShowChallengeSheet(false);
+                            }}
+                            className="p-4 border-white/10 bg-white/5 hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer rounded-xl flex items-center justify-between group"
+                        >
+                            <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="font-bold text-lg">{template.title}</h3>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                                        {template.durationDays} Days
+                                    </span>
+                                </div>
+                                <p className="text-sm text-muted-foreground">{template.description}</p>
                             </div>
-                        </div>
-            </ActionSheet>
+                            <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-muted-foreground group-hover:border-primary group-hover:text-primary transition-colors">
+                                <Plus className="w-4 h-4" />
+                            </div>
+                        </Card>
+                    ))}
+                </div>
+            </FullScreenSheet>
+
+            {/* --- SETTINGS SHEET (HalfSheet) --- */}
+            <HalfSheet
+                open={showSettingsSheet}
+                onClose={() => setShowSettingsSheet(false)}
+                title="Preferences"
+                subtitle="Configure your dashboard experience."
+            >
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <Label>Device Platform (For SMS/Sharing)</Label>
+                        <Select value={config.comms.platform} onValueChange={(val: any) => actions.setCommsPlatform(val)}>
+                            <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ios">
+                                    <div className="flex items-center gap-2"><Smartphone className="w-4 h-4" /> iOS (iPhone)</div>
+                                </SelectItem>
+                                <SelectItem value="android">
+                                    <div className="flex items-center gap-2"><Smartphone className="w-4 h-4" /> Android</div>
+                                </SelectItem>
+                                <SelectItem value="desktop">
+                                    <div className="flex items-center gap-2"><Monitor className="w-4 h-4" /> Desktop / Web</div>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+            </HalfSheet>
 
         </PageShell>
     );
 }
-
