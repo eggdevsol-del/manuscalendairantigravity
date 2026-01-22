@@ -20,8 +20,8 @@ import { useRef, useCallback, useState } from "react";
 import { motion } from "framer-motion";
 
 // Constants for gesture detection
-const SWIPE_THRESHOLD = 20; // pixels to commit swipe
-const ROW_HEIGHT = 72; // Height of nav row in pixels
+const SWIPE_THRESHOLD = 15; // pixels to commit swipe (reduced for better responsiveness)
+const ROW_HEIGHT = 77; // Height of nav row in pixels (increased by 5px from 72)
 
 export default function BottomNav() {
     const [location] = useLocation();
@@ -32,7 +32,7 @@ export default function BottomNav() {
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState(0);
     const dragStartY = useRef(0);
-    const elementRef = useRef<HTMLDivElement>(null);
+    const pointerIdRef = useRef<number | null>(null);
 
     const isActive = (p?: string) => {
         if (!p) return false;
@@ -49,10 +49,10 @@ export default function BottomNav() {
         // Always allow swipe if we have a contextual row OR if we're currently showing it
         if (!hasContextualRow && !isContextualVisible) return;
         
-        // Capture on the nav element itself
-        if (elementRef.current) {
-            elementRef.current.setPointerCapture(e.pointerId);
-        }
+        // Store pointer ID and capture it on the target
+        pointerIdRef.current = e.pointerId;
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        
         dragStartY.current = e.clientY;
         setIsDragging(true);
         setDragOffset(0);
@@ -60,7 +60,7 @@ export default function BottomNav() {
 
     // Handle pointer move - track drag distance
     const handlePointerMove = useCallback((e: React.PointerEvent) => {
-        if (!isDragging) return;
+        if (!isDragging || pointerIdRef.current !== e.pointerId) return;
         
         const deltaY = dragStartY.current - e.clientY; // Positive = swipe up, Negative = swipe down
         // Clamp the drag offset
@@ -71,11 +71,16 @@ export default function BottomNav() {
 
     // Handle pointer up - determine if swipe commits
     const handlePointerUp = useCallback((e: React.PointerEvent) => {
-        if (!isDragging) return;
+        if (!isDragging || pointerIdRef.current !== e.pointerId) return;
         
-        if (elementRef.current) {
-            elementRef.current.releasePointerCapture(e.pointerId);
+        // Release pointer capture
+        try {
+            (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+        } catch {
+            // Ignore if already released
         }
+        
+        pointerIdRef.current = null;
         setIsDragging(false);
         
         // Determine if swipe should commit
@@ -105,16 +110,28 @@ export default function BottomNav() {
         return baseY;
     };
 
+    // Swipe indicator - shows when contextual row is available
+    const showSwipeIndicator = hasContextualRow && !isContextualVisible;
+
     return (
         <nav
-            ref={elementRef}
-            className="fixed bottom-0 inset-x-0 z-[50] select-none"
-            style={{ touchAction: "none" }}
+            className="fixed bottom-0 inset-x-0 z-[50] select-none touch-none"
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
         >
+            {/* Swipe indicator - appears above nav when contextual row available */}
+            {showSwipeIndicator && (
+                <div 
+                    className="absolute -top-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 opacity-40"
+                    onClick={() => setContextualVisible(true)}
+                >
+                    <div className="w-8 h-1 rounded-full bg-white/60" />
+                    <span className="text-[10px] text-white/60 font-medium">Swipe up</span>
+                </div>
+            )}
+
             {/* Container with nav row height + safe area, overflow hidden for row swap */}
             <div 
                 className="bg-slate-950/60 backdrop-blur-[32px] border-t border-white/10 overflow-hidden"
