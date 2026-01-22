@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
+import { PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
 import { cn } from "@/lib/utils";
 
 interface WorkHoursAndServicesProps {
@@ -250,14 +251,14 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
   ];
 
   return (
-    <div className="fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden">
+    <PageShell>
       {/* 1. Page Header (Fixed) */}
-      <header className="px-4 py-4 z-10 shrink-0 flex items-center gap-3">
+      <PageHeader variant="transparent">
         <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10 text-foreground" onClick={onBack}>
           <ChevronRight className="w-5 h-5 rotate-180" />
         </Button>
         <h1 className="text-2xl font-bold text-foreground">Work Hours & Services</h1>
-      </header>
+      </PageHeader>
 
       {/* 2. Top Context Area */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
@@ -266,9 +267,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
       </div>
 
       {/* 3. Sheet Container */}
-      <div className="flex-1 z-20 flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative">
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none" />
-
+      <GlassSheet className="bg-white/5">
         <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
           <div className="pb-32 max-w-lg mx-auto space-y-6">
 
@@ -436,7 +435,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
 
           </div>
         </div>
-      </div>
+      </GlassSheet>
 
       {/* Project Builder Modal - keeping as is, wrapped in ModalShell it should work fine */}
       <ModalShell
@@ -483,6 +482,6 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
         </div>
       </ModalShell>
 
-    </div>
+    </PageShell>
   );
 }
