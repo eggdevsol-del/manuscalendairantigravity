@@ -263,7 +263,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
       {/* 2. Top Context Area */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
         <p className="text-4xl font-light text-foreground/90 tracking-tight">Schedule</p>
-        <p className="text-lg font-medium text-muted-foreground mt-1">Manage availability & offerings</p>
+        <p className="text-muted-foreground text-lg font-medium mt-1">Manage availability & offerings</p>
       </div>
 
       {/* 3. Sheet Container */}

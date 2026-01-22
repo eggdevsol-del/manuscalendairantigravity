@@ -416,7 +416,7 @@ export default function Calendar() {
         <p className="text-4xl font-light text-foreground/90 tracking-tight">
           {currentDate.toLocaleDateString("en-US", { weekday: "long" })}
         </p>
-        <p className="text-lg font-medium text-muted-foreground mt-1">
+        <p className="text-muted-foreground text-lg font-medium mt-1">
           {currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
         </p>
       </div>

@@ -17,14 +17,12 @@ export default function Wallet() {
 
             {/* 2. Top Context Area */}
             <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
-                <div className="flex flex-col">
-                    <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                        {isArtist ? "Active Promotions" : "Balance"}
-                    </span>
-                    <p className="text-5xl font-light text-foreground/90 tracking-tighter tabular-nums mt-1">
-                        {isArtist ? "3 Active" : "$0.00"}
-                    </p>
-                </div>
+                <p className="text-4xl font-light text-foreground/90 tracking-tight">
+                    {isArtist ? "Promotions" : "Wallet"}
+                </p>
+                <p className="text-muted-foreground text-lg font-medium mt-1">
+                    {isArtist ? "3 Active" : "$0.00 Balance"}
+                </p>
             </div>
 
             {/* 3. Sheet Container */}
