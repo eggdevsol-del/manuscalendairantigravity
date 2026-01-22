@@ -252,15 +252,8 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
 
   return (
     <PageShell>
-      {/* 1. Page Header (Fixed) */}
-      <PageHeader 
-        title="Work Hours & Services" 
-        leftAction={
-          <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10 text-foreground" onClick={onBack}>
-            <ChevronRight className="w-5 h-5 rotate-180" />
-          </Button>
-        }
-      />
+      {/* 1. Page Header - Left aligned, no icons */}
+      <PageHeader title="Work Hours & Services" />
 
       {/* 2. Top Context Area */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">

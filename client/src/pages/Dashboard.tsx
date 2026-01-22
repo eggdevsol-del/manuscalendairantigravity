@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useDashboardTasks } from "@/features/dashboard/useDashboardTasks";
 import { CHALLENGE_TEMPLATES, DashboardTask } from "@/features/dashboard/DashboardTaskRegister";
 import { PageShell, PageHeader, GlassSheet, HalfSheet, FullScreenSheet } from "@/components/ui/ssot";
-import { X, Check, Clock, ExternalLink, MessageSquare, Mail, Play, Plus, Trash2, Smartphone, Monitor } from "lucide-react";
+import { X, Check, Clock, ExternalLink, MessageSquare, Mail, Play, Trash2, Smartphone, Monitor, ChevronRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card"; // For Challenges only
@@ -91,15 +91,8 @@ export default function Dashboard() {
 
     return (
         <PageShell>
-            {/* 1. Page Header */}
-            <PageHeader 
-                title="Dashboard" 
-                rightAction={
-                    <Button variant="ghost" size="icon" onClick={() => setShowSettingsSheet(true)} className="text-muted-foreground hover:text-foreground">
-                        <Smartphone className="w-5 h-5" />
-                    </Button>
-                }
-            />
+            {/* 1. Page Header - Left aligned, no icons */}
+            <PageHeader title="Dashboard" />
 
             {/* 2. Top Context Area (Date) */}
             <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
@@ -257,7 +250,7 @@ export default function Dashboard() {
                                 actions.startChallenge(template);
                                 setShowChallengeSheet(false);
                             }}
-                            className="p-4 border-white/10 bg-white/5 hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer rounded-xl flex items-center justify-between group"
+                            className="p-4 border-white/10 bg-white/5 hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer rounded-2xl flex items-center justify-between group"
                         >
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
@@ -269,7 +262,7 @@ export default function Dashboard() {
                                 <p className="text-sm text-muted-foreground">{template.description}</p>
                             </div>
                             <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-muted-foreground group-hover:border-primary group-hover:text-primary transition-colors">
-                                <Plus className="w-4 h-4" />
+                                <ChevronRight className="w-4 h-4" />
                             </div>
                         </Card>
                     ))}

@@ -13,6 +13,8 @@ export { LoadingState } from "./LoadingState";
 export { SegmentedHeader } from "./SegmentedHeader";
 export { SheetHeader } from "./SheetHeader";
 export { TaskCard } from "./TaskCard";
+export { ConversationCard } from "./ConversationCard";
+export { ConsultationCard } from "./ConsultationCard";
 export { BottomSheet, ActionSheet } from "./BottomSheet";
 export { FullScreenSheet } from "./FullScreenSheet";
 export { HalfSheet } from "./HalfSheet";

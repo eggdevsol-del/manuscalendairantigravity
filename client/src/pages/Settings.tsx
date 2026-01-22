@@ -199,15 +199,8 @@ export default function Settings() {
   if (activeSection === "profile") {
     return (
       <PageShell>
-        {/* 1. Page Header (Fixed) */}
-        <PageHeader 
-          title="Profile" 
-          leftAction={
-            <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10 text-foreground" onClick={() => setActiveSection("main")}>
-              <ChevronRight className="w-5 h-5 rotate-180" />
-            </Button>
-          }
-        />
+        {/* 1. Page Header - Left aligned, no icons */}
+        <PageHeader title="Profile" />
 
         {/* 2. Top Context Area */}
         <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
@@ -301,14 +294,8 @@ export default function Settings() {
   if (activeSection === "business" && isArtist) {
     return (
       <PageShell>
-        <PageHeader 
-          title="Business Info" 
-          leftAction={
-            <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10 text-foreground" onClick={() => setActiveSection("main")}>
-              <ChevronRight className="w-5 h-5 rotate-180" />
-            </Button>
-          }
-        />
+        {/* 1. Page Header - Left aligned, no icons */}
+        <PageHeader title="Business Info" />
 
         <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
           <p className="text-4xl font-light text-foreground/90 tracking-tight">Business</p>
@@ -420,13 +407,8 @@ export default function Settings() {
   // --- Main View ---
   return (
     <PageShell>
-      {/* 1. Page Header (Fixed) */}
-      <PageHeader 
-        title="Settings" 
-        rightAction={
-          <span className="text-xs text-muted-foreground font-medium bg-white/5 px-2 py-1 rounded-full">v{__APP_VERSION__}</span>
-        }
-      />
+      {/* 1. Page Header - Left aligned, no icons */}
+      <PageHeader title="Settings" />
 
       {/* 2. Top Context Area (Profile Summary) */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">

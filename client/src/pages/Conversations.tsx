@@ -1,12 +1,11 @@
 
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Calendar, ChevronDown, ChevronRight, MessageCircle, User } from "lucide-react";
+import { Calendar, ChevronDown, MessageCircle } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
-import { LoadingState, PageShell, GlassSheet, PageHeader } from "@/components/ui/ssot";
+import { LoadingState, PageShell, GlassSheet, PageHeader, ConversationCard, ConsultationCard } from "@/components/ui/ssot";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 
@@ -93,15 +92,8 @@ export default function Conversations() {
 
   return (
     <PageShell>
-      {/* 1. Page Header (Fixed) */}
-      <PageHeader 
-        title="Messages" 
-        rightAction={
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <User className="w-5 h-5 text-primary" />
-          </div>
-        }
-      />
+      {/* 1. Page Header - Left aligned, no icons */}
+      <PageHeader title="Messages" />
 
       {/* 2. Top Context Area (Non-interactive) */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
@@ -155,14 +147,17 @@ export default function Conversations() {
                   </CollapsibleTrigger>
                 </div>
 
-                <CollapsibleContent className="space-y-2">
+                <CollapsibleContent className="space-y-3">
                   {pendingConsults
                     .filter(c => c.status === 'pending' && !c.viewed)
                     .sort((a, b) => new Date(b.createdAt as any).getTime() - new Date(a.createdAt as any).getTime())
                     .map((consult) => (
-                      <Card
+                      <ConsultationCard
                         key={consult.id}
-                        className="p-5 cursor-pointer transition-all duration-300 border-0 bg-gradient-to-r from-primary/20 to-primary/5 backdrop-blur-xl rounded-[2rem] relative group border border-white/10 hover:border-primary/30 shadow-lg"
+                        subject={consult.subject}
+                        clientName={consult.client?.name || 'Client'}
+                        description={consult.description}
+                        isNew={true}
                         onClick={async () => {
                           updateConsultationMutation.mutate({ id: consult.id, viewed: 1 });
                           try {
@@ -177,21 +172,7 @@ export default function Conversations() {
                             console.error("Error clicking card", e);
                           }
                         }}
-                      >
-                        <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <div className="flex items-center justify-between relative z-10">
-                          <div className="flex-1 min-w-0 pr-4">
-                            <div className="flex items-center gap-2 mb-1.5">
-                              <span className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_hsl(var(--primary))]" />
-                              <h3 className="font-bold text-white text-base truncate pr-2">{consult.subject} - {consult.client?.name || 'Client'}</h3>
-                            </div>
-                            <p className="text-sm text-white/60 line-clamp-2 leading-relaxed pl-4">{consult.description}</p>
-                          </div>
-                          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-300">
-                            <ChevronRight className="w-4 h-4 text-white/40 group-hover:text-white" />
-                          </div>
-                        </div>
-                      </Card>
+                      />
                     ))}
                 </CollapsibleContent>
               </Collapsible>
@@ -214,56 +195,25 @@ export default function Conversations() {
               </Empty>
             ) : (
               <div className="space-y-3">
-                {conversations.map((conv) => (
-                  <Card
-                    key={conv.id}
-                    className="group relative p-4 pr-6 cursor-pointer border-0 bg-white/5 backdrop-blur-md rounded-[2rem] transition-all duration-300 hover:bg-white/10 hover:scale-[1.02] border border-white/5 hover:border-white/10"
-                    onClick={() => setLocation(`/chat/${conv.id}`)}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg ring-2 ring-white/5">
-                        {conv.otherUser?.avatar ? (
-                          <img src={conv.otherUser.avatar} alt={conv.otherUser.name || "User"} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-white font-bold text-xl">
-                            {conv.otherUser?.name?.charAt(0).toUpperCase() || "?"}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0 py-1">
-                        <div className="flex justify-between items-center mb-0.5">
-                          <h3 className="font-bold text-white text-lg truncate tracking-tight">
-                            {conv.otherUser?.name || "Unknown User"}
-                          </h3>
-                          <p className="text-[10px] font-bold text-white/30 uppercase tracking-wider">
-                            {(() => {
-                              const dateStr = conv.lastMessageAt || conv.createdAt;
-                              if (!dateStr) return "";
-                              const date = new Date(dateStr as any);
-                              return isNaN(date.getTime()) ? "" : date.toLocaleDateString();
-                            })()}
-                          </p>
-                        </div>
-
-                        <p className="text-sm font-medium text-white/50 truncate flex items-center gap-2">
-                          {conv.unreadCount > 0 ? <span className="w-2 h-2 rounded-full bg-primary inline-block" /> : null}
-                          Click to view messages
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-2 flex-shrink-0 self-center">
-                        {conv.unreadCount > 0 && (
-                          <div className="bg-primary text-white shadow-[0_0_10px_rgba(var(--primary),0.5)] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
-                            {conv.unreadCount}
-                          </div>
-                        )}
-                        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <MessageCircle className="w-4 h-4 text-white" />
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
+                {conversations.map((conv) => {
+                  const dateStr = conv.lastMessageAt || conv.createdAt;
+                  let timestamp = "";
+                  if (dateStr) {
+                    const date = new Date(dateStr as any);
+                    timestamp = isNaN(date.getTime()) ? "" : date.toLocaleDateString();
+                  }
+                  
+                  return (
+                    <ConversationCard
+                      key={conv.id}
+                      name={conv.otherUser?.name || "Unknown User"}
+                      avatar={conv.otherUser?.avatar}
+                      timestamp={timestamp}
+                      unreadCount={conv.unreadCount || 0}
+                      onClick={() => setLocation(`/chat/${conv.id}`)}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>
