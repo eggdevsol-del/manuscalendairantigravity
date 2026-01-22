@@ -17,7 +17,7 @@ import { Link, useLocation } from "wouter";
 import { useTotalUnreadCount } from "@/lib/selectors/conversation.selectors";
 import { useBottomNav } from "@/contexts/BottomNavContext";
 import { useRef, useCallback, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 // Constants for gesture detection
 const SWIPE_THRESHOLD = 20; // pixels to commit swipe
@@ -32,6 +32,7 @@ export default function BottomNav() {
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState(0);
     const dragStartY = useRef(0);
+    const elementRef = useRef<HTMLDivElement>(null);
 
     const isActive = (p?: string) => {
         if (!p) return false;
@@ -45,19 +46,23 @@ export default function BottomNav() {
 
     // Handle pointer down - start tracking
     const handlePointerDown = useCallback((e: React.PointerEvent) => {
-        if (!hasContextualRow) return;
+        // Always allow swipe if we have a contextual row OR if we're currently showing it
+        if (!hasContextualRow && !isContextualVisible) return;
         
-        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        // Capture on the nav element itself
+        if (elementRef.current) {
+            elementRef.current.setPointerCapture(e.pointerId);
+        }
         dragStartY.current = e.clientY;
         setIsDragging(true);
         setDragOffset(0);
-    }, [hasContextualRow]);
+    }, [hasContextualRow, isContextualVisible]);
 
     // Handle pointer move - track drag distance
     const handlePointerMove = useCallback((e: React.PointerEvent) => {
         if (!isDragging) return;
         
-        const deltaY = dragStartY.current - e.clientY; // Positive = swipe up
+        const deltaY = dragStartY.current - e.clientY; // Positive = swipe up, Negative = swipe down
         // Clamp the drag offset
         const maxDrag = ROW_HEIGHT;
         const clampedDelta = Math.max(-maxDrag, Math.min(maxDrag, deltaY));
@@ -68,39 +73,41 @@ export default function BottomNav() {
     const handlePointerUp = useCallback((e: React.PointerEvent) => {
         if (!isDragging) return;
         
-        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+        if (elementRef.current) {
+            elementRef.current.releasePointerCapture(e.pointerId);
+        }
         setIsDragging(false);
         
         // Determine if swipe should commit
-        if (dragOffset > SWIPE_THRESHOLD && !isContextualVisible) {
-            // Swipe up - show contextual row
+        // dragOffset > 0 means user swiped UP (finger moved up, deltaY is positive)
+        // dragOffset < 0 means user swiped DOWN (finger moved down, deltaY is negative)
+        
+        if (dragOffset > SWIPE_THRESHOLD && !isContextualVisible && hasContextualRow) {
+            // Swipe up while on main row - show contextual row
             setContextualVisible(true);
         } else if (dragOffset < -SWIPE_THRESHOLD && isContextualVisible) {
-            // Swipe down - hide contextual row
+            // Swipe down while on contextual row - show main row
             setContextualVisible(false);
         }
         
         setDragOffset(0);
-    }, [isDragging, dragOffset, isContextualVisible, setContextualVisible]);
+    }, [isDragging, dragOffset, isContextualVisible, hasContextualRow, setContextualVisible]);
 
-    // Calculate the visual offset during drag
-    const getRowTransform = () => {
+    // Calculate the current Y position of the row container
+    const getRowY = () => {
+        const baseY = isContextualVisible ? -ROW_HEIGHT : 0;
         if (isDragging) {
-            // During drag, show partial transition
-            const progress = dragOffset / ROW_HEIGHT;
-            if (isContextualVisible) {
-                // Currently showing contextual, dragging down would show main
-                return Math.min(0, progress) * ROW_HEIGHT;
-            } else {
-                // Currently showing main, dragging up would show contextual
-                return Math.max(0, -progress) * ROW_HEIGHT;
-            }
+            // Add drag offset for visual feedback
+            // When showing main (baseY=0), swiping up (positive offset) should move negative
+            // When showing contextual (baseY=-ROW_HEIGHT), swiping down (negative offset) should move positive
+            return baseY - (dragOffset * 0.5); // 0.5 for elastic feel
         }
-        return isContextualVisible ? -ROW_HEIGHT : 0;
+        return baseY;
     };
 
     return (
         <nav
+            ref={elementRef}
             className="fixed bottom-0 inset-x-0 z-[50] select-none"
             style={{ touchAction: "none" }}
             onPointerDown={handlePointerDown}
@@ -111,19 +118,13 @@ export default function BottomNav() {
             {/* Container with fixed height and overflow hidden */}
             <div 
                 className="bg-slate-950/60 backdrop-blur-[32px] border-t border-white/10 overflow-hidden"
-                style={{ 
-                    height: ROW_HEIGHT,
-                    paddingBottom: "env(safe-area-inset-bottom)" 
-                }}
+                style={{ height: ROW_HEIGHT }}
             >
                 {/* Row Container - slides up/down */}
                 <motion.div
                     className="flex flex-col"
-                    animate={{ y: isContextualVisible ? -ROW_HEIGHT : 0 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                    style={{ 
-                        y: isDragging ? getRowTransform() : undefined 
-                    }}
+                    animate={{ y: isDragging ? getRowY() : (isContextualVisible ? -ROW_HEIGHT : 0) }}
+                    transition={isDragging ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 35 }}
                 >
                     {/* Row 0: Main Navigation */}
                     <div 
