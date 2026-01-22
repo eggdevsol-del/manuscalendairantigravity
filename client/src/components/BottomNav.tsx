@@ -115,10 +115,13 @@ export default function BottomNav() {
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
         >
-            {/* Container with fixed height and overflow hidden */}
+            {/* Container with nav row height + safe area, overflow hidden for row swap */}
             <div 
                 className="bg-slate-950/60 backdrop-blur-[32px] border-t border-white/10 overflow-hidden"
-                style={{ height: ROW_HEIGHT }}
+                style={{ 
+                    height: ROW_HEIGHT,
+                    paddingBottom: "env(safe-area-inset-bottom)"
+                }}
             >
                 {/* Row Container - slides up/down */}
                 <motion.div
@@ -200,12 +203,6 @@ export default function BottomNav() {
                     </div>
                 </motion.div>
             </div>
-
-            {/* Safe area spacer */}
-            <div 
-                className="bg-slate-950/60 backdrop-blur-[32px]"
-                style={{ height: "env(safe-area-inset-bottom)" }}
-            />
         </nav>
     );
 }
