@@ -163,6 +163,7 @@
     background: var(--bg-gradient);
     background-attachment: fixed;
     height: 100vh;
+    overflow: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     touch-action: manipulation;
