@@ -6,7 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Calendar, ChevronDown, ChevronRight, MessageCircle, User } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
-import { LoadingState } from "@/components/ui/ssot";
+import { LoadingState, PageShell, GlassSheet, PageHeader } from "@/components/ui/ssot";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 
@@ -92,17 +92,16 @@ export default function Conversations() {
   const unreadTotal = conversations?.reduce((acc, curr) => acc + (curr.unreadCount || 0), 0) || 0;
 
   return (
-    <div className="fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden">
-
+    <PageShell>
       {/* 1. Page Header (Fixed) */}
-      <header className="px-4 py-4 z-10 shrink-0 flex items-center justify-between">
+      <PageHeader variant="transparent" className="justify-between">
         <h1 className="text-2xl font-bold text-foreground">Messages</h1>
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
             <User className="w-5 h-5 text-primary" />
           </div>
         </div>
-      </header>
+      </PageHeader>
 
       {/* 2. Top Context Area (Non-interactive) */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
@@ -118,10 +117,7 @@ export default function Conversations() {
       </div>
 
       {/* 3. Sheet Container */}
-      <div className="flex-1 z-20 flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative">
-
-        {/* Top Edge Highlight */}
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none" />
+      <GlassSheet className="bg-white/5">
 
         {/* Sheet Header (Optional Actions) */}
         <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5 flex justify-end">
@@ -273,7 +269,7 @@ export default function Conversations() {
           </div>
         </div>
 
-      </div>
-    </div>
+      </GlassSheet>
+    </PageShell>
   );
 }

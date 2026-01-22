@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
-import { LoadingState } from "@/components/ui/ssot";
+import { LoadingState, PageShell, GlassSheet, PageHeader } from "@/components/ui/ssot";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -94,15 +94,14 @@ export default function Consultations() {
   };
 
   return (
-    <div className="fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden">
-
+    <PageShell>
       {/* 1. Page Header (Fixed) */}
-      <header className="px-4 py-4 z-10 shrink-0 flex items-center justify-between">
+      <PageHeader variant="transparent" className="justify-between">
         <h1 className="text-2xl font-bold text-foreground">Consultations</h1>
         <Button size="icon" variant="ghost" className="rounded-full bg-white/5 hover:bg-white/10 text-foreground" onClick={() => setShowNewDialog(true)}>
           <Plus className="w-5 h-5" />
         </Button>
-      </header>
+      </PageHeader>
 
       {/* 2. Top Context Area (Stats/Info) */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
@@ -113,10 +112,7 @@ export default function Consultations() {
       </div>
 
       {/* 3. Sheet Container */}
-      <div className="flex-1 z-20 flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative">
-
-        {/* Top Edge Highlight */}
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none" />
+      <GlassSheet className="bg-white/5">
 
         {/* Sheet Header: Filter/Sort could go here */}
         <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5">
@@ -276,6 +272,6 @@ export default function Consultations() {
           </div>
         </div>
       </ModalShell>
-    </div>
+    </PageShell>
   );
 }
