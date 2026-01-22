@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
 import { ChevronLeft, Mail, MessageCircle, Phone, Plus, Search, Trash, User } from "lucide-react";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -168,21 +169,21 @@ export default function Clients() {
         {/* Client List */}
         {filteredClients.length === 0 ? (
           <Card className="p-8">
-            <div className="text-center space-y-3">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto">
-                <User className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <div>
-                <p className="font-semibold text-foreground">No clients yet</p>
-                <p className="text-sm text-muted-foreground">
-                  Add your first client to get started
-                </p>
-              </div>
-              <Button onClick={() => setShowAddDialog(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Client
-              </Button>
-            </div>
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon" className="w-16 h-16 rounded-full bg-muted">
+                  <User className="w-8 h-8" />
+                </EmptyMedia>
+                <EmptyTitle>No clients yet</EmptyTitle>
+                <EmptyDescription>Add your first client to get started</EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button onClick={() => setShowAddDialog(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Client
+                </Button>
+              </EmptyContent>
+            </Empty>
           </Card>
         ) : (
           <div className="space-y-3">

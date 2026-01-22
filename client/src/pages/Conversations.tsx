@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Calendar, ChevronDown, ChevronRight, MessageCircle, User } from "lucide-react";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { LoadingState } from "@/components/ui/ssot";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
@@ -202,19 +203,19 @@ export default function Conversations() {
 
             {/* Conversations List */}
             {!conversations || conversations.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                  <MessageCircle className="w-10 h-10 text-muted-foreground" />
-                </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  No messages yet
-                </h3>
-                <p className="text-muted-foreground text-sm max-w-xs">
-                  {isArtist
-                    ? "Client inquiries will appear here."
-                    : "Start a conversation to book your next session."}
-                </p>
-              </div>
+              <Empty className="py-12">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon" className="w-20 h-20 rounded-full bg-white/5">
+                    <MessageCircle className="w-10 h-10" />
+                  </EmptyMedia>
+                  <EmptyTitle>No messages yet</EmptyTitle>
+                  <EmptyDescription>
+                    {isArtist
+                      ? "Client inquiries will appear here."
+                      : "Start a conversation to book your next session."}
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             ) : (
               <div className="space-y-3">
                 {conversations.map((conv) => (

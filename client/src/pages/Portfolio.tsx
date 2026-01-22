@@ -4,7 +4,8 @@ import { trpc } from "@/lib/trpc";
 import { useRegisterBottomNavRow } from "@/contexts/BottomNavContext";
 import { BottomNavRow } from "@/components/BottomNavRow";
 import { Card, CardContent } from "@/components/ui/card";
-import { Heart, Trash2, Upload } from "lucide-react";
+import { Heart, Trash2, Upload, Image } from "lucide-react";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/ssot";
 
@@ -103,8 +104,18 @@ export default function Portfolio() {
                         ))}
 
                         {portfolioItems?.length === 0 && (
-                            <div className="col-span-2 py-10 text-center text-muted-foreground">
-                                {isArtist ? "No images yet. Upload some work!" : "No portfolio items found."}
+                            <div className="col-span-2">
+                                <Empty className="py-10">
+                                    <EmptyHeader>
+                                        <EmptyMedia variant="icon" className="w-16 h-16 rounded-full bg-white/5">
+                                            <Image className="w-8 h-8" />
+                                        </EmptyMedia>
+                                        <EmptyTitle>{isArtist ? "No images yet" : "No portfolio items"}</EmptyTitle>
+                                        <EmptyDescription>
+                                            {isArtist ? "Upload some work to showcase your talent!" : "Check back later for new work."}
+                                        </EmptyDescription>
+                                    </EmptyHeader>
+                                </Empty>
                             </div>
                         )}
                     </div>

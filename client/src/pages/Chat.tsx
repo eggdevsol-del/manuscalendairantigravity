@@ -14,7 +14,8 @@ import { BookingWizard } from "@/features/booking/BookingWizard";
 import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
 import { ProjectProposalMessage } from "@/components/chat/ProjectProposalMessage";
 import { ProjectProposalModal } from "@/features/chat/components/ProjectProposalModal";
-import { ArrowLeft, Send, User, Phone, Mail, Cake, ImagePlus, Pin, PinOff, Calendar, FileText, Zap } from "lucide-react";
+import { ArrowLeft, Send, User, Phone, Mail, Cake, ImagePlus, Pin, PinOff, Calendar, FileText, Zap, MessageCircle } from "lucide-react";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { useRegisterBottomNavRow } from "@/contexts/BottomNavContext";
 import { QuickActionsRow, ChatAction } from "@/features/chat/components/QuickActionsRow";
 import { useLocation, useParams } from "wouter";
@@ -328,9 +329,15 @@ export default function Chat() {
                 );
               })
             ) : (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">No messages yet</p>
-              </div>
+              <Empty className="py-12">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon" className="w-16 h-16 rounded-full bg-white/5">
+                    <MessageCircle className="w-8 h-8" />
+                  </EmptyMedia>
+                  <EmptyTitle>No messages yet</EmptyTitle>
+                  <EmptyDescription>Start the conversation</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             )}
             {/* Removed bottomRef div */}
           </div>
