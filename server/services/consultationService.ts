@@ -69,7 +69,7 @@ export async function updateConsultation(
 
     await db
         .update(consultations)
-        .set({ ...updates, updatedAt: new Date().toISOString() })
+        .set({ ...updates, updatedAt: new Date().toISOString().slice(0, 19).replace('T', ' ') })
         .where(eq(consultations.id, id));
 
     return getConsultation(id);
@@ -82,6 +82,9 @@ export async function archiveOldConsultations() {
 
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    // Format as MySQL DATETIME: YYYY-MM-DD HH:MM:SS
+    const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().slice(0, 19).replace('T', ' ');
 
     // Using sql directly or query builder if feasible, 
     // but Drizzle query builder for updates with where clause on date:
@@ -91,7 +94,7 @@ export async function archiveOldConsultations() {
         .where(
             and(
                 eq(consultations.status, 'pending'),
-                lt(consultations.createdAt, thirtyDaysAgo.toISOString())
+                lt(consultations.createdAt, thirtyDaysAgoStr)
             )
         );
 }
