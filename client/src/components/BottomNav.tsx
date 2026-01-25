@@ -93,6 +93,10 @@ export default function BottomNav() {
         } else if (dragOffset < -SWIPE_THRESHOLD && isContextualVisible) {
             // Swipe down while on contextual row - show main row
             setContextualVisible(false);
+        } else if (dragOffset > SWIPE_THRESHOLD && isContextualVisible) {
+            // Swipe up while on contextual row (Row 1) - also return to main row
+            // This allows users to swipe up from Row 1 to get back to main nav
+            setContextualVisible(false);
         }
         
         setDragOffset(0);
@@ -110,8 +114,9 @@ export default function BottomNav() {
         return baseY;
     };
 
-    // Swipe indicator - shows when contextual row is available
+    // Swipe indicator - shows when contextual row is available or when on contextual row
     const showSwipeIndicator = hasContextualRow && !isContextualVisible;
+    const showSwipeDownIndicator = isContextualVisible;
 
     return (
         <nav
@@ -129,6 +134,17 @@ export default function BottomNav() {
                 >
                     <div className="w-8 h-1 rounded-full bg-white/60" />
                     <span className="text-[10px] text-white/60 font-medium">Swipe up</span>
+                </div>
+            )}
+
+            {/* Swipe indicator for Row 1 - swipe up or down to return to main nav */}
+            {showSwipeDownIndicator && (
+                <div 
+                    className="absolute -top-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 opacity-40"
+                    onClick={() => setContextualVisible(false)}
+                >
+                    <div className="w-8 h-1 rounded-full bg-white/60" />
+                    <span className="text-[10px] text-white/60 font-medium">Swipe to close</span>
                 </div>
             )}
 
