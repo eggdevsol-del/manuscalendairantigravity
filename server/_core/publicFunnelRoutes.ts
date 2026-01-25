@@ -215,7 +215,7 @@ export function registerPublicFunnelRoutes(app: Express) {
         const existingLead = await db.query.leads.findFirst({
           where: and(
             eq(schema.leads.artistId, artistId),
-            eq(schema.leads.email, contact.email.toLowerCase())
+            eq(schema.leads.clientEmail, contact.email.toLowerCase())
           ),
         });
 
@@ -223,8 +223,8 @@ export function registerPublicFunnelRoutes(app: Express) {
           console.log(`[PublicFunnel] POST /api/public/funnel/submit - Updating existing lead: ${existingLead.id}`);
           await db.update(schema.leads)
             .set({
-              name: contact.name,
-              phone: contact.phone || null,
+              clientName: contact.name,
+              clientPhone: contact.phone || null,
               projectType: intent?.projectType || null,
               projectDescription: intent?.projectDescription || null,
               stylePreferences: style?.stylePreferences ? JSON.stringify(style.stylePreferences) : null,
@@ -233,6 +233,7 @@ export function registerPublicFunnelRoutes(app: Express) {
               estimatedSize: budget?.estimatedSize || null,
               budgetMin: budget?.budgetMin || null,
               budgetMax: budget?.budgetMax || null,
+              budgetLabel: budget?.budgetLabel || null,
               preferredTimeframe: availability?.preferredTimeframe || null,
               preferredMonths: availability?.preferredMonths ? JSON.stringify(availability.preferredMonths) : null,
               urgency: availability?.urgency || "flexible",
@@ -248,11 +249,10 @@ export function registerPublicFunnelRoutes(app: Express) {
           const [newLead] = await db.insert(schema.leads).values({
             artistId,
             source: "funnel",
-            sourceUrl: `/start/`,
             status: "new",
-            name: contact.name,
-            email: contact.email.toLowerCase(),
-            phone: contact.phone || null,
+            clientName: contact.name,
+            clientEmail: contact.email.toLowerCase(),
+            clientPhone: contact.phone || null,
             projectType: intent?.projectType || null,
             projectDescription: intent?.projectDescription || null,
             stylePreferences: style?.stylePreferences ? JSON.stringify(style.stylePreferences) : null,
@@ -261,6 +261,7 @@ export function registerPublicFunnelRoutes(app: Express) {
             estimatedSize: budget?.estimatedSize || null,
             budgetMin: budget?.budgetMin || null,
             budgetMax: budget?.budgetMax || null,
+            budgetLabel: budget?.budgetLabel || null,
             preferredTimeframe: availability?.preferredTimeframe || null,
             preferredMonths: availability?.preferredMonths ? JSON.stringify(availability.preferredMonths) : null,
             urgency: availability?.urgency || "flexible",

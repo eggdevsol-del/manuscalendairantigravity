@@ -171,47 +171,63 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
 
   // Handle form submission
   const handleSubmit = async () => {
-    if (!artistProfile) return;
+    if (!artistProfile) {
+      console.error('[Funnel] No artist profile');
+      return;
+    }
     
+    console.log('[Funnel] Starting submission...');
     setSubmitting(true);
+    
+    const submitData = {
+      artistId: artistProfile.id,
+      sessionId,
+      intent: {
+        projectType,
+        projectDescription,
+      },
+      contact: {
+        name,
+        email,
+        phone: phone || undefined,
+      },
+      style: {
+        stylePreferences: selectedStyles,
+        referenceImages: [],
+      },
+      budget: {
+        placement: projectType,
+        estimatedSize: '',
+        budgetMin: selectedBudget?.min || 0,
+        budgetMax: selectedBudget?.max || 0,
+        budgetLabel: selectedBudget?.label || '',
+      },
+      availability: {
+        preferredTimeframe: timeframe,
+        preferredMonths: [],
+        urgency: 'flexible',
+      },
+    };
+    
+    console.log('[Funnel] Submit data:', JSON.stringify(submitData, null, 2));
+    
     try {
       const response = await fetch('/api/public/funnel/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          artistId: artistProfile.id,
-          sessionId,
-          intent: {
-            projectType,
-            projectDescription,
-          },
-          contact: {
-            name,
-            email,
-            phone: phone || undefined,
-          },
-          style: {
-            stylePreferences: selectedStyles,
-            referenceImages: [],
-          },
-          budget: {
-            placement: projectType, // Use project type as placement
-            estimatedSize: '',
-            budgetMin: selectedBudget?.min || 0,
-            budgetMax: selectedBudget?.max || 0,
-            budgetLabel: selectedBudget?.label || '',
-          },
-          availability: {
-            preferredTimeframe: timeframe,
-            preferredMonths: [],
-            urgency: 'flexible',
-          },
-        }),
+        body: JSON.stringify(submitData),
       });
       
+      console.log('[Funnel] Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to submit');
+        const errorText = await response.text();
+        console.error('[Funnel] Submit error response:', errorText);
+        throw new Error(`Failed to submit: ${errorText}`);
       }
+      
+      const result = await response.json();
+      console.log('[Funnel] Submit success:', result);
       
       setSubmitted(true);
       sessionStorage.removeItem(`funnel_session_${artistSlug}`);
