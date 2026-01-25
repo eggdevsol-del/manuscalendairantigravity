@@ -21,6 +21,7 @@ import { motion } from "framer-motion";
 
 // Constants for gesture detection
 const SWIPE_THRESHOLD = 15; // pixels to commit swipe (reduced for better responsiveness)
+const DRAG_START_THRESHOLD = 5; // pixels before we consider it a drag (not a tap)
 const ROW_HEIGHT = 77; // Height of nav row in pixels (increased by 5px from 72)
 
 export default function BottomNav() {
@@ -32,7 +33,9 @@ export default function BottomNav() {
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState(0);
     const dragStartY = useRef(0);
+    const dragStartX = useRef(0);
     const pointerIdRef = useRef<number | null>(null);
+    const hasDragStarted = useRef(false); // Track if we've exceeded drag threshold
 
     const isActive = (p?: string) => {
         if (!p) return false;
@@ -44,63 +47,85 @@ export default function BottomNav() {
     // Check if contextual row is available
     const hasContextualRow = contextualRow !== null;
 
-    // Handle pointer down - start tracking
+    // Handle pointer down - start tracking potential drag
     const handlePointerDown = useCallback((e: React.PointerEvent) => {
         // Always allow swipe if we have a contextual row OR if we're currently showing it
         if (!hasContextualRow && !isContextualVisible) return;
         
-        // Store pointer ID and capture it on the target
+        // Store pointer ID but DON'T capture yet - wait to see if it's a drag
         pointerIdRef.current = e.pointerId;
-        (e.target as HTMLElement).setPointerCapture(e.pointerId);
-        
         dragStartY.current = e.clientY;
-        setIsDragging(true);
+        dragStartX.current = e.clientX;
+        hasDragStarted.current = false;
         setDragOffset(0);
     }, [hasContextualRow, isContextualVisible]);
 
     // Handle pointer move - track drag distance
     const handlePointerMove = useCallback((e: React.PointerEvent) => {
-        if (!isDragging || pointerIdRef.current !== e.pointerId) return;
+        if (pointerIdRef.current !== e.pointerId) return;
         
         const deltaY = dragStartY.current - e.clientY; // Positive = swipe up, Negative = swipe down
-        // Clamp the drag offset
-        const maxDrag = ROW_HEIGHT;
-        const clampedDelta = Math.max(-maxDrag, Math.min(maxDrag, deltaY));
-        setDragOffset(clampedDelta);
-    }, [isDragging]);
+        const deltaX = Math.abs(e.clientX - dragStartX.current);
+        const absDeltaY = Math.abs(deltaY);
+        
+        // Only start dragging if vertical movement exceeds threshold and is more than horizontal
+        if (!hasDragStarted.current && absDeltaY > DRAG_START_THRESHOLD && absDeltaY > deltaX) {
+            hasDragStarted.current = true;
+            setIsDragging(true);
+            // Now capture the pointer since we're dragging
+            try {
+                (e.target as HTMLElement).setPointerCapture(e.pointerId);
+            } catch {
+                // Ignore if capture fails
+            }
+        }
+        
+        if (hasDragStarted.current) {
+            // Clamp the drag offset
+            const maxDrag = ROW_HEIGHT;
+            const clampedDelta = Math.max(-maxDrag, Math.min(maxDrag, deltaY));
+            setDragOffset(clampedDelta);
+        }
+    }, []);
 
     // Handle pointer up - determine if swipe commits
     const handlePointerUp = useCallback((e: React.PointerEvent) => {
-        if (!isDragging || pointerIdRef.current !== e.pointerId) return;
+        if (pointerIdRef.current !== e.pointerId) return;
         
-        // Release pointer capture
-        try {
-            (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-        } catch {
-            // Ignore if already released
+        // Release pointer capture if we captured it
+        if (hasDragStarted.current) {
+            try {
+                (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+            } catch {
+                // Ignore if already released
+            }
         }
         
         pointerIdRef.current = null;
-        setIsDragging(false);
         
-        // Determine if swipe should commit
-        // dragOffset > 0 means user swiped UP (finger moved up, deltaY is positive)
-        // dragOffset < 0 means user swiped DOWN (finger moved down, deltaY is negative)
-        
-        if (dragOffset > SWIPE_THRESHOLD && !isContextualVisible && hasContextualRow) {
-            // Swipe up while on main row - show contextual row
-            setContextualVisible(true);
-        } else if (dragOffset < -SWIPE_THRESHOLD && isContextualVisible) {
-            // Swipe down while on contextual row - show main row
-            setContextualVisible(false);
-        } else if (dragOffset > SWIPE_THRESHOLD && isContextualVisible) {
-            // Swipe up while on contextual row (Row 1) - also return to main row
-            // This allows users to swipe up from Row 1 to get back to main nav
-            setContextualVisible(false);
+        // Only process swipe if we actually started dragging
+        if (hasDragStarted.current) {
+            // Determine if swipe should commit
+            // dragOffset > 0 means user swiped UP (finger moved up, deltaY is positive)
+            // dragOffset < 0 means user swiped DOWN (finger moved down, deltaY is negative)
+            
+            if (dragOffset > SWIPE_THRESHOLD && !isContextualVisible && hasContextualRow) {
+                // Swipe up while on main row - show contextual row
+                setContextualVisible(true);
+            } else if (dragOffset < -SWIPE_THRESHOLD && isContextualVisible) {
+                // Swipe down while on contextual row - show main row
+                setContextualVisible(false);
+            } else if (dragOffset > SWIPE_THRESHOLD && isContextualVisible) {
+                // Swipe up while on contextual row (Row 1) - also return to main row
+                // This allows users to swipe up from Row 1 to get back to main nav
+                setContextualVisible(false);
+            }
         }
         
+        hasDragStarted.current = false;
+        setIsDragging(false);
         setDragOffset(0);
-    }, [isDragging, dragOffset, isContextualVisible, hasContextualRow, setContextualVisible]);
+    }, [dragOffset, isContextualVisible, hasContextualRow, setContextualVisible]);
 
     // Calculate the current Y position of the row container
     const getRowY = () => {
@@ -150,7 +175,7 @@ export default function BottomNav() {
 
             {/* Container with nav row height + safe area, overflow hidden for row swap */}
             <div 
-                className="bg-slate-950/60 backdrop-blur-[32px] border-t border-white/10 overflow-hidden"
+                className="bg-gray-100/90 dark:bg-slate-950/60 backdrop-blur-[32px] border-t border-gray-200 dark:border-white/10 overflow-hidden"
                 style={{ 
                     height: ROW_HEIGHT,
                     paddingBottom: "env(safe-area-inset-bottom)"
@@ -173,9 +198,9 @@ export default function BottomNav() {
                                 <Button
                                     variant="ghost"
                                     className={cn(
-                                        "flex flex-col items-center justify-center gap-1.5 h-full w-full rounded-none hover:bg-white/5 transition-all relative snap-center shrink-0",
+                                        "flex flex-col items-center justify-center gap-1.5 h-full w-full rounded-none hover:bg-gray-200/50 dark:hover:bg-white/5 transition-all relative snap-center shrink-0",
                                         "min-w-[33.33vw] w-[33.33vw]",
-                                        active ? "text-white" : "text-white/40"
+                                        active ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-white/40"
                                     )}
                                     onClick={item.action}
                                 >
@@ -184,8 +209,8 @@ export default function BottomNav() {
                                             className={cn(
                                                 "w-6 h-6 transition-all duration-300",
                                                 active
-                                                    ? "text-white scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-                                                    : "text-white/40 group-hover:text-white/70"
+                                                    ? "text-gray-900 dark:text-white scale-110 drop-shadow-[0_0_8px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                                                    : "text-gray-500 dark:text-white/40 group-hover:text-gray-700 dark:group-hover:text-white/70"
                                             )}
                                             strokeWidth={active ? 2.5 : 2}
                                         />
@@ -202,12 +227,12 @@ export default function BottomNav() {
                                     </div>
                                     <span className={cn(
                                         "text-[11px] font-medium tracking-wide transition-all duration-300",
-                                        active ? "text-white opacity-100" : "text-white/40 opacity-70"
+                                        active ? "text-gray-900 dark:text-white opacity-100" : "text-gray-500 dark:text-white/40 opacity-70"
                                     )}>
                                         {item.label}
                                     </span>
                                     {active && (
-                                        <div className="absolute bottom-2 w-1 h-1 rounded-full bg-white shadow-[0_0_8px_white]" />
+                                        <div className="absolute bottom-2 w-1 h-1 rounded-full bg-gray-900 dark:bg-white shadow-[0_0_8px_rgba(0,0,0,0.3)] dark:shadow-[0_0_8px_white]" />
                                     )}
                                 </Button>
                             );
@@ -229,7 +254,7 @@ export default function BottomNav() {
 
                     {/* Row 1: Contextual Actions - horizontally scrollable like Row 0 */}
                     <div 
-                        className="w-full overflow-x-auto snap-x snap-mandatory no-scrollbar overscroll-x-contain flex items-center shrink-0 border-t border-white/5"
+                        className="w-full overflow-x-auto snap-x snap-mandatory no-scrollbar overscroll-x-contain flex items-center shrink-0 border-t border-gray-200 dark:border-white/5"
                         style={{ height: ROW_HEIGHT }}
                     >
                         {contextualRow}
