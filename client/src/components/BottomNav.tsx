@@ -120,7 +120,7 @@ export default function BottomNav() {
 
     return (
         <nav
-            className="fixed bottom-0 inset-x-0 z-[50] select-none touch-none"
+            className="fixed bottom-0 inset-x-0 z-[50] select-none"
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
