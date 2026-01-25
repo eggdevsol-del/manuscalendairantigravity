@@ -502,10 +502,19 @@ export const funnelRouter = router({
           .set(updateData)
           .where(eq(schema.artistSettings.userId, user.id));
       } else {
+        // Insert new artistSettings with required fields
         await db.insert(schema.artistSettings).values({
           userId: user.id,
-          ...updateData,
+          workSchedule: JSON.stringify([]), // Required field - empty default
+          services: JSON.stringify([]), // Required field - empty default
+          publicSlug: updateData.publicSlug || null,
+          funnelEnabled: updateData.funnelEnabled ?? 0,
+          funnelWelcomeMessage: updateData.funnelWelcomeMessage || null,
+          styleOptions: updateData.styleOptions || null,
+          placementOptions: updateData.placementOptions || null,
+          budgetRanges: updateData.budgetRanges || null,
           createdAt: now,
+          updatedAt: now,
         });
       }
 
