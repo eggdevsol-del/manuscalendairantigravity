@@ -12,6 +12,7 @@ import { serveStatic, setupVite } from "./vite";
 import { verifyAndFixDatabase } from "../verify-and-fix-db";
 import { storageGetData } from "../storage";
 import { startOutboxWorker } from "../workers/outboxProcessor";
+import { registerPublicFunnelRoutes } from "./publicFunnelRoutes";
 
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -66,6 +67,9 @@ async function startServer() {
 
   // Serve static uploads
   app.use("/uploads", express.static(uploadDir));
+
+  // Public funnel API routes (no auth required)
+  registerPublicFunnelRoutes(app);
 
   // File serving endpoint - handle full paths with subdirectories
   app.get("/api/files/*", async (req, res) => {
