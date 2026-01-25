@@ -1,41 +1,22 @@
 /**
  * Funnel Wrapper Component
  * 
- * This is the main container for the public consultation funnel.
- * It handles:
- * - Session management
- * - Step navigation
- * - Progress tracking
- * - Data persistence across steps
- * 
- * IMPORTANT: This is a PUBLIC page - no authentication required
+ * Simple, clean light-mode consultation funnel.
+ * No images, no icons - just clean text and forms.
  */
+import { useState, useEffect } from "react";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRoute, useLocation } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
 // Generate unique session ID
 const generateSessionId = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
   }
-  // Fallback for older browsers
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = Math.random() * 16 | 0;
     const v = c === 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
 };
-
-// Funnel step components
-import FunnelIntentStep from "./steps/FunnelIntentStep";
-import FunnelContactStep from "./steps/FunnelContactStep";
-import FunnelStyleStep from "./steps/FunnelStyleStep";
-import FunnelBudgetStep from "./steps/FunnelBudgetStep";
-import FunnelAvailabilityStep from "./steps/FunnelAvailabilityStep";
-import FunnelSuccessStep from "./steps/FunnelSuccessStep";
-import FunnelLoadingState from "./components/FunnelLoadingState";
-import FunnelNotFound from "./components/FunnelNotFound";
 
 // Types
 export interface FunnelStepData {
@@ -83,29 +64,81 @@ interface FunnelWrapperProps {
   artistSlug: string;
 }
 
-const STEP_ORDER = ['intent', 'contact', 'style', 'budget', 'availability', 'success'];
+// Simple project types without emojis
+const PROJECT_TYPES = [
+  { id: 'full-sleeve', label: 'Full Sleeve' },
+  { id: 'half-sleeve', label: 'Half Sleeve' },
+  { id: 'back-piece', label: 'Back Piece' },
+  { id: 'chest-piece', label: 'Chest Piece' },
+  { id: 'cover-up', label: 'Cover Up' },
+  { id: 'small-piece', label: 'Small Piece' },
+  { id: 'touch-up', label: 'Touch Up' },
+  { id: 'custom', label: 'Custom Project' },
+];
+
+// Simple style options
+const STYLE_OPTIONS = [
+  'Realism', 'Traditional', 'Neo-Traditional', 'Japanese', 
+  'Blackwork', 'Dotwork', 'Watercolor', 'Geometric', 
+  'Minimalist', 'Fine Line', 'Other'
+];
+
+// Simple placement options
+const PLACEMENT_OPTIONS = [
+  'Full Sleeve', 'Half Sleeve', 'Forearm', 'Upper Arm',
+  'Back', 'Chest', 'Ribs', 'Thigh', 'Calf', 'Hand', 'Neck', 'Other'
+];
+
+// Budget ranges
+const BUDGET_RANGES = [
+  { label: 'Under $500', min: 0, max: 500 },
+  { label: '$500 - $1,000', min: 500, max: 1000 },
+  { label: '$1,000 - $2,500', min: 1000, max: 2500 },
+  { label: '$2,500 - $5,000', min: 2500, max: 5000 },
+  { label: '$5,000 - $10,000', min: 5000, max: 10000 },
+  { label: '$10,000+', min: 10000, max: null },
+];
+
+// Timeframe options
+const TIMEFRAME_OPTIONS = [
+  { id: 'asap', label: 'As soon as possible' },
+  { id: '1-3months', label: 'Within 1-3 months' },
+  { id: '3-6months', label: 'Within 3-6 months' },
+  { id: '6months+', label: '6+ months from now' },
+  { id: 'flexible', label: 'Flexible / No rush' },
+];
 
 export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
-  const [, setLocation] = useLocation();
-  
   // State
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [artistProfile, setArtistProfile] = useState<ArtistProfile | null>(null);
   const [sessionId, setSessionId] = useState<string>("");
-  const [currentStep, setCurrentStep] = useState<string>("intent");
-  const [stepData, setStepData] = useState<FunnelStepData>({});
-  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [currentStep, setCurrentStep] = useState<number>(0);
   const [submitting, setSubmitting] = useState(false);
-  const [leadId, setLeadId] = useState<number | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  
+  // Form data
+  const [projectType, setProjectType] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
+  const [placement, setPlacement] = useState('');
+  const [selectedBudget, setSelectedBudget] = useState<typeof BUDGET_RANGES[0] | null>(null);
+  const [timeframe, setTimeframe] = useState('');
 
-  // Initialize session and fetch artist profile
+  // Total steps (excluding success)
+  const totalSteps = 5;
+
+  // Initialize
   useEffect(() => {
     const initFunnel = async () => {
       try {
         setLoading(true);
         
-        // Generate or retrieve session ID
+        // Generate session ID
         let storedSessionId = sessionStorage.getItem(`funnel_session_${artistSlug}`);
         if (!storedSessionId) {
           storedSessionId = generateSessionId();
@@ -113,93 +146,38 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         }
         setSessionId(storedSessionId);
         
-        // Restore step data if exists
-        const storedData = sessionStorage.getItem(`funnel_data_${artistSlug}`);
-        if (storedData) {
-          const parsed = JSON.parse(storedData);
-          setStepData(parsed.stepData || {});
-          setCompletedSteps(parsed.completedSteps || []);
-          setCurrentStep(parsed.currentStep || 'intent');
-        }
-        
         // Fetch artist profile
+        console.log(`[Funnel] Fetching artist profile for slug: ${artistSlug}`);
         const response = await fetch(`/api/public/artist/${artistSlug}`);
+        
         if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error(`[Funnel] Error fetching artist:`, errorData);
           if (response.status === 404) {
-            setError("Artist not found");
+            setError("This booking link is not available");
           } else {
-            setError("Failed to load artist profile");
+            setError("Something went wrong. Please try again.");
           }
           return;
         }
         
-        const profile = await response.json();
-        setArtistProfile(profile);
+        const data = await response.json();
+        console.log(`[Funnel] Artist profile loaded:`, data.displayName);
+        setArtistProfile(data);
         
       } catch (err) {
-        console.error("Failed to initialize funnel:", err);
-        setError("Something went wrong. Please try again.");
+        console.error("[Funnel] Init error:", err);
+        setError("Failed to load. Please try again.");
       } finally {
         setLoading(false);
       }
     };
-    
+
     initFunnel();
   }, [artistSlug]);
 
-  // Persist data to session storage
-  useEffect(() => {
-    if (sessionId && artistSlug) {
-      sessionStorage.setItem(`funnel_data_${artistSlug}`, JSON.stringify({
-        stepData,
-        completedSteps,
-        currentStep,
-      }));
-    }
-  }, [stepData, completedSteps, currentStep, sessionId, artistSlug]);
-
-  // Get enabled steps for this artist
-  const getEnabledSteps = useCallback(() => {
-    if (!artistProfile) return STEP_ORDER.filter(s => s !== 'success');
-    return artistProfile.enabledSteps.filter(s => STEP_ORDER.includes(s));
-  }, [artistProfile]);
-
-  // Navigation handlers
-  const handleNext = useCallback((stepName: string, data: any) => {
-    // Save step data
-    setStepData(prev => ({
-      ...prev,
-      [stepName]: data,
-    }));
-    
-    // Mark step as completed
-    if (!completedSteps.includes(stepName)) {
-      setCompletedSteps(prev => [...prev, stepName]);
-    }
-    
-    // Find next step
-    const enabledSteps = getEnabledSteps();
-    const currentIndex = enabledSteps.indexOf(stepName);
-    
-    if (currentIndex < enabledSteps.length - 1) {
-      setCurrentStep(enabledSteps[currentIndex + 1]);
-    } else {
-      // All steps complete - submit
-      handleSubmit({ ...stepData, [stepName]: data });
-    }
-  }, [completedSteps, getEnabledSteps, stepData]);
-
-  const handleBack = useCallback(() => {
-    const enabledSteps = getEnabledSteps();
-    const currentIndex = enabledSteps.indexOf(currentStep);
-    
-    if (currentIndex > 0) {
-      setCurrentStep(enabledSteps[currentIndex - 1]);
-    }
-  }, [currentStep, getEnabledSteps]);
-
-  // Submit funnel
-  const handleSubmit = async (finalData: FunnelStepData) => {
+  // Handle form submission
+  const handleSubmit = async () => {
     if (!artistProfile) return;
     
     setSubmitting(true);
@@ -210,7 +188,31 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         body: JSON.stringify({
           artistId: artistProfile.id,
           sessionId,
-          ...finalData,
+          intent: {
+            projectType,
+            projectDescription,
+          },
+          contact: {
+            name,
+            email,
+            phone: phone || undefined,
+          },
+          style: {
+            stylePreferences: selectedStyles,
+            referenceImages: [],
+          },
+          budget: {
+            placement,
+            estimatedSize: '',
+            budgetMin: selectedBudget?.min || 0,
+            budgetMax: selectedBudget?.max || 0,
+            budgetLabel: selectedBudget?.label || '',
+          },
+          availability: {
+            preferredTimeframe: timeframe,
+            preferredMonths: [],
+            urgency: 'flexible',
+          },
         }),
       });
       
@@ -218,124 +220,355 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         throw new Error('Failed to submit');
       }
       
-      const result = await response.json();
-      setLeadId(result.leadId);
-      setCurrentStep('success');
-      
-      // Clear session storage
+      setSubmitted(true);
       sessionStorage.removeItem(`funnel_session_${artistSlug}`);
-      sessionStorage.removeItem(`funnel_data_${artistSlug}`);
       
     } catch (err) {
-      console.error("Failed to submit funnel:", err);
-      // Show error but stay on current step
+      console.error("[Funnel] Submit error:", err);
+      alert("Failed to submit. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Calculate progress
-  const getProgress = useCallback(() => {
-    const enabledSteps = getEnabledSteps();
-    const currentIndex = enabledSteps.indexOf(currentStep);
-    return ((currentIndex + 1) / enabledSteps.length) * 100;
-  }, [currentStep, getEnabledSteps]);
+  // Validation for each step
+  const canProceed = () => {
+    switch (currentStep) {
+      case 0: // Intent
+        return projectType && projectDescription.trim().length >= 10;
+      case 1: // Contact
+        return name.trim() && email.trim() && email.includes('@');
+      case 2: // Style
+        return selectedStyles.length > 0;
+      case 3: // Budget
+        return placement && selectedBudget;
+      case 4: // Availability
+        return timeframe;
+      default:
+        return false;
+    }
+  };
+
+  // Next step
+  const handleNext = () => {
+    if (currentStep < totalSteps - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      handleSubmit();
+    }
+  };
+
+  // Previous step
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  // Toggle style selection
+  const toggleStyle = (style: string) => {
+    setSelectedStyles(prev => 
+      prev.includes(style) 
+        ? prev.filter(s => s !== style)
+        : [...prev, style]
+    );
+  };
 
   // Loading state
   if (loading) {
-    return <FunnelLoadingState />;
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-gray-400 mb-2">Loading...</div>
+        </div>
+      </div>
+    );
   }
 
   // Error state
   if (error || !artistProfile) {
-    return <FunnelNotFound message={error || "Artist not found"} />;
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center px-6">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+            Not Available
+          </h1>
+          <p className="text-gray-600 mb-6">
+            {error || "This booking link is not available."}
+          </p>
+          <p className="text-sm text-gray-500">
+            Please contact the artist directly if you believe this is an error.
+          </p>
+        </div>
+      </div>
+    );
   }
 
-  // Render current step
-  const renderStep = () => {
-    const commonProps = {
-      artistProfile,
-      stepData,
-      onNext: handleNext,
-      onBack: handleBack,
-      isFirstStep: currentStep === getEnabledSteps()[0],
-      isLastStep: currentStep === getEnabledSteps()[getEnabledSteps().length - 1],
-      submitting,
-    };
+  // Success state
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center px-6">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+            Request Submitted!
+          </h1>
+          <p className="text-gray-600 mb-6">
+            Thank you for your interest. {artistProfile.displayName} will review your request and get back to you soon.
+          </p>
+          <p className="text-sm text-gray-500">
+            Check your email for confirmation.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-    switch (currentStep) {
-      case 'intent':
-        return <FunnelIntentStep {...commonProps} />;
-      case 'contact':
-        return <FunnelContactStep {...commonProps} />;
-      case 'style':
-        return <FunnelStyleStep {...commonProps} />;
-      case 'budget':
-        return <FunnelBudgetStep {...commonProps} />;
-      case 'availability':
-        return <FunnelAvailabilityStep {...commonProps} />;
-      case 'success':
-        return <FunnelSuccessStep artistProfile={artistProfile} leadId={leadId} />;
-      default:
-        return <FunnelIntentStep {...commonProps} />;
-    }
-  };
+  // Step titles
+  const stepTitles = [
+    "What are you looking for?",
+    "Your contact details",
+    "Style preferences",
+    "Placement & budget",
+    "When would you like to get tattooed?"
+  ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       {/* Progress bar */}
-      {currentStep !== 'success' && (
-        <div className="fixed top-0 left-0 right-0 z-50">
-          <div className="h-1 bg-muted">
-            <motion.div
-              className="h-full bg-primary"
-              initial={{ width: 0 }}
-              animate={{ width: `${getProgress()}%` }}
-              transition={{ duration: 0.3 }}
-            />
-          </div>
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100">
+        <div className="h-1 bg-gray-100">
+          <div 
+            className="h-full bg-gray-900 transition-all duration-300"
+            style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
+          />
         </div>
-      )}
-
-      {/* Artist header */}
-      {currentStep !== 'success' && (
-        <div className="pt-6 pb-4 px-6 text-center">
-          {artistProfile.profileImageUrl ? (
-            <img
-              src={artistProfile.profileImageUrl}
-              alt={artistProfile.displayName}
-              className="w-16 h-16 rounded-full mx-auto mb-3 object-cover ring-2 ring-primary/20"
-            />
-          ) : (
-            <div className="w-16 h-16 rounded-full mx-auto mb-3 bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <span className="text-2xl font-bold text-white">
-                {artistProfile.displayName?.charAt(0) || '?'}
-              </span>
-            </div>
-          )}
-          <h1 className="text-lg font-bold text-foreground">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <span className="text-sm text-gray-500">
+            Step {currentStep + 1} of {totalSteps}
+          </span>
+          <span className="text-sm font-medium text-gray-900">
             {artistProfile.displayName}
-          </h1>
-          {artistProfile.tagline && (
-            <p className="text-sm text-muted-foreground mt-1">
-              {artistProfile.tagline}
-            </p>
-          )}
+          </span>
         </div>
-      )}
+      </div>
 
-      {/* Step content */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentStep}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
-        >
-          {renderStep()}
-        </motion.div>
-      </AnimatePresence>
+      {/* Content */}
+      <div className="pt-20 pb-32 px-6 max-w-lg mx-auto">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+          {stepTitles[currentStep]}
+        </h2>
+
+        {/* Step 0: Intent */}
+        {currentStep === 0 && (
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Project type
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {PROJECT_TYPES.map((type) => (
+                  <button
+                    key={type.id}
+                    onClick={() => setProjectType(type.id)}
+                    className={`p-3 text-left rounded-lg border transition-colors ${
+                      projectType === type.id
+                        ? 'border-gray-900 bg-gray-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <span className="text-sm font-medium text-gray-900">{type.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Describe your idea
+              </label>
+              <textarea
+                value={projectDescription}
+                onChange={(e) => setProjectDescription(e.target.value)}
+                placeholder="Tell us about your vision..."
+                rows={4}
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {projectDescription.length < 10 
+                  ? `At least ${10 - projectDescription.length} more characters`
+                  : 'Great!'
+                }
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Step 1: Contact */}
+        {currentStep === 1 && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Your name *
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Full name"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email *
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone (optional)
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Your phone number"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Style */}
+        {currentStep === 2 && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600 mb-4">
+              Select all styles you're interested in
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {STYLE_OPTIONS.map((style) => (
+                <button
+                  key={style}
+                  onClick={() => toggleStyle(style)}
+                  className={`px-4 py-2 rounded-full border transition-colors ${
+                    selectedStyles.includes(style)
+                      ? 'border-gray-900 bg-gray-900 text-white'
+                      : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  {style}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Budget */}
+        {currentStep === 3 && (
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Placement
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {PLACEMENT_OPTIONS.map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPlacement(p)}
+                    className={`p-2 text-center rounded-lg border transition-colors text-sm ${
+                      placement === p
+                        ? 'border-gray-900 bg-gray-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Budget range
+              </label>
+              <div className="space-y-2">
+                {BUDGET_RANGES.map((budget) => (
+                  <button
+                    key={budget.label}
+                    onClick={() => setSelectedBudget(budget)}
+                    className={`w-full p-3 text-left rounded-lg border transition-colors ${
+                      selectedBudget?.label === budget.label
+                        ? 'border-gray-900 bg-gray-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <span className="font-medium text-gray-900">{budget.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: Availability */}
+        {currentStep === 4 && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600 mb-4">
+              When are you hoping to get started?
+            </p>
+            <div className="space-y-2">
+              {TIMEFRAME_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => setTimeframe(option.id)}
+                  className={`w-full p-4 text-left rounded-lg border transition-colors ${
+                    timeframe === option.id
+                      ? 'border-gray-900 bg-gray-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <span className="font-medium text-gray-900">{option.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4">
+        <div className="max-w-lg mx-auto flex gap-3">
+          {currentStep > 0 && (
+            <button
+              onClick={handleBack}
+              disabled={submitting}
+              className="flex-1 py-3 px-6 border border-gray-200 rounded-lg font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Back
+            </button>
+          )}
+          <button
+            onClick={handleNext}
+            disabled={!canProceed() || submitting}
+            className={`${currentStep === 0 ? 'w-full' : 'flex-1'} py-3 px-6 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {submitting 
+              ? 'Submitting...' 
+              : currentStep === totalSteps - 1 
+                ? 'Submit Request' 
+                : 'Continue'
+            }
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
