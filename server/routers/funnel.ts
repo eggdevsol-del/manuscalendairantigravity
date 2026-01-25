@@ -164,8 +164,8 @@ export const funnelRouter = router({
       const artistId = settings.userId;
 
       // Check for existing funnel submission by session
-      let existingSubmission = await db.query.funnelSubmissions.findFirst({
-        where: eq(schema.funnelSubmissions.sessionId, input.sessionId),
+      let existingSubmission = await db.query.funnelSessions.findFirst({
+        where: eq(schema.funnelSessions.id, input.sessionId),
       });
 
       // Flatten step data for storage
@@ -195,29 +195,28 @@ export const funnelRouter = router({
 
       if (existingSubmission) {
         // Update existing submission
-        await db.update(schema.funnelSubmissions)
+        await db.update(schema.funnelSessions)
           .set({
             stepData: JSON.stringify(input.stepData),
-            currentStep: input.currentStep,
-            status: input.isComplete ? 'completed' : 'in_progress',
+            currentStep: String(input.currentStep),
+            completed: input.isComplete ? 1 : 0,
             completedAt: input.isComplete ? nowFormatted : null,
-            updatedAt: nowFormatted,
+            lastActivityAt: nowFormatted,
           })
-          .where(eq(schema.funnelSubmissions.id, existingSubmission.id));
+          .where(eq(schema.funnelSessions.id, existingSubmission.id));
       } else {
         // Create new submission
-        const [newSubmission] = await db.insert(schema.funnelSubmissions).values({
+        await db.insert(schema.funnelSessions).values({
+          id: input.sessionId,
           artistId,
-          sessionId: input.sessionId,
           stepData: JSON.stringify(input.stepData),
-          currentStep: input.currentStep,
-          status: input.isComplete ? 'completed' : 'in_progress',
+          currentStep: String(input.currentStep),
+          completed: input.isComplete ? 1 : 0,
           startedAt: nowFormatted,
           completedAt: input.isComplete ? nowFormatted : null,
           createdAt: nowFormatted,
-          updatedAt: nowFormatted,
         });
-        existingSubmission = { id: newSubmission.insertId } as any;
+        existingSubmission = { id: input.sessionId } as any;
       }
 
       // If complete, create or update lead
@@ -253,7 +252,7 @@ export const funnelRouter = router({
               priorityScore,
               priorityTier,
               estimatedValue,
-              funnelSubmissionId: existingSubmission!.id,
+              funnelSessionId: existingSubmission!.id,
               updatedAt: nowFormatted,
             })
             .where(eq(schema.leads.id, existingLead.id));
@@ -284,7 +283,7 @@ export const funnelRouter = router({
             priorityScore,
             priorityTier,
             estimatedValue,
-            funnelSubmissionId: existingSubmission!.id,
+            funnelSessionId: existingSubmission!.id,
             createdAt: nowFormatted,
             updatedAt: nowFormatted,
           });
