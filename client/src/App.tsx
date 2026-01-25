@@ -77,6 +77,22 @@ function Router() {
   );
 }
 
+/**
+ * Wrapper component to conditionally render IOSInstallPrompt
+ * Only shows on non-funnel pages (funnel has its own install prompt on success)
+ */
+function ConditionalIOSInstallPrompt() {
+  const [location] = useLocation();
+  const isPublicFunnel = location.startsWith("/start/") || location.startsWith("/deposit/");
+  
+  // Don't render on funnel pages - the funnel handles its own install prompt
+  if (isPublicFunnel) {
+    return null;
+  }
+  
+  return <IOSInstallPrompt />;
+}
+
 function App() {
   return (
     <ThemeProvider
@@ -88,7 +104,7 @@ function App() {
           <TooltipProvider>
             <Toaster />
             <InstallPrompt />
-            <IOSInstallPrompt />
+            <ConditionalIOSInstallPrompt />
             <ErrorBoundary>
               <Router />
             </ErrorBoundary>
@@ -100,4 +116,3 @@ function App() {
 }
 
 export default App;
-

@@ -5,6 +5,7 @@
  * No images, no icons - just clean text and forms.
  */
 import { useState, useEffect } from "react";
+import IOSInstallPrompt from "@/components/IOSInstallPrompt";
 
 // Generate unique session ID
 const generateSessionId = () => {
@@ -111,6 +112,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   
   // Form data
   const [projectType, setProjectType] = useState('');
@@ -232,6 +234,12 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
       setSubmitted(true);
       sessionStorage.removeItem(`funnel_session_${artistSlug}`);
       
+      // Show install prompt after a short delay on success
+      setTimeout(() => {
+        setShowInstallPrompt(true);
+        console.log('[Funnel] Showing install prompt after successful submission');
+      }, 1500);
+      
     } catch (err) {
       console.error("[Funnel] Submit error:", err);
       alert("Failed to submit. Please try again.");
@@ -328,6 +336,14 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
             Check your email for confirmation.
           </p>
         </div>
+        
+        {/* Show install prompt ONLY after successful submission */}
+        {showInstallPrompt && (
+          <IOSInstallPrompt 
+            forceShow={true} 
+            onDismiss={() => setShowInstallPrompt(false)} 
+          />
+        )}
       </div>
     );
   }
