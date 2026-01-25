@@ -409,10 +409,7 @@ export default function Chat() {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleImageUpload(file);
-                }}
+                onChange={handleImageUpload}
                 disabled={uploadingImage}
               />
               <ImagePlus className={cn("w-5 h-5", uploadingImage ? "text-muted-foreground animate-pulse" : "text-muted-foreground hover:text-foreground")} />
