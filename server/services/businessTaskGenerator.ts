@@ -155,18 +155,18 @@ async function generateNewLeadTasks(
     tasks.push({
       taskType: 'new_lead',
       taskTier: 'tier1',
-      title: `New lead: ${lead.name}`,
+      title: `New lead: ${lead.clientName}`,
       context: `${lead.projectType?.replace(/-/g, ' ') || 'Consultation'} • ${tagPreview} • ${timeLabel}`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
       relatedEntityType: 'lead',
       relatedEntityId: String(lead.id),
       clientId: null,
-      clientName: lead.name,
+      clientName: lead.clientName,
       actionType: 'in_app',
-      smsNumber: lead.phone || null,
+      smsNumber: lead.clientPhone || null,
       smsBody: null,
-      emailRecipient: lead.email || null,
+      emailRecipient: lead.clientEmail || null,
       emailSubject: null,
       emailBody: null,
       deepLink: `/conversations?leadId=${lead.id}`,
@@ -215,25 +215,25 @@ async function generateLeadFollowUpTasks(
       baseScore += 50;
     }
     
-    const followUpMessage = `Hey ${lead.name}! Just following up on your ${lead.projectType?.replace(/-/g, ' ') || 'tattoo'} inquiry. Let me know if you have any questions or if you'd like to move forward with booking!`;
+    const followUpMessage = `Hey ${lead.clientName}! Just following up on your ${lead.projectType?.replace(/-/g, ' ') || 'tattoo'} inquiry. Let me know if you have any questions or if you'd like to move forward with booking!`;
     
     tasks.push({
       taskType: 'lead_follow_up',
       taskTier: 'tier2',
-      title: `Follow up: ${lead.name}`,
+      title: `Follow up: ${lead.clientName}`,
       context: `Contacted ${Math.floor(daysSinceContact)} days ago - no response`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
       relatedEntityType: 'lead',
       relatedEntityId: String(lead.id),
       clientId: null,
-      clientName: lead.name,
-      actionType: lead.phone ? 'sms' : 'email',
-      smsNumber: lead.phone || null,
-      smsBody: lead.phone ? followUpMessage : null,
-      emailRecipient: lead.email || null,
-      emailSubject: lead.phone ? null : `Following up on your tattoo inquiry`,
-      emailBody: lead.phone ? null : followUpMessage,
+      clientName: lead.clientName,
+      actionType: lead.clientPhone ? 'sms' : 'email',
+      smsNumber: lead.clientPhone || null,
+      smsBody: lead.clientPhone ? followUpMessage : null,
+      emailRecipient: lead.clientEmail || null,
+      emailSubject: lead.clientPhone ? null : `Following up on your tattoo inquiry`,
+      emailBody: lead.clientPhone ? null : followUpMessage,
       deepLink: `/conversations?leadId=${lead.id}`,
       dueAt: null,
       expiresAt: null

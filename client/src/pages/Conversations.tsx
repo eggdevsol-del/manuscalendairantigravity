@@ -24,6 +24,15 @@ export default function Conversations() {
     refetchInterval: 10000,
   });
 
+  // Get new leads from funnel for artists
+  const { data: leadsData } = trpc.funnel.getLeads.useQuery(
+    { status: 'new', limit: 50, offset: 0 },
+    {
+      enabled: !!user && (user.role === 'artist' || user.role === 'admin'),
+      refetchInterval: 10000,
+    }
+  );
+
   const [isConsultationsOpen, setIsConsultationsOpen] = useState(true);
 
   const createConversationMutation = trpc.conversations.getOrCreate.useMutation({
@@ -174,6 +183,40 @@ export default function Conversations() {
                         }}
                       />
                     ))}
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+
+            {/* New Leads from Funnel */}
+            {isArtist && leadsData?.leads && leadsData.leads.length > 0 && (
+              <Collapsible
+                open={isConsultationsOpen}
+                onOpenChange={setIsConsultationsOpen}
+                className="mb-6 space-y-2"
+              >
+                <div className="flex items-center justify-between px-2 mb-3">
+                  <h2 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">Consultation Requests</h2>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="w-8 h-8 p-0 rounded-full hover:bg-white/10 text-muted-foreground">
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isConsultationsOpen ? '' : '-rotate-90'}`} />
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+
+                <CollapsibleContent className="space-y-3">
+                  {leadsData.leads.map((lead) => (
+                    <ConsultationCard
+                      key={`lead-${lead.id}`}
+                      subject={`${lead.projectType?.replace(/-/g, ' ') || 'New consultation'} - ${lead.clientName}`}
+                      clientName={lead.clientName}
+                      description={lead.projectDescription || 'No description provided'}
+                      isNew={true}
+                      onClick={() => {
+                        // Navigate to lead detail or create conversation
+                        setLocation(`/lead/${lead.id}`);
+                      }}
+                    />
+                  ))}
                 </CollapsibleContent>
               </Collapsible>
             )}
