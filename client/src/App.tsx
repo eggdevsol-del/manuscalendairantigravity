@@ -28,6 +28,7 @@ import CompleteProfile from "./pages/CompleteProfile";
 import Clients from "./pages/Clients";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import SetPassword from "./pages/SetPassword";
 import ClientProfile from "./pages/ClientProfile";
 import { PublicFunnel } from "./pages/funnel";
 import { DepositSheet } from "./pages/funnel/DepositSheet";
@@ -35,7 +36,7 @@ import LeadDetail from "./pages/LeadDetail";
 
 function Router() {
   const [location] = useLocation();
-  const hideBottomNavPaths = ["/", "/login", "/signup", "/complete-profile"];
+  const hideBottomNavPaths = ["/", "/login", "/signup", "/set-password", "/complete-profile"];
   const isPublicFunnel = location.startsWith("/start/") || location.startsWith("/deposit/");
   const shouldShowBottomNav = !hideBottomNavPaths.includes(location) && !location.startsWith("/404") && !isPublicFunnel;
 
@@ -45,6 +46,7 @@ function Router() {
         <Route path="/" component={Login} />
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
+        <Route path="/set-password" component={SetPassword} />
         
         {/* Public funnel - no auth required */}
         <Route path="/start/:slug" component={PublicFunnel} />

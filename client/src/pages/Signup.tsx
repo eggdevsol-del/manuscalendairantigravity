@@ -19,6 +19,8 @@ export default function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const checkEmailMutation = trpc.auth.checkEmailExists.useMutation();
+
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: (data) => {
       // Store JWT token in localStorage
@@ -35,8 +37,33 @@ export default function Signup() {
       setIsLoading(false);
     },
     onError: (error) => {
-      toast.error(error.message || "Registration failed. Please try again.");
-      setIsLoading(false);
+      // Check if this is an "email exists" error
+      if (error.data?.code === "CONFLICT" || error.message.includes("already exists")) {
+        // Check if it's a funnel client
+        checkEmailMutation.mutate(
+          { email },
+          {
+            onSuccess: (result) => {
+              if (result.exists && result.isFunnelClient) {
+                // Redirect to set password page
+                toast.info("You've already submitted a consultation! Let's set up your password.");
+                setLocation(`/set-password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(result.name || name)}`);
+              } else if (result.exists) {
+                // User has a password, suggest login
+                toast.error("An account with this email already exists. Please sign in instead.");
+              }
+              setIsLoading(false);
+            },
+            onError: () => {
+              toast.error("An account with this email already exists.");
+              setIsLoading(false);
+            },
+          }
+        );
+      } else {
+        toast.error(error.message || "Registration failed. Please try again.");
+        setIsLoading(false);
+      }
     },
   });
 
@@ -59,7 +86,32 @@ export default function Signup() {
     }
 
     setIsLoading(true);
-    registerMutation.mutate({ name, email, password, role });
+    
+    // First check if email exists and is a funnel client
+    checkEmailMutation.mutate(
+      { email },
+      {
+        onSuccess: (result) => {
+          if (result.exists && result.isFunnelClient) {
+            // Redirect to set password page
+            toast.info("You've already submitted a consultation! Let's set up your password.");
+            setLocation(`/set-password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(result.name || name)}`);
+            setIsLoading(false);
+          } else if (result.exists) {
+            // User has a password, suggest login
+            toast.error("An account with this email already exists. Please sign in instead.");
+            setIsLoading(false);
+          } else {
+            // New user, proceed with registration
+            registerMutation.mutate({ name, email, password, role });
+          }
+        },
+        onError: () => {
+          // If check fails, try to register anyway
+          registerMutation.mutate({ name, email, password, role });
+        },
+      }
+    );
   };
 
   return (
@@ -252,4 +304,3 @@ export default function Signup() {
     </div>
   );
 }
-
