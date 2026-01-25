@@ -15,6 +15,7 @@ import { bookingRouter } from "./booking";
 import { clientProfileRouter } from "./clientProfile";
 import { dashboardRouter } from "./dashboard";
 import { dashboardTasksRouter } from "./dashboardTasks";
+import { funnelRouter } from "./funnel";
 import { portfolioRouter } from "./portfolio";
 import { walletRouter } from "./wallet";
 
@@ -28,6 +29,7 @@ export const appRouter = router({
     conversations: conversationsRouter,
     dashboard: dashboardRouter,
     dashboardTasks: dashboardTasksRouter,
+    funnel: funnelRouter,
     messages: messagesRouter,
     notifications: notificationTemplatesRouter,
     policies: policiesRouter,

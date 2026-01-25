@@ -29,11 +29,14 @@ import Clients from "./pages/Clients";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ClientProfile from "./pages/ClientProfile";
+import { PublicFunnel } from "./pages/funnel";
+import { DepositSheet } from "./pages/funnel/DepositSheet";
 
 function Router() {
   const [location] = useLocation();
   const hideBottomNavPaths = ["/", "/login", "/signup", "/complete-profile"];
-  const shouldShowBottomNav = !hideBottomNavPaths.includes(location) && !location.startsWith("/404");
+  const isPublicFunnel = location.startsWith("/start/") || location.startsWith("/deposit/");
+  const shouldShowBottomNav = !hideBottomNavPaths.includes(location) && !location.startsWith("/404") && !isPublicFunnel;
 
   return (
     <div className={`min-h-screen ${shouldShowBottomNav ? "pb-16" : ""}`}>
@@ -41,6 +44,10 @@ function Router() {
         <Route path="/" component={Login} />
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
+        
+        {/* Public funnel - no auth required */}
+        <Route path="/start/:slug" component={PublicFunnel} />
+        <Route path="/deposit/:token" component={DepositSheet} />
 
         <Route path="/conversations" component={Conversations} />
         <Route path="/chat/:id" component={Chat} />

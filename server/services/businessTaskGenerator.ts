@@ -110,6 +110,140 @@ function isJanuary(): boolean {
 // ==========================================
 
 /**
+ * TIER 1: New Lead from Funnel
+ * Leads from the public funnel get highest priority
+ */
+async function generateNewLeadTasks(
+  db: MySql2Database<typeof schema>,
+  artistId: string
+): Promise<BusinessTask[]> {
+  const tasks: BusinessTask[] = [];
+  
+  const newLeads = await db.query.leads.findMany({
+    where: and(
+      eq(schema.leads.artistId, artistId),
+      eq(schema.leads.status, 'new')
+    ),
+    orderBy: [desc(schema.leads.priorityScore), asc(schema.leads.createdAt)]
+  });
+
+  for (const lead of newLeads) {
+    const hours = hoursSince(lead.createdAt!);
+    let baseScore: number;
+    
+    // New leads from funnel are critical - they've already shown high intent
+    if (hours < 1) baseScore = 980;      // Just submitted
+    else if (hours < 4) baseScore = 900;  // Very fresh
+    else if (hours < 24) baseScore = 750; // Same day
+    else if (hours < 48) baseScore = 550; // Yesterday
+    else baseScore = Math.max(200, 400 - (hours * 3));
+    
+    // Boost based on lead's own priority score
+    const leadPriorityBoost = Math.min(100, (lead.priorityScore || 0) / 10);
+    baseScore += leadPriorityBoost;
+    
+    // Parse derived tags for display
+    const tags = lead.derivedTags ? JSON.parse(lead.derivedTags) : [];
+    const tagPreview = tags.slice(0, 3).join(' • ');
+    
+    const timeLabel = hours < 1 
+      ? 'Just now' 
+      : hours < 24 
+        ? `${Math.floor(hours)}h ago` 
+        : `${Math.floor(hours / 24)}d ago`;
+    
+    tasks.push({
+      taskType: 'new_lead',
+      taskTier: 'tier1',
+      title: `New lead: ${lead.name}`,
+      context: `${lead.projectType?.replace(/-/g, ' ') || 'Consultation'} • ${tagPreview} • ${timeLabel}`,
+      priorityScore: baseScore,
+      priorityLevel: getPriorityLevel(baseScore),
+      relatedEntityType: 'lead',
+      relatedEntityId: String(lead.id),
+      clientId: null,
+      clientName: lead.name,
+      actionType: 'in_app',
+      smsNumber: lead.phone || null,
+      smsBody: null,
+      emailRecipient: lead.email || null,
+      emailSubject: null,
+      emailBody: null,
+      deepLink: `/conversations?leadId=${lead.id}`,
+      dueAt: new Date(new Date(lead.createdAt!).getTime() + 60 * 60 * 1000), // 1 hour after creation
+      expiresAt: null
+    });
+  }
+  
+  return tasks;
+}
+
+/**
+ * TIER 2: Lead Follow-up (contacted but not qualified)
+ */
+async function generateLeadFollowUpTasks(
+  db: MySql2Database<typeof schema>,
+  artistId: string
+): Promise<BusinessTask[]> {
+  const tasks: BusinessTask[] = [];
+  
+  const contactedLeads = await db.query.leads.findMany({
+    where: and(
+      eq(schema.leads.artistId, artistId),
+      eq(schema.leads.status, 'contacted')
+    ),
+    orderBy: [desc(schema.leads.priorityScore)]
+  });
+
+  for (const lead of contactedLeads) {
+    const daysSinceContact = lead.firstContactAt ? daysSince(lead.firstContactAt) : daysSince(lead.createdAt!);
+    
+    // Only create follow-up task if it's been more than 2 days since contact
+    if (daysSinceContact < 2) continue;
+    
+    let baseScore: number;
+    
+    if (daysSinceContact < 4) baseScore = 550;      // 2-4 days - follow up
+    else if (daysSinceContact < 7) baseScore = 450;  // 4-7 days - getting stale
+    else if (daysSinceContact < 14) baseScore = 350; // 1-2 weeks - at risk
+    else baseScore = 250;                            // 2+ weeks - cold
+    
+    // Boost based on estimated value
+    if (lead.estimatedValue && lead.estimatedValue > 500000) { // $5000+
+      baseScore += 100;
+    } else if (lead.estimatedValue && lead.estimatedValue > 200000) { // $2000+
+      baseScore += 50;
+    }
+    
+    const followUpMessage = `Hey ${lead.name}! Just following up on your ${lead.projectType?.replace(/-/g, ' ') || 'tattoo'} inquiry. Let me know if you have any questions or if you'd like to move forward with booking!`;
+    
+    tasks.push({
+      taskType: 'lead_follow_up',
+      taskTier: 'tier2',
+      title: `Follow up: ${lead.name}`,
+      context: `Contacted ${Math.floor(daysSinceContact)} days ago - no response`,
+      priorityScore: baseScore,
+      priorityLevel: getPriorityLevel(baseScore),
+      relatedEntityType: 'lead',
+      relatedEntityId: String(lead.id),
+      clientId: null,
+      clientName: lead.name,
+      actionType: lead.phone ? 'sms' : 'email',
+      smsNumber: lead.phone || null,
+      smsBody: lead.phone ? followUpMessage : null,
+      emailRecipient: lead.email || null,
+      emailSubject: lead.phone ? null : `Following up on your tattoo inquiry`,
+      emailBody: lead.phone ? null : followUpMessage,
+      deepLink: `/conversations?leadId=${lead.id}`,
+      dueAt: null,
+      expiresAt: null
+    });
+  }
+  
+  return tasks;
+}
+
+/**
  * TIER 1: New Consultation Request
  */
 async function generateNewConsultationTasks(
@@ -771,6 +905,8 @@ export async function generateBusinessTasks(
   
   // Generate all task types in parallel
   const [
+    newLeadTasks,
+    leadFollowUpTasks,
     consultationTasks,
     depositTasks,
     confirmationTasks,
@@ -781,6 +917,8 @@ export async function generateBusinessTasks(
     healedPhotoTasks,
     thankYouTasks,
   ] = await Promise.all([
+    generateNewLeadTasks(db, artistId),
+    generateLeadFollowUpTasks(db, artistId),
     generateNewConsultationTasks(db, artistId),
     generateDepositTasks(db, artistId),
     generateConfirmationTasks(db, artistId),
@@ -794,6 +932,8 @@ export async function generateBusinessTasks(
   
   // Combine all tasks
   const allTasks: BusinessTask[] = [
+    ...newLeadTasks,
+    ...leadFollowUpTasks,
     ...consultationTasks,
     ...depositTasks,
     ...confirmationTasks,
