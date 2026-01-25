@@ -83,12 +83,6 @@ const STYLE_OPTIONS = [
   'Minimalist', 'Fine Line', 'Other'
 ];
 
-// Simple placement options
-const PLACEMENT_OPTIONS = [
-  'Full Sleeve', 'Half Sleeve', 'Forearm', 'Upper Arm',
-  'Back', 'Chest', 'Ribs', 'Thigh', 'Calf', 'Hand', 'Neck', 'Other'
-];
-
 // Budget ranges
 const BUDGET_RANGES = [
   { label: 'Under $500', min: 0, max: 500 },
@@ -125,7 +119,6 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
-  const [placement, setPlacement] = useState('');
   const [selectedBudget, setSelectedBudget] = useState<typeof BUDGET_RANGES[0] | null>(null);
   const [timeframe, setTimeframe] = useState('');
 
@@ -202,7 +195,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
             referenceImages: [],
           },
           budget: {
-            placement,
+            placement: projectType, // Use project type as placement
             estimatedSize: '',
             budgetMin: selectedBudget?.min || 0,
             budgetMax: selectedBudget?.max || 0,
@@ -241,7 +234,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
       case 2: // Style
         return selectedStyles.length > 0;
       case 3: // Budget
-        return placement && selectedBudget;
+        return selectedBudget !== null;
       case 4: // Availability
         return timeframe;
       default:
@@ -328,7 +321,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
     "What are you looking for?",
     "Your contact details",
     "Style preferences",
-    "Placement & budget",
+    "Your budget",
     "When would you like to get tattooed?"
   ];
 
@@ -473,47 +466,24 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
 
         {/* Step 3: Budget */}
         {currentStep === 3 && (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Placement
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {PLACEMENT_OPTIONS.map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPlacement(p)}
-                    className={`p-2 text-center rounded-lg border transition-colors text-sm ${
-                      placement === p
-                        ? 'border-gray-900 bg-gray-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Budget range
-              </label>
-              <div className="space-y-2">
-                {BUDGET_RANGES.map((budget) => (
-                  <button
-                    key={budget.label}
-                    onClick={() => setSelectedBudget(budget)}
-                    className={`w-full p-3 text-left rounded-lg border transition-colors ${
-                      selectedBudget?.label === budget.label
-                        ? 'border-gray-900 bg-gray-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <span className="font-medium text-gray-900">{budget.label}</span>
-                  </button>
-                ))}
-              </div>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600 mb-4">
+              What's your budget for this project?
+            </p>
+            <div className="space-y-2">
+              {BUDGET_RANGES.map((budget) => (
+                <button
+                  key={budget.label}
+                  onClick={() => setSelectedBudget(budget)}
+                  className={`w-full p-4 text-left rounded-lg border transition-colors ${
+                    selectedBudget?.label === budget.label
+                      ? 'border-gray-900 bg-gray-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <span className="font-medium text-gray-900">{budget.label}</span>
+                </button>
+              ))}
             </div>
           </div>
         )}
