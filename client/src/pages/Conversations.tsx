@@ -18,12 +18,6 @@ export default function Conversations() {
     refetchInterval: 10000,
   });
 
-  // Get pending consultation requests for artists
-  const { data: pendingConsults } = trpc.consultations.list.useQuery(undefined, {
-    enabled: !!user && (user.role === 'artist' || user.role === 'admin'),
-    refetchInterval: 10000,
-  });
-
   // Get new leads from funnel for artists
   const { data: leadsData } = trpc.funnel.getLeads.useQuery(
     { status: 'new', limit: 50, offset: 0 },
@@ -44,30 +38,6 @@ export default function Conversations() {
   });
 
   const utils = trpc.useUtils();
-  const updateConsultationMutation = trpc.consultations.update.useMutation({
-    onMutate: async (variables) => {
-      // Optimistic update
-      await utils.consultations.list.cancel();
-      const previousData = utils.consultations.list.getData();
-
-      if (previousData) {
-        // Optimistically mark as viewed
-        utils.consultations.list.setData(undefined, previousData.map(c =>
-          c.id === variables.id ? { ...c, viewed: 1 } : c
-        ));
-      }
-      return { previousData };
-    },
-    onError: (err, variables, context) => {
-      // Rollback
-      if (context?.previousData) {
-        utils.consultations.list.setData(undefined, context.previousData);
-      }
-    },
-    onSettled: () => {
-      utils.consultations.list.invalidate();
-    }
-  });
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -140,54 +110,7 @@ export default function Conversations() {
         <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y">
           <div className="pb-32 max-w-lg mx-auto space-y-4">
 
-            {/* Pending Consultations (Collapsible) */}
-            {isArtist && pendingConsults && pendingConsults.filter(c => c.status === 'pending' && !c.viewed).length > 0 && (
-              <Collapsible
-                open={isConsultationsOpen}
-                onOpenChange={setIsConsultationsOpen}
-                className="mb-6 space-y-2"
-              >
-                <div className="flex items-center justify-between px-2 mb-3">
-                  <h2 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">Consultation Requests</h2>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm" className="w-8 h-8 p-0 rounded-full hover:bg-white/10 text-muted-foreground">
-                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isConsultationsOpen ? '' : '-rotate-90'}`} />
-                    </Button>
-                  </CollapsibleTrigger>
-                </div>
-
-                <CollapsibleContent className="space-y-3">
-                  {pendingConsults
-                    .filter(c => c.status === 'pending' && !c.viewed)
-                    .sort((a, b) => new Date(b.createdAt as any).getTime() - new Date(a.createdAt as any).getTime())
-                    .map((consult) => (
-                      <ConsultationCard
-                        key={consult.id}
-                        subject={consult.subject}
-                        clientName={consult.client?.name || 'Client'}
-                        description={consult.description}
-                        isNew={true}
-                        onClick={async () => {
-                          updateConsultationMutation.mutate({ id: consult.id, viewed: 1 });
-                          try {
-                            const result = await createConversationMutation.mutateAsync({
-                              clientId: consult.clientId,
-                              artistId: consult.artistId,
-                            });
-                            if (result) {
-                              setLocation(`/chat/${result.id}?consultationId=${consult.id}`);
-                            }
-                          } catch (e) {
-                            console.error("Error clicking card", e);
-                          }
-                        }}
-                      />
-                    ))}
-                </CollapsibleContent>
-              </Collapsible>
-            )}
-
-            {/* New Leads from Funnel */}
+            {/* Consultation Requests from Funnel */}
             {isArtist && leadsData?.leads && leadsData.leads.length > 0 && (
               <Collapsible
                 open={isConsultationsOpen}
