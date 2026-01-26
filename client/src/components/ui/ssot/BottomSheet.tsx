@@ -11,6 +11,8 @@
  * - Action sheets with complex content
  * 
  * DO NOT use DialogPrimitive directly in page components.
+ * 
+ * @version 1.0.126
  */
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
@@ -18,10 +20,14 @@ import { Dialog, DialogTitle } from "@/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 interface BottomSheetProps {
-  /** Whether the sheet is open */
-  open: boolean;
-  /** Callback when open state changes */
-  onOpenChange: (open: boolean) => void;
+  /** Whether the sheet is open (preferred prop name) */
+  open?: boolean;
+  /** Alias for open - for backward compatibility */
+  isOpen?: boolean;
+  /** Callback when open state changes (preferred prop name) */
+  onOpenChange?: (open: boolean) => void;
+  /** Alias for onOpenChange - for backward compatibility */
+  onClose?: () => void;
   /** Sheet content */
   children: ReactNode;
   /** Optional title for accessibility (visually hidden if not displayed) */
@@ -38,14 +44,28 @@ interface BottomSheetProps {
 
 export function BottomSheet({ 
   open, 
+  isOpen,
   onOpenChange, 
+  onClose,
   children, 
   title = "Sheet",
   className,
   overlayVariant = "default"
 }: BottomSheetProps) {
+  // Support both prop naming conventions
+  const isSheetOpen = open ?? isOpen ?? false;
+  const handleOpenChange = (newOpen: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(newOpen);
+    } else if (onClose && !newOpen) {
+      onClose();
+    }
+  };
+
+  console.log(`[BottomSheet] Rendering with open=${isSheetOpen}, title="${title}"`);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isSheetOpen} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay 
           className={cn(
@@ -79,10 +99,14 @@ export function BottomSheet({
  * and only covers part of the screen (like iOS action sheets).
  */
 interface ActionSheetProps {
-  /** Whether the sheet is open */
-  open: boolean;
-  /** Callback when open state changes */
-  onOpenChange: (open: boolean) => void;
+  /** Whether the sheet is open (preferred prop name) */
+  open?: boolean;
+  /** Alias for open - for backward compatibility */
+  isOpen?: boolean;
+  /** Callback when open state changes (preferred prop name) */
+  onOpenChange?: (open: boolean) => void;
+  /** Alias for onOpenChange - for backward compatibility */
+  onClose?: () => void;
   /** Sheet content */
   children: ReactNode;
   /** Optional title for accessibility */
@@ -95,14 +119,26 @@ interface ActionSheetProps {
 
 export function ActionSheet({ 
   open, 
+  isOpen,
   onOpenChange, 
+  onClose,
   children, 
   title = "Action Sheet",
   className,
   maxHeight = "85vh"
 }: ActionSheetProps) {
+  // Support both prop naming conventions
+  const isSheetOpen = open ?? isOpen ?? false;
+  const handleOpenChange = (newOpen: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(newOpen);
+    } else if (onClose && !newOpen) {
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isSheetOpen} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay 
           className={cn(
