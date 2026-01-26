@@ -28,6 +28,8 @@ import {
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { forceUpdate } from "@/lib/pwa";
+import { RefreshCw } from "lucide-react";
 
 type SettingsSection = "main" | "profile" | "work-hours" | "quick-actions" | "notifications" | "business";
 
@@ -599,6 +601,26 @@ export default function Settings() {
                   </div>
                 </div>
                 <Switch checked={showDebugLabels} onCheckedChange={setShowDebugLabels} />
+              </div>
+            </Card>
+
+            <Card 
+              className="cursor-pointer hover:bg-blue-500/10 transition-colors border-0 bg-white/5 rounded-2xl group" 
+              onClick={() => {
+                toast.info("Checking for updates...");
+                forceUpdate();
+              }}
+            >
+              <div className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30 transition-colors">
+                    <RefreshCw className="w-5 h-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-foreground">Check for Updates</p>
+                    <p className="text-xs text-muted-foreground">Force refresh app to latest version</p>
+                  </div>
+                </div>
               </div>
             </Card>
 
