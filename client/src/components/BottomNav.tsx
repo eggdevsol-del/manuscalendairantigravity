@@ -16,26 +16,20 @@ import { cn } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
 import { useTotalUnreadCount } from "@/lib/selectors/conversation.selectors";
 import { useBottomNav } from "@/contexts/BottomNavContext";
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 
 // Constants for gesture detection
-const SWIPE_THRESHOLD = 15; // pixels to commit swipe (reduced for better responsiveness)
-const DRAG_START_THRESHOLD = 5; // pixels before we consider it a drag (not a tap)
-const ROW_HEIGHT = 77; // Height of nav row in pixels (increased by 5px from 72)
+const SWIPE_THRESHOLD = 30; // pixels to commit swipe
+const ROW_HEIGHT = 77; // Height of nav row in pixels
 
 export default function BottomNav() {
     const [location] = useLocation();
     const totalUnreadCount = useTotalUnreadCount();
     const { navItems, contextualRow, isContextualVisible, setContextualVisible } = useBottomNav();
     
-    // Gesture state
-    const [isDragging, setIsDragging] = useState(false);
-    const [dragOffset, setDragOffset] = useState(0);
-    const dragStartY = useRef(0);
-    const dragStartX = useRef(0);
-    const pointerIdRef = useRef<number | null>(null);
-    const hasDragStarted = useRef(false); // Track if we've exceeded drag threshold
+    // Gesture state for the swipe indicator only
+    const swipeStartY = useRef<number | null>(null);
 
     const isActive = (p?: string) => {
         if (!p) return false;
@@ -47,129 +41,64 @@ export default function BottomNav() {
     // Check if contextual row is available
     const hasContextualRow = contextualRow !== null;
 
-    // Handle pointer down - start tracking potential drag
-    const handlePointerDown = useCallback((e: React.PointerEvent) => {
-        // Always allow swipe if we have a contextual row OR if we're currently showing it
-        if (!hasContextualRow && !isContextualVisible) return;
-        
-        // Store pointer ID but DON'T capture yet - wait to see if it's a drag
-        pointerIdRef.current = e.pointerId;
-        dragStartY.current = e.clientY;
-        dragStartX.current = e.clientX;
-        hasDragStarted.current = false;
-        setDragOffset(0);
-    }, [hasContextualRow, isContextualVisible]);
-
-    // Handle pointer move - track drag distance
-    const handlePointerMove = useCallback((e: React.PointerEvent) => {
-        if (pointerIdRef.current !== e.pointerId) return;
-        
-        const deltaY = dragStartY.current - e.clientY; // Positive = swipe up, Negative = swipe down
-        const deltaX = Math.abs(e.clientX - dragStartX.current);
-        const absDeltaY = Math.abs(deltaY);
-        
-        // Only start dragging if vertical movement exceeds threshold and is more than horizontal
-        if (!hasDragStarted.current && absDeltaY > DRAG_START_THRESHOLD && absDeltaY > deltaX) {
-            hasDragStarted.current = true;
-            setIsDragging(true);
-            // Now capture the pointer since we're dragging
-            try {
-                (e.target as HTMLElement).setPointerCapture(e.pointerId);
-            } catch {
-                // Ignore if capture fails
-            }
-        }
-        
-        if (hasDragStarted.current) {
-            // Clamp the drag offset
-            const maxDrag = ROW_HEIGHT;
-            const clampedDelta = Math.max(-maxDrag, Math.min(maxDrag, deltaY));
-            setDragOffset(clampedDelta);
-        }
-    }, []);
-
-    // Handle pointer up - determine if swipe commits
-    const handlePointerUp = useCallback((e: React.PointerEvent) => {
-        if (pointerIdRef.current !== e.pointerId) return;
-        
-        // Release pointer capture if we captured it
-        if (hasDragStarted.current) {
-            try {
-                (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-            } catch {
-                // Ignore if already released
-            }
-        }
-        
-        pointerIdRef.current = null;
-        
-        // Only process swipe if we actually started dragging
-        if (hasDragStarted.current) {
-            // Determine if swipe should commit
-            // dragOffset > 0 means user swiped UP (finger moved up, deltaY is positive)
-            // dragOffset < 0 means user swiped DOWN (finger moved down, deltaY is negative)
-            
-            if (dragOffset > SWIPE_THRESHOLD && !isContextualVisible && hasContextualRow) {
-                // Swipe up while on main row - show contextual row
-                setContextualVisible(true);
-            } else if (dragOffset < -SWIPE_THRESHOLD && isContextualVisible) {
-                // Swipe down while on contextual row - show main row
-                setContextualVisible(false);
-            } else if (dragOffset > SWIPE_THRESHOLD && isContextualVisible) {
-                // Swipe up while on contextual row (Row 1) - also return to main row
-                // This allows users to swipe up from Row 1 to get back to main nav
-                setContextualVisible(false);
-            }
-        }
-        
-        hasDragStarted.current = false;
-        setIsDragging(false);
-        setDragOffset(0);
-    }, [dragOffset, isContextualVisible, hasContextualRow, setContextualVisible]);
-
-    // Calculate the current Y position of the row container
-    const getRowY = () => {
-        const baseY = isContextualVisible ? -ROW_HEIGHT : 0;
-        if (isDragging) {
-            // Add drag offset for visual feedback
-            // When showing main (baseY=0), swiping up (positive offset) should move negative
-            // When showing contextual (baseY=-ROW_HEIGHT), swiping down (negative offset) should move positive
-            return baseY - (dragOffset * 0.5); // 0.5 for elastic feel
-        }
-        return baseY;
-    };
-
     // Swipe indicator - shows when contextual row is available or when on contextual row
     const showSwipeIndicator = hasContextualRow && !isContextualVisible;
     const showSwipeDownIndicator = isContextualVisible;
 
+    // Handle swipe on the indicator area only
+    const handleIndicatorTouchStart = useCallback((e: React.TouchEvent) => {
+        swipeStartY.current = e.touches[0].clientY;
+    }, []);
+
+    const handleIndicatorTouchEnd = useCallback((e: React.TouchEvent) => {
+        if (swipeStartY.current === null) return;
+        
+        const deltaY = swipeStartY.current - e.changedTouches[0].clientY;
+        swipeStartY.current = null;
+        
+        // Swipe up to show contextual row
+        if (deltaY > SWIPE_THRESHOLD && !isContextualVisible && hasContextualRow) {
+            setContextualVisible(true);
+        }
+        // Swipe down to hide contextual row
+        else if (deltaY < -SWIPE_THRESHOLD && isContextualVisible) {
+            setContextualVisible(false);
+        }
+        // Swipe up while on contextual row also hides it
+        else if (deltaY > SWIPE_THRESHOLD && isContextualVisible) {
+            setContextualVisible(false);
+        }
+    }, [isContextualVisible, hasContextualRow, setContextualVisible]);
+
     return (
-        <nav
-            className="fixed bottom-0 inset-x-0 z-[50] select-none"
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-        >
+        <nav className="fixed bottom-0 inset-x-0 z-[50] select-none">
             {/* Swipe indicator - appears above nav when contextual row available */}
             {showSwipeIndicator && (
                 <div 
-                    className="absolute -top-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 opacity-60"
+                    className="absolute -top-8 left-0 right-0 h-10 flex items-center justify-center cursor-pointer"
                     onClick={() => setContextualVisible(true)}
+                    onTouchStart={handleIndicatorTouchStart}
+                    onTouchEnd={handleIndicatorTouchEnd}
                 >
-                    <div className="w-8 h-1 rounded-full bg-gray-600 dark:bg-white/60" />
-                    <span className="text-[10px] text-gray-600 dark:text-white/60 font-medium">Swipe up</span>
+                    <div className="flex flex-col items-center gap-0.5 opacity-60">
+                        <div className="w-8 h-1 rounded-full bg-gray-600 dark:bg-white/60" />
+                        <span className="text-[10px] text-gray-600 dark:text-white/60 font-medium">Swipe up</span>
+                    </div>
                 </div>
             )}
 
             {/* Swipe indicator for Row 1 - swipe up or down to return to main nav */}
             {showSwipeDownIndicator && (
                 <div 
-                    className="absolute -top-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 opacity-60"
+                    className="absolute -top-8 left-0 right-0 h-10 flex items-center justify-center cursor-pointer"
                     onClick={() => setContextualVisible(false)}
+                    onTouchStart={handleIndicatorTouchStart}
+                    onTouchEnd={handleIndicatorTouchEnd}
                 >
-                    <div className="w-8 h-1 rounded-full bg-gray-600 dark:bg-white/60" />
-                    <span className="text-[10px] text-gray-600 dark:text-white/60 font-medium">Swipe to close</span>
+                    <div className="flex flex-col items-center gap-0.5 opacity-60">
+                        <div className="w-8 h-1 rounded-full bg-gray-600 dark:bg-white/60" />
+                        <span className="text-[10px] text-gray-600 dark:text-white/60 font-medium">Swipe to close</span>
+                    </div>
                 </div>
             )}
 
@@ -184,8 +113,8 @@ export default function BottomNav() {
                 {/* Row Container - slides up/down */}
                 <motion.div
                     className="flex flex-col"
-                    animate={{ y: isDragging ? getRowY() : (isContextualVisible ? -ROW_HEIGHT : 0) }}
-                    transition={isDragging ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 35 }}
+                    animate={{ y: isContextualVisible ? -ROW_HEIGHT : 0 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 35 }}
                 >
                     {/* Row 0: Main Navigation */}
                     <div 
@@ -252,15 +181,10 @@ export default function BottomNav() {
                         })}
                     </div>
 
-                    {/* Row 1: Contextual Actions - horizontally scrollable like Row 0 */}
+                    {/* Row 1: Contextual Actions - NO pointer event handlers here */}
                     <div 
                         className="w-full overflow-x-auto snap-x snap-mandatory no-scrollbar overscroll-x-contain flex items-center shrink-0 border-t border-gray-200 dark:border-white/5"
                         style={{ height: ROW_HEIGHT }}
-                        onPointerDown={(e) => {
-                            // Stop propagation to prevent nav's swipe handlers from interfering with button clicks
-                            // The swipe gestures will still work on the indicator and empty areas
-                            e.stopPropagation();
-                        }}
                     >
                         {contextualRow}
                     </div>
