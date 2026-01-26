@@ -51,8 +51,8 @@
   /* Deep Slate Text */
   --foreground: oklch(0.20 0.05 260);
 
-  /* Glassy White Card - More opaque in light mode for better contrast */
-  --card: oklch(1 0 0 / 0.92);
+  /* Glassy White Card - High opacity in light mode for better contrast */
+  --card: oklch(1 0 0 / 0.97);
   --card-foreground: oklch(0.20 0.05 260);
 
   --popover: oklch(1 0 0 / 0.95);
