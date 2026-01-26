@@ -181,10 +181,13 @@ export default function BottomNav() {
                         })}
                     </div>
 
-                    {/* Row 1: Contextual Actions - NO pointer event handlers here */}
+                    {/* Row 1: Contextual Actions - Removed snap behavior, added touch-action */}
                     <div 
-                        className="w-full overflow-x-auto snap-x snap-mandatory no-scrollbar overscroll-x-contain flex items-center shrink-0 border-t border-gray-200 dark:border-white/5"
-                        style={{ height: ROW_HEIGHT }}
+                        className="w-full overflow-x-auto no-scrollbar overscroll-x-contain flex items-center shrink-0 border-t border-gray-200 dark:border-white/5"
+                        style={{ 
+                            height: ROW_HEIGHT,
+                            touchAction: 'pan-x',  // Allow horizontal scroll but prioritize button taps
+                        }}
                     >
                         {contextualRow}
                     </div>
