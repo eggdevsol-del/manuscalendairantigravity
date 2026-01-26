@@ -1,18 +1,16 @@
 /**
- * BottomNav - System-level interaction controller
+ * BottomNav - System-level navigation controller
  * 
  * Handles 2D navigation:
  * - Horizontal (X): Navigation between top-level pages via horizontal scroll
  * - Vertical (Y): Row swap between main nav and contextual actions via swipe up/down
  * 
- * The nav has a FIXED height. Swipe up/down swaps which row is visible,
- * NOT expanding like a drawer.
+ * CRITICAL ARCHITECTURE NOTES:
+ * - Row 0 (main nav) uses horizontal scroll for page navigation
+ * - Row 1 (contextual actions) uses a SIMPLE FLEX container with NO scroll
+ *   This ensures buttons receive touch events without scroll interference
  * 
- * CRITICAL: Row 1 (contextual actions) must NOT have any gesture handlers
- * that could interfere with button touch events. The NavActionButton SSOT
- * component has full authority over its touch events.
- * 
- * See docs/bottom-nav.md for full architecture documentation.
+ * @version 1.0.125
  */
 
 import { Button } from "@/components/ui/button";
@@ -23,16 +21,15 @@ import { useBottomNav } from "@/contexts/BottomNavContext";
 import { useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 
-// Constants for gesture detection
-const SWIPE_THRESHOLD = 30; // pixels to commit swipe
-const ROW_HEIGHT = 77; // Height of nav row in pixels
+// Constants
+const SWIPE_THRESHOLD = 30;
+const ROW_HEIGHT = 77;
 
 export default function BottomNav() {
     const [location] = useLocation();
     const totalUnreadCount = useTotalUnreadCount();
     const { navItems, contextualRow, isContextualVisible, setContextualVisible } = useBottomNav();
     
-    // Gesture state for the swipe indicator only
     const swipeStartY = useRef<number | null>(null);
 
     const isActive = (p?: string) => {
@@ -42,14 +39,10 @@ export default function BottomNav() {
         return false;
     };
 
-    // Check if contextual row is available
     const hasContextualRow = contextualRow !== null;
-
-    // Swipe indicator - shows when contextual row is available or when on contextual row
     const showSwipeIndicator = hasContextualRow && !isContextualVisible;
     const showSwipeDownIndicator = isContextualVisible;
 
-    // Handle swipe on the indicator area only
     const handleIndicatorTouchStart = useCallback((e: React.TouchEvent) => {
         swipeStartY.current = e.touches[0].clientY;
     }, []);
@@ -60,23 +53,18 @@ export default function BottomNav() {
         const deltaY = swipeStartY.current - e.changedTouches[0].clientY;
         swipeStartY.current = null;
         
-        // Swipe up to show contextual row
         if (deltaY > SWIPE_THRESHOLD && !isContextualVisible && hasContextualRow) {
             setContextualVisible(true);
-        }
-        // Swipe down to hide contextual row
-        else if (deltaY < -SWIPE_THRESHOLD && isContextualVisible) {
+        } else if (deltaY < -SWIPE_THRESHOLD && isContextualVisible) {
             setContextualVisible(false);
-        }
-        // Swipe up while on contextual row also hides it
-        else if (deltaY > SWIPE_THRESHOLD && isContextualVisible) {
+        } else if (deltaY > SWIPE_THRESHOLD && isContextualVisible) {
             setContextualVisible(false);
         }
     }, [isContextualVisible, hasContextualRow, setContextualVisible]);
 
     return (
         <nav className="fixed bottom-0 inset-x-0 z-[50] select-none">
-            {/* Swipe indicator - appears above nav when contextual row available */}
+            {/* Swipe indicator - swipe up to show contextual row */}
             {showSwipeIndicator && (
                 <div 
                     className="absolute -top-8 left-0 right-0 h-10 flex items-center justify-center cursor-pointer"
@@ -91,7 +79,7 @@ export default function BottomNav() {
                 </div>
             )}
 
-            {/* Swipe indicator for Row 1 - swipe up or down to return to main nav */}
+            {/* Swipe indicator - swipe down to close contextual row */}
             {showSwipeDownIndicator && (
                 <div 
                     className="absolute -top-8 left-0 right-0 h-10 flex items-center justify-center cursor-pointer"
@@ -106,7 +94,7 @@ export default function BottomNav() {
                 </div>
             )}
 
-            {/* Container with nav row height + safe area, overflow hidden for row swap */}
+            {/* Main container */}
             <div 
                 className="bg-gray-100/90 dark:bg-slate-950/60 backdrop-blur-[32px] border-t border-gray-200 dark:border-white/10 overflow-hidden"
                 style={{ 
@@ -120,7 +108,7 @@ export default function BottomNav() {
                     animate={{ y: isContextualVisible ? -ROW_HEIGHT : 0 }}
                     transition={{ type: "spring", stiffness: 400, damping: 35 }}
                 >
-                    {/* Row 0: Main Navigation */}
+                    {/* Row 0: Main Navigation - uses horizontal scroll */}
                     <div 
                         className="w-full overflow-x-auto snap-x snap-mandatory flex items-center no-scrollbar overscroll-x-contain shrink-0"
                         style={{ height: ROW_HEIGHT }}
@@ -188,22 +176,16 @@ export default function BottomNav() {
                     {/* 
                      * Row 1: Contextual Actions
                      * 
-                     * CRITICAL: This container must NOT have any touch/pointer event handlers.
-                     * The NavActionButton SSOT component has full authority over touch events.
-                     * 
-                     * - NO onTouchStart/onTouchEnd/onTouchMove
-                     * - NO onPointerDown/onPointerUp/onPointerMove
-                     * - NO gesture libraries wrapping this container
-                     * - touchAction: auto to let buttons handle their own events
+                     * CRITICAL: NO SCROLL on this container!
+                     * Uses a simple flex container so buttons receive all touch events.
+                     * The buttons use touch-action: none to disable browser gestures.
                      */}
                     <div 
-                        className="w-full overflow-x-auto no-scrollbar flex items-center shrink-0 border-t border-gray-200 dark:border-white/5"
+                        className="w-full flex items-center justify-start px-2 shrink-0 border-t border-gray-200 dark:border-white/5"
                         style={{ 
                             height: ROW_HEIGHT,
-                            // CRITICAL: Let child buttons handle their own touch events
-                            touchAction: 'auto',
-                            // Ensure scroll doesn't capture taps
-                            overscrollBehaviorX: 'contain',
+                            // NO overflow-x-auto - this was causing the issue!
+                            // Buttons will wrap or be constrained to viewport
                         }}
                     >
                         {contextualRow}

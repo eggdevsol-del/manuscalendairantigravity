@@ -1,9 +1,10 @@
 /**
  * BottomNavRow - Container for bottom navigation action buttons
  * 
- * CRITICAL: This component uses a plain div (not motion.div) to avoid
- * any gesture interference with child button touch events. The NavActionButton
- * SSOT component has full authority over its touch events.
+ * SIMPLE FLEX CONTAINER - no scroll, no gestures.
+ * This ensures child buttons receive all touch/pointer events.
+ * 
+ * @version 1.0.125
  */
 
 import { cn } from "@/lib/utils";
@@ -19,13 +20,9 @@ export const BottomNavRow = forwardRef<HTMLDivElement, BottomNavRowProps>(
             <div
                 ref={ref}
                 className={cn(
-                    "flex items-center px-4 py-3 gap-2 w-max h-full",
+                    "flex items-center gap-1 h-full",
                     className
                 )}
-                style={{
-                    // CRITICAL: Let child buttons handle their own touch events
-                    touchAction: 'auto',
-                }}
                 {...props}
             >
                 {children}

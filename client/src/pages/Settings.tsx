@@ -30,6 +30,7 @@ import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { forceUpdate } from "@/lib/pwa";
 import { RefreshCw } from "lucide-react";
+import { APP_VERSION } from "@/lib/version";
 
 type SettingsSection = "main" | "profile" | "work-hours" | "quick-actions" | "notifications" | "business";
 
@@ -412,7 +413,7 @@ export default function Settings() {
       {/* 1. Page Header - Left aligned, with version number */}
       <PageHeader 
         title="Settings" 
-        subtitle={`v${import.meta.env.VITE_APP_VERSION || '1.0.119'}`}
+        subtitle={`v${APP_VERSION}`}
       />
 
       {/* 2. Top Context Area (Profile Summary) */}

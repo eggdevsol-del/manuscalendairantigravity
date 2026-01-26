@@ -8,6 +8,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, LogIn, Mail } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { APP_VERSION } from "@/lib/version";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -186,7 +187,7 @@ export default function Login() {
 
           {/* Version Number */}
           <div className="mt-6 text-center">
-            <span className="text-xs text-muted-foreground font-medium">v{__APP_VERSION__}</span>
+            <span className="text-xs text-muted-foreground font-medium">v{APP_VERSION}</span>
           </div>
         </CardContent>
       </Card>
