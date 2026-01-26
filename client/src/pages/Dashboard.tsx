@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useDashboardTasks } from "@/features/dashboard/useDashboardTasks";
-import { useBusinessTasks, useWeeklySnapshot, useDashboardSettings, type BusinessTask as ServerBusinessTask } from "@/features/dashboard/useBusinessTasks";
+import { useBusinessTasks, useWeeklySnapshot, useDashboardSettings, useQuickStats, type BusinessTask as ServerBusinessTask } from "@/features/dashboard/useBusinessTasks";
 import { CHALLENGE_TEMPLATES } from "@/features/dashboard/DashboardTaskRegister";
 import { DashboardTask, ChallengeTemplate } from "@/features/dashboard/types";
 import { PageShell, PageHeader, GlassSheet, HalfSheet, FullScreenSheet, WeeklySnapshotModal } from "@/components/ui/ssot";
@@ -90,6 +90,9 @@ export default function Dashboard() {
 
     // Dashboard Settings Hook
     const { settings: dashboardSettings, updateSettings, isUpdating } = useDashboardSettings();
+
+    // Quick Stats Hook (for header display)
+    const { stats: quickStats, isLoading: statsLoading } = useQuickStats();
 
     // UI State
     const [selectedTask, setSelectedTask] = useState<ExtendedTask | null>(null);
@@ -241,14 +244,39 @@ export default function Dashboard() {
             {/* 1. Page Header - Left aligned, no icons */}
             <PageHeader title="Dashboard" />
 
-            {/* 2. Top Context Area (Date) */}
-            <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
-                <p className="text-4xl font-light text-foreground/90 tracking-tight">
-                    {selectedDate.toLocaleDateString("en-US", { weekday: "long" })}
-                </p>
-                <p className="text-muted-foreground text-lg font-medium mt-1">
-                    {selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
-                </p>
+            {/* 2. Top Context Area (Date + Quick Stats) */}
+            <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex items-start justify-between h-[20vh]">
+                {/* Left side - Date */}
+                <div className="flex flex-col justify-center opacity-80">
+                    <p className="text-4xl font-light text-foreground/90 tracking-tight">
+                        {selectedDate.toLocaleDateString("en-US", { weekday: "long" })}
+                    </p>
+                    <p className="text-muted-foreground text-lg font-medium mt-1">
+                        {selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                    </p>
+                </div>
+
+                {/* Right side - Quick Stats */}
+                <div className="flex flex-col items-end gap-1 text-right mt-1">
+                    <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground text-sm">Open This Month:</span>
+                        <span className="text-foreground font-semibold text-lg tabular-nums">
+                            {statsLoading ? '—' : quickStats.openDatesThisMonth}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground text-sm">Bookings This Week:</span>
+                        <span className="text-foreground font-semibold text-lg tabular-nums">
+                            {statsLoading ? '—' : quickStats.bookingsThisWeek}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground text-sm">New Enquiries:</span>
+                        <span className={`font-semibold text-lg tabular-nums ${quickStats.newEnquiries > 0 ? 'text-primary' : 'text-foreground'}`}>
+                            {statsLoading ? '—' : quickStats.newEnquiries}
+                        </span>
+                    </div>
+                </div>
             </div>
 
             {/* 3. Sheet Container (Matched to Calendar.tsx) */}

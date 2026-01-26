@@ -439,6 +439,104 @@ export const dashboardTasksRouter = router({
       const daysSinceShown = (now.getTime() - lastShown.getTime()) / (1000 * 60 * 60 * 24);
 
       return { shouldShow: daysSinceShown >= 7 };
+    }),
+
+  /**
+   * Get quick stats for dashboard header
+   * Returns key metrics for artist at-a-glance view
+   */
+  getQuickStats: protectedProcedure
+    .query(async ({ ctx }) => {
+      const { user } = ctx;
+      if (user.role !== 'artist' && user.role !== 'admin') {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+      }
+
+      const now = new Date();
+      
+      // Calculate week boundaries (Monday to Sunday)
+      const dayOfWeek = now.getDay();
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() + mondayOffset);
+      weekStart.setHours(0, 0, 0, 0);
+      
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999);
+
+      // Calculate month boundaries
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      monthEnd.setHours(23, 59, 59, 999);
+
+      // Get bookings this week (confirmed appointments)
+      const weeklyBookings = await db.query.appointments.findMany({
+        where: and(
+          eq(schema.appointments.artistId, user.id),
+          eq(schema.appointments.status, 'confirmed'),
+          gte(schema.appointments.startTime, weekStart.toISOString()),
+          lte(schema.appointments.startTime, weekEnd.toISOString())
+        )
+      });
+
+      // Get all appointments this month to calculate open dates
+      const monthlyAppointments = await db.query.appointments.findMany({
+        where: and(
+          eq(schema.appointments.artistId, user.id),
+          gte(schema.appointments.startTime, monthStart.toISOString()),
+          lte(schema.appointments.startTime, monthEnd.toISOString())
+        )
+      });
+
+      // Calculate booked dates this month
+      const bookedDates = new Set(
+        monthlyAppointments.map(a => new Date(a.startTime).toDateString())
+      );
+
+      // Calculate working days remaining in month (Mon-Fri by default)
+      // TODO: Add workDays to artistSettings schema for customization
+      const workDays = [1, 2, 3, 4, 5]; // Mon-Fri
+      let openDatesThisMonth = 0;
+      
+      for (let d = new Date(now); d <= monthEnd; d.setDate(d.getDate() + 1)) {
+        const dayNum = d.getDay();
+        if (workDays.includes(dayNum) && !bookedDates.has(d.toDateString())) {
+          openDatesThisMonth++;
+        }
+      }
+
+      // Get new enquiries (pending consultations/leads)
+      const pendingLeads = await db.query.leads.findMany({
+        where: and(
+          eq(schema.leads.artistId, user.id),
+          eq(schema.leads.status, 'pending')
+        )
+      });
+
+      // Get pending consultations from conversations
+      const pendingConsultations = await db.query.conversations.findMany({
+        where: and(
+          eq(schema.conversations.artistId, user.id),
+          eq(schema.conversations.status, 'pending')
+        )
+      });
+
+      const newEnquiries = pendingLeads.length + pendingConsultations.length;
+
+      return {
+        bookingsThisWeek: weeklyBookings.length,
+        openDatesThisMonth,
+        newEnquiries,
+        // Additional context
+        weekLabel: `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+        monthLabel: now.toLocaleDateString('en-US', { month: 'long' })
+      };
     })
 });
 

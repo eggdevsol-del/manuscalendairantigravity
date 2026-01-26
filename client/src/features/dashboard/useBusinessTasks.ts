@@ -271,3 +271,27 @@ export function useDashboardSettings() {
     isUpdating: updateMutation.isPending
   };
 }
+
+
+/**
+ * Hook for dashboard quick stats (header display)
+ * Returns key metrics for artist at-a-glance view
+ */
+export function useQuickStats() {
+  const { data, isLoading, refetch } = trpc.dashboardTasks.getQuickStats.useQuery(undefined, {
+    refetchOnWindowFocus: true,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  return {
+    stats: data || {
+      bookingsThisWeek: 0,
+      openDatesThisMonth: 0,
+      newEnquiries: 0,
+      weekLabel: '',
+      monthLabel: ''
+    },
+    isLoading,
+    refetch
+  };
+}
