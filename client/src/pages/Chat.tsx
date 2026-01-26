@@ -19,7 +19,7 @@ import { useRegisterBottomNavRow } from "@/contexts/BottomNavContext";
 import { QuickActionsRow, ChatAction } from "@/features/chat/components/QuickActionsRow";
 import { useLocation, useParams } from "wouter";
 import { format } from "date-fns";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 
@@ -95,56 +95,66 @@ export default function Chat() {
   // State for selected image lightbox
   const [selectedMediaImage, setSelectedMediaImage] = useState<string | null>(null);
 
+  // Stable callback references for quick actions
+  const handleBookClick = useCallback(() => {
+    console.log('[Chat] Book button clicked');
+    setShowBookingCalendar(true);
+  }, [setShowBookingCalendar]);
+
+  const handleProposalClick = useCallback(() => {
+    console.log('[Chat] Proposal button clicked');
+    setShowProjectWizard(true);
+  }, [setShowProjectWizard]);
+
   // Register Bottom Nav Contextual Row (Quick Actions + System Actions)
-  // NOTE: Not using useMemo here to ensure fresh onClick handlers are always passed
-  const isAuthorized = user?.role === 'artist' || user?.role === 'admin';
+  const quickActionsRow = useMemo(() => {
+    const isAuthorized = user?.role === 'artist' || user?.role === 'admin';
 
-  // System Actions (Fixed) - Only for Artists
-  const systemActions: ChatAction[] = isAuthorized ? [
-    {
-      id: 'chat.book',
-      label: 'Book',
-      icon: Calendar,
-      onClick: () => {
-        console.log('[Chat] Book button clicked, calling setShowBookingCalendar(true)');
-        setShowBookingCalendar(true);
+    // System Actions (Fixed) - Only for Artists
+    const systemActions: ChatAction[] = isAuthorized ? [
+      {
+        id: 'chat.book',
+        label: 'Book',
+        icon: Calendar,
+        onClick: handleBookClick,
+        highlight: true
       },
-      highlight: true
-    },
-    {
-      id: 'chat.proposal',
-      label: 'Proposal',
-      icon: FileText,
-      onClick: () => {
-        console.log('[Chat] Proposal button clicked, calling setShowProjectWizard(true)');
-        setShowProjectWizard(true);
-      },
-      highlight: true
+      {
+        id: 'chat.proposal',
+        label: 'Proposal',
+        icon: FileText,
+        onClick: handleProposalClick,
+        highlight: true
+      }
+    ] : [];
+
+    // User Configured Actions
+    const userActions: ChatAction[] = isAuthorized && quickActions ? quickActions.map(qa => {
+      // Icon Mapping
+      let Icon = Zap;
+      if (qa.actionType === 'find_availability') Icon = FileText;
+      else if (qa.actionType === 'deposit_info') Icon = Send;
+
+      return {
+        id: qa.id,
+        label: qa.label,
+        icon: Icon,
+        onClick: () => handleQuickAction(qa),
+        highlight: false
+      };
+    }) : [];
+
+    // Validated Composition
+    const allActions = [...systemActions, ...userActions];
+
+    if (allActions.length === 0) {
+      return null;
     }
-  ] : [];
 
-  // User Configured Actions
-  const userActions: ChatAction[] = isAuthorized && quickActions ? quickActions.map(qa => {
-    // Icon Mapping
-    let Icon = Zap;
-    if (qa.actionType === 'find_availability') Icon = FileText;
-    else if (qa.actionType === 'deposit_info') Icon = Send;
-
-    return {
-      id: qa.id,
-      label: qa.label,
-      icon: Icon,
-      onClick: () => handleQuickAction(qa),
-      highlight: false
-    };
-  }) : [];
-
-  // Validated Composition
-  const allActions = [...systemActions, ...userActions];
-
-  const quickActionsRow = allActions.length > 0 ? (
-    <QuickActionsRow actions={allActions} />
-  ) : null;
+    return (
+      <QuickActionsRow actions={allActions} />
+    );
+  }, [user?.role, quickActions, handleQuickAction, handleBookClick, handleProposalClick]);
 
   useRegisterBottomNavRow("chat-actions", quickActionsRow);
 
