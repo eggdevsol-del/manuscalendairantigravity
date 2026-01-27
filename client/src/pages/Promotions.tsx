@@ -178,10 +178,11 @@ export default function Promotions() {
                       yOffset = 0; // Moves to top/center
                       zIndex = 50; // High z-index
                       blurAmount = 0;
-                      scale = 1.05; // Slight pop
+                      scale = 1.02; // Reduced pop from 1.05
                     } else {
                       // This is an unselected card
-                      yOffset = 180 + (index * 20); // Push down below selected
+                      // Tighter stacking to keep on screen
+                      yOffset = 180 + (index * 15); // Reduced spread (was 20)
                       zIndex = index; // Keep original order relative to each other
                       blurAmount = 2; // 2px blur (~10-15%)
                       scale = 0.95;
