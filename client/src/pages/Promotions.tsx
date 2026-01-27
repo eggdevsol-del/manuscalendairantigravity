@@ -210,7 +210,7 @@ export default function Promotions() {
                       style={{
                         position: 'absolute',
                         top: 20, // Base top position
-                        width: '100%',
+                        width: '90%', // limit width to 90% of screenspace
                         maxWidth: '400px', // Ensure cards don't get too wide
                       }}
                     >
