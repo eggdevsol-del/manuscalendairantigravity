@@ -178,14 +178,14 @@ export default function Promotions() {
                       yOffset = 0; // Moves to top/center
                       zIndex = 50; // High z-index
                       blurAmount = 0;
-                      scale = 1.02; // Reduced pop from 1.05
+                      scale = 1.0; // Normal size (relative to container)
                     } else {
                       // This is an unselected card
-                      // Tighter stacking to keep on screen
-                      yOffset = 180 + (index * 15); // Reduced spread (was 20)
+                      // Stacked tighter and scaled down more to create "deck" effect
+                      yOffset = 160 + (index * 12); // Tighter spacing (was 15)
                       zIndex = index; // Keep original order relative to each other
-                      blurAmount = 2; // 2px blur (~10-15%)
-                      scale = 0.95;
+                      blurAmount = 4; // More blur to distinguish (was 2)
+                      scale = 0.90; // Smaller scale for unselected (was 0.95)
                     }
                   }
 
@@ -204,8 +204,8 @@ export default function Promotions() {
                       exit={{ opacity: 0, y: -20 }}
                       transition={{
                         type: "spring",
-                        stiffness: 300,
-                        damping: 30
+                        stiffness: 350,
+                        damping: 25
                       }}
                       style={{
                         position: 'absolute',
