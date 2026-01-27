@@ -214,27 +214,27 @@ export function getTypeDefaults(type: PromotionType): TypeDefaultConfig {
 export function buildCardBackground(
   gradientId?: string | null,
   colorId?: string | null,
-  backgroundImageUrl?: string | null
+  customColor?: string | null
 ): string {
-  // Priority: Background image > Gradient > Solid color
-  if (backgroundImageUrl) {
-    return `url(${backgroundImageUrl}) center/cover no-repeat`;
+  // Custom color takes priority if provided
+  if (customColor) {
+    return customColor;
   }
-  
+
   if (gradientId) {
     const gradient = getGradientById(gradientId);
     if (gradient) {
       return `linear-gradient(${gradient.direction}, ${gradient.from}, ${gradient.to})`;
     }
   }
-  
+
   if (colorId) {
     const color = getColorById(colorId);
-    if (color) {
+    if (color && color.id !== 'custom') {
       return color.value;
     }
   }
-  
+
   // Fallback
   return GRADIENTS[0].from;
 }
@@ -247,12 +247,12 @@ export function getTextColor(
     const gradient = getGradientById(gradientId);
     if (gradient) return gradient.textColor;
   }
-  
+
   if (colorId) {
     const color = getColorById(colorId);
     if (color) return color.textColor;
   }
-  
+
   return 'white';
 }
 
@@ -262,11 +262,11 @@ export function formatPromotionValue(
   valueType: 'fixed' | 'percentage'
 ): string {
   const defaults = getTypeDefaults(type);
-  
+
   if (valueType === 'percentage') {
     return `${value}% OFF`;
   }
-  
+
   // Fixed value - convert cents to dollars
   const dollars = (value / 100).toFixed(value % 100 === 0 ? 0 : 2);
   return `${defaults.valuePrefix}${dollars}${defaults.valueSuffix}`;
