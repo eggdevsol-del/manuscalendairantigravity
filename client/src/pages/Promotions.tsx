@@ -16,11 +16,11 @@ import { Button } from "@/components/ui/button";
 import { Plus, Gift, Percent, CreditCard, Send, Calendar, Users, Check, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { 
-  PromotionCard, 
+import {
+  PromotionCard,
   PromotionCardData,
-  PromotionType, 
-  TYPE_DEFAULTS, 
+  PromotionType,
+  TYPE_DEFAULTS,
   getTypeDefaults,
   CreatePromotionWizard,
   SendPromotionSheet,
@@ -38,23 +38,23 @@ const TABS = [
 export default function Promotions() {
   const { user } = useAuth();
   const isArtist = user?.role === 'artist';
-  
+
   const [activeTab, setActiveTab] = useState<PromotionType>('voucher');
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
   const [showCreateWizard, setShowCreateWizard] = useState(false);
   const [showSendSheet, setShowSendSheet] = useState(false);
   const [showAutoApplySheet, setShowAutoApplySheet] = useState(false);
-  
+
   // Fetch promotions based on role
   const { data: promotions, isLoading, refetch } = trpc.promotions.getPromotions.useQuery(
     { type: activeTab },
     { enabled: !!user }
   );
-  
+
   // Filter cards by type
   const filteredCards = (promotions || []).filter(p => p.type === activeTab);
   const selectedCard = filteredCards.find(c => c.id === selectedCardId);
-  
+
   // Handle card selection
   const handleCardClick = (cardId: number) => {
     setSelectedCardId(prev => prev === cardId ? null : cardId);
@@ -63,7 +63,7 @@ export default function Promotions() {
   // Handle client using promotion on booking
   const handleUseOnBooking = () => {
     if (!selectedCard) return;
-    
+
     // Store the selected promotion in sessionStorage for use in booking flow
     sessionStorage.setItem('pendingPromotion', JSON.stringify({
       id: selectedCard.id,
@@ -73,16 +73,16 @@ export default function Promotions() {
       valueType: selectedCard.valueType,
       code: selectedCard.code,
     }));
-    
+
     toast.success('Promotion ready to use!', {
       description: 'This will be applied to your next booking acceptance.',
     });
   };
-  
+
   return (
     <PageShell>
       {/* Header */}
-      <PageHeader 
+      <PageHeader
         title="Promotions"
         rightElement={
           isArtist && (
@@ -97,20 +97,20 @@ export default function Promotions() {
           )
         }
       />
-      
+
       {/* Context Area */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[15vh] opacity-80">
         <p className="text-4xl font-light text-foreground/90 tracking-tight">
           {isArtist ? 'Your Cards' : 'My Rewards'}
         </p>
         <p className="text-muted-foreground text-lg font-medium mt-1">
-          {isArtist 
+          {isArtist
             ? 'Create and send promotions to clients'
             : 'Redeem your vouchers and discounts'
           }
         </p>
       </div>
-      
+
       {/* Glass Sheet */}
       <GlassSheet className="bg-card">
         {/* Tab Navigation */}
@@ -127,8 +127,8 @@ export default function Promotions() {
                 }}
                 className={cn(
                   "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all",
-                  isActive 
-                    ? "bg-primary text-primary-foreground shadow-lg" 
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-lg"
                     : "bg-black/5 dark:bg-white/5 text-muted-foreground hover:bg-black/10 dark:hover:bg-white/10"
                 )}
               >
@@ -138,7 +138,7 @@ export default function Promotions() {
             );
           })}
         </div>
-        
+
         {/* Card Stack Display */}
         <div className="relative min-h-[300px] flex flex-col items-center justify-center py-8">
           {isLoading ? (
@@ -146,40 +146,77 @@ export default function Promotions() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
           ) : filteredCards.length === 0 ? (
-            <EmptyState 
-              type={activeTab} 
-              isArtist={isArtist} 
-              onCreate={() => setShowCreateWizard(true)} 
+            <EmptyState
+              type={activeTab}
+              isArtist={isArtist}
+              onCreate={() => setShowCreateWizard(true)}
             />
           ) : (
             <AnimatePresence mode="popLayout">
-              <div className="relative w-full flex flex-col items-center gap-[-40px]">
+              <div className="relative w-full flex flex-col items-center min-h-[400px]">
                 {filteredCards.map((card, index) => {
                   const isSelected = selectedCardId === card.id;
-                  const hasSelection = selectedCardId !== null;
-                  const isBlurred = hasSelection && !isSelected;
-                  
+
+                  // Calculate visual properties based on selection state
+                  // If a card is selected, it goes to top (y=0) and full opacity/no blur
+                  // If no card is selected, they stack naturally
+                  // If ANOTHER card is selected, this one steps back and blurs
+
+                  let yOffset = 0;
+                  let zIndex = 0;
+                  let blurAmount = 0;
+                  let scale = 1;
+
+                  if (selectedCardId === null) {
+                    // No selection: Stack normally
+                    yOffset = index * 60; // Increased spacing for visibility
+                    zIndex = index;
+                    blurAmount = 0;
+                  } else {
+                    if (isSelected) {
+                      // This is the selected card
+                      yOffset = 0; // Moves to top/center
+                      zIndex = 50; // High z-index
+                      blurAmount = 0;
+                      scale = 1.05; // Slight pop
+                    } else {
+                      // This is an unselected card
+                      yOffset = 180 + (index * 20); // Push down below selected
+                      zIndex = index; // Keep original order relative to each other
+                      blurAmount = 2; // 2px blur (~10-15%)
+                      scale = 0.95;
+                    }
+                  }
+
                   return (
                     <motion.div
                       key={card.id}
                       layout
                       initial={{ opacity: 0, y: 20 }}
-                      animate={{ 
-                        opacity: 1, 
-                        y: isSelected ? -20 : index * -30,
-                        zIndex: isSelected ? 50 : filteredCards.length - index,
+                      animate={{
+                        opacity: 1,
+                        y: yOffset,
+                        zIndex: zIndex,
+                        scale: scale,
+                        filter: `blur(${blurAmount}px)`,
                       }}
                       exit={{ opacity: 0, y: -20 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      style={{ 
-                        position: index === 0 ? 'relative' : 'absolute',
-                        top: index === 0 ? 0 : `${index * 30}px`,
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: 20, // Base top position
+                        width: '100%',
+                        maxWidth: '400px', // Ensure cards don't get too wide
                       }}
                     >
                       <PromotionCard
                         data={card as PromotionCardData}
                         selected={isSelected}
-                        blurred={isBlurred}
+                        blurred={blurAmount > 0}
                         onClick={() => handleCardClick(card.id)}
                         size="lg"
                       />
@@ -190,7 +227,7 @@ export default function Promotions() {
             </AnimatePresence>
           )}
         </div>
-        
+
         {/* Action Buttons (when card selected) */}
         <AnimatePresence>
           {selectedCard && (
@@ -239,7 +276,7 @@ export default function Promotions() {
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         {/* Create New Button - Only visible for artists when no card is selected */}
         {isArtist && !selectedCardId && (
           <div className="sticky bottom-24 left-0 right-0 px-4 pt-6 pb-2 mt-8 bg-gradient-to-t from-card via-card to-transparent">
@@ -252,11 +289,11 @@ export default function Promotions() {
             </Button>
           </div>
         )}
-        
+
         {/* Spacer for bottom nav */}
         <div className="h-32" />
       </GlassSheet>
-      
+
       {/* Create Wizard Sheet */}
       {showCreateWizard && (
         <CreatePromotionWizard
@@ -268,7 +305,7 @@ export default function Promotions() {
           defaultType={activeTab}
         />
       )}
-      
+
       {/* Send to Client Sheet */}
       {showSendSheet && selectedCard && (
         <SendPromotionSheet
@@ -277,7 +314,7 @@ export default function Promotions() {
           promotion={selectedCard as PromotionCardData}
         />
       )}
-      
+
       {/* Auto-Apply Settings Sheet */}
       {showAutoApplySheet && selectedCard && (
         <AutoApplySheet
@@ -295,18 +332,18 @@ export default function Promotions() {
 }
 
 // Empty state component
-function EmptyState({ 
-  type, 
-  isArtist, 
-  onCreate 
-}: { 
-  type: PromotionType; 
+function EmptyState({
+  type,
+  isArtist,
+  onCreate
+}: {
+  type: PromotionType;
   isArtist: boolean;
   onCreate: () => void;
 }) {
   const defaults = getTypeDefaults(type);
   const Icon = type === 'voucher' ? Gift : type === 'discount' ? Percent : CreditCard;
-  
+
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
@@ -316,7 +353,7 @@ function EmptyState({
         No {defaults.labelPlural} Yet
       </h3>
       <p className="text-sm text-muted-foreground max-w-xs mb-6">
-        {isArtist 
+        {isArtist
           ? `Create your first ${defaults.labelSingular.toLowerCase()} to reward your clients`
           : `You don't have any ${defaults.labelPlural.toLowerCase()} yet`
         }
@@ -345,7 +382,7 @@ function AutoApplySheet({
 }) {
   const [isAutoApply, setIsAutoApply] = useState(promotion.isAutoApply || false);
   const [startDate, setStartDate] = useState(
-    promotion.autoApplyStartDate 
+    promotion.autoApplyStartDate
       ? new Date(promotion.autoApplyStartDate).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0]
   );
@@ -354,7 +391,7 @@ function AutoApplySheet({
       ? new Date(promotion.autoApplyEndDate).toISOString().split('T')[0]
       : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   );
-  
+
   const updateAutoApply = trpc.promotions.updateAutoApply.useMutation({
     onSuccess: () => {
       toast.success('Auto-apply settings saved');
@@ -364,7 +401,7 @@ function AutoApplySheet({
       toast.error('Failed to save settings', { description: error.message });
     },
   });
-  
+
   const handleSave = () => {
     updateAutoApply.mutate({
       templateId: promotion.id,
@@ -373,7 +410,7 @@ function AutoApplySheet({
       endDate: isAutoApply ? endDate : undefined,
     });
   };
-  
+
   return (
     <FullScreenSheet
       isOpen={isOpen}
@@ -404,7 +441,7 @@ function AutoApplySheet({
             />
           </button>
         </div>
-        
+
         {/* Date Range */}
         {isAutoApply && (
           <div className="space-y-4">
@@ -435,7 +472,7 @@ function AutoApplySheet({
             </p>
           </div>
         )}
-        
+
         {/* Save Button */}
         <Button
           className="w-full h-14 rounded-xl font-bold"
