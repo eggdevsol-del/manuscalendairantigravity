@@ -104,24 +104,30 @@ export default function Calendar() {
     status: "scheduled" as const,
   });
 
-  const startOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    1
-  );
-  const endOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth() + 1,
-    0
-  );
+  // Calculate grid range for data fetching
+  // We need to know the start/end of the VISIBLE grid, not just the month
+  const gridStart = useMemo(() => {
+    const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const day = start.getDay(); // 0-6
+    start.setDate(start.getDate() - day);
+    return start;
+  }, [currentDate]);
+
+  const gridEnd = useMemo(() => {
+    const end = new Date(gridStart);
+    end.setDate(gridStart.getDate() + 42); // 6 rows * 7 days
+    return end;
+  }, [gridStart]);
 
   const { data: appointments, isLoading, refetch } = trpc.appointments.list.useQuery(
     {
-      startDate: startOfMonth,
-      endDate: endOfMonth,
+      startDate: gridStart,
+      endDate: gridEnd,
     },
     {
       enabled: !!user,
+      // Keep previous data while fetching new month to prevent flickering
+      placeholderData: (previousData) => previousData,
     }
   );
 
@@ -289,16 +295,15 @@ export default function Calendar() {
 
     const days: Date[] = [];
 
-    // Add days from previous month to fill the first row
-    for (let i = 0; i < startDay; i++) {
-      const date = new Date(firstDay);
-      date.setDate(date.getDate() - (startDay - i));
-      days.push(date);
-    }
+    // Generate fixed 6-row grid (42 days)
+    // Start from the first Sunday (even if in previous month)
+    const startOfGrid = new Date(firstDay);
+    startOfGrid.setDate(firstDay.getDate() - startDay); // Go back to Sunday
 
-    // Add all days of the current month
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push(new Date(currentDate.getFullYear(), currentDate.getMonth(), i));
+    for (let i = 0; i < 42; i++) {
+        const date = new Date(startOfGrid);
+        date.setDate(startOfGrid.getDate() + i);
+        days.push(date);
     }
 
     return days;
@@ -317,6 +322,34 @@ export default function Calendar() {
         aptDate.getFullYear() === date.getFullYear()
       );
     });
+  };
+
+  // -- Swipe Gestures --
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      goToNextPeriod();
+    }
+    if (isRightSwipe) {
+      goToPreviousPeriod();
+    }
   };
 
   const isToday = (date: Date) => {
@@ -451,7 +484,12 @@ export default function Calendar() {
         </div>
 
         {/* Scrollable Calendar Content */}
-        <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y">
+        <div 
+            className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+        >
           <div className="pb-32 max-w-lg mx-auto">
             {viewMode === "week" ? (
               <div className="space-y-3">
