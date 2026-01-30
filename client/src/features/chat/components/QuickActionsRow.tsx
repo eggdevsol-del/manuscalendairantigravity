@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-import { Button } from "@/components/ui";
-=======
 /**
  * QuickActionsRow - Chat contextual actions for bottom navigation
  * 
@@ -10,7 +7,6 @@ import { Button } from "@/components/ui";
  */
 
 import { NavActionButton } from "@/components/ui/ssot";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { BottomNavRow } from "@/components/BottomNavRow";
 import { LucideIcon } from "lucide-react";
 
@@ -30,7 +26,7 @@ export function QuickActionsRow({
     actions = [],
 }: QuickActionsRowProps) {
     console.log('[QuickActionsRow] Rendering with', actions.length, 'actions');
-    
+
     return (
         <BottomNavRow>
             {actions.map((action) => (
