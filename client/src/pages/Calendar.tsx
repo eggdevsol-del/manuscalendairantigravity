@@ -662,70 +662,149 @@ export default function Calendar() {
               )}
             </div>
 
-            {/* Selected Date List Area (Displayed in Month View) */}
+            {/* Hourly Day Timeline Area (Displayed in Month View) */}
             {viewMode === "month" && (
-              <div className="flex-1 overflow-y-auto min-h-0 border-t border-white/5 pt-4 -mx-4 px-4 bg-black/20">
-                <div className="space-y-3 pb-24">
-                  {selectedDate ? (
-                    <>
-                      <div className="flex items-center justify-between px-1 mb-2">
-                        <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
-                          {selectedDate.toLocaleDateString("en-US", { weekday: 'long', month: 'long', day: 'numeric' })}
-                        </h3>
-                        {/* Add Appt Button (Small) */}
-                        {isArtist && (
-                          <Button
-                            size="sm" variant="ghost" className="h-6 px-2 text-primary hover:text-primary hover:bg-primary/10 -mr-2"
-                            onClick={() => handleDateClick(selectedDate)} // Use original create handler
-                          >
-                            <Plus className="w-4 h-4 mr-1" /> Add
-                          </Button>
-                        )}
-                      </div>
+              <div className="flex-1 overflow-hidden min-h-0 border-t border-white/5 bg-black/20 flex flex-col">
 
-                      {getAppointmentsForDate(selectedDate).length > 0 ? (
-                        getAppointmentsForDate(selectedDate).map(apt => (
-                          <div
-                            key={apt.id}
-                            className="flex items-center gap-4 p-4 rounded-2xl bg-[#1c1c1e] border border-white/5 active:scale-[0.98] transition-transform cursor-pointer"
-                            onClick={() => {
-                              setSelectedAppointment(apt);
-                              setShowAppointmentDetailDialog(true);
-                            }}
-                          >
-                            {/* Icon Box */}
-                            <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0 text-blue-400">
-                              {apt.status === 'confirmed' ? <Check className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-base text-white truncate">{apt.serviceName || apt.title}</h4>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
-                                <span>{new Date(apt.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                                <span>-</span>
-                                <span>{new Date(apt.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                              </div>
-                              {apt.clientName && (
-                                <p className="text-xs text-muted-foreground/60 mt-1 truncate">{apt.clientName}</p>
-                              )}
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground/40 space-y-2">
-                          <div className="w-12 h-12 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center">
-                            <CalendarIcon className="w-5 h-5" />
-                          </div>
-                          <p className="text-sm">No events</p>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full py-12 text-muted-foreground/40">
-                      <p className="text-sm">Select a date to view events</p>
-                    </div>
+                {/* Timeline Header */}
+                <div className="px-4 py-3 shrink-0 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md z-10">
+                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
+                    {selectedDate
+                      ? selectedDate.toLocaleDateString("en-US", { weekday: 'long', month: 'long', day: 'numeric' })
+                      : "Select a date"}
+                  </h3>
+                  {selectedDate && isArtist && (
+                    <Button
+                      size="sm" variant="ghost" className="h-6 px-2 text-primary hover:text-primary hover:bg-primary/10 -mr-2"
+                      onClick={() => handleDateClick(selectedDate)} // Default add (9am)
+                    >
+                      <Plus className="w-4 h-4 mr-1" /> Add
+                    </Button>
                   )}
                 </div>
+
+                {/* Timeline Scroll Area */}
+                {selectedDate ? (
+                  <div
+                    key={selectedDate.toISOString()}
+                    className="flex-1 overflow-y-auto relative mobile-scroll touch-pan-y"
+                    ref={(el) => {
+                      if (el && !el.dataset.scrolled) {
+                        // Scroll to 9 AM (Hour 9). 1 Hour = 96px (approx h-24). 
+                        // 9 * 96 = 864px. 
+                        // Better to use simpler math or id scroll.
+                        // Let's rely on an ID anchor.
+                        const nineAm = el.querySelector('#time-slot-9');
+                        if (nineAm) {
+                          nineAm.scrollIntoView({ block: 'center' });
+                          el.dataset.scrolled = "true";
+                        }
+                      }
+                    }}
+                  >
+                    <div className="min-h-[2000px] pb-32"> {/* Tall container for 24h */}
+                      {Array.from({ length: 24 }).map((_, hour) => (
+                        <div key={hour} id={`time-slot-${hour}`} className="relative h-24 border-b border-white/5 group">
+                          {/* Hour Label */}
+                          <div className="absolute top-0 left-0 w-16 text-right pr-3 -mt-2.5 z-10 pointer-events-none">
+                            <span className="text-xs font-medium text-muted-foreground/60">
+                              {hour === 0 ? "12 AM" : hour === 12 ? "12 PM" : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
+                            </span>
+                          </div>
+
+                          {/* 15 Minute Slots */}
+                          {[0, 15, 30, 45].map((minute) => (
+                            <div
+                              key={minute}
+                              className={cn(
+                                "h-6 w-full pl-20 pr-4 flex items-center cursor-pointer transition-colors border-l border-white/5",
+                                "hover:bg-white/5 active:bg-white/10",
+                                minute === 0 ? "border-t border-white/10" : "border-t border-white/[0.02]"
+                              )}
+                              onClick={() => {
+                                if (!isArtist) return;
+                                const newTime = new Date(selectedDate);
+                                newTime.setHours(hour);
+                                newTime.setMinutes(minute);
+
+                                // Use ISO string logic similar to handleDateClick but specific time
+                                const dateStr = newTime.getFullYear() + "-" +
+                                  String(newTime.getMonth() + 1).padStart(2, '0') + "-" +
+                                  String(newTime.getDate()).padStart(2, '0');
+                                const timeStr = String(newTime.getHours()).padStart(2, '0') + ":" + String(newTime.getMinutes()).padStart(2, '0');
+                                const endTimeStr = String(newTime.getHours() + 1).padStart(2, '0') + ":" + String(newTime.getMinutes()).padStart(2, '0'); // Default 1h
+
+                                setAppointmentForm({
+                                  ...appointmentForm,
+                                  startTime: `${dateStr}T${timeStr}`,
+                                  endTime: `${dateStr}T${endTimeStr}`,
+                                });
+                                setStep('service');
+                                setSelectedService(null);
+                                setShowAppointmentDialog(true);
+                              }}
+                            >
+                              {/* Use semantic border for markers */}
+                            </div>
+                          ))}
+
+                          {/* Render Appointments starting in this hour */}
+                          {getAppointmentsForDate(selectedDate).filter(apt => {
+                            const d = new Date(apt.startTime);
+                            return d.getHours() === hour;
+                          }).map(apt => {
+                            const start = new Date(apt.startTime);
+                            const end = new Date(apt.endTime);
+
+                            // Calculate styling
+                            const startMin = start.getMinutes();
+                            const durationMins = (end.getTime() - start.getTime()) / 60000;
+
+                            // 1 hour = 96px (4 * 24px slots). 
+                            // 1 min = 96/60 = 1.6px
+                            const topPx = startMin * 1.6;
+                            const heightPx = Math.max(durationMins * 1.6, 24); // Min height 1 slot
+
+                            return (
+                              <div
+                                key={apt.id}
+                                className="absolute left-20 right-4 rounded-lg bg-primary/20 border border-primary/30 backdrop-blur-sm shadow-sm overflow-hidden z-20 hover:brightness-110 transition-all cursor-pointer flex flex-col justify-center px-3"
+                                style={{
+                                  top: `${topPx}px`,
+                                  height: `${heightPx}px`
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedAppointment(apt);
+                                  setShowAppointmentDetailDialog(true);
+                                }}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                  <span className="text-xs font-bold text-white truncate shadow-black drop-shadow-md">
+                                    {apt.serviceName || apt.title}
+                                  </span>
+                                </div>
+                                {heightPx > 30 && (
+                                  <div className="text-[10px] text-primary-foreground/80 pl-3.5 truncate">
+                                    {start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} - {apt.clientName}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground/40 space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center animate-pulse">
+                      <Clock className="w-8 h-8 opacity-50" />
+                    </div>
+                    <p className="text-sm font-medium">Select a date to view agenda</p>
+                  </div>
+                )}
               </div>
             )}
 
