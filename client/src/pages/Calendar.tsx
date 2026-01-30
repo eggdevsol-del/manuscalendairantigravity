@@ -301,9 +301,9 @@ export default function Calendar() {
     startOfGrid.setDate(firstDay.getDate() - startDay); // Go back to Sunday
 
     for (let i = 0; i < 42; i++) {
-        const date = new Date(startOfGrid);
-        date.setDate(startOfGrid.getDate() + i);
-        days.push(date);
+      const date = new Date(startOfGrid);
+      date.setDate(startOfGrid.getDate() + i);
+      days.push(date);
     }
 
     return days;
@@ -484,131 +484,231 @@ export default function Calendar() {
         </div>
 
         {/* Scrollable Calendar Content */}
-        <div 
-            className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y"
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
+        <div
+          className="flex-1 w-full h-full flex flex-col px-4 pt-4 overflow-hidden"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
         >
-          <div className="pb-32 max-w-lg mx-auto">
-            {viewMode === "week" ? (
-              <div className="space-y-3">
-                {getWeekDays().map((day) => {
-                  const dayAppointments = getAppointmentsForDate(day);
-                  return (
-                    <Card
-                      key={day.toISOString()}
-                      className={cn(
-                        "p-4 min-h-[120px] cursor-pointer transition-all duration-300 border-0 bg-white/5 hover:bg-white/10 rounded-2xl",
-                        isToday(day) ? "ring-1 ring-primary/50 bg-primary/5" : ""
-                      )}
-                      onClick={() => handleDateClick(day)}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                            {day.toLocaleDateString("en-US", { weekday: "short" })}
-                          </p>
-                          <p className={cn("text-2xl font-bold mt-0.5", isToday(day) ? "text-primary" : "text-foreground")}>
-                            {day.getDate()}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">
-                            {dayAppointments.length} appt{dayAppointments.length !== 1 ? "s" : ""}
-                          </p>
-                          {isArtist && (
-                            <div className="flex justify-end mt-1">
-                              <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center">
-                                <Plus className="w-3 h-3 text-white/70" />
+          <div className="w-full max-w-lg mx-auto flex flex-col h-full">
+
+            {/* Calendar Grid Area */}
+            <div className="shrink-0 mb-4">
+              {viewMode === "week" ? (
+                <div className="space-y-3">
+                  {getWeekDays().map((day) => {
+                    const dayAppointments = getAppointmentsForDate(day);
+                    return (
+                      <Card
+                        key={day.toISOString()}
+                        className={cn(
+                          "p-4 min-h-[120px] cursor-pointer transition-all duration-300 border-0 bg-white/5 hover:bg-white/10 rounded-2xl",
+                          isToday(day) ? "ring-1 ring-primary/50 bg-primary/5" : ""
+                        )}
+                        onClick={() => handleDateClick(day)}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                              {day.toLocaleDateString("en-US", { weekday: "short" })}
+                            </p>
+                            <p className={cn("text-2xl font-bold mt-0.5", isToday(day) ? "text-primary" : "text-foreground")}>
+                              {day.getDate()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-muted-foreground">
+                              {dayAppointments.length} appt{dayAppointments.length !== 1 ? "s" : ""}
+                            </p>
+                            {isArtist && (
+                              <div className="flex justify-end mt-1">
+                                <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center">
+                                  <Plus className="w-3 h-3 text-white/70" />
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
+
+                        {dayAppointments.length > 0 ? (
+                          <div className="space-y-2">
+                            {dayAppointments.map((apt) => (
+                              <div
+                                key={apt.id}
+                                className="p-2.5 rounded-xl bg-white/5 border border-white/5 cursor-pointer hover:bg-white/10 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedAppointment(apt);
+                                  setShowAppointmentDetailDialog(true);
+                                }}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <p className="text-sm font-semibold text-foreground/90">
+                                    {apt.serviceName || apt.title}
+                                  </p>
+                                  <p className="text-xs font-mono text-muted-foreground">
+                                    {new Date(apt.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                  </p>
+                                </div>
+                                {apt.clientName && (
+                                  <p className="text-xs text-muted-foreground mt-0.5">
+                                    {apt.clientName}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center p-2 mt-2 border border-dashed border-white/10 rounded-lg">
+                            <span className="text-xs text-muted-foreground/40">Available</span>
+                          </div>
+                        )}
+                      </Card>
+                    );
+                  })}
+                </div>
+              ) : (
+                // MONTH VIEW
+                <div className="w-full">
+                  {/* Day Headers */}
+                  <div className="grid grid-cols-7 gap-3 mb-2">
+                    {["S", "M", "T", "W", "T", "F", "S"].map((day, idx) => (
+                      <div
+                        key={`day-header-${idx}`}
+                        className="text-center text-xs font-medium text-muted-foreground/50 py-1"
+                      >
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Date Grid */}
+                  <div className="girls grid grid-cols-7 gap-3">
+                    {getMonthDays().map((day, index) => {
+                      const dayAppointments = getAppointmentsForDate(day);
+                      const dateKey = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
+
+                      // Selection Logic
+                      const isSelected = selectedDate
+                        ? (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth() && day.getFullYear() === selectedDate.getFullYear())
+                        : false;
+
+                      // If no date is manually selected, default to today for visual context, or just let today behave normally
+                      // Per screenshot: 30 is blue (Selected), 13 has dot (Today?). 
+                      // Let's make "Selected" = Blue background. "Today" = just bold text if not selected?
+                      // User said: "when user selects a date...". So we rely on selectedDate state.
+
+                      return (
+                        <button
+                          key={dateKey}
+                          className={cn(
+                            "aspect-square flex flex-col items-center justify-center rounded-[14px] transition-all relative",
+                            // Base Style
+                            "bg-[#1c1c1e] text-foreground border-none",
+                            // Selection Style (Blue/Cyan gradient per screenshot)
+                            isSelected
+                              ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20 z-10 scale-105 font-bold"
+                              : "hover:bg-white/10",
+                            // Dim filler days
+                            !isCurrentMonth(day) && !isSelected && "opacity-20 bg-transparent"
+                          )}
+                          onClick={() => {
+                            setSelectedDate(day);
+                            // Dont trigger the create dialog immediately if just selecting for view
+                            // The original 'handleDateClick' triggered create dialog. Needs adjustment.
+                            // We will just set selected date here. Create dialog can be a separate button or double click?
+                            // For now, let's keep it simple: Click = Select. 
+                          }}
+                        >
+                          <span className={cn(
+                            "text-[15px]",
+                            isToday(day) && !isSelected && "text-blue-400 font-bold", // Today but not selected
+                          )}>
+                            {day.getDate()}
+                          </span>
+
+                          {/* Dots */}
+                          {dayAppointments.length > 0 && (
+                            <div className={cn(
+                              "absolute bottom-2 w-1 h-1 rounded-full",
+                              isSelected ? "bg-white/80" : "bg-blue-500"
+                            )} />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Selected Date List Area (Displayed in Month View) */}
+            {viewMode === "month" && (
+              <div className="flex-1 overflow-y-auto min-h-0 border-t border-white/5 pt-4 -mx-4 px-4 bg-black/20">
+                <div className="space-y-3 pb-24">
+                  {selectedDate ? (
+                    <>
+                      <div className="flex items-center justify-between px-1 mb-2">
+                        <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
+                          {selectedDate.toLocaleDateString("en-US", { weekday: 'long', month: 'long', day: 'numeric' })}
+                        </h3>
+                        {/* Add Appt Button (Small) */}
+                        {isArtist && (
+                          <Button
+                            size="sm" variant="ghost" className="h-6 px-2 text-primary hover:text-primary hover:bg-primary/10 -mr-2"
+                            onClick={() => handleDateClick(selectedDate)} // Use original create handler
+                          >
+                            <Plus className="w-4 h-4 mr-1" /> Add
+                          </Button>
+                        )}
                       </div>
 
-                      {dayAppointments.length > 0 ? (
-                        <div className="space-y-2">
-                          {dayAppointments.map((apt) => (
-                            <div
-                              key={apt.id}
-                              className="p-2.5 rounded-xl bg-white/5 border border-white/5 cursor-pointer hover:bg-white/10 transition-colors"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedAppointment(apt);
-                                setShowAppointmentDetailDialog(true);
-                              }}
-                            >
-                              <div className="flex justify-between items-start">
-                                <p className="text-sm font-semibold text-foreground/90">
-                                  {apt.serviceName || apt.title}
-                                </p>
-                                <p className="text-xs font-mono text-muted-foreground">
-                                  {new Date(apt.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                                </p>
-                              </div>
+                      {getAppointmentsForDate(selectedDate).length > 0 ? (
+                        getAppointmentsForDate(selectedDate).map(apt => (
+                          <div
+                            key={apt.id}
+                            className="flex items-center gap-4 p-4 rounded-2xl bg-[#1c1c1e] border border-white/5 active:scale-[0.98] transition-transform cursor-pointer"
+                            onClick={() => {
+                              setSelectedAppointment(apt);
+                              setShowAppointmentDetailDialog(true);
+                            }}
+                          >
+                            {/* Icon Box */}
+                            <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0 text-blue-400">
+                              {apt.status === 'confirmed' ? <Check className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
+                            </div>
 
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-base text-white truncate">{apt.serviceName || apt.title}</h4>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
+                                <span>{new Date(apt.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                                <span>-</span>
+                                <span>{new Date(apt.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                              </div>
                               {apt.clientName && (
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                  {apt.clientName}
-                                </p>
+                                <p className="text-xs text-muted-foreground/60 mt-1 truncate">{apt.clientName}</p>
                               )}
                             </div>
-                          ))}
-                        </div>
+                          </div>
+                        ))
                       ) : (
-                        <div className="flex items-center justify-center p-2 mt-2 border border-dashed border-white/10 rounded-lg">
-                          <span className="text-xs text-muted-foreground/40">Available</span>
+                        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground/40 space-y-2">
+                          <div className="w-12 h-12 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center">
+                            <CalendarIcon className="w-5 h-5" />
+                          </div>
+                          <p className="text-sm">No events</p>
                         </div>
                       )}
-                    </Card>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="grid grid-cols-7 gap-2">
-                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, idx) => (
-                  <div
-                    key={`day-header-${idx}`}
-                    className="text-center text-xs font-bold text-muted-foreground/60 py-2 uppercase"
-                  >
-                    {day.charAt(0)}
-                  </div>
-                ))}
-                {getMonthDays().map((day, index) => {
-                  const dayAppointments = getAppointmentsForDate(day);
-                  // Use a stable key based on the actual date to prevent rendering issues
-                  const dateKey = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
-                  return (
-                    <Card
-                      key={dateKey}
-                      className={cn(
-                        "aspect-square p-1 cursor-pointer transition-colors border-0 bg-white/5 hover:bg-white/10 rounded-xl relative overflow-hidden",
-                        isToday(day) ? "ring-1 ring-primary bg-primary/10" : "",
-                        !isCurrentMonth(day) ? "opacity-30" : ""
-                      )}
-                      onClick={() => handleDateClick(day)}
-                    >
-                      <div className="flex flex-col items-center justify-center h-full">
-                        <p
-                          className={cn(
-                            "text-sm font-medium",
-                            isToday(day) ? "text-primary font-bold" : "text-foreground"
-                          )}
-                        >
-                          {day.getDate()}
-                        </p>
-                        <div className="flex gap-0.5 mt-1 flex-wrap justify-center content-center max-w-[80%]">
-                          {dayAppointments.slice(0, 4).map((_, i) => (
-                            <div key={i} className="w-1 h-1 rounded-full bg-primary/70" />
-                          ))}
-                        </div>
-                      </div>
-                    </Card>
-                  );
-                })}
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full py-12 text-muted-foreground/40">
+                      <p className="text-sm">Select a date to view events</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
+
           </div>
         </div>
       </GlassSheet>
