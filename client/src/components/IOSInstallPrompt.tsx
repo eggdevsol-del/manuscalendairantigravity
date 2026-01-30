@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
-import { Share, X, Plus, Smartphone } from "lucide-react";
-=======
-import { Button } from "@/components/ui/button";
 import { Share, X, Plus, Smartphone, MessageCircle, Gift, Calendar, Bell } from "lucide-react";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { useEffect, useState } from "react";
 
 interface IOSInstallPromptProps {
@@ -19,7 +14,7 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
 
   useEffect(() => {
     console.log('[IOSInstallPrompt] Initializing, forceShow:', forceShow);
-    
+
     // Check if device is iOS
     const userAgent = window.navigator.userAgent.toLowerCase();
     const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
@@ -90,7 +85,7 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
   if (forceShow && !isIOS) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-        <div 
+        <div
           className="w-full max-w-sm max-h-[70vh] overflow-y-auto rounded-2xl p-6"
           style={{
             background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
@@ -106,7 +101,7 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
             >
               <X className="h-5 w-5" />
             </Button>
-            
+
             <div className="text-center mb-6">
               <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
                 <Smartphone className="h-8 w-8 text-white" />
@@ -187,7 +182,7 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div 
+      <div
         className="w-full max-w-sm max-h-[70vh] overflow-y-auto rounded-2xl p-6"
         style={{
           background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
@@ -203,7 +198,7 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
           >
             <X className="h-5 w-5" />
           </Button>
-          
+
           <div className="text-center mb-6">
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
               <Smartphone className="h-8 w-8 text-white" />

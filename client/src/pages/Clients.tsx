@@ -1,14 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-<<<<<<< HEAD
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, ModalShell } from "@/components/ui";
-=======
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label } from "@/components/ui";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
 import { LoadingState } from "@/components/ui/ssot";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { trpc } from "@/lib/trpc";
 import { ChevronLeft, Mail, MessageCircle, Phone, Plus, Search, Trash, User } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";

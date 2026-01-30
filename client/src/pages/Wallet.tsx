@@ -1,10 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-<<<<<<< HEAD
 import { Card } from "@/components/ui";
-=======
-import { Card } from "@/components/ui/card";
 import { PageShell, GlassSheet, PageHeader } from "@/components/ui/ssot";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 
 export default function Wallet() {
     const { user } = useAuth();

@@ -1,5 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, ModalShell, Switch, Textarea } from "@/components/ui";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Switch, Textarea } from "@/components/ui";
+import { ModalShell } from "@/components/ui/overlays/modal-shell";
+import { PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
 import { trpc } from "@/lib/trpc";
 import { ChevronRight, Plus, Trash2, Pencil, Check, X, Layers, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -11,12 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-<<<<<<< HEAD
-=======
-import { ModalShell } from "@/components/ui/overlays/modal-shell";
-import { PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { cn } from "@/lib/utils";
 
 interface WorkHoursAndServicesProps {

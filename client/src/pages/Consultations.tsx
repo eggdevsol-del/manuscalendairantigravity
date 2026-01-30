@@ -1,16 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-<<<<<<< HEAD
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, ModalShell, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from "@/components/ui";
-=======
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from "@/components/ui";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
 import { LoadingState, PageShell, GlassSheet, PageHeader } from "@/components/ui/ssot";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { trpc } from "@/lib/trpc";
 import { Calendar, ChevronRight, Clock, Plus } from "lucide-react";
 import { useEffect, useState } from "react";

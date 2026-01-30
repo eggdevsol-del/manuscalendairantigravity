@@ -3,16 +3,10 @@ import { useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useRegisterBottomNavRow } from "@/contexts/BottomNavContext";
 import { BottomNavRow } from "@/components/BottomNavRow";
-<<<<<<< HEAD
 import { Button, Card, CardContent } from "@/components/ui";
-import { Heart, Trash2, Upload } from "lucide-react";
-=======
-import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Trash2, Upload, Image } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
-import { Button } from "@/components/ui/button";
 import { LoadingState, PageShell, GlassSheet, PageHeader } from "@/components/ui/ssot";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 
 export default function Portfolio() {
     const { user } = useAuth();

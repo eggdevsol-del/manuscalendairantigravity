@@ -1,22 +1,10 @@
-<<<<<<< HEAD
-import { Button, Checkbox, Dialog, DialogTitle, Input, Label, ModalShell, ScrollArea, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
+import { Button, Checkbox, Dialog, DialogTitle, Input, Label, ScrollArea, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
+import { ModalShell } from "@/components/ui/overlays/modal-shell";
 // import { SheetShell } from "@/components/ui/overlays/sheet-shell"; // REMOVED
 import { useChatController } from "@/features/chat/useChatController";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cn } from "@/lib/utils";
-=======
-// import { SheetShell } from "@/components/ui/overlays/sheet-shell"; // REMOVED
-import { useChatController } from "@/features/chat/useChatController";
-import { Button } from "@/components/ui/button";
 import { BottomSheet, LoadingState, PageShell } from "@/components/ui/ssot";
-import { DialogTitle } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-// Tabs removed - using existing components
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { BookingWizard } from "@/features/booking/BookingWizard";
 // ProposalSheet removed - not needed
 import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
@@ -96,7 +84,7 @@ export default function Chat() {
   const clientId = conversation?.otherUser?.id;
   const { data: mediaData } = trpc.conversations.getClientMedia.useQuery(
     { clientId: clientId || '' },
-    { 
+    {
       enabled: isArtist && !!clientId,
       staleTime: 30000,
     }
@@ -248,8 +236,8 @@ export default function Chat() {
                   onClick={() => setSelectedMediaImage(img.url)}
                   className="w-8 h-8 rounded-md overflow-hidden bg-muted/50 border border-white/10 hover:border-primary/50 transition-colors shrink-0"
                 >
-                  <img 
-                    src={img.url} 
+                  <img
+                    src={img.url}
                     alt={`Media ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
@@ -470,13 +458,16 @@ export default function Chat() {
             <Label>Preferred Dates (comma separated)</Label>
             <Input
               placeholder="e.g., Jan 15, Jan 22, Feb 5"
-              value={clientConfirmDates}
-              onChange={(e) => setClientConfirmDates(e.target.value)}
+              value={clientConfirmDates.map(d => d.date).join(', ')}
+              onChange={(e) => {
+                const dates = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                setClientConfirmDates(dates.map(date => ({ date, selected: true })));
+              }}
             />
           </div>
           <Button
             className="w-full"
-            onClick={() => handleClientConfirmDates(clientConfirmDates)}
+            onClick={() => handleClientConfirmDates()}
           >
             Confirm Dates
           </Button>
@@ -522,18 +513,18 @@ export default function Chat() {
 
       {/* Media Image Lightbox */}
       {selectedMediaImage && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           onClick={() => setSelectedMediaImage(null)}
         >
-          <button 
+          <button
             className="absolute top-4 right-4 text-white/70 hover:text-white text-sm px-3 py-1 rounded-lg bg-white/10"
             onClick={() => setSelectedMediaImage(null)}
           >
             Close
           </button>
-          <img 
-            src={selectedMediaImage} 
+          <img
+            src={selectedMediaImage}
             alt="Full size"
             className="max-w-full max-h-full object-contain rounded-lg"
             onClick={(e) => e.stopPropagation()}

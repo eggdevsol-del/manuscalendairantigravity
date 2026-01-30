@@ -1,17 +1,10 @@
 
 import { useAuth } from "@/_core/hooks/useAuth";
-<<<<<<< HEAD
 import { Button, Card, Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui";
 import { trpc } from "@/lib/trpc";
 import { Calendar, ChevronDown, ChevronRight, MessageCircle, User } from "lucide-react";
-=======
-import { Button } from "@/components/ui/button";
-import { trpc } from "@/lib/trpc";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Calendar, ChevronDown, MessageCircle } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { LoadingState, PageShell, GlassSheet, PageHeader, ConversationCard, ConsultationCard } from "@/components/ui/ssot";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 
@@ -174,7 +167,7 @@ export default function Conversations() {
                     const date = new Date(dateStr as any);
                     timestamp = isNaN(date.getTime()) ? "" : date.toLocaleDateString();
                   }
-                  
+
                   return (
                     <ConversationCard
                       key={conv.id}

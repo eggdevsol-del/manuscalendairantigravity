@@ -1,25 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button, Dialog, DialogTitle, Label, SegmentedHeader, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, TaskCard } from "@/components/ui";
+import { Button, Dialog, DialogTitle, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
 import { useDashboardTasks } from "@/features/dashboard/useDashboardTasks";
-<<<<<<< HEAD
-import { CHALLENGE_TEMPLATES, DashboardTask } from "@/features/dashboard/DashboardTaskRegister";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X, Check, Clock, ExternalLink, MessageSquare, Mail, Play, Plus, Trash2, Smartphone, Monitor } from "lucide-react";
-import { Card } from "@/components/ui/card"; // For Challenges only
-=======
 import { useBusinessTasks, useWeeklySnapshot, useDashboardSettings, type BusinessTask as ServerBusinessTask } from "@/features/dashboard/useBusinessTasks";
 import { CHALLENGE_TEMPLATES } from "@/features/dashboard/DashboardTaskRegister";
 import { DashboardTask, ChallengeTemplate } from "@/features/dashboard/types";
-import { PageShell, PageHeader, GlassSheet, HalfSheet, FullScreenSheet, WeeklySnapshotModal } from "@/components/ui/ssot";
-import { X, Check, Clock, ExternalLink, MessageSquare, Mail, Play, Trash2, Smartphone, Monitor, ChevronRight, Settings, BarChart3 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { PageShell, PageHeader, GlassSheet, HalfSheet, FullScreenSheet, WeeklySnapshotModal, TaskCard, SegmentedHeader } from "@/components/ui/ssot";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { X, Check, Clock, ExternalLink, MessageSquare, Mail, Play, Plus, Trash2, Smartphone, Monitor, ChevronRight, Settings, BarChart3 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 
 // SSOT Components
 
@@ -82,12 +74,12 @@ export default function Dashboard() {
     const { tasks: legacyTasks, actions: legacyActions, stats, config } = useDashboardTasks();
 
     // New Business Tasks Hook (Revenue Protection Algorithm)
-    const { 
-        tasks: businessTasks, 
-        isLoading: businessLoading, 
+    const {
+        tasks: businessTasks,
+        isLoading: businessLoading,
         settings: businessSettings,
         actions: businessActions,
-        completingTask 
+        completingTask
     } = useBusinessTasks();
 
     // Weekly Snapshot Hook
@@ -118,7 +110,7 @@ export default function Dashboard() {
 
     // Derived State
     const activeCategory = TITLES[activeIndex].toLowerCase() as 'business' | 'social' | 'personal';
-    
+
     // Transform legacy task to ExtendedTask
     const transformLegacyTask = (task: DashboardTask): ExtendedTask => ({
         id: task.id,
@@ -156,19 +148,19 @@ export default function Dashboard() {
     // Handlers
     const handleTaskClick = (task: ExtendedTask) => {
         setSelectedTask(task);
-        
+
         // Start tracking time for business tasks
         if (task._serverTask) {
             const startTime = businessActions.startTask(task._serverTask);
             setTaskStartTime(startTime);
         }
-        
+
         setShowTaskSheet(true);
     };
 
     const executeAction = async (task: ExtendedTask) => {
         const serverTask = task._serverTask;
-        
+
         if (serverTask) {
             // Handle server-generated business tasks
             switch (serverTask.actionType) {
@@ -316,9 +308,9 @@ export default function Dashboard() {
                                         />
                                     ))
                                 ) : (
-                                    <EmptyState 
-                                        category={TITLES[activeIndex]} 
-                                        onAction={activeCategory === 'personal' ? () => setShowChallengeSheet(true) : undefined} 
+                                    <EmptyState
+                                        category={TITLES[activeIndex]}
+                                        onAction={activeCategory === 'personal' ? () => setShowChallengeSheet(true) : undefined}
                                     />
                                 )}
 
@@ -372,10 +364,10 @@ export default function Dashboard() {
                                 {selectedTask.actionType === 'email' && <Mail className="mr-2 w-5 h-5" />}
                                 {selectedTask.actionType === 'social' && <ExternalLink className="mr-2 w-5 h-5" />}
                                 {(selectedTask.actionType === 'internal' || selectedTask.actionType === 'in_app') && <Play className="mr-2 w-5 h-5" />}
-                                {selectedTask._serverTask?.actionType === 'sms' ? 'Send SMS' : 
-                                 selectedTask._serverTask?.actionType === 'email' ? 'Send Email' :
-                                 selectedTask._serverTask?.actionType === 'in_app' ? 'Open in App' :
-                                 'Execute Action'}
+                                {selectedTask._serverTask?.actionType === 'sms' ? 'Send SMS' :
+                                    selectedTask._serverTask?.actionType === 'email' ? 'Send Email' :
+                                        selectedTask._serverTask?.actionType === 'in_app' ? 'Open in App' :
+                                            'Execute Action'}
                             </Button>
                         )}
 
@@ -512,8 +504,8 @@ export default function Dashboard() {
                     {/* Email Client */}
                     <div className="space-y-2">
                         <Label>Preferred Email Client</Label>
-                        <Select 
-                            value={dashboardSettings.preferredEmailClient} 
+                        <Select
+                            value={dashboardSettings.preferredEmailClient}
                             onValueChange={(val: 'default' | 'gmail' | 'outlook' | 'apple_mail') => updateSettings({ preferredEmailClient: val })}
                         >
                             <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl">

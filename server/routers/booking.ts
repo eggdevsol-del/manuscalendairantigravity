@@ -54,11 +54,17 @@ export const bookingRouter = router({
                 // Use getAppointmentsForUser which supports fromDate
                 const searchStart = new Date(input.startDate);
 
-                const existingAppointments = await db.getAppointmentsForUser(
+                const rawAppointments = await db.getAppointmentsForUser(
                     conversation.artistId,
                     "artist",
                     searchStart
                 );
+
+                const existingAppointments = rawAppointments.map(a => ({
+                    ...a,
+                    startTime: new Date(a.startTime),
+                    endTime: new Date(a.endTime)
+                }));
 
                 console.log("[BookingRouter] Existing appointments count:", existingAppointments.length);
 
@@ -106,8 +112,9 @@ export const bookingRouter = router({
             if (!conversation) throw new TRPCError({ code: "NOT_FOUND", message: "Conversation not found" });
 
             let createdCount = 0;
+            const appointmentIds: number[] = [];
             for (const appt of input.appointments) {
-                await db.createAppointment({
+                const created = await db.createAppointment({
                     conversationId: input.conversationId,
                     artistId: conversation.artistId,
                     clientId: conversation.clientId,
@@ -120,6 +127,9 @@ export const bookingRouter = router({
                     depositAmount: appt.depositAmount,
                     status: "pending",
                 });
+                if (created) {
+                    appointmentIds.push(created.id);
+                }
                 createdCount++;
             }
 
@@ -152,6 +162,6 @@ export const bookingRouter = router({
                 createdAt: new Date()
             });
 
-            return { success: true, count: createdCount };
+            return { success: true, count: createdCount, appointmentIds };
         })
 });

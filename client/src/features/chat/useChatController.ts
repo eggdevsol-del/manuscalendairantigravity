@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useChatState } from "./hooks/useChatState";
 import { useChatData } from "./hooks/useChatData";
 import { useChatMutations } from "./hooks/useChatMutations";
+import { trpc } from "@/lib/trpc";
 
 export function useChatController(conversationId: number) {
     // 1. Initialize State
@@ -167,7 +168,7 @@ export function useChatController(conversationId: number) {
     const handleClientAcceptProposal = useCallback((message: any, appliedPromotion?: { id: number; discountAmount: number; finalAmount: number }) => {
         const metadata = selectedProposal?.metadata;
         if (!metadata) return;
-        
+
         if (!metadata.proposedDates && !metadata.dates) return;
         const bookingDates = metadata.dates || metadata.proposedDates || [];
 
@@ -177,7 +178,7 @@ export function useChatController(conversationId: number) {
         }
 
         // Calculate price - use promotion final amount if applied, otherwise original
-        const finalPrice = appliedPromotion 
+        const finalPrice = appliedPromotion
             ? appliedPromotion.finalAmount / 100 // Convert cents to dollars
             : metadata.price || 0;
 
@@ -189,7 +190,7 @@ export function useChatController(conversationId: number) {
                 startTime,
                 endTime: new Date(startTime.getTime() + duration * 60 * 1000),
                 title: metadata.serviceName,
-                description: appliedPromotion 
+                description: appliedPromotion
                     ? `Project Booking (Client Accepted - Promotion Applied: -$${(appliedPromotion.discountAmount / 100).toFixed(2)})`
                     : "Project Booking (Client Accepted)",
                 serviceName: metadata.serviceName,
@@ -252,11 +253,7 @@ export function useChatController(conversationId: number) {
                 });
             }
         });
-<<<<<<< HEAD
-    }, [conversationId, bookProjectMutation.mutate, updateMetadataMutation.mutate, sendMessageMutation.mutate, scrollToBottom, setScrollIntent, setSelectedProposal]);
-=======
-    }, [conversationId, selectedProposal, bookProjectMutation.mutate, updateMetadataMutation.mutate, sendMessageMutation.mutate, redeemPromotionMutation, scrollToBottom]);
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
+    }, [conversationId, selectedProposal, bookProjectMutation.mutate, updateMetadataMutation.mutate, sendMessageMutation.mutate, redeemPromotionMutation, scrollToBottom, setScrollIntent, setSelectedProposal]);
 
     const handleViewProposal = useCallback((message: any, metadata: any) => {
         setSelectedProposal({ message, metadata });

@@ -4,11 +4,7 @@ import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Chec
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, LogIn, Mail } from "lucide-react";
-<<<<<<< HEAD
-=======
-import { Checkbox } from "@/components/ui/checkbox";
 import { APP_VERSION } from "@/lib/version";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 
 export default function Login() {
   const [, setLocation] = useLocation();

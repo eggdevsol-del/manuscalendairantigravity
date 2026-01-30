@@ -5,17 +5,8 @@ import DemoDataLoader from "./DemoDataLoader";
 import PushNotificationSettings from "@/components/PushNotificationSettings";
 import WorkHoursAndServices from "./WorkHoursAndServices";
 import ArtistLink from "@/components/ArtistLink";
-<<<<<<< HEAD
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Switch, Textarea } from "@/components/ui";
-=======
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { LoadingState, PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { trpc } from "@/lib/trpc";
 import {
   Bell,
@@ -415,8 +406,8 @@ export default function Settings() {
   return (
     <PageShell>
       {/* 1. Page Header - Left aligned, with version number */}
-      <PageHeader 
-        title="Settings" 
+      <PageHeader
+        title="Settings"
         subtitle={`v${APP_VERSION}`}
       />
 
@@ -609,8 +600,8 @@ export default function Settings() {
               </div>
             </Card>
 
-            <Card 
-              className="cursor-pointer hover:bg-blue-500/10 transition-colors border-0 bg-white/5 rounded-2xl group" 
+            <Card
+              className="cursor-pointer hover:bg-blue-500/10 transition-colors border-0 bg-white/5 rounded-2xl group"
               onClick={() => {
                 toast.info("Checking for updates...");
                 forceUpdate();

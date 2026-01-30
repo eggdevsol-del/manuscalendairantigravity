@@ -1,17 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-<<<<<<< HEAD
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, ModalShell, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea } from "@/components/ui";
-=======
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea } from "@/components/ui";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
 import { LoadingState } from "@/components/ui/ssot";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { trpc } from "@/lib/trpc";
 import { Bell, ChevronLeft, Edit, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -33,14 +23,14 @@ export default function NotificationsManagement() {
     enabled: true,
   });
 
-  const { data: templates, refetch } = trpc.notificationTemplates.list.useQuery(
+  const { data: templates, refetch } = trpc.notifications.list.useQuery(
     undefined,
     {
       enabled: !!user && (user.role === "artist" || user.role === "admin"),
     }
   );
 
-  const createMutation = trpc.notificationTemplates.create.useMutation({
+  const createMutation = trpc.notifications.create.useMutation({
     onSuccess: () => {
       toast.success("Template created");
       setShowDialog(false);
@@ -52,7 +42,7 @@ export default function NotificationsManagement() {
     },
   });
 
-  const updateMutation = trpc.notificationTemplates.update.useMutation({
+  const updateMutation = trpc.notifications.update.useMutation({
     onSuccess: () => {
       toast.success("Template updated");
       setShowDialog(false);
@@ -64,7 +54,7 @@ export default function NotificationsManagement() {
     },
   });
 
-  const deleteMutation = trpc.notificationTemplates.delete.useMutation({
+  const deleteMutation = trpc.notifications.delete.useMutation({
     onSuccess: () => {
       toast.success("Template deleted");
       refetch();
