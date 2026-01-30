@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from "@/components/ui";
-import { Check, Copy, Share2 } from "lucide-react";
-import { useState } from "react";
-=======
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,7 +5,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Check, Copy, ExternalLink, Link2, Loader2, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -25,20 +19,20 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
   const [slug, setSlug] = useState("");
   const [isEnabled, setIsEnabled] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  
+
   const debouncedSlug = useDebounce(slug, 500);
-  
+
   // Fetch current funnel settings
   const { data: settings, isLoading } = trpc.funnel.getFunnelSettings.useQuery();
-  
+
   // Check slug availability
   const { data: slugCheck, isLoading: checkingSlug } = trpc.funnel.checkSlugAvailability.useQuery(
     { slug: debouncedSlug },
-    { 
+    {
       enabled: debouncedSlug.length >= 3 && debouncedSlug !== settings?.publicSlug,
     }
   );
-  
+
   // Update settings mutation
   const updateSettings = trpc.funnel.updateFunnelSettings.useMutation({
     onSuccess: () => {
@@ -49,7 +43,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
       toast.error(error.message || "Failed to update settings");
     },
   });
-  
+
   // Initialize state from settings
   useEffect(() => {
     if (settings) {
@@ -57,11 +51,11 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
       setIsEnabled(settings.funnelEnabled || false);
     }
   }, [settings]);
-  
+
   // Generate the booking link
   const baseUrl = window.location.origin;
   const bookingLink = slug ? `${baseUrl}/start/${slug}` : null;
-  
+
   const handleCopy = async () => {
     if (!bookingLink) return;
     try {
@@ -90,7 +84,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
       handleCopy();
     }
   };
-  
+
   const handleSave = () => {
     if (slug.length < 3) {
       toast.error("URL must be at least 3 characters");
@@ -101,7 +95,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
       funnelEnabled: isEnabled,
     });
   };
-  
+
   const handleToggleEnabled = (enabled: boolean) => {
     setIsEnabled(enabled);
     if (settings?.publicSlug) {
@@ -110,7 +104,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
       });
     }
   };
-  
+
   const slugIsValid = slug.length >= 3 && (slugCheck?.available || slug === settings?.publicSlug);
   const slugIsTaken = slug.length >= 3 && slug !== settings?.publicSlug && slugCheck?.available === false;
   const hasChanges = slug !== (settings?.publicSlug || "");
@@ -167,7 +161,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
               />
             </div>
           </div>
-          
+
           {/* Slug status */}
           <div className="h-5">
             {checkingSlug && debouncedSlug.length >= 3 && (
@@ -190,7 +184,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
             )}
           </div>
         </div>
-        
+
         {/* Save button when editing */}
         {hasChanges && (
           <Button
@@ -204,7 +198,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
             Save URL
           </Button>
         )}
-        
+
         {/* Share section - only show when slug is set and enabled */}
         {bookingLink && settings?.publicSlug && (
           <>
@@ -228,7 +222,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
                   )}
                 </Button>
               </div>
-              
+
               <div className="flex gap-2">
                 <Button
                   variant="default"
@@ -247,7 +241,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
                 </Button>
               </div>
             </div>
-            
+
             {!isEnabled && (
               <p className="text-xs text-amber-400 text-center">
                 Your booking link is currently disabled
@@ -255,7 +249,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
             )}
           </>
         )}
-        
+
         {!settings?.publicSlug && (
           <p className="text-xs text-muted-foreground text-center">
             Set your custom URL above to start receiving consultation requests
