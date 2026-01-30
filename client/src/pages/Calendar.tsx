@@ -364,14 +364,11 @@ export default function Calendar() {
       // Vertical Swipe
       if (Math.abs(yDistance) < minSwipeDistance) return;
 
-      // Swipe Up (yDistance > 0) -> Open Hourly (Week) View
-      if (yDistance > 0 && viewMode === "month") {
-        setViewMode("week");
-      }
-      // Swipe Down (yDistance < 0) -> Back to Month View (Optional UX improvement)
-      if (yDistance < 0 && viewMode === "week") {
-        setViewMode("month");
-      }
+      // Swipe Up/Down Logic
+      // User requested "Day View" which matches the current Split View (Grid + List).
+      // We do NOT want to switch to 'week' view.
+      // For now, allow default scrolling or add partial sheet logic later if needed.
+      // Keeping this block empty or removing the mode switch ensures we stay in the desired "Day View" (Split Layout).
     }
   };
 
