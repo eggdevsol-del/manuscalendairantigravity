@@ -324,30 +324,54 @@ export default function Calendar() {
   };
 
   // -- Swipe Gestures --
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
   const minSwipeDistance = 50;
 
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
+    setTouchStart({
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY,
+    });
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    setTouchEnd({
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY,
+    });
   };
 
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
 
-    if (isLeftSwipe) {
-      goToNextPeriod();
-    }
-    if (isRightSwipe) {
-      goToPreviousPeriod();
+    const xDistance = touchStart.x - touchEnd.x;
+    const yDistance = touchStart.y - touchEnd.y;
+
+    // Check for horizontal swipe (Month Navigation)
+    const isHorizontalSwipe = Math.abs(xDistance) > Math.abs(yDistance);
+
+    if (isHorizontalSwipe) {
+      if (Math.abs(xDistance) < minSwipeDistance) return;
+
+      if (xDistance > 0) {
+        goToNextPeriod();
+      } else {
+        goToPreviousPeriod();
+      }
+    } else {
+      // Vertical Swipe
+      if (Math.abs(yDistance) < minSwipeDistance) return;
+
+      // Swipe Up (yDistance > 0) -> Open Hourly (Week) View
+      if (yDistance > 0 && viewMode === "month") {
+        setViewMode("week");
+      }
+      // Swipe Down (yDistance < 0) -> Back to Month View (Optional UX improvement)
+      if (yDistance < 0 && viewMode === "week") {
+        setViewMode("month");
+      }
     }
   };
 
