@@ -71,43 +71,49 @@ export function PromotionCard({
   const template = getTemplateById(data.templateDesign) || getTemplateById('classic')!;
   const typeDefaults = getTypeDefaults(data.type);
   const Icon = TypeIcon[data.type];
-  
-  // Build background style
-  const background = buildCardBackgroundWithPosition(
+
+  // Build base background style (Colors/Gradients only)
+  // We handle the Image manually in a layer above
+  const baseBackground = buildCardBackground(
     data.gradientFrom || null,
     data.primaryColor || null,
-    data.customColor,
-    data.backgroundImageUrl || null,
-    data.backgroundScale || 1,
-    data.backgroundPositionX || 50,
-    data.backgroundPositionY || 50
+    data.customColor
   );
-  
+
+  // Image styles
+  const imageStyles = data.backgroundImageUrl ? {
+    backgroundImage: `url(${data.backgroundImageUrl})`,
+    backgroundSize: `${(data.backgroundScale || 1) * 100}%`,
+    backgroundPosition: `${data.backgroundPositionX || 50}% ${data.backgroundPositionY || 50}%`,
+    backgroundRepeat: 'no-repeat',
+  } : undefined;
+
   // Determine text color
   let textColor: 'white' | 'black' = 'white';
   if (data.customColor) {
     textColor = getContrastTextColor(data.customColor);
-  } else if (!data.backgroundImageUrl) {
+  } else if (data.gradientFrom || data.primaryColor) {
+    // If we have a color background, calculate contrast
     textColor = getTextColor(data.gradientFrom, data.primaryColor);
   }
-  
+
   // Size classes
   const sizeClasses = {
     sm: 'w-48 text-xs',
     md: 'w-72 text-sm',
     lg: 'w-96 text-base',
   };
-  
+
   // Format display value
   const displayValue = formatPromotionValue(
     data.remainingValue ?? data.value,
     data.type,
     data.valueType
   );
-  
+
   // Check if partially used
   const isPartiallyUsed = data.remainingValue !== undefined && data.remainingValue < data.value;
-  
+
   return (
     <motion.div
       className={cn(
@@ -126,18 +132,28 @@ export function PromotionCard({
       {/* Card Body */}
       <div
         className="absolute inset-0 rounded-2xl overflow-hidden shadow-xl"
-        style={{ background }}
+        style={{ background: baseBackground }}
       >
-        {/* Overlay for background images */}
+        {/* Background Image Layer */}
         {data.backgroundImageUrl && (
-          <div className="absolute inset-0 bg-black/30" />
+          <div
+            className="absolute inset-0 z-0 transition-all duration-200"
+            style={imageStyles}
+          />
         )}
-        
+
+        {/* Overlay for background images - Optional, maybe only if no color selected? 
+            Keeping it simple: If BG image exists, add slight overlay for text contrast if needed, 
+            BUT user wants "actually transparent", so we should actully REMOVE any forced overlay 
+            or make it very subtle/user controlled. 
+            Removing standard overlay to respect transparency request.
+        */}
+
         {/* Hologram effect for premium template */}
         {template.hasHologram && (
-          <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gradient-to-br from-white/40 via-transparent to-white/20 animate-pulse" />
+          <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gradient-to-br from-white/40 via-transparent to-white/20 animate-pulse z-10" />
         )}
-        
+
         {/* Chip for EFTPOS style */}
         {template.hasChip && (
           <div className="absolute top-6 left-6">
@@ -150,12 +166,12 @@ export function PromotionCard({
             </div>
           </div>
         )}
-        
+
         {/* Magnetic stripe */}
         {template.hasMagStripe && (
           <div className="absolute bottom-12 left-0 right-0 h-8 bg-black/80" />
         )}
-        
+
         {/* Logo area */}
         {data.logoUrl ? (
           <img
@@ -188,7 +204,7 @@ export function PromotionCard({
             </span>
           </div>
         )}
-        
+
         {/* Card name / Custom text */}
         <div
           className={cn(
@@ -206,7 +222,7 @@ export function PromotionCard({
             </p>
           )}
         </div>
-        
+
         {/* Value display */}
         <div
           className={cn(
@@ -226,7 +242,7 @@ export function PromotionCard({
             </div>
           )}
         </div>
-        
+
         {/* Artist name - bottom right corner */}
         {data.artistName && (
           <div
@@ -238,7 +254,7 @@ export function PromotionCard({
             {data.artistName}
           </div>
         )}
-        
+
         {/* Code display (bottom center, only if no artist name or different position) */}
         {data.code && !data.artistName && (
           <div
@@ -250,7 +266,7 @@ export function PromotionCard({
             {data.code}
           </div>
         )}
-        
+
         {/* Code display (bottom left if artist name is shown) */}
         {data.code && data.artistName && (
           <div
@@ -262,7 +278,7 @@ export function PromotionCard({
             {data.code}
           </div>
         )}
-        
+
         {/* Status badge */}
         {data.status && data.status !== 'active' && (
           <div
@@ -280,7 +296,7 @@ export function PromotionCard({
             {data.status === 'revoked' && 'Revoked'}
           </div>
         )}
-        
+
         {/* Expiry date - show above artist name if present */}
         {data.expiresAt && data.status === 'active' && (
           <div
@@ -315,11 +331,11 @@ function buildCardBackgroundWithPosition(
     const scalePercent = scale * 100;
     return `url(${backgroundImageUrl}) ${positionX}% ${positionY}% / ${scalePercent}% no-repeat`;
   }
-  
+
   if (customColor) {
     return customColor;
   }
-  
+
   // Use the existing buildCardBackground for gradients and solid colors
   return buildCardBackground(gradientId, colorId, null);
 }

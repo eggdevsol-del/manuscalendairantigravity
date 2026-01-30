@@ -48,7 +48,7 @@ export function CreatePromotionWizard({
 }: CreatePromotionWizardProps) {
   const { user } = useAuth();
   const [step, setStep] = useState<WizardStep>('type');
-  
+
   // Form state
   const [type, setType] = useState<PromotionType>(defaultType);
   const [name, setName] = useState('');
@@ -66,19 +66,19 @@ export function CreatePromotionWizard({
   const [backgroundScale, setBackgroundScale] = useState(1);
   const [backgroundPositionX, setBackgroundPositionX] = useState(50);
   const [backgroundPositionY, setBackgroundPositionY] = useState(50);
-  
+
   // Upload states
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingBackground, setUploadingBackground] = useState(false);
-  
+
   const logoInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
-  
+
   const utils = trpc.useUtils();
-  
+
   // Get artist name for display on card
   const artistName = user?.name || 'Artist';
-  
+
   // Create mutation
   const createMutation = trpc.promotions.createTemplate.useMutation({
     onSuccess: () => {
@@ -92,25 +92,25 @@ export function CreatePromotionWizard({
       toast.error(error.message || 'Failed to create promotion');
     },
   });
-  
+
   // Upload mutation
   const uploadMutation = trpc.upload.uploadImage.useMutation();
-  
+
   // Handle logo upload
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file');
       return;
     }
-    
+
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image must be less than 5MB');
       return;
     }
-    
+
     setUploadingLogo(true);
     try {
       const reader = new FileReader();
@@ -132,22 +132,22 @@ export function CreatePromotionWizard({
       setUploadingLogo(false);
     }
   };
-  
+
   // Handle background upload
   const handleBackgroundUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file');
       return;
     }
-    
+
     if (file.size > 10 * 1024 * 1024) {
       toast.error('Image must be less than 10MB');
       return;
     }
-    
+
     setUploadingBackground(true);
     try {
       const reader = new FileReader();
@@ -169,7 +169,7 @@ export function CreatePromotionWizard({
       setUploadingBackground(false);
     }
   };
-  
+
   // Step navigation
   const goNext = () => {
     const steps: WizardStep[] = ['type', 'value', 'design', 'preview'];
@@ -178,7 +178,7 @@ export function CreatePromotionWizard({
       setStep(steps[currentIndex + 1]);
     }
   };
-  
+
   const goBack = () => {
     const steps: WizardStep[] = ['type', 'value', 'design', 'preview'];
     const currentIndex = steps.indexOf(step);
@@ -186,7 +186,7 @@ export function CreatePromotionWizard({
       setStep(steps[currentIndex - 1]);
     }
   };
-  
+
   // Get step title
   const getStepTitle = () => {
     switch (step) {
@@ -196,7 +196,7 @@ export function CreatePromotionWizard({
       case 'preview': return 'Preview & Create';
     }
   };
-  
+
   // Build preview data
   const previewData: PromotionCardData = {
     id: 0,
@@ -218,7 +218,7 @@ export function CreatePromotionWizard({
     artistName,
     status: 'active',
   };
-  
+
   // Handle create
   const handleCreate = () => {
     createMutation.mutate({
@@ -239,7 +239,7 @@ export function CreatePromotionWizard({
       backgroundPositionY,
     });
   };
-  
+
   // Validation
   const canProceed = () => {
     switch (step) {
@@ -249,7 +249,7 @@ export function CreatePromotionWizard({
       case 'preview': return true;
     }
   };
-  
+
   return (
     <FullScreenSheet
       open={isOpen}
@@ -286,7 +286,7 @@ export function CreatePromotionWizard({
               onSelect={setType}
             />
           )}
-          
+
           {/* Step: Value Configuration */}
           {step === 'value' && (
             <ValueConfigStep
@@ -301,7 +301,7 @@ export function CreatePromotionWizard({
               setValue={setValue}
             />
           )}
-          
+
           {/* Step: Design Customization */}
           {step === 'design' && (
             <DesignCustomizationStep
@@ -337,7 +337,7 @@ export function CreatePromotionWizard({
               previewData={previewData}
             />
           )}
-          
+
           {/* Step: Preview & Create */}
           {step === 'preview' && (
             <PreviewStep
@@ -347,7 +347,7 @@ export function CreatePromotionWizard({
           )}
         </motion.div>
       </AnimatePresence>
-      
+
       {/* Bottom Action */}
       <div className="mt-8 space-y-3">
         {step === 'preview' ? (
@@ -401,13 +401,13 @@ function TypeSelectionStep({
       description: 'Credit balance that can be used across multiple bookings',
     },
   ];
-  
+
   return (
     <div className="space-y-4">
       {types.map(t => {
         const Icon = t.icon;
         const isSelected = selected === t.id;
-        
+
         return (
           <button
             key={t.id}
@@ -471,7 +471,7 @@ function ValueConfigStep({
   setValue: (v: string) => void;
 }) {
   const defaults = getTypeDefaults(type);
-  
+
   return (
     <div className="space-y-6">
       {/* Name */}
@@ -484,7 +484,7 @@ function ValueConfigStep({
           className="h-12 rounded-xl"
         />
       </div>
-      
+
       {/* Description */}
       <div className="space-y-2">
         <Label>Description (optional)</Label>
@@ -496,7 +496,7 @@ function ValueConfigStep({
           rows={2}
         />
       </div>
-      
+
       {/* Value Type (only for discount) */}
       {type === 'discount' && (
         <div className="space-y-2">
@@ -527,7 +527,7 @@ function ValueConfigStep({
           </div>
         </div>
       )}
-      
+
       {/* Value */}
       <div className="space-y-2">
         <Label>
@@ -623,14 +623,14 @@ function DesignCustomizationStep({
   previewData: PromotionCardData;
 }) {
   const availableTemplates = CARD_TEMPLATES.filter(t => t.forTypes.includes(type));
-  
+
   return (
     <div className="space-y-6">
       {/* Live Preview */}
       <div className="flex justify-center py-4">
         <PromotionCard data={previewData} size="md" />
       </div>
-      
+
       {/* Template Selection */}
       <div className="space-y-2">
         <Label>Card Style</Label>
@@ -651,7 +651,7 @@ function DesignCustomizationStep({
           ))}
         </div>
       </div>
-      
+
       {/* Color Mode Toggle */}
       <div className="space-y-2">
         <Label>Color Style</Label>
@@ -692,13 +692,13 @@ function DesignCustomizationStep({
           </button>
         </div>
       </div>
-      
+
       {/* Color/Gradient Selection */}
       <div className="space-y-2">
         <Label>
           {colorMode === 'gradient' ? 'Choose Gradient' : colorMode === 'custom' ? 'Pick Custom Color' : 'Choose Color'}
         </Label>
-        
+
         {colorMode === 'custom' ? (
           <div className="flex items-center gap-4">
             <input
@@ -753,7 +753,7 @@ function DesignCustomizationStep({
           </div>
         )}
       </div>
-      
+
       {/* Logo Upload */}
       <div className="space-y-2">
         <Label className="flex items-center gap-2">
@@ -791,13 +791,70 @@ function DesignCustomizationStep({
           </Button>
         )}
       </div>
-      
+
       {/* Background Image Upload */}
       <div className="space-y-2">
         <Label className="flex items-center gap-2">
           <ImageIcon className="w-4 h-4" />
           Background Image (optional)
         </Label>
+
+        {/* Image Controls - Only show if image exists */}
+        {backgroundImageUrl && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="p-4 bg-black/5 dark:bg-white/5 rounded-xl space-y-4 mb-4 border border-white/10"
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <ZoomIn className="w-3 h-3" /> Zoom
+                </Label>
+                <span className="text-xs font-mono">{Math.round(backgroundScale * 100)}%</span>
+              </div>
+              <Slider
+                value={[backgroundScale]}
+                min={0.5}
+                max={3}
+                step={0.1}
+                onValueChange={([v]) => setBackgroundScale(v)}
+                className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
+              />
+
+              <div className="flex items-center justify-between pt-2">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Move className="w-3 h-3" /> Position X
+                </Label>
+                <span className="text-xs font-mono">{backgroundPositionX}%</span>
+              </div>
+              <Slider
+                value={[backgroundPositionX]}
+                min={0}
+                max={100}
+                step={1}
+                onValueChange={([v]) => setBackgroundPositionX(v)}
+                className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
+              />
+
+              <div className="flex items-center justify-between pt-2">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Move className="w-3 h-3 rotate-90" /> Position Y
+                </Label>
+                <span className="text-xs font-mono">{backgroundPositionY}%</span>
+              </div>
+              <Slider
+                value={[backgroundPositionY]}
+                min={0}
+                max={100}
+                step={1}
+                onValueChange={([v]) => setBackgroundPositionY(v)}
+                className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
+              />
+            </div>
+          </motion.div>
+        )}
+
         <input
           ref={backgroundInputRef}
           type="file"
@@ -819,7 +876,7 @@ function DesignCustomizationStep({
                 <X className="w-4 h-4" />
               </Button>
             </div>
-            
+
             {/* Background Resize Controls */}
             <div className="space-y-4 p-4 bg-black/5 dark:bg-white/5 rounded-xl">
               <div className="space-y-2">
@@ -836,7 +893,7 @@ function DesignCustomizationStep({
                   className="w-full"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-sm">
                   <Move className="w-4 h-4" />
@@ -851,7 +908,7 @@ function DesignCustomizationStep({
                   className="w-full"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label className="text-sm">Position Y: {backgroundPositionY}%</Label>
                 <Slider
@@ -876,7 +933,7 @@ function DesignCustomizationStep({
           </Button>
         )}
       </div>
-      
+
       {/* Custom Text */}
       <div className="space-y-2">
         <Label>Custom Text (optional)</Label>
@@ -906,7 +963,7 @@ function PreviewStep({
       <div className="flex justify-center py-8">
         <PromotionCard data={previewData} size="lg" />
       </div>
-      
+
       {/* Summary */}
       <div className="bg-black/5 dark:bg-white/5 rounded-xl p-4 space-y-3">
         <h3 className="font-semibold text-foreground">Summary</h3>
@@ -922,8 +979,8 @@ function PreviewStep({
           <div className="flex justify-between">
             <span className="text-muted-foreground">Value</span>
             <span className="font-medium">
-              {previewData.valueType === 'percentage' 
-                ? `${previewData.value}%` 
+              {previewData.valueType === 'percentage'
+                ? `${previewData.value}%`
                 : `$${(previewData.value / 100).toFixed(2)}`
               }
             </span>
@@ -936,7 +993,7 @@ function PreviewStep({
           )}
         </div>
       </div>
-      
+
       <p className="text-center text-sm text-muted-foreground">
         This will create a template you can send to clients or auto-apply to new bookings.
       </p>
