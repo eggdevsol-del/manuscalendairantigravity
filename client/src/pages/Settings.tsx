@@ -5,7 +5,17 @@ import DemoDataLoader from "./DemoDataLoader";
 import PushNotificationSettings from "@/components/PushNotificationSettings";
 import WorkHoursAndServices from "./WorkHoursAndServices";
 import ArtistLink from "@/components/ArtistLink";
+<<<<<<< HEAD
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Switch, Textarea } from "@/components/ui";
+=======
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { LoadingState, PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
+>>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { trpc } from "@/lib/trpc";
 import {
   Bell,
@@ -22,6 +32,9 @@ import {
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { forceUpdate } from "@/lib/pwa";
+import { RefreshCw } from "lucide-react";
+import { APP_VERSION } from "@/lib/version";
 
 type SettingsSection = "main" | "profile" | "work-hours" | "quick-actions" | "notifications" | "business";
 
@@ -163,11 +176,7 @@ export default function Settings() {
   };
 
   if (loading) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground text-lg">Loading...</div>
-      </div>
-    );
+    return <LoadingState message="Loading..." fullScreen />;
   }
 
   const isArtist = user?.role === "artist" || user?.role === "admin";
@@ -196,14 +205,9 @@ export default function Settings() {
 
   if (activeSection === "profile") {
     return (
-      <div className="fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden">
-        {/* 1. Page Header (Fixed) */}
-        <header className="px-4 py-4 z-10 shrink-0 flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10 text-foreground" onClick={() => setActiveSection("main")}>
-            <ChevronRight className="w-5 h-5 rotate-180" />
-          </Button>
-          <h1 className="text-2xl font-bold text-foreground">Profile</h1>
-        </header>
+      <PageShell>
+        {/* 1. Page Header - Left aligned, no icons */}
+        <PageHeader title="Profile" />
 
         {/* 2. Top Context Area */}
         <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
@@ -217,9 +221,7 @@ export default function Settings() {
         </div>
 
         {/* 3. Sheet Container */}
-        <div className="flex-1 z-20 flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative">
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none" />
-
+        <GlassSheet className="bg-white/5">
           <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
             <div className="pb-32 max-w-lg mx-auto space-y-6">
 
@@ -291,30 +293,23 @@ export default function Settings() {
 
             </div>
           </div>
-        </div>
-      </div>
+        </GlassSheet>
+      </PageShell>
     );
   }
 
   if (activeSection === "business" && isArtist) {
     return (
-      <div className="fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden">
-
-        <header className="px-4 py-4 z-10 shrink-0 flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10 text-foreground" onClick={() => setActiveSection("main")}>
-            <ChevronRight className="w-5 h-5 rotate-180" />
-          </Button>
-          <h1 className="text-2xl font-bold text-foreground">Business Info</h1>
-        </header>
+      <PageShell>
+        {/* 1. Page Header - Left aligned, no icons */}
+        <PageHeader title="Business Info" />
 
         <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
           <p className="text-4xl font-light text-foreground/90 tracking-tight">Business</p>
-          <p className="text-lg font-medium text-muted-foreground mt-1">Details & Payments (Confidential)</p>
+          <p className="text-muted-foreground text-lg font-medium mt-1">Details & Payments (Confidential)</p>
         </div>
 
-        <div className="flex-1 z-20 flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative">
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none" />
-
+        <GlassSheet className="bg-white/5">
           <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
             <div className="pb-32 max-w-lg mx-auto space-y-6">
 
@@ -411,20 +406,19 @@ export default function Settings() {
               </Button>
             </div>
           </div>
-        </div>
-      </div>
+        </GlassSheet>
+      </PageShell>
     )
   }
 
   // --- Main View ---
   return (
-    <div className="fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden">
-
-      {/* 1. Page Header (Fixed) */}
-      <header className="px-4 py-4 z-10 shrink-0 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <span className="text-xs text-muted-foreground font-medium bg-white/5 px-2 py-1 rounded-full">v{__APP_VERSION__}</span>
-      </header>
+    <PageShell>
+      {/* 1. Page Header - Left aligned, with version number */}
+      <PageHeader 
+        title="Settings" 
+        subtitle={`v${APP_VERSION}`}
+      />
 
       {/* 2. Top Context Area (Profile Summary) */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
@@ -444,9 +438,7 @@ export default function Settings() {
       </div>
 
       {/* 3. Sheet Container */}
-      <div className="flex-1 z-20 flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative">
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none" />
-
+      <GlassSheet className="bg-white/5">
         <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5">
           <h2 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">
             Preferences
@@ -617,6 +609,26 @@ export default function Settings() {
               </div>
             </Card>
 
+            <Card 
+              className="cursor-pointer hover:bg-blue-500/10 transition-colors border-0 bg-white/5 rounded-2xl group" 
+              onClick={() => {
+                toast.info("Checking for updates...");
+                forceUpdate();
+              }}
+            >
+              <div className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30 transition-colors">
+                    <RefreshCw className="w-5 h-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-foreground">Check for Updates</p>
+                    <p className="text-xs text-muted-foreground">Force refresh app to latest version</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
             <Card className="cursor-pointer hover:bg-destructive/10 transition-colors border-0 bg-white/5 rounded-2xl group" onClick={handleLogout}>
               <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -633,8 +645,7 @@ export default function Settings() {
 
           </div>
         </div>
-      </div>
-
-    </div>
+      </GlassSheet>
+    </PageShell>
   );
 }

@@ -1,5 +1,17 @@
+/**
+ * UI SINGLE SOURCE OF TRUTH (SSOT)
+ * -------------------------------
+ * SegmentedHeader is the canonical tab header component.
+ * Use this for consistent tab styling across all pages.
+ * 
+ * Features:
+ * - Non-selected tabs have 4% blur effect
+ * - Active tab has full opacity and slight scale
+ * - Smooth transitions between states
+ * 
+ * DO NOT create custom tab styles in page components.
+ */
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 interface SegmentedHeaderProps {
     options: string[];
@@ -24,7 +36,8 @@ export function SegmentedHeader({ options, activeIndex, onChange, className }: S
                                 : "text-muted-foreground font-medium opacity-40 hover:opacity-70 scale-[0.98]"
                         )}
                         style={{
-                            // Ensure font smoothing/crispness
+                            // Active tab: no blur, non-active: 4% blur (approx 0.4px)
+                            filter: isActive ? "none" : "blur(0.4px)",
                             textShadow: isActive ? "0 0 20px rgba(255,255,255,0.3)" : "none"
                         }}
                     >

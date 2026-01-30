@@ -1,6 +1,17 @@
+<<<<<<< HEAD
 import { Button } from "@/components/ui";
+=======
+/**
+ * QuickActionsRow - Chat contextual actions for bottom navigation
+ * 
+ * Uses SSOT NavActionButton for guaranteed touch event handling.
+ * This component renders the contextual action bar that appears
+ * when viewing a chat conversation.
+ */
+
+import { NavActionButton } from "@/components/ui/ssot";
+>>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { BottomNavRow } from "@/components/BottomNavRow";
-import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 
 export interface ChatAction {
@@ -18,29 +29,20 @@ interface QuickActionsRowProps {
 export function QuickActionsRow({
     actions = [],
 }: QuickActionsRowProps) {
+    console.log('[QuickActionsRow] Rendering with', actions.length, 'actions');
+    
     return (
         <BottomNavRow>
-            {actions.map((action) => {
-                const Icon = action.icon;
-                return (
-                    <Button
-                        key={action.id}
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                            "flex-col h-auto py-2 px-3 gap-1 hover:bg-transparent min-w-[70px] snap-center shrink-0 transition-all duration-300 relative text-muted-foreground opacity-70 hover:opacity-100"
-                        )}
-                        onClick={action.onClick}
-                    >
-                        <div className="relative">
-                            <Icon className={cn("w-6 h-6 mb-0.5", action.highlight ? "text-blue-500" : "text-amber-500")} />
-                        </div>
-                        <span className="text-[10px] font-medium font-normal truncate max-w-[80px]">
-                            {action.label}
-                        </span>
-                    </Button>
-                )
-            })}
+            {actions.map((action) => (
+                <NavActionButton
+                    key={action.id}
+                    id={action.id}
+                    label={action.label}
+                    icon={action.icon}
+                    onAction={action.onClick}
+                    highlight={action.highlight}
+                />
+            ))}
         </BottomNavRow>
     );
 }

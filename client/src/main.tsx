@@ -77,6 +77,10 @@ createRoot(document.getElementById("root")!).render(
   </trpc.Provider>
 );
 
+// Current app version (baked in at build time)
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || '0.0.0';
+console.log('[App] Starting version:', APP_VERSION);
+
 // Register service worker for PWA
 if (import.meta.env.PROD) {
   registerServiceWorker();

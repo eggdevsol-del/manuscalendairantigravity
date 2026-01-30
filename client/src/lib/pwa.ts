@@ -2,28 +2,33 @@ import { registerSW } from 'virtual:pwa-register';
 
 /**
  * Register service worker for PWA functionality
+ * 
+ * This implementation uses aggressive update checking to ensure
+ * users always get the latest version of the app.
  */
 export async function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
+    console.log('[PWA] Registering service worker...');
+    
     const updateSW = registerSW({
       immediate: true,
       onNeedRefresh() {
-        console.log('[PWA] New content available, reloading in 2 seconds...');
-        // Give user brief moment to see the message, then reload
-        setTimeout(() => {
-          updateSW(true);
-        }, 2000);
+        console.log('[PWA] New content available, refreshing...');
+        // Refresh to get new content
+        updateSW(true);
       },
       onOfflineReady() {
         console.log('[PWA] App ready to work offline');
       },
       onRegistered(registration) {
-        console.log('[PWA] Service Worker registered');
-        // Check for updates every 60 seconds
+        console.log('[PWA] Service Worker registered successfully');
+        
         if (registration) {
+          // Check for updates every 60 seconds
           setInterval(() => {
-            console.log('[PWA] Checking for updates...');
-            registration.update();
+            registration.update().catch(err => {
+              console.error('[PWA] Update check failed:', err);
+            });
           }, 60000);
         }
       },
@@ -31,8 +36,60 @@ export async function registerServiceWorker() {
         console.error('[PWA] SW registration error:', error);
       },
     });
+
     return updateSW;
   }
+}
+
+/**
+ * Force clear all caches and reload
+ * Call this when you need to force an update
+ */
+export async function forceUpdate(): Promise<void> {
+  console.log('[PWA] Force updating app...');
+  
+  // Clear all caches
+  if ('caches' in window) {
+    const cacheNames = await caches.keys();
+    console.log('[PWA] Clearing caches:', cacheNames);
+    await Promise.all(
+      cacheNames.map(cacheName => caches.delete(cacheName))
+    );
+  }
+  
+  // Unregister all service workers
+  if ('serviceWorker' in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    console.log('[PWA] Unregistering service workers:', registrations.length);
+    await Promise.all(
+      registrations.map(registration => registration.unregister())
+    );
+  }
+  
+  // Reload the page
+  console.log('[PWA] Reloading page...');
+  window.location.reload();
+}
+
+/**
+ * Get current service worker version
+ */
+export async function getServiceWorkerVersion(): Promise<string | null> {
+  if (!('serviceWorker' in navigator)) return null;
+  
+  const registration = await navigator.serviceWorker.ready;
+  if (!registration.active) return null;
+  
+  return new Promise((resolve) => {
+    const messageChannel = new MessageChannel();
+    messageChannel.port1.onmessage = (event) => {
+      resolve(event.data?.version || null);
+    };
+    registration.active.postMessage({ type: 'GET_VERSION' }, [messageChannel.port2]);
+    
+    // Timeout after 1 second
+    setTimeout(() => resolve(null), 1000);
+  });
 }
 
 /**

@@ -64,6 +64,20 @@
       "when": 1768270689007,
       "tag": "0008_classy_pyro",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1769089969180,
+      "tag": "0009_revenue_protection_algorithm",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1769308470781,
+      "tag": "0010_consultation_funnel_system",
+      "breakpoints": true
     }
   ]
 }

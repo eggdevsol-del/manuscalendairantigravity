@@ -2,6 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import { trpc } from "@/lib/trpc";
 import { ChevronLeft, FileText, Shield } from "lucide-react";
+import { LoadingState } from "@/components/ui/ssot";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 
@@ -45,11 +46,7 @@ export default function Policies() {
   );
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-primary text-lg">Loading...</div>
-      </div>
-    );
+    return <LoadingState message="Loading..." fullScreen />;
   }
 
   // Policy detail view
@@ -75,7 +72,7 @@ export default function Policies() {
         <main className="flex-1 px-4 py-4 mobile-scroll overflow-y-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-pulse text-primary">Loading policy...</div>
+              <LoadingState message="Loading policy..." />
             </div>
           ) : !policy || !policy.enabled ? (
             <Card className="p-8 text-center">

@@ -33,7 +33,42 @@ export async function initializeDatabase() {
     const tablesExist = (tables as any)[0].count > 0;
     
     if (tablesExist) {
-      console.log('[DB Init] Tables already exist, skipping initialization');
+      console.log('[DB Init] Tables already exist, checking for new migrations...');
+      
+      // Check for promotion_templates table (new in 0012)
+      const [promoTable] = await connection.query(
+        "SELECT COUNT(*) as count FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'promotion_templates'"
+      );
+      
+      if ((promoTable as any)[0].count === 0) {
+        console.log('[DB Init] Running promotions system migration...');
+        
+        // Find drizzle path
+        let drizzlePath = path.join(__dirname, '..', 'drizzle');
+        if (__dirname.includes('/dist')) {
+          drizzlePath = path.join(__dirname, 'drizzle');
+        }
+        
+        const promoMigration = path.join(drizzlePath, '0012_promotions_system.sql');
+        if (fs.existsSync(promoMigration)) {
+          const sql = fs.readFileSync(promoMigration, 'utf-8');
+          const statements = sql.split(';').filter(s => s.trim().length > 0);
+          
+          for (const statement of statements) {
+            if (statement.trim()) {
+              try {
+                await connection.query(statement);
+              } catch (error: any) {
+                if (!error.message.includes('already exists')) {
+                  console.error('[DB Init] Migration error:', error.message);
+                }
+              }
+            }
+          }
+          console.log('[DB Init] ✓ Promotions system migration completed');
+        }
+      }
+      
       await connection.end();
       return;
     }

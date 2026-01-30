@@ -1,14 +1,42 @@
-
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button, Dialog, DialogTitle, Label, SegmentedHeader, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, TaskCard } from "@/components/ui";
 import { useDashboardTasks } from "@/features/dashboard/useDashboardTasks";
+<<<<<<< HEAD
 import { CHALLENGE_TEMPLATES, DashboardTask } from "@/features/dashboard/DashboardTaskRegister";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X, Check, Clock, ExternalLink, MessageSquare, Mail, Play, Plus, Trash2, Smartphone, Monitor } from "lucide-react";
 import { Card } from "@/components/ui/card"; // For Challenges only
+=======
+import { useBusinessTasks, useWeeklySnapshot, useDashboardSettings, type BusinessTask as ServerBusinessTask } from "@/features/dashboard/useBusinessTasks";
+import { CHALLENGE_TEMPLATES } from "@/features/dashboard/DashboardTaskRegister";
+import { DashboardTask, ChallengeTemplate } from "@/features/dashboard/types";
+import { PageShell, PageHeader, GlassSheet, HalfSheet, FullScreenSheet, WeeklySnapshotModal } from "@/components/ui/ssot";
+import { X, Check, Clock, ExternalLink, MessageSquare, Mail, Play, Trash2, Smartphone, Monitor, ChevronRight, Settings, BarChart3 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+>>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 
 // SSOT Components
+
+// --- Types ---
+
+// Extended task type that can hold either legacy or server task data
+interface ExtendedTask {
+    id: string;
+    title: string;
+    context?: string;
+    priority: 'high' | 'medium' | 'low';
+    status: 'pending' | 'completed' | 'dismissed' | 'snoozed';
+    actionType: 'sms' | 'email' | 'social' | 'internal' | 'in_app' | 'link' | 'none';
+    actionPayload?: string;
+    domain: 'business' | 'social' | 'personal';
+    _serverTask?: ServerBusinessTask;
+}
 
 // --- Components ---
 
@@ -34,37 +62,170 @@ function EmptyState({ category, onAction }: { category: string; onAction?: () =>
     );
 }
 
+function LoadingState() {
+    return (
+        <div className="flex flex-col items-center justify-center p-8 text-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+            <p className="text-muted-foreground/50 text-sm">Loading tasks...</p>
+        </div>
+    );
+}
+
 const TITLES = ["Business", "Social", "Personal"];
 
 export default function Dashboard() {
+    const [, setLocation] = useLocation();
     const [activeIndex, setActiveIndex] = useState(0);
     const selectedDate = new Date();
 
-    // Feature Hook
-    const { tasks: allTasks, actions, stats, config } = useDashboardTasks();
+    // Legacy Feature Hook (for Social and Personal)
+    const { tasks: legacyTasks, actions: legacyActions, stats, config } = useDashboardTasks();
+
+    // New Business Tasks Hook (Revenue Protection Algorithm)
+    const { 
+        tasks: businessTasks, 
+        isLoading: businessLoading, 
+        settings: businessSettings,
+        actions: businessActions,
+        completingTask 
+    } = useBusinessTasks();
+
+    // Weekly Snapshot Hook
+    const { shouldShow: showSnapshot, snapshot, dismiss: dismissSnapshot } = useWeeklySnapshot();
+
+    // Dashboard Settings Hook
+    const { settings: dashboardSettings, updateSettings, isUpdating } = useDashboardSettings();
+
 
     // UI State
-    const [selectedTask, setSelectedTask] = useState<DashboardTask | null>(null);
+    const [selectedTask, setSelectedTask] = useState<ExtendedTask | null>(null);
     const [showTaskSheet, setShowTaskSheet] = useState(false);
     const [showChallengeSheet, setShowChallengeSheet] = useState(false);
     const [showSettingsSheet, setShowSettingsSheet] = useState(false);
+    const [showSnapshotModal, setShowSnapshotModal] = useState(false);
+    const [taskStartTime, setTaskStartTime] = useState<string | null>(null);
+
+    // Track if snapshot was already shown in this session
+    const snapshotShownThisSession = useRef(false);
+
+    // Show weekly snapshot on mount if needed (only once per session)
+    useEffect(() => {
+        if (showSnapshot && !snapshotShownThisSession.current) {
+            snapshotShownThisSession.current = true;
+            setShowSnapshotModal(true);
+        }
+    }, [showSnapshot]);
 
     // Derived State
     const activeCategory = TITLES[activeIndex].toLowerCase() as 'business' | 'social' | 'personal';
-    const currentTasks = allTasks[activeCategory] || [];
+    
+    // Transform legacy task to ExtendedTask
+    const transformLegacyTask = (task: DashboardTask): ExtendedTask => ({
+        id: task.id,
+        title: task.title,
+        context: task.context,
+        priority: task.priority,
+        status: task.status,
+        actionType: task.actionType,
+        actionPayload: task.actionPayload,
+        domain: task.domain
+    });
+
+    // Get current tasks based on category
+    const getCurrentTasks = (): ExtendedTask[] => {
+        if (activeCategory === 'business') {
+            // Use server-generated business tasks
+            return businessTasks.map(task => ({
+                id: task.id,
+                title: task.title,
+                context: task.context,
+                priority: task.priority,
+                status: task.status as ExtendedTask['status'],
+                actionType: task.actionType as ExtendedTask['actionType'],
+                domain: 'business' as const,
+                _serverTask: task._original
+            } as ExtendedTask));
+        }
+        // Use legacy tasks for social and personal
+        const tasks = legacyTasks[activeCategory] || [];
+        return tasks.map(transformLegacyTask);
+    };
+
+    const currentTasks = getCurrentTasks();
 
     // Handlers
-    const handleTaskClick = (task: DashboardTask) => {
+    const handleTaskClick = (task: ExtendedTask) => {
         setSelectedTask(task);
+        
+        // Start tracking time for business tasks
+        if (task._serverTask) {
+            const startTime = businessActions.startTask(task._serverTask);
+            setTaskStartTime(startTime);
+        }
+        
         setShowTaskSheet(true);
     };
 
-    const executeAction = (task: DashboardTask) => {
-        const { actionType, actionPayload } = task;
-        if (actionType === 'email' && actionPayload) return actions.handleComms.email(actionPayload);
-        if (actionType === 'sms' && actionPayload) return actions.handleComms.sms(actionPayload);
-        if (actionType === 'social' && actionPayload) return window.open(actionPayload, '_blank');
-        if (actionPayload) console.log("Internal Nav:", actionPayload);
+    const executeAction = async (task: ExtendedTask) => {
+        const serverTask = task._serverTask;
+        
+        if (serverTask) {
+            // Handle server-generated business tasks
+            switch (serverTask.actionType) {
+                case 'sms':
+                    if (serverTask.smsNumber && serverTask.smsBody) {
+                        businessActions.openSms(serverTask);
+                    }
+                    break;
+                case 'email':
+                    if (serverTask.emailRecipient) {
+                        businessActions.openEmail(serverTask, businessSettings.preferredEmailClient);
+                    }
+                    break;
+                case 'in_app':
+                    if (serverTask.deepLink) {
+                        businessActions.navigateToTask(serverTask, setLocation);
+                    }
+                    break;
+                case 'external':
+                    // Handle external links if needed
+                    break;
+            }
+        } else {
+            // Handle legacy tasks
+            const { actionType, actionPayload } = task;
+            if (actionType === 'email' && actionPayload) return legacyActions.handleComms.email(actionPayload);
+            if (actionType === 'sms' && actionPayload) return legacyActions.handleComms.sms(actionPayload);
+            if (actionType === 'social' && actionPayload) return window.open(actionPayload, '_blank');
+            if (actionPayload) console.log("Internal Nav:", actionPayload);
+        }
+    };
+
+    const handleMarkDone = async (task: ExtendedTask) => {
+        if (task._serverTask) {
+            // Complete server task with tracking
+            await businessActions.completeTask(task._serverTask, 'manual');
+        } else {
+            // Legacy task completion
+            legacyActions.markDone(task.id);
+        }
+        setShowTaskSheet(false);
+    };
+
+    const handleSnooze = (task: ExtendedTask) => {
+        if (!task._serverTask) {
+            legacyActions.snooze(task.id);
+        }
+        // Note: Server tasks don't have snooze - they regenerate based on data
+        setShowTaskSheet(false);
+    };
+
+    const handleDismiss = (task: ExtendedTask) => {
+        if (!task._serverTask) {
+            legacyActions.dismiss(task.id);
+        }
+        // Note: Server tasks don't have dismiss - they regenerate based on data
+        setShowTaskSheet(false);
     };
 
     // Framer motion variants
@@ -86,34 +247,22 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(88,28,135,0.4),rgba(2,6,23,1)_60%)]">
-
-            {/* 1. Page Header */}
-            <header className="px-6 py-4 z-10 shrink-0 flex justify-between items-center relative mt-2">
-                <h1 className="text-xl font-bold text-white tracking-wide">Dashboard</h1>
-                <div className="flex items-center gap-3">
-                    {/* Settings Trigger - Matching reference right icon */}
-                    <Button variant="ghost" size="icon" onClick={() => setShowSettingsSheet(true)} className="text-white/50 hover:text-white">
-                        <Smartphone className="w-5 h-5" />
-                    </Button>
-                </div>
-            </header>
+        <PageShell>
+            {/* 1. Page Header - Left aligned, no icons */}
+            <PageHeader title="Dashboard" />
 
             {/* 2. Top Context Area (Date) */}
-            <div className="px-8 pt-6 pb-8 z-10 shrink-0 flex flex-col justify-start h-[25vh] relative text-left">
-                <p className="text-6xl font-extralight text-white/90 tracking-tight leading-none mb-1">
+            <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
+                <p className="text-4xl font-light text-foreground/90 tracking-tight">
                     {selectedDate.toLocaleDateString("en-US", { weekday: "long" })}
                 </p>
-                <p className="text-white/50 text-lg font-light tracking-wide pl-1">
+                <p className="text-muted-foreground text-lg font-medium mt-1">
                     {selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
                 </p>
             </div>
 
             {/* 3. Sheet Container (Matched to Calendar.tsx) */}
-            <div className="flex-1 z-20 flex flex-col bg-[#0f1323]/80 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative">
-
-                {/* Top Edge Highlight */}
-                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none" />
+            <GlassSheet className="bg-white/5">
 
                 {/* Sheet Header Tabs */}
                 <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5">
@@ -151,183 +300,291 @@ export default function Dashboard() {
                             className="absolute top-0 left-0 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y"
                         >
                             <div className="space-y-3 pb-32 max-w-lg mx-auto">
-                                {currentTasks.length > 0 ? (
+                                {/* Loading state for business tasks */}
+                                {activeCategory === 'business' && businessLoading ? (
+                                    <LoadingState />
+                                ) : currentTasks.length > 0 ? (
                                     currentTasks.map(task => (
                                         <TaskCard
                                             key={task.id}
                                             title={task.title}
                                             context={task.context}
-                                            priority={task.priority as 'high' | 'medium' | 'low'}
+                                            priority={task.priority}
                                             status={task.status}
                                             actionType={task.actionType as any}
                                             onClick={() => handleTaskClick(task)}
                                         />
                                     ))
                                 ) : (
-                                    <EmptyState category={TITLES[activeIndex]} onAction={activeCategory === 'personal' ? () => setShowChallengeSheet(true) : undefined} />
+                                    <EmptyState 
+                                        category={TITLES[activeIndex]} 
+                                        onAction={activeCategory === 'personal' ? () => setShowChallengeSheet(true) : undefined} 
+                                    />
+                                )}
+
+                                {/* Settings button at bottom of business tasks */}
+                                {activeCategory === 'business' && !businessLoading && (
+                                    <div className="pt-4 flex justify-center gap-3">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-muted-foreground hover:text-foreground"
+                                            onClick={() => setShowSnapshotModal(true)}
+                                        >
+                                            <BarChart3 className="w-4 h-4 mr-2" />
+                                            Weekly Stats
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-muted-foreground hover:text-foreground"
+                                            onClick={() => setShowSettingsSheet(true)}
+                                        >
+                                            <Settings className="w-4 h-4 mr-2" />
+                                            Settings
+                                        </Button>
+                                    </div>
                                 )}
                             </div>
                         </motion.div>
                     </AnimatePresence>
                 </div>
-            </div>
+            </GlassSheet>
 
 
-            {/* --- ACTION SHEET --- */}
-            <Dialog open={showTaskSheet} onOpenChange={setShowTaskSheet}>
-                <DialogPrimitive.Portal>
-                    <DialogPrimitive.Overlay className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-                    <DialogPrimitive.Content className="fixed inset-x-0 bottom-0 z-[101] w-full bg-background/90 backdrop-blur-xl border-t border-white/10 rounded-t-[2rem] p-6 pb-12 shadow-2xl space-y-6 outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom duration-300">
-                        <div className="mx-auto w-12 h-1.5 rounded-full bg-white/20 mb-2" />
-
-                        {selectedTask && (
-                            <>
-                                <div className="space-y-1">
-                                    <DialogTitle className="text-2xl font-bold">{selectedTask.title}</DialogTitle>
-                                    <p className="text-muted-foreground">{selectedTask.context}</p>
-                                </div>
-
-                                <div className="grid gap-3">
-                                    {/* Primary Action */}
-                                    {selectedTask.actionType !== 'none' && (
-                                        <Button
-                                            size="lg"
-                                            className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-primary/20"
-                                            onClick={() => executeAction(selectedTask)}
-                                        >
-                                            {selectedTask.actionType === 'sms' && <MessageSquare className="mr-2 w-5 h-5" />}
-                                            {selectedTask.actionType === 'email' && <Mail className="mr-2 w-5 h-5" />}
-                                            {selectedTask.actionType === 'social' && <ExternalLink className="mr-2 w-5 h-5" />}
-                                            {selectedTask.actionType === 'internal' && <Play className="mr-2 w-5 h-5" />}
-                                            Execute Action
-                                        </Button>
-                                    )}
-
-                                    {/* Task Management Actions */}
-                                    <Button
-                                        variant="secondary"
-                                        size="lg"
-                                        className="w-full h-14 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5"
-                                        onClick={() => { actions.markDone(selectedTask.id); setShowTaskSheet(false); }}
-                                    >
-                                        <Check className="mr-2 w-5 h-5 text-green-500" />
-                                        Mark Completed
-                                    </Button>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <Button
-                                            variant="outline"
-                                            className="h-12 rounded-xl border-white/10 bg-transparent hover:bg-white/5"
-                                            onClick={() => { actions.snooze(selectedTask.id); setShowTaskSheet(false); }}
-                                        >
-                                            <Clock className="mr-2 w-4 h-4" />
-                                            Snooze 24h
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            className="h-12 rounded-xl border-white/10 bg-transparent hover:bg-white/5 text-muted-foreground"
-                                            onClick={() => { actions.dismiss(selectedTask.id); setShowTaskSheet(false); }}
-                                        >
-                                            <X className="mr-2 w-4 h-4" />
-                                            Dismiss
-                                        </Button>
-                                    </div>
-
-                                    {/* Stop Challenge (Personal Only) */}
-                                    {selectedTask.domain === 'personal' && stats.activeChallengeId && (
-                                        <Button
-                                            variant="ghost"
-                                            className="w-full h-12 text-red-500 hover:text-red-400 hover:bg-red-500/10"
-                                            onClick={() => { actions.stopChallenge(); setShowTaskSheet(false); }}
-                                        >
-                                            <Trash2 className="mr-2 w-4 h-4" />
-                                            Stop Challenge
-                                        </Button>
-                                    )}
-                                </div>
-                            </>
+            {/* --- TASK SHEET (HalfSheet) --- */}
+            <HalfSheet
+                open={showTaskSheet}
+                onClose={() => setShowTaskSheet(false)}
+                title={selectedTask?.title || "Task"}
+                subtitle={selectedTask?.context}
+            >
+                {selectedTask && (
+                    <div className="grid gap-3">
+                        {/* Primary Action */}
+                        {selectedTask.actionType !== 'none' && (
+                            <Button
+                                size="lg"
+                                className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-primary/20"
+                                onClick={() => executeAction(selectedTask)}
+                            >
+                                {selectedTask.actionType === 'sms' && <MessageSquare className="mr-2 w-5 h-5" />}
+                                {selectedTask.actionType === 'email' && <Mail className="mr-2 w-5 h-5" />}
+                                {selectedTask.actionType === 'social' && <ExternalLink className="mr-2 w-5 h-5" />}
+                                {(selectedTask.actionType === 'internal' || selectedTask.actionType === 'in_app') && <Play className="mr-2 w-5 h-5" />}
+                                {selectedTask._serverTask?.actionType === 'sms' ? 'Send SMS' : 
+                                 selectedTask._serverTask?.actionType === 'email' ? 'Send Email' :
+                                 selectedTask._serverTask?.actionType === 'in_app' ? 'Open in App' :
+                                 'Execute Action'}
+                            </Button>
                         )}
-                    </DialogPrimitive.Content>
-                </DialogPrimitive.Portal>
-            </Dialog>
 
-            {/* --- CHALLENGE SHEET --- */}
-            <Dialog open={showChallengeSheet} onOpenChange={setShowChallengeSheet}>
-                <DialogPrimitive.Portal>
-                    <DialogPrimitive.Overlay className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-                    <DialogPrimitive.Content className="fixed inset-x-0 bottom-0 z-[101] max-h-[85vh] w-full bg-slate-950/95 backdrop-blur-xl border-t border-white/10 rounded-t-[2rem] p-0 shadow-2xl overflow-hidden flex flex-col outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom duration-300">
-                        <div className="px-6 py-4 border-b border-white/5 shrink-0">
-                            <div className="mx-auto w-12 h-1.5 rounded-full bg-white/20 mb-4" />
-                            <DialogTitle className="text-xl font-bold">Select a Challenge</DialogTitle>
-                            <p className="text-sm text-muted-foreground">Commit to a new personal growth goal.</p>
-                        </div>
+                        {/* Task Management Actions */}
+                        <Button
+                            variant="secondary"
+                            size="lg"
+                            className="w-full h-14 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5"
+                            onClick={() => handleMarkDone(selectedTask)}
+                            disabled={completingTask === `${selectedTask._serverTask?.taskType}-${selectedTask._serverTask?.relatedEntityId || 'none'}`}
+                        >
+                            <Check className="mr-2 w-5 h-5 text-green-500" />
+                            Mark Completed
+                        </Button>
 
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                            {CHALLENGE_TEMPLATES.map(template => (
-                                <Card
-                                    key={template.id}
-                                    onClick={() => {
-                                        actions.startChallenge(template);
-                                        setShowChallengeSheet(false);
-                                    }}
-                                    className="p-4 border-white/10 bg-white/5 hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer rounded-xl flex items-center justify-between group"
+                        {/* Only show snooze/dismiss for non-server tasks */}
+                        {!selectedTask._serverTask && (
+                            <div className="grid grid-cols-2 gap-3">
+                                <Button
+                                    variant="outline"
+                                    className="h-12 rounded-xl border-white/10 bg-transparent hover:bg-white/5"
+                                    onClick={() => handleSnooze(selectedTask)}
                                 >
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="font-bold text-lg">{template.title}</h3>
-                                            <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/20 text-primary px-2 py-0.5 rounded-full">
-                                                {template.durationDays} Days
-                                            </span>
-                                        </div>
-                                        <p className="text-sm text-muted-foreground">{template.description}</p>
-                                    </div>
-                                    <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-muted-foreground group-hover:border-primary group-hover:text-primary transition-colors">
-                                        <Plus className="w-4 h-4" />
-                                    </div>
-                                </Card>
-                            ))}
-                        </div>
-                    </DialogPrimitive.Content>
-                </DialogPrimitive.Portal>
-            </Dialog>
-
-            {/* --- SETTINGS SHEET --- */}
-            <Dialog open={showSettingsSheet} onOpenChange={setShowSettingsSheet}>
-                <DialogPrimitive.Portal>
-                    <DialogPrimitive.Overlay className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-                    <DialogPrimitive.Content className="fixed inset-x-0 bottom-0 z-[101] w-full bg-background/90 backdrop-blur-xl border-t border-white/10 rounded-t-[2rem] p-6 pb-12 shadow-2xl space-y-6 outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom duration-300">
-                        <div className="mx-auto w-12 h-1.5 rounded-full bg-white/20 mb-2" />
-                        <div className="space-y-1">
-                            <DialogTitle className="text-2xl font-bold">Preferences</DialogTitle>
-                            <p className="text-muted-foreground">Configure your dashboard experience.</p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label>Device Platform (For SMS/Sharing)</Label>
-                                <Select value={config.comms.platform} onValueChange={(val: any) => actions.setCommsPlatform(val)}>
-                                    <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ios">
-                                            <div className="flex items-center gap-2"><Smartphone className="w-4 h-4" /> iOS (iPhone)</div>
-                                        </SelectItem>
-                                        <SelectItem value="android">
-                                            <div className="flex items-center gap-2"><Smartphone className="w-4 h-4" /> Android</div>
-                                        </SelectItem>
-                                        <SelectItem value="desktop">
-                                            <div className="flex items-center gap-2"><Monitor className="w-4 h-4" /> Desktop / Web</div>
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                    <Clock className="mr-2 w-4 h-4" />
+                                    Snooze 24h
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="h-12 rounded-xl border-white/10 bg-transparent hover:bg-white/5 text-muted-foreground"
+                                    onClick={() => handleDismiss(selectedTask)}
+                                >
+                                    <X className="mr-2 w-4 h-4" />
+                                    Dismiss
+                                </Button>
                             </div>
-                        </div>
-                    </DialogPrimitive.Content>
-                </DialogPrimitive.Portal>
-            </Dialog>
+                        )}
 
-        </div>
+                        {/* Stop Challenge (Personal Only) */}
+                        {selectedTask.domain === 'personal' && stats.activeChallengeId && (
+                            <Button
+                                variant="ghost"
+                                className="w-full h-12 text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                                onClick={() => { legacyActions.stopChallenge(); setShowTaskSheet(false); }}
+                            >
+                                <Trash2 className="mr-2 w-4 h-4" />
+                                Stop Challenge
+                            </Button>
+                        )}
+                    </div>
+                )}
+            </HalfSheet>
+
+            {/* --- CHALLENGE SHEET (FullScreenSheet) --- */}
+            <FullScreenSheet
+                open={showChallengeSheet}
+                onClose={() => setShowChallengeSheet(false)}
+                title="Challenges"
+                contextTitle="Select a Challenge"
+                contextSubtitle="Commit to a new personal growth goal."
+            >
+                <div className="space-y-3">
+                    {CHALLENGE_TEMPLATES.map((template: ChallengeTemplate) => (
+                        <Card
+                            key={template.id}
+                            onClick={() => {
+                                legacyActions.startChallenge(template);
+                                setShowChallengeSheet(false);
+                            }}
+                            className="p-4 border-white/10 bg-white/5 hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer rounded-2xl flex items-center justify-between group"
+                        >
+                            <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="font-bold text-lg">{template.title}</h3>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                                        {template.durationDays} Days
+                                    </span>
+                                </div>
+                                <p className="text-sm text-muted-foreground">{template.description}</p>
+                            </div>
+                            <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-muted-foreground group-hover:border-primary group-hover:text-primary transition-colors">
+                                <ChevronRight className="w-4 h-4" />
+                            </div>
+                        </Card>
+                    ))}
+                </div>
+            </FullScreenSheet>
+
+            {/* --- SETTINGS SHEET (HalfSheet) --- */}
+            <HalfSheet
+                open={showSettingsSheet}
+                onClose={() => setShowSettingsSheet(false)}
+                title="Dashboard Settings"
+                subtitle="Configure your revenue protection dashboard."
+            >
+                <div className="space-y-6">
+                    {/* Max Visible Tasks */}
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <Label>Daily Task Limit</Label>
+                            <span className="text-sm font-medium">{dashboardSettings.maxVisibleTasks}</span>
+                        </div>
+                        <Slider
+                            value={[dashboardSettings.maxVisibleTasks]}
+                            onValueChange={([value]) => updateSettings({ maxVisibleTasks: value })}
+                            min={4}
+                            max={15}
+                            step={1}
+                            className="w-full"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Number of tasks shown per day (4-15)
+                        </p>
+                    </div>
+
+                    {/* Goal Advanced Booking */}
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <Label>Booking Goal</Label>
+                            <span className="text-sm font-medium">{dashboardSettings.goalAdvancedBookingMonths} months</span>
+                        </div>
+                        <Slider
+                            value={[dashboardSettings.goalAdvancedBookingMonths]}
+                            onValueChange={([value]) => updateSettings({ goalAdvancedBookingMonths: value })}
+                            min={1}
+                            max={12}
+                            step={1}
+                            className="w-full"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            How far in advance you want to be booked
+                        </p>
+                    </div>
+
+                    {/* Email Client */}
+                    <div className="space-y-2">
+                        <Label>Preferred Email Client</Label>
+                        <Select 
+                            value={dashboardSettings.preferredEmailClient} 
+                            onValueChange={(val: 'default' | 'gmail' | 'outlook' | 'apple_mail') => updateSettings({ preferredEmailClient: val })}
+                        >
+                            <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="default">
+                                    <div className="flex items-center gap-2"><Mail className="w-4 h-4" /> Default (mailto:)</div>
+                                </SelectItem>
+                                <SelectItem value="gmail">
+                                    <div className="flex items-center gap-2"><Mail className="w-4 h-4" /> Gmail</div>
+                                </SelectItem>
+                                <SelectItem value="outlook">
+                                    <div className="flex items-center gap-2"><Mail className="w-4 h-4" /> Outlook</div>
+                                </SelectItem>
+                                <SelectItem value="apple_mail">
+                                    <div className="flex items-center gap-2"><Mail className="w-4 h-4" /> Apple Mail</div>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Weekly Snapshot Toggle */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <Label>Weekly Snapshot</Label>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Show performance summary every Monday
+                            </p>
+                        </div>
+                        <Switch
+                            checked={dashboardSettings.showWeeklySnapshot}
+                            onCheckedChange={(checked) => updateSettings({ showWeeklySnapshot: checked })}
+                        />
+                    </div>
+
+                    {/* Device Platform (Legacy) */}
+                    <div className="space-y-2">
+                        <Label>Device Platform (For SMS)</Label>
+                        <Select value={config.comms.platform} onValueChange={(val: 'ios' | 'android' | 'desktop') => legacyActions.setCommsPlatform(val)}>
+                            <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ios">
+                                    <div className="flex items-center gap-2"><Smartphone className="w-4 h-4" /> iOS (iPhone)</div>
+                                </SelectItem>
+                                <SelectItem value="android">
+                                    <div className="flex items-center gap-2"><Smartphone className="w-4 h-4" /> Android</div>
+                                </SelectItem>
+                                <SelectItem value="desktop">
+                                    <div className="flex items-center gap-2"><Monitor className="w-4 h-4" /> Desktop / Web</div>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+            </HalfSheet>
+
+            {/* --- WEEKLY SNAPSHOT MODAL --- */}
+            <WeeklySnapshotModal
+                open={showSnapshotModal}
+                onClose={() => {
+                    setShowSnapshotModal(false);
+                    if (showSnapshot) {
+                        dismissSnapshot();
+                    }
+                }}
+                data={snapshot}
+            />
+
+        </PageShell>
     );
 }
-

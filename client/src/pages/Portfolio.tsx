@@ -3,8 +3,16 @@ import { useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useRegisterBottomNavRow } from "@/contexts/BottomNavContext";
 import { BottomNavRow } from "@/components/BottomNavRow";
+<<<<<<< HEAD
 import { Button, Card, CardContent } from "@/components/ui";
 import { Heart, Trash2, Upload } from "lucide-react";
+=======
+import { Card, CardContent } from "@/components/ui/card";
+import { Heart, Trash2, Upload, Image } from "lucide-react";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
+import { Button } from "@/components/ui/button";
+import { LoadingState, PageShell, GlassSheet, PageHeader } from "@/components/ui/ssot";
+>>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 
 export default function Portfolio() {
     const { user } = useAuth();
@@ -33,18 +41,13 @@ export default function Portfolio() {
     const toggleLikeMutation = trpc.portfolio.toggleLike.useMutation();
 
     if (isLoading) {
-        return <div className="p-10 text-center animate-pulse">Loading gallery...</div>;
+        return <LoadingState message="Loading gallery..." fullScreen />;
     }
 
     return (
-        <div className="fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden">
-
+        <PageShell>
             {/* 1. Page Header (Fixed) */}
-            <header className="px-4 py-4 z-10 shrink-0 flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-foreground">
-                    {isArtist ? "My Portfolio" : "Explore"}
-                </h1>
-            </header>
+            <PageHeader title={isArtist ? "My Portfolio" : "Explore"} />
 
             {/* 2. Top Context Area (Non-interactive) */}
             <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
@@ -57,10 +60,7 @@ export default function Portfolio() {
             </div>
 
             {/* 3. Sheet Container */}
-            <div className="flex-1 z-20 flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative">
-
-                {/* Top Edge Highlight */}
-                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none" />
+            <GlassSheet className="bg-white/5">
 
                 {/* Optional Sheet Header / Actions Area */}
                 <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5 flex justify-end">
@@ -101,13 +101,23 @@ export default function Portfolio() {
                         ))}
 
                         {portfolioItems?.length === 0 && (
-                            <div className="col-span-2 py-10 text-center text-muted-foreground">
-                                {isArtist ? "No images yet. Upload some work!" : "No portfolio items found."}
+                            <div className="col-span-2">
+                                <Empty className="py-10">
+                                    <EmptyHeader>
+                                        <EmptyMedia variant="icon" className="w-16 h-16 rounded-full bg-white/5">
+                                            <Image className="w-8 h-8" />
+                                        </EmptyMedia>
+                                        <EmptyTitle>{isArtist ? "No images yet" : "No portfolio items"}</EmptyTitle>
+                                        <EmptyDescription>
+                                            {isArtist ? "Upload some work to showcase your talent!" : "Check back later for new work."}
+                                        </EmptyDescription>
+                                    </EmptyHeader>
+                                </Empty>
                             </div>
                         )}
                     </div>
                 </div>
-            </div>
-        </div>
+            </GlassSheet>
+        </PageShell>
     );
 }

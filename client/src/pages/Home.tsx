@@ -2,6 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { Calendar, MessageCircle, Sparkles, Users } from "lucide-react";
+import { LoadingState } from "@/components/ui/ssot";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { APP_VERSION } from "@/version";
@@ -13,11 +14,7 @@ export default function Home() {
   // TEMPORARY: Authentication disabled - no automatic redirects
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/10">
-        <div className="animate-pulse text-primary text-lg">Loading...</div>
-      </div>
-    );
+    return <LoadingState message="Loading..." fullScreen />;
   }
 
   return (

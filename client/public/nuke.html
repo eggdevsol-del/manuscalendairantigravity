@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Updating App...</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+    }
+    .container {
+      text-align: center;
+      max-width: 400px;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    p {
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255,255,255,0.2);
+      border-top-color: #8b5cf6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 24px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .status {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+    }
+    .error {
+      color: #ef4444;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <h1>Updating App</h1>
+    <p>Clearing cached data and fetching the latest version...</p>
+    <div class="status" id="status">Initializing...</div>
+    <div class="error" id="error" style="display: none;"></div>
+  </div>
+
+  <script>
+    const status = document.getElementById('status');
+    const error = document.getElementById('error');
+
+    async function nukeAndReload() {
+      try {
+        // Step 1: Unregister all service workers
+        status.textContent = 'Unregistering service workers...';
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          console.log('[Nuke] Found', registrations.length, 'service workers');
+          for (const registration of registrations) {
+            await registration.unregister();
+            console.log('[Nuke] Unregistered SW:', registration.scope);
+          }
+        }
+
+        // Step 2: Clear all caches
+        status.textContent = 'Clearing all caches...';
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          console.log('[Nuke] Found', cacheNames.length, 'caches');
+          for (const cacheName of cacheNames) {
+            await caches.delete(cacheName);
+            console.log('[Nuke] Deleted cache:', cacheName);
+          }
+        }
+
+        // Step 3: Clear localStorage items related to app version
+        status.textContent = 'Clearing local storage...';
+        localStorage.removeItem('app_version');
+        
+        // Step 4: Wait a moment for everything to settle
+        status.textContent = 'Finalizing...';
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Step 5: Redirect to the app with a cache-busting parameter
+        status.textContent = 'Redirecting to updated app...';
+        const timestamp = Date.now();
+        
+        // Use replace to prevent back button from coming back here
+        window.location.replace('/?_cb=' + timestamp);
+        
+      } catch (err) {
+        console.error('[Nuke] Error:', err);
+        error.textContent = 'Error: ' + err.message + '. Please try manually clearing Safari data.';
+        error.style.display = 'block';
+        status.textContent = 'Update failed';
+      }
+    }
+
+    // Start the nuke process
+    nukeAndReload();
+  </script>
+</body>
+</html>

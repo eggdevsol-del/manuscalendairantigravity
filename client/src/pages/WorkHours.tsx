@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
 import { ChevronLeft, Clock, Plus, Save, Trash2, Layers } from "lucide-react";
+import { LoadingState } from "@/components/ui/ssot";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -218,11 +219,7 @@ export default function WorkHours() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-primary text-lg">Loading...</div>
-      </div>
-    );
+    return <LoadingState message="Loading..." fullScreen />;
   }
 
   return (

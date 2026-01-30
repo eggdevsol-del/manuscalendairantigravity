@@ -14,8 +14,11 @@ import { uploadRouter } from "./upload";
 import { bookingRouter } from "./booking";
 import { clientProfileRouter } from "./clientProfile";
 import { dashboardRouter } from "./dashboard";
+import { dashboardTasksRouter } from "./dashboardTasks";
+import { funnelRouter } from "./funnel";
 import { portfolioRouter } from "./portfolio";
 import { walletRouter } from "./wallet";
+import { promotionsRouter } from "./promotions";
 
 export const appRouter = router({
     appointments: appointmentsRouter,
@@ -26,6 +29,8 @@ export const appRouter = router({
     consultations: consultationsRouter,
     conversations: conversationsRouter,
     dashboard: dashboardRouter,
+    dashboardTasks: dashboardTasksRouter,
+    funnel: funnelRouter,
     messages: messagesRouter,
     notifications: notificationTemplatesRouter,
     policies: policiesRouter,
@@ -34,6 +39,7 @@ export const appRouter = router({
     system: systemRouter,
     upload: uploadRouter,
     wallet: walletRouter,
+    promotions: promotionsRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -304,6 +304,79 @@ export const authRouter = router({
     }),
 
   /**
+   * Check if email exists (for funnel clients)
+   */
+  checkEmailExists: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { email } = input;
+      const user = await getUserByEmail(email);
+      
+      if (!user) {
+        return { exists: false, isFunnelClient: false, name: null };
+      }
+      
+      // Check if this is a funnel client (has no password set)
+      const isFunnelClient = !user.password;
+      
+      return {
+        exists: true,
+        isFunnelClient,
+        name: user.name,
+      };
+    }),
+
+  /**
+   * Set password for funnel client (first-time account setup)
+   */
+  setPasswordForFunnelClient: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+        password: z.string().min(8, "Password must be at least 8 characters"),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { email, password } = input;
+
+      // Get user by email
+      const user = await getUserByEmail(email);
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Account not found. Please submit a consultation first.",
+        });
+      }
+
+      // Hash new password
+      const hashedPassword = await hashPassword(password);
+
+      // Update password
+      await updateUserPassword(user.id, hashedPassword);
+
+      // Update last signed in
+      await updateUserLastSignedIn(user.id);
+
+      // Generate JWT token
+      const token = generateToken({ id: user.id, email: user.email });
+
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          hasCompletedOnboarding: user.hasCompletedOnboarding,
+        },
+        token,
+      };
+    }),
+
+  /**
    * Request password reset
    */
   requestPasswordReset: publicProcedure

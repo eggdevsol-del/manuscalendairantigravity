@@ -1,5 +1,17 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+<<<<<<< HEAD
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, ModalShell, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea } from "@/components/ui";
+=======
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ModalShell } from "@/components/ui/overlays/modal-shell";
+import { LoadingState } from "@/components/ui/ssot";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+>>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { trpc } from "@/lib/trpc";
 import { Bell, ChevronLeft, Edit, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -137,11 +149,7 @@ export default function NotificationsManagement() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-primary text-lg">Loading...</div>
-      </div>
-    );
+    return <LoadingState message="Loading..." fullScreen />;
   }
 
   return (

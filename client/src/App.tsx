@@ -14,8 +14,8 @@ import Calendar from "./pages/Calendar";
 import Settings from "./pages/Settings";
 import Conversations from "./pages/Conversations";
 import Dashboard from "./pages/Dashboard";
-import Portfolio from "./pages/Portfolio";
-import Wallet from "./pages/Wallet";
+// Portfolio page removed - replaced by Promotions
+import Promotions from "./pages/Promotions";
 
 import Consultations from "./pages/Consultations";
 import Policies from "./pages/Policies";
@@ -27,28 +27,38 @@ import CompleteProfile from "./pages/CompleteProfile";
 import Clients from "./pages/Clients";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import SetPassword from "./pages/SetPassword";
 import ClientProfile from "./pages/ClientProfile";
+import { PublicFunnel } from "./pages/funnel";
+import { DepositSheet } from "./pages/funnel/DepositSheet";
+import LeadDetail from "./pages/LeadDetail";
 
 function Router() {
   const [location] = useLocation();
-  const hideBottomNavPaths = ["/", "/login", "/signup", "/complete-profile"];
-  const shouldShowBottomNav = !hideBottomNavPaths.includes(location) && !location.startsWith("/404");
+  const hideBottomNavPaths = ["/", "/login", "/signup", "/set-password", "/complete-profile"];
+  const isPublicFunnel = location.startsWith("/start/") || location.startsWith("/deposit/");
+  const shouldShowBottomNav = !hideBottomNavPaths.includes(location) && !location.startsWith("/404") && !isPublicFunnel;
 
   return (
     <div className={`min-h-screen ${shouldShowBottomNav ? "pb-16" : ""}`}>
       <Switch>
-        <Route path="/" component={Home} />
+        <Route path="/" component={Login} />
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
+        <Route path="/set-password" component={SetPassword} />
+        
+        {/* Public funnel - no auth required */}
+        <Route path="/start/:slug" component={PublicFunnel} />
+        <Route path="/deposit/:token" component={DepositSheet} />
 
         <Route path="/conversations" component={Conversations} />
+        <Route path="/lead/:id" component={LeadDetail} />
         <Route path="/chat/:id" component={Chat} />
         <Route path="/calendar" component={Calendar} />
 
         <Route path="/dashboard" component={Dashboard} />
-        <Route path="/portfolio" component={Portfolio} />
-        <Route path="/explore" component={Portfolio} />
-        <Route path="/wallet" component={Wallet} />
+        {/* Portfolio routes removed */}
+        <Route path="/promotions" component={Promotions} />
 
         <Route path="/settings" component={Settings} />
         <Route path="/consultations" component={Consultations} />
@@ -67,6 +77,22 @@ function Router() {
   );
 }
 
+/**
+ * Wrapper component to conditionally render IOSInstallPrompt
+ * Only shows on non-funnel pages (funnel has its own install prompt on success)
+ */
+function ConditionalIOSInstallPrompt() {
+  const [location] = useLocation();
+  const isPublicFunnel = location.startsWith("/start/") || location.startsWith("/deposit/");
+  
+  // Don't render on funnel pages - the funnel handles its own install prompt
+  if (isPublicFunnel) {
+    return null;
+  }
+  
+  return <IOSInstallPrompt />;
+}
+
 function App() {
   return (
     <ThemeProvider
@@ -78,7 +104,7 @@ function App() {
           <TooltipProvider>
             <Toaster />
             <InstallPrompt />
-            <IOSInstallPrompt />
+            <ConditionalIOSInstallPrompt />
             <ErrorBoundary>
               <Router />
             </ErrorBoundary>
@@ -90,4 +116,3 @@ function App() {
 }
 
 export default App;
-

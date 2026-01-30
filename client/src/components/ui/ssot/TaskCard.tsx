@@ -2,12 +2,19 @@ import { Card } from "../card";
 /**
  * UI SINGLE SOURCE OF TRUTH (SSOT)
  * -------------------------------
+ * TaskCard is the canonical card component for Dashboard tasks.
  * This file is part of the core UI primitives. Changes to gradients, blur, 
  * radius, or core styling MUST happen here. 
  * DO NOT OVERRIDE STYLES IN PAGE COMPONENTS.
+ * 
+ * Card Dimensions (SSOT):
+ * - Border radius: rounded-2xl (1rem / 16px)
+ * - Padding: p-4 (1rem / 16px)
+ * - Background: bg-white/5 with hover:bg-white/10
+ * - Border: border-0 (no border)
  */
 import { cn } from "@/lib/utils";
-import { Check, Mail, MessageSquare, Plus } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
 
 export interface TaskCardProps {
     title: string;
@@ -56,9 +63,9 @@ export function TaskCard({ title, context, priority, status, actionType, onClick
                     )}
                 </div>
 
-                {/* Right Arrow / Plus / Check */}
+                {/* Right Chevron / Check */}
                 <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-muted-foreground group-hover:border-white/30 group-hover:text-foreground transition-colors">
-                    {status === 'completed' ? <Check className="w-4 h-4 text-green-500" /> : <Plus className="w-4 h-4" />}
+                    {status === 'completed' ? <Check className="w-4 h-4 text-green-500" /> : <ChevronRight className="w-4 h-4" />}
                 </div>
             </div>
         </Card>

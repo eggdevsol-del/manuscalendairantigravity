@@ -1,19 +1,36 @@
+<<<<<<< HEAD
 import { Button, Checkbox, Dialog, DialogTitle, Input, Label, ModalShell, ScrollArea, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
 // import { SheetShell } from "@/components/ui/overlays/sheet-shell"; // REMOVED
 import { useChatController } from "@/features/chat/useChatController";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cn } from "@/lib/utils";
+=======
+// import { SheetShell } from "@/components/ui/overlays/sheet-shell"; // REMOVED
+import { useChatController } from "@/features/chat/useChatController";
+import { Button } from "@/components/ui/button";
+import { BottomSheet, LoadingState, PageShell } from "@/components/ui/ssot";
+import { DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+// Tabs removed - using existing components
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+>>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { BookingWizard } from "@/features/booking/BookingWizard";
+// ProposalSheet removed - not needed
 import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
 import { ProjectProposalMessage } from "@/components/chat/ProjectProposalMessage";
 import { ProjectProposalModal } from "@/features/chat/components/ProjectProposalModal";
-import { ArrowLeft, Send, User, Phone, Mail, Cake, ImagePlus, Pin, PinOff, Calendar, FileText, Zap } from "lucide-react";
+import { ArrowLeft, Send, User, Phone, Mail, Cake, ImagePlus, Pin, PinOff, Calendar, FileText, Zap, MessageCircle, Image as ImageIcon, Camera } from "lucide-react";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { useRegisterBottomNavRow } from "@/contexts/BottomNavContext";
 import { QuickActionsRow, ChatAction } from "@/features/chat/components/QuickActionsRow";
 import { useLocation, useParams } from "wouter";
 import { format } from "date-fns";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
 
 export default function Chat() {
   const { id } = useParams<{ id: string }>();
@@ -28,6 +45,7 @@ export default function Chat() {
     messages,
     messagesLoading,
     quickActions,
+    artistSettings,
     availableServices,
 
     // State
@@ -74,6 +92,25 @@ export default function Chat() {
 
   } = useChatController(conversationId);
 
+  // Fetch client media for the media quick links bar
+  const clientId = conversation?.otherUser?.id;
+  const { data: mediaData } = trpc.conversations.getClientMedia.useQuery(
+    { clientId: clientId || '' },
+    { 
+      enabled: isArtist && !!clientId,
+      staleTime: 30000,
+    }
+  );
+
+  // State for selected image lightbox
+  const [selectedMediaImage, setSelectedMediaImage] = useState<string | null>(null);
+
+  // Stable callback references for quick actions
+  const handleBookClick = useCallback(() => {
+    console.log('[Chat] Book button clicked');
+    setShowBookingCalendar(true);
+  }, [setShowBookingCalendar]);
+
   // Register Bottom Nav Contextual Row (Quick Actions + System Actions)
   const quickActionsRow = useMemo(() => {
     const isAuthorized = user?.role === 'artist' || user?.role === 'admin';
@@ -84,14 +121,7 @@ export default function Chat() {
         id: 'chat.book',
         label: 'Book',
         icon: Calendar,
-        onClick: () => setShowBookingCalendar(true),
-        highlight: true
-      },
-      {
-        id: 'chat.proposal',
-        label: 'Proposal',
-        icon: FileText,
-        onClick: () => setShowProjectWizard(true),
+        onClick: handleBookClick,
         highlight: true
       }
     ] : [];
@@ -122,14 +152,10 @@ export default function Chat() {
     return (
       <QuickActionsRow actions={allActions} />
     );
-  }, [quickActions, user?.role, handleQuickAction, setShowBookingCalendar, setShowProjectWizard]);
+  }, [user?.role, quickActions, handleQuickAction, handleBookClick]);
 
-  useRegisterBottomNavRow("chat", quickActionsRow);
+  useRegisterBottomNavRow("chat-actions", quickActionsRow);
 
-  // Local UI Refs
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Key press handler local (calls hook handler)
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -138,11 +164,7 @@ export default function Chat() {
   };
 
   if (authLoading || convLoading || messagesLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-primary text-lg">Loading...</div>
-      </div>
-    );
+    return <LoadingState message="Loading..." fullScreen />;
   }
 
   if (!conversation) {
@@ -158,8 +180,15 @@ export default function Chat() {
     );
   }
 
+  // Check if there's any media to show
+  const hasMedia = mediaData && mediaData.totalCount > 0;
+  const allMediaImages = [
+    ...(mediaData?.referenceImages || []),
+    ...(mediaData?.bodyPlacementImages || [])
+  ];
+
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden selection:bg-primary/20">
+    <PageShell className="selection:bg-primary/20">
 
       {/* Fixed Header & Consultation Pin */}
       <div className="flex-none z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 shadow-sm supports-[backdrop-filter]:bg-background/60">
@@ -205,6 +234,45 @@ export default function Chat() {
             <div className="w-9" />
           </div>
         </header>
+
+        {/* Media Quick Links Bar - Shows when client has uploaded media */}
+        {isArtist && hasMedia && (
+          <div className="px-4 py-2 border-t border-white/5 bg-muted/30 flex items-center gap-3">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider shrink-0">
+              Media
+            </span>
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              {allMediaImages.slice(0, 6).map((img, index) => (
+                <button
+                  key={`media-${index}`}
+                  onClick={() => setSelectedMediaImage(img.url)}
+                  className="w-8 h-8 rounded-md overflow-hidden bg-muted/50 border border-white/10 hover:border-primary/50 transition-colors shrink-0"
+                >
+                  <img 
+                    src={img.url} 
+                    alt={`Media ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+              {allMediaImages.length > 6 && (
+                <button
+                  onClick={() => setShowClientInfo(true)}
+                  className="w-8 h-8 rounded-md bg-muted/50 border border-white/10 hover:border-primary/50 transition-colors flex items-center justify-center shrink-0"
+                >
+                  <span className="text-xs font-medium text-muted-foreground">+{allMediaImages.length - 6}</span>
+                </button>
+              )}
+              <button
+                onClick={() => setShowClientInfo(true)}
+                className="ml-1 px-2 py-1 rounded-md bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-1 shrink-0"
+              >
+                <ImageIcon className="w-3 h-3 text-primary" />
+                <span className="text-xs font-medium text-primary">View All</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Consultation Details & Pinning */}
         {consultationData && (
@@ -325,9 +393,15 @@ export default function Chat() {
                 );
               })
             ) : (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">No messages yet</p>
-              </div>
+              <Empty className="py-12">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon" className="w-16 h-16 rounded-full bg-white/5">
+                    <MessageCircle className="w-8 h-8" />
+                  </EmptyMedia>
+                  <EmptyTitle>No messages yet</EmptyTitle>
+                  <EmptyDescription>Start the conversation</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             )}
             {/* Removed bottomRef div */}
           </div>
@@ -338,210 +412,134 @@ export default function Chat() {
       {/* Input Bar */}
       <div className="fixed bottom-[110px] left-4 right-4 z-[60]">
         <div className="relative">
-          {/* Input Bar */}
-          <div className="bg-background/60 backdrop-blur-xl border border-white/10 shadow-2xl rounded-[2rem] p-1.5 pl-4 flex items-center gap-2">
-            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-            <Button size="icon" variant="ghost" className="shrink-0 h-9 w-9 rounded-full hover:bg-white/10 -ml-2" onClick={() => fileInputRef.current?.click()} disabled={uploadingImage}>
-              <ImagePlus className="w-5 h-5 text-muted-foreground" />
-            </Button>
+          <div className="flex items-center gap-2 p-2 rounded-2xl bg-muted/80 backdrop-blur-xl border border-white/10 shadow-lg">
+            <label className="cursor-pointer p-2 hover:bg-white/10 rounded-xl transition-colors">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+                disabled={uploadingImage}
+              />
+              <ImagePlus className={cn("w-5 h-5", uploadingImage ? "text-muted-foreground animate-pulse" : "text-muted-foreground hover:text-foreground")} />
+            </label>
             <Input
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
-              onKeyUp={handleKeyPress}
+              onKeyDown={handleKeyPress}
               placeholder="Type a message..."
-              className="flex-1 bg-transparent border-0 focus-visible:ring-0 px-2 h-10 placeholder:text-muted-foreground/50"
-              disabled={uploadingImage}
+              className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60"
             />
-            <Button size="icon" className="shrink-0 h-10 w-10 rounded-full shadow-md" onClick={handleSendMessage} disabled={!messageText.trim() || sendMessageMutation.isPending || uploadingImage}>
+            <Button
+              onClick={handleSendMessage}
+              disabled={!messageText.trim() || sendMessageMutation.isPending}
+              size="icon"
+              className="rounded-xl bg-primary hover:bg-primary/90 transition-all shadow-md"
+            >
               <Send className="w-4 h-4" />
             </Button>
           </div>
         </div>
       </div>
 
+      {/* Booking Wizard - Uses existing SSOT component with its own FullScreenSheet */}
       <BookingWizard
-        isOpen={showProjectWizard}
-        onClose={() => setShowProjectWizard(false)}
+        isOpen={showBookingCalendar}
+        onClose={() => setShowBookingCalendar(false)}
         conversationId={conversationId}
-        artistServices={availableServices}
+        artistServices={availableServices || []}
+        artistSettings={artistSettings}
         onBookingSuccess={() => {
-          setShowProjectWizard(false);
+          setShowBookingCalendar(false);
+          toast.success('Booking proposal sent!');
         }}
-        overlayName="Booking Wizard"
-        overlayId="chat.booking_wizard"
       />
 
-      {/* Book Now Calendar Sheet (Gold Standard) */}
-      <Dialog open={showBookingCalendar} onOpenChange={(open) => !open && setShowBookingCalendar(false)}>
-        <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-          <DialogPrimitive.Content
-            className="fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col gap-0 overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
-          >
-            {/* Standard Header */}
-            <header className="px-4 py-4 z-10 shrink-0 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10 text-foreground -ml-2" onClick={() => setShowBookingCalendar(false)}>
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-                <DialogTitle className="text-2xl font-bold text-foreground">Select Date</DialogTitle>
-              </div>
-            </header>
-
-            {/* Context Area */}
-            <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[10vh] opacity-80 transition-all duration-300">
-              <p className="text-4xl font-light text-foreground/90 tracking-tight">Availability</p>
-              <p className="text-sm text-muted-foreground mt-1">Select a start date for this project</p>
-            </div>
-
-            {/* Sheet Container */}
-            <div className="flex-1 z-20 flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative">
-              <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none" />
-
-              {/* Scrollable Content */}
-              <div className="flex-1 w-full h-full px-4 pt-8 overflow-y-auto mobile-scroll touch-pan-y">
-                <div className="pb-32 max-w-lg mx-auto space-y-6">
-
-                  {/* Calendar Controls */}
-                  <div className="flex items-center justify-between mb-2 px-2">
-                    <Button variant="ghost" size="icon" onClick={prevMonth} className="rounded-full hover:bg-white/10">
-                      <ArrowLeft className="w-4 h-4" />
-                    </Button>
-                    <span className="font-bold text-lg">{format(new Date(calendarDays.find(d => d.type === 'day')?.date || new Date()), 'MMMM yyyy')}</span>
-                    <Button variant="ghost" size="icon" onClick={nextMonth} className="rounded-full hover:bg-white/10">
-                      <ArrowLeft className="w-4 h-4 rotate-180" />
-                    </Button>
-                  </div>
-
-                  {/* Calendar Grid */}
-                  <div className="grid grid-cols-7 gap-1">
-                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
-                      <div key={d} className="h-10 flex items-center justify-center text-xs font-bold text-muted-foreground">{d}</div>
-                    ))}
-                    {calendarDays.map((item, i) => (
-                      <div key={item.key || i} className="aspect-square">
-                        {item.type === 'empty' || !item.date ? (
-                          <div />
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            className={cn(
-                              "w-full h-full p-0 font-normal rounded-xl transition-all duration-200",
-                              projectStartDate?.toDateString() === item.date.toDateString()
-                                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-100 font-bold"
-                                : "hover:bg-white/10 hover:scale-105",
-                              item.date.toDateString() === new Date().toDateString() && projectStartDate?.toDateString() !== item.date.toDateString()
-                                ? "border border-primary/50 text-primary"
-                                : ""
-                            )}
-                            onClick={() => setProjectStartDate(item.date)}
-                          >
-                            {item.day}
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Confirm Action */}
-                  <Button
-                    className="w-full shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-base font-semibold mt-4"
-                    disabled={!projectStartDate || sendMessageMutation.isPending}
-                    onClick={() => {
-                      if (!projectStartDate) return;
-
-                      // SSOT Pipeline: Create Proposal 
-                      const message = `I have updated the project date to: ${format(projectStartDate, 'EEEE, MMMM do yyyy')}.\n\nPlease confirm if this works for you.`;
-
-                      const metadata = JSON.stringify({
-                        type: "project_proposal",
-                        serviceName: "Custom Session", // Fallback if no service context
-                        serviceDuration: 60,
-                        sittings: 1,
-                        price: 0, // Fallback
-                        totalCost: 0,
-                        frequency: "single",
-                        dates: [projectStartDate.toISOString()],
-                        proposedDates: [projectStartDate.toISOString()],
-                        status: 'pending',
-                        // Include policies/settings if available in context, otherwise defaults
-                      });
-
-                      sendMessageMutation.mutate({
-                        conversationId,
-                        content: message,
-                        messageType: "appointment_request",
-                        metadata: metadata
-                      });
-                      setShowBookingCalendar(false);
-                    }}
-                  >
-                    {sendMessageMutation.isPending ? "Sending..." : "Confirm Date"}
-                  </Button>
-
-                </div>
-              </div>
-            </div>
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Portal>
-      </Dialog>
-
-
-      {/* Client Confirm Dialog */}
-      <ModalShell
+      {/* Client Confirm Dates Dialog */}
+      <BottomSheet
         isOpen={showClientConfirmDialog}
         onClose={() => setShowClientConfirmDialog(false)}
-        title="Confirm Project Dates"
-        description="Please review and select the dates you can attend."
-        footer={<Button onClick={handleClientConfirmDates}>Confirm Dates</Button>}
-        className="max-w-md"
-        overlayName="Client Confirm"
-        overlayId="chat.client_confirm"
+        title="Confirm Your Availability"
       >
-        <div className="space-y-2 py-4">
-          {clientConfirmDates.map((item, idx) => (
-            <div key={idx} className="flex items-center space-x-2 p-2 rounded hover:bg-muted">
-              <Checkbox
-                id={`date-${idx}`}
-                checked={item.selected}
-                onCheckedChange={(checked) => {
-                  const newDates = [...clientConfirmDates];
-                  newDates[idx].selected = checked === true;
-                  setClientConfirmDates(newDates);
-                }}
-              />
-              <Label htmlFor={`date-${idx}`} className="cursor-pointer flex-1">
-                {format(new Date(item.date), 'PPPP')}
-              </Label>
-            </div>
+        <DialogTitle className="sr-only">Confirm Your Availability</DialogTitle>
+        <div className="p-4 space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Please confirm the dates you're available for your tattoo sessions.
+          </p>
+          <div className="space-y-2">
+            <Label>Preferred Dates (comma separated)</Label>
+            <Input
+              placeholder="e.g., Jan 15, Jan 22, Feb 5"
+              value={clientConfirmDates}
+              onChange={(e) => setClientConfirmDates(e.target.value)}
+            />
+          </div>
+          <Button
+            className="w-full"
+            onClick={() => handleClientConfirmDates(clientConfirmDates)}
+          >
+            Confirm Dates
+          </Button>
+        </div>
+      </BottomSheet>
+
+      {/* Quick Actions Modal */}
+      <BottomSheet
+        isOpen={false}
+        onClose={() => { }}
+        title="Quick Actions"
+      >
+        <DialogTitle className="sr-only">Quick Actions</DialogTitle>
+        <div className="grid grid-cols-2 gap-3 p-4">
+          {quickActions?.map((action) => (
+            <Button
+              key={action.id}
+              variant="outline"
+              className="h-auto py-4 flex flex-col items-center gap-2"
+              onClick={() => handleQuickAction(action)}
+            >
+              <Zap className="w-5 h-5" />
+              <span className="text-xs">{action.label}</span>
+            </Button>
           ))}
         </div>
-      </ModalShell>
-
+      </BottomSheet>
       <ClientProfileSheet
         isOpen={showClientInfo}
         onClose={() => setShowClientInfo(false)}
         client={conversation?.otherUser}
       />
-
       <ProjectProposalModal
         isOpen={!!selectedProposal}
         onClose={() => setSelectedProposal(null)}
         metadata={selectedProposal?.metadata}
         isArtist={isArtist}
-        onAccept={() => selectedProposal && handleClientAcceptProposal(selectedProposal.message, selectedProposal.metadata)}
-        onReject={() => {
-          if (selectedProposal) {
-            sendMessageMutation.mutate({
-              conversationId,
-              content: "I'm sorry, those dates don't work for me.",
-              messageType: "text"
-            });
-            setSelectedProposal(null);
-          }
-        }}
-        isPendingAction={bookProjectMutation.isPending}
+        onAccept={(appliedPromotion) => handleClientAcceptProposal(selectedProposal?.message, appliedPromotion)}
+        onReject={() => setSelectedProposal(null)}
+        isPendingAction={false}
+        artistId={conversation?.artistId}
       />
-    </div>
+
+      {/* Media Image Lightbox */}
+      {selectedMediaImage && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setSelectedMediaImage(null)}
+        >
+          <button 
+            className="absolute top-4 right-4 text-white/70 hover:text-white text-sm px-3 py-1 rounded-lg bg-white/10"
+            onClick={() => setSelectedMediaImage(null)}
+          >
+            Close
+          </button>
+          <img 
+            src={selectedMediaImage} 
+            alt="Full size"
+            className="max-w-full max-h-full object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </PageShell>
   );
 }

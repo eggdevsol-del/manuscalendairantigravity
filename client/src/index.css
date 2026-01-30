@@ -48,28 +48,28 @@
 
   /* Soft Off-White Base */
   --background: oklch(0.97 0.01 260);
-  /* Deep Slate Text */
-  --foreground: oklch(0.20 0.05 260);
+  /* Deep Slate Text - Darker for better readability */
+  --foreground: oklch(0.15 0.05 260);
 
-  /* Glassy White Card */
-  --card: oklch(1 0 0 / 0.8);
-  --card-foreground: oklch(0.20 0.05 260);
+  /* Glassy White Card - High opacity in light mode for better contrast */
+  --card: oklch(1 0 0 / 0.97);
+  --card-foreground: oklch(0.15 0.05 260);
 
   --popover: oklch(1 0 0 / 0.95);
-  --popover-foreground: oklch(0.20 0.05 260);
+  --popover-foreground: oklch(0.15 0.05 260);
 
   /* Primary: Deep Violet (Readable on light) */
   --primary: oklch(0.55 0.15 280);
   --primary-foreground: oklch(0.98 0 0);
 
   --secondary: oklch(0.92 0.02 260);
-  --secondary-foreground: oklch(0.20 0.05 260);
+  --secondary-foreground: oklch(0.15 0.05 260);
 
   --muted: oklch(0.96 0.01 260);
-  --muted-foreground: oklch(0.55 0.05 260);
+  --muted-foreground: oklch(0.40 0.05 260);
 
   --accent: oklch(0.90 0.05 260);
-  --accent-foreground: oklch(0.20 0.05 260);
+  --accent-foreground: oklch(0.15 0.05 260);
 
   --destructive: oklch(0.60 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
@@ -87,11 +87,11 @@
 
   /* Sidebar */
   --sidebar: oklch(0.97 0.01 260);
-  --sidebar-foreground: oklch(0.20 0.05 260);
+  --sidebar-foreground: oklch(0.15 0.05 260);
   --sidebar-primary: oklch(0.55 0.15 280);
   --sidebar-primary-foreground: oklch(0.98 0 0);
   --sidebar-accent: oklch(0.20 0.05 260 / 0.05);
-  --sidebar-accent-foreground: oklch(0.20 0.05 260);
+  --sidebar-accent-foreground: oklch(0.15 0.05 260);
   --sidebar-border: oklch(0.20 0.05 260 / 0.1);
   --sidebar-ring: oklch(0.55 0.15 280);
 
@@ -158,15 +158,36 @@
     @apply border-border outline-ring/50;
   }
 
-  body {
-    @apply bg-background text-foreground;
+  html {
+    height: 100%;
+  }
+
+  /* Fixed background layer - works on iOS Safari where background-attachment: fixed doesn't */
+  html::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
     background: var(--bg-gradient);
-    background-attachment: fixed;
-    height: 100vh;
+    pointer-events: none;
+  }
+
+  body {
+    @apply bg-transparent text-foreground;
+    min-height: 100%;
+    min-height: 100dvh;
+    overflow: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     touch-action: manipulation;
     overscroll-behavior-y: none;
+    /* Extend to safe areas */
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   button:not(:disabled),

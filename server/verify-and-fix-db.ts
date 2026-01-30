@@ -38,7 +38,10 @@ async function verifyAndFixDatabase() {
       'policies',
       'pushSubscriptions',
       'quickActionButtons',
-      'socialMessageSync'
+      'socialMessageSync',
+      'promotion_templates',
+      'issued_promotions',
+      'promotion_redemptions'
     ];
 
     const missingTables = expectedTables.filter(t => !tableNames.includes(t));
@@ -55,16 +58,16 @@ async function verifyAndFixDatabase() {
     console.log('[DB Verify] Running migrations to create missing tables...');
 
     // Find drizzle migrations directory
-    const drizzlePath = path.join(process.cwd(), 'drizzle');
+    let drizzlePath = path.join(process.cwd(), 'drizzle');
     if (!fs.existsSync(drizzlePath)) {
       // Try dist/drizzle for production
-      const distDrizzlePath = path.join(process.cwd(), 'dist', 'drizzle');
-      if (!fs.existsSync(distDrizzlePath)) {
-        console.error('[DB Verify] Drizzle migrations not found');
+      drizzlePath = path.join(process.cwd(), 'dist', 'drizzle');
+      if (!fs.existsSync(drizzlePath)) {
+        console.error('[DB Verify] Drizzle migrations not found at:', drizzlePath);
         process.exit(1);
       }
-      console.log('[DB Verify] Using migrations from:', distDrizzlePath);
     }
+    console.log('[DB Verify] Using migrations from:', drizzlePath);
 
     const migrationFiles = fs.readdirSync(drizzlePath)
       .filter(f => f.endsWith('.sql'))

@@ -1,4 +1,4 @@
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, foreignKey, primaryKey, int, varchar, text, datetime, mysqlEnum, timestamp, index, longtext, unique, tinyint } from "drizzle-orm/mysql-core"
+import { mysqlTable, mysqlSchema, AnyMySqlColumn, foreignKey, primaryKey, int, varchar, text, datetime, mysqlEnum, timestamp, index, longtext, unique, tinyint, decimal } from "drizzle-orm/mysql-core"
 import { sql, type InferSelectModel, type InferInsertModel, relations } from "drizzle-orm"
 
 export const appointments = mysqlTable("appointments", {
@@ -39,10 +39,18 @@ export const artistSettings = mysqlTable("artistSettings", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	autoSendDepositInfo: tinyint().default(0),
+// Funnel settings (SSOT for booking link)
+publicSlug: varchar({ length: 50 }),
+funnelEnabled: tinyint().default(0),
+funnelWelcomeMessage: text(),
+styleOptions: text(), // JSON array of style options
+placementOptions: text(), // JSON array of placement options
+budgetRanges: text(), // JSON array of budget range objects
 },
-	(table) => [
-		primaryKey({ columns: [table.id], name: "artistSettings_id" }),
-	]);
+(table) => [
+primaryKey({ columns: [table.id], name: "artistSettings_id" }),
+unique("artistSettings_publicSlug_unique").on(table.publicSlug),
+]);
 
 export const clientContent = mysqlTable("client_content", {
 	id: int().autoincrement().notNull(),
@@ -498,5 +506,689 @@ export const moodboardItemsRelations = relations(moodboardItems, ({ one }) => ({
 	moodboard: one(moodboards, {
 		fields: [moodboardItems.moodboardId],
 		references: [moodboards.id],
+	}),
+}));
+
+
+// ==========================================
+// REVENUE PROTECTION ALGORITHM TABLES
+// ==========================================
+
+/**
+ * Task Completion Registry
+ * Records every task completion for analytics
+ */
+export const taskCompletions = mysqlTable("task_completions", {
+	id: int().autoincrement().notNull(),
+	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	taskType: varchar({ length: 100 }).notNull(), // e.g., 'new_consultation', 'deposit_collection', 'birthday_outreach'
+	taskTier: mysqlEnum(['tier1', 'tier2', 'tier3', 'tier4']).notNull(),
+	taskDomain: mysqlEnum(['business', 'social', 'personal']).default('business').notNull(),
+	relatedEntityType: varchar({ length: 50 }), // 'consultation', 'appointment', 'conversation', 'user'
+	relatedEntityId: varchar({ length: 64 }), // ID of the related entity
+	clientId: varchar({ length: 64 }).references(() => users.id, { onDelete: "set null" }),
+	priorityScore: int().notNull(), // Score at time of completion
+	startedAt: timestamp({ mode: 'string' }).notNull(), // When task was selected/started
+	completedAt: timestamp({ mode: 'string' }).notNull(), // When task was marked complete
+	timeToCompleteSeconds: int().notNull(), // Calculated: completedAt - startedAt
+	actionTaken: varchar({ length: 50 }), // 'sms', 'email', 'in_app', 'manual'
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	primaryKey({ columns: [table.id], name: "task_completions_id" }),
+	index("idx_artist_task_type").on(table.artistId, table.taskType),
+	index("idx_artist_completed").on(table.artistId, table.completedAt),
+	index("idx_task_domain").on(table.taskDomain),
+]);
+
+/**
+ * Weekly Analytics Snapshots
+ * Pre-computed weekly metrics for the analytics modal
+ */
+export const weeklyAnalytics = mysqlTable("weekly_analytics", {
+	id: int().autoincrement().notNull(),
+	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	weekStartDate: datetime({ mode: 'string' }).notNull(), // Monday of the week
+	weekEndDate: datetime({ mode: 'string' }).notNull(), // Sunday of the week
+	
+	// Task completion metrics
+	totalTasksCompleted: int().default(0),
+	tier1TasksCompleted: int().default(0),
+	tier2TasksCompleted: int().default(0),
+	tier3TasksCompleted: int().default(0),
+	tier4TasksCompleted: int().default(0),
+	
+	// Response time metrics (in seconds)
+	avgConsultationResponseTime: int(), // Average time to respond to new consultations
+	fastestConsultationResponse: int(),
+	slowestConsultationResponse: int(),
+	
+	// Task completion time metrics (in seconds)
+	avgTaskCompletionTime: int(),
+	avgTier1CompletionTime: int(),
+	avgTier2CompletionTime: int(),
+	
+	// Follow-up metrics
+	followUpsWithin24Hours: int().default(0),
+	followUpsWithin48Hours: int().default(0),
+	totalFollowUpsNeeded: int().default(0),
+	followUpRate: int(), // Percentage (0-100)
+	
+	// Revenue protection metrics
+	depositsCollected: int().default(0),
+	depositsOutstanding: int().default(0),
+	appointmentsConfirmed: int().default(0),
+	appointmentsUnconfirmed: int().default(0),
+	
+	// Consultation conversion
+	newConsultations: int().default(0),
+	consultationsConverted: int().default(0), // Became appointments
+	conversionRate: int(), // Percentage (0-100)
+	
+	// Comparison to benchmarks (stored as percentage relative to benchmark)
+	responseTimeVsBenchmark: int(), // 100 = at benchmark, >100 = faster, <100 = slower
+	completionRateVsBenchmark: int(),
+	followUpRateVsBenchmark: int(),
+	
+	// Overall efficiency score (0-100)
+	efficiencyScore: int(),
+	
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	primaryKey({ columns: [table.id], name: "weekly_analytics_id" }),
+	unique("artist_week").on(table.artistId, table.weekStartDate),
+	index("idx_artist_week").on(table.artistId, table.weekStartDate),
+]);
+
+/**
+ * Artist Dashboard Settings
+ * Stores artist preferences for dashboard behavior
+ */
+export const dashboardSettings = mysqlTable("dashboard_settings", {
+	id: int().autoincrement().notNull(),
+	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	
+	// Task display settings
+	maxVisibleTasks: int().default(10),
+	
+	// Booking goal settings
+	goalAdvancedBookingMonths: int().default(3), // How far ahead they want to be booked (1-12)
+	
+	// Email client preference
+	preferredEmailClient: mysqlEnum(['default', 'gmail', 'outlook', 'apple_mail']).default('default'),
+	
+	// Analytics preferences
+	showWeeklySnapshot: tinyint().default(1),
+	lastSnapshotShownAt: timestamp({ mode: 'string' }),
+	
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	primaryKey({ columns: [table.id], name: "dashboard_settings_id" }),
+	unique("artist_dashboard_settings").on(table.artistId),
+]);
+
+/**
+ * Active Tasks Cache
+ * Stores currently generated tasks for quick retrieval
+ * Regenerated on relevant data changes
+ */
+export const activeTasks = mysqlTable("active_tasks", {
+	id: int().autoincrement().notNull(),
+	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	taskDomain: mysqlEnum(['business', 'social', 'personal']).default('business').notNull(),
+	taskType: varchar({ length: 100 }).notNull(),
+	taskTier: mysqlEnum(['tier1', 'tier2', 'tier3', 'tier4']).notNull(),
+	title: varchar({ length: 255 }).notNull(),
+	context: text(), // Additional context shown on card
+	priorityScore: int().notNull(),
+	priorityLevel: mysqlEnum(['critical', 'high', 'medium', 'low']).notNull(),
+	
+	// Related entity info
+	relatedEntityType: varchar({ length: 50 }),
+	relatedEntityId: varchar({ length: 64 }),
+	clientId: varchar({ length: 64 }).references(() => users.id, { onDelete: "cascade" }),
+	clientName: varchar({ length: 255 }),
+	
+	// Action info for SMS/Email integration
+	actionType: mysqlEnum(['in_app', 'sms', 'email', 'external']),
+	smsNumber: varchar({ length: 20 }),
+	smsBody: text(),
+	emailRecipient: varchar({ length: 320 }),
+	emailSubject: varchar({ length: 255 }),
+	emailBody: text(),
+	deepLink: varchar({ length: 500 }), // In-app navigation link
+	
+	// Timing info
+	dueAt: timestamp({ mode: 'string' }), // When this task becomes urgent
+	expiresAt: timestamp({ mode: 'string' }), // When this task is no longer relevant
+	
+	// Tracking
+	startedAt: timestamp({ mode: 'string' }), // When user selected this task
+	
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	primaryKey({ columns: [table.id], name: "active_tasks_id" }),
+	index("idx_artist_domain").on(table.artistId, table.taskDomain),
+	index("idx_artist_score").on(table.artistId, table.priorityScore),
+]);
+
+// Type exports for new tables
+export type InsertTaskCompletion = InferInsertModel<typeof taskCompletions>;
+export type SelectTaskCompletion = InferSelectModel<typeof taskCompletions>;
+export type InsertWeeklyAnalytics = InferInsertModel<typeof weeklyAnalytics>;
+export type SelectWeeklyAnalytics = InferSelectModel<typeof weeklyAnalytics>;
+export type InsertDashboardSettings = InferInsertModel<typeof dashboardSettings>;
+export type SelectDashboardSettings = InferSelectModel<typeof dashboardSettings>;
+export type InsertActiveTask = InferInsertModel<typeof activeTasks>;
+export type SelectActiveTask = InferSelectModel<typeof activeTasks>;
+
+// Relations for new tables
+export const taskCompletionsRelations = relations(taskCompletions, ({ one }) => ({
+	artist: one(users, {
+		fields: [taskCompletions.artistId],
+		references: [users.id],
+	}),
+	client: one(users, {
+		fields: [taskCompletions.clientId],
+		references: [users.id],
+	}),
+}));
+
+export const weeklyAnalyticsRelations = relations(weeklyAnalytics, ({ one }) => ({
+	artist: one(users, {
+		fields: [weeklyAnalytics.artistId],
+		references: [users.id],
+	}),
+}));
+
+export const dashboardSettingsRelations = relations(dashboardSettings, ({ one }) => ({
+	artist: one(users, {
+		fields: [dashboardSettings.artistId],
+		references: [users.id],
+	}),
+}));
+
+export const activeTasksRelations = relations(activeTasks, ({ one }) => ({
+	artist: one(users, {
+		fields: [activeTasks.artistId],
+		references: [users.id],
+	}),
+	client: one(users, {
+		fields: [activeTasks.clientId],
+		references: [users.id],
+	}),
+}));
+
+
+// ==========================================
+// CONSULTATION FUNNEL / ARTIST LINK TABLES
+// ==========================================
+
+/**
+ * Artist Public Profile Settings
+ * Stores artist's public link configuration and customization
+ */
+export const artistPublicProfile = mysqlTable("artist_public_profile", {
+	id: int().autoincrement().notNull(),
+	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	
+	// Public link slug (e.g., "pmason" for calendair.app/start/pmason)
+	slug: varchar({ length: 50 }).notNull().unique(),
+	
+	// Profile display settings
+	displayName: varchar({ length: 255 }),
+	tagline: text(), // Short bio/tagline for public profile
+	profileImageUrl: text(),
+	coverImageUrl: text(),
+	
+	// Funnel settings
+	funnelEnabled: tinyint().default(1), // Whether public link is active
+	
+	// Funnel step configuration (JSON array of enabled steps)
+	// Default: ['intent', 'contact', 'style', 'budget', 'availability']
+	enabledSteps: text().default('["intent","contact","style","budget","availability"]'),
+	
+	// Style options available (JSON array)
+	styleOptions: text().default('["realism","traditional","neo-traditional","japanese","blackwork","dotwork","watercolor","geometric","minimalist","other"]'),
+	
+	// Placement options available (JSON array)
+	placementOptions: text().default('["full-sleeve","half-sleeve","forearm","upper-arm","back-piece","chest","ribs","thigh","calf","hand","neck","other"]'),
+	
+	// Budget ranges available (JSON array of {label, min, max})
+	budgetRanges: text().default('[{"label":"Under $500","min":0,"max":500},{"label":"$500-$1,000","min":500,"max":1000},{"label":"$1,000-$2,500","min":1000,"max":2500},{"label":"$2,500-$5,000","min":2500,"max":5000},{"label":"$5,000-$10,000","min":5000,"max":10000},{"label":"$10,000+","min":10000,"max":null}]'),
+	
+	// Availability settings
+	showAvailability: tinyint().default(1),
+	
+	// Analytics
+	totalViews: int().default(0),
+	totalSubmissions: int().default(0),
+	
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	primaryKey({ columns: [table.id], name: "artist_public_profile_id" }),
+	unique("artist_public_profile_artist").on(table.artistId),
+	index("idx_slug").on(table.slug),
+]);
+
+/**
+ * Leads Table
+ * The single source of truth for all consultation funnel submissions
+ * This is the core entity that drives the Revenue Protection Algorithm
+ */
+export const leads = mysqlTable("leads", {
+	id: int().autoincrement().notNull(),
+	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	
+	// Client info (may or may not have a user account yet)
+	clientId: varchar({ length: 64 }).references(() => users.id, { onDelete: "set null" }),
+	clientName: varchar({ length: 255 }).notNull(),
+	clientFirstName: varchar({ length: 100 }),
+	clientLastName: varchar({ length: 100 }),
+	clientBirthdate: varchar({ length: 20 }),
+	clientEmail: varchar({ length: 320 }).notNull(),
+	clientPhone: varchar({ length: 20 }),
+	
+	// Lead source tracking
+	source: mysqlEnum(['funnel', 'direct_message', 'instagram', 'facebook', 'referral', 'walk_in', 'other']).default('funnel').notNull(),
+	sourceDetails: text(), // Additional source info (e.g., referrer name, ad campaign)
+	funnelSessionId: varchar({ length: 64 }), // Links to funnel_sessions for analytics
+	
+	// Lead status progression
+	status: mysqlEnum([
+		'new',              // Just submitted, not viewed
+		'viewed',           // Artist has seen the lead
+		'contacted',        // Artist has reached out
+		'qualifying',       // In discussion, gathering more info
+		'proposal_sent',    // Proposal/quote sent
+		'proposal_accepted',// Client accepted proposal
+		'deposit_requested',// Deposit has been requested
+		'deposit_pending',  // Deposit claimed but not verified
+		'deposit_verified', // Deposit confirmed
+		'scheduled',        // Appointment booked
+		'completed',        // Work done
+		'lost',             // Lead didn't convert
+		'archived'          // Old/inactive lead
+	]).default('new').notNull(),
+	
+	// Intent/Project details (from funnel)
+	projectType: varchar({ length: 100 }), // e.g., 'full-sleeve', 'back-piece', 'cover-up'
+	projectDescription: text(),
+	
+	// Style preferences
+	stylePreferences: text(), // JSON array of selected styles
+	referenceImages: text(), // JSON array of uploaded image URLs
+	bodyPlacementImages: text(), // JSON array of body placement photo URLs
+	
+	// Size & Budget
+	placement: varchar({ length: 100 }),
+	estimatedSize: varchar({ length: 100 }), // e.g., 'small', 'medium', 'large', 'extra-large'
+	budgetMin: int(), // In cents
+	budgetMax: int(), // In cents
+	budgetLabel: varchar({ length: 100 }), // Human-readable budget range
+	
+	// Availability preferences
+	preferredTimeframe: varchar({ length: 100 }), // e.g., 'asap', '1-3 months', '3-6 months', '6-12 months'
+	preferredMonths: text(), // JSON array of preferred months
+	urgency: mysqlEnum(['flexible', 'moderate', 'urgent']).default('flexible'),
+	
+	// Derived tags (computed from form answers, stored as JSON array)
+	// e.g., ["Full Sleeve", "Est $6k-$8k", "High Priority", "Realism", "2026 Target"]
+	derivedTags: text(),
+	
+	// Priority scoring (computed by algorithm)
+	priorityScore: int().default(0),
+	priorityTier: mysqlEnum(['tier1', 'tier2', 'tier3', 'tier4']).default('tier2'),
+	
+	// Value estimation
+	estimatedValue: int(), // In cents, computed from budget range
+	
+	// Linked entities (created when lead progresses)
+	conversationId: int().references(() => conversations.id, { onDelete: "set null" }),
+	consultationId: int().references(() => consultations.id, { onDelete: "set null" }),
+	appointmentId: int().references(() => appointments.id, { onDelete: "set null" }),
+	
+	// Proposal tracking
+	proposalSentAt: timestamp({ mode: 'string' }),
+	proposalAcceptedAt: timestamp({ mode: 'string' }),
+	proposedDates: text(), // JSON array of proposed date options
+	acceptedDate: datetime({ mode: 'string' }),
+	
+	// Deposit tracking
+	depositAmount: int(), // In cents
+	depositRequestedAt: timestamp({ mode: 'string' }),
+	depositClaimedAt: timestamp({ mode: 'string' }),
+	depositVerifiedAt: timestamp({ mode: 'string' }),
+	depositMethod: mysqlEnum(['stripe', 'paypal', 'bank_transfer', 'cash']),
+	depositProof: text(), // Screenshot URL for bank transfers
+	
+	// Timestamps
+	lastContactedAt: timestamp({ mode: 'string' }),
+	lastActivityAt: timestamp({ mode: 'string' }),
+	convertedAt: timestamp({ mode: 'string' }), // When became a booked appointment
+	lostAt: timestamp({ mode: 'string' }),
+	lostReason: varchar({ length: 255 }),
+	
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	primaryKey({ columns: [table.id], name: "leads_id" }),
+	index("idx_artist_status").on(table.artistId, table.status),
+	index("idx_artist_priority").on(table.artistId, table.priorityScore),
+	index("idx_client_email").on(table.clientEmail),
+	index("idx_created").on(table.createdAt),
+]);
+
+/**
+ * Funnel Sessions
+ * Tracks each visitor's progress through the funnel
+ * Used for analytics and abandoned funnel recovery
+ */
+export const funnelSessions = mysqlTable("funnel_sessions", {
+	id: varchar({ length: 64 }).notNull(), // UUID
+	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	
+	// Session tracking
+	visitorFingerprint: varchar({ length: 255 }), // For anonymous tracking
+	ipAddress: varchar({ length: 45 }),
+	userAgent: text(),
+	referrer: text(),
+	
+	// Funnel progress
+	currentStep: varchar({ length: 50 }).default('intent'),
+	completedSteps: text().default('[]'), // JSON array of completed step names
+	stepData: text().default('{}'), // JSON object with data from each step
+	
+	// Completion status
+	completed: tinyint().default(0),
+	leadId: int().references(() => leads.id, { onDelete: "set null" }),
+	
+	// Timing
+	startedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+	lastActivityAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+	completedAt: timestamp({ mode: 'string' }),
+	
+	// Abandonment tracking
+	abandoned: tinyint().default(0),
+	abandonedAt: timestamp({ mode: 'string' }),
+	abandonedStep: varchar({ length: 50 }),
+	recoveryEmailSent: tinyint().default(0),
+	
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	primaryKey({ columns: [table.id], name: "funnel_sessions_id" }),
+	index("idx_artist_session").on(table.artistId),
+	index("idx_abandoned").on(table.abandoned, table.recoveryEmailSent),
+]);
+
+/**
+ * Lead Activity Log
+ * Tracks all activity on a lead for timeline display
+ */
+export const leadActivityLog = mysqlTable("lead_activity_log", {
+	id: int().autoincrement().notNull(),
+	leadId: int().notNull().references(() => leads.id, { onDelete: "cascade" }),
+	
+	activityType: mysqlEnum([
+		'created',
+		'viewed',
+		'status_changed',
+		'contacted',
+		'message_sent',
+		'message_received',
+		'proposal_sent',
+		'proposal_accepted',
+		'proposal_declined',
+		'deposit_requested',
+		'deposit_claimed',
+		'deposit_verified',
+		'appointment_scheduled',
+		'appointment_confirmed',
+		'appointment_completed',
+		'note_added',
+		'tag_added',
+		'tag_removed',
+		'marked_lost',
+		'archived'
+	]).notNull(),
+	
+	// Activity details
+	description: text(),
+	metadata: text(), // JSON object with additional data
+	
+	// Who performed the action
+	performedBy: varchar({ length: 64 }).references(() => users.id, { onDelete: "set null" }),
+	performedByType: mysqlEnum(['artist', 'client', 'system']).default('system'),
+	
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	primaryKey({ columns: [table.id], name: "lead_activity_log_id" }),
+	index("idx_lead_activity").on(table.leadId, table.createdAt),
+]);
+
+// Type exports for funnel tables
+export type InsertArtistPublicProfile = InferInsertModel<typeof artistPublicProfile>;
+export type SelectArtistPublicProfile = InferSelectModel<typeof artistPublicProfile>;
+export type InsertLead = InferInsertModel<typeof leads>;
+export type SelectLead = InferSelectModel<typeof leads>;
+export type InsertFunnelSession = InferInsertModel<typeof funnelSessions>;
+export type SelectFunnelSession = InferSelectModel<typeof funnelSessions>;
+export type InsertLeadActivityLog = InferInsertModel<typeof leadActivityLog>;
+export type SelectLeadActivityLog = InferSelectModel<typeof leadActivityLog>;
+
+// Relations for funnel tables
+export const artistPublicProfileRelations = relations(artistPublicProfile, ({ one }) => ({
+	artist: one(users, {
+		fields: [artistPublicProfile.artistId],
+		references: [users.id],
+	}),
+}));
+
+export const leadsRelations = relations(leads, ({ one, many }) => ({
+	artist: one(users, {
+		fields: [leads.artistId],
+		references: [users.id],
+		relationName: "artist_leads"
+	}),
+	client: one(users, {
+		fields: [leads.clientId],
+		references: [users.id],
+		relationName: "client_leads"
+	}),
+	conversation: one(conversations, {
+		fields: [leads.conversationId],
+		references: [conversations.id],
+	}),
+	consultation: one(consultations, {
+		fields: [leads.consultationId],
+		references: [consultations.id],
+	}),
+	appointment: one(appointments, {
+		fields: [leads.appointmentId],
+		references: [appointments.id],
+	}),
+	activityLog: many(leadActivityLog),
+}));
+
+export const funnelSessionsRelations = relations(funnelSessions, ({ one }) => ({
+	artist: one(users, {
+		fields: [funnelSessions.artistId],
+		references: [users.id],
+	}),
+	lead: one(leads, {
+		fields: [funnelSessions.leadId],
+		references: [leads.id],
+	}),
+}));
+
+export const leadActivityLogRelations = relations(leadActivityLog, ({ one }) => ({
+	lead: one(leads, {
+		fields: [leadActivityLog.leadId],
+		references: [leads.id],
+	}),
+	performer: one(users, {
+		fields: [leadActivityLog.performedBy],
+		references: [users.id],
+	}),
+}));
+
+
+// ==========================================
+// PROMOTIONS SYSTEM TABLES
+// ==========================================
+
+/**
+ * Promotion Templates
+ * Artist-created templates for vouchers, discounts, and credits
+ */
+export const promotionTemplates = mysqlTable("promotion_templates", {
+	id: int().autoincrement().notNull(),
+	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	
+	// Template type
+	type: mysqlEnum(['voucher', 'discount', 'credit']).notNull(),
+	
+	// Display info
+	name: varchar({ length: 255 }).notNull(),
+	description: text(),
+	
+	// Value configuration
+	valueType: mysqlEnum(['fixed', 'percentage']).default('fixed').notNull(),
+	value: int().notNull(), // Amount in cents for fixed, percentage for percentage type
+	
+	// Design customization
+	templateDesign: varchar({ length: 50 }).default('classic').notNull(), // References SSOT template registry
+	primaryColor: varchar({ length: 50 }), // Color key from palette
+	gradientFrom: varchar({ length: 50 }), // Gradient start color key
+	gradientTo: varchar({ length: 50 }), // Gradient end color key
+	customText: varchar({ length: 100 }), // Custom text overlay
+	logoUrl: text(), // S3 URL for custom logo
+	backgroundImageUrl: text(), // S3 URL for background image
+	backgroundScale: decimal({ precision: 3, scale: 2 }).default('1.00'), // Scale factor for background image
+	backgroundPositionX: int().default(50), // X position percentage (0-100)
+	backgroundPositionY: int().default(50), // Y position percentage (0-100)
+	
+	// Status
+	isActive: tinyint().default(1),
+	
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	primaryKey({ columns: [table.id], name: "promotion_templates_id" }),
+	index("idx_artist_templates").on(table.artistId, table.type),
+]);
+
+/**
+ * Issued Promotions
+ * Individual promotions issued to clients (instances of templates)
+ */
+export const issuedPromotions = mysqlTable("issued_promotions", {
+	id: int().autoincrement().notNull(),
+	templateId: int().notNull().references(() => promotionTemplates.id, { onDelete: "cascade" }),
+	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	clientId: varchar({ length: 64 }).references(() => users.id, { onDelete: "cascade" }), // Null for auto-apply promotions
+	
+	// Unique code for redemption
+	code: varchar({ length: 32 }).notNull(),
+	
+	// Value at time of issue (snapshot from template)
+	type: mysqlEnum(['voucher', 'discount', 'credit']).notNull(),
+	valueType: mysqlEnum(['fixed', 'percentage']).default('fixed').notNull(),
+	originalValue: int().notNull(), // Original value when issued
+	remainingValue: int().notNull(), // Remaining value (for partial redemptions)
+	
+	// Auto-apply settings
+	isAutoApply: tinyint().default(0),
+	autoApplyStartDate: datetime({ mode: 'string' }),
+	autoApplyEndDate: datetime({ mode: 'string' }),
+	
+	// Status
+	status: mysqlEnum(['active', 'partially_used', 'fully_used', 'expired', 'revoked']).default('active').notNull(),
+	
+	// Redemption tracking
+	redeemedAt: timestamp({ mode: 'string' }),
+	redeemedOnAppointmentId: int().references(() => appointments.id, { onDelete: "set null" }),
+	
+	// Validity
+	expiresAt: datetime({ mode: 'string' }),
+	
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	primaryKey({ columns: [table.id], name: "issued_promotions_id" }),
+	unique("issued_promotions_code").on(table.code),
+	index("idx_client_promotions").on(table.clientId, table.status),
+	index("idx_artist_promotions").on(table.artistId, table.status),
+	index("idx_auto_apply").on(table.isAutoApply, table.autoApplyStartDate, table.autoApplyEndDate),
+]);
+
+/**
+ * Promotion Redemptions
+ * Track partial or full redemptions of promotions
+ */
+export const promotionRedemptions = mysqlTable("promotion_redemptions", {
+	id: int().autoincrement().notNull(),
+	promotionId: int().notNull().references(() => issuedPromotions.id, { onDelete: "cascade" }),
+	appointmentId: int().notNull().references(() => appointments.id, { onDelete: "cascade" }),
+	
+	// Amount redeemed in this transaction
+	amountRedeemed: int().notNull(), // In cents
+	
+	// Original booking amount before discount
+	originalAmount: int().notNull(),
+	// Final amount after discount
+	finalAmount: int().notNull(),
+	
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	primaryKey({ columns: [table.id], name: "promotion_redemptions_id" }),
+	index("idx_promotion_redemptions").on(table.promotionId),
+	index("idx_appointment_redemptions").on(table.appointmentId),
+]);
+
+// Type exports for promotion tables
+export type InsertPromotionTemplate = InferInsertModel<typeof promotionTemplates>;
+export type SelectPromotionTemplate = InferSelectModel<typeof promotionTemplates>;
+export type InsertIssuedPromotion = InferInsertModel<typeof issuedPromotions>;
+export type SelectIssuedPromotion = InferSelectModel<typeof issuedPromotions>;
+export type InsertPromotionRedemption = InferInsertModel<typeof promotionRedemptions>;
+export type SelectPromotionRedemption = InferSelectModel<typeof promotionRedemptions>;
+
+// Relations for promotion tables
+export const promotionTemplatesRelations = relations(promotionTemplates, ({ one, many }) => ({
+	artist: one(users, {
+		fields: [promotionTemplates.artistId],
+		references: [users.id],
+	}),
+	issuedPromotions: many(issuedPromotions),
+}));
+
+export const issuedPromotionsRelations = relations(issuedPromotions, ({ one, many }) => ({
+	template: one(promotionTemplates, {
+		fields: [issuedPromotions.templateId],
+		references: [promotionTemplates.id],
+	}),
+	artist: one(users, {
+		fields: [issuedPromotions.artistId],
+		references: [users.id],
+	}),
+	client: one(users, {
+		fields: [issuedPromotions.clientId],
+		references: [users.id],
+	}),
+	redemptions: many(promotionRedemptions),
+}));
+
+export const promotionRedemptionsRelations = relations(promotionRedemptions, ({ one }) => ({
+	promotion: one(issuedPromotions, {
+		fields: [promotionRedemptions.promotionId],
+		references: [issuedPromotions.id],
+	}),
+	appointment: one(appointments, {
+		fields: [promotionRedemptions.appointmentId],
+		references: [appointments.id],
 	}),
 }));
