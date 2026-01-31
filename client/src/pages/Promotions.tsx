@@ -31,6 +31,7 @@ import {
   TYPE_DEFAULTS,
   getTypeDefaults,
   SendPromotionSheet,
+  CreatePromotionWizard,
 } from "@/features/promotions";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
