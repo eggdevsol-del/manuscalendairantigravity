@@ -79,27 +79,46 @@ export function PromotionCard({
   const Icon = TypeIcon[data.type];
 
   // Build base background style (Colors/Gradients only)
-  // We handle the Image manually in a layer above
   const baseBackground = buildCardBackground(
     data.gradientFrom || null,
     data.primaryColor || null,
     data.customColor
   );
 
-  // Image styles
-  const imageStyles = data.backgroundImageUrl ? {
-    backgroundImage: `url(${data.backgroundImageUrl})`,
-    backgroundSize: `${(data.backgroundScale || 1) * 100}%`,
-    backgroundPosition: `${data.backgroundPositionX ?? 50}% ${data.backgroundPositionY ?? 50}%`,
+  // Background Image with defensive quoting and cache busting
+  const getProcessedImageUrl = (url: string) => {
+    if (!url) return null;
+    // Add cache buster for relative API paths to ensure fresh display on update
+    const separator = url.includes('?') ? '&' : '?';
+    const cacheBuster = url.startsWith('/api/') ? `${separator}v=${Date.now()}` : '';
+    return `url("${url}${cacheBuster}")`;
+  };
+
+  const backgroundImageUrl = getProcessedImageUrl(data.backgroundImageUrl || '');
+
+  // Combined background style
+  // Image (top layer) followed by color/gradient
+  const combinedBackground = backgroundImageUrl
+    ? `${backgroundImageUrl}, ${baseBackground}`
+    : baseBackground;
+
+  const cardStyle: React.CSSProperties = {
+    background: combinedBackground,
+    backgroundSize: backgroundImageUrl
+      ? `${(data.backgroundScale || 1) * 100}%, auto`
+      : 'auto',
+    backgroundPosition: backgroundImageUrl
+      ? `${data.backgroundPositionX ?? 50}% ${data.backgroundPositionY ?? 50}%, center`
+      : 'center',
     backgroundRepeat: 'no-repeat',
-  } : undefined;
+    aspectRatio: template.aspectRatio,
+  };
 
   // Determine text color
   let textColor: 'white' | 'black' = 'white';
   if (data.customColor) {
     textColor = getContrastTextColor(data.customColor);
   } else if (data.gradientFrom || data.primaryColor) {
-    // If we have a color background, calculate contrast
     textColor = getTextColor(data.gradientFrom, data.primaryColor);
   }
 
@@ -129,31 +148,14 @@ export function PromotionCard({
         selected && "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105 z-10",
         className
       )}
-      style={{ aspectRatio: template.aspectRatio }}
+      style={cardStyle}
       onClick={onClick}
       whileHover={{ scale: blurred ? 0.95 : 1.02 }}
       whileTap={{ scale: 0.98 }}
       layout
     >
-      {/* Card Body */}
-      <div
-        className="absolute inset-0 rounded-2xl overflow-hidden shadow-xl"
-        style={{ background: baseBackground }}
-      >
-        {/* Background Image Layer */}
-        {data.backgroundImageUrl && (
-          <div
-            className="absolute inset-0 transition-all duration-200"
-            style={imageStyles}
-          />
-        )}
-
-        {/* Overlay for background images - Optional, maybe only if no color selected? 
-            Keeping it simple: If BG image exists, add slight overlay for text contrast if needed, 
-            BUT user wants "actually transparent", so we should actully REMOVE any forced overlay 
-            or make it very subtle/user controlled. 
-            Removing standard overlay to respect transparency request.
-        */}
+      {/* Card Body Overlay - Handling highlights and glass effects */}
+      <div className="absolute inset-0 rounded-2xl overflow-hidden shadow-xl pointer-events-none">
 
         {/* Hologram effect for premium template */}
         {template.hasHologram && (
