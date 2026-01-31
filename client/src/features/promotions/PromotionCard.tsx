@@ -98,27 +98,31 @@ export function PromotionCard({
   // Background Image with defensive quoting and cache busting
   const getProcessedImageUrl = (url: string) => {
     if (!url) return null;
-    // Add cache buster for relative API paths to ensure fresh display on update
     const separator = url.includes('?') ? '&' : '?';
     const cacheBuster = url.startsWith('/api/') ? `${separator}v=${Date.now()}` : '';
     return `url("${url}${cacheBuster}")`;
   };
 
-  const backgroundImageUrl = getProcessedImageUrl(data.backgroundImageUrl || '');
+  const bgImageUrl = getProcessedImageUrl(data.backgroundImageUrl || '');
 
-  // Combined background style
-  // Image (top layer) followed by color/gradient
-  const combinedBackground = backgroundImageUrl
-    ? `${backgroundImageUrl}, ${baseBackground}`
-    : baseBackground;
+  // Independent background properties to avoid shorthand resets
+  // Layering order: Image (Layer 1), then Gradient/Color (Layer 2)
+  const backgroundImage = bgImageUrl
+    ? (baseBackground.startsWith('linear-gradient')
+      ? `${bgImageUrl}, ${baseBackground}`
+      : bgImageUrl)
+    : (baseBackground.startsWith('linear-gradient') ? baseBackground : 'none');
+
+  const backgroundColor = !baseBackground.startsWith('linear-gradient') ? baseBackground : 'transparent';
 
   const cardStyle: React.CSSProperties = {
-    background: combinedBackground,
-    backgroundSize: backgroundImageUrl
-      ? `${(data.backgroundScale || 1) * 100}%, auto`
+    backgroundImage,
+    backgroundColor,
+    backgroundSize: bgImageUrl
+      ? `${(data.backgroundScale || 1) * 100}% auto${baseBackground.startsWith('linear-gradient') ? ', auto' : ''}`
       : 'auto',
-    backgroundPosition: backgroundImageUrl
-      ? `${data.backgroundPositionX ?? 50}% ${data.backgroundPositionY ?? 50}%, center`
+    backgroundPosition: bgImageUrl
+      ? `${data.backgroundPositionX ?? 50}% ${data.backgroundPositionY ?? 50}%${baseBackground.startsWith('linear-gradient') ? ', center' : ''}`
       : 'center',
     backgroundRepeat: 'no-repeat',
     aspectRatio: template.aspectRatio,
@@ -152,7 +156,7 @@ export function PromotionCard({
   return (
     <motion.div
       className={cn(
-        "relative cursor-pointer transition-all duration-300",
+        "relative cursor-pointer transition-all duration-300 rounded-2xl overflow-hidden shadow-xl",
         sizeClasses[size],
         blurred && "opacity-40 blur-[2px] scale-95",
         selected && "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105 z-10",
@@ -165,7 +169,7 @@ export function PromotionCard({
       layout
     >
       {/* Card Body Overlay - Handling highlights and glass effects */}
-      <div className="absolute inset-0 rounded-2xl overflow-hidden shadow-xl pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none">
 
         {/* Hologram effect for premium template */}
         {template.hasHologram && (
