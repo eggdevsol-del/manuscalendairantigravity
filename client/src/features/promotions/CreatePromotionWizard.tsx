@@ -250,6 +250,9 @@ export function CreatePromotionWizard({
 
   // Validation
   const canProceed = () => {
+    // Block navigation if uploads are in progress
+    if (uploadingLogo || uploadingBackground) return false;
+
     switch (step) {
       case 'type': return true;
       case 'value': return value && parseFloat(value) > 0;
