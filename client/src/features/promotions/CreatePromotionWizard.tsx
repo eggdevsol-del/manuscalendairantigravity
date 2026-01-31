@@ -29,6 +29,7 @@ import {
   getTypeDefaults,
   getContrastTextColor,
 } from "./cardTemplates";
+import { InteractiveCardPreview } from "./InteractiveCardPreview";
 import { useAuth } from "@/_core/hooks/useAuth";
 
 type WizardStep = 'type' | 'value' | 'design' | 'preview';
@@ -626,9 +627,23 @@ function DesignCustomizationStep({
 
   return (
     <div className="space-y-6">
-      {/* Live Preview */}
-      <div className="flex justify-center py-4">
-        <PromotionCard data={previewData} size="md" />
+      {/* Live Preview with Interactivity */}
+      <div className="flex flex-col items-center gap-4 py-2">
+        <InteractiveCardPreview
+          data={previewData}
+          onUpdatePosition={(x: number, y: number) => {
+            setBackgroundPositionX(x);
+            setBackgroundPositionY(y);
+          }}
+          onUpdateScale={setBackgroundScale}
+        />
+
+        {/* Helper text */}
+        {backgroundImageUrl && (
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <Move className="w-3 h-3" /> Drag to move • <ZoomIn className="w-3 h-3" /> Scroll to zoom
+          </p>
+        )}
       </div>
 
       {/* Template Selection */}

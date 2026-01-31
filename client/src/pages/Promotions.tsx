@@ -180,7 +180,7 @@ export default function Promotions() {
                   // Simplified Animation Logic:
                   // 1. Stack vertically (y = index * 60)
                   // 2. No translation on select (y stays same)
-                  // 3. Scale 5% on select (scale 1.05)
+                  // 3. Scale 3% on select (scale 1.03)
                   // 4. Blur others 2% (2px) if any selected
                   // 5. Z-index bump on select to float above
 
@@ -195,7 +195,7 @@ export default function Promotions() {
                         opacity: 1,
                         y: baseTop, // Maintain stack position
                         zIndex: isSelected ? 50 : index, // Pop to top if selected
-                        scale: isSelected ? 1.05 : 1,
+                        scale: isSelected ? 1.03 : 1,
                         filter: anySelected && !isSelected ? "blur(2px)" : "blur(0px)",
                       }}
                       exit={{ opacity: 0, scale: 0.9 }}
@@ -224,8 +224,8 @@ export default function Promotions() {
                     </motion.div>
                   );
                 })}
-                {/* Spacer to ensure scroll area covers the stack height */}
-                <div style={{ height: `${Math.max(600, filteredCards.length * 60 + 300)}px` }} />
+                {/* Spacer to just clear the bottom of the last card + buttons area */}
+                <div style={{ height: `${filteredCards.length * 60 + 200}px` }} />
               </div>
             )}
           </div>

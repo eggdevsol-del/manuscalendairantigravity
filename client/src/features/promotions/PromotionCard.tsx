@@ -90,7 +90,7 @@ export function PromotionCard({
   const imageStyles = data.backgroundImageUrl ? {
     backgroundImage: `url(${data.backgroundImageUrl})`,
     backgroundSize: `${(data.backgroundScale || 1) * 100}%`,
-    backgroundPosition: `${data.backgroundPositionX || 50}% ${data.backgroundPositionY || 50}%`,
+    backgroundPosition: `${data.backgroundPositionX ?? 50}% ${data.backgroundPositionY ?? 50}%`,
     backgroundRepeat: 'no-repeat',
   } : undefined;
 
