@@ -563,31 +563,40 @@ export default function Calendar() {
 
                         {dayAppointments.length > 0 ? (
                           <div className="space-y-2">
-                            {dayAppointments.map((apt) => (
-                              <div
-                                key={apt.id}
-                                className="p-2.5 rounded-xl bg-white/5 border border-white/5 cursor-pointer hover:bg-white/10 transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedAppointment(apt);
-                                  setShowAppointmentDetailDialog(true);
-                                }}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <p className="text-sm font-semibold text-foreground/90">
-                                    {apt.serviceName || apt.title}
-                                  </p>
-                                  <p className="text-xs font-mono text-muted-foreground">
-                                    {new Date(apt.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                                  </p>
+                            {dayAppointments.map((apt) => {
+                              const serviceColor = availableServices.find(s => s.name === apt.serviceName || s.name === apt.title)?.color || "var(--primary)";
+                              const isHex = serviceColor.startsWith('#');
+
+                              return (
+                                <div
+                                  key={apt.id}
+                                  className="p-2.5 rounded-xl border cursor-pointer transition-colors backdrop-blur-sm"
+                                  style={{
+                                    backgroundColor: isHex ? `${serviceColor}40` : `oklch(from ${serviceColor} l c h / 0.1)`,
+                                    borderColor: isHex ? `${serviceColor}60` : `oklch(from ${serviceColor} l c h / 0.2)`
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedAppointment(apt);
+                                    setShowAppointmentDetailDialog(true);
+                                  }}
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <p className="text-sm font-semibold text-foreground/90 truncate">
+                                      {apt.serviceName || apt.title}
+                                    </p>
+                                    <p className="text-xs font-mono text-muted-foreground">
+                                      {new Date(apt.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                    </p>
+                                  </div>
+                                  {apt.clientName && (
+                                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                                      {apt.clientName}
+                                    </p>
+                                  )}
                                 </div>
-                                {apt.clientName && (
-                                  <p className="text-xs text-muted-foreground mt-0.5">
-                                    {apt.clientName}
-                                  </p>
-                                )}
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         ) : (
                           <div className="flex items-center justify-center p-2 mt-2 border border-dashed border-white/10 rounded-lg">
@@ -799,13 +808,19 @@ export default function Calendar() {
                             const topPx = startMin * 1.6;
                             const heightPx = Math.max(durationMins * 1.6, 24); // Min height 1 slot
 
+                            // Get service color from availableServices or default to primary
+                            const serviceColor = availableServices.find(s => s.name === apt.serviceName || s.name === apt.title)?.color || "var(--primary)";
+                            const isHex = serviceColor.startsWith('#');
+
                             return (
                               <div
                                 key={apt.id}
-                                className="absolute left-20 right-4 rounded-lg bg-primary/20 border border-primary/30 backdrop-blur-sm shadow-sm overflow-hidden z-20 hover:brightness-110 transition-all cursor-pointer flex flex-col justify-center px-3"
+                                className="absolute left-20 right-4 rounded-lg backdrop-blur-sm shadow-sm overflow-hidden z-20 hover:brightness-110 transition-all cursor-pointer flex flex-col justify-center px-3 border border-white/10"
                                 style={{
                                   top: `${topPx}px`,
-                                  height: `${heightPx}px`
+                                  height: `${heightPx}px`,
+                                  backgroundColor: isHex ? `${serviceColor}40` : `oklch(from ${serviceColor} l c h / 0.3)`,
+                                  borderColor: serviceColor,
                                 }}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -814,14 +829,14 @@ export default function Calendar() {
                                 }}
                               >
                                 <div className="flex items-center gap-2">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                                  <span className="text-xs font-bold text-white truncate shadow-black drop-shadow-md">
+                                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: serviceColor }} />
+                                  <span className="text-xs font-bold text-foreground truncate shadow-black drop-shadow-sm">
                                     {apt.serviceName || apt.title}
                                   </span>
                                 </div>
                                 {heightPx > 30 && (
-                                  <div className="text-[10px] text-primary-foreground/80 pl-3.5 truncate">
-                                    {start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} - {apt.clientName}
+                                  <div className="text-[10px] text-foreground/80 pl-3.5 truncate">
+                                    {start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
                                   </div>
                                 )}
                               </div>

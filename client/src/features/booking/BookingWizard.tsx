@@ -219,7 +219,7 @@ export function BookingWizard({ isOpen, onClose, conversationId, artistServices,
             onClose={handleClose}
             title={getStepTitle()}
             contextContent={getContextContent()}
-            onBack={step !== 'service' && step !== 'success' ? goBack : undefined}
+            onBack={step === 'success' ? undefined : (step === 'service' ? onClose : goBack)}
         >
             <div className="space-y-4">
                 {/* STEP: SERVICE */}
