@@ -19,6 +19,15 @@ export function InteractiveCardPreview({
     const containerRef = useRef<HTMLDivElement>(null);
     const isDragging = useRef(false);
     const lastPos = useRef({ x: 0, y: 0 });
+    const startPinchDist = useRef<number | null>(null);
+    const startScale = useRef<number>(1);
+
+    // Helper: calculate distance between two touches
+    const getTouchDist = (touches: React.TouchList) => {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    };
 
     // Reset defaults if no image
     useEffect(() => {
@@ -27,7 +36,7 @@ export function InteractiveCardPreview({
         }
     }, [data.backgroundImageUrl]);
 
-    // Handle Drag for Pan
+    // --- Mouse Handlers ---
     const handleMouseDown = (e: React.MouseEvent) => {
         if (!data.backgroundImageUrl) return;
         isDragging.current = true;
@@ -36,46 +45,66 @@ export function InteractiveCardPreview({
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (!isDragging.current || !data.backgroundImageUrl) return;
-
         const deltaX = e.clientX - lastPos.current.x;
         const deltaY = e.clientY - lastPos.current.y;
 
-        // Convert pixels to percentage estimate
-        // Assuming card width ~300px for calculation
+        // Pan Sensitivity (lower = more precise)
         const sensitivity = 0.2;
-
-        // Update X (0-100)
-        const currentX = data.backgroundPositionX || 50;
-        const newX = Math.min(100, Math.max(0, currentX - (deltaX * sensitivity)));
-
-        // Update Y (0-100)
-        const currentY = data.backgroundPositionY || 50;
-        const newY = Math.min(100, Math.max(0, currentY - (deltaY * sensitivity)));
+        const newX = Math.min(100, Math.max(0, (data.backgroundPositionX || 50) - (deltaX * sensitivity)));
+        const newY = Math.min(100, Math.max(0, (data.backgroundPositionY || 50) - (deltaY * sensitivity)));
 
         onUpdatePosition(newX, newY);
         lastPos.current = { x: e.clientX, y: e.clientY };
     };
 
-    const handleMouseUp = () => {
-        isDragging.current = false;
+    const handleMouseUp = () => { isDragging.current = false; };
+
+    // --- Touch Handlers (Facebook style) ---
+    const handleTouchStart = (e: React.TouchEvent) => {
+        if (!data.backgroundImageUrl) return;
+
+        if (e.touches.length === 1) {
+            isDragging.current = true;
+            lastPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            startPinchDist.current = null;
+        } else if (e.touches.length === 2) {
+            isDragging.current = false; // Disable pan while pinching
+            startPinchDist.current = getTouchDist(e.touches);
+            startScale.current = data.backgroundScale || 1;
+        }
     };
 
-    const handleMouseLeave = () => {
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (!data.backgroundImageUrl) return;
+
+        if (e.touches.length === 1 && isDragging.current) {
+            const deltaX = e.touches[0].clientX - lastPos.current.x;
+            const deltaY = e.touches[0].clientY - lastPos.current.y;
+
+            const sensitivity = 0.2;
+            const newX = Math.min(100, Math.max(0, (data.backgroundPositionX || 50) - (deltaX * sensitivity)));
+            const newY = Math.min(100, Math.max(0, (data.backgroundPositionY || 50) - (deltaY * sensitivity)));
+
+            onUpdatePosition(newX, newY);
+            lastPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        } else if (e.touches.length === 2 && startPinchDist.current) {
+            const currentDist = getTouchDist(e.touches);
+            const ratio = currentDist / startPinchDist.current;
+            const newScale = Math.min(3, Math.max(0.5, startScale.current * ratio));
+            onUpdateScale(newScale);
+        }
+    };
+
+    const handleTouchEnd = () => {
         isDragging.current = false;
+        startPinchDist.current = null;
     };
 
     // Handle Wheel for Zoom
     const handleWheel = (e: React.WheelEvent) => {
         if (!data.backgroundImageUrl) return;
-
-        // Prevent page scroll if hovering card
-        // e.preventDefault(); // React synthetic events can't be always prevented this way for passive listeners
-
-        // Determine direction
         const delta = -Math.sign(e.deltaY) * 0.1;
-        const currentScale = data.backgroundScale || 1;
-        const newScale = Math.min(3, Math.max(0.5, currentScale + delta));
-
+        const newScale = Math.min(3, Math.max(0.5, (data.backgroundScale || 1) + delta));
         onUpdateScale(newScale);
     };
 
@@ -83,22 +112,22 @@ export function InteractiveCardPreview({
         <div className="flex flex-col items-center gap-4">
             <div
                 ref={containerRef}
-                className="relative cursor-move touch-none"
+                className="relative cursor-move touch-none overflow-hidden rounded-2xl"
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseLeave}
+                onMouseLeave={handleMouseUp}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
                 onWheel={handleWheel}
-                title={data.backgroundImageUrl ? "Drag to move background, Scroll to zoom" : "Preview"}
+                title={data.backgroundImageUrl ? "Drag to move background, Pinch or Scroll to zoom" : "Preview"}
             >
                 <PromotionCard
                     data={data}
                     size="md"
-                    // Disable default card pointer events to let wrapper handle them
                     className="pointer-events-none select-none"
                 />
-
-                {/* Overlay to capture events cleanly over the card content */}
                 <div className="absolute inset-0 z-50 bg-transparent" />
             </div>
 
