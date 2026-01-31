@@ -520,9 +520,11 @@ export default function Calendar() {
             {/* Calendar Grid Area */}
             <div
               className={cn(
-                "shrink-0 mb-4 transition-all duration-300 ease-in-out",
+                "flex-1 mb-4 transition-all duration-300 ease-in-out",
+                // Enable scrolling for week view
+                viewMode === 'week' ? "overflow-y-auto mobile-scroll touch-pan-y" : "",
                 // When selected, constrain grid height to allow timeline to take 75%
-                selectedDate && viewMode === 'month' ? "h-[25%] overflow-hidden" : ""
+                selectedDate && viewMode === 'month' ? "h-[25%] overflow-hidden shrink-0" : ""
               )}
             >
               {viewMode === "week" ? (

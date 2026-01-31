@@ -77,7 +77,24 @@ registerRoute(
   })
 );
 
-// 2. Images (Cache First) -> optimized for immutable uploads or static assets not in precache
+// 2. Artist Uploaded Files (StaleWhileRevalidate) -> Instant load from cache, refresh in background
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/api/files/'),
+  new StaleWhileRevalidate({
+    cacheName: `voucher-images-v${APP_VERSION}`,
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+      new ExpirationPlugin({
+        maxEntries: 100,
+        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+      }),
+    ],
+  })
+);
+
+// 3. General Images (Cache First)
 registerRoute(
   ({ request }) => request.destination === 'image',
   new CacheFirst({
@@ -129,11 +146,11 @@ self.addEventListener('message', (event) => {
     console.log('[SW] Received SKIP_WAITING message, activating immediately');
     self.skipWaiting();
   }
-  
+
   if (event.data && event.data.type === 'GET_VERSION') {
     event.ports[0].postMessage({ version: APP_VERSION });
   }
-  
+
   if (event.data && event.data.type === 'CLEAR_CACHES') {
     console.log('[SW] Clearing all caches...');
     event.waitUntil(

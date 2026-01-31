@@ -99,7 +99,10 @@ export function PromotionCard({
   const getProcessedImageUrl = (url: string) => {
     if (!url) return null;
     const separator = url.includes('?') ? '&' : '?';
-    const cacheBuster = url.startsWith('/api/') ? `${separator}v=${Date.now()}` : '';
+    // Use stable app version for cache busting instead of Date.now()
+    // This allows PWA caching to work across sessions until a new version is deployed.
+    const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
+    const cacheBuster = url.startsWith('/api/') ? `${separator}v=${version}` : '';
     return `url("${url}${cacheBuster}")`;
   };
 
