@@ -207,12 +207,12 @@ export default function Promotions() {
 
                   // Calculate relative position
                   const position = index - currentIndex;
-                  const isSelected = selectedCardId === card.id || (selectedCardId === null && index === 0);
+                  const isSelected = selectedCardId === card.id;
 
                   // Visual constants
-                  const cardOffset = 140; // Vertical spacing between cards
-                  const scaleFactor = 0.15; // How much cards scale down as they move away
-                  const blurAmount = 4; // Max blur for background cards
+                  const cardOffset = 180; // Increased offset for better visibility
+                  const scaleFactor = 0.15;
+                  const blurAmount = 4;
 
                   return (
                     <motion.div
@@ -245,20 +245,23 @@ export default function Promotions() {
                       style={{
                         position: 'absolute',
                         width: '100%',
-                        maxWidth: '400px',
+                        // Remove maxWidth to allow edge-to-edge on narrower screens
                         transformOrigin: 'center center',
                         cursor: 'grab',
                         touchAction: 'none'
                       }}
                       whileTap={{ cursor: 'grabbing' }}
-                      onClick={() => setSelectedCardId(card.id)}
+                      // Toggle selection logic: if already selected, deselect
+                      onClick={() => setSelectedCardId(prev => prev === card.id ? null : card.id)}
                     >
-                      <PromotionCard
-                        data={card as PromotionCardData}
-                        selected={isSelected}
-                        size="lg"
-                        className="w-full shadow-2xl"
-                      />
+                      <div className="px-0 w-full"> {/* Container for edge-to-edge */}
+                        <PromotionCard
+                          data={card as PromotionCardData}
+                          selected={isSelected}
+                          size="lg"
+                          className="w-full shadow-2xl rounded-none" // Remove rounding if needed for edge-to-edge look, or keep if preferred
+                        />
+                      </div>
                     </motion.div>
                   );
                 })}
@@ -289,74 +292,76 @@ export default function Promotions() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="mt-8 space-y-3 px-4"
+              className="mt-4 px-4 overflow-y-auto no-scrollbar"
+              style={{ maxHeight: '24vh' }} // Constraint to 24% height
             >
-              {isArtist ? (
-                <>
-                  <Button
-                    className="w-full h-14 rounded-xl font-bold text-base"
-                    onClick={() => setShowSendSheet(true)}
-                  >
-                    <Send className="w-5 h-5 mr-2" />
-                    Send to Client
-                  </Button>
-                  <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2 pb-4"> {/* Inner container for layout */}
+                {isArtist ? (
+                  <>
+                    <Button
+                      className="w-full h-12 rounded-xl font-bold text-sm"
+                      onClick={() => setShowSendSheet(true)}
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      Send to Client
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant="outline"
+                        className="h-10 rounded-xl text-sm"
+                        onClick={handleEdit}
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-10 rounded-xl text-sm text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 border-red-200 dark:border-red-900/30"
+                        onClick={() => setShowDeleteDialog(true)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
+
                     <Button
                       variant="outline"
-                      className="h-12 rounded-xl"
-                      onClick={handleEdit}
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="h-12 rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 border-red-200 dark:border-red-900/30"
-                      onClick={() => setShowDeleteDialog(true)}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete
-                    </Button>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    className="w-full h-12 rounded-xl"
-                    onClick={() => setShowAutoApplySheet(true)}
-                  >
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Auto-Apply to New Clients
-                  </Button>
-
-                  {/* Show explicit EDIT/VIEW options if already auto-apply */}
-                  {(selectedCard as PromotionCardData).isAutoApply && (
-                    <Button
-                      className="w-full h-12 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20"
+                      className="w-full h-10 rounded-xl text-sm"
                       onClick={() => setShowAutoApplySheet(true)}
                     >
                       <Calendar className="w-4 h-4 mr-2" />
-                      Edit Auto-Apply Settings
+                      Auto-Apply
                     </Button>
-                  )}
-                </>
-              ) : (
-                <>
-                  <Button
-                    className="w-full h-14 rounded-xl font-bold text-base"
-                    disabled={selectedCard.status !== 'active'}
-                    onClick={handleUseOnBooking}
-                  >
-                    <Check className="w-5 h-5 mr-2" />
-                    Use on Next Booking
-                  </Button>
-                  {selectedCard.status !== 'active' && (
-                    <p className="text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
-                      <Info className="w-4 h-4" />
-                      This promotion has already been used
-                    </p>
-                  )}
-                </>
-              )}
+
+                    {(selectedCard as PromotionCardData).isAutoApply && (
+                      <Button
+                        className="w-full h-10 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 text-sm"
+                        onClick={() => setShowAutoApplySheet(true)}
+                      >
+                        <Calendar className="w-4 h-4 mr-2" />
+                        Edit Auto-Apply
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      className="w-full h-12 rounded-xl font-bold text-sm"
+                      disabled={selectedCard.status !== 'active'}
+                      onClick={handleUseOnBooking}
+                    >
+                      <Check className="w-4 h-4 mr-2" />
+                      Use on Next Booking
+                    </Button>
+                    {selectedCard.status !== 'active' && (
+                      <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-2">
+                        <Info className="w-3 h-3" />
+                        Promotion already used
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
