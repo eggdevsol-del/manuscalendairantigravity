@@ -286,22 +286,30 @@ export function PromotionCard({
         )}
 
         {/* Status badge */}
-        {data.status && data.status !== 'active' && (
-          <div
-            className={cn(
-              "absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-medium",
-              data.status === 'partially_used' && "bg-yellow-500/80 text-yellow-900",
-              data.status === 'fully_used' && "bg-gray-500/80 text-white",
-              data.status === 'expired' && "bg-red-500/80 text-white",
-              data.status === 'revoked' && "bg-red-700/80 text-white"
-            )}
-          >
-            {data.status === 'partially_used' && 'Partially Used'}
-            {data.status === 'fully_used' && 'Used'}
-            {data.status === 'expired' && 'Expired'}
-            {data.status === 'revoked' && 'Revoked'}
-          </div>
-        )}
+        <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
+          {data.isAutoApply && (
+            <div className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/90 text-primary-foreground shadow-sm flex items-center gap-1">
+              <span>Auto Apply</span>
+            </div>
+          )}
+
+          {data.status && data.status !== 'active' && (
+            <div
+              className={cn(
+                "px-2 py-0.5 rounded-full text-xs font-medium",
+                data.status === 'partially_used' && "bg-yellow-500/80 text-yellow-900",
+                data.status === 'fully_used' && "bg-gray-500/80 text-white",
+                data.status === 'expired' && "bg-red-500/80 text-white",
+                data.status === 'revoked' && "bg-red-700/80 text-white"
+              )}
+            >
+              {data.status === 'partially_used' && 'Partially Used'}
+              {data.status === 'fully_used' && 'Used'}
+              {data.status === 'expired' && 'Expired'}
+              {data.status === 'revoked' && 'Revoked'}
+            </div>
+          )}
+        </div>
 
         {/* Expiry date - show above artist name if present */}
         {data.expiresAt && data.status === 'active' && (

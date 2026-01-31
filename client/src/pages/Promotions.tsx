@@ -122,7 +122,7 @@ export default function Promotions() {
       </div>
 
       {/* Glass Sheet */}
-      <GlassSheet className="bg-card">
+      <GlassSheet className="bg-card flex flex-col h-full overflow-hidden">
         {/* Filter Navigation */}
         <div className="flex gap-2 mb-6 px-2 overflow-x-auto no-scrollbar">
           {FILTERS.map(filter => {
@@ -149,71 +149,86 @@ export default function Promotions() {
           })}
         </div>
 
-        {/* Card Stack Display */}
-        <div className="relative min-h-[300px] flex flex-col items-center justify-center py-8">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-48">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-            </div>
-          ) : filteredCards.length === 0 ? (
-            <EmptyState
-              type={activeFilter === 'all' ? 'voucher' : activeFilter}
-              isArtist={isArtist}
-              onCreate={() => setShowCreateWizard(true)}
-            />
-          ) : (
-            <div className="relative w-full flex flex-col items-center min-h-[500px]">
-              {filteredCards.map((card, index) => {
-                const isSelected = selectedCardId === card.id;
-                const anySelected = selectedCardId !== null;
+        {/* Card Stack Display - Scrollable Container */}
+        <div className="relative flex-1 w-full overflow-hidden">
+          {/* Scrollable Area with fade mask at bottom */}
+          <div
+            className="absolute inset-0 overflow-y-auto px-4 pb-32 no-scrollbar"
+            style={{
+              maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'
+            }}
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center h-48">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              </div>
+            ) : filteredCards.length === 0 ? (
+              <div className="min-h-[300px] flex items-center justify-center">
+                <EmptyState
+                  type={activeFilter === 'all' ? 'voucher' : activeFilter}
+                  isArtist={isArtist}
+                  onCreate={() => setShowCreateWizard(true)}
+                />
+              </div>
+            ) : (
+              <div className="relative w-full flex flex-col items-center min-h-[600px] pt-8">
+                {filteredCards.map((card, index) => {
+                  const isSelected = selectedCardId === card.id;
+                  const anySelected = selectedCardId !== null;
 
-                // Simplified Animation Logic:
-                // 1. Stack vertically (y = index * 60)
-                // 2. No translation on select (y stays same)
-                // 3. Scale 5% on select (scale 1.05)
-                // 4. Blur others 4px if any selected
-                // 5. Z-index bump on select to float above
+                  // Simplified Animation Logic:
+                  // 1. Stack vertically (y = index * 60)
+                  // 2. No translation on select (y stays same)
+                  // 3. Scale 5% on select (scale 1.05)
+                  // 4. Blur others 2% (2px) if any selected
+                  // 5. Z-index bump on select to float above
 
-                const baseTop = index * 60; // Keep natural stack spacing
+                  const baseTop = index * 60; // Keep natural stack spacing
 
-                return (
-                  <motion.div
-                    key={card.id}
-                    layout
-                    initial={{ opacity: 0, y: baseTop + 50 }}
-                    animate={{
-                      opacity: 1,
-                      y: baseTop, // Maintain stack position
-                      zIndex: isSelected ? 50 : index, // Pop to top if selected
-                      scale: isSelected ? 1.05 : 1,
-                      filter: anySelected && !isSelected ? "blur(4px)" : "blur(0px)",
-                    }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 400,
-                      damping: 30
-                    }}
-                    style={{
-                      position: 'absolute',
-                      top: 20,
-                      width: '90%',
-                      maxWidth: '400px',
-                      transformOrigin: 'center center'
-                    }}
-                  >
-                    <PromotionCard
-                      data={card as PromotionCardData}
-                      selected={isSelected}
-                      blurred={anySelected && !isSelected}
-                      onClick={() => handleCardClick(card.id)}
-                      size="lg"
-                    />
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
+                  return (
+                    <motion.div
+                      key={card.id}
+                      layout
+                      initial={{ opacity: 0, y: baseTop + 50 }}
+                      animate={{
+                        opacity: 1,
+                        y: baseTop, // Maintain stack position
+                        zIndex: isSelected ? 50 : index, // Pop to top if selected
+                        scale: isSelected ? 1.05 : 1,
+                        filter: anySelected && !isSelected ? "blur(2px)" : "blur(0px)",
+                      }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 30
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: 20,
+                        width: '100%',
+                        maxWidth: '400px',
+                        transformOrigin: 'center center',
+                        pointerEvents: anySelected && !isSelected ? 'none' : 'auto', // Prevent clicking blurred cards beneath
+                      }}
+                    >
+                      <PromotionCard
+                        data={card as PromotionCardData}
+                        selected={isSelected}
+                        blurred={anySelected && !isSelected}
+                        onClick={() => handleCardClick(card.id)}
+                        size="lg"
+                        className="w-full"
+                      />
+                    </motion.div>
+                  );
+                })}
+                {/* Spacer to ensure scroll area covers the stack height */}
+                <div style={{ height: `${Math.max(600, filteredCards.length * 60 + 300)}px` }} />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Action Buttons (when card selected) */}
@@ -242,6 +257,17 @@ export default function Promotions() {
                     <Calendar className="w-4 h-4 mr-2" />
                     Auto-Apply to New Clients
                   </Button>
+
+                  {/* Show explicit EDIT/VIEW options if already auto-apply */}
+                  {(selectedCard as PromotionCardData).isAutoApply && (
+                    <Button
+                      className="w-full h-12 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20"
+                      onClick={() => setShowAutoApplySheet(true)}
+                    >
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Edit Auto-Apply Settings
+                    </Button>
+                  )}
                 </>
               ) : (
                 <>
