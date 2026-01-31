@@ -76,11 +76,14 @@ export async function storageGet(
 // Helper function to retrieve file data from database
 export async function storageGetData(key: string): Promise<{ data: Buffer; mimeType: string } | null> {
   const db = await getDb();
+  console.log(`[Storage] GetData query for key: ${key}`);
+
   const result: any = await db.execute(sql`
     SELECT file_data, mime_type FROM file_storage WHERE file_key = ${key}
   `);
 
   if (!result || !result[0]) {
+    console.warn(`[Storage] No result from DB for key: ${key}`);
     return null;
   }
 
@@ -89,8 +92,11 @@ export async function storageGetData(key: string): Promise<{ data: Buffer; mimeT
   const rows = Array.isArray(result[0]) ? result[0] : result;
 
   if (!rows[0] || !rows[0].file_data) {
+    console.warn(`[Storage] Row found but no file_data for key: ${key}`);
     return null;
   }
+
+  console.log(`[Storage] Found data for key: ${key}, mime: ${rows[0].mime_type}`);
 
   return {
     data: Buffer.from(rows[0].file_data as string, 'base64'),
