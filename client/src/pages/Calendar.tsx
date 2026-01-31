@@ -518,7 +518,13 @@ export default function Calendar() {
           <div className="w-full max-w-lg mx-auto flex flex-col h-full">
 
             {/* Calendar Grid Area */}
-            <div className="shrink-0 mb-4">
+            <div
+              className={cn(
+                "shrink-0 mb-4 transition-all duration-300 ease-in-out",
+                // When selected, constrain grid height to allow timeline to take 60%
+                selectedDate && viewMode === 'month' ? "h-[35%] overflow-hidden" : ""
+              )}
+            >
               {viewMode === "week" ? (
                 <div className="space-y-3">
                   {getWeekDays().map((day) => {
@@ -594,9 +600,9 @@ export default function Calendar() {
                 </div>
               ) : (
                 // MONTH VIEW
-                <div className="w-full">
+                <div className="w-full h-full flex flex-col">
                   {/* Day Headers */}
-                  <div className="grid grid-cols-7 gap-3 mb-2">
+                  <div className="grid grid-cols-7 gap-3 mb-2 shrink-0">
                     {["S", "M", "T", "W", "T", "F", "S"].map((day, idx) => (
                       <div
                         key={`day-header-${idx}`}
@@ -608,7 +614,11 @@ export default function Calendar() {
                   </div>
 
                   {/* Date Grid */}
-                  <div className="girls grid grid-cols-7 gap-3">
+                  <div className={cn(
+                    "girls grid grid-cols-7 gap-3",
+                    // Ensure grid is scrollable if compressed
+                    selectedDate ? "overflow-y-auto pr-1 custom-scrollbar" : ""
+                  )}>
                     {getMonthDays().map((day, index) => {
                       const dayAppointments = getAppointmentsForDate(day);
                       const dateKey = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
@@ -669,7 +679,13 @@ export default function Calendar() {
 
             {/* Hourly Day Timeline Area (Displayed in Month View) */}
             {viewMode === "month" && (
-              <div className="flex-1 overflow-hidden min-h-0 border-t border-white/5 bg-black/20 flex flex-col">
+              <div
+                className={cn(
+                  "flex-1 overflow-hidden min-h-0 border-t border-white/5 bg-black/20 flex flex-col transition-all duration-300",
+                  // Ensure it takes 65% when selected, pushing the grid to be smaller
+                  selectedDate ? "basis-[65%] grow-0" : ""
+                )}
+              >
 
                 {/* Timeline Header */}
                 <div className="px-4 py-3 shrink-0 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md z-10 transition-colors duration-300">
