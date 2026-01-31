@@ -184,86 +184,102 @@ export default function Promotions() {
           })}
         </div>
 
-        {/* Card Stack Display - Scrollable Container */}
-        <div className="relative flex-1 w-full overflow-hidden">
-          {/* Scrollable Area with fade mask at bottom */}
-          <div
-            className="absolute inset-0 overflow-y-auto px-4 pb-32 no-scrollbar"
-            style={{
-              maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'
-            }}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center h-48">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-              </div>
-            ) : filteredCards.length === 0 ? (
-              <div className="min-h-[300px] flex items-center justify-center">
-                <EmptyState
-                  type={activeFilter === 'all' ? 'voucher' : activeFilter}
-                  isArtist={isArtist}
-                  onCreate={() => setShowCreateWizard(true)}
-                />
-              </div>
-            ) : (
-              <div className="relative w-full flex flex-col items-center min-h-[600px] pt-8">
+        {/* Vertical Carousel Display */}
+        <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-48">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            </div>
+          ) : filteredCards.length === 0 ? (
+            <div className="min-h-[300px] flex items-center justify-center">
+              <EmptyState
+                type={activeFilter === 'all' ? 'voucher' : activeFilter}
+                isArtist={isArtist}
+                onCreate={() => setShowCreateWizard(true)}
+              />
+            </div>
+          ) : (
+            <div className="relative w-full h-full flex items-center justify-center overflow-visible">
+              <AnimatePresence mode="popLayout">
                 {filteredCards.map((card, index) => {
-                  const isSelected = selectedCardId === card.id;
-                  const anySelected = selectedCardId !== null;
+                  const activeIndex = filteredCards.findIndex(c => c.id === selectedCardId);
+                  const currentIndex = activeIndex === -1 ? 0 : activeIndex;
 
-                  // Simplified Animation Logic:
-                  // 1. Stack vertically (y = index * 60)
-                  // 2. No translation on select (y stays same)
-                  // 3. Scale 3% on select (scale 1.03)
-                  // 4. Blur others 2% (2px) if any selected
-                  // 5. Z-index bump on select to float above
+                  // Calculate relative position
+                  const position = index - currentIndex;
+                  const isSelected = selectedCardId === card.id || (selectedCardId === null && index === 0);
 
-                  const baseTop = index * 60; // Keep natural stack spacing
+                  // Visual constants
+                  const cardOffset = 140; // Vertical spacing between cards
+                  const scaleFactor = 0.15; // How much cards scale down as they move away
+                  const blurAmount = 4; // Max blur for background cards
 
                   return (
                     <motion.div
                       key={card.id}
-                      layout
-                      initial={{ opacity: 0, y: baseTop + 50 }}
-                      animate={{
-                        opacity: 1,
-                        y: baseTop, // Maintain stack position
-                        zIndex: isSelected ? 50 : index, // Pop to top if selected
-                        scale: isSelected ? 1.03 : 1,
-                        filter: anySelected && !isSelected ? "blur(2px)" : "blur(0px)",
+                      drag="y"
+                      dragConstraints={{ top: 0, bottom: 0 }}
+                      dragElastic={0.2}
+                      onDragEnd={(_, info) => {
+                        const threshold = 50;
+                        if (info.offset.y < -threshold && currentIndex < filteredCards.length - 1) {
+                          setSelectedCardId(filteredCards[currentIndex + 1].id);
+                        } else if (info.offset.y > threshold && currentIndex > 0) {
+                          setSelectedCardId(filteredCards[currentIndex - 1].id);
+                        }
                       }}
-                      exit={{ opacity: 0, scale: 0.9 }}
+                      initial={{ opacity: 0, y: 100 }}
+                      animate={{
+                        opacity: Math.max(0, 1 - Math.abs(position) * 0.4),
+                        y: position * cardOffset,
+                        scale: 1 - Math.abs(position) * scaleFactor,
+                        zIndex: 50 - Math.abs(position),
+                        filter: `blur(${Math.min(blurAmount, Math.abs(position) * 2)}px)`,
+                      }}
+                      exit={{ opacity: 0, scale: 0.5 }}
                       transition={{
                         type: "spring",
-                        stiffness: 400,
+                        stiffness: 300,
                         damping: 30
                       }}
                       style={{
                         position: 'absolute',
-                        top: 20,
                         width: '100%',
                         maxWidth: '400px',
                         transformOrigin: 'center center',
-                        pointerEvents: anySelected && !isSelected ? 'none' : 'auto', // Prevent clicking blurred cards beneath
+                        cursor: 'grab',
+                        touchAction: 'none'
                       }}
+                      whileTap={{ cursor: 'grabbing' }}
+                      onClick={() => setSelectedCardId(card.id)}
                     >
                       <PromotionCard
                         data={card as PromotionCardData}
                         selected={isSelected}
-                        blurred={anySelected && !isSelected}
-                        onClick={() => handleCardClick(card.id)}
                         size="lg"
-                        className="w-full"
+                        className="w-full shadow-2xl"
                       />
                     </motion.div>
                   );
                 })}
-                {/* Spacer to just clear the bottom of the last card + buttons area */}
-                <div style={{ height: `${filteredCards.length * 60 + 200}px` }} />
+              </AnimatePresence>
+
+              {/* Vertical Guide indicators (optional but helpful) */}
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+                {filteredCards.map((card, idx) => (
+                  <div
+                    key={`dot-${card.id}`}
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full transition-all duration-300",
+                      (selectedCardId === card.id || (selectedCardId === null && idx === 0))
+                        ? "bg-primary h-4"
+                        : "bg-white/20"
+                    )}
+                  />
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons (when card selected) */}
@@ -389,9 +405,9 @@ export default function Promotions() {
             <Button
               variant="destructive"
               onClick={handleDelete}
-              disabled={deleteMutation.isLoading}
+              disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isLoading ? 'Deleting...' : 'Delete'}
+              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>
