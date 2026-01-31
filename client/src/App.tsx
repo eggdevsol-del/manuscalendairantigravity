@@ -44,7 +44,7 @@ function Router() {
 
   const hideBottomNavPaths = ["/", "/login", "/signup", "/set-password", "/complete-profile"];
   const isPublicFunnel = location.startsWith("/start/") || location.startsWith("/deposit/");
-  const shouldShowBottomNav = !hideBottomNavPaths.includes(location) && !location.startsWith("/404") && !isPublicFunnel && !(isArtist && isTabletLandscape);
+  const shouldShowBottomNav = !hideBottomNavPaths.includes(location) && !location.startsWith("/404") && !isPublicFunnel;
 
   return (
     <div className={`min-h-screen ${shouldShowBottomNav ? "pb-16" : ""}`}>
