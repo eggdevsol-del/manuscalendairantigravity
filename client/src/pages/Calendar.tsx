@@ -521,8 +521,8 @@ export default function Calendar() {
             <div
               className={cn(
                 "shrink-0 mb-4 transition-all duration-300 ease-in-out",
-                // When selected, constrain grid height to allow timeline to take 60%
-                selectedDate && viewMode === 'month' ? "h-[35%] overflow-hidden" : ""
+                // When selected, constrain grid height to allow timeline to take 75%
+                selectedDate && viewMode === 'month' ? "h-[25%] overflow-hidden" : ""
               )}
             >
               {viewMode === "week" ? (
@@ -628,36 +628,28 @@ export default function Calendar() {
                         ? (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth() && day.getFullYear() === selectedDate.getFullYear())
                         : false;
 
-                      // If no date is manually selected, default to today for visual context, or just let today behave normally
-                      // Per screenshot: 30 is blue (Selected), 13 has dot (Today?). 
-                      // Let's make "Selected" = Blue background. "Today" = just bold text if not selected?
-                      // User said: "when user selects a date...". So we rely on selectedDate state.
-
                       return (
                         <button
                           key={dateKey}
                           className={cn(
-                            "aspect-square flex flex-col items-center justify-center rounded-[14px] transition-all relative",
-                            // Base Style
-                            "bg-[#1c1c1e] text-foreground border-none",
-                            // Selection Style (Blue/Cyan gradient per screenshot)
+                            "aspect-square flex flex-col items-center justify-center rounded-[14px] transition-all relative font-medium",
+                            // Base Style: Use Secondary (medium greyish in dark mode, light grey in light mode)
+                            // SSOT: Use semantic tokens.
+                            "bg-secondary text-foreground border-none ring-0 outline-none",
+                            // Selection Style
                             isSelected
-                              ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20 z-10 scale-105 font-bold"
-                              : "hover:bg-white/10",
+                              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 z-10 scale-105 font-bold"
+                              : "hover:bg-secondary/80",
                             // Dim filler days
-                            !isCurrentMonth(day) && !isSelected && "opacity-20 bg-transparent"
+                            !isCurrentMonth(day) && !isSelected && "opacity-30 bg-transparent text-muted-foreground"
                           )}
                           onClick={() => {
                             setSelectedDate(day);
-                            // Dont trigger the create dialog immediately if just selecting for view
-                            // The original 'handleDateClick' triggered create dialog. Needs adjustment.
-                            // We will just set selected date here. Create dialog can be a separate button or double click?
-                            // For now, let's keep it simple: Click = Select. 
                           }}
                         >
                           <span className={cn(
                             "text-[15px]",
-                            isToday(day) && !isSelected && "text-blue-400 font-bold", // Today but not selected
+                            isToday(day) && !isSelected && "text-primary font-bold", // Today but not selected
                           )}>
                             {day.getDate()}
                           </span>
@@ -666,7 +658,7 @@ export default function Calendar() {
                           {dayAppointments.length > 0 && (
                             <div className={cn(
                               "absolute bottom-2 w-1 h-1 rounded-full",
-                              isSelected ? "bg-white/80" : "bg-blue-500"
+                              isSelected ? "bg-primary-foreground/90" : "bg-primary"
                             )} />
                           )}
                         </button>
@@ -682,8 +674,8 @@ export default function Calendar() {
               <div
                 className={cn(
                   "flex-1 overflow-hidden min-h-0 border-t border-white/5 bg-black/20 flex flex-col transition-all duration-300",
-                  // Ensure it takes 65% when selected, pushing the grid to be smaller
-                  selectedDate ? "basis-[65%] grow-0" : ""
+                  // Ensure it takes 75% when selected, pushing the grid to be smaller
+                  selectedDate ? "basis-[75%] grow-0" : ""
                 )}
               >
 
@@ -722,13 +714,23 @@ export default function Calendar() {
                     className="flex-1 overflow-y-auto relative mobile-scroll touch-pan-y"
                     ref={(el) => {
                       if (el && !el.dataset.scrolled) {
-                        // Scroll to 9 AM (Hour 9). 1 Hour = 96px (approx h-24). 
-                        // 9 * 96 = 864px. 
-                        // Better to use simpler math or id scroll.
-                        // Let's rely on an ID anchor.
-                        const nineAm = el.querySelector('#time-slot-9');
-                        if (nineAm) {
-                          nineAm.scrollIntoView({ block: 'center' });
+                        // Find first appointment hour
+                        const dayAppts = getAppointmentsForDate(selectedDate);
+                        let scrollHour = 9; // Default 9 AM
+
+                        if (dayAppts.length > 0) {
+                          // Sort by start time just in case
+                          const appts = [...dayAppts].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+                          const first = new Date(appts[0].startTime);
+                          scrollHour = first.getHours();
+                        }
+
+                        // Scroll to that hour (minus 1 for padding if possible, or direct)
+                        const targetHour = Math.max(0, scrollHour - 1); // 1 hour buffer for context
+                        const targetEl = el.querySelector(`#time-slot-${Math.max(0, scrollHour)}`); // Target exact start for now
+
+                        if (targetEl) {
+                          targetEl.scrollIntoView({ block: 'start' });
                           el.dataset.scrolled = "true";
                         }
                       }
