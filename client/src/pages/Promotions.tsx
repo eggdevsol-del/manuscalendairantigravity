@@ -13,16 +13,23 @@ import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { PageShell, PageHeader, GlassSheet, FullScreenSheet } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
-import { Plus, Gift, Percent, CreditCard, Send, Calendar, Users, Check, Info } from "lucide-react";
+import { Gift, Percent, CreditCard, Plus, Send, Calendar, Check, Info, Settings, Edit, Trash2, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   PromotionCard,
   PromotionCardData,
   PromotionType,
   TYPE_DEFAULTS,
   getTypeDefaults,
-  CreatePromotionWizard,
   SendPromotionSheet,
 } from "@/features/promotions";
 import { trpc } from "@/lib/trpc";
@@ -65,12 +72,39 @@ export default function Promotions() {
   const [showCreateWizard, setShowCreateWizard] = useState(false);
   const [showSendSheet, setShowSendSheet] = useState(false);
   const [showAutoApplySheet, setShowAutoApplySheet] = useState(false);
+  const [editingPromotion, setEditingPromotion] = useState<PromotionCardData | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Fetch promotions (all or filtered by type)
-  const { data: promotions, isLoading, refetch } = trpc.promotions.getPromotions.useQuery(
+  const { data: promotions = [], isLoading, refetch } = trpc.promotions.getPromotions.useQuery(
     { type: activeFilter === 'all' ? undefined : activeFilter },
     { enabled: !!user }
   );
+
+  const deleteMutation = trpc.promotions.deleteTemplate.useMutation({
+    onSuccess: () => {
+      toast.success('Promotion deleted');
+      setSelectedCardId(null);
+      setShowDeleteDialog(false);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to delete promotion');
+    }
+  });
+
+  const handleDelete = () => {
+    if (selectedCardId) {
+      deleteMutation.mutate({ templateId: selectedCardId });
+    }
+  };
+
+  const handleEdit = () => {
+    if (selectedCard) {
+      setEditingPromotion(selectedCard as PromotionCardData);
+      setShowCreateWizard(true);
+    }
+  };
 
   // For the 'All' view, we might want to sort them or group them, but stacking them by date (default) is fine.
   // The query already orders by createdAt desc.
@@ -249,6 +283,25 @@ export default function Promotions() {
                     <Send className="w-5 h-5 mr-2" />
                     Send to Client
                   </Button>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      variant="outline"
+                      className="h-12 rounded-xl"
+                      onClick={handleEdit}
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-12 rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 border-red-200 dark:border-red-900/30"
+                      onClick={() => setShowDeleteDialog(true)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                  </div>
+
                   <Button
                     variant="outline"
                     className="w-full h-12 rounded-xl"
@@ -311,14 +364,37 @@ export default function Promotions() {
       {/* Create Wizard Sheet */}
       {showCreateWizard && (
         <CreatePromotionWizard
-          isOpen={showCreateWizard}
           onClose={() => {
             setShowCreateWizard(false);
+            setEditingPromotion(null);
             refetch();
           }}
-          defaultType={activeFilter === 'all' ? 'voucher' : activeFilter}
+          initialData={editingPromotion}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Promotion?</DialogTitle>
+            <DialogDescription>
+              This will permanently delete "{selectedCard?.name}". This action cannot be undone.
+              Existing client cards using this template will not be affected.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleteMutation.isLoading}
+            >
+              {deleteMutation.isLoading ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Send to Client Sheet */}
       {showSendSheet && selectedCard && (

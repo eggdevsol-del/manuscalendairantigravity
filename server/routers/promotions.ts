@@ -86,6 +86,80 @@ export const promotionsRouter = router({
     }),
 
   /**
+   * Update an existing promotion template
+   */
+  updateTemplate: protectedProcedure
+    .input(z.object({
+      id: z.number(),
+      type: promotionTypeEnum,
+      name: z.string().min(1).max(255),
+      description: z.string().max(500).nullable().optional(),
+      valueType: valueTypeEnum.default('fixed'),
+      value: z.number().min(1),
+      templateDesign: z.string().default('classic'),
+      primaryColor: z.string().nullable().optional(),
+      gradientFrom: z.string().nullable().optional(),
+      gradientTo: z.string().nullable().optional(),
+      customText: z.string().max(100).nullable().optional(),
+      logoUrl: z.string().nullable().optional(),
+      backgroundImageUrl: z.string().nullable().optional(),
+      backgroundScale: z.number().min(0.5).max(3).optional(),
+      backgroundPositionX: z.number().min(0).max(100).optional(),
+      backgroundPositionY: z.number().min(0).max(100).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        if (ctx.user.role !== 'artist' && ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can update promotions" });
+        }
+
+        const db = await getDb();
+        if (!db) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+        }
+
+        // Verify ownership
+        const existing = await db.query.promotionTemplates.findFirst({
+          where: and(
+            eq(schema.promotionTemplates.id, input.id),
+            eq(schema.promotionTemplates.artistId, ctx.user.id)
+          )
+        });
+
+        if (!existing) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Promotion not found" });
+        }
+
+        await db.update(schema.promotionTemplates)
+          .set({
+            type: input.type,
+            name: input.name,
+            description: input.description || null,
+            valueType: input.valueType,
+            value: input.value,
+            templateDesign: input.templateDesign,
+            primaryColor: input.primaryColor || null,
+            gradientFrom: input.gradientFrom || null,
+            gradientTo: input.gradientTo || null,
+            customText: input.customText || null,
+            logoUrl: input.logoUrl || null,
+            backgroundImageUrl: input.backgroundImageUrl || null,
+            backgroundScale: input.backgroundScale?.toString() || '1.00',
+            backgroundPositionX: input.backgroundPositionX || 50,
+            backgroundPositionY: input.backgroundPositionY || 50,
+            updatedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+          })
+          .where(eq(schema.promotionTemplates.id, input.id));
+
+        console.log(`[promotions.updateTemplate] Updated template ${input.id} for artist ${ctx.user.id}`);
+        return { success: true };
+      } catch (error) {
+        console.error('[promotions.updateTemplate] Error:', error);
+        throw error;
+      }
+    }),
+
+  /**
    * Get promotions based on role
    * - Artists: Get their templates
    * - Clients: Get promotions issued to them

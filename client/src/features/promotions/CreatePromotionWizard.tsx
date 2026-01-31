@@ -35,38 +35,53 @@ import { useAuth } from "@/_core/hooks/useAuth";
 type WizardStep = 'type' | 'value' | 'design' | 'preview';
 
 interface CreatePromotionWizardProps {
-  isOpen: boolean;
   onClose: () => void;
-  defaultType?: PromotionType;
   onSuccess?: () => void;
+  initialData?: PromotionCardData | null; // For editing
 }
 
-export function CreatePromotionWizard({
-  isOpen,
-  onClose,
-  defaultType = 'voucher',
-  onSuccess,
-}: CreatePromotionWizardProps) {
+export function CreatePromotionWizard({ onClose, onSuccess, initialData }: CreatePromotionWizardProps) {
   const { user } = useAuth();
   const [step, setStep] = useState<WizardStep>('type');
 
-  // Form state
-  const [type, setType] = useState<PromotionType>(defaultType);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [valueType, setValueType] = useState<'fixed' | 'percentage'>('fixed');
-  const [value, setValue] = useState('');
-  const [templateDesign, setTemplateDesign] = useState('classic');
-  const [colorMode, setColorMode] = useState<'solid' | 'gradient' | 'custom'>('gradient');
-  const [primaryColor, setPrimaryColor] = useState<string | null>(null);
-  const [gradientId, setGradientId] = useState<string>('gold_shimmer');
-  const [customColor, setCustomColor] = useState('#667eea');
-  const [customText, setCustomText] = useState('');
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(null);
-  const [backgroundScale, setBackgroundScale] = useState(1);
-  const [backgroundPositionX, setBackgroundPositionX] = useState(50);
-  const [backgroundPositionY, setBackgroundPositionY] = useState(50);
+  // Form state - Initialize with initialData if present
+  const [type, setType] = useState<PromotionType>(initialData?.type || 'voucher');
+  const [name, setName] = useState(initialData?.name || '');
+  const [description, setDescription] = useState(initialData?.description || '');
+  const [valueType, setValueType] = useState<'fixed' | 'percentage'>(
+    initialData?.valueType || 'fixed'
+  );
+
+  // Convert cents to dollars for input if fixed
+  const initialValue = initialData
+    ? (initialData.valueType === 'fixed' ? (initialData.value / 100).toString() : initialData.value.toString())
+    : '';
+  const [value, setValue] = useState(initialValue);
+
+  const [templateDesign, setTemplateDesign] = useState(initialData?.templateDesign || 'classic');
+
+  // Determine color mode from initial data
+  const getInitialColorMode = () => {
+    if (!initialData) return 'gradient';
+    if (initialData.gradientFrom) return 'gradient';
+    if (initialData.primaryColor === 'custom' || initialData.customColor) return 'custom';
+    if (initialData.primaryColor) return 'solid';
+    return 'gradient';
+  };
+
+  const [colorMode, setColorMode] = useState<'solid' | 'gradient' | 'custom'>(getInitialColorMode());
+
+  const [primaryColor, setPrimaryColor] = useState<string | null>(
+    initialData?.primaryColor && initialData.primaryColor !== 'custom' ? initialData.primaryColor : null
+  );
+  const [gradientId, setGradientId] = useState<string>(initialData?.gradientFrom || 'gold_shimmer');
+  const [customColor, setCustomColor] = useState(initialData?.customColor || '#667eea');
+  const [customText, setCustomText] = useState(initialData?.customText || '');
+  const [logoUrl, setLogoUrl] = useState<string | null>(initialData?.logoUrl || null);
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(initialData?.backgroundImageUrl || null);
+  const [backgroundScale, setBackgroundScale] = useState(initialData?.backgroundScale || 1);
+  const [backgroundPositionX, setBackgroundPositionX] = useState(initialData?.backgroundPositionX ?? 50);
+  const [backgroundPositionY, setBackgroundPositionY] = useState(initialData?.backgroundPositionY ?? 50);
 
   // Upload states
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -91,6 +106,20 @@ export function CreatePromotionWizard({
     onError: (error) => {
       console.error('[CreatePromotionWizard] Create error:', error);
       toast.error(error.message || 'Failed to create promotion');
+    },
+  });
+
+  // Update mutation
+  const updateMutation = trpc.promotions.updateTemplate.useMutation({
+    onSuccess: () => {
+      toast.success('Promotion updated!');
+      utils.promotions.getPromotions.invalidate();
+      onSuccess?.();
+      onClose();
+    },
+    onError: (error) => {
+      console.error('[CreatePromotionWizard] Update error:', error);
+      toast.error(error.message || 'Failed to update promotion');
     },
   });
 
@@ -227,9 +256,9 @@ export function CreatePromotionWizard({
     status: 'active',
   };
 
-  // Handle create
-  const handleCreate = () => {
-    createMutation.mutate({
+  // Handle create/update
+  const handleSave = () => {
+    const payload = {
       type,
       name: name || getTypeDefaults(type).labelSingular,
       description: description || null,
@@ -245,7 +274,16 @@ export function CreatePromotionWizard({
       backgroundScale,
       backgroundPositionX,
       backgroundPositionY,
-    });
+    };
+
+    if (initialData) {
+      updateMutation.mutate({
+        id: initialData.id,
+        ...payload
+      });
+    } else {
+      createMutation.mutate(payload);
+    }
   };
 
   // Validation
@@ -263,7 +301,7 @@ export function CreatePromotionWizard({
 
   return (
     <FullScreenSheet
-      open={isOpen}
+      open={true}
       onClose={onClose}
       title={getStepTitle()}
       onBack={step !== 'type' ? goBack : undefined}
@@ -359,24 +397,27 @@ export function CreatePromotionWizard({
         </motion.div>
       </AnimatePresence>
 
-      {/* Bottom Action */}
-      <div className="mt-8 space-y-3">
+      {/* Footer */}
+      <div className="p-4 border-t border-white/10 flex justify-between items-center bg-card/50 backdrop-blur-xl">
+        <Button variant="ghost" onClick={step === 'type' ? onClose : goBack}>
+          {step === 'type' ? 'Cancel' : 'Back'}
+        </Button>
+
         {step === 'preview' ? (
           <Button
-            className="w-full h-14 rounded-xl font-bold text-base"
-            onClick={handleCreate}
-            disabled={createMutation.isPending}
+            className="w-32 font-bold"
+            onClick={handleSave}
+            disabled={!canProceed() || createMutation.isPending || updateMutation.isPending}
           >
-            {createMutation.isPending ? 'Creating...' : 'Create Promotion'}
+            {(createMutation.isPending || updateMutation.isPending) ? 'Saving...' : (initialData ? 'Save Changes' : 'Create')}
           </Button>
         ) : (
           <Button
-            className="w-full h-14 rounded-xl font-bold text-base"
+            className="w-32"
             onClick={goNext}
             disabled={!canProceed()}
           >
             Continue
-            <ChevronRight className="w-5 h-5 ml-2" />
           </Button>
         )}
       </div>
