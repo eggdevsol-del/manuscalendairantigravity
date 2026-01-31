@@ -1,17 +1,10 @@
-import fs from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
-
-const UPLOAD_DIR = path.join(process.cwd(), 'server', 'uploads');
-
-// Ensure upload directory exists
-if (!fs.existsSync(UPLOAD_DIR)) {
-    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
+import { storagePut } from '../storage';
 
 export class MediaService {
     /**
-     * Save a base64 string as a file
+     * Save a base64 string as a file using DB storage
      * @param base64Data content of the file
      * @param filename original filename
      * @returns public URL path
@@ -23,14 +16,16 @@ export class MediaService {
             throw new Error('Invalid base64 string');
         }
 
+        const mimeType = matches[1];
         const buffer = Buffer.from(matches[2], 'base64');
         const extension = path.extname(filename);
         const uniqueName = `${randomUUID()}${extension}`;
-        const filePath = path.join(UPLOAD_DIR, uniqueName);
 
-        await fs.promises.writeFile(filePath, buffer);
+        // Use uploads/ prefix for organization
+        const key = `uploads/${uniqueName}`;
 
-        return `/uploads/${uniqueName}`;
+        const result = await storagePut(key, buffer, mimeType);
+        return result.url;
     }
 
     /**
