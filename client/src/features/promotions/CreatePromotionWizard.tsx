@@ -618,8 +618,8 @@ function DesignCustomizationStep({
   uploadingBackground: boolean;
   handleLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleBackgroundUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  logoInputRef: React.RefObject<HTMLInputElement>;
-  backgroundInputRef: React.RefObject<HTMLInputElement>;
+  logoInputRef: React.RefObject<HTMLInputElement | null>;
+  backgroundInputRef: React.RefObject<HTMLInputElement | null>;
   previewData: PromotionCardData;
 }) {
   const availableTemplates = CARD_TEMPLATES.filter(t => t.forTypes.includes(type));

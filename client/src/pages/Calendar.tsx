@@ -821,7 +821,7 @@ export default function Calendar() {
                             return (
                               <div
                                 key={apt.id}
-                                className="absolute left-20 right-4 rounded-lg backdrop-blur-sm shadow-sm overflow-hidden z-20 hover:brightness-110 transition-all cursor-pointer flex flex-col justify-center px-3 border border-white/10"
+                                className="absolute left-20 right-4 rounded-lg backdrop-blur-sm shadow-sm overflow-hidden z-20 hover:brightness-110 transition-all cursor-pointer flex flex-col pt-2 px-3 border border-white/10"
                                 style={{
                                   top: `${topPx}px`,
                                   height: `${heightPx}px`,
