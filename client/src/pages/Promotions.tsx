@@ -28,31 +28,53 @@ import {
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
-// Tab configuration
-const TABS = [
+// Filter configuration
+const FILTERS = [
+  { id: 'all', label: 'All', icon: CollectionIcon },
   { id: 'voucher' as PromotionType, label: 'Vouchers', icon: Gift },
   { id: 'discount' as PromotionType, label: 'Discounts', icon: Percent },
   { id: 'credit' as PromotionType, label: 'Credits', icon: CreditCard },
 ];
 
+function CollectionIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="6" width="20" height="12" rx="2" />
+      <path d="M6 10h.01" />
+      <path d="M10 10h.01" />
+      <path d="M14 10h.01" />
+    </svg>
+  )
+}
+
 export default function Promotions() {
   const { user } = useAuth();
   const isArtist = user?.role === 'artist';
 
-  const [activeTab, setActiveTab] = useState<PromotionType>('voucher');
+  const [activeFilter, setActiveFilter] = useState<'all' | PromotionType>('all');
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
   const [showCreateWizard, setShowCreateWizard] = useState(false);
   const [showSendSheet, setShowSendSheet] = useState(false);
   const [showAutoApplySheet, setShowAutoApplySheet] = useState(false);
 
-  // Fetch promotions based on role
+  // Fetch promotions (all or filtered by type)
   const { data: promotions, isLoading, refetch } = trpc.promotions.getPromotions.useQuery(
-    { type: activeTab },
+    { type: activeFilter === 'all' ? undefined : activeFilter },
     { enabled: !!user }
   );
 
-  // Filter cards by type
-  const filteredCards = (promotions || []).filter(p => p.type === activeTab);
+  // For the 'All' view, we might want to sort them or group them, but stacking them by date (default) is fine.
+  // The query already orders by createdAt desc.
+  const filteredCards = promotions || [];
   const selectedCard = filteredCards.find(c => c.id === selectedCardId);
 
   // Handle card selection
@@ -69,7 +91,7 @@ export default function Promotions() {
       id: selectedCard.id,
       type: selectedCard.type,
       name: selectedCard.name,
-      value: selectedCard.value || selectedCard.originalValue,
+      value: selectedCard.value,
       valueType: selectedCard.valueType,
       code: selectedCard.code,
     }));
@@ -84,18 +106,6 @@ export default function Promotions() {
       {/* Header */}
       <PageHeader
         title="Promotions"
-        rightElement={
-          isArtist && (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="rounded-full bg-white/5 hover:bg-white/10"
-              onClick={() => setShowCreateWizard(true)}
-            >
-              <Plus className="w-5 h-5" />
-            </Button>
-          )
-        }
       />
 
       {/* Context Area */}
@@ -113,27 +123,27 @@ export default function Promotions() {
 
       {/* Glass Sheet */}
       <GlassSheet className="bg-card">
-        {/* Tab Navigation */}
-        <div className="flex gap-2 mb-6 px-2">
-          {TABS.map(tab => {
-            const isActive = activeTab === tab.id;
-            const Icon = tab.icon;
+        {/* Filter Navigation */}
+        <div className="flex gap-2 mb-6 px-2 overflow-x-auto no-scrollbar">
+          {FILTERS.map(filter => {
+            const isActive = activeFilter === filter.id;
+            const Icon = filter.icon;
             return (
               <button
-                key={tab.id}
+                key={filter.id}
                 onClick={() => {
-                  setActiveTab(tab.id);
+                  setActiveFilter(filter.id as any);
                   setSelectedCardId(null);
                 }}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all",
+                  "flex items-center gap-2 py-2 px-4 rounded-full transition-all whitespace-nowrap border",
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-lg"
-                    : "bg-black/5 dark:bg-white/5 text-muted-foreground hover:bg-black/10 dark:hover:bg-white/10"
+                    ? "bg-primary text-primary-foreground border-primary shadow-lg"
+                    : "bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10"
                 )}
               >
                 <Icon className="w-4 h-4" />
-                <span className="text-sm font-medium">{tab.label}</span>
+                <span className="text-sm font-medium">{filter.label}</span>
               </button>
             );
           })}
@@ -147,85 +157,62 @@ export default function Promotions() {
             </div>
           ) : filteredCards.length === 0 ? (
             <EmptyState
-              type={activeTab}
+              type={activeFilter === 'all' ? 'voucher' : activeFilter}
               isArtist={isArtist}
               onCreate={() => setShowCreateWizard(true)}
             />
           ) : (
-            <AnimatePresence mode="popLayout">
-              <div className="relative w-full flex flex-col items-center min-h-[400px]">
-                {filteredCards.map((card, index) => {
-                  const isSelected = selectedCardId === card.id;
+            <div className="relative w-full flex flex-col items-center min-h-[500px]">
+              {filteredCards.map((card, index) => {
+                const isSelected = selectedCardId === card.id;
+                const anySelected = selectedCardId !== null;
 
-                  // Calculate visual properties based on selection state
-                  // If a card is selected, it goes to top (y=0) and full opacity/no blur
-                  // If no card is selected, they stack naturally
-                  // If ANOTHER card is selected, this one steps back and blurs
+                // Simplified Animation Logic:
+                // 1. Stack vertically (y = index * 60)
+                // 2. No translation on select (y stays same)
+                // 3. Scale 5% on select (scale 1.05)
+                // 4. Blur others 4px if any selected
+                // 5. Z-index bump on select to float above
 
-                  let yOffset = 0;
-                  let zIndex = 0;
-                  let blurAmount = 0;
-                  let scale = 1;
+                const baseTop = index * 60; // Keep natural stack spacing
 
-                  if (selectedCardId === null) {
-                    // No selection: Stack normally
-                    yOffset = index * 60; // Increased spacing for visibility
-                    zIndex = index;
-                    blurAmount = 0;
-                  } else {
-                    if (isSelected) {
-                      // This is the selected card
-                      yOffset = 0; // Moves to top/center
-                      zIndex = 50; // High z-index
-                      blurAmount = 0;
-                      scale = 1.0; // Normal size (relative to container)
-                    } else {
-                      // This is an unselected card
-                      // Stacked tighter and scaled down more to create "deck" effect
-                      yOffset = 160 + (index * 12); // Tighter spacing (was 15)
-                      zIndex = index; // Keep original order relative to each other
-                      blurAmount = 4; // More blur to distinguish (was 2)
-                      scale = 0.90; // Smaller scale for unselected (was 0.95)
-                    }
-                  }
-
-                  return (
-                    <motion.div
-                      key={card.id}
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{
-                        opacity: 1,
-                        y: yOffset,
-                        zIndex: zIndex,
-                        scale: scale,
-                        filter: `blur(${blurAmount}px)`,
-                      }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 350,
-                        damping: 25
-                      }}
-                      style={{
-                        position: 'absolute',
-                        top: 20, // Base top position
-                        width: '90%', // limit width to 90% of screenspace
-                        maxWidth: '400px', // Ensure cards don't get too wide
-                      }}
-                    >
-                      <PromotionCard
-                        data={card as PromotionCardData}
-                        selected={isSelected}
-                        blurred={blurAmount > 0}
-                        onClick={() => handleCardClick(card.id)}
-                        size="lg"
-                      />
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </AnimatePresence>
+                return (
+                  <motion.div
+                    key={card.id}
+                    layout
+                    initial={{ opacity: 0, y: baseTop + 50 }}
+                    animate={{
+                      opacity: 1,
+                      y: baseTop, // Maintain stack position
+                      zIndex: isSelected ? 50 : index, // Pop to top if selected
+                      scale: isSelected ? 1.05 : 1,
+                      filter: anySelected && !isSelected ? "blur(4px)" : "blur(0px)",
+                    }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 30
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: 20,
+                      width: '90%',
+                      maxWidth: '400px',
+                      transformOrigin: 'center center'
+                    }}
+                  >
+                    <PromotionCard
+                      data={card as PromotionCardData}
+                      selected={isSelected}
+                      blurred={anySelected && !isSelected}
+                      onClick={() => handleCardClick(card.id)}
+                      size="lg"
+                    />
+                  </motion.div>
+                );
+              })}
+            </div>
           )}
         </div>
 
@@ -286,7 +273,7 @@ export default function Promotions() {
               onClick={() => setShowCreateWizard(true)}
             >
               <Plus className="w-5 h-5 mr-2" />
-              Create New {activeTab === 'voucher' ? 'Voucher' : activeTab === 'discount' ? 'Discount' : 'Credit'}
+              Create New {activeFilter === 'all' ? 'Voucher' : activeFilter === 'voucher' ? 'Voucher' : activeFilter === 'discount' ? 'Discount' : 'Credit'}
             </Button>
           </div>
         )}
@@ -303,7 +290,7 @@ export default function Promotions() {
             setShowCreateWizard(false);
             refetch();
           }}
-          defaultType={activeTab}
+          defaultType={activeFilter === 'all' ? 'voucher' : activeFilter}
         />
       )}
 
@@ -414,7 +401,7 @@ function AutoApplySheet({
 
   return (
     <FullScreenSheet
-      isOpen={isOpen}
+      open={isOpen}
       onClose={onClose}
       title="Auto-Apply Settings"
     >

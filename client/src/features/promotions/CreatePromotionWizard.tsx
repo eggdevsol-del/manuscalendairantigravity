@@ -798,6 +798,19 @@ function DesignCustomizationStep({
           <ImageIcon className="w-4 h-4" />
           Background Image (optional)
         </Label>
+        <div className="flex justify-between items-center px-1">
+          <span className="text-xs text-muted-foreground">
+            Rec: 1000x600px (1.66 aspect ratio)
+          </span>
+          <a
+            href="/voucher-template.png"
+            download
+            className="text-xs text-primary hover:underline flex items-center gap-1"
+          >
+            <Move className="w-3 h-3" />
+            Download Template
+          </a>
+        </div>
 
         {/* Image Controls - Only show if image exists */}
         {backgroundImageUrl && (

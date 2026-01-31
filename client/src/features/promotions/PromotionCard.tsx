@@ -43,6 +43,12 @@ export interface PromotionCardData {
   code?: string;
   status?: 'active' | 'partially_used' | 'fully_used' | 'expired' | 'revoked';
   expiresAt?: string | null;
+  // Auto-apply fields
+  isAutoApply?: boolean;
+  autoApplyStartDate?: string | null;
+  autoApplyEndDate?: string | null;
+  // Computed fields handling
+  originalValue?: number;
 }
 
 interface PromotionCardProps {
