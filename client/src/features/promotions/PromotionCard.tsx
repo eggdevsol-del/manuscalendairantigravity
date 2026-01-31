@@ -78,6 +78,16 @@ export function PromotionCard({
   const typeDefaults = getTypeDefaults(data.type);
   const Icon = TypeIcon[data.type];
 
+  if (data.backgroundImageUrl) {
+    console.log(`[PromotionCard] Rendering with background: ${data.backgroundImageUrl}`, {
+      id: data.id,
+      name: data.name,
+      scale: data.backgroundScale,
+      x: data.backgroundPositionX,
+      y: data.backgroundPositionY
+    });
+  }
+
   // Build base background style (Colors/Gradients only)
   const baseBackground = buildCardBackground(
     data.gradientFrom || null,
