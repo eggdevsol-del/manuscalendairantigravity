@@ -828,12 +828,12 @@ function DesignCustomizationStep({
             Rec: 1000x600px (1.66 aspect ratio)
           </span>
           <a
-            href="/voucher-template.png"
-            download
+            href="/voucher-template.svg"
+            download="voucher-template.svg"
             className="text-xs text-primary hover:underline flex items-center gap-1"
           >
             <Move className="w-3 h-3" />
-            Download Template
+            Download Template Guide
           </a>
         </div>
 

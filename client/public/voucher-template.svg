@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1000" height="600" viewBox="0 0 1000 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 
+    Gift Card Template Guide 
+    Dimensions: 1000x600 (1.66 aspect ratio)
+    Padding simulation: 68px (based on p-6 relative scale)
+  -->
+
+  <!-- Background Outline (Card Boundary) -->
+  <rect width="1000" height="600" rx="32" stroke="#CCCCCC" stroke-width="4" stroke-dasharray="10 10"/>
+  
+  <!-- Safe Margin Guide (approx 68px padding) -->
+  <rect x="68" y="68" width="864" height="464" stroke="#CCCCCC" stroke-width="2" stroke-dasharray="5 5" stroke-opacity="0.5"/>
+  <text x="500" y="40" font-family="Arial, sans-serif" font-size="24" fill="#CCCCCC" text-anchor="middle" font-weight="bold">SAFE AREA MARGIN (68px)</text>
+
+  <!-- 1. Top Left: Logo Area -->
+  <circle cx="118" cy="118" r="50" stroke="#FF0000" stroke-width="2" stroke-dasharray="5 5" fill="rgba(255,0,0,0.1)"/>
+  <text x="118" y="118" font-family="Arial, sans-serif" font-size="20" fill="#FF0000" text-anchor="middle" dy="5">LOGO</text>
+  <text x="68" y="185" font-family="Arial, sans-serif" font-size="16" fill="#FF0000">Top Left</text>
+
+  <!-- 2. Top Right: Label (GIFT VOUCHER) -->
+  <rect x="732" y="68" width="200" height="50" stroke="#0000FF" stroke-width="2" stroke-dasharray="5 5" fill="rgba(0,0,255,0.1)"/>
+  <text x="932" y="100" font-family="Arial, sans-serif" font-size="24" fill="#0000FF" text-anchor="end" font-weight="bold">TYPE LABEL</text>
+  <text x="932" y="50" font-family="Arial, sans-serif" font-size="16" fill="#0000FF" text-anchor="end">e.g. GIFT VOUCHER</text>
+
+  <!-- 3. Center Left: Main Title -->
+  <rect x="68" y="250" width="500" height="60" stroke="#00AA00" stroke-width="2" stroke-dasharray="5 5" fill="rgba(0,170,0,0.1)"/>
+  <text x="68" y="290" font-family="Arial, sans-serif" font-size="48" fill="#00AA00" font-weight="bold">Card Title</text>
+  <text x="68" y="240" font-family="Arial, sans-serif" font-size="16" fill="#00AA00">Center Left</text>
+
+  <!-- 4. Below Title: Value -->
+  <rect x="68" y="320" width="300" height="80" stroke="#00AA00" stroke-width="2" stroke-dasharray="5 5" fill="rgba(0,170,0,0.1)"/>
+  <text x="68" y="380" font-family="Arial, sans-serif" font-size="72" fill="#00AA00" font-weight="bold">$100</text>
+  <text x="380" y="360" font-family="Arial, sans-serif" font-size="16" fill="#00AA00">&lt;-- Value Display</text>
+
+  <!-- 5. Bottom Right: Artist Name -->
+  <rect x="600" y="500" width="332" height="40" stroke="#FF00FF" stroke-width="2" stroke-dasharray="5 5" fill="rgba(255,0,255,0.1)"/>
+  <text x="932" y="530" font-family="Arial, sans-serif" font-size="24" fill="#FF00FF" text-anchor="end">Artist Name</text>
+  <text x="932" y="560" font-family="Arial, sans-serif" font-size="16" fill="#FF00FF" text-anchor="end">Bottom Right</text>
+
+  <!-- Helper Grid -->
+  <path d="M500 0 V600 M0 300 H1000" stroke="#CCCCCC" stroke-width="1" stroke-dasharray="10 10"/>
+  <text x="510" y="590" font-family="Arial, sans-serif" font-size="14" fill="#666666">Center X</text>
+  <text x="10" y="315" font-family="Arial, sans-serif" font-size="14" fill="#666666">Center Y</text>
+
+  <text x="500" y="580" font-family="Arial, sans-serif" font-size="14" fill="#333333" text-anchor="middle">1000px x 600px Output</text>
+
+</svg>
