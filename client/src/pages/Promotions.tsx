@@ -70,11 +70,19 @@ export default function Promotions() {
 
   const [activeFilter, setActiveFilter] = useState<'all' | PromotionType>('all');
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+  const [focalIndex, setFocalIndex] = useState(0);
   const [showCreateWizard, setShowCreateWizard] = useState(false);
   const [showSendSheet, setShowSendSheet] = useState(false);
   const [showAutoApplySheet, setShowAutoApplySheet] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<PromotionCardData | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // Reset focalIndex when filter changes
+  const handleFilterChange = (filter: 'all' | PromotionType) => {
+    setActiveFilter(filter);
+    setSelectedCardId(null);
+    setFocalIndex(0);
+  };
 
   // Fetch promotions (all or filtered by type)
   const { data: promotions = [], isLoading, refetch } = trpc.promotions.getPromotions.useQuery(
@@ -166,10 +174,7 @@ export default function Promotions() {
             return (
               <button
                 key={filter.id}
-                onClick={() => {
-                  setActiveFilter(filter.id as any);
-                  setSelectedCardId(null);
-                }}
+                onClick={() => handleFilterChange(filter.id as any)}
                 className={cn(
                   "flex items-center gap-2 py-2 px-4 rounded-full transition-all whitespace-nowrap border",
                   isActive
@@ -202,12 +207,10 @@ export default function Promotions() {
             <div className="relative w-full h-full flex items-center justify-center overflow-visible">
               <AnimatePresence mode="popLayout">
                 {filteredCards.map((card, index) => {
-                  const activeIndex = filteredCards.findIndex(c => c.id === selectedCardId);
-                  const currentIndex = activeIndex === -1 ? 0 : activeIndex;
-
-                  // Calculate relative position
-                  const position = index - currentIndex;
+                  // Use focalIndex for positioning
+                  const position = index - focalIndex;
                   const isSelected = selectedCardId === card.id;
+                  const isFocal = focalIndex === index;
 
                   // Visual constants
                   const cardOffset = 180; // Increased offset for better visibility
@@ -220,13 +223,15 @@ export default function Promotions() {
                       drag="y"
                       dragConstraints={{ top: 0, bottom: 0 }}
                       dragElastic={0.2}
+                      onDragStart={() => setSelectedCardId(null)} // Hide buttons when swipe starts
                       onDragEnd={(_, info) => {
                         const threshold = 50;
-                        if (info.offset.y < -threshold && currentIndex < filteredCards.length - 1) {
-                          setSelectedCardId(filteredCards[currentIndex + 1].id);
-                        } else if (info.offset.y > threshold && currentIndex > 0) {
-                          setSelectedCardId(filteredCards[currentIndex - 1].id);
+                        if (info.offset.y < -threshold && focalIndex < filteredCards.length - 1) {
+                          setFocalIndex(prev => prev + 1);
+                        } else if (info.offset.y > threshold && focalIndex > 0) {
+                          setFocalIndex(prev => prev - 1);
                         }
+                        setSelectedCardId(null); // Ensure deselected after swipe ends
                       }}
                       initial={{ opacity: 0, y: 100 }}
                       animate={{
@@ -247,12 +252,20 @@ export default function Promotions() {
                         width: '100%',
                         // Remove maxWidth to allow edge-to-edge on narrower screens
                         transformOrigin: 'center center',
-                        cursor: 'grab',
+                        cursor: isFocal ? 'grab' : 'pointer',
                         touchAction: 'none'
                       }}
-                      whileTap={{ cursor: 'grabbing' }}
-                      // Toggle selection logic: if already selected, deselect
-                      onClick={() => setSelectedCardId(prev => prev === card.id ? null : card.id)}
+                      whileTap={{ cursor: isFocal ? 'grabbing' : 'pointer' }}
+                      onClick={() => {
+                        if (isFocal) {
+                          // Toggle selection only for centered card
+                          setSelectedCardId(prev => prev === card.id ? null : card.id);
+                        } else {
+                          // If clicking background card, move it to center
+                          setFocalIndex(index);
+                          setSelectedCardId(null);
+                        }
+                      }}
                     >
                       <div className="px-0 w-full"> {/* Container for edge-to-edge */}
                         <PromotionCard
@@ -274,7 +287,7 @@ export default function Promotions() {
                     key={`dot-${card.id}`}
                     className={cn(
                       "w-1.5 h-1.5 rounded-full transition-all duration-300",
-                      (selectedCardId === card.id || (selectedCardId === null && idx === 0))
+                      focalIndex === idx
                         ? "bg-primary h-4"
                         : "bg-white/20"
                     )}
