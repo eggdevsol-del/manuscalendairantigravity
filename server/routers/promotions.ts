@@ -130,6 +130,9 @@ export const promotionsRouter = router({
             customText: t.customText,
             logoUrl: t.logoUrl,
             backgroundImageUrl: t.backgroundImageUrl,
+            backgroundScale: t.backgroundScale ? parseFloat(t.backgroundScale) : 1,
+            backgroundPositionX: t.backgroundPositionX,
+            backgroundPositionY: t.backgroundPositionY,
             status: 'active' as const,
             code: null,
             expiresAt: null,
@@ -162,6 +165,9 @@ export const promotionsRouter = router({
             customText: p.template?.customText,
             logoUrl: p.template?.logoUrl,
             backgroundImageUrl: p.template?.backgroundImageUrl,
+            backgroundScale: p.template?.backgroundScale ? parseFloat(p.template?.backgroundScale) : 1,
+            backgroundPositionX: p.template?.backgroundPositionX,
+            backgroundPositionY: p.template?.backgroundPositionY,
             status: p.status,
             code: p.code,
             expiresAt: p.expiresAt,
@@ -405,7 +411,7 @@ export const promotionsRouter = router({
         finalAmount = Math.max(0, finalAmount);
 
         // Calculate new remaining value
-        const newRemainingValue = promotion.valueType === 'percentage' 
+        const newRemainingValue = promotion.valueType === 'percentage'
           ? 0 // Percentage discounts are fully used in one transaction
           : promotion.remainingValue - amountRedeemed;
 
@@ -439,7 +445,7 @@ export const promotionsRouter = router({
           .where(eq(schema.appointments.id, input.appointmentId));
 
         console.log(`[promotions.redeemPromotion] Redeemed ${amountRedeemed} cents on appointment ${input.appointmentId}`);
-        
+
         return {
           success: true,
           amountRedeemed,
