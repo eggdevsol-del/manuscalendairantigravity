@@ -567,10 +567,17 @@ export default function Calendar() {
                               const serviceColor = availableServices.find(s => s.name === apt.serviceName || s.name === apt.title)?.color || "var(--primary)";
                               const isHex = serviceColor.startsWith('#');
 
+                              const sessionLabel = (() => {
+                                if (!apt.totalSessions || apt.totalSessions <= 1) return null;
+                                if (apt.sessionNumber === apt.totalSessions) return "Final Session";
+                                if (apt.sessionNumber === 1) return "Session One";
+                                return `Session ${apt.sessionNumber}`;
+                              })();
+
                               return (
                                 <div
                                   key={apt.id}
-                                  className="p-2.5 rounded-xl border cursor-pointer transition-colors backdrop-blur-sm"
+                                  className="p-2.5 rounded-xl border cursor-pointer transition-colors backdrop-blur-sm flex flex-col justify-center"
                                   style={{
                                     backgroundColor: isHex ? `${serviceColor}40` : `oklch(from ${serviceColor} l c h / 0.1)`,
                                     borderColor: isHex ? `${serviceColor}60` : `oklch(from ${serviceColor} l c h / 0.2)`
@@ -581,19 +588,18 @@ export default function Calendar() {
                                     setShowAppointmentDetailDialog(true);
                                   }}
                                 >
-                                  <div className="flex justify-between items-start">
-                                    <p className="text-sm font-semibold text-foreground/90 truncate">
-                                      {apt.serviceName || apt.title}
-                                    </p>
-                                    <p className="text-xs font-mono text-muted-foreground">
-                                      {new Date(apt.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                                    </p>
+                                  <p className="text-sm font-bold text-foreground truncate">
+                                    {apt.clientName || "Unknown Client"}
+                                  </p>
+                                  <div className="flex items-center gap-1.5 text-xs text-foreground/80 truncate mt-0.5">
+                                    <span>{apt.serviceName || apt.title}</span>
+                                    {sessionLabel && (
+                                      <>
+                                        <span className="opacity-40">•</span>
+                                        <span className="opacity-60 font-medium">{sessionLabel}</span>
+                                      </>
+                                    )}
                                   </div>
-                                  {apt.clientName && (
-                                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                                      {apt.clientName}
-                                    </p>
-                                  )}
                                 </div>
                               );
                             })}
@@ -828,17 +834,37 @@ export default function Calendar() {
                                   setShowAppointmentDetailDialog(true);
                                 }}
                               >
-                                <div className="flex items-center gap-2">
-                                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: serviceColor }} />
-                                  <span className="text-xs font-bold text-foreground truncate shadow-black drop-shadow-sm">
-                                    {apt.serviceName || apt.title}
-                                  </span>
-                                </div>
-                                {heightPx > 30 && (
-                                  <div className="text-[10px] text-foreground/80 pl-3.5 truncate">
-                                    {start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-                                  </div>
-                                )}
+                                {(() => {
+                                  const sessionLabel = (() => {
+                                    if (!apt.totalSessions || apt.totalSessions <= 1) return null;
+                                    if (apt.sessionNumber === apt.totalSessions) return "Final Session";
+                                    if (apt.sessionNumber === 1) return "Session One";
+                                    return `Session ${apt.sessionNumber}`;
+                                  })();
+
+                                  return (
+                                    <>
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0" style={{ backgroundColor: serviceColor }} />
+                                        <p className="text-sm font-bold text-foreground truncate shadow-black drop-shadow-sm">
+                                          {apt.clientName || "Unknown Client"}
+                                        </p>
+                                      </div>
+
+                                      {heightPx > 40 && (
+                                        <div className="flex items-center gap-1.5 text-xs text-foreground/90 truncate pl-3.5 mt-0.5">
+                                          <span>{apt.serviceName || apt.title}</span>
+                                          {sessionLabel && (
+                                            <>
+                                              <span className="opacity-40">•</span>
+                                              <span className="opacity-70 font-medium">{sessionLabel}</span>
+                                            </>
+                                          )}
+                                        </div>
+                                      )}
+                                    </>
+                                  );
+                                })()}
                               </div>
                             );
                           })}

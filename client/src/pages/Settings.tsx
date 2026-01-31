@@ -1,7 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useUIDebug } from "@/_core/contexts/UIDebugContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import DemoDataLoader from "./DemoDataLoader";
 import PushNotificationSettings from "@/components/PushNotificationSettings";
 import WorkHoursAndServices from "./WorkHoursAndServices";
 import ArtistLink from "@/components/ArtistLink";
@@ -582,8 +581,6 @@ export default function Settings() {
                 </Card>
               </>
             )}
-
-            {isArtist && <DemoDataLoader />}
 
             <Card className="border-0 bg-white/5 rounded-2xl overflow-hidden">
               <div className="p-4 flex items-center justify-between">

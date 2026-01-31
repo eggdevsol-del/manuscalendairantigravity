@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte, gt, lt, ne } from "drizzle-orm";
+import { and, desc, eq, gte, lte, gt, lt, ne, sql } from "drizzle-orm";
 import { appointments, InsertAppointment, users } from "../../drizzle/schema";
 import { getDb } from "./core";
 
@@ -43,7 +43,7 @@ export async function updateAppointment(
 
     await db
         .update(appointments)
-        .set({ ...updates, updatedAt: new Date() })
+        .set({ ...updates, updatedAt: new Date().toISOString() })
         .where(eq(appointments.id, id));
 
     return getAppointment(id);
@@ -73,11 +73,11 @@ export async function getAppointmentsForUser(
     ];
 
     if (startDate) {
-        conditions.push(gte(appointments.startTime, startDate));
+        conditions.push(gte(appointments.startTime, startDate.toISOString()));
     }
 
     if (endDate) {
-        conditions.push(lte(appointments.startTime, endDate));
+        conditions.push(lte(appointments.startTime, endDate.toISOString()));
     }
 
     // Join with users table to get client/artist names
@@ -103,6 +103,17 @@ export async function getAppointmentsForUser(
             updatedAt: appointments.updatedAt,
             clientName: users.name,
             clientEmail: users.email,
+            sessionNumber: sql<number>`(
+                SELECT COUNT(*)
+                FROM ${appointments} a2
+                WHERE a2.conversationId = ${appointments.conversationId}
+                AND a2.startTime <= ${appointments.startTime}
+            )`,
+            totalSessions: sql<number>`(
+                SELECT COUNT(*)
+                FROM ${appointments} a2
+                WHERE a2.conversationId = ${appointments.conversationId}
+            )`,
         })
         .from(appointments)
         .leftJoin(users, eq(appointments.clientId, users.id))
