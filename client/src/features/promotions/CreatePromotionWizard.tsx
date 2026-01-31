@@ -134,6 +134,9 @@ export function CreatePromotionWizard({
     }
   };
 
+  // Local preview state for immediate feedback
+  const [localBackgroundPreview, setLocalBackgroundPreview] = useState<string | null>(null);
+
   // Handle background upload
   const handleBackgroundUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -154,6 +157,9 @@ export function CreatePromotionWizard({
       const reader = new FileReader();
       reader.onload = async () => {
         const base64 = reader.result as string;
+        // Set local preview immediately
+        setLocalBackgroundPreview(base64);
+
         const result = await uploadMutation.mutateAsync({
           base64,
           filename: file.name,
@@ -166,6 +172,7 @@ export function CreatePromotionWizard({
     } catch (error) {
       console.error('[CreatePromotionWizard] Background upload error:', error);
       toast.error('Failed to upload background');
+      setLocalBackgroundPreview(null); // Clear preview on error
     } finally {
       setUploadingBackground(false);
     }
@@ -212,7 +219,7 @@ export function CreatePromotionWizard({
     customText: customText || null,
     customColor: colorMode === 'custom' ? customColor : undefined,
     logoUrl,
-    backgroundImageUrl,
+    backgroundImageUrl: localBackgroundPreview || backgroundImageUrl,
     backgroundScale,
     backgroundPositionX,
     backgroundPositionY,

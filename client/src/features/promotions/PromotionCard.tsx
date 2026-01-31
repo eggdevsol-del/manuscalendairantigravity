@@ -143,7 +143,7 @@ export function PromotionCard({
         {/* Background Image Layer */}
         {data.backgroundImageUrl && (
           <div
-            className="absolute inset-0 z-0 transition-all duration-200"
+            className="absolute inset-0 transition-all duration-200"
             style={imageStyles}
           />
         )}
