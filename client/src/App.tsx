@@ -3,11 +3,14 @@ import { UIDebugProvider } from "@/_core/contexts/UIDebugContext";
 import { BottomNavProvider } from "@/contexts/BottomNavContext";
 import InstallPrompt from "./components/InstallPrompt";
 import IOSInstallPrompt from "./components/IOSInstallPrompt";
+import IOSInstallPrompt from "./components/IOSInstallPrompt";
 import BottomNav from "@/components/BottomNav";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { useTabletLandscape } from "@/hooks/useTabletLandscape";
 import Home from "./pages/Home";
 import Chat from "./pages/Chat";
 import Calendar from "./pages/Calendar";
@@ -35,9 +38,13 @@ import LeadDetail from "./pages/LeadDetail";
 
 function Router() {
   const [location] = useLocation();
+  const { user } = useAuth();
+  const isTabletLandscape = useTabletLandscape();
+  const isArtist = user?.role === 'artist';
+
   const hideBottomNavPaths = ["/", "/login", "/signup", "/set-password", "/complete-profile"];
   const isPublicFunnel = location.startsWith("/start/") || location.startsWith("/deposit/");
-  const shouldShowBottomNav = !hideBottomNavPaths.includes(location) && !location.startsWith("/404") && !isPublicFunnel;
+  const shouldShowBottomNav = !hideBottomNavPaths.includes(location) && !location.startsWith("/404") && !isPublicFunnel && !(isArtist && isTabletLandscape);
 
   return (
     <div className={`min-h-screen ${shouldShowBottomNav ? "pb-16" : ""}`}>
@@ -46,7 +53,7 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
         <Route path="/set-password" component={SetPassword} />
-        
+
         {/* Public funnel - no auth required */}
         <Route path="/start/:slug" component={PublicFunnel} />
         <Route path="/deposit/:token" component={DepositSheet} />
@@ -84,12 +91,12 @@ function Router() {
 function ConditionalIOSInstallPrompt() {
   const [location] = useLocation();
   const isPublicFunnel = location.startsWith("/start/") || location.startsWith("/deposit/");
-  
+
   // Don't render on funnel pages - the funnel handles its own install prompt
   if (isPublicFunnel) {
     return null;
   }
-  
+
   return <IOSInstallPrompt />;
 }
 

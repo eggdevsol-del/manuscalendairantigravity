@@ -455,7 +455,12 @@ export default function Calendar() {
       <PageHeader title="Calendar" />
 
       {/* 2. Top Context Area (Date Display) */}
-      <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
+      <div
+        className={cn(
+          "px-6 pt-4 z-10 shrink-0 flex flex-col justify-center transition-all duration-500 ease-in-out overflow-hidden",
+          selectedDate ? "h-0 opacity-0 pb-0" : "h-[20vh] opacity-80 pb-8"
+        )}
+      >
         <p className="text-4xl font-light text-foreground/90 tracking-tight">
           {currentDate.toLocaleDateString("en-US", { weekday: "long" })}
         </p>
@@ -667,12 +672,23 @@ export default function Calendar() {
               <div className="flex-1 overflow-hidden min-h-0 border-t border-white/5 bg-black/20 flex flex-col">
 
                 {/* Timeline Header */}
-                <div className="px-4 py-3 shrink-0 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md z-10">
-                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
-                    {selectedDate
-                      ? selectedDate.toLocaleDateString("en-US", { weekday: 'long', month: 'long', day: 'numeric' })
-                      : "Select a date"}
-                  </h3>
+                <div className="px-4 py-3 shrink-0 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md z-10 transition-colors duration-300">
+                  <div className="flex items-center gap-2">
+                    {selectedDate && (
+                      <Button
+                        size="icon" variant="ghost" className="h-8 w-8 -ml-2 text-muted-foreground hover:text-foreground rounded-full"
+                        onClick={() => setSelectedDate(null)}
+                      >
+                        <ArrowLeft className="w-5 h-5" />
+                      </Button>
+                    )}
+                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1">
+                      {selectedDate
+                        ? selectedDate.toLocaleDateString("en-US", { weekday: 'long', month: 'long', day: 'numeric' })
+                        : "Select a date"}
+                    </h3>
+                  </div>
+
                   {selectedDate && isArtist && (
                     <Button
                       size="sm" variant="ghost" className="h-6 px-2 text-primary hover:text-primary hover:bg-primary/10 -mr-2"

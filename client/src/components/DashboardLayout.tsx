@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
+import { useTabletLandscape } from "@/hooks/useTabletLandscape";
 import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -124,6 +125,24 @@ function DashboardLayoutContent({
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
 
+  const isTabletLandscape = useTabletLandscape();
+  // Ensure we check for artist role here too if we want to be safe, but DashboardLayout is usually protected or used by logged in users.
+  // Ideally, we should receive 'isArtist' or check 'user.role' here again.
+  const isArtist = user?.role === 'artist';
+
+  // Force expand if artist + tablet landscape
+  // We can't easily force the 'state' from here since it's controlled by SidebarProvider/useSidebar context internal state usually.
+  // unique SidebarProvider logic: it uses cookie or localstorage. 
+  // But we can affect the `defaultOpen` or similar if we could.
+  // Since `useSidebar` provides `state`, we might want to effect it.
+
+  useEffect(() => {
+    if (isArtist && isTabletLandscape && isCollapsed) {
+      toggleSidebar();
+    }
+  }, [isArtist, isTabletLandscape]); // Intentionally not adding isCollapsed to dependency to avoid loops if toggleSidebar implementation toggles
+
+  // However, specifically for the Resizing logic:
   useEffect(() => {
     if (isCollapsed) {
       setIsResizing(false);
@@ -272,7 +291,7 @@ function DashboardLayoutContent({
       </div>
 
       <SidebarInset>
-        {isMobile && (
+        {isMobile && !isTabletLandscape && (
           <div className="flex border-b h-14 items-center justify-between px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="h-9 w-9 rounded-lg" />
