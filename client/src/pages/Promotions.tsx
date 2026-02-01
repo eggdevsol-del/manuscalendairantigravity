@@ -227,22 +227,15 @@ export default function Promotions() {
                   return (
                     <motion.div
                       key={card.id}
-                      drag="y"
-                      dragConstraints={{ top: 0, bottom: 0 }}
-                      dragElastic={0.2}
-                      onDragStart={() => {
-                        console.log('[Promotions] Drag Start - Unselecting');
-                        setSelectedCardId(null); // Hide buttons when swipe starts
-                      }}
-                      onDragEnd={(_, info) => {
+                      onPanEnd={(_, info) => {
                         const threshold = 50;
                         if (info.offset.y < -threshold && focalIndex < filteredCards.length - 1) {
                           setFocalIndex(prev => prev + 1);
+                          setSelectedCardId(null);
                         } else if (info.offset.y > threshold && focalIndex > 0) {
                           setFocalIndex(prev => prev - 1);
+                          setSelectedCardId(null);
                         }
-                        setSelectedCardId(null); // Ensure deselected after swipe ends
-                        console.log('[Promotions] Drag End - Unselecting');
                       }}
                       initial={{ opacity: 0, y: 100 }}
                       animate={{
@@ -255,8 +248,9 @@ export default function Promotions() {
                       exit={{ opacity: 0, scale: 0.5 }}
                       transition={{
                         type: "spring",
-                        stiffness: 300,
-                        damping: 30
+                        stiffness: 220, // Softer spring
+                        damping: 25,
+                        mass: 0.8
                       }}
                       style={{
                         position: 'absolute',
@@ -310,15 +304,16 @@ export default function Promotions() {
         </div>
 
         {/* Stable Footer Controls Area */}
-        <div className="shrink-0 z-[60] bg-gradient-to-t from-card via-card to-transparent px-4 pb-24 pt-4 w-full relative min-h-[200px] flex flex-col justify-center">
-          <AnimatePresence mode="wait">
+        <div className="shrink-0 z-[60] bg-gradient-to-t from-card via-card to-transparent px-4 pb-24 pt-4 w-full relative min-h-[200px] flex items-center justify-center">
+          <AnimatePresence mode="popLayout">
             {selectedCard ? (
               <motion.div
                 key="actions"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="w-full space-y-2"
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="w-full space-y-2 absolute top-1/2 left-0 right-0 -translate-y-1/2 px-4"
               >
                 {isArtist ? (
                   <>
@@ -389,10 +384,11 @@ export default function Promotions() {
             ) : isArtist ? (
               <motion.div
                 key="create"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="w-full"
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="w-full absolute top-1/2 left-0 right-0 -translate-y-1/2 px-4"
               >
                 <Button
                   className="w-full h-14 rounded-2xl font-bold text-base shadow-lg"
