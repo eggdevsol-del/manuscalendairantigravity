@@ -221,7 +221,7 @@ export default function Promotions() {
 
                   // Visual constants
                   const cardOffset = 180; // Increased offset for better visibility
-                  const scaleFactor = 0.15;
+                  const scaleFactor = 0.05;
                   const blurAmount = 4;
 
                   return (
@@ -248,8 +248,8 @@ export default function Promotions() {
                       exit={{ opacity: 0, scale: 0.5 }}
                       transition={{
                         type: "spring",
-                        stiffness: 220, // Softer spring
-                        damping: 25,
+                        stiffness: 280, // Faster spring (approx 20% speedup)
+                        damping: 28,
                         mass: 0.8
                       }}
                       style={{
@@ -277,7 +277,7 @@ export default function Promotions() {
                           data={card as PromotionCardData}
                           selected={isSelected}
                           size="lg"
-                          className="w-full shadow-2xl rounded-none" // Remove rounding if needed for edge-to-edge look, or keep if preferred
+                          className="w-full shadow-2xl rounded-2xl"
                         />
                       </div>
                     </motion.div>
