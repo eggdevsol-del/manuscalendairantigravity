@@ -311,43 +311,51 @@ export default function Calendar() {
   // Keep getMonthDays for backward compatibility but use memoized value
   const getMonthDays = () => monthDays;
 
-  const getAppointmentsForDate = (date: Date) => {
-    if (!appointments) return [];
-    return appointments.filter((apt) => {
-      const aptDate = new Date(apt.startTime);
-      return (
-        aptDate.getDate() === date.getDate() &&
-        aptDate.getMonth() === date.getMonth() &&
-        aptDate.getFullYear() === date.getFullYear()
-      );
+  // Optimize appointment lookup: Create O(1) map
+  const appointmentsByDate = useMemo(() => {
+    if (!appointments) return new Map<string, any[]>();
+    const map = new Map<string, any[]>();
+
+    appointments.forEach((apt) => {
+      const d = new Date(apt.startTime);
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; // Consistent key
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(apt);
     });
+    return map;
+  }, [appointments]);
+
+  const getAppointmentsForDate = (date: Date) => {
+    const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    return appointmentsByDate.get(key) || [];
   };
 
   // -- Swipe Gestures --
-  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
-  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
+  // Use Refs instead of State to prevent re-renders during swipe (60fps critical)
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const touchEndRef = useRef<{ x: number; y: number } | null>(null);
   const minSwipeDistance = 50;
 
   const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart({
+    touchEndRef.current = null;
+    touchStartRef.current = {
       x: e.targetTouches[0].clientX,
       y: e.targetTouches[0].clientY,
-    });
+    };
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd({
+    touchEndRef.current = {
       x: e.targetTouches[0].clientX,
       y: e.targetTouches[0].clientY,
-    });
+    };
   };
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!touchStartRef.current || !touchEndRef.current) return;
 
-    const xDistance = touchStart.x - touchEnd.x;
-    const yDistance = touchStart.y - touchEnd.y;
+    const xDistance = touchStartRef.current.x - touchEndRef.current.x;
+    const yDistance = touchStartRef.current.y - touchEndRef.current.y;
 
     // Check for horizontal swipe (Month Navigation)
     const isHorizontalSwipe = Math.abs(xDistance) > Math.abs(yDistance);
@@ -365,10 +373,7 @@ export default function Calendar() {
       if (Math.abs(yDistance) < minSwipeDistance) return;
 
       // Swipe Up/Down Logic
-      // User requested "Day View" which matches the current Split View (Grid + List).
-      // We do NOT want to switch to 'week' view.
-      // For now, allow default scrolling or add partial sheet logic later if needed.
-      // Keeping this block empty or removing the mode switch ensures we stay in the desired "Day View" (Split Layout).
+      // Currently empty as per original code
     }
   };
 
@@ -460,6 +465,7 @@ export default function Calendar() {
           "px-6 pt-4 z-10 shrink-0 flex flex-col justify-center transition-all duration-500 ease-in-out overflow-hidden",
           selectedDate ? "h-0 opacity-0 pb-0" : "h-[20vh] opacity-80 pb-8"
         )}
+        style={{ willChange: "height, padding, opacity" }}
       >
         <p className="text-4xl font-light text-foreground/90 tracking-tight">
           {currentDate.toLocaleDateString("en-US", { weekday: "long" })}
@@ -526,6 +532,7 @@ export default function Calendar() {
                 // When selected, constrain grid height to allow timeline to take 75%
                 selectedDate && viewMode === 'month' ? "h-[25%] overflow-hidden shrink-0" : ""
               )}
+              style={{ willChange: "height, flex-basis" }}
             >
               {viewMode === "week" ? (
                 <div className="space-y-3">
@@ -694,6 +701,7 @@ export default function Calendar() {
                   // Ensure it takes 75% when selected, pushing the grid to be smaller
                   selectedDate ? "basis-[75%] grow-0" : ""
                 )}
+                style={{ willChange: "flex-basis" }}
               >
 
                 {/* Timeline Header */}
