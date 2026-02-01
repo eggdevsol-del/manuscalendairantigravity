@@ -169,6 +169,13 @@ export default function Promotions() {
 
   // Shared Drag End Handler (Locked Lifecycle)
   function handleDragEnd(_: any, info: PanInfo) {
+    if (commitLockRef.current) return; // Prevent double-trigger
+
+    // Check if meaningful drag occurred (for click prevention)
+    if (Math.abs(info.offset.y) > 5) {
+      didDragRef.current = true;
+    }
+
     const threshold = 50;
     const offset = info.offset.y;
     const velocity = info.velocity.y;
