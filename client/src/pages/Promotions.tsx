@@ -14,7 +14,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { PageShell, PageHeader, GlassSheet, FullScreenSheet } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
 import { Gift, Percent, CreditCard, Plus, Send, Calendar, Check, Info, Settings, Edit, Trash2, AlertTriangle } from "lucide-react";
-import { motion, AnimatePresence, useAnimation, useMotionValue, PanInfo, useTransform, animate, MotionValue } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, PanInfo, useTransform, animate, MotionValue } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -639,15 +639,13 @@ interface SwipeableCardWrapperProps {
 
 function SwipeableCardWrapper({ children, isFocal, position, sharedDragY, onSwipe }: SwipeableCardWrapperProps) {
   // Define coupling factor based on position
-  // pos 0 -> 1.0, pos 1 -> ~0.31, pos 2 -> ~0.19, etc.
   const factor = 1 / (1 + Math.abs(position) * 2.2);
 
   // Use sharedDragY directly if focal, otherwise derive it with the factor
-  const derivedY = isFocal
-    ? sharedDragY
-    : useTransform(sharedDragY, v => v * factor);
+  // This ensures parallax but keeps only ONE source of truth for the drag.
+  const y = isFocal ? sharedDragY : useTransform(sharedDragY, v => v * factor);
 
-  // Ensure clean state when focal status changes
+  // Guard: If we stop being focal, we must ensure we aren't holding a drag offset.
   useEffect(() => {
     if (!isFocal) {
       sharedDragY.set(0);
@@ -659,25 +657,25 @@ function SwipeableCardWrapper({ children, isFocal, position, sharedDragY, onSwip
     const offset = info.offset.y;
     const velocity = info.velocity.y;
 
+    // Logic: Immediate reset if we are about to navigate (prevents flash).
+    // Otherwise, spring back.
     if (offset < -threshold || (velocity < -500)) { // Up
-      sharedDragY.set(0); // Instant reset before state change
+      sharedDragY.set(0);
       onSwipe('up');
     } else if (offset > threshold || (velocity > 500)) { // Down
-      sharedDragY.set(0); // Instant reset before state change
+      sharedDragY.set(0);
       onSwipe('down');
     } else {
-      // Revert if threshold not met
-      animate(sharedDragY, 0, { type: "spring", stiffness: 300, damping: 30 });
+      animate(sharedDragY, 0, { type: "spring", stiffness: 300, damping: 30, mass: 0.8 });
     }
   }
 
   return (
     <motion.div
       drag={isFocal ? "y" : false}
-      // Free drag (no constraints) to allow 1:1 following
-      dragElastic={0.12} // Ignored without constraints but keeping for completeness 
+      dragElastic={0.12}
       dragMomentum={false}
-      style={{ y: derivedY }}
+      style={{ y }}
       onDragEnd={onDragEnd}
       className="w-full"
     >
