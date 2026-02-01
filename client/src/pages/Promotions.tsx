@@ -9,7 +9,7 @@
  * @version 1.0.1
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { PageShell, PageHeader, GlassSheet, FullScreenSheet } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
@@ -213,7 +213,7 @@ export default function Promotions() {
             <div className="relative w-full h-full flex items-center justify-center overflow-visible">
               {/* Debug render */}
               {(() => { console.log('[Promotions] Render - Loading:', isLoading, 'Cards:', filteredCards.length); return null; })()}
-              <AnimatePresence>
+              <AnimatePresence initial={false}>
                 {filteredCards.map((card, index) => {
                   // Use focalIndex for positioning
                   const position = index - focalIndex;
@@ -647,19 +647,28 @@ function SwipeableCardWrapper({ children, isFocal, position, sharedDragY, onSwip
     ? sharedDragY
     : useTransform(sharedDragY, v => v * factor);
 
+  // Ensure clean state when focal status changes
+  useEffect(() => {
+    if (!isFocal) {
+      sharedDragY.set(0);
+    }
+  }, [isFocal, sharedDragY]);
+
   function onDragEnd(_: any, info: PanInfo) {
     const threshold = 50;
     const offset = info.offset.y;
     const velocity = info.velocity.y;
 
     if (offset < -threshold || (velocity < -500)) { // Up
+      sharedDragY.set(0); // Instant reset before state change
       onSwipe('up');
     } else if (offset > threshold || (velocity > 500)) { // Down
+      sharedDragY.set(0); // Instant reset before state change
       onSwipe('down');
+    } else {
+      // Revert if threshold not met
+      animate(sharedDragY, 0, { type: "spring", stiffness: 300, damping: 30 });
     }
-
-    // Always snap sharedDragY back to 0 with spring
-    animate(sharedDragY, 0, { type: "spring", stiffness: 300, damping: 30 });
   }
 
   return (
