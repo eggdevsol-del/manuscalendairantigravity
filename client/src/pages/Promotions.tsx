@@ -120,7 +120,9 @@ export default function Promotions() {
   const filteredCards = promotions || [];
   const selectedCard = filteredCards.find(c => c.id === selectedCardId);
 
-  // DRAG & PHYSICS (Centralized to prevent re-render crashes)
+  // ----------------------------------------------------
+  // DRAG & PHYSICS (Centralized to prevent crashes)
+  // ----------------------------------------------------
   const dragY = useMotionValue(0);
   const COMMIT_DISTANCE = 110;
   const cardOffset = 180; // Visual constant for stacking
@@ -131,12 +133,43 @@ export default function Promotions() {
   );
 
   // Transform progress into a stack pixel shift
-  const stackShiftY = useTransform(progress, v => v * cardOffset);
+  const stackShift = useTransform(progress, v => v * cardOffset);
 
-  // Stop drag animation on unmount
+  // Stop drag animation on unmount & cleanup
   useEffect(() => {
     return () => dragY.stop();
   }, []);
+
+  // Shared Drag End Handler (Locked Lifecycle)
+  function handleDragEnd(_: any, info: PanInfo) {
+    const threshold = 50;
+    const offset = info.offset.y;
+    const velocity = info.velocity.y;
+
+    if (offset < -threshold || (velocity < -500)) { // Up
+      dragY.stop();
+      dragY.set(0);
+
+      if (focalIndex < filteredCards.length - 1) {
+        setFocalIndex(prev => prev + 1);
+        setSelectedCardId(null);
+      } else {
+        animate(dragY, 0, { type: "spring", stiffness: 300, damping: 30 });
+      }
+    } else if (offset > threshold || (velocity > 500)) { // Down
+      dragY.stop();
+      dragY.set(0);
+
+      if (focalIndex > 0) {
+        setFocalIndex(prev => prev - 1);
+        setSelectedCardId(null);
+      } else {
+        animate(dragY, 0, { type: "spring", stiffness: 300, damping: 30 });
+      }
+    } else {
+      animate(dragY, 0, { type: "spring", stiffness: 300, damping: 30, mass: 0.8 });
+    }
+  }
 
   // Handle card selection
   const handleCardClick = (cardId: number) => {
@@ -230,15 +263,22 @@ export default function Promotions() {
             <div className="relative w-full h-full flex items-center justify-center overflow-visible">
               {/* Debug render */}
               {(() => { console.log('[Promotions] Render - Loading:', isLoading, 'Cards:', filteredCards.length); return null; })()}
-              <AnimatePresence initial={false}>
+              <AnimatePresence initial={false} mode="popLayout">
                 {filteredCards.map((card, index) => {
-                  // Use focalIndex for positioning
                   const position = index - focalIndex;
                   const isSelected = selectedCardId === card.id;
                   const isFocal = focalIndex === index;
 
-                  // Visual constants (kept for blur/scale/z-index logic - layout SSOT)
-                  const scaleFactor = 0.05;
+                  // Compute per-card transforms in parent
+                  const factor = 1 / (1 + Math.abs(position) * 2.2);
+                  const y = isFocal
+                    ? dragY
+                    : useTransform(stackShift, v => v * factor);
+
+                  // Scale: Reactive calculation
+                  const scale = useTransform(progress, p => 1 - Math.abs(position + p) * 0.05);
+
+                  // Visual constants
                   const blurAmount = 4;
 
                   return (
@@ -247,22 +287,19 @@ export default function Promotions() {
                       initial={{ opacity: 0, y: 100 }}
                       animate={{
                         opacity: Math.max(0, 1 - Math.abs(position) * 0.4),
-                        y: position * cardOffset,
-                        scale: 1 - Math.abs(position) * scaleFactor,
                         zIndex: 50 - Math.abs(position),
                         filter: `blur(${Math.min(blurAmount, Math.abs(position) * 2)}px)`,
                       }}
                       exit={{ opacity: 0, scale: 0.5 }}
                       transition={{
                         type: "spring",
-                        stiffness: 280, // Faster spring (approx 20% speedup)
+                        stiffness: 280,
                         damping: 28,
                         mass: 0.8
                       }}
                       style={{
                         position: 'absolute',
                         width: '100%',
-                        // Remove maxWidth to allow edge-to-edge on narrower screens
                         transformOrigin: 'center center',
                         cursor: isFocal ? 'grab' : 'pointer',
                         touchAction: 'none'
@@ -270,10 +307,8 @@ export default function Promotions() {
                       whileTap={{ cursor: isFocal ? 'grabbing' : 'pointer' }}
                       onClick={() => {
                         if (isFocal) {
-                          // Toggle selection only for centered card
                           setSelectedCardId(prev => prev === card.id ? null : card.id);
                         } else {
-                          // If clicking background card, move it to center
                           setFocalIndex(index);
                           setSelectedCardId(null);
                         }
@@ -281,21 +316,11 @@ export default function Promotions() {
                     >
                       <SwipeableCardWrapper
                         isFocal={isFocal}
-                        position={position}
-                        dragY={dragY}
-                        progress={progress}
-                        stackShiftY={stackShiftY}
-                        onSwipe={(direction) => {
-                          if (direction === 'up' && focalIndex < filteredCards.length - 1) {
-                            setFocalIndex(prev => prev + 1);
-                            setSelectedCardId(null);
-                          } else if (direction === 'down' && focalIndex > 0) {
-                            setFocalIndex(prev => prev - 1);
-                            setSelectedCardId(null);
-                          }
-                        }}
+                        y={y}
+                        scale={scale}
+                        onDragEnd={handleDragEnd}
                       >
-                        <div className="px-0 w-full"> {/* Container for edge-to-edge */}
+                        <div className="px-0 w-full">
                           <PromotionCard
                             data={card as PromotionCardData}
                             selected={isSelected}
@@ -650,51 +675,25 @@ function AutoApplySheet({
 interface SwipeableCardWrapperProps {
   children: React.ReactNode;
   isFocal: boolean;
-  position: number;
-  dragY: MotionValue<number>;
-  progress: MotionValue<number>;
-  stackShiftY: MotionValue<number>;
-  onSwipe: (direction: 'up' | 'down') => void;
+  y: MotionValue<number>;
+  scale: MotionValue<number> | number;
+  onDragEnd: (e: any, info: PanInfo) => void;
 }
 
 function SwipeableCardWrapper({
   children,
   isFocal,
-  position,
-  dragY,
-  stackShiftY,
-  onSwipe
+  y,
+  scale,
+  onDragEnd
 }: SwipeableCardWrapperProps) {
-
-  // Define coupling factor based on position
-  const factor = 1 / (1 + Math.abs(position) * 2.2);
-
-  const y = isFocal
-    ? dragY
-    : useTransform(stackShiftY, v => v * factor);
-
-  function onDragEnd(_: any, info: PanInfo) {
-    const threshold = 50;
-    const offset = info.offset.y;
-    const velocity = info.velocity.y;
-
-    if (offset < -threshold || (velocity < -500)) { // Up
-      dragY.set(0);
-      onSwipe('up');
-    } else if (offset > threshold || (velocity > 500)) { // Down
-      dragY.set(0);
-      onSwipe('down');
-    } else {
-      animate(dragY, 0, { type: "spring", stiffness: 300, damping: 30, mass: 0.8 });
-    }
-  }
-
+  // Dumb component - only rendering motion values passed from parent
   return (
     <motion.div
       drag={isFocal ? "y" : false}
       dragConstraints={false}
       dragMomentum={false}
-      style={{ y }}
+      style={{ y, scale }}
       onDragEnd={onDragEnd}
       className="w-full"
     >
