@@ -9,7 +9,7 @@
  * @version 1.0.1
  */
 
-import { useEffect, useState, useRef, useLayoutEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { PageShell, PageHeader, GlassSheet, FullScreenSheet } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
@@ -81,26 +81,6 @@ export default function Promotions() {
   // Ref for the list container to apply CSS variables
   const listContainerRef = useRef<HTMLDivElement>(null);
 
-  // LIFECYCLE LOCKS
-  // Prevent re-entry during async animations
-  const commitLockRef = useRef(false);
-  // Prevent click-selection if the user just dragged
-  const didDragRef = useRef(false);
-
-  // RESET LOGIC: 
-  // We MUST wait for the React render cycle to complete (new focalIndex committed)
-  // before we reset dragY to 0. If we do it too early, the OLD focal card snaps back.
-  useLayoutEffect(() => {
-    // Check if we just finished a drag transition
-    if (commitLockRef.current) {
-      // release lock
-      commitLockRef.current = false;
-      // NOW it is safe to reset dragY because the new card is the focal card
-      // and it should start at 0.
-      dragY.set(0);
-    }
-  }, [focalIndex]); // Runs synchronously after DOM mutation
-
   // Reset focalIndex when filter changes
   const handleFilterChange = (filter: 'all' | PromotionType) => {
     setActiveFilter(filter);
@@ -169,13 +149,6 @@ export default function Promotions() {
 
   // Shared Drag End Handler (Locked Lifecycle)
   function handleDragEnd(_: any, info: PanInfo) {
-    if (commitLockRef.current) return; // Prevent double-trigger
-
-    // Check if meaningful drag occurred (for click prevention)
-    if (Math.abs(info.offset.y) > 5) {
-      didDragRef.current = true;
-    }
-
     const threshold = 50;
     const offset = info.offset.y;
     const velocity = info.velocity.y;
@@ -184,17 +157,17 @@ export default function Promotions() {
       dragY.stop();
 
       if (focalIndex < filteredCards.length - 1) {
-        // LOCK: Start async handoff
-        commitLockRef.current = true;
-
         // Animate to the visual destination (off-screen/stack top) BEFORE state update
         // This prevents the visual "snap to center" glitch
         animate(dragY, -cardOffset, { type: "spring", stiffness: 400, damping: 25 })
           .then(() => {
-            setIsDragging(false);
+            setIsDragging(false); // Ensure dragging state is cleared
             setFocalIndex(prev => prev + 1);
             setSelectedCardId(null);
-            // DO NOT reset dragY here. useLayoutEffect will do it after render.
+            // We set dragY to 0 immediately after state update.
+            // Since the card at 'prev' index is no longer focal, it ignores dragY (0).
+            // The new focal card starts at 0 (center) which is correct.
+            dragY.set(0);
           });
       } else {
         animate(dragY, 0, { type: "spring", stiffness: 300, damping: 30 });
@@ -203,14 +176,12 @@ export default function Promotions() {
       dragY.stop();
 
       if (focalIndex > 0) {
-        commitLockRef.current = true;
-
         animate(dragY, cardOffset, { type: "spring", stiffness: 400, damping: 25 })
           .then(() => {
             setIsDragging(false);
             setFocalIndex(prev => prev - 1);
             setSelectedCardId(null);
-            // DO NOT reset dragY here. useLayoutEffect will do it after render.
+            dragY.set(0);
           });
       } else {
         animate(dragY, 0, { type: "spring", stiffness: 300, damping: 30 });
@@ -368,15 +339,8 @@ export default function Promotions() {
                       }}
                       whileTap={{ cursor: isFocal ? 'grabbing' : 'pointer' }}
                       onClick={() => {
-                        // Prevent click if we were just dragging (checking both state and ref)
-                        if (isDragging || didDragRef.current) {
-                          // Reset local drag ref for next time
-                          didDragRef.current = false;
-                          return;
-                        }
-
-                        // Also clear the ref just in case
-                        didDragRef.current = false;
+                        // Prevent click if we were just dragging
+                        if (isDragging) return;
 
                         if (isFocal) {
                           setSelectedCardId(prev => prev === card.id ? null : card.id);
@@ -390,13 +354,9 @@ export default function Promotions() {
                         isFocal={isFocal}
                         y={dragY} // Only used if isFocal (MotionValue)
                         factor={factor} // Used for CSS calc if !isFocal (number)
-                        onDragStart={() => {
-                          setIsDragging(true);
-                          didDragRef.current = false; // Reset start
-                        }}
+                        onDragStart={() => setIsDragging(true)}
                         onDragEnd={(e, info) => {
-                          // Note: setIsDragging(false) is handled in handleDragEnd animate.then()
-                          // We pass through to the logic handler
+                          setIsDragging(false);
                           handleDragEnd(e, info);
                         }}
                       >
