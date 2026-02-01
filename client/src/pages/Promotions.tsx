@@ -309,17 +309,17 @@ export default function Promotions() {
           )}
         </div>
 
-        {/* Action Buttons (when card selected) */}
-        <AnimatePresence>
-          {selectedCard && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="absolute bottom-32 left-0 right-0 px-4 overflow-y-auto no-scrollbar z-[60]"
-              style={{ maxHeight: '30vh' }}
-            >
-              <div className="space-y-2 pb-4"> {/* Inner container for layout */}
+        {/* Stable Footer Controls Area */}
+        <div className="shrink-0 z-[60] bg-gradient-to-t from-card via-card to-transparent px-4 pb-8 pt-4 w-full relative min-h-[160px] flex flex-col justify-end">
+          <AnimatePresence mode="wait">
+            {selectedCard ? (
+              <motion.div
+                key="actions"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="w-full space-y-2"
+              >
                 {isArtist ? (
                   <>
                     <Button
@@ -385,26 +385,28 @@ export default function Promotions() {
                     )}
                   </>
                 )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Create New Button - Only visible for artists when no card is selected */}
-        {isArtist && !selectedCardId && (
-          <div className="sticky bottom-24 left-0 right-0 px-4 pt-6 pb-2 mt-8 bg-gradient-to-t from-card via-card to-transparent">
-            <Button
-              className="w-full h-14 rounded-2xl font-bold text-base shadow-lg"
-              onClick={() => setShowCreateWizard(true)}
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Create New {activeFilter === 'all' ? 'Voucher' : activeFilter === 'voucher' ? 'Voucher' : activeFilter === 'discount' ? 'Discount' : 'Credit'}
-            </Button>
-          </div>
-        )}
-
-        {/* Spacer for bottom nav */}
-        <div className="h-32" />
+              </motion.div>
+            ) : isArtist ? (
+              <motion.div
+                key="create"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="w-full"
+              >
+                <Button
+                  className="w-full h-14 rounded-2xl font-bold text-base shadow-lg"
+                  onClick={() => setShowCreateWizard(true)}
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Create New {activeFilter === 'all' ? 'Voucher' : activeFilter === 'voucher' ? 'Voucher' : activeFilter === 'discount' ? 'Discount' : 'Credit'}
+                </Button>
+              </motion.div>
+            ) : (
+              <div className="h-14" /> // Spacer for client view when nothing selected
+            )}
+          </AnimatePresence>
+        </div>
       </GlassSheet>
 
       {/* Create Wizard Sheet */}
