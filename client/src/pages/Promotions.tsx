@@ -310,7 +310,7 @@ export default function Promotions() {
         </div>
 
         {/* Stable Footer Controls Area */}
-        <div className="shrink-0 z-[60] bg-gradient-to-t from-card via-card to-transparent px-4 pb-8 pt-4 w-full relative min-h-[160px] flex flex-col justify-end">
+        <div className="shrink-0 z-[60] bg-gradient-to-t from-card via-card to-transparent px-4 pb-24 pt-4 w-full relative min-h-[200px] flex flex-col justify-center">
           <AnimatePresence mode="wait">
             {selectedCard ? (
               <motion.div
