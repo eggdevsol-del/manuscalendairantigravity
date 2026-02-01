@@ -9,7 +9,7 @@
  * @version 1.0.1
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { PageShell, PageHeader, GlassSheet, FullScreenSheet } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
@@ -77,6 +77,9 @@ export default function Promotions() {
   const [editingPromotion, setEditingPromotion] = useState<PromotionCardData | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  // Ref for the list container to apply CSS variables
+  const listContainerRef = useRef<HTMLDivElement>(null);
+
   // Reset focalIndex when filter changes
   const handleFilterChange = (filter: 'all' | PromotionType) => {
     setActiveFilter(filter);
@@ -123,21 +126,24 @@ export default function Promotions() {
   // ----------------------------------------------------
   // DRAG & PHYSICS (Centralized to prevent crashes)
   // ----------------------------------------------------
+
+  // The Single Source of Truth for drag state
   const dragY = useMotionValue(0);
   const COMMIT_DISTANCE = 110;
   const cardOffset = 180; // Visual constant for stacking
 
-  // Transform drag Y into a bounded progress (-1 to 1)
-  const progress = useTransform(dragY, v =>
-    Math.max(-1, Math.min(1, v / COMMIT_DISTANCE))
-  );
-
-  // Transform progress into a stack pixel shift
-  const stackShift = useTransform(progress, v => v * cardOffset);
-
-  // Stop drag animation on unmount & cleanup
+  // Update CSS variable --drag-y whenever dragY changes
+  // This allows non-focal cards to react to drag without using hooks in a loop
   useEffect(() => {
-    return () => dragY.stop();
+    const unsubscribe = dragY.on("change", (latest) => {
+      if (listContainerRef.current) {
+        listContainerRef.current.style.setProperty('--drag-y', `${latest}`);
+      }
+    });
+    return () => {
+      unsubscribe();
+      dragY.stop(); // Stop potential animation on unmount
+    };
   }, []);
 
   // Shared Drag End Handler (Locked Lifecycle)
@@ -260,23 +266,30 @@ export default function Promotions() {
               />
             </div>
           ) : (
-            <div className="relative w-full h-full flex items-center justify-center overflow-visible">
-              {/* Debug render */}
-              {(() => { console.log('[Promotions] Render - Loading:', isLoading, 'Cards:', filteredCards.length); return null; })()}
+            <div
+              ref={listContainerRef}
+              className="relative w-full h-full flex items-center justify-center overflow-visible"
+              style={{
+                // Initialize CSS variable to 0
+                // @ts-ignore
+                '--drag-y': '0',
+              } as React.CSSProperties}
+            >
               <AnimatePresence initial={false} mode="popLayout">
                 {filteredCards.map((card, index) => {
                   const position = index - focalIndex;
                   const isSelected = selectedCardId === card.id;
                   const isFocal = focalIndex === index;
 
-                  // Compute per-card transforms in parent
-                  const factor = 1 / (1 + Math.abs(position) * 2.2);
-                  const y = isFocal
-                    ? dragY
-                    : useTransform(stackShift, v => v * factor);
+                  // Compute scale securely without hooks (static based on position)
+                  // Scale = 1 - Math.abs(position) * 0.05
+                  const scale = 1 - Math.abs(position) * 0.05;
 
-                  // Scale: Reactive calculation
-                  const scale = useTransform(progress, p => 1 - Math.abs(position + p) * 0.05);
+                  // Compute coupling factor: 1 / (1 + |pos| * 2.2)
+                  const factor = 1 / (1 + Math.abs(position) * 2.2);
+
+                  // The card offset for visual stacking
+                  const baseOffset = position * cardOffset;
 
                   // Visual constants
                   const blurAmount = 4;
@@ -289,6 +302,8 @@ export default function Promotions() {
                         opacity: Math.max(0, 1 - Math.abs(position) * 0.4),
                         zIndex: 50 - Math.abs(position),
                         filter: `blur(${Math.min(blurAmount, Math.abs(position) * 2)}px)`,
+                        // For non-focal cards, we animate to the base position
+                        y: baseOffset,
                       }}
                       exit={{ opacity: 0, scale: 0.5 }}
                       transition={{
@@ -302,7 +317,9 @@ export default function Promotions() {
                         width: '100%',
                         transformOrigin: 'center center',
                         cursor: isFocal ? 'grab' : 'pointer',
-                        touchAction: 'none'
+                        touchAction: 'none',
+                        // Static scale applied here
+                        scale: scale,
                       }}
                       whileTap={{ cursor: isFocal ? 'grabbing' : 'pointer' }}
                       onClick={() => {
@@ -316,8 +333,8 @@ export default function Promotions() {
                     >
                       <SwipeableCardWrapper
                         isFocal={isFocal}
-                        y={y}
-                        scale={scale}
+                        y={dragY} // Only used if isFocal (MotionValue)
+                        factor={factor} // Used for CSS calc if !isFocal (number)
                         onDragEnd={handleDragEnd}
                       >
                         <div className="px-0 w-full">
@@ -675,8 +692,8 @@ function AutoApplySheet({
 interface SwipeableCardWrapperProps {
   children: React.ReactNode;
   isFocal: boolean;
-  y: MotionValue<number>;
-  scale: MotionValue<number> | number;
+  y?: MotionValue<number>;  // Optional because non-focal cards don't use this
+  factor: number;          // Coupling factor for optional parallax via CSS
   onDragEnd: (e: any, info: PanInfo) => void;
 }
 
@@ -684,20 +701,43 @@ function SwipeableCardWrapper({
   children,
   isFocal,
   y,
-  scale,
+  factor,
   onDragEnd
 }: SwipeableCardWrapperProps) {
-  // Dumb component - only rendering motion values passed from parent
+
+  // If Focal -> Use MotionValue Drag
+  if (isFocal) {
+    return (
+      <motion.div
+        drag="y"
+        dragConstraints={false}
+        dragMomentum={false}
+        style={{ y }} // This is the shared 'dragY' motion value
+        onDragEnd={onDragEnd}
+        className="w-full"
+      >
+        {children}
+      </motion.div>
+    );
+  }
+
+  // If Not Focal -> Use CSS Variable Parallax
   return (
-    <motion.div
-      drag={isFocal ? "y" : false}
-      dragConstraints={false}
-      dragMomentum={false}
-      style={{ y, scale }}
-      onDragEnd={onDragEnd}
+    <div
       className="w-full"
+      style={{
+        // Use CSS calc to bind to the parent's drag-y variable
+        // "progress" was v / COMMIT_DISTANCE.
+        // "stackShift" was progress * cardOffset.
+        // "factor" was 1 / (1 + |pos| * 2.2).
+        // Original: useTransform(stackShift, v => v * factor)
+        // = (dragY / 110) * 180 * factor
+        // = dragY * 1.636 * factor
+        // constant: 180/110 approx 1.63636...
+        transform: `translateY(calc(var(--drag-y) * 1px * 1.636 * ${factor}))`
+      }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
