@@ -122,7 +122,12 @@ export default function Promotions() {
 
   // Handle card selection
   const handleCardClick = (cardId: number) => {
-    setSelectedCardId(prev => prev === cardId ? null : cardId);
+    console.log('[Promotions] Card clicked:', cardId, 'Current selected:', selectedCardId);
+    setSelectedCardId(prev => {
+      const newState = prev === cardId ? null : cardId;
+      console.log('[Promotions] Setting selected card to:', newState);
+      return newState;
+    });
   };
 
   // Handle client using promotion on booking
@@ -205,7 +210,9 @@ export default function Promotions() {
             </div>
           ) : (
             <div className="relative w-full h-full flex items-center justify-center overflow-visible">
-              <AnimatePresence mode="popLayout">
+              {/* Debug render */}
+              {(() => { console.log('[Promotions] Render - Loading:', isLoading, 'Cards:', filteredCards.length); return null; })()}
+              <AnimatePresence>
                 {filteredCards.map((card, index) => {
                   // Use focalIndex for positioning
                   const position = index - focalIndex;
@@ -223,7 +230,10 @@ export default function Promotions() {
                       drag="y"
                       dragConstraints={{ top: 0, bottom: 0 }}
                       dragElastic={0.2}
-                      onDragStart={() => setSelectedCardId(null)} // Hide buttons when swipe starts
+                      onDragStart={() => {
+                        console.log('[Promotions] Drag Start - Unselecting');
+                        setSelectedCardId(null); // Hide buttons when swipe starts
+                      }}
                       onDragEnd={(_, info) => {
                         const threshold = 50;
                         if (info.offset.y < -threshold && focalIndex < filteredCards.length - 1) {
@@ -232,6 +242,7 @@ export default function Promotions() {
                           setFocalIndex(prev => prev - 1);
                         }
                         setSelectedCardId(null); // Ensure deselected after swipe ends
+                        console.log('[Promotions] Drag End - Unselecting');
                       }}
                       initial={{ opacity: 0, y: 100 }}
                       animate={{
@@ -305,8 +316,8 @@ export default function Promotions() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="mt-4 px-4 overflow-y-auto no-scrollbar"
-              style={{ maxHeight: '24vh' }} // Constraint to 24% height
+              className="absolute bottom-32 left-0 right-0 px-4 overflow-y-auto no-scrollbar z-[60]"
+              style={{ maxHeight: '30vh' }}
             >
               <div className="space-y-2 pb-4"> {/* Inner container for layout */}
                 {isArtist ? (
