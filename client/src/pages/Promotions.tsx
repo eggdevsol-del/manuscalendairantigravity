@@ -76,6 +76,7 @@ export default function Promotions() {
   const [showAutoApplySheet, setShowAutoApplySheet] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<PromotionCardData | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDragging, setIsDragging] = useState(false); // Track dragging state to prevent double-drive
 
   // Ref for the list container to apply CSS variables
   const listContainerRef = useRef<HTMLDivElement>(null);
@@ -275,7 +276,7 @@ export default function Promotions() {
                 '--drag-y': '0',
               } as React.CSSProperties}
             >
-              <AnimatePresence initial={false} mode="popLayout">
+              <AnimatePresence initial={false}>
                 {filteredCards.map((card, index) => {
                   const position = index - focalIndex;
                   const isSelected = selectedCardId === card.id;
@@ -297,13 +298,14 @@ export default function Promotions() {
                   return (
                     <motion.div
                       key={card.id}
-                      initial={{ opacity: 0, y: 100 }}
                       animate={{
                         opacity: Math.max(0, 1 - Math.abs(position) * 0.4),
                         zIndex: 50 - Math.abs(position),
                         filter: `blur(${Math.min(blurAmount, Math.abs(position) * 2)}px)`,
                         // For non-focal cards, we animate to the base position
-                        y: baseOffset,
+                        // For focal cards: if dragging, DO NOT animate 'y' (keep it at baseOffset),
+                        // because the inner wrapper is already moving.
+                        y: isFocal && isDragging ? baseOffset : baseOffset,
                       }}
                       exit={{ opacity: 0, scale: 0.5 }}
                       transition={{
@@ -317,12 +319,16 @@ export default function Promotions() {
                         width: '100%',
                         transformOrigin: 'center center',
                         cursor: isFocal ? 'grab' : 'pointer',
-                        touchAction: 'none',
+                        touchAction: isFocal ? 'none' : 'auto',
+                        willChange: 'transform, filter',
                         // Static scale applied here
                         scale: scale,
                       }}
                       whileTap={{ cursor: isFocal ? 'grabbing' : 'pointer' }}
                       onClick={() => {
+                        // Prevent click if we were just dragging
+                        if (isDragging) return;
+
                         if (isFocal) {
                           setSelectedCardId(prev => prev === card.id ? null : card.id);
                         } else {
@@ -335,7 +341,11 @@ export default function Promotions() {
                         isFocal={isFocal}
                         y={dragY} // Only used if isFocal (MotionValue)
                         factor={factor} // Used for CSS calc if !isFocal (number)
-                        onDragEnd={handleDragEnd}
+                        onDragStart={() => setIsDragging(true)}
+                        onDragEnd={(e, info) => {
+                          setIsDragging(false);
+                          handleDragEnd(e, info);
+                        }}
                       >
                         <div className="px-0 w-full">
                           <PromotionCard
@@ -695,6 +705,7 @@ interface SwipeableCardWrapperProps {
   y?: MotionValue<number>;  // Optional because non-focal cards don't use this
   factor: number;          // Coupling factor for optional parallax via CSS
   onDragEnd: (e: any, info: PanInfo) => void;
+  onDragStart?: () => void;
 }
 
 function SwipeableCardWrapper({
@@ -702,7 +713,8 @@ function SwipeableCardWrapper({
   isFocal,
   y,
   factor,
-  onDragEnd
+  onDragEnd,
+  onDragStart
 }: SwipeableCardWrapperProps) {
 
   // If Focal -> Use MotionValue Drag
@@ -713,6 +725,7 @@ function SwipeableCardWrapper({
         dragConstraints={false}
         dragMomentum={false}
         style={{ y }} // This is the shared 'dragY' motion value
+        onDragStart={onDragStart}
         onDragEnd={onDragEnd}
         className="w-full"
       >
