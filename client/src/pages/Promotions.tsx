@@ -33,6 +33,7 @@ import {
   SendPromotionSheet,
   CreatePromotionWizard,
 } from "@/features/promotions";
+import { SwipeStack } from "@/components/ui/SwipeStack";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
@@ -69,19 +70,19 @@ export default function Promotions() {
   const isArtist = user?.role === 'artist';
 
   const [activeFilter, setActiveFilter] = useState<'all' | PromotionType>('all');
-  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
-  const [focalIndex, setFocalIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isSelectionActive, setIsSelectionActive] = useState(true);
   const [showCreateWizard, setShowCreateWizard] = useState(false);
   const [showSendSheet, setShowSendSheet] = useState(false);
   const [showAutoApplySheet, setShowAutoApplySheet] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<PromotionCardData | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Reset focalIndex when filter changes
+  // Reset currentIndex when filter changes
   const handleFilterChange = (filter: 'all' | PromotionType) => {
     setActiveFilter(filter);
-    setSelectedCardId(null);
-    setFocalIndex(0);
+    setCurrentIndex(0);
+    setIsSelectionActive(true);
   };
 
   // Fetch promotions (all or filtered by type)
@@ -93,7 +94,6 @@ export default function Promotions() {
   const deleteMutation = trpc.promotions.deleteTemplate.useMutation({
     onSuccess: () => {
       toast.success('Promotion deleted');
-      setSelectedCardId(null);
       setShowDeleteDialog(false);
       refetch();
     },
@@ -103,8 +103,8 @@ export default function Promotions() {
   });
 
   const handleDelete = () => {
-    if (selectedCardId) {
-      deleteMutation.mutate({ templateId: selectedCardId });
+    if (selectedCard && selectedId) {
+      deleteMutation.mutate({ templateId: selectedId });
     }
   };
 
@@ -117,17 +117,24 @@ export default function Promotions() {
 
   // For the 'All' view, we might want to sort them or group them, but stacking them by date (default) is fine.
   // The query already orders by createdAt desc.
+  // The query already orders by createdAt desc.
+  // The query already orders by createdAt desc.
   const filteredCards = promotions || [];
-  const selectedCard = filteredCards.find(c => c.id === selectedCardId);
+  const activeCard = filteredCards[currentIndex];
+  const selectedCard = isSelectionActive ? activeCard : null;
+  // Helper for delete mutation which needs ID (computed from activeCard for safety or selectedCard?)
+  // If we want to allow delete only when selected, use selectedCard.
+  const selectedId = selectedCard?.id;
 
-  // Handle card selection
-  const handleCardClick = (cardId: number) => {
-    console.log('[Promotions] Card clicked:', cardId, 'Current selected:', selectedCardId);
-    setSelectedCardId(prev => {
-      const newState = prev === cardId ? null : cardId;
-      console.log('[Promotions] Setting selected card to:', newState);
-      return newState;
-    });
+  // Handle swipe actions
+  const handleSwipe = (direction: 'up' | 'down', index: number) => {
+    console.log(`[Promotions] Swiped ${direction} on card ${index}`);
+    if (direction === 'up') {
+      setIsSelectionActive(true);
+    } else {
+      // Swipe Down -> Deselect (Dismiss actions)
+      setIsSelectionActive(false);
+    }
   };
 
   // Handle client using promotion on booking
@@ -210,89 +217,31 @@ export default function Promotions() {
             </div>
           ) : (
             <div className="relative w-full h-full flex items-center justify-center overflow-visible">
-              {/* Debug render */}
-              {(() => { console.log('[Promotions] Render - Loading:', isLoading, 'Cards:', filteredCards.length); return null; })()}
-              <AnimatePresence>
-                {filteredCards.map((card, index) => {
-                  // Use focalIndex for positioning
-                  const position = index - focalIndex;
-                  const isSelected = selectedCardId === card.id;
-                  const isFocal = focalIndex === index;
+              <SwipeStack
+                items={filteredCards}
+                startIndex={currentIndex}
+                onChange={setCurrentIndex}
+                onSwipe={handleSwipe}
+                renderItem={(card, index, isTop) => (
+                  <div className="px-0 w-full" onClick={() => setIsSelectionActive(true)}>
+                    <PromotionCard
+                      data={card as unknown as PromotionCardData}
+                      selected={isTop && isSelectionActive} // Top card is always "selected" visually
+                      size="lg"
+                      className="w-full shadow-2xl rounded-2xl"
+                    />
+                  </div>
+                )}
+              />
 
-                  // Visual constants
-                  const cardOffset = 180; // Increased offset for better visibility
-                  const scaleFactor = 0.05;
-                  const blurAmount = 4;
-
-                  return (
-                    <motion.div
-                      key={card.id}
-                      onPanEnd={(_, info) => {
-                        const threshold = 50;
-                        if (info.offset.y < -threshold && focalIndex < filteredCards.length - 1) {
-                          setFocalIndex(prev => prev + 1);
-                          setSelectedCardId(null);
-                        } else if (info.offset.y > threshold && focalIndex > 0) {
-                          setFocalIndex(prev => prev - 1);
-                          setSelectedCardId(null);
-                        }
-                      }}
-                      initial={{ opacity: 0, y: 100 }}
-                      animate={{
-                        opacity: Math.max(0, 1 - Math.abs(position) * 0.4),
-                        y: position * cardOffset,
-                        scale: 1 - Math.abs(position) * scaleFactor,
-                        zIndex: 50 - Math.abs(position),
-                        filter: `blur(${Math.min(blurAmount, Math.abs(position) * 2)}px)`,
-                      }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 280, // Faster spring (approx 20% speedup)
-                        damping: 28,
-                        mass: 0.8
-                      }}
-                      style={{
-                        position: 'absolute',
-                        width: '100%',
-                        // Remove maxWidth to allow edge-to-edge on narrower screens
-                        transformOrigin: 'center center',
-                        cursor: isFocal ? 'grab' : 'pointer',
-                        touchAction: 'none'
-                      }}
-                      whileTap={{ cursor: isFocal ? 'grabbing' : 'pointer' }}
-                      onClick={() => {
-                        if (isFocal) {
-                          // Toggle selection only for centered card
-                          setSelectedCardId(prev => prev === card.id ? null : card.id);
-                        } else {
-                          // If clicking background card, move it to center
-                          setFocalIndex(index);
-                          setSelectedCardId(null);
-                        }
-                      }}
-                    >
-                      <div className="px-0 w-full"> {/* Container for edge-to-edge */}
-                        <PromotionCard
-                          data={card as PromotionCardData}
-                          selected={isSelected}
-                          size="lg"
-                          className="w-full shadow-2xl rounded-2xl"
-                        />
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-
-              {/* Vertical Guide indicators (optional but helpful) */}
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+              {/* Vertical Guide indicators */}
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 pointer-events-none">
                 {filteredCards.map((card, idx) => (
                   <div
                     key={`dot-${card.id}`}
                     className={cn(
                       "w-1.5 h-1.5 rounded-full transition-all duration-300",
-                      focalIndex === idx
+                      currentIndex === idx
                         ? "bg-primary h-4"
                         : "bg-white/20"
                     )}
