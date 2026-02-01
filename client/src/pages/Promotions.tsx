@@ -119,7 +119,24 @@ export default function Promotions() {
   // The query already orders by createdAt desc.
   const filteredCards = promotions || [];
   const selectedCard = filteredCards.find(c => c.id === selectedCardId);
-  const sharedDragY = useMotionValue(0);
+
+  // DRAG & PHYSICS (Centralized to prevent re-render crashes)
+  const dragY = useMotionValue(0);
+  const COMMIT_DISTANCE = 110;
+  const cardOffset = 180; // Visual constant for stacking
+
+  // Transform drag Y into a bounded progress (-1 to 1)
+  const progress = useTransform(dragY, v =>
+    Math.max(-1, Math.min(1, v / COMMIT_DISTANCE))
+  );
+
+  // Transform progress into a stack pixel shift
+  const stackShiftY = useTransform(progress, v => v * cardOffset);
+
+  // Stop drag animation on unmount
+  useEffect(() => {
+    return () => dragY.stop();
+  }, []);
 
   // Handle card selection
   const handleCardClick = (cardId: number) => {
@@ -220,8 +237,7 @@ export default function Promotions() {
                   const isSelected = selectedCardId === card.id;
                   const isFocal = focalIndex === index;
 
-                  // Visual constants
-                  const cardOffset = 180; // Increased offset for better visibility
+                  // Visual constants (kept for blur/scale/z-index logic - layout SSOT)
                   const scaleFactor = 0.05;
                   const blurAmount = 4;
 
@@ -266,7 +282,9 @@ export default function Promotions() {
                       <SwipeableCardWrapper
                         isFocal={isFocal}
                         position={position}
-                        sharedDragY={sharedDragY}
+                        dragY={dragY}
+                        progress={progress}
+                        stackShiftY={stackShiftY}
                         onSwipe={(direction) => {
                           if (direction === 'up' && focalIndex < filteredCards.length - 1) {
                             setFocalIndex(prev => prev + 1);
@@ -633,47 +651,48 @@ interface SwipeableCardWrapperProps {
   children: React.ReactNode;
   isFocal: boolean;
   position: number;
-  sharedDragY: MotionValue<number>;
+  dragY: MotionValue<number>;
+  progress: MotionValue<number>;
+  stackShiftY: MotionValue<number>;
   onSwipe: (direction: 'up' | 'down') => void;
 }
 
-function SwipeableCardWrapper({ children, isFocal, position, sharedDragY, onSwipe }: SwipeableCardWrapperProps) {
+function SwipeableCardWrapper({
+  children,
+  isFocal,
+  position,
+  dragY,
+  stackShiftY,
+  onSwipe
+}: SwipeableCardWrapperProps) {
+
   // Define coupling factor based on position
   const factor = 1 / (1 + Math.abs(position) * 2.2);
 
-  // Use sharedDragY directly if focal, otherwise derive it with the factor
-  // This ensures parallax but keeps only ONE source of truth for the drag.
-  const y = isFocal ? sharedDragY : useTransform(sharedDragY, v => v * factor);
-
-  // Guard: If we stop being focal, we must ensure we aren't holding a drag offset.
-  useEffect(() => {
-    if (!isFocal) {
-      sharedDragY.set(0);
-    }
-  }, [isFocal, sharedDragY]);
+  const y = isFocal
+    ? dragY
+    : useTransform(stackShiftY, v => v * factor);
 
   function onDragEnd(_: any, info: PanInfo) {
     const threshold = 50;
     const offset = info.offset.y;
     const velocity = info.velocity.y;
 
-    // Logic: Immediate reset if we are about to navigate (prevents flash).
-    // Otherwise, spring back.
     if (offset < -threshold || (velocity < -500)) { // Up
-      sharedDragY.set(0);
+      dragY.set(0);
       onSwipe('up');
     } else if (offset > threshold || (velocity > 500)) { // Down
-      sharedDragY.set(0);
+      dragY.set(0);
       onSwipe('down');
     } else {
-      animate(sharedDragY, 0, { type: "spring", stiffness: 300, damping: 30, mass: 0.8 });
+      animate(dragY, 0, { type: "spring", stiffness: 300, damping: 30, mass: 0.8 });
     }
   }
 
   return (
     <motion.div
       drag={isFocal ? "y" : false}
-      dragElastic={0.12}
+      dragConstraints={false}
       dragMomentum={false}
       style={{ y }}
       onDragEnd={onDragEnd}
