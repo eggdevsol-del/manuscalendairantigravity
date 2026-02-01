@@ -14,7 +14,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { PageShell, PageHeader, GlassSheet, FullScreenSheet } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
 import { Gift, Percent, CreditCard, Plus, Send, Calendar, Check, Info, Settings, Edit, Trash2, AlertTriangle } from "lucide-react";
-import { motion, AnimatePresence, useAnimation, useMotionValue, PanInfo } from "framer-motion";
+import { motion, AnimatePresence, useAnimation, useMotionValue, PanInfo, useTransform, animate, MotionValue } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -119,6 +119,7 @@ export default function Promotions() {
   // The query already orders by createdAt desc.
   const filteredCards = promotions || [];
   const selectedCard = filteredCards.find(c => c.id === selectedCardId);
+  const sharedDragY = useMotionValue(0);
 
   // Handle card selection
   const handleCardClick = (cardId: number) => {
@@ -264,6 +265,8 @@ export default function Promotions() {
                     >
                       <SwipeableCardWrapper
                         isFocal={isFocal}
+                        position={position}
+                        sharedDragY={sharedDragY}
                         onSwipe={(direction) => {
                           if (direction === 'up' && focalIndex < filteredCards.length - 1) {
                             setFocalIndex(prev => prev + 1);
@@ -629,42 +632,43 @@ function AutoApplySheet({
 interface SwipeableCardWrapperProps {
   children: React.ReactNode;
   isFocal: boolean;
+  position: number;
+  sharedDragY: MotionValue<number>;
   onSwipe: (direction: 'up' | 'down') => void;
 }
 
-function SwipeableCardWrapper({ children, isFocal, onSwipe }: SwipeableCardWrapperProps) {
-  const controls = useAnimation();
-  const y = useMotionValue(0);
+function SwipeableCardWrapper({ children, isFocal, position, sharedDragY, onSwipe }: SwipeableCardWrapperProps) {
+  // Define coupling factor based on position
+  // pos 0 -> 1.0, pos 1 -> ~0.31, pos 2 -> ~0.19, etc.
+  const factor = 1 / (1 + Math.abs(position) * 2.2);
+
+  // Use sharedDragY directly if focal, otherwise derive it with the factor
+  const derivedY = isFocal
+    ? sharedDragY
+    : useTransform(sharedDragY, v => v * factor);
 
   function onDragEnd(_: any, info: PanInfo) {
     const threshold = 50;
     const offset = info.offset.y;
     const velocity = info.velocity.y;
 
-    let triggered = false;
-
     if (offset < -threshold || (velocity < -500)) { // Up
       onSwipe('up');
-      triggered = true;
     } else if (offset > threshold || (velocity > 500)) { // Down
       onSwipe('down');
-      triggered = true;
     }
 
-    // Always snap back to 0. 
-    // If swipe triggered, parent updates layout and this component essentially resets logic 
-    // (or visually moves away). We snap to 0 to ensure clean state.
-    controls.start({ x: 0, y: 0, transition: { type: "spring", stiffness: 300, damping: 30 } });
+    // Always snap sharedDragY back to 0 with spring
+    animate(sharedDragY, 0, { type: "spring", stiffness: 300, damping: 30 });
   }
 
   return (
     <motion.div
       drag={isFocal ? "y" : false}
       // Free drag (no constraints) to allow 1:1 following
-      dragElastic={0.12} // Ignored without constraints but keeping for completeness if behavior changes
+      dragElastic={0.12} // Ignored without constraints but keeping for completeness 
       dragMomentum={false}
-      animate={controls}
-      style={{ y }}
+      style={{ y: derivedY }}
       onDragEnd={onDragEnd}
       className="w-full"
     >
