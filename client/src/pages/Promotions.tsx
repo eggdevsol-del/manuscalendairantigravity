@@ -9,12 +9,12 @@
  * @version 1.0.1
  */
 
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { PageShell, PageHeader, GlassSheet, FullScreenSheet } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
 import { Gift, Percent, CreditCard, Plus, Send, Calendar, Check, Info, Settings, Edit, Trash2, AlertTriangle } from "lucide-react";
-import { motion, AnimatePresence, useMotionValue, PanInfo, useTransform, animate, MotionValue } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -76,10 +76,6 @@ export default function Promotions() {
   const [showAutoApplySheet, setShowAutoApplySheet] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<PromotionCardData | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isDragging, setIsDragging] = useState(false); // Track dragging state to prevent double-drive
-
-  // Ref for the list container to apply CSS variables
-  const listContainerRef = useRef<HTMLDivElement>(null);
 
   // Reset focalIndex when filter changes
   const handleFilterChange = (filter: 'all' | PromotionType) => {
@@ -123,73 +119,6 @@ export default function Promotions() {
   // The query already orders by createdAt desc.
   const filteredCards = promotions || [];
   const selectedCard = filteredCards.find(c => c.id === selectedCardId);
-
-  // ----------------------------------------------------
-  // DRAG & PHYSICS (Centralized to prevent crashes)
-  // ----------------------------------------------------
-
-  // The Single Source of Truth for drag state
-  const dragY = useMotionValue(0);
-  const COMMIT_DISTANCE = 110;
-  const cardOffset = 180; // Visual constant for stacking
-
-  // Update CSS variable --drag-y whenever dragY changes
-  // This allows non-focal cards to react to drag without using hooks in a loop
-  useEffect(() => {
-    const unsubscribe = dragY.on("change", (latest) => {
-      if (listContainerRef.current) {
-        listContainerRef.current.style.setProperty('--drag-y', `${latest}`);
-      }
-    });
-    return () => {
-      unsubscribe();
-      dragY.stop(); // Stop potential animation on unmount
-    };
-  }, []);
-
-  // Shared Drag End Handler (Locked Lifecycle)
-  function handleDragEnd(_: any, info: PanInfo) {
-    const threshold = 50;
-    const offset = info.offset.y;
-    const velocity = info.velocity.y;
-
-    if (offset < -threshold || (velocity < -500)) { // Up
-      dragY.stop();
-
-      if (focalIndex < filteredCards.length - 1) {
-        // Animate to the visual destination (off-screen/stack top) BEFORE state update
-        // This prevents the visual "snap to center" glitch
-        animate(dragY, -cardOffset, { type: "spring", stiffness: 400, damping: 25 })
-          .then(() => {
-            setIsDragging(false); // Ensure dragging state is cleared
-            setFocalIndex(prev => prev + 1);
-            setSelectedCardId(null);
-            // We set dragY to 0 immediately after state update.
-            // Since the card at 'prev' index is no longer focal, it ignores dragY (0).
-            // The new focal card starts at 0 (center) which is correct.
-            dragY.set(0);
-          });
-      } else {
-        animate(dragY, 0, { type: "spring", stiffness: 300, damping: 30 });
-      }
-    } else if (offset > threshold || (velocity > 500)) { // Down
-      dragY.stop();
-
-      if (focalIndex > 0) {
-        animate(dragY, cardOffset, { type: "spring", stiffness: 400, damping: 25 })
-          .then(() => {
-            setIsDragging(false);
-            setFocalIndex(prev => prev - 1);
-            setSelectedCardId(null);
-            dragY.set(0);
-          });
-      } else {
-        animate(dragY, 0, { type: "spring", stiffness: 300, damping: 30 });
-      }
-    } else {
-      animate(dragY, 0, { type: "spring", stiffness: 300, damping: 30, mass: 0.8 });
-    }
-  }
 
   // Handle card selection
   const handleCardClick = (cardId: number) => {
@@ -280,95 +209,77 @@ export default function Promotions() {
               />
             </div>
           ) : (
-            <div
-              ref={listContainerRef}
-              className="relative w-full h-full flex items-center justify-center overflow-visible"
-              style={{
-                // Initialize CSS variable to 0
-                // @ts-ignore
-                '--drag-y': '0',
-              } as React.CSSProperties}
-            >
-              <AnimatePresence initial={false}>
+            <div className="relative w-full h-full flex items-center justify-center overflow-visible">
+              {/* Debug render */}
+              {(() => { console.log('[Promotions] Render - Loading:', isLoading, 'Cards:', filteredCards.length); return null; })()}
+              <AnimatePresence>
                 {filteredCards.map((card, index) => {
+                  // Use focalIndex for positioning
                   const position = index - focalIndex;
                   const isSelected = selectedCardId === card.id;
                   const isFocal = focalIndex === index;
 
-                  // Compute scale securely without hooks (static based on position)
-                  // Scale = 1 - Math.abs(position) * 0.05
-                  const scale = 1 - Math.abs(position) * 0.05;
-
-                  // Compute coupling factor: 1 / (1 + |pos| * 2.2)
-                  const factor = 1 / (1 + Math.abs(position) * 2.2);
-
-                  // The card offset for visual stacking
-                  const baseOffset = position * cardOffset;
-
                   // Visual constants
+                  const cardOffset = 180; // Increased offset for better visibility
+                  const scaleFactor = 0.05;
                   const blurAmount = 4;
 
                   return (
                     <motion.div
                       key={card.id}
+                      onPanEnd={(_, info) => {
+                        const threshold = 50;
+                        if (info.offset.y < -threshold && focalIndex < filteredCards.length - 1) {
+                          setFocalIndex(prev => prev + 1);
+                          setSelectedCardId(null);
+                        } else if (info.offset.y > threshold && focalIndex > 0) {
+                          setFocalIndex(prev => prev - 1);
+                          setSelectedCardId(null);
+                        }
+                      }}
+                      initial={{ opacity: 0, y: 100 }}
                       animate={{
                         opacity: Math.max(0, 1 - Math.abs(position) * 0.4),
+                        y: position * cardOffset,
+                        scale: 1 - Math.abs(position) * scaleFactor,
                         zIndex: 50 - Math.abs(position),
                         filter: `blur(${Math.min(blurAmount, Math.abs(position) * 2)}px)`,
-                        // For non-focal cards, we animate to the base position
-                        // For focal cards: if dragging, DO NOT animate 'y' (keep it at baseOffset),
-                        // because the inner wrapper is already moving.
-                        y: isFocal && isDragging ? baseOffset : baseOffset,
                       }}
                       exit={{ opacity: 0, scale: 0.5 }}
                       transition={{
                         type: "spring",
-                        stiffness: 280,
+                        stiffness: 280, // Faster spring (approx 20% speedup)
                         damping: 28,
                         mass: 0.8
                       }}
                       style={{
                         position: 'absolute',
                         width: '100%',
+                        // Remove maxWidth to allow edge-to-edge on narrower screens
                         transformOrigin: 'center center',
                         cursor: isFocal ? 'grab' : 'pointer',
-                        touchAction: isFocal ? 'none' : 'auto',
-                        willChange: 'transform, filter',
-                        // Static scale applied here
-                        scale: scale,
+                        touchAction: 'none'
                       }}
                       whileTap={{ cursor: isFocal ? 'grabbing' : 'pointer' }}
                       onClick={() => {
-                        // Prevent click if we were just dragging
-                        if (isDragging) return;
-
                         if (isFocal) {
+                          // Toggle selection only for centered card
                           setSelectedCardId(prev => prev === card.id ? null : card.id);
                         } else {
+                          // If clicking background card, move it to center
                           setFocalIndex(index);
                           setSelectedCardId(null);
                         }
                       }}
                     >
-                      <SwipeableCardWrapper
-                        isFocal={isFocal}
-                        y={dragY} // Only used if isFocal (MotionValue)
-                        factor={factor} // Used for CSS calc if !isFocal (number)
-                        onDragStart={() => setIsDragging(true)}
-                        onDragEnd={(e, info) => {
-                          setIsDragging(false);
-                          handleDragEnd(e, info);
-                        }}
-                      >
-                        <div className="px-0 w-full">
-                          <PromotionCard
-                            data={card as PromotionCardData}
-                            selected={isSelected}
-                            size="lg"
-                            className="w-full shadow-2xl rounded-2xl"
-                          />
-                        </div>
-                      </SwipeableCardWrapper>
+                      <div className="px-0 w-full"> {/* Container for edge-to-edge */}
+                        <PromotionCard
+                          data={card as PromotionCardData}
+                          selected={isSelected}
+                          size="lg"
+                          className="w-full shadow-2xl rounded-2xl"
+                        />
+                      </div>
                     </motion.div>
                   );
                 })}
@@ -706,64 +617,5 @@ function AutoApplySheet({
         </Button>
       </div>
     </FullScreenSheet>
-  );
-}
-
-// ------------------------------------
-// SwipeableCardWrapper
-// ------------------------------------
-interface SwipeableCardWrapperProps {
-  children: React.ReactNode;
-  isFocal: boolean;
-  y?: MotionValue<number>;  // Optional because non-focal cards don't use this
-  factor: number;          // Coupling factor for optional parallax via CSS
-  onDragEnd: (e: any, info: PanInfo) => void;
-  onDragStart?: () => void;
-}
-
-function SwipeableCardWrapper({
-  children,
-  isFocal,
-  y,
-  factor,
-  onDragEnd,
-  onDragStart
-}: SwipeableCardWrapperProps) {
-
-  // If Focal -> Use MotionValue Drag
-  if (isFocal) {
-    return (
-      <motion.div
-        drag="y"
-        dragConstraints={false}
-        dragMomentum={false}
-        style={{ y }} // This is the shared 'dragY' motion value
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-        className="w-full"
-      >
-        {children}
-      </motion.div>
-    );
-  }
-
-  // If Not Focal -> Use CSS Variable Parallax
-  return (
-    <div
-      className="w-full"
-      style={{
-        // Use CSS calc to bind to the parent's drag-y variable
-        // "progress" was v / COMMIT_DISTANCE.
-        // "stackShift" was progress * cardOffset.
-        // "factor" was 1 / (1 + |pos| * 2.2).
-        // Original: useTransform(stackShift, v => v * factor)
-        // = (dragY / 110) * 180 * factor
-        // = dragY * 1.636 * factor
-        // constant: 180/110 approx 1.63636...
-        transform: `translateY(calc(var(--drag-y) * 1px * 1.636 * ${factor}))`
-      }}
-    >
-      {children}
-    </div>
   );
 }
