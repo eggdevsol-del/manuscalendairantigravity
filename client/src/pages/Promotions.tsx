@@ -14,7 +14,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { PageShell, PageHeader, GlassSheet, FullScreenSheet } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
 import { Gift, Percent, CreditCard, Plus, Send, Calendar, Check, Info, Settings, Edit, Trash2, AlertTriangle } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useAnimation, useMotionValue, PanInfo } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -227,16 +227,6 @@ export default function Promotions() {
                   return (
                     <motion.div
                       key={card.id}
-                      onPanEnd={(_, info) => {
-                        const threshold = 50;
-                        if (info.offset.y < -threshold && focalIndex < filteredCards.length - 1) {
-                          setFocalIndex(prev => prev + 1);
-                          setSelectedCardId(null);
-                        } else if (info.offset.y > threshold && focalIndex > 0) {
-                          setFocalIndex(prev => prev - 1);
-                          setSelectedCardId(null);
-                        }
-                      }}
                       initial={{ opacity: 0, y: 100 }}
                       animate={{
                         opacity: Math.max(0, 1 - Math.abs(position) * 0.4),
@@ -272,14 +262,27 @@ export default function Promotions() {
                         }
                       }}
                     >
-                      <div className="px-0 w-full"> {/* Container for edge-to-edge */}
-                        <PromotionCard
-                          data={card as PromotionCardData}
-                          selected={isSelected}
-                          size="lg"
-                          className="w-full shadow-2xl rounded-2xl"
-                        />
-                      </div>
+                      <SwipeableCardWrapper
+                        isFocal={isFocal}
+                        onSwipe={(direction) => {
+                          if (direction === 'up' && focalIndex < filteredCards.length - 1) {
+                            setFocalIndex(prev => prev + 1);
+                            setSelectedCardId(null);
+                          } else if (direction === 'down' && focalIndex > 0) {
+                            setFocalIndex(prev => prev - 1);
+                            setSelectedCardId(null);
+                          }
+                        }}
+                      >
+                        <div className="px-0 w-full"> {/* Container for edge-to-edge */}
+                          <PromotionCard
+                            data={card as PromotionCardData}
+                            selected={isSelected}
+                            size="lg"
+                            className="w-full shadow-2xl rounded-2xl"
+                          />
+                        </div>
+                      </SwipeableCardWrapper>
                     </motion.div>
                   );
                 })}
@@ -617,5 +620,55 @@ function AutoApplySheet({
         </Button>
       </div>
     </FullScreenSheet>
+  );
+}
+
+// ------------------------------------
+// SwipeableCardWrapper
+// ------------------------------------
+interface SwipeableCardWrapperProps {
+  children: React.ReactNode;
+  isFocal: boolean;
+  onSwipe: (direction: 'up' | 'down') => void;
+}
+
+function SwipeableCardWrapper({ children, isFocal, onSwipe }: SwipeableCardWrapperProps) {
+  const controls = useAnimation();
+  const y = useMotionValue(0);
+
+  function onDragEnd(_: any, info: PanInfo) {
+    const threshold = 50;
+    const offset = info.offset.y;
+    const velocity = info.velocity.y;
+
+    let triggered = false;
+
+    if (offset < -threshold || (velocity < -500)) { // Up
+      onSwipe('up');
+      triggered = true;
+    } else if (offset > threshold || (velocity > 500)) { // Down
+      onSwipe('down');
+      triggered = true;
+    }
+
+    // Always snap back to 0. 
+    // If swipe triggered, parent updates layout and this component essentially resets logic 
+    // (or visually moves away). We snap to 0 to ensure clean state.
+    controls.start({ x: 0, y: 0, transition: { type: "spring", stiffness: 300, damping: 30 } });
+  }
+
+  return (
+    <motion.div
+      drag={isFocal ? "y" : false}
+      // Free drag (no constraints) to allow 1:1 following
+      dragElastic={0.12} // Ignored without constraints but keeping for completeness if behavior changes
+      dragMomentum={false}
+      animate={controls}
+      style={{ y }}
+      onDragEnd={onDragEnd}
+      className="w-full"
+    >
+      {children}
+    </motion.div>
   );
 }
