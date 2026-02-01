@@ -184,17 +184,17 @@ export default function Promotions() {
       dragY.stop();
 
       if (focalIndex < filteredCards.length - 1) {
+        // LOCK: Start async handoff
+        commitLockRef.current = true;
+
         // Animate to the visual destination (off-screen/stack top) BEFORE state update
         // This prevents the visual "snap to center" glitch
         animate(dragY, -cardOffset, { type: "spring", stiffness: 400, damping: 25 })
           .then(() => {
-            setIsDragging(false); // Ensure dragging state is cleared
+            setIsDragging(false);
             setFocalIndex(prev => prev + 1);
             setSelectedCardId(null);
-            // We set dragY to 0 immediately after state update.
-            // Since the card at 'prev' index is no longer focal, it ignores dragY (0).
-            // The new focal card starts at 0 (center) which is correct.
-            dragY.set(0);
+            // DO NOT reset dragY here. useLayoutEffect will do it after render.
           });
       } else {
         animate(dragY, 0, { type: "spring", stiffness: 300, damping: 30 });
@@ -203,12 +203,14 @@ export default function Promotions() {
       dragY.stop();
 
       if (focalIndex > 0) {
+        commitLockRef.current = true;
+
         animate(dragY, cardOffset, { type: "spring", stiffness: 400, damping: 25 })
           .then(() => {
             setIsDragging(false);
             setFocalIndex(prev => prev - 1);
             setSelectedCardId(null);
-            dragY.set(0);
+            // DO NOT reset dragY here. useLayoutEffect will do it after render.
           });
       } else {
         animate(dragY, 0, { type: "spring", stiffness: 300, damping: 30 });
