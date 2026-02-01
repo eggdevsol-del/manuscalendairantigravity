@@ -155,21 +155,34 @@ export default function Promotions() {
 
     if (offset < -threshold || (velocity < -500)) { // Up
       dragY.stop();
-      dragY.set(0);
 
       if (focalIndex < filteredCards.length - 1) {
-        setFocalIndex(prev => prev + 1);
-        setSelectedCardId(null);
+        // Animate to the visual destination (off-screen/stack top) BEFORE state update
+        // This prevents the visual "snap to center" glitch
+        animate(dragY, -cardOffset, { type: "spring", stiffness: 400, damping: 25 })
+          .then(() => {
+            setIsDragging(false); // Ensure dragging state is cleared
+            setFocalIndex(prev => prev + 1);
+            setSelectedCardId(null);
+            // We set dragY to 0 immediately after state update.
+            // Since the card at 'prev' index is no longer focal, it ignores dragY (0).
+            // The new focal card starts at 0 (center) which is correct.
+            dragY.set(0);
+          });
       } else {
         animate(dragY, 0, { type: "spring", stiffness: 300, damping: 30 });
       }
     } else if (offset > threshold || (velocity > 500)) { // Down
       dragY.stop();
-      dragY.set(0);
 
       if (focalIndex > 0) {
-        setFocalIndex(prev => prev - 1);
-        setSelectedCardId(null);
+        animate(dragY, cardOffset, { type: "spring", stiffness: 400, damping: 25 })
+          .then(() => {
+            setIsDragging(false);
+            setFocalIndex(prev => prev - 1);
+            setSelectedCardId(null);
+            dragY.set(0);
+          });
       } else {
         animate(dragY, 0, { type: "spring", stiffness: 300, damping: 30 });
       }
