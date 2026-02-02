@@ -371,6 +371,32 @@ export default function Dashboard() {
                             </Button>
                         )}
 
+                        {/* Secondary Communication Actions */}
+                        {selectedTask._serverTask && (
+                            <div className="grid grid-cols-2 gap-3">
+                                {selectedTask._serverTask.smsNumber && selectedTask._serverTask.actionType !== 'sms' && (
+                                    <Button
+                                        variant="outline"
+                                        className="h-12 rounded-xl border-white/10 bg-transparent hover:bg-white/5"
+                                        onClick={() => businessActions.openSms(selectedTask._serverTask!)}
+                                    >
+                                        <MessageSquare className="mr-2 w-4 h-4" />
+                                        Send SMS
+                                    </Button>
+                                )}
+                                {selectedTask._serverTask.emailRecipient && selectedTask._serverTask.actionType !== 'email' && (
+                                    <Button
+                                        variant="outline"
+                                        className="h-12 rounded-xl border-white/10 bg-transparent hover:bg-white/5"
+                                        onClick={() => businessActions.openEmail(selectedTask._serverTask!, businessSettings.preferredEmailClient)}
+                                    >
+                                        <Mail className="mr-2 w-4 h-4" />
+                                        Send Email
+                                    </Button>
+                                )}
+                            </div>
+                        )}
+
                         {/* Task Management Actions */}
                         <Button
                             variant="secondary"

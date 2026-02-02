@@ -1,12 +1,6 @@
-<<<<<<< HEAD
-import { ScrollArea, SheetShell, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
-import { User, Mail, Phone, Cake, BadgeCheck } from "lucide-react";
-=======
+import { ScrollArea, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { User, Mail, Phone, Cake, BadgeCheck, Image as ImageIcon, Camera, Loader2 } from "lucide-react";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { format } from "date-fns";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
@@ -27,11 +21,11 @@ interface ClientProfileSheetProps {
 
 export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileSheetProps) {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    
+
     // Fetch client media from leads
     const { data: mediaData, isLoading: mediaLoading } = trpc.conversations.getClientMedia.useQuery(
         { clientId: client?.id || '' },
-        { 
+        {
             enabled: isOpen && !!client?.id,
             staleTime: 30000, // Cache for 30 seconds
         }
@@ -131,8 +125,8 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
                                                         onClick={() => setSelectedImage(img.url)}
                                                         className="aspect-square rounded-lg overflow-hidden bg-muted/30 border border-white/5 hover:border-primary/50 transition-colors"
                                                     >
-                                                        <img 
-                                                            src={img.url} 
+                                                        <img
+                                                            src={img.url}
                                                             alt={`Reference ${index + 1}`}
                                                             className="w-full h-full object-cover"
                                                         />
@@ -155,8 +149,8 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
                                                         onClick={() => setSelectedImage(img.url)}
                                                         className="aspect-square rounded-lg overflow-hidden bg-muted/30 border border-white/5 hover:border-primary/50 transition-colors"
                                                     >
-                                                        <img 
-                                                            src={img.url} 
+                                                        <img
+                                                            src={img.url}
                                                             alt={`Body placement ${index + 1}`}
                                                             className="w-full h-full object-cover"
                                                         />
@@ -193,18 +187,18 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
 
             {/* Image Lightbox - Portal to body to ensure it's above all sheets */}
             {selectedImage && createPortal(
-                <div 
+                <div
                     className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4"
                     onClick={() => setSelectedImage(null)}
                 >
-                    <button 
+                    <button
                         className="absolute top-4 right-4 text-white/70 hover:text-white text-sm px-3 py-1.5 rounded-lg bg-white/10 backdrop-blur-sm z-10"
                         onClick={() => setSelectedImage(null)}
                     >
                         Close
                     </button>
-                    <img 
-                        src={selectedImage} 
+                    <img
+                        src={selectedImage}
                         alt="Full size"
                         className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                         onClick={(e) => e.stopPropagation()}

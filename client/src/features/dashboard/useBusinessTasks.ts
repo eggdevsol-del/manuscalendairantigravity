@@ -42,10 +42,10 @@ export function useBusinessTasks() {
   const [completingTask, setCompletingTask] = useState<string | null>(null);
 
   // Fetch business tasks from server
-  const { 
-    data, 
-    isLoading, 
-    refetch 
+  const {
+    data,
+    isLoading,
+    refetch
   } = trpc.dashboardTasks.getBusinessTasks.useQuery(undefined, {
     refetchOnWindowFocus: false,
     staleTime: 30000, // 30 seconds
@@ -81,17 +81,17 @@ export function useBusinessTasks() {
 
   // Complete a task (records completion with time tracking)
   const completeTask = useCallback(async (
-    task: BusinessTask, 
+    task: BusinessTask,
     actionTaken?: 'in_app' | 'sms' | 'email' | 'manual'
   ) => {
     const key = getTaskKey(task);
     const startInfo = startedTasksRef.current.get(key);
-    
+
     // Use stored start time or current time if not tracked
     const startedAt = startInfo?.startedAt || new Date().toISOString();
-    
+
     setCompletingTask(key);
-    
+
     try {
       await completeTaskMutation.mutateAsync({
         taskType: task.taskType,
@@ -103,7 +103,7 @@ export function useBusinessTasks() {
         startedAt,
         actionTaken
       });
-      
+
       // Clean up tracking
       startedTasksRef.current.delete(key);
     } finally {
@@ -113,41 +113,40 @@ export function useBusinessTasks() {
 
   // Open native SMS app with pre-populated content
   const openSms = useCallback((task: BusinessTask) => {
-    if (!task.smsNumber || !task.smsBody) return;
-    
+    if (!task.smsNumber) return;
+
     // Start tracking
     startTask(task);
-    
+
     // Detect platform and construct SMS URL
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const body = encodeURIComponent(task.smsBody);
     const number = task.smsNumber.replace(/\D/g, ''); // Remove non-digits
-    
-    let smsUrl: string;
-    if (isIOS) {
-      // iOS uses sms: with &body=
-      smsUrl = `sms:${number}&body=${body}`;
-    } else {
-      // Android uses sms: with ?body=
-      smsUrl = `sms:${number}?body=${body}`;
+    const body = task.smsBody ? encodeURIComponent(task.smsBody) : '';
+
+    let smsUrl = `sms:${number}`;
+    if (body) {
+      if (isIOS) {
+        smsUrl += `&body=${body}`;
+      } else {
+        smsUrl += `?body=${body}`;
+      }
     }
-    
+
     window.location.href = smsUrl;
   }, [startTask]);
 
-  // Open email client with pre-populated content
   const openEmail = useCallback((task: BusinessTask, preferredClient?: string) => {
     if (!task.emailRecipient) return;
-    
+
     // Start tracking
     startTask(task);
-    
+
     const to = encodeURIComponent(task.emailRecipient);
     const subject = encodeURIComponent(task.emailSubject || '');
     const body = encodeURIComponent(task.emailBody || '');
-    
+
     let emailUrl: string;
-    
+
     switch (preferredClient) {
       case 'gmail':
         emailUrl = `https://mail.google.com/mail/?view=cm&to=${to}&su=${subject}&body=${body}`;
@@ -163,7 +162,7 @@ export function useBusinessTasks() {
         // Default mailto:
         emailUrl = `mailto:${task.emailRecipient}?subject=${subject}&body=${body}`;
     }
-    
+
     if (preferredClient === 'gmail' || preferredClient === 'outlook') {
       window.open(emailUrl, '_blank');
     } else {
@@ -174,10 +173,10 @@ export function useBusinessTasks() {
   // Navigate to in-app location
   const navigateToTask = useCallback((task: BusinessTask, navigate: (path: string) => void) => {
     if (!task.deepLink) return;
-    
+
     // Start tracking
     startTask(task);
-    
+
     navigate(task.deepLink);
   }, [startTask]);
 
@@ -224,17 +223,17 @@ export function useBusinessTasks() {
  */
 export function useWeeklySnapshot() {
   const utils = trpc.useUtils();
-  
+
   const { data: shouldShow, refetch: refetchShouldShow } = trpc.dashboardTasks.shouldShowWeeklySnapshot.useQuery(undefined, {
     // Don't refetch on window focus to prevent re-showing after dismiss
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 60, // 1 hour
   });
-  
+
   const { data: snapshot, isLoading } = trpc.dashboardTasks.getWeeklySnapshot.useQuery(undefined, {
     enabled: shouldShow?.shouldShow === true
   });
-  
+
   const dismissMutation = trpc.dashboardTasks.dismissWeeklySnapshot.useMutation({
     onSuccess: () => {
       // Immediately set shouldShow to false to prevent re-showing
