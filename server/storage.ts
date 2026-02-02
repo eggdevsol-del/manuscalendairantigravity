@@ -41,12 +41,12 @@ export async function storagePut(
   console.log('[Storage] Starting upload:', { relKey, dataLength: data.length, contentType });
   await ensureStorageTable();
   console.log('[Storage] Storage table ensured');
-  
+
   const key = relKey.replace(/^\/+/, '');
   const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
   const base64Data = buffer.toString('base64');
   const mimeType = contentType || getMimeType(key);
-  
+
   // Insert or update the file
   console.log('[Storage] Preparing to insert:', { key, base64Length: base64Data.length, mimeType });
   const db = await getDb();
@@ -58,7 +58,7 @@ export async function storagePut(
       mime_type = ${mimeType},
       created_at = CURRENT_TIMESTAMP
   `);
-  
+
   const url = `/api/files/${key}`;
   console.log('[Storage] Upload successful:', { key, url });
   return { key, url };
@@ -76,17 +76,31 @@ export async function storageGet(
 // Helper function to retrieve file data from database
 export async function storageGetData(key: string): Promise<{ data: Buffer; mimeType: string } | null> {
   const db = await getDb();
+  console.log(`[Storage] GetData query for key: ${key}`);
+
   const result: any = await db.execute(sql`
     SELECT file_data, mime_type FROM file_storage WHERE file_key = ${key}
   `);
-  
-  if (!result || !result[0] || !result[0].file_data) {
+
+  if (!result || !result[0]) {
+    console.warn(`[Storage] No result from DB for key: ${key}`);
     return null;
   }
-  
+
+  // Handle different driver result structures
+  // mysql2 returns [rows, fields] so result[0] is the rows array
+  const rows = Array.isArray(result[0]) ? result[0] : result;
+
+  if (!rows[0] || !rows[0].file_data) {
+    console.warn(`[Storage] Row found but no file_data for key: ${key}`);
+    return null;
+  }
+
+  console.log(`[Storage] Found data for key: ${key}, mime: ${rows[0].mime_type}`);
+
   return {
-    data: Buffer.from(result[0].file_data as string, 'base64'),
-    mimeType: result[0].mime_type as string
+    data: Buffer.from(rows[0].file_data as string, 'base64'),
+    mimeType: rows[0].mime_type as string
   };
 }
 

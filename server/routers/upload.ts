@@ -18,7 +18,7 @@ export const uploadRouter = router({
             let fileData = input.fileData || input.base64 || '';
             let fileName = input.fileName || input.filename || 'upload.png';
             let contentType = input.contentType;
-            
+
             // Extract content type from base64 data URL if present
             if (fileData.startsWith('data:')) {
                 const match = fileData.match(/^data:([^;]+);base64,/);
@@ -27,7 +27,7 @@ export const uploadRouter = router({
                     fileData = fileData.replace(/^data:[^;]+;base64,/, '');
                 }
             }
-            
+
             // Default content type
             if (!contentType) {
                 contentType = 'image/png';
@@ -44,7 +44,7 @@ export const uploadRouter = router({
             }
 
             // Save file
-            const url = await MediaService.saveBase64(fileData, fileName);
+            const url = await MediaService.saveBase64(fileData, fileName, contentType);
 
             return {
                 url,

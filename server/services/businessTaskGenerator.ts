@@ -201,12 +201,17 @@ async function generateLeadFollowUpTasks(
     // Only create follow-up task if it's been more than 2 days since contact
     if (daysSinceContact < 2) continue;
 
-    let baseScore: number;
+    // TIME GROWTH LOGIC:
+    // Base 400. Increases by 40 points every day it's left unanswered.
+    // Cap at 900 (Critical).
+    // Example: 
+    // Day 3: 400 + (1 * 40) = 440
+    // Day 5: 400 + (3 * 40) = 520
+    // Day 14: 400 + (12 * 40) = 880
 
-    if (daysSinceContact < 4) baseScore = 550;      // 2-4 days - follow up
-    else if (daysSinceContact < 7) baseScore = 450;  // 4-7 days - getting stale
-    else if (daysSinceContact < 14) baseScore = 350; // 1-2 weeks - at risk
-    else baseScore = 250;                            // 2+ weeks - cold
+    const daysOverdue = Math.max(0, daysSinceContact - 2);
+    let baseScore = 400 + (daysOverdue * 40);
+    baseScore = Math.min(900, baseScore); // Cap
 
     // Boost based on estimated value
     if (lead.estimatedValue && lead.estimatedValue > 500000) { // $5000+
@@ -221,7 +226,7 @@ async function generateLeadFollowUpTasks(
       taskType: 'lead_follow_up',
       taskTier: 'tier2',
       title: `Follow up: ${lead.clientName}`,
-      context: `Contacted ${Math.floor(daysSinceContact)} days ago - no response`,
+      context: `Contacted ${Math.floor(daysSinceContact)} days ago - needs reply`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
       relatedEntityType: 'lead',
@@ -275,7 +280,7 @@ async function generateNewConsultationTasks(
 
     const isViewed = consult.viewed === 1;
     if (isViewed && hours > 2) {
-      // Viewed but not responded - slightly lower priority
+      // Viewed but not responded - still high priority if new, but distinct
       baseScore = Math.min(baseScore, 700);
     }
 
@@ -344,11 +349,24 @@ async function generateDepositTasks(
     const hours = hoursUntil(appt.startTime);
     let baseScore: number;
 
-    if (hours < 24) baseScore = 1000;
-    else if (hours < 48) baseScore = 900;
-    else if (hours < 72) baseScore = 750;
-    else if (hours < 168) baseScore = 550; // 1 week
-    else baseScore = 400;
+    // HYBRID PRIORITY:
+    // 1. Increases as appointment gets closer (Urgency)
+    // 2. Increases as booking gets older (Staleness - "Why haven't they paid yet?")
+
+    // Urgency Score (0-600)
+    let urgencyScore = 0;
+    if (hours < 24) urgencyScore = 600;
+    else if (hours < 48) urgencyScore = 500;
+    else if (hours < 72) urgencyScore = 400;
+    else if (hours < 168) urgencyScore = 300; // 1 week
+    else urgencyScore = 200;
+
+    // Staleness Score (0-300)
+    const hoursSinceBooking = hoursSince(appt.createdAt!);
+    const daysSinceBooking = hoursSinceBooking / 24;
+    const stalenessScore = Math.min(300, daysSinceBooking * 30); // Max out after 10 days
+
+    baseScore = urgencyScore + stalenessScore;
 
     // January adjustment (post-Christmas no-show risk)
     if (isJanuary()) {
@@ -491,11 +509,13 @@ async function generateFollowUpTasks(
 
     let baseScore: number;
 
-    if (days < 2) baseScore = 650;
-    else if (days < 3) baseScore = 550;
-    else if (days < 5) baseScore = 450;
-    else if (days < 7) baseScore = 350;
-    else baseScore = 250;
+    // TIME GROWTH LOGIC:
+    // Base 400. Increases by 50 points per day.
+    // Cap at 950 (Critical).
+
+    const daysOverdue = Math.max(0, days - 2);
+    baseScore = 400 + (daysOverdue * 50);
+    baseScore = Math.min(950, baseScore);
 
     const daysLabel = Math.floor(days);
 
@@ -509,19 +529,19 @@ async function generateFollowUpTasks(
       taskType: 'follow_up_responded',
       taskTier: 'tier2',
       title: `Follow up: ${consult.client?.name || 'Client'}`,
-      context: `Responded ${daysLabel} day${daysLabel !== 1 ? 's' : ''} ago - not yet scheduled`,
+      context: `Responded ${daysLabel} day${daysLabel !== 1 ? 's' : ''} ago - needs reply`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
       relatedEntityType: 'consultation',
       relatedEntityId: String(consult.id),
       clientId: consult.clientId,
       clientName: consult.client?.name || null,
-      actionType: 'in_app',
+      actionType: 'in_app', // Default to in_app, but UI shows secondary email
       smsNumber: null,
       smsBody: null,
-      emailRecipient: null,
-      emailSubject: null,
-      emailBody: null,
+      emailRecipient: consult.client?.email || null,
+      emailSubject: `Following up on your consultation`,
+      emailBody: `Hi ${consult.client?.name || 'there'}! Just following up on your consultation. Let me know if you have any questions!`,
       deepLink: conversationId ? `/chat/${conversationId}` : `/conversations`,
       dueAt: null,
       expiresAt: null
@@ -563,16 +583,13 @@ async function generateStaleConversationTasks(
 
     let baseScore: number;
 
-    if (days < 3) baseScore = 600;
-    else if (days < 4) baseScore = 500;
-    else if (days < 6) baseScore = 400;
-    else if (days < 8) baseScore = 300;
-    else baseScore = 200;
+    // TIME GROWTH LOGIC:
+    // Base 300. Increases by 40 points per day.
+    // Cap at 900.
 
-    if (days > 7) {
-      // Consider archiving after 7 days
-      baseScore = Math.max(100, baseScore);
-    }
+    const daysOverdue = Math.max(0, days - 2);
+    baseScore = 300 + (daysOverdue * 40);
+    baseScore = Math.min(900, baseScore);
 
     const daysLabel = Math.floor(days);
 
@@ -590,9 +607,9 @@ async function generateStaleConversationTasks(
       actionType: 'in_app',
       smsNumber: null,
       smsBody: null,
-      emailRecipient: null,
-      emailSubject: null,
-      emailBody: null,
+      emailRecipient: conv.client?.email || null,
+      emailSubject: `Checking in!`,
+      emailBody: `Hi ${conv.client?.name || 'there'}! Just checking in since we haven't chatted in a while.`,
       deepLink: `/chat/${conv.id}`,
       dueAt: null,
       expiresAt: null

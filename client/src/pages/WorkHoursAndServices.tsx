@@ -41,6 +41,7 @@ interface Service {
   price: number;
   description: string;
   sittings?: number;
+  color?: string;
 }
 
 const defaultSchedule: WorkSchedule = {
@@ -60,7 +61,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newService, setNewService] = useState<Service>({ name: "", duration: 60, price: 0, description: "", sittings: 1 });
+  const [newService, setNewService] = useState<Service>({ name: "", duration: 60, price: 0, description: "", sittings: 1, color: "#3b82f6" });
 
   // Project Service Builder State
   const [showProjectBuilder, setShowProjectBuilder] = useState(false);
@@ -156,7 +157,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
       return;
     }
     setServices(prev => [...prev, newService]);
-    setNewService({ name: "", duration: 60, price: 0, description: "", sittings: 1 });
+    setNewService({ name: "", duration: 60, price: 0, description: "", sittings: 1, color: "#3b82f6" });
     setShowAddForm(false);
     toast.success("Service added successfully");
   };
@@ -187,7 +188,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
   };
 
   const handleCancelAdd = () => {
-    setNewService({ name: "", duration: 60, price: 0, description: "", sittings: 1 });
+    setNewService({ name: "", duration: 60, price: 0, description: "", sittings: 1, color: "#3b82f6" });
     setShowAddForm(false);
   };
 
@@ -367,6 +368,25 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
                           </div>
                         </div>
 
+                        <div className="space-y-2">
+                          <Label>Color</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              type="color"
+                              value={editingService.color || "#3b82f6"}
+                              onChange={(e) => setEditingService({ ...editingService, color: e.target.value })}
+                              className="w-12 h-10 p-1 bg-white/5 border-white/10 cursor-pointer"
+                            />
+                            <Input
+                              type="text"
+                              value={editingService.color || "#3b82f6"}
+                              onChange={(e) => setEditingService({ ...editingService, color: e.target.value })}
+                              className="flex-1 bg-white/5 border-white/10"
+                              placeholder="#3b82f6"
+                            />
+                          </div>
+                        </div>
+
                         {/* ... (Other fields can be similarly styled) ... */}
 
                         <div className="flex gap-2 pt-2">
@@ -404,6 +424,15 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
                     <div className="flex gap-2">
                       <Input type="number" placeholder="Duration" value={newService.duration} onChange={e => setNewService({ ...newService, duration: parseInt(e.target.value) })} className="bg-white/5 border-white/10" />
                       <Input type="number" placeholder="Price" value={newService.price} onChange={e => setNewService({ ...newService, price: parseInt(e.target.value) })} className="bg-white/5 border-white/10" />
+                      <div className="w-16">
+                        <Input
+                          type="color"
+                          title="Service Color"
+                          value={newService.color || "#3b82f6"}
+                          onChange={(e) => setNewService({ ...newService, color: e.target.value })}
+                          className="h-10 p-1 bg-white/5 border-white/10 w-full cursor-pointer"
+                        />
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Button size="sm" onClick={handleAddService}>Add</Button>

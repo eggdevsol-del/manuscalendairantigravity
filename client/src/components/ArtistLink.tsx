@@ -1,4 +1,12 @@
+<<<<<<< HEAD
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Switch } from "@/components/ui";
+=======
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+>>>>>>> 07d2229caa9a461d00622999a9af9320f242562f
 import { Check, Copy, ExternalLink, Link2, Loader2, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";

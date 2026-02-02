@@ -13,51 +13,121 @@ import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { PageShell, PageHeader, GlassSheet, FullScreenSheet } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
-import { Plus, Gift, Percent, CreditCard, Send, Calendar, Users, Check, Info } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Gift, Percent, CreditCard, Plus, Send, Calendar, Check, Info, Settings, Edit, Trash2, AlertTriangle } from "lucide-react";
+import { motion, AnimatePresence, useAnimation, useMotionValue, PanInfo } from "framer-motion";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   PromotionCard,
   PromotionCardData,
   PromotionType,
   TYPE_DEFAULTS,
   getTypeDefaults,
-  CreatePromotionWizard,
   SendPromotionSheet,
+  CreatePromotionWizard,
 } from "@/features/promotions";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
-// Tab configuration
-const TABS = [
+// Filter configuration
+const FILTERS = [
+  { id: 'all', label: 'All', icon: CollectionIcon },
   { id: 'voucher' as PromotionType, label: 'Vouchers', icon: Gift },
   { id: 'discount' as PromotionType, label: 'Discounts', icon: Percent },
   { id: 'credit' as PromotionType, label: 'Credits', icon: CreditCard },
 ];
 
+function CollectionIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="6" width="20" height="12" rx="2" />
+      <path d="M6 10h.01" />
+      <path d="M10 10h.01" />
+      <path d="M14 10h.01" />
+    </svg>
+  )
+}
+
 export default function Promotions() {
   const { user } = useAuth();
   const isArtist = user?.role === 'artist';
 
-  const [activeTab, setActiveTab] = useState<PromotionType>('voucher');
+  const [activeFilter, setActiveFilter] = useState<'all' | PromotionType>('all');
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+  const [focalIndex, setFocalIndex] = useState(0);
   const [showCreateWizard, setShowCreateWizard] = useState(false);
   const [showSendSheet, setShowSendSheet] = useState(false);
   const [showAutoApplySheet, setShowAutoApplySheet] = useState(false);
+  const [editingPromotion, setEditingPromotion] = useState<PromotionCardData | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Fetch promotions based on role
-  const { data: promotions, isLoading, refetch } = trpc.promotions.getPromotions.useQuery(
-    { type: activeTab },
+  // Reset focalIndex when filter changes
+  const handleFilterChange = (filter: 'all' | PromotionType) => {
+    setActiveFilter(filter);
+    setSelectedCardId(null);
+    setFocalIndex(0);
+  };
+
+  // Fetch promotions (all or filtered by type)
+  const { data: promotions = [], isLoading, refetch } = trpc.promotions.getPromotions.useQuery(
+    { type: activeFilter === 'all' ? undefined : activeFilter },
     { enabled: !!user }
   );
 
-  // Filter cards by type
-  const filteredCards = (promotions || []).filter(p => p.type === activeTab);
+  const deleteMutation = trpc.promotions.deleteTemplate.useMutation({
+    onSuccess: () => {
+      toast.success('Promotion deleted');
+      setSelectedCardId(null);
+      setShowDeleteDialog(false);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to delete promotion');
+    }
+  });
+
+  const handleDelete = () => {
+    if (selectedCardId) {
+      deleteMutation.mutate({ templateId: selectedCardId });
+    }
+  };
+
+  const handleEdit = () => {
+    if (selectedCard) {
+      setEditingPromotion(selectedCard as PromotionCardData);
+      setShowCreateWizard(true);
+    }
+  };
+
+  // For the 'All' view, we might want to sort them or group them, but stacking them by date (default) is fine.
+  // The query already orders by createdAt desc.
+  const filteredCards = promotions || [];
   const selectedCard = filteredCards.find(c => c.id === selectedCardId);
 
   // Handle card selection
   const handleCardClick = (cardId: number) => {
-    setSelectedCardId(prev => prev === cardId ? null : cardId);
+    console.log('[Promotions] Card clicked:', cardId, 'Current selected:', selectedCardId);
+    setSelectedCardId(prev => {
+      const newState = prev === cardId ? null : cardId;
+      console.log('[Promotions] Setting selected card to:', newState);
+      return newState;
+    });
   };
 
   // Handle client using promotion on booking
@@ -69,7 +139,7 @@ export default function Promotions() {
       id: selectedCard.id,
       type: selectedCard.type,
       name: selectedCard.name,
-      value: selectedCard.value || selectedCard.originalValue,
+      value: selectedCard.value,
       valueType: selectedCard.valueType,
       code: selectedCard.code,
     }));
@@ -84,18 +154,6 @@ export default function Promotions() {
       {/* Header */}
       <PageHeader
         title="Promotions"
-        rightElement={
-          isArtist && (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="rounded-full bg-white/5 hover:bg-white/10"
-              onClick={() => setShowCreateWizard(true)}
-            >
-              <Plus className="w-5 h-5" />
-            </Button>
-          )
-        }
       />
 
       {/* Context Area */}
@@ -112,200 +170,278 @@ export default function Promotions() {
       </div>
 
       {/* Glass Sheet */}
-      <GlassSheet className="bg-card">
-        {/* Tab Navigation */}
-        <div className="flex gap-2 mb-6 px-2">
-          {TABS.map(tab => {
-            const isActive = activeTab === tab.id;
-            const Icon = tab.icon;
+      <GlassSheet className="bg-card flex flex-col h-full overflow-hidden">
+        {/* Filter Navigation */}
+        <div className="flex gap-2 mb-6 px-2 overflow-x-auto no-scrollbar">
+          {FILTERS.map(filter => {
+            const isActive = activeFilter === filter.id;
+            const Icon = filter.icon;
             return (
               <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  setSelectedCardId(null);
-                }}
+                key={filter.id}
+                onClick={() => handleFilterChange(filter.id as any)}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all",
+                  "flex items-center gap-2 py-2 px-4 rounded-full transition-all whitespace-nowrap border",
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-lg"
-                    : "bg-black/5 dark:bg-white/5 text-muted-foreground hover:bg-black/10 dark:hover:bg-white/10"
+                    ? "bg-primary text-primary-foreground border-primary shadow-lg"
+                    : "bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10"
                 )}
               >
                 <Icon className="w-4 h-4" />
-                <span className="text-sm font-medium">{tab.label}</span>
+                <span className="text-sm font-medium">{filter.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Card Stack Display */}
-        <div className="relative min-h-[300px] flex flex-col items-center justify-center py-8">
+        {/* Vertical Carousel Display */}
+        <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center">
           {isLoading ? (
             <div className="flex items-center justify-center h-48">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
           ) : filteredCards.length === 0 ? (
-            <EmptyState
-              type={activeTab}
-              isArtist={isArtist}
-              onCreate={() => setShowCreateWizard(true)}
-            />
+            <div className="min-h-[300px] flex items-center justify-center">
+              <EmptyState
+                type={activeFilter === 'all' ? 'voucher' : activeFilter}
+                isArtist={isArtist}
+                onCreate={() => setShowCreateWizard(true)}
+              />
+            </div>
           ) : (
-            <AnimatePresence mode="popLayout">
-              <div className="relative w-full flex flex-col items-center min-h-[400px]">
+            <div className="relative w-full h-full flex items-center justify-center overflow-visible">
+              {/* Debug render */}
+              {(() => { console.log('[Promotions] Render - Loading:', isLoading, 'Cards:', filteredCards.length); return null; })()}
+              <AnimatePresence>
                 {filteredCards.map((card, index) => {
+                  // Use focalIndex for positioning
+                  const position = index - focalIndex;
                   const isSelected = selectedCardId === card.id;
+                  const isFocal = focalIndex === index;
 
-                  // Calculate visual properties based on selection state
-                  // If a card is selected, it goes to top (y=0) and full opacity/no blur
-                  // If no card is selected, they stack naturally
-                  // If ANOTHER card is selected, this one steps back and blurs
-
-                  let yOffset = 0;
-                  let zIndex = 0;
-                  let blurAmount = 0;
-                  let scale = 1;
-
-                  if (selectedCardId === null) {
-                    // No selection: Stack normally
-                    yOffset = index * 60; // Increased spacing for visibility
-                    zIndex = index;
-                    blurAmount = 0;
-                  } else {
-                    if (isSelected) {
-                      // This is the selected card
-                      yOffset = 0; // Moves to top/center
-                      zIndex = 50; // High z-index
-                      blurAmount = 0;
-                      scale = 1.0; // Normal size (relative to container)
-                    } else {
-                      // This is an unselected card
-                      // Stacked tighter and scaled down more to create "deck" effect
-                      yOffset = 160 + (index * 12); // Tighter spacing (was 15)
-                      zIndex = index; // Keep original order relative to each other
-                      blurAmount = 4; // More blur to distinguish (was 2)
-                      scale = 0.90; // Smaller scale for unselected (was 0.95)
-                    }
-                  }
+                  // Visual constants
+                  const cardOffset = 180; // Increased offset for better visibility
+                  const scaleFactor = 0.05;
+                  const blurAmount = 4;
 
                   return (
                     <motion.div
                       key={card.id}
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 100 }}
                       animate={{
-                        opacity: 1,
-                        y: yOffset,
-                        zIndex: zIndex,
-                        scale: scale,
-                        filter: `blur(${blurAmount}px)`,
+                        opacity: Math.max(0, 1 - Math.abs(position) * 0.4),
+                        y: position * cardOffset,
+                        scale: 1 - Math.abs(position) * scaleFactor,
+                        zIndex: 50 - Math.abs(position),
+                        filter: `blur(${Math.min(blurAmount, Math.abs(position) * 2)}px)`,
                       }}
-                      exit={{ opacity: 0, y: -20 }}
+                      exit={{ opacity: 0, scale: 0.5 }}
                       transition={{
                         type: "spring",
-                        stiffness: 350,
-                        damping: 25
+                        stiffness: 280, // Faster spring (approx 20% speedup)
+                        damping: 28,
+                        mass: 0.8
                       }}
                       style={{
                         position: 'absolute',
-                        top: 20, // Base top position
-                        width: '90%', // limit width to 90% of screenspace
-                        maxWidth: '400px', // Ensure cards don't get too wide
+                        width: '100%',
+                        // Remove maxWidth to allow edge-to-edge on narrower screens
+                        transformOrigin: 'center center',
+                        cursor: isFocal ? 'grab' : 'pointer',
+                        touchAction: 'none'
+                      }}
+                      whileTap={{ cursor: isFocal ? 'grabbing' : 'pointer' }}
+                      onClick={() => {
+                        if (isFocal) {
+                          // Toggle selection only for centered card
+                          setSelectedCardId(prev => prev === card.id ? null : card.id);
+                        } else {
+                          // If clicking background card, move it to center
+                          setFocalIndex(index);
+                          setSelectedCardId(null);
+                        }
                       }}
                     >
-                      <PromotionCard
-                        data={card as PromotionCardData}
-                        selected={isSelected}
-                        blurred={blurAmount > 0}
-                        onClick={() => handleCardClick(card.id)}
-                        size="lg"
-                      />
+                      <SwipeableCardWrapper
+                        isFocal={isFocal}
+                        onSwipe={(direction) => {
+                          if (direction === 'up' && focalIndex < filteredCards.length - 1) {
+                            setFocalIndex(prev => prev + 1);
+                            setSelectedCardId(null);
+                          } else if (direction === 'down' && focalIndex > 0) {
+                            setFocalIndex(prev => prev - 1);
+                            setSelectedCardId(null);
+                          }
+                        }}
+                      >
+                        <div className="px-0 w-full"> {/* Container for edge-to-edge */}
+                          <PromotionCard
+                            data={card as PromotionCardData}
+                            selected={isSelected}
+                            size="lg"
+                            className="w-full shadow-2xl rounded-2xl"
+                          />
+                        </div>
+                      </SwipeableCardWrapper>
                     </motion.div>
                   );
                 })}
+              </AnimatePresence>
+
+              {/* Vertical Guide indicators (optional but helpful) */}
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+                {filteredCards.map((card, idx) => (
+                  <div
+                    key={`dot-${card.id}`}
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full transition-all duration-300",
+                      focalIndex === idx
+                        ? "bg-primary h-4"
+                        : "bg-white/20"
+                    )}
+                  />
+                ))}
               </div>
-            </AnimatePresence>
+            </div>
           )}
         </div>
 
-        {/* Action Buttons (when card selected) */}
-        <AnimatePresence>
-          {selectedCard && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="mt-8 space-y-3 px-4"
-            >
-              {isArtist ? (
-                <>
-                  <Button
-                    className="w-full h-14 rounded-xl font-bold text-base"
-                    onClick={() => setShowSendSheet(true)}
-                  >
-                    <Send className="w-5 h-5 mr-2" />
-                    Send to Client
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full h-12 rounded-xl"
-                    onClick={() => setShowAutoApplySheet(true)}
-                  >
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Auto-Apply to New Clients
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    className="w-full h-14 rounded-xl font-bold text-base"
-                    disabled={selectedCard.status !== 'active'}
-                    onClick={handleUseOnBooking}
-                  >
-                    <Check className="w-5 h-5 mr-2" />
-                    Use on Next Booking
-                  </Button>
-                  {selectedCard.status !== 'active' && (
-                    <p className="text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
-                      <Info className="w-4 h-4" />
-                      This promotion has already been used
-                    </p>
-                  )}
-                </>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Stable Footer Controls Area */}
+        <div className="shrink-0 z-[60] bg-gradient-to-t from-card via-card to-transparent px-4 pb-24 pt-4 w-full relative min-h-[200px] flex items-center justify-center">
+          <AnimatePresence mode="popLayout">
+            {selectedCard ? (
+              <motion.div
+                key="actions"
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="w-full space-y-2 absolute top-1/2 left-0 right-0 -translate-y-1/2 px-4"
+              >
+                {isArtist ? (
+                  <>
+                    <Button
+                      className="w-full h-12 rounded-xl font-bold text-sm"
+                      onClick={() => setShowSendSheet(true)}
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      Send to Client
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant="outline"
+                        className="h-10 rounded-xl text-sm"
+                        onClick={handleEdit}
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-10 rounded-xl text-sm text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 border-red-200 dark:border-red-900/30"
+                        onClick={() => setShowDeleteDialog(true)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
 
-        {/* Create New Button - Only visible for artists when no card is selected */}
-        {isArtist && !selectedCardId && (
-          <div className="sticky bottom-24 left-0 right-0 px-4 pt-6 pb-2 mt-8 bg-gradient-to-t from-card via-card to-transparent">
-            <Button
-              className="w-full h-14 rounded-2xl font-bold text-base shadow-lg"
-              onClick={() => setShowCreateWizard(true)}
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Create New {activeTab === 'voucher' ? 'Voucher' : activeTab === 'discount' ? 'Discount' : 'Credit'}
-            </Button>
-          </div>
-        )}
+                    <Button
+                      variant="outline"
+                      className="w-full h-10 rounded-xl text-sm"
+                      onClick={() => setShowAutoApplySheet(true)}
+                    >
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Auto-Apply
+                    </Button>
 
-        {/* Spacer for bottom nav */}
-        <div className="h-32" />
+                    {(selectedCard as PromotionCardData).isAutoApply && (
+                      <Button
+                        className="w-full h-10 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 text-sm"
+                        onClick={() => setShowAutoApplySheet(true)}
+                      >
+                        <Calendar className="w-4 h-4 mr-2" />
+                        Edit Auto-Apply
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      className="w-full h-12 rounded-xl font-bold text-sm"
+                      disabled={selectedCard.status !== 'active'}
+                      onClick={handleUseOnBooking}
+                    >
+                      <Check className="w-4 h-4 mr-2" />
+                      Use on Next Booking
+                    </Button>
+                    {selectedCard.status !== 'active' && (
+                      <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-2">
+                        <Info className="w-3 h-3" />
+                        Promotion already used
+                      </p>
+                    )}
+                  </>
+                )}
+              </motion.div>
+            ) : isArtist ? (
+              <motion.div
+                key="create"
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="w-full absolute top-1/2 left-0 right-0 -translate-y-1/2 px-4"
+              >
+                <Button
+                  className="w-full h-14 rounded-2xl font-bold text-base shadow-lg"
+                  onClick={() => setShowCreateWizard(true)}
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Create New {activeFilter === 'all' ? 'Voucher' : activeFilter === 'voucher' ? 'Voucher' : activeFilter === 'discount' ? 'Discount' : 'Credit'}
+                </Button>
+              </motion.div>
+            ) : (
+              <div className="h-14" /> // Spacer for client view when nothing selected
+            )}
+          </AnimatePresence>
+        </div>
       </GlassSheet>
 
       {/* Create Wizard Sheet */}
       {showCreateWizard && (
         <CreatePromotionWizard
-          isOpen={showCreateWizard}
           onClose={() => {
             setShowCreateWizard(false);
+            setEditingPromotion(null);
             refetch();
           }}
-          defaultType={activeTab}
+          initialData={editingPromotion}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Promotion?</DialogTitle>
+            <DialogDescription>
+              This will permanently delete "{selectedCard?.name}". This action cannot be undone.
+              Existing client cards using this template will not be affected.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Send to Client Sheet */}
       {showSendSheet && selectedCard && (
@@ -414,7 +550,7 @@ function AutoApplySheet({
 
   return (
     <FullScreenSheet
-      isOpen={isOpen}
+      open={isOpen}
       onClose={onClose}
       title="Auto-Apply Settings"
     >
@@ -484,5 +620,55 @@ function AutoApplySheet({
         </Button>
       </div>
     </FullScreenSheet>
+  );
+}
+
+// ------------------------------------
+// SwipeableCardWrapper
+// ------------------------------------
+interface SwipeableCardWrapperProps {
+  children: React.ReactNode;
+  isFocal: boolean;
+  onSwipe: (direction: 'up' | 'down') => void;
+}
+
+function SwipeableCardWrapper({ children, isFocal, onSwipe }: SwipeableCardWrapperProps) {
+  const controls = useAnimation();
+  const y = useMotionValue(0);
+
+  function onDragEnd(_: any, info: PanInfo) {
+    const threshold = 50;
+    const offset = info.offset.y;
+    const velocity = info.velocity.y;
+
+    let triggered = false;
+
+    if (offset < -threshold || (velocity < -500)) { // Up
+      onSwipe('up');
+      triggered = true;
+    } else if (offset > threshold || (velocity > 500)) { // Down
+      onSwipe('down');
+      triggered = true;
+    }
+
+    // Always snap back to 0. 
+    // If swipe triggered, parent updates layout and this component essentially resets logic 
+    // (or visually moves away). We snap to 0 to ensure clean state.
+    controls.start({ x: 0, y: 0, transition: { type: "spring", stiffness: 300, damping: 30 } });
+  }
+
+  return (
+    <motion.div
+      drag={isFocal ? "y" : false}
+      // Free drag (no constraints) to allow 1:1 following
+      dragElastic={0.12} // Ignored without constraints but keeping for completeness if behavior changes
+      dragMomentum={false}
+      animate={controls}
+      style={{ y }}
+      onDragEnd={onDragEnd}
+      className="w-full"
+    >
+      {children}
+    </motion.div>
   );
 }

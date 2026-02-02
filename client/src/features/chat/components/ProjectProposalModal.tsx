@@ -1,20 +1,13 @@
 import { useState } from "react";
 import { format } from "date-fns";
-<<<<<<< HEAD
-import { Check, Calendar as CalendarIcon, DollarSign, Clock, AlertCircle, X } from "lucide-react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, Button, Card, Dialog, DialogTitle } from "@/components/ui";
-=======
 import { Check, Calendar as CalendarIcon, DollarSign, Clock, AlertCircle, X, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 import { cn } from "@/lib/utils";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-<<<<<<< HEAD
-=======
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogTitle } from "@/components/ui/dialog";
 import { ApplyPromotionSheet } from "@/features/promotions";
->>>>>>> f67b805f30b6e59529d357c59fa5a255ab93fc80
 
 interface ProposalMetadata {
     type: "project_proposal";
@@ -65,26 +58,26 @@ export function ProjectProposalModal({
     if (!metadata) return null;
 
     const { serviceName, totalCost, sittings, dates, status, serviceDuration, depositAmount, discountApplied, discountAmount: storedDiscountAmount, finalAmount: storedFinalAmount, promotionName } = metadata;
-    
+
     // Calculate display amounts (with promotion if applied - either from current session or stored from acceptance)
     const hasStoredDiscount = discountApplied && storedFinalAmount !== undefined;
     const hasCurrentDiscount = appliedPromotion !== null;
     const hasDiscount = hasCurrentDiscount || hasStoredDiscount;
-    
-    const displayTotal = hasCurrentDiscount 
-        ? appliedPromotion.finalAmount / 100 
-        : hasStoredDiscount 
-            ? storedFinalAmount / 100 
+
+    const displayTotal = hasCurrentDiscount
+        ? appliedPromotion.finalAmount / 100
+        : hasStoredDiscount
+            ? storedFinalAmount / 100
             : totalCost;
-    
-    const displayDiscountAmount = hasCurrentDiscount 
-        ? appliedPromotion.discountAmount / 100 
-        : hasStoredDiscount 
-            ? (storedDiscountAmount || 0) / 100 
+
+    const displayDiscountAmount = hasCurrentDiscount
+        ? appliedPromotion.discountAmount / 100
+        : hasStoredDiscount
+            ? (storedDiscountAmount || 0) / 100
             : 0;
-    
-    const displayPromotionName = hasCurrentDiscount 
-        ? appliedPromotion.name 
+
+    const displayPromotionName = hasCurrentDiscount
+        ? appliedPromotion.name
         : promotionName || 'Promotion';
 
     const dateList = Array.isArray(dates) ? dates : [];
@@ -159,7 +152,7 @@ export function ProjectProposalModal({
                             </div>
                         </div>
                     )}
-                    
+
                     {/* Apply Promotion Button */}
                     {!appliedPromotion && artistId && (
                         <Button
@@ -172,7 +165,7 @@ export function ProjectProposalModal({
                             Apply Voucher or Discount
                         </Button>
                     )}
-                    
+
                     {/* Accept/Decline Buttons */}
                     <div className="grid grid-cols-2 gap-3">
                         <Button
@@ -315,7 +308,7 @@ export function ProjectProposalModal({
                     </div>
                 </DialogPrimitive.Content>
             </DialogPrimitive.Portal>
-            
+
             {/* Apply Promotion Sheet */}
             {artistId && (
                 <ApplyPromotionSheet

@@ -1,7 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useUIDebug } from "@/_core/contexts/UIDebugContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import DemoDataLoader from "./DemoDataLoader";
 import PushNotificationSettings from "@/components/PushNotificationSettings";
 import WorkHoursAndServices from "./WorkHoursAndServices";
 import ArtistLink from "@/components/ArtistLink";
@@ -45,6 +44,7 @@ export default function Settings() {
 
   // Business settings state
   const [businessName, setBusinessName] = useState("");
+  const [businessEmail, setBusinessEmail] = useState("");
   const [businessAddress, setBusinessAddress] = useState("");
   const [bsb, setBsb] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
@@ -102,6 +102,7 @@ export default function Settings() {
   useEffect(() => {
     if (artistSettings) {
       setBusinessName(artistSettings.businessName || "");
+      setBusinessEmail(artistSettings.businessEmail || "");
       setBusinessAddress(artistSettings.businessAddress || "");
       setBsb(artistSettings.bsb || "");
       setAccountNumber(artistSettings.accountNumber || "");
@@ -176,6 +177,7 @@ export default function Settings() {
     if (artistSettings) {
       upsertArtistSettingsMutation.mutate({
         businessName,
+        businessEmail,
         businessAddress,
         bsb,
         accountNumber,
@@ -314,6 +316,21 @@ export default function Settings() {
                     placeholder="Your business name"
                     className="bg-white/5 border-white/10"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="businessEmail">Business Email</Label>
+                  <Input
+                    id="businessEmail"
+                    value={businessEmail}
+                    onChange={(e) => setBusinessEmail(e.target.value)}
+                    placeholder="email@example.com"
+                    type="email"
+                    className="bg-white/5 border-white/10"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This email will be used for sending notifications to clients
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -582,8 +599,6 @@ export default function Settings() {
                 </Card>
               </>
             )}
-
-            {isArtist && <DemoDataLoader />}
 
             <Card className="border-0 bg-white/5 rounded-2xl overflow-hidden">
               <div className="p-4 flex items-center justify-between">

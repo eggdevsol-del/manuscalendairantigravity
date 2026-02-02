@@ -51,3 +51,5 @@ export * from "./textarea";
 export * from "./toggle-group";
 export * from "./toggle";
 export * from "./tooltip";
+export * from "./overlays/modal-shell";
+export * from "./overlays/sheet-shell";

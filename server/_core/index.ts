@@ -78,7 +78,7 @@ async function startServer() {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
-    res.json({ 
+    res.json({
       version: packageJson.version,
       timestamp: Date.now()
     });
@@ -89,14 +89,17 @@ async function startServer() {
     try {
       // Get the full path after /api/files/
       const key = (req.params as any)[0];
+      console.log(`[File Serving] Request for key: ${key}`);
       const file = await storageGetData(key);
 
       if (!file) {
+        console.warn(`[File Serving] File not found for key: ${key}`);
         return res.status(404).json({ error: "File not found" });
       }
 
+      console.log(`[File Serving] Serving file: ${key} (${file.mimeType}, ${file.data.length} bytes)`);
       res.setHeader("Content-Type", file.mimeType);
-      res.setHeader("Cache-Control", "public, max-age=31536000");
+      res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
       res.send(file.data);
     } catch (error) {
       console.error("[File Serving] Error:", error);

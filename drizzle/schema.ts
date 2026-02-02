@@ -31,6 +31,7 @@ export const artistSettings = mysqlTable("artistSettings", {
 	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	businessName: text(),
 	businessAddress: text(),
+	businessEmail: varchar({ length: 320 }),
 	bsb: varchar({ length: 10 }),
 	accountNumber: varchar({ length: 20 }),
 	depositAmount: int(),
@@ -39,18 +40,18 @@ export const artistSettings = mysqlTable("artistSettings", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	autoSendDepositInfo: tinyint().default(0),
-// Funnel settings (SSOT for booking link)
-publicSlug: varchar({ length: 50 }),
-funnelEnabled: tinyint().default(0),
-funnelWelcomeMessage: text(),
-styleOptions: text(), // JSON array of style options
-placementOptions: text(), // JSON array of placement options
-budgetRanges: text(), // JSON array of budget range objects
+	// Funnel settings (SSOT for booking link)
+	publicSlug: varchar({ length: 50 }),
+	funnelEnabled: tinyint().default(0),
+	funnelWelcomeMessage: text(),
+	styleOptions: text(), // JSON array of style options
+	placementOptions: text(), // JSON array of placement options
+	budgetRanges: text(), // JSON array of budget range objects
 },
-(table) => [
-primaryKey({ columns: [table.id], name: "artistSettings_id" }),
-unique("artistSettings_publicSlug_unique").on(table.publicSlug),
-]);
+	(table) => [
+		primaryKey({ columns: [table.id], name: "artistSettings_id" }),
+		unique("artistSettings_publicSlug_unique").on(table.publicSlug),
+	]);
 
 export const clientContent = mysqlTable("client_content", {
 	id: int().autoincrement().notNull(),
@@ -367,6 +368,8 @@ export const moodboardItems = mysqlTable("moodboard_items", {
 ]);
 
 
+export type InsertAppointment = InferInsertModel<typeof appointments>;
+export type SelectAppointment = InferSelectModel<typeof appointments>;
 export type InsertConsultation = InferInsertModel<typeof consultations>;
 export type SelectConsultation = InferSelectModel<typeof consultations>;
 export type InsertConversation = InferInsertModel<typeof conversations>;
@@ -549,49 +552,49 @@ export const weeklyAnalytics = mysqlTable("weekly_analytics", {
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	weekStartDate: datetime({ mode: 'string' }).notNull(), // Monday of the week
 	weekEndDate: datetime({ mode: 'string' }).notNull(), // Sunday of the week
-	
+
 	// Task completion metrics
 	totalTasksCompleted: int().default(0),
 	tier1TasksCompleted: int().default(0),
 	tier2TasksCompleted: int().default(0),
 	tier3TasksCompleted: int().default(0),
 	tier4TasksCompleted: int().default(0),
-	
+
 	// Response time metrics (in seconds)
 	avgConsultationResponseTime: int(), // Average time to respond to new consultations
 	fastestConsultationResponse: int(),
 	slowestConsultationResponse: int(),
-	
+
 	// Task completion time metrics (in seconds)
 	avgTaskCompletionTime: int(),
 	avgTier1CompletionTime: int(),
 	avgTier2CompletionTime: int(),
-	
+
 	// Follow-up metrics
 	followUpsWithin24Hours: int().default(0),
 	followUpsWithin48Hours: int().default(0),
 	totalFollowUpsNeeded: int().default(0),
 	followUpRate: int(), // Percentage (0-100)
-	
+
 	// Revenue protection metrics
 	depositsCollected: int().default(0),
 	depositsOutstanding: int().default(0),
 	appointmentsConfirmed: int().default(0),
 	appointmentsUnconfirmed: int().default(0),
-	
+
 	// Consultation conversion
 	newConsultations: int().default(0),
 	consultationsConverted: int().default(0), // Became appointments
 	conversionRate: int(), // Percentage (0-100)
-	
+
 	// Comparison to benchmarks (stored as percentage relative to benchmark)
 	responseTimeVsBenchmark: int(), // 100 = at benchmark, >100 = faster, <100 = slower
 	completionRateVsBenchmark: int(),
 	followUpRateVsBenchmark: int(),
-	
+
 	// Overall efficiency score (0-100)
 	efficiencyScore: int(),
-	
+
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
@@ -607,20 +610,20 @@ export const weeklyAnalytics = mysqlTable("weekly_analytics", {
 export const dashboardSettings = mysqlTable("dashboard_settings", {
 	id: int().autoincrement().notNull(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
-	
+
 	// Task display settings
 	maxVisibleTasks: int().default(10),
-	
+
 	// Booking goal settings
 	goalAdvancedBookingMonths: int().default(3), // How far ahead they want to be booked (1-12)
-	
+
 	// Email client preference
 	preferredEmailClient: mysqlEnum(['default', 'gmail', 'outlook', 'apple_mail']).default('default'),
-	
+
 	// Analytics preferences
 	showWeeklySnapshot: tinyint().default(1),
 	lastSnapshotShownAt: timestamp({ mode: 'string' }),
-	
+
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
@@ -643,13 +646,13 @@ export const activeTasks = mysqlTable("active_tasks", {
 	context: text(), // Additional context shown on card
 	priorityScore: int().notNull(),
 	priorityLevel: mysqlEnum(['critical', 'high', 'medium', 'low']).notNull(),
-	
+
 	// Related entity info
 	relatedEntityType: varchar({ length: 50 }),
 	relatedEntityId: varchar({ length: 64 }),
 	clientId: varchar({ length: 64 }).references(() => users.id, { onDelete: "cascade" }),
 	clientName: varchar({ length: 255 }),
-	
+
 	// Action info for SMS/Email integration
 	actionType: mysqlEnum(['in_app', 'sms', 'email', 'external']),
 	smsNumber: varchar({ length: 20 }),
@@ -658,14 +661,14 @@ export const activeTasks = mysqlTable("active_tasks", {
 	emailSubject: varchar({ length: 255 }),
 	emailBody: text(),
 	deepLink: varchar({ length: 500 }), // In-app navigation link
-	
+
 	// Timing info
 	dueAt: timestamp({ mode: 'string' }), // When this task becomes urgent
 	expiresAt: timestamp({ mode: 'string' }), // When this task is no longer relevant
-	
+
 	// Tracking
 	startedAt: timestamp({ mode: 'string' }), // When user selected this task
-	
+
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
@@ -733,39 +736,39 @@ export const activeTasksRelations = relations(activeTasks, ({ one }) => ({
 export const artistPublicProfile = mysqlTable("artist_public_profile", {
 	id: int().autoincrement().notNull(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
-	
+
 	// Public link slug (e.g., "pmason" for calendair.app/start/pmason)
 	slug: varchar({ length: 50 }).notNull().unique(),
-	
+
 	// Profile display settings
 	displayName: varchar({ length: 255 }),
 	tagline: text(), // Short bio/tagline for public profile
 	profileImageUrl: text(),
 	coverImageUrl: text(),
-	
+
 	// Funnel settings
 	funnelEnabled: tinyint().default(1), // Whether public link is active
-	
+
 	// Funnel step configuration (JSON array of enabled steps)
 	// Default: ['intent', 'contact', 'style', 'budget', 'availability']
 	enabledSteps: text().default('["intent","contact","style","budget","availability"]'),
-	
+
 	// Style options available (JSON array)
 	styleOptions: text().default('["realism","traditional","neo-traditional","japanese","blackwork","dotwork","watercolor","geometric","minimalist","other"]'),
-	
+
 	// Placement options available (JSON array)
 	placementOptions: text().default('["full-sleeve","half-sleeve","forearm","upper-arm","back-piece","chest","ribs","thigh","calf","hand","neck","other"]'),
-	
+
 	// Budget ranges available (JSON array of {label, min, max})
 	budgetRanges: text().default('[{"label":"Under $500","min":0,"max":500},{"label":"$500-$1,000","min":500,"max":1000},{"label":"$1,000-$2,500","min":1000,"max":2500},{"label":"$2,500-$5,000","min":2500,"max":5000},{"label":"$5,000-$10,000","min":5000,"max":10000},{"label":"$10,000+","min":10000,"max":null}]'),
-	
+
 	// Availability settings
 	showAvailability: tinyint().default(1),
-	
+
 	// Analytics
 	totalViews: int().default(0),
 	totalSubmissions: int().default(0),
-	
+
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
@@ -782,7 +785,7 @@ export const artistPublicProfile = mysqlTable("artist_public_profile", {
 export const leads = mysqlTable("leads", {
 	id: int().autoincrement().notNull(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
-	
+
 	// Client info (may or may not have a user account yet)
 	clientId: varchar({ length: 64 }).references(() => users.id, { onDelete: "set null" }),
 	clientName: varchar({ length: 255 }).notNull(),
@@ -791,12 +794,12 @@ export const leads = mysqlTable("leads", {
 	clientBirthdate: varchar({ length: 20 }),
 	clientEmail: varchar({ length: 320 }).notNull(),
 	clientPhone: varchar({ length: 20 }),
-	
+
 	// Lead source tracking
 	source: mysqlEnum(['funnel', 'direct_message', 'instagram', 'facebook', 'referral', 'walk_in', 'other']).default('funnel').notNull(),
 	sourceDetails: text(), // Additional source info (e.g., referrer name, ad campaign)
 	funnelSessionId: varchar({ length: 64 }), // Links to funnel_sessions for analytics
-	
+
 	// Lead status progression
 	status: mysqlEnum([
 		'new',              // Just submitted, not viewed
@@ -813,50 +816,50 @@ export const leads = mysqlTable("leads", {
 		'lost',             // Lead didn't convert
 		'archived'          // Old/inactive lead
 	]).default('new').notNull(),
-	
+
 	// Intent/Project details (from funnel)
 	projectType: varchar({ length: 100 }), // e.g., 'full-sleeve', 'back-piece', 'cover-up'
 	projectDescription: text(),
-	
+
 	// Style preferences
 	stylePreferences: text(), // JSON array of selected styles
 	referenceImages: text(), // JSON array of uploaded image URLs
 	bodyPlacementImages: text(), // JSON array of body placement photo URLs
-	
+
 	// Size & Budget
 	placement: varchar({ length: 100 }),
 	estimatedSize: varchar({ length: 100 }), // e.g., 'small', 'medium', 'large', 'extra-large'
 	budgetMin: int(), // In cents
 	budgetMax: int(), // In cents
 	budgetLabel: varchar({ length: 100 }), // Human-readable budget range
-	
+
 	// Availability preferences
 	preferredTimeframe: varchar({ length: 100 }), // e.g., 'asap', '1-3 months', '3-6 months', '6-12 months'
 	preferredMonths: text(), // JSON array of preferred months
 	urgency: mysqlEnum(['flexible', 'moderate', 'urgent']).default('flexible'),
-	
+
 	// Derived tags (computed from form answers, stored as JSON array)
 	// e.g., ["Full Sleeve", "Est $6k-$8k", "High Priority", "Realism", "2026 Target"]
 	derivedTags: text(),
-	
+
 	// Priority scoring (computed by algorithm)
 	priorityScore: int().default(0),
 	priorityTier: mysqlEnum(['tier1', 'tier2', 'tier3', 'tier4']).default('tier2'),
-	
+
 	// Value estimation
 	estimatedValue: int(), // In cents, computed from budget range
-	
+
 	// Linked entities (created when lead progresses)
 	conversationId: int().references(() => conversations.id, { onDelete: "set null" }),
 	consultationId: int().references(() => consultations.id, { onDelete: "set null" }),
 	appointmentId: int().references(() => appointments.id, { onDelete: "set null" }),
-	
+
 	// Proposal tracking
 	proposalSentAt: timestamp({ mode: 'string' }),
 	proposalAcceptedAt: timestamp({ mode: 'string' }),
 	proposedDates: text(), // JSON array of proposed date options
 	acceptedDate: datetime({ mode: 'string' }),
-	
+
 	// Deposit tracking
 	depositAmount: int(), // In cents
 	depositRequestedAt: timestamp({ mode: 'string' }),
@@ -864,14 +867,14 @@ export const leads = mysqlTable("leads", {
 	depositVerifiedAt: timestamp({ mode: 'string' }),
 	depositMethod: mysqlEnum(['stripe', 'paypal', 'bank_transfer', 'cash']),
 	depositProof: text(), // Screenshot URL for bank transfers
-	
+
 	// Timestamps
 	lastContactedAt: timestamp({ mode: 'string' }),
 	lastActivityAt: timestamp({ mode: 'string' }),
 	convertedAt: timestamp({ mode: 'string' }), // When became a booked appointment
 	lostAt: timestamp({ mode: 'string' }),
 	lostReason: varchar({ length: 255 }),
-	
+
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
@@ -890,33 +893,33 @@ export const leads = mysqlTable("leads", {
 export const funnelSessions = mysqlTable("funnel_sessions", {
 	id: varchar({ length: 64 }).notNull(), // UUID
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
-	
+
 	// Session tracking
 	visitorFingerprint: varchar({ length: 255 }), // For anonymous tracking
 	ipAddress: varchar({ length: 45 }),
 	userAgent: text(),
 	referrer: text(),
-	
+
 	// Funnel progress
 	currentStep: varchar({ length: 50 }).default('intent'),
 	completedSteps: text().default('[]'), // JSON array of completed step names
 	stepData: text().default('{}'), // JSON object with data from each step
-	
+
 	// Completion status
 	completed: tinyint().default(0),
 	leadId: int().references(() => leads.id, { onDelete: "set null" }),
-	
+
 	// Timing
 	startedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	lastActivityAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	completedAt: timestamp({ mode: 'string' }),
-	
+
 	// Abandonment tracking
 	abandoned: tinyint().default(0),
 	abandonedAt: timestamp({ mode: 'string' }),
 	abandonedStep: varchar({ length: 50 }),
 	recoveryEmailSent: tinyint().default(0),
-	
+
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
 	primaryKey({ columns: [table.id], name: "funnel_sessions_id" }),
@@ -931,7 +934,7 @@ export const funnelSessions = mysqlTable("funnel_sessions", {
 export const leadActivityLog = mysqlTable("lead_activity_log", {
 	id: int().autoincrement().notNull(),
 	leadId: int().notNull().references(() => leads.id, { onDelete: "cascade" }),
-	
+
 	activityType: mysqlEnum([
 		'created',
 		'viewed',
@@ -954,15 +957,15 @@ export const leadActivityLog = mysqlTable("lead_activity_log", {
 		'marked_lost',
 		'archived'
 	]).notNull(),
-	
+
 	// Activity details
 	description: text(),
 	metadata: text(), // JSON object with additional data
-	
+
 	// Who performed the action
 	performedBy: varchar({ length: 64 }).references(() => users.id, { onDelete: "set null" }),
 	performedByType: mysqlEnum(['artist', 'client', 'system']).default('system'),
-	
+
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
 	primaryKey({ columns: [table.id], name: "lead_activity_log_id" }),
@@ -1047,18 +1050,18 @@ export const leadActivityLogRelations = relations(leadActivityLog, ({ one }) => 
 export const promotionTemplates = mysqlTable("promotion_templates", {
 	id: int().autoincrement().notNull(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
-	
+
 	// Template type
 	type: mysqlEnum(['voucher', 'discount', 'credit']).notNull(),
-	
+
 	// Display info
 	name: varchar({ length: 255 }).notNull(),
 	description: text(),
-	
+
 	// Value configuration
 	valueType: mysqlEnum(['fixed', 'percentage']).default('fixed').notNull(),
 	value: int().notNull(), // Amount in cents for fixed, percentage for percentage type
-	
+
 	// Design customization
 	templateDesign: varchar({ length: 50 }).default('classic').notNull(), // References SSOT template registry
 	primaryColor: varchar({ length: 50 }), // Color key from palette
@@ -1070,10 +1073,10 @@ export const promotionTemplates = mysqlTable("promotion_templates", {
 	backgroundScale: decimal({ precision: 3, scale: 2 }).default('1.00'), // Scale factor for background image
 	backgroundPositionX: int().default(50), // X position percentage (0-100)
 	backgroundPositionY: int().default(50), // Y position percentage (0-100)
-	
+
 	// Status
 	isActive: tinyint().default(1),
-	
+
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
@@ -1090,31 +1093,31 @@ export const issuedPromotions = mysqlTable("issued_promotions", {
 	templateId: int().notNull().references(() => promotionTemplates.id, { onDelete: "cascade" }),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	clientId: varchar({ length: 64 }).references(() => users.id, { onDelete: "cascade" }), // Null for auto-apply promotions
-	
+
 	// Unique code for redemption
 	code: varchar({ length: 32 }).notNull(),
-	
+
 	// Value at time of issue (snapshot from template)
 	type: mysqlEnum(['voucher', 'discount', 'credit']).notNull(),
 	valueType: mysqlEnum(['fixed', 'percentage']).default('fixed').notNull(),
 	originalValue: int().notNull(), // Original value when issued
 	remainingValue: int().notNull(), // Remaining value (for partial redemptions)
-	
+
 	// Auto-apply settings
 	isAutoApply: tinyint().default(0),
 	autoApplyStartDate: datetime({ mode: 'string' }),
 	autoApplyEndDate: datetime({ mode: 'string' }),
-	
+
 	// Status
 	status: mysqlEnum(['active', 'partially_used', 'fully_used', 'expired', 'revoked']).default('active').notNull(),
-	
+
 	// Redemption tracking
 	redeemedAt: timestamp({ mode: 'string' }),
 	redeemedOnAppointmentId: int().references(() => appointments.id, { onDelete: "set null" }),
-	
+
 	// Validity
 	expiresAt: datetime({ mode: 'string' }),
-	
+
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
@@ -1133,15 +1136,15 @@ export const promotionRedemptions = mysqlTable("promotion_redemptions", {
 	id: int().autoincrement().notNull(),
 	promotionId: int().notNull().references(() => issuedPromotions.id, { onDelete: "cascade" }),
 	appointmentId: int().notNull().references(() => appointments.id, { onDelete: "cascade" }),
-	
+
 	// Amount redeemed in this transaction
 	amountRedeemed: int().notNull(), // In cents
-	
+
 	// Original booking amount before discount
 	originalAmount: int().notNull(),
 	// Final amount after discount
 	finalAmount: int().notNull(),
-	
+
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
 	primaryKey({ columns: [table.id], name: "promotion_redemptions_id" }),

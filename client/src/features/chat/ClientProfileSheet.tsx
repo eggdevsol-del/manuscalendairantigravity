@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import { ScrollArea, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
+=======
+>>>>>>> 07d2229caa9a461d00622999a9af9320f242562f
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { User, Mail, Phone, Cake, BadgeCheck, Image as ImageIcon, Camera, Loader2 } from "lucide-react";
 import { format } from "date-fns";

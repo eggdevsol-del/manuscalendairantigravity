@@ -43,6 +43,12 @@ export interface PromotionCardData {
   code?: string;
   status?: 'active' | 'partially_used' | 'fully_used' | 'expired' | 'revoked';
   expiresAt?: string | null;
+  // Auto-apply fields
+  isAutoApply?: boolean;
+  autoApplyStartDate?: string | null;
+  autoApplyEndDate?: string | null;
+  // Computed fields handling
+  originalValue?: number;
 }
 
 interface PromotionCardProps {
@@ -72,28 +78,64 @@ export function PromotionCard({
   const typeDefaults = getTypeDefaults(data.type);
   const Icon = TypeIcon[data.type];
 
+  if (data.backgroundImageUrl) {
+    console.log(`[PromotionCard] Rendering with background: ${data.backgroundImageUrl}`, {
+      id: data.id,
+      name: data.name,
+      scale: data.backgroundScale,
+      x: data.backgroundPositionX,
+      y: data.backgroundPositionY
+    });
+  }
+
   // Build base background style (Colors/Gradients only)
-  // We handle the Image manually in a layer above
   const baseBackground = buildCardBackground(
     data.gradientFrom || null,
     data.primaryColor || null,
     data.customColor
   );
 
-  // Image styles
-  const imageStyles = data.backgroundImageUrl ? {
-    backgroundImage: `url(${data.backgroundImageUrl})`,
-    backgroundSize: `${(data.backgroundScale || 1) * 100}%`,
-    backgroundPosition: `${data.backgroundPositionX || 50}% ${data.backgroundPositionY || 50}%`,
+  // Background Image with defensive quoting and cache busting
+  const getProcessedImageUrl = (url: string) => {
+    if (!url) return null;
+    const separator = url.includes('?') ? '&' : '?';
+    // Use stable app version for cache busting instead of Date.now()
+    // This allows PWA caching to work across sessions until a new version is deployed.
+    const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
+    const cacheBuster = url.startsWith('/api/') ? `${separator}v=${version}` : '';
+    return `url("${url}${cacheBuster}")`;
+  };
+
+  const bgImageUrl = getProcessedImageUrl(data.backgroundImageUrl || '');
+
+  // Independent background properties to avoid shorthand resets
+  // Layering order: Image (Layer 1), then Gradient/Color (Layer 2)
+  const backgroundImage = bgImageUrl
+    ? (baseBackground.startsWith('linear-gradient')
+      ? `${bgImageUrl}, ${baseBackground}`
+      : bgImageUrl)
+    : (baseBackground.startsWith('linear-gradient') ? baseBackground : 'none');
+
+  const backgroundColor = !baseBackground.startsWith('linear-gradient') ? baseBackground : 'transparent';
+
+  const cardStyle: React.CSSProperties = {
+    backgroundImage,
+    backgroundColor,
+    backgroundSize: bgImageUrl
+      ? `${(data.backgroundScale || 1) * 100}% auto${baseBackground.startsWith('linear-gradient') ? ', auto' : ''}`
+      : 'auto',
+    backgroundPosition: bgImageUrl
+      ? `${data.backgroundPositionX ?? 50}% ${data.backgroundPositionY ?? 50}%${baseBackground.startsWith('linear-gradient') ? ', center' : ''}`
+      : 'center',
     backgroundRepeat: 'no-repeat',
-  } : undefined;
+    aspectRatio: template.aspectRatio,
+  };
 
   // Determine text color
   let textColor: 'white' | 'black' = 'white';
   if (data.customColor) {
     textColor = getContrastTextColor(data.customColor);
   } else if (data.gradientFrom || data.primaryColor) {
-    // If we have a color background, calculate contrast
     textColor = getTextColor(data.gradientFrom, data.primaryColor);
   }
 
@@ -117,37 +159,20 @@ export function PromotionCard({
   return (
     <motion.div
       className={cn(
-        "relative cursor-pointer transition-all duration-300",
+        "relative cursor-pointer transition-all duration-300 rounded-2xl overflow-hidden shadow-xl",
         sizeClasses[size],
         blurred && "opacity-40 blur-[2px] scale-95",
         selected && "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105 z-10",
         className
       )}
-      style={{ aspectRatio: template.aspectRatio }}
+      style={cardStyle}
       onClick={onClick}
       whileHover={{ scale: blurred ? 0.95 : 1.02 }}
       whileTap={{ scale: 0.98 }}
       layout
     >
-      {/* Card Body */}
-      <div
-        className="absolute inset-0 rounded-2xl overflow-hidden shadow-xl"
-        style={{ background: baseBackground }}
-      >
-        {/* Background Image Layer */}
-        {data.backgroundImageUrl && (
-          <div
-            className="absolute inset-0 z-0 transition-all duration-200"
-            style={imageStyles}
-          />
-        )}
-
-        {/* Overlay for background images - Optional, maybe only if no color selected? 
-            Keeping it simple: If BG image exists, add slight overlay for text contrast if needed, 
-            BUT user wants "actually transparent", so we should actully REMOVE any forced overlay 
-            or make it very subtle/user controlled. 
-            Removing standard overlay to respect transparency request.
-        */}
+      {/* Card Body Overlay - Handling highlights and glass effects */}
+      <div className="absolute inset-0 pointer-events-none">
 
         {/* Hologram effect for premium template */}
         {template.hasHologram && (
@@ -280,22 +305,30 @@ export function PromotionCard({
         )}
 
         {/* Status badge */}
-        {data.status && data.status !== 'active' && (
-          <div
-            className={cn(
-              "absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-medium",
-              data.status === 'partially_used' && "bg-yellow-500/80 text-yellow-900",
-              data.status === 'fully_used' && "bg-gray-500/80 text-white",
-              data.status === 'expired' && "bg-red-500/80 text-white",
-              data.status === 'revoked' && "bg-red-700/80 text-white"
-            )}
-          >
-            {data.status === 'partially_used' && 'Partially Used'}
-            {data.status === 'fully_used' && 'Used'}
-            {data.status === 'expired' && 'Expired'}
-            {data.status === 'revoked' && 'Revoked'}
-          </div>
-        )}
+        <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
+          {data.isAutoApply && (
+            <div className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/90 text-primary-foreground shadow-sm flex items-center gap-1">
+              <span>Auto Apply</span>
+            </div>
+          )}
+
+          {data.status && data.status !== 'active' && (
+            <div
+              className={cn(
+                "px-2 py-0.5 rounded-full text-xs font-medium",
+                data.status === 'partially_used' && "bg-yellow-500/80 text-yellow-900",
+                data.status === 'fully_used' && "bg-gray-500/80 text-white",
+                data.status === 'expired' && "bg-red-500/80 text-white",
+                data.status === 'revoked' && "bg-red-700/80 text-white"
+              )}
+            >
+              {data.status === 'partially_used' && 'Partially Used'}
+              {data.status === 'fully_used' && 'Used'}
+              {data.status === 'expired' && 'Expired'}
+              {data.status === 'revoked' && 'Revoked'}
+            </div>
+          )}
+        </div>
 
         {/* Expiry date - show above artist name if present */}
         {data.expiresAt && data.status === 'active' && (

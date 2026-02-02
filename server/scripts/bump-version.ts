@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 // Paths
 // We are in server/scripts. Root is ../..
 const rootDir = path.resolve(__dirname, '../../');
-const clientVersionPath = path.join(rootDir, 'client/src/version.ts');
+const clientVersionPath = path.join(rootDir, 'client/src/lib/version.ts');
 const packageJsonPath = path.join(rootDir, 'package.json');
 
 // Read current version from package.json
@@ -29,8 +29,10 @@ console.log(`Bumping to: ${newVersion}`);
 packageJson.version = newVersion;
 fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
 
-// Update client/src/version.ts
-const versionFileContent = `export const APP_VERSION = "${newVersion}";\n`;
-fs.writeFileSync(clientVersionPath, versionFileContent);
+// NOTE: We do not update client/src/lib/version.ts directly because it uses
+// __APP_VERSION__ injected by Vite from package.json
+// Writing to it would destroy the helper functions.
+
+console.log('Version updated successfully.');
 
 console.log('Version updated successfully.');

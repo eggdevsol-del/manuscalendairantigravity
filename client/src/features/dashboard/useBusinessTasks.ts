@@ -113,7 +113,11 @@ export function useBusinessTasks() {
 
   // Open native SMS app with pre-populated content
   const openSms = useCallback((task: BusinessTask) => {
+<<<<<<< HEAD
     if (!task.smsNumber) return;
+=======
+    if (!task.smsNumber || !task.smsBody) return;
+>>>>>>> 07d2229caa9a461d00622999a9af9320f242562f
 
     // Start tracking
     startTask(task);
@@ -121,6 +125,7 @@ export function useBusinessTasks() {
     // Detect platform and construct SMS URL
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const number = task.smsNumber.replace(/\D/g, ''); // Remove non-digits
+<<<<<<< HEAD
     const body = task.smsBody ? encodeURIComponent(task.smsBody) : '';
 
     let smsUrl = `sms:${number}`;
@@ -130,6 +135,16 @@ export function useBusinessTasks() {
       } else {
         smsUrl += `?body=${body}`;
       }
+=======
+
+    let smsUrl: string;
+    if (isIOS) {
+      // iOS uses sms: with &body=
+      smsUrl = `sms:${number}&body=${body}`;
+    } else {
+      // Android uses sms: with ?body=
+      smsUrl = `sms:${number}?body=${body}`;
+>>>>>>> 07d2229caa9a461d00622999a9af9320f242562f
     }
 
     window.location.href = smsUrl;
@@ -145,6 +160,7 @@ export function useBusinessTasks() {
     const subject = encodeURIComponent(task.emailSubject || '');
     const body = encodeURIComponent(task.emailBody || '');
 
+<<<<<<< HEAD
     let emailUrl: string;
 
     switch (preferredClient) {
@@ -160,10 +176,46 @@ export function useBusinessTasks() {
         break;
       default:
         // Default mailto:
+=======
+    // Detect platform
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    const isMobile = isIOS || isAndroid;
+
+    let emailUrl: string;
+
+    // On mobile, try to open the specific app with deep links
+    if (isMobile) {
+      if (preferredClient === 'gmail') {
+        // Gmail App Scheme: googlegmail:///co?to=...
+        emailUrl = `googlegmail:///co?to=${to}&subject=${subject}&body=${body}`;
+      } else if (preferredClient === 'outlook') {
+        // Outlook App Scheme: ms-outlook://compose?to=...
+        emailUrl = `ms-outlook://compose?to=${to}&subject=${subject}&body=${body}`;
+      } else {
+        // Default / Apple Mail
+>>>>>>> 07d2229caa9a461d00622999a9af9320f242562f
         emailUrl = `mailto:${task.emailRecipient}?subject=${subject}&body=${body}`;
+      }
+    } else {
+      // Desktop / Web Fallbacks
+      switch (preferredClient) {
+        case 'gmail':
+          emailUrl = `https://mail.google.com/mail/?view=cm&to=${to}&su=${subject}&body=${body}`;
+          break;
+        case 'outlook':
+          emailUrl = `https://outlook.live.com/mail/0/deeplink/compose?to=${to}&subject=${subject}&body=${body}`;
+          break;
+        default:
+          emailUrl = `mailto:${task.emailRecipient}?subject=${subject}&body=${body}`;
+      }
     }
 
+<<<<<<< HEAD
     if (preferredClient === 'gmail' || preferredClient === 'outlook') {
+=======
+    if (!isMobile && (preferredClient === 'gmail' || preferredClient === 'outlook')) {
+>>>>>>> 07d2229caa9a461d00622999a9af9320f242562f
       window.open(emailUrl, '_blank');
     } else {
       window.location.href = emailUrl;
