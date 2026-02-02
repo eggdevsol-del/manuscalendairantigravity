@@ -371,7 +371,6 @@ export default function Dashboard() {
                             </Button>
                         )}
 
-<<<<<<< HEAD
                         {/* Secondary Communication Actions */}
                         {selectedTask._serverTask && (
                             <div className="grid grid-cols-2 gap-3">
@@ -396,19 +395,6 @@ export default function Dashboard() {
                                     </Button>
                                 )}
                             </div>
-=======
-                        {/* Secondary Email Action (if available and not primary) */}
-                        {selectedTask._serverTask?.emailRecipient && selectedTask._serverTask.actionType !== 'email' && (
-                            <Button
-                                size="lg"
-                                variant="secondary"
-                                className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-black/5 border border-white/5"
-                                onClick={() => businessActions.openEmail(selectedTask._serverTask!, businessSettings.preferredEmailClient)}
-                            >
-                                <Mail className="mr-2 w-5 h-5" />
-                                Send Email
-                            </Button>
->>>>>>> 07d2229caa9a461d00622999a9af9320f242562f
                         )}
 
                         {/* Task Management Actions */}
