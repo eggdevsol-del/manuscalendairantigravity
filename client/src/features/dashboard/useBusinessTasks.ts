@@ -211,7 +211,7 @@ export function useBusinessTasks() {
     actionType: task.actionType === 'in_app' ? 'internal' : task.actionType,
     domain: 'business' as const,
     // Original task data for actions
-    _original: task
+    _serverTask: task
   }));
 
   return {
