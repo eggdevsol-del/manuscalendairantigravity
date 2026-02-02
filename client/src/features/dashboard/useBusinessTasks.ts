@@ -146,12 +146,13 @@ export function useBusinessTasks() {
     const subject = encodeURIComponent(task.emailSubject || '');
     const body = encodeURIComponent(task.emailBody || '');
 
+    // Fallback to mailto as default safe URL
+    let emailUrl = `mailto:${task.emailRecipient}?subject=${subject}&body=${body}`;
+
     // Detect platform
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid = /Android/.test(navigator.userAgent);
     const isMobile = isIOS || isAndroid;
-
-    let emailUrl: string;
 
     // On mobile, try to open the specific app with deep links
     if (isMobile) {
@@ -161,10 +162,8 @@ export function useBusinessTasks() {
       } else if (preferredClient === 'outlook') {
         // Outlook App Scheme: ms-outlook://compose?to=...
         emailUrl = `ms-outlook://compose?to=${to}&subject=${subject}&body=${body}`;
-      } else {
-        // Default / Apple Mail
-        emailUrl = `mailto:${task.emailRecipient}?subject=${subject}&body=${body}`;
       }
+      // Else keep default mailto
     } else {
       // Desktop / Web Fallbacks
       switch (preferredClient) {
@@ -175,7 +174,8 @@ export function useBusinessTasks() {
           emailUrl = `https://outlook.live.com/mail/0/deeplink/compose?to=${to}&subject=${subject}&body=${body}`;
           break;
         default:
-          emailUrl = `mailto:${task.emailRecipient}?subject=${subject}&body=${body}`;
+          // Keep default mailto
+          break;
       }
     }
 

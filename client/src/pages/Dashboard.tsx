@@ -371,6 +371,19 @@ export default function Dashboard() {
                             </Button>
                         )}
 
+                        {/* Secondary SMS Action (if available and not primary) */}
+                        {selectedTask._serverTask?.smsNumber && selectedTask._serverTask.actionType !== 'sms' && (
+                            <Button
+                                size="lg"
+                                variant="secondary"
+                                className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-black/5 border border-white/5"
+                                onClick={() => businessActions.openSms(selectedTask._serverTask!)}
+                            >
+                                <MessageSquare className="mr-2 w-5 h-5" />
+                                Send SMS
+                            </Button>
+                        )}
+
                         {/* Secondary Email Action (if available and not primary) */}
                         {selectedTask._serverTask?.emailRecipient && selectedTask._serverTask.actionType !== 'email' && (
                             <Button

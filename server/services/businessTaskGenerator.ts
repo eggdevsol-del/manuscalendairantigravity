@@ -536,9 +536,9 @@ async function generateFollowUpTasks(
       relatedEntityId: String(consult.id),
       clientId: consult.clientId,
       clientName: consult.client?.name || null,
-      actionType: 'in_app', // Default to in_app, but UI shows secondary email
-      smsNumber: null,
-      smsBody: null,
+      actionType: 'in_app', // Default to in_app, but UI shows secondary actions
+      smsNumber: consult.client?.phone || null,
+      smsBody: `Hi ${consult.client?.name || 'there'}! Just following up on your consultation. Let me know if you have any questions!`,
       emailRecipient: consult.client?.email || null,
       emailSubject: `Following up on your consultation`,
       emailBody: `Hi ${consult.client?.name || 'there'}! Just following up on your consultation. Let me know if you have any questions!`,
@@ -605,8 +605,8 @@ async function generateStaleConversationTasks(
       clientId: conv.clientId,
       clientName: conv.client?.name || null,
       actionType: 'in_app',
-      smsNumber: null,
-      smsBody: null,
+      smsNumber: conv.client?.phone || null,
+      smsBody: `Hi ${conv.client?.name || 'there'}! Just checking in since we haven't chatted in a while.`,
       emailRecipient: conv.client?.email || null,
       emailSubject: `Checking in!`,
       emailBody: `Hi ${conv.client?.name || 'there'}! Just checking in since we haven't chatted in a while.`,
