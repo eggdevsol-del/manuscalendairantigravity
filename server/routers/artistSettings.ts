@@ -11,6 +11,7 @@ export const artistSettingsRouter = router({
             userId: ctx.user.id,
             businessName: null,
             businessAddress: null,
+            businessEmail: null,
             bsb: null,
             accountNumber: null,
             depositAmount: null,
@@ -26,6 +27,7 @@ export const artistSettingsRouter = router({
             z.object({
                 businessName: z.string().optional(),
                 businessAddress: z.string().optional(),
+                businessEmail: z.string().optional(),
                 bsb: z.string().optional(),
                 accountNumber: z.string().optional(),
                 depositAmount: z.number().optional(),

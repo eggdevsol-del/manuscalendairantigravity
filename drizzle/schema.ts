@@ -31,6 +31,7 @@ export const artistSettings = mysqlTable("artistSettings", {
 	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	businessName: text(),
 	businessAddress: text(),
+	businessEmail: varchar({ length: 320 }),
 	bsb: varchar({ length: 10 }),
 	accountNumber: varchar({ length: 20 }),
 	depositAmount: int(),
