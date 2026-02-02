@@ -701,7 +701,7 @@ export default function Calendar() {
                   // Ensure it takes 75% when selected, pushing the grid to be smaller
                   selectedDate ? "basis-[75%] grow-0" : ""
                 )}
-                style={{ willChange: "flex-basis" }}
+                style={{ willChange: "flex-basis", contain: "layout paint" }}
               >
 
                 {/* Timeline Header */}
@@ -739,25 +739,32 @@ export default function Calendar() {
                     className="flex-1 overflow-y-auto relative mobile-scroll touch-pan-y"
                     ref={(el) => {
                       if (el && !el.dataset.scrolled) {
-                        // Find first appointment hour
-                        const dayAppts = getAppointmentsForDate(selectedDate);
-                        let scrollHour = 9; // Default 9 AM
+                        // Defer scrolling until after the expansion animation (300ms)
+                        // This prevents layout thrashing during the transition
+                        setTimeout(() => {
+                          // Double check element still exists and hasn't been scrolled yet
+                          if (!el.isConnected || el.dataset.scrolled) return;
 
-                        if (dayAppts.length > 0) {
-                          // Sort by start time just in case
-                          const appts = [...dayAppts].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-                          const first = new Date(appts[0].startTime);
-                          scrollHour = first.getHours();
-                        }
+                          // Find first appointment hour
+                          const dayAppts = getAppointmentsForDate(selectedDate);
+                          let scrollHour = 9; // Default 9 AM
 
-                        // Scroll to that hour (minus 1 for padding if possible, or direct)
-                        const targetHour = Math.max(0, scrollHour - 1); // 1 hour buffer for context
-                        const targetEl = el.querySelector(`#time-slot-${Math.max(0, scrollHour)}`); // Target exact start for now
+                          if (dayAppts.length > 0) {
+                            // Sort by start time just in case
+                            const appts = [...dayAppts].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+                            const first = new Date(appts[0].startTime);
+                            scrollHour = first.getHours();
+                          }
 
-                        if (targetEl) {
-                          targetEl.scrollIntoView({ block: 'start' });
-                          el.dataset.scrolled = "true";
-                        }
+                          // Scroll to that hour (minus 1 for padding if possible, or direct)
+                          const targetHour = Math.max(0, scrollHour - 1);
+                          const targetEl = el.querySelector(`#time-slot-${targetHour}`);
+
+                          if (targetEl) {
+                            targetEl.scrollIntoView({ block: 'start', behavior: 'smooth' });
+                            el.dataset.scrolled = "true";
+                          }
+                        }, 305); // slightly more than 300ms transition
                       }
                     }}
                   >
