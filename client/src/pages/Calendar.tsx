@@ -74,6 +74,11 @@ export default function Calendar() {
   const [showAppointmentDetailDialog, setShowAppointmentDetailDialog] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+  const [showTimelineContent, setShowTimelineContent] = useState(false);
+  const timelineRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to time when timeline content becomes visible
+
 
   // New State for Gold Standard Flow
   const [step, setStep] = useState<'service' | 'details'>('service');
@@ -329,6 +334,28 @@ export default function Calendar() {
     const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
     return appointmentsByDate.get(key) || [];
   };
+
+  // Scroll to time when timeline content becomes visible
+  useEffect(() => {
+    if (showTimelineContent && selectedDate && timelineRef.current) {
+      const el = timelineRef.current;
+      const dayAppts = getAppointmentsForDate(selectedDate);
+      let scrollHour = 9; // Default 9 AM
+
+      if (dayAppts.length > 0) {
+        const appts = [...dayAppts].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+        const first = new Date(appts[0].startTime);
+        scrollHour = first.getHours();
+      }
+
+      const targetHour = Math.max(0, scrollHour - 1);
+      const targetEl = el.querySelector(`#time-slot-${targetHour}`);
+
+      if (targetEl) {
+        targetEl.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      }
+    }
+  }, [showTimelineContent, selectedDate, appointmentsByDate]);
 
   // -- Swipe Gestures --
   // Use Refs instead of State to prevent re-renders during swipe (60fps critical)
@@ -668,7 +695,10 @@ export default function Calendar() {
                             !isCurrentMonth(day) && !isSelected && "opacity-30 bg-transparent text-muted-foreground"
                           )}
                           onClick={() => {
+                            if (selectedDate?.getTime() === day.getTime()) return;
                             setSelectedDate(day);
+                            setShowTimelineContent(false);
+                            setTimeout(() => setShowTimelineContent(true), 305);
                           }}
                         >
                           <span className={cn(
@@ -710,7 +740,10 @@ export default function Calendar() {
                     {selectedDate && (
                       <Button
                         size="icon" variant="ghost" className="h-8 w-8 -ml-2 text-muted-foreground hover:text-foreground rounded-full"
-                        onClick={() => setSelectedDate(null)}
+                        onClick={() => {
+                          setShowTimelineContent(false);
+                          setSelectedDate(null);
+                        }}
                       >
                         <ArrowLeft className="w-5 h-5" />
                       </Button>
@@ -737,157 +770,130 @@ export default function Calendar() {
                   <div
                     key={selectedDate.toISOString()}
                     className="flex-1 overflow-y-auto relative mobile-scroll touch-pan-y"
-                    ref={(el) => {
-                      if (el && !el.dataset.scrolled) {
-                        // Defer scrolling until after the expansion animation (300ms)
-                        // This prevents layout thrashing during the transition
-                        setTimeout(() => {
-                          // Double check element still exists and hasn't been scrolled yet
-                          if (!el.isConnected || el.dataset.scrolled) return;
-
-                          // Find first appointment hour
-                          const dayAppts = getAppointmentsForDate(selectedDate);
-                          let scrollHour = 9; // Default 9 AM
-
-                          if (dayAppts.length > 0) {
-                            // Sort by start time just in case
-                            const appts = [...dayAppts].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-                            const first = new Date(appts[0].startTime);
-                            scrollHour = first.getHours();
-                          }
-
-                          // Scroll to that hour (minus 1 for padding if possible, or direct)
-                          const targetHour = Math.max(0, scrollHour - 1);
-                          const targetEl = el.querySelector(`#time-slot-${targetHour}`);
-
-                          if (targetEl) {
-                            targetEl.scrollIntoView({ block: 'start', behavior: 'smooth' });
-                            el.dataset.scrolled = "true";
-                          }
-                        }, 305); // slightly more than 300ms transition
-                      }
-                    }}
+                    ref={timelineRef}
                   >
-                    <div className="min-h-[2000px] pb-32"> {/* Tall container for 24h */}
-                      {Array.from({ length: 24 }).map((_, hour) => (
-                        <div key={hour} id={`time-slot-${hour}`} className="relative h-24 border-b border-white/5 group">
-                          {/* Hour Label */}
-                          <div className="absolute top-0 left-0 w-16 text-right pr-3 -mt-2.5 z-10 pointer-events-none">
-                            <span className="text-xs font-medium text-muted-foreground/60">
-                              {hour === 0 ? "12 AM" : hour === 12 ? "12 PM" : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
-                            </span>
-                          </div>
-
-                          {/* 15 Minute Slots */}
-                          {[0, 15, 30, 45].map((minute) => (
-                            <div
-                              key={minute}
-                              className={cn(
-                                "h-6 w-full pl-20 pr-4 flex items-center cursor-pointer transition-colors border-l border-white/5",
-                                "hover:bg-white/5 active:bg-white/10",
-                                minute === 0 ? "border-t border-white/10" : "border-t border-white/[0.02]"
-                              )}
-                              onClick={() => {
-                                if (!isArtist) return;
-                                const newTime = new Date(selectedDate);
-                                newTime.setHours(hour);
-                                newTime.setMinutes(minute);
-
-                                // Use ISO string logic similar to handleDateClick but specific time
-                                const dateStr = newTime.getFullYear() + "-" +
-                                  String(newTime.getMonth() + 1).padStart(2, '0') + "-" +
-                                  String(newTime.getDate()).padStart(2, '0');
-                                const timeStr = String(newTime.getHours()).padStart(2, '0') + ":" + String(newTime.getMinutes()).padStart(2, '0');
-                                const endTimeStr = String(newTime.getHours() + 1).padStart(2, '0') + ":" + String(newTime.getMinutes()).padStart(2, '0'); // Default 1h
-
-                                setAppointmentForm({
-                                  ...appointmentForm,
-                                  startTime: `${dateStr}T${timeStr}`,
-                                  endTime: `${dateStr}T${endTimeStr}`,
-                                });
-                                setStep('service');
-                                setSelectedService(null);
-                                setShowAppointmentDialog(true);
-                              }}
-                            >
-                              {/* Use semantic border for markers */}
+                    {showTimelineContent && (
+                      <div className="min-h-[2000px] pb-32"> {/* Tall container for 24h */}
+                        {Array.from({ length: 24 }).map((_, hour) => (
+                          <div key={hour} id={`time-slot-${hour}`} className="relative h-24 border-b border-white/5 group">
+                            {/* Hour Label */}
+                            <div className="absolute top-0 left-0 w-16 text-right pr-3 -mt-2.5 z-10 pointer-events-none">
+                              <span className="text-xs font-medium text-muted-foreground/60">
+                                {hour === 0 ? "12 AM" : hour === 12 ? "12 PM" : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
+                              </span>
                             </div>
-                          ))}
 
-                          {/* Render Appointments starting in this hour */}
-                          {getAppointmentsForDate(selectedDate).filter(apt => {
-                            const d = new Date(apt.startTime);
-                            return d.getHours() === hour;
-                          }).map(apt => {
-                            const start = new Date(apt.startTime);
-                            const end = new Date(apt.endTime);
-
-                            // Calculate styling
-                            const startMin = start.getMinutes();
-                            const durationMins = (end.getTime() - start.getTime()) / 60000;
-
-                            // 1 hour = 96px (4 * 24px slots). 
-                            // 1 min = 96/60 = 1.6px
-                            const topPx = startMin * 1.6;
-                            const heightPx = Math.max(durationMins * 1.6, 24); // Min height 1 slot
-
-                            // Get service color from availableServices or default to primary
-                            const serviceColor = availableServices.find(s => s.name === apt.serviceName || s.name === apt.title)?.color || "var(--primary)";
-                            const isHex = serviceColor.startsWith('#');
-
-                            return (
+                            {/* 15 Minute Slots */}
+                            {[0, 15, 30, 45].map((minute) => (
                               <div
-                                key={apt.id}
-                                className="absolute left-20 right-4 rounded-lg backdrop-blur-sm shadow-sm overflow-hidden z-20 hover:brightness-110 transition-all cursor-pointer flex flex-col pt-2 px-3 border border-white/10"
-                                style={{
-                                  top: `${topPx}px`,
-                                  height: `${heightPx}px`,
-                                  backgroundColor: isHex ? `${serviceColor}40` : `oklch(from ${serviceColor} l c h / 0.3)`,
-                                  borderColor: serviceColor,
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedAppointment(apt);
-                                  setShowAppointmentDetailDialog(true);
+                                key={minute}
+                                className={cn(
+                                  "h-6 w-full pl-20 pr-4 flex items-center cursor-pointer transition-colors border-l border-white/5",
+                                  "hover:bg-white/5 active:bg-white/10",
+                                  minute === 0 ? "border-t border-white/10" : "border-t border-white/[0.02]"
+                                )}
+                                onClick={() => {
+                                  if (!isArtist) return;
+                                  const newTime = new Date(selectedDate);
+                                  newTime.setHours(hour);
+                                  newTime.setMinutes(minute);
+
+                                  // Use ISO string logic similar to handleDateClick but specific time
+                                  const dateStr = newTime.getFullYear() + "-" +
+                                    String(newTime.getMonth() + 1).padStart(2, '0') + "-" +
+                                    String(newTime.getDate()).padStart(2, '0');
+                                  const timeStr = String(newTime.getHours()).padStart(2, '0') + ":" + String(newTime.getMinutes()).padStart(2, '0');
+                                  const endTimeStr = String(newTime.getHours() + 1).padStart(2, '0') + ":" + String(newTime.getMinutes()).padStart(2, '0'); // Default 1h
+
+                                  setAppointmentForm({
+                                    ...appointmentForm,
+                                    startTime: `${dateStr}T${timeStr}`,
+                                    endTime: `${dateStr}T${endTimeStr}`,
+                                  });
+                                  setStep('service');
+                                  setSelectedService(null);
+                                  setShowAppointmentDialog(true);
                                 }}
                               >
-                                {(() => {
-                                  const sessionLabel = (() => {
-                                    if (!apt.totalSessions || apt.totalSessions <= 1) return null;
-                                    if (apt.sessionNumber === apt.totalSessions) return "Final Session";
-                                    if (apt.sessionNumber === 1) return "Session One";
-                                    return `Session ${apt.sessionNumber}`;
-                                  })();
-
-                                  return (
-                                    <>
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0" style={{ backgroundColor: serviceColor }} />
-                                        <p className="text-sm font-bold text-foreground truncate shadow-black drop-shadow-sm">
-                                          {apt.clientName || "Unknown Client"}
-                                        </p>
-                                      </div>
-
-                                      {heightPx > 40 && (
-                                        <div className="flex items-center gap-1.5 text-xs text-foreground/90 truncate pl-3.5 mt-0.5">
-                                          <span>{apt.serviceName || apt.title}</span>
-                                          {sessionLabel && (
-                                            <>
-                                              <span className="opacity-40">•</span>
-                                              <span className="opacity-70 font-medium">{sessionLabel}</span>
-                                            </>
-                                          )}
-                                        </div>
-                                      )}
-                                    </>
-                                  );
-                                })()}
+                                {/* Use semantic border for markers */}
                               </div>
-                            );
-                          })}
-                        </div>
-                      ))}
-                    </div>
+                            ))}
+
+                            {/* Render Appointments starting in this hour */}
+                            {getAppointmentsForDate(selectedDate).filter(apt => {
+                              const d = new Date(apt.startTime);
+                              return d.getHours() === hour;
+                            }).map(apt => {
+                              const start = new Date(apt.startTime);
+                              const end = new Date(apt.endTime);
+
+                              // Calculate styling
+                              const startMin = start.getMinutes();
+                              const durationMins = (end.getTime() - start.getTime()) / 60000;
+
+                              // 1 hour = 96px (4 * 24px slots). 
+                              // 1 min = 96/60 = 1.6px
+                              const topPx = startMin * 1.6;
+                              const heightPx = Math.max(durationMins * 1.6, 24); // Min height 1 slot
+
+                              // Get service color from availableServices or default to primary
+                              const serviceColor = availableServices.find(s => s.name === apt.serviceName || s.name === apt.title)?.color || "var(--primary)";
+                              const isHex = serviceColor.startsWith('#');
+
+                              return (
+                                <div
+                                  key={apt.id}
+                                  className="absolute left-20 right-4 rounded-lg backdrop-blur-sm shadow-sm overflow-hidden z-20 hover:brightness-110 transition-all cursor-pointer flex flex-col pt-2 px-3 border border-white/10"
+                                  style={{
+                                    top: `${topPx}px`,
+                                    height: `${heightPx}px`,
+                                    backgroundColor: isHex ? `${serviceColor}40` : `oklch(from ${serviceColor} l c h / 0.3)`,
+                                    borderColor: serviceColor,
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedAppointment(apt);
+                                    setShowAppointmentDetailDialog(true);
+                                  }}
+                                >
+                                  {(() => {
+                                    const sessionLabel = (() => {
+                                      if (!apt.totalSessions || apt.totalSessions <= 1) return null;
+                                      if (apt.sessionNumber === apt.totalSessions) return "Final Session";
+                                      if (apt.sessionNumber === 1) return "Session One";
+                                      return `Session ${apt.sessionNumber}`;
+                                    })();
+
+                                    return (
+                                      <>
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0" style={{ backgroundColor: serviceColor }} />
+                                          <p className="text-sm font-bold text-foreground truncate shadow-black drop-shadow-sm">
+                                            {apt.clientName || "Unknown Client"}
+                                          </p>
+                                        </div>
+
+                                        {heightPx > 40 && (
+                                          <div className="flex items-center gap-1.5 text-xs text-foreground/90 truncate pl-3.5 mt-0.5">
+                                            <span>{apt.serviceName || apt.title}</span>
+                                            {sessionLabel && (
+                                              <>
+                                                <span className="opacity-40">•</span>
+                                                <span className="opacity-70 font-medium">{sessionLabel}</span>
+                                              </>
+                                            )}
+                                          </div>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground/40 space-y-4">
