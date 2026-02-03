@@ -86,8 +86,15 @@ export default function Settings() {
     },
   });
 
-  const { data: artistSettings, isLoading: isLoadingSettings } = trpc.artistSettings.get.useQuery(undefined, {
+  const {
+    data: artistSettings,
+    isLoading: isLoadingSettings,
+    isError: isErrorSettings,
+    error: settingsError,
+    refetch: refetchSettings
+  } = trpc.artistSettings.get.useQuery(undefined, {
     enabled: !!user && (user.role === "artist" || user.role === "admin"),
+    retry: 3,
   });
 
   // Redirect to login if not authenticated
@@ -435,11 +442,21 @@ export default function Settings() {
 
               <Button
                 className="w-full shadow-lg shadow-primary/20"
-                onClick={handleSaveBusinessInfo}
-                disabled={upsertArtistSettingsMutation.isPending || !artistSettings}
+                onClick={isErrorSettings || (!artistSettings && !isLoadingSettings) ? () => refetchSettings() : handleSaveBusinessInfo}
+                disabled={upsertArtistSettingsMutation.isPending || (isLoadingSettings && !isErrorSettings)}
+                variant={isErrorSettings ? "destructive" : "default"}
               >
-                {upsertArtistSettingsMutation.isPending ? "Saving..." : !artistSettings ? "Loading..." : "Save Business Info"}
+                {upsertArtistSettingsMutation.isPending ? "Saving..." :
+                  isLoadingSettings ? "Loading..." :
+                    isErrorSettings ? "Retry Loading Data" :
+                      !artistSettings ? "Data Unavailable (Retry)" :
+                        "Save Business Info"}
               </Button>
+              {isErrorSettings && (
+                <p className="text-xs text-destructive text-center mt-2">
+                  Error: {settingsError?.message || "Could not load settings"}
+                </p>
+              )}
             </div>
           </div>
         </GlassSheet>
