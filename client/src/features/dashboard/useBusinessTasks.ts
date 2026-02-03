@@ -136,113 +136,37 @@ export function useBusinessTasks() {
   }, [startTask]);
 
   // Helper to generate Email URL (exported for use in UI)
-  const getTaskEmailUrl = useCallback((task: BusinessTask, preferredClient?: string) => {
+  const getTaskEmailUrl = useCallback((task: BusinessTask) => {
     if (!task.emailRecipient) return '';
 
-    // Default mailto fallback
-    let emailUrl = `mailto:${task.emailRecipient}`;
+    const subject = task.emailSubject ? encodeURIComponent(task.emailSubject) : '';
+    const body = task.emailBody ? encodeURIComponent(task.emailBody) : '';
 
-    // Add params if available
+    let emailUrl = `mailto:${task.emailRecipient}`;
     const params: string[] = [];
-    if (task.emailSubject) params.push(`subject=${encodeURIComponent(task.emailSubject)}`);
-    if (task.emailBody) params.push(`body=${encodeURIComponent(task.emailBody)}`);
+    if (subject) params.push(`subject=${subject}`);
+    if (body) params.push(`body=${body}`);
 
     if (params.length > 0) {
       emailUrl += `?${params.join('&')}`;
     }
 
-    // Detect platform
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isAndroid = /Android/.test(navigator.userAgent);
-    const isMobile = isIOS || isAndroid;
-
-    // On mobile, try to open the specific app with deep links
-    if (isMobile) {
-      const to = encodeURIComponent(task.emailRecipient);
-      const subject = encodeURIComponent(task.emailSubject || '');
-      const body = encodeURIComponent(task.emailBody || '');
-
-      if (preferredClient === 'gmail') {
-        emailUrl = `googlegmail:///co?to=${to}&subject=${subject}&body=${body}`;
-      } else if (preferredClient === 'outlook') {
-        emailUrl = `ms-outlook://compose?to=${to}&subject=${subject}&body=${body}`;
-      }
-    } else {
-      // Desktop / Web Fallbacks
-      const to = encodeURIComponent(task.emailRecipient);
-      const subject = encodeURIComponent(task.emailSubject || '');
-      const body = encodeURIComponent(task.emailBody || '');
-
-      if (preferredClient === 'gmail') {
-        emailUrl = `https://mail.google.com/mail/?view=cm&to=${to}&su=${subject}&body=${body}`;
-      } else if (preferredClient === 'outlook') {
-        emailUrl = `https://outlook.live.com/mail/0/deeplink/compose?to=${to}&subject=${subject}&body=${body}`;
-      }
-    }
-
     return emailUrl;
   }, []);
 
-  const openEmail = useCallback((task: BusinessTask, preferredClient?: string) => {
+  const openEmail = useCallback((task: BusinessTask) => {
     if (!task.emailRecipient) return;
 
     // Start tracking
     startTask(task);
 
-    const to = encodeURIComponent(task.emailRecipient);
-    const subject = encodeURIComponent(task.emailSubject || '');
-    const body = encodeURIComponent(task.emailBody || '');
-
-    // Fallback to mailto as default safe URL
-    let emailUrl = `mailto:${task.emailRecipient}?subject=${subject}&body=${body}`;
-
-    // Detect platform
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isAndroid = /Android/.test(navigator.userAgent);
-    const isMobile = isIOS || isAndroid;
-
-    // Debug logging
-    console.log('openEmail called', {
-      task,
-      preferredClient,
-      isMobile,
-      userAgent: navigator.userAgent
-    });
-
-    // On mobile, try to open the specific app with deep links
-    if (isMobile) {
-      if (preferredClient === 'gmail') {
-        // Gmail App Scheme: googlegmail:///co?to=...
-        emailUrl = `googlegmail:///co?to=${to}&subject=${subject}&body=${body}`;
-      } else if (preferredClient === 'outlook') {
-        // Outlook App Scheme: ms-outlook://compose?to=...
-        emailUrl = `ms-outlook://compose?to=${to}&subject=${subject}&body=${body}`;
-      }
-      // Else keep default mailto
-    } else {
-      // Desktop / Web Fallbacks
-      switch (preferredClient) {
-        case 'gmail':
-          emailUrl = `https://mail.google.com/mail/?view=cm&to=${to}&su=${subject}&body=${body}`;
-          break;
-        case 'outlook':
-          emailUrl = `https://outlook.live.com/mail/0/deeplink/compose?to=${to}&subject=${subject}&body=${body}`;
-          break;
-        default:
-          // Keep default mailto
-          break;
-      }
-    }
+    const emailUrl = getTaskEmailUrl(task);
 
     console.log('Opening email URL:', emailUrl);
 
-    if (!isMobile && (preferredClient === 'gmail' || preferredClient === 'outlook')) {
-      window.open(emailUrl, '_blank');
-    } else {
-      // Use window.open for better intent handling on Mobile
-      window.open(emailUrl, '_self');
-    }
-  }, [startTask]);
+    // Standard mailto handling
+    window.location.href = emailUrl;
+  }, [startTask, getTaskEmailUrl]);
 
   // Navigate to in-app location
   const navigateToTask = useCallback((task: BusinessTask, navigate: (path: string) => void) => {
