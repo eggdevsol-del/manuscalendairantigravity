@@ -135,7 +135,7 @@ export default function Dashboard() {
                 status: task.status as ExtendedTask['status'],
                 actionType: task.actionType as ExtendedTask['actionType'],
                 domain: 'business' as const,
-                _serverTask: task._original
+                _serverTask: task._serverTask
             } as ExtendedTask));
         }
         // Use legacy tasks for social and personal
