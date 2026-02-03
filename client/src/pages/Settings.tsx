@@ -436,9 +436,9 @@ export default function Settings() {
               <Button
                 className="w-full shadow-lg shadow-primary/20"
                 onClick={handleSaveBusinessInfo}
-                disabled={upsertArtistSettingsMutation.isPending || isLoadingSettings}
+                disabled={upsertArtistSettingsMutation.isPending || !artistSettings}
               >
-                {upsertArtistSettingsMutation.isPending ? "Saving..." : isLoadingSettings ? "Loading..." : "Save Business Info"}
+                {upsertArtistSettingsMutation.isPending ? "Saving..." : !artistSettings ? "Loading..." : "Save Business Info"}
               </Button>
             </div>
           </div>
