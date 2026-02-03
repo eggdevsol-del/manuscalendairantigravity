@@ -135,6 +135,54 @@ export function useBusinessTasks() {
     window.location.href = smsUrl;
   }, [startTask]);
 
+  // Helper to generate Email URL (exported for use in UI)
+  const getTaskEmailUrl = useCallback((task: BusinessTask, preferredClient?: string) => {
+    if (!task.emailRecipient) return '';
+
+    // Default mailto fallback
+    let emailUrl = `mailto:${task.emailRecipient}`;
+
+    // Add params if available
+    const params: string[] = [];
+    if (task.emailSubject) params.push(`subject=${encodeURIComponent(task.emailSubject)}`);
+    if (task.emailBody) params.push(`body=${encodeURIComponent(task.emailBody)}`);
+
+    if (params.length > 0) {
+      emailUrl += `?${params.join('&')}`;
+    }
+
+    // Detect platform
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    const isMobile = isIOS || isAndroid;
+
+    // On mobile, try to open the specific app with deep links
+    if (isMobile) {
+      const to = encodeURIComponent(task.emailRecipient);
+      const subject = encodeURIComponent(task.emailSubject || '');
+      const body = encodeURIComponent(task.emailBody || '');
+
+      if (preferredClient === 'gmail') {
+        emailUrl = `googlegmail:///co?to=${to}&subject=${subject}&body=${body}`;
+      } else if (preferredClient === 'outlook') {
+        emailUrl = `ms-outlook://compose?to=${to}&subject=${subject}&body=${body}`;
+      }
+    } else {
+      // Desktop / Web Fallbacks
+      const to = encodeURIComponent(task.emailRecipient);
+      const subject = encodeURIComponent(task.emailSubject || '');
+      const body = encodeURIComponent(task.emailBody || '');
+
+      if (preferredClient === 'gmail') {
+        emailUrl = `https://mail.google.com/mail/?view=cm&to=${to}&su=${subject}&body=${body}`;
+      } else if (preferredClient === 'outlook') {
+        emailUrl = `https://outlook.live.com/mail/0/deeplink/compose?to=${to}&subject=${subject}&body=${body}`;
+      }
+    }
+
+    return emailUrl;
+  }, []);
+
   const openEmail = useCallback((task: BusinessTask, preferredClient?: string) => {
     if (!task.emailRecipient) return;
 
@@ -237,6 +285,7 @@ export function useBusinessTasks() {
       completeTask,
       openSms,
       openEmail,
+      getTaskEmailUrl,
       navigateToTask,
       refetch
     },

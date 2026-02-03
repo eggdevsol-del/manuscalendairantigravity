@@ -367,20 +367,32 @@ export default function Dashboard() {
 
                         {/* Primary Action */}
                         {selectedTask.actionType !== 'none' && (
-                            <Button
-                                size="lg"
-                                className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-primary/20"
-                                onClick={() => executeAction(selectedTask)}
-                            >
-                                {selectedTask.actionType === 'sms' && <MessageSquare className="mr-2 w-5 h-5" />}
-                                {selectedTask.actionType === 'email' && <Mail className="mr-2 w-5 h-5" />}
-                                {selectedTask.actionType === 'social' && <ExternalLink className="mr-2 w-5 h-5" />}
-                                {(selectedTask.actionType === 'internal' || selectedTask.actionType === 'in_app') && <Play className="mr-2 w-5 h-5" />}
-                                {selectedTask._serverTask?.actionType === 'sms' ? 'Send SMS' :
-                                    selectedTask._serverTask?.actionType === 'email' ? 'Send Email' :
+                            selectedTask.actionType === 'email' && selectedTask._serverTask ? (
+                                <Button
+                                    asChild
+                                    size="lg"
+                                    className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-primary/20"
+                                    onClick={() => businessActions.startTask(selectedTask._serverTask!)}
+                                >
+                                    <a href={businessActions.getTaskEmailUrl(selectedTask._serverTask, businessSettings.preferredEmailClient)}>
+                                        <Mail className="mr-2 w-5 h-5" />
+                                        Send Email
+                                    </a>
+                                </Button>
+                            ) : (
+                                <Button
+                                    size="lg"
+                                    className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-primary/20"
+                                    onClick={() => executeAction(selectedTask)}
+                                >
+                                    {selectedTask.actionType === 'sms' && <MessageSquare className="mr-2 w-5 h-5" />}
+                                    {selectedTask.actionType === 'social' && <ExternalLink className="mr-2 w-5 h-5" />}
+                                    {(selectedTask.actionType === 'internal' || selectedTask.actionType === 'in_app') && <Play className="mr-2 w-5 h-5" />}
+                                    {selectedTask._serverTask?.actionType === 'sms' ? 'Send SMS' :
                                         selectedTask._serverTask?.actionType === 'in_app' ? 'Open in App' :
                                             'Execute Action'}
-                            </Button>
+                                </Button>
+                            )
                         )}
 
                         {/* Secondary SMS Action (if available and not primary) */}
@@ -399,13 +411,22 @@ export default function Dashboard() {
                         {/* Secondary Email Action (if available and not primary) */}
                         {selectedTask._serverTask?.emailRecipient && selectedTask._serverTask.actionType !== 'email' && (
                             <Button
+                                asChild
                                 size="lg"
                                 variant="secondary"
                                 className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-black/5 border border-white/5"
-                                onClick={() => businessActions.openEmail(selectedTask._serverTask!, businessSettings.preferredEmailClient)}
+                                // We keep onClick for tracking, but navigation is handled by href
+                                onClick={() => businessActions.startTask(selectedTask._serverTask!)}
                             >
-                                <Mail className="mr-2 w-5 h-5" />
-                                Send Email
+                                <a
+                                    href={businessActions.getTaskEmailUrl(selectedTask._serverTask!, businessSettings.preferredEmailClient)}
+                                    // Use target based on device/url, or rely on browser default for mailto
+                                    // adding 'external' rel for safety
+                                    rel="noopener noreferrer"
+                                >
+                                    <Mail className="mr-2 w-5 h-5" />
+                                    Send Email
+                                </a>
                             </Button>
                         )}
 
