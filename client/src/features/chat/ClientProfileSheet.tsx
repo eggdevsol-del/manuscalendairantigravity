@@ -1,6 +1,5 @@
+import { ScrollArea, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { User, Mail, Phone, Cake, BadgeCheck, Image as ImageIcon, Camera, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { trpc } from "@/lib/trpc";

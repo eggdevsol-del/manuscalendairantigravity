@@ -353,6 +353,18 @@ export default function Dashboard() {
             >
                 {selectedTask && (
                     <div className="grid gap-3">
+                        {/* DEBUG DATA */}
+                        <div className="text-[10px] bg-black/80 p-2 rounded text-green-400 font-mono overflow-auto max-h-32 mb-2">
+                            SERVER TASK DEBUG:
+                            {JSON.stringify({
+                                hasServerTask: !!selectedTask._serverTask,
+                                stAction: selectedTask._serverTask?.actionType,
+                                sms: selectedTask._serverTask?.smsNumber,
+                                email: selectedTask._serverTask?.emailRecipient,
+                                title: selectedTask._serverTask?.title
+                            }, null, 2)}
+                        </div>
+
                         {/* Primary Action */}
                         {selectedTask.actionType !== 'none' && (
                             <Button

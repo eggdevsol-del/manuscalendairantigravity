@@ -113,29 +113,28 @@ export function useBusinessTasks() {
 
   // Open native SMS app with pre-populated content
   const openSms = useCallback((task: BusinessTask) => {
-    if (!task.smsNumber || !task.smsBody) return;
+    if (!task.smsNumber) return;
 
     // Start tracking
     startTask(task);
 
     // Detect platform and construct SMS URL
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const body = encodeURIComponent(task.smsBody);
     const number = task.smsNumber.replace(/\D/g, ''); // Remove non-digits
+    const body = task.smsBody ? encodeURIComponent(task.smsBody) : '';
 
-    let smsUrl: string;
-    if (isIOS) {
-      // iOS uses sms: with &body=
-      smsUrl = `sms:${number}&body=${body}`;
-    } else {
-      // Android uses sms: with ?body=
-      smsUrl = `sms:${number}?body=${body}`;
+    let smsUrl = `sms:${number}`;
+    if (body) {
+      if (isIOS) {
+        smsUrl += `&body=${body}`;
+      } else {
+        smsUrl += `?body=${body}`;
+      }
     }
 
     window.location.href = smsUrl;
   }, [startTask]);
 
-  // Open email client with pre-populated content
   const openEmail = useCallback((task: BusinessTask, preferredClient?: string) => {
     if (!task.emailRecipient) return;
 
@@ -212,7 +211,7 @@ export function useBusinessTasks() {
     actionType: task.actionType === 'in_app' ? 'internal' : task.actionType,
     domain: 'business' as const,
     // Original task data for actions
-    _original: task
+    _serverTask: task
   }));
 
   return {

@@ -48,7 +48,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
   useEffect(() => {
     if (settings) {
       setSlug(settings.publicSlug || "");
-      setIsEnabled(settings.funnelEnabled || false);
+      setIsEnabled(Boolean(settings.funnelEnabled));
     }
   }, [settings]);
 

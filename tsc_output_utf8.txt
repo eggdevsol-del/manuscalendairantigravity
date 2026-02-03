@@ -1,0 +1,15 @@
+﻿client/src/features/booking/BookingWizard.tsx(2,1): error TS1185: Merge conflict marker encountered.
+client/src/features/booking/BookingWizard.tsx(7,1): error TS1185: Merge conflict marker encountered.
+client/src/features/booking/BookingWizard.tsx(12,1): error TS1185: Merge conflict marker encountered.
+client/src/features/chat/ClientProfileSheet.tsx(1,1): error TS1185: Merge conflict marker encountered.
+client/src/features/chat/ClientProfileSheet.tsx(4,1): error TS1185: Merge conflict marker encountered.
+client/src/features/chat/ClientProfileSheet.tsx(9,1): error TS1185: Merge conflict marker encountered.
+client/src/features/chat/components/ProjectProposalModal.tsx(3,1): error TS1185: Merge conflict marker encountered.
+client/src/features/chat/components/ProjectProposalModal.tsx(6,1): error TS1185: Merge conflict marker encountered.
+client/src/features/chat/components/ProjectProposalModal.tsx(10,1): error TS1185: Merge conflict marker encountered.
+client/src/features/chat/components/ProjectProposalModal.tsx(13,1): error TS1185: Merge conflict marker encountered.
+client/src/features/chat/components/ProjectProposalModal.tsx(14,1): error TS1185: Merge conflict marker encountered.
+client/src/features/chat/components/ProjectProposalModal.tsx(17,1): error TS1185: Merge conflict marker encountered.
+client/src/features/chat/components/QuickActionsRow.tsx(1,1): error TS1185: Merge conflict marker encountered.
+client/src/features/chat/components/QuickActionsRow.tsx(3,1): error TS1185: Merge conflict marker encountered.
+client/src/features/chat/components/QuickActionsRow.tsx(13,1): error TS1185: Merge conflict marker encountered.
