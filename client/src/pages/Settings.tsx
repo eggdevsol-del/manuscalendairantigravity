@@ -25,6 +25,11 @@ import { toast } from "sonner";
 import { forceUpdate } from "@/lib/pwa";
 import { RefreshCw } from "lucide-react";
 import { APP_VERSION } from "@/lib/version";
+import { getGoogleMapsEmbedUrl } from "@/lib/utils";
+import { useDebounce } from "@/hooks/useDebounce";
+// Actually, I should check if useDebounce exists first. 
+// If not, I can implement a simple one inside component or create the hook.
+// Let's check for hooks first.
 
 type SettingsSection = "main" | "profile" | "work-hours" | "quick-actions" | "notifications" | "business";
 
@@ -50,6 +55,8 @@ export default function Settings() {
   const [accountNumber, setAccountNumber] = useState("");
   const [depositAmount, setDepositAmount] = useState("");
   const [autoSendDepositInfo, setAutoSendDepositInfo] = useState(false);
+
+  const debouncedAddress = useDebounce(businessAddress, 1000);
 
   const updateProfileMutation = trpc.auth.updateProfile.useMutation({
     onSuccess: () => {
@@ -346,6 +353,25 @@ export default function Settings() {
                   <p className="text-xs text-muted-foreground">
                     Clients will receive a map link to this address on appointment day
                   </p>
+
+                  {/* Google Maps Preview */}
+                  {businessAddress && (
+                    <div className="mt-3 rounded-xl overflow-hidden border border-white/10 h-40 bg-black/20 relative group">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        scrolling="no"
+                        marginHeight={0}
+                        marginWidth={0}
+                        src={getGoogleMapsEmbedUrl(debouncedAddress)}
+                        className="opacity-70 group-hover:opacity-100 transition-opacity"
+                      />
+                      <div className="absolute bottom-0 right-0 bg-black/60 px-2 py-1 text-[10px] text-white/70 backdrop-blur-sm rounded-tl-lg pointer-events-none">
+                        Preview
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
