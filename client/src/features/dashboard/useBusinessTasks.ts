@@ -135,24 +135,90 @@ export function useBusinessTasks() {
     window.location.href = smsUrl;
   }, [startTask]);
 
+  // Professional Email Templates mapping
+  const getProfessionalEmail = useCallback((task: BusinessTask, businessName: string | null) => {
+    const bName = businessName || 'My Business';
+    const cName = task.clientName || 'there';
+
+    // Default fallback (using what's already in the task if available)
+    let subject = task.emailSubject || `Message from ${bName}`;
+    let body = task.emailBody || `Hi ${cName},\n\nI'm reaching out regarding our project at ${bName}.\n\nRegards,\n\n${bName}`;
+
+    // Task-specific templates
+    switch (task.taskType) {
+      case 'lead_follow_up':
+        subject = `Follow up: Your inquiry with ${bName}`;
+        body = `Hi ${cName},\n\nJust wanted to follow up on your project inquiry with ${bName}. Did you have any more thoughts or questions?\n\nLooking forward to hearing from you!\n\nRegards,\n\n${bName}`;
+        break;
+      case 'deposit_collection':
+        subject = `Secure your booking with ${bName}`;
+        body = `Hi ${cName},\n\nTo finalize your booking with ${bName}, please send through your deposit. This secures your spot in my calendar!\n\nOnce received, I'll send through a final confirmation.\n\nRegards,\n\n${bName}`;
+        break;
+      case 'appointment_confirmation':
+        subject = `Confirming your appointment with ${bName}`;
+        body = `Hi ${cName},\n\nI'm confirming your appointment with ${bName}. I'm looking forward to working on your project!\n\nRegards,\n\n${bName}`;
+        break;
+      case 'post_appointment_thankyou':
+        subject = `Thank you from ${bName}`;
+        body = `Hi ${cName},\n\nThank you so much for coming in! It was a pleasure working with you. I hope you're happy with the results.\n\nPlease let me know if you have any questions about the healing process.\n\nRegards,\n\n${bName}`;
+        break;
+      case 'healed_photo_request':
+        subject = `Healed photos for ${bName}`;
+        body = `Hi ${cName},\n\nI hope your tattoo is healing well! If you have a moment, I'd love to see some healed photos of our project for my portfolio.\n\nRegards,\n\n${bName}`;
+        break;
+      case 'birthday_outreach':
+        subject = `Happy Birthday from ${bName}!`;
+        body = `Hi ${cName},\n\nHappy Birthday! Wishing you a fantastic day from everyone at ${bName}.\n\nRegards,\n\n${bName}`;
+        break;
+      case 'new_lead':
+        subject = `Inquiry received: ${bName}`;
+        body = `Hi ${cName},\n\nThanks for reaching out to ${bName}! I've received your inquiry and will be in touch shortly to discuss your project.\n\nRegards,\n\n${bName}`;
+        break;
+      case 'new_consultation':
+        subject = `Consultation request: ${bName}`;
+        body = `Hi ${cName},\n\nThanks for your consultation request with ${bName}. I've received all the details and will get back to you with some possible dates/times soon.\n\nRegards,\n\n${bName}`;
+        break;
+      case 'follow_up_responded':
+        subject = `Re: Your project with ${bName}`;
+        body = `Hi ${cName},\n\nThanks for getting back to me! I've seen your latest message and will review it shortly.\n\nRegards,\n\n${bName}`;
+        break;
+      case 'stale_conversation':
+        subject = `Checking in: Your project with ${bName}`;
+        body = `Hi ${cName},\n\nIt's been a little while since we last spoke about your project. I wanted to check in and see if you were still interested in moving forward?\n\nRegards,\n\n${bName}`;
+        break;
+      case 'tattoo_anniversary':
+        subject = `Happy Tattoo Anniversary from ${bName}!`;
+        body = `Hi ${cName},\n\nHappy Tattoo Anniversary! It's been a year since our project together. Hope it's still looking great!\n\nRegards,\n\n${bName}`;
+        break;
+    }
+
+    return { subject, body };
+  }, []);
+
   // Helper to generate Email URL (exported for use in UI)
   const getTaskEmailUrl = useCallback((task: BusinessTask) => {
     if (!task.emailRecipient) return '';
 
-    const subject = task.emailSubject ? encodeURIComponent(task.emailSubject) : '';
-    const body = task.emailBody ? encodeURIComponent(task.emailBody) : '';
+    const { subject, body } = getProfessionalEmail(task, settings?.businessName || null);
 
     let emailUrl = `mailto:${task.emailRecipient}`;
     const params: string[] = [];
-    if (subject) params.push(`subject=${subject}`);
-    if (body) params.push(`body=${body}`);
+
+    // Add professional content
+    params.push(`subject=${encodeURIComponent(subject)}`);
+    params.push(`body=${encodeURIComponent(body)}`);
+
+    // Try to include sender hint (Note: not standard but some clients like apple mail/outlook mobile might use it)
+    if (settings?.businessEmail) {
+      params.push(`cc=${encodeURIComponent(settings.businessEmail)}`); // BCC or CC yourself is a safe way to 'hint' the sender
+    }
 
     if (params.length > 0) {
       emailUrl += `?${params.join('&')}`;
     }
 
     return emailUrl;
-  }, []);
+  }, [getProfessionalEmail, settings]);
 
   const openEmail = useCallback((task: BusinessTask) => {
     if (!task.emailRecipient) return;
@@ -202,7 +268,9 @@ export function useBusinessTasks() {
     isLoading,
     settings: {
       maxVisibleTasks: settings?.maxVisibleTasks || 10,
-      preferredEmailClient: settings?.preferredEmailClient || 'default'
+      preferredEmailClient: settings?.preferredEmailClient || 'default',
+      businessEmail: settings?.businessEmail || null,
+      businessName: settings?.businessName || null
     },
     actions: {
       startTask,

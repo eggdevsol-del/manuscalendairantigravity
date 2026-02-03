@@ -171,7 +171,7 @@ export default function Dashboard() {
                     break;
                 case 'email':
                     if (serverTask.emailRecipient) {
-                        businessActions.openEmail(serverTask, businessSettings.preferredEmailClient);
+                        businessActions.openEmail(serverTask);
                     }
                     break;
                 case 'in_app':
@@ -371,7 +371,7 @@ export default function Dashboard() {
                                 <Button
                                     size="lg"
                                     className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-primary/20"
-                                    onClick={() => businessActions.openEmail(selectedTask._serverTask!, businessSettings.preferredEmailClient)}
+                                    onClick={() => businessActions.openEmail(selectedTask._serverTask!)}
                                 >
                                     <Mail className="mr-2 w-5 h-5" />
                                     Send Email
@@ -411,7 +411,7 @@ export default function Dashboard() {
                                 size="lg"
                                 variant="secondary"
                                 className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-black/5 border border-white/5"
-                                onClick={() => businessActions.openEmail(selectedTask._serverTask!, businessSettings.preferredEmailClient)}
+                                onClick={() => businessActions.openEmail(selectedTask._serverTask!)}
                             >
                                 <Mail className="mr-2 w-5 h-5" />
                                 Send Email

@@ -56,6 +56,11 @@ export const dashboardTasksRouter = router({
         };
       }
 
+      // Get artist business info
+      const artistSettings = await db.query.artistSettings.findFirst({
+        where: eq(schema.artistSettings.userId, user.id)
+      });
+
       // Generate tasks using the algorithm
       const tasks = await generateBusinessTasks(db, user.id, settings.maxVisibleTasks || 10);
 
@@ -63,7 +68,9 @@ export const dashboardTasksRouter = router({
         tasks,
         settings: {
           maxVisibleTasks: settings.maxVisibleTasks,
-          preferredEmailClient: settings.preferredEmailClient
+          preferredEmailClient: settings.preferredEmailClient,
+          businessName: artistSettings?.businessName || null,
+          businessEmail: artistSettings?.businessEmail || null
         }
       };
     }),
@@ -106,7 +113,7 @@ export const dashboardTasksRouter = router({
         startedAt: new Date().toISOString()
       });
 
-      return { 
+      return {
         taskId: result.insertId,
         startedAt: new Date().toISOString()
       };
@@ -171,7 +178,7 @@ export const dashboardTasksRouter = router({
         )
       );
 
-      return { 
+      return {
         success: true,
         timeToCompleteSeconds
       };
@@ -196,13 +203,19 @@ export const dashboardTasksRouter = router({
         where: eq(schema.dashboardSettings.artistId, user.id)
       });
 
+      const artistSettings = await db.query.artistSettings.findFirst({
+        where: eq(schema.artistSettings.userId, user.id)
+      });
+
       if (!settings) {
         // Return defaults
         return {
           maxVisibleTasks: 10,
           goalAdvancedBookingMonths: 3,
           preferredEmailClient: 'default' as const,
-          showWeeklySnapshot: true
+          showWeeklySnapshot: true,
+          businessName: artistSettings?.businessName || null,
+          businessEmail: artistSettings?.businessEmail || null
         };
       }
 
@@ -210,7 +223,9 @@ export const dashboardTasksRouter = router({
         maxVisibleTasks: settings.maxVisibleTasks || 10,
         goalAdvancedBookingMonths: settings.goalAdvancedBookingMonths || 3,
         preferredEmailClient: settings.preferredEmailClient || 'default',
-        showWeeklySnapshot: settings.showWeeklySnapshot === 1
+        showWeeklySnapshot: settings.showWeeklySnapshot === 1,
+        businessName: artistSettings?.businessName || null,
+        businessEmail: artistSettings?.businessEmail || null
       };
     }),
 
@@ -281,7 +296,7 @@ export const dashboardTasksRouter = router({
       const weekStart = new Date(now);
       weekStart.setDate(now.getDate() + mondayOffset);
       weekStart.setHours(0, 0, 0, 0);
-      
+
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekStart.getDate() + 6);
       weekEnd.setHours(23, 59, 59, 999);
@@ -325,17 +340,17 @@ export const dashboardTasksRouter = router({
 
       // Calculate efficiency score (0-100)
       let efficiencyScore = 50; // Base score
-      
+
       // Add points for task completion
       efficiencyScore += Math.min(25, totalTasks * 2.5);
-      
+
       // Add points for fast response times
       if (avgConsultationResponse > 0 && avgConsultationResponse < BENCHMARKS.EXCELLENT_RESPONSE_TIME) {
         efficiencyScore += 15;
       } else if (avgConsultationResponse > 0 && avgConsultationResponse < BENCHMARKS.GOOD_RESPONSE_TIME) {
         efficiencyScore += 10;
       }
-      
+
       // Add points for tier 1 task completion
       efficiencyScore += Math.min(10, tier1Tasks * 2);
 
@@ -365,11 +380,11 @@ export const dashboardTasksRouter = router({
         comparison: {
           responseTimeVsBenchmark,
           // 100 = at benchmark, >100 = better than average, <100 = worse
-          benchmarkLabel: responseTimeVsBenchmark >= 150 ? 'Elite' 
+          benchmarkLabel: responseTimeVsBenchmark >= 150 ? 'Elite'
             : responseTimeVsBenchmark >= 120 ? 'Excellent'
-            : responseTimeVsBenchmark >= 100 ? 'Good'
-            : responseTimeVsBenchmark >= 80 ? 'Average'
-            : 'Needs Improvement'
+              : responseTimeVsBenchmark >= 100 ? 'Good'
+                : responseTimeVsBenchmark >= 80 ? 'Average'
+                  : 'Needs Improvement'
         },
         efficiencyScore,
         rating,
@@ -393,12 +408,12 @@ export const dashboardTasksRouter = router({
       }
 
       const now = new Date().toISOString();
-      
+
       // Check if settings row exists
       const existing = await db.query.dashboardSettings.findFirst({
         where: eq(schema.dashboardSettings.artistId, user.id)
       });
-      
+
       if (existing) {
         // Update existing row
         await db.update(schema.dashboardSettings)
@@ -444,15 +459,15 @@ export const dashboardTasksRouter = router({
 
       // Show once per week if not shown in the last 7 days
       const now = new Date();
-      
+
       if (!settings.lastSnapshotShownAt) {
         // Never shown before - show it
         return { shouldShow: true };
       }
-      
+
       const lastShown = new Date(settings.lastSnapshotShownAt);
       const daysSinceShown = (now.getTime() - lastShown.getTime()) / (1000 * 60 * 60 * 24);
-      
+
       // Only show if it's been at least 7 days since last shown
       return { shouldShow: daysSinceShown >= 7 };
     }),
@@ -474,14 +489,14 @@ export const dashboardTasksRouter = router({
       }
 
       const now = new Date();
-      
+
       // Calculate week boundaries (Monday to Sunday)
       const dayOfWeek = now.getDay();
       const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
       const weekStart = new Date(now);
       weekStart.setDate(now.getDate() + mondayOffset);
       weekStart.setHours(0, 0, 0, 0);
-      
+
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekStart.getDate() + 6);
       weekEnd.setHours(23, 59, 59, 999);
@@ -519,7 +534,7 @@ export const dashboardTasksRouter = router({
       // TODO: Add workDays to artistSettings schema for customization
       const workDays = [1, 2, 3, 4, 5]; // Mon-Fri
       let openDatesThisMonth = 0;
-      
+
       for (let d = new Date(now); d <= monthEnd; d.setDate(d.getDate() + 1)) {
         const dayNum = d.getDay();
         if (workDays.includes(dayNum) && !bookedDates.has(d.toDateString())) {
@@ -527,19 +542,19 @@ export const dashboardTasksRouter = router({
         }
       }
 
-      // Get new enquiries (pending consultations/leads)
+      // Get new enquiries (new leads)
       const pendingLeads = await db.query.leads.findMany({
         where: and(
           eq(schema.leads.artistId, user.id),
-          eq(schema.leads.status, 'pending')
+          eq(schema.leads.status, 'new')
         )
       });
 
-      // Get pending consultations from conversations
-      const pendingConsultations = await db.query.conversations.findMany({
+      // Get pending consultations from consultations table
+      const pendingConsultations = await db.query.consultations.findMany({
         where: and(
-          eq(schema.conversations.artistId, user.id),
-          eq(schema.conversations.status, 'pending')
+          eq(schema.consultations.artistId, user.id),
+          eq(schema.consultations.status, 'pending')
         )
       });
 
