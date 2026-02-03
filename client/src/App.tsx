@@ -1,8 +1,8 @@
+import React from "react";
 import { Toaster, TooltipProvider } from "@/components/ui";
 import { UIDebugProvider } from "@/_core/contexts/UIDebugContext";
 import { BottomNavProvider } from "@/contexts/BottomNavContext";
 import InstallPrompt from "./components/InstallPrompt";
-import IOSInstallPrompt from "./components/IOSInstallPrompt";
 import IOSInstallPrompt from "./components/IOSInstallPrompt";
 import BottomNav from "@/components/BottomNav";
 import NotFound from "@/pages/NotFound";
@@ -112,6 +112,13 @@ function App() {
             <Toaster />
             <InstallPrompt />
             <ConditionalIOSInstallPrompt />
+            {import.meta.env.DEV && (
+              <React.Suspense fallback={null}>
+                {React.createElement(
+                  React.lazy(() => import('@/components/dev/DevComponentPathHeader').then(m => ({ default: m.DevComponentPathHeader })))
+                )}
+              </React.Suspense>
+            )}
             <ErrorBoundary>
               <Router />
             </ErrorBoundary>
