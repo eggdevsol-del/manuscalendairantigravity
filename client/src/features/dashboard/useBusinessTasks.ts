@@ -153,6 +153,14 @@ export function useBusinessTasks() {
     const isAndroid = /Android/.test(navigator.userAgent);
     const isMobile = isIOS || isAndroid;
 
+    // Debug logging
+    console.log('openEmail called', {
+      task,
+      preferredClient,
+      isMobile,
+      userAgent: navigator.userAgent
+    });
+
     // On mobile, try to open the specific app with deep links
     if (isMobile) {
       if (preferredClient === 'gmail') {
@@ -178,10 +186,13 @@ export function useBusinessTasks() {
       }
     }
 
+    console.log('Opening email URL:', emailUrl);
+
     if (!isMobile && (preferredClient === 'gmail' || preferredClient === 'outlook')) {
       window.open(emailUrl, '_blank');
     } else {
-      window.location.href = emailUrl;
+      // Use window.open for better intent handling on Mobile
+      window.open(emailUrl, '_self');
     }
   }, [startTask]);
 
