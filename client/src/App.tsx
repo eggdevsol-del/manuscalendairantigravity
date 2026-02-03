@@ -112,13 +112,6 @@ function App() {
             <Toaster />
             <InstallPrompt />
             <ConditionalIOSInstallPrompt />
-            {import.meta.env.DEV && (
-              <React.Suspense fallback={null}>
-                {React.createElement(
-                  React.lazy(() => import('@/components/dev/DevComponentPathHeader').then(m => ({ default: m.DevComponentPathHeader })))
-                )}
-              </React.Suspense>
-            )}
             <ErrorBoundary>
               <Router />
             </ErrorBoundary>
