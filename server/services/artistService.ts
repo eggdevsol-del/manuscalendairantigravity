@@ -14,16 +14,26 @@ import { getDb } from "./core";
 // ============================================================================
 
 export async function getArtistSettings(userId: string) {
-    const db = await getDb();
-    if (!db) return undefined;
+    try {
+        const db = await getDb();
+        if (!db) {
+            console.error("[getArtistSettings] Database connection unavailable");
+            return undefined;
+        }
 
-    const result = await db
-        .select()
-        .from(artistSettings)
-        .where(eq(artistSettings.userId, userId))
-        .limit(1);
+        const result = await db
+            .select()
+            .from(artistSettings)
+            .where(eq(artistSettings.userId, userId))
+            .limit(1);
 
-    return result.length > 0 ? result[0] : undefined;
+        return result.length > 0 ? result[0] : undefined;
+    } catch (error: any) {
+        console.error("[getArtistSettings] Failed to fetch settings:", error);
+        // Log SQL if available in the error object (common in mysql2/drizzle)
+        if (error.sql) console.error("[getArtistSettings] SQL:", error.sql);
+        throw new Error(`Failed query: ${error.message}`);
+    }
 }
 
 export async function upsertArtistSettings(settings: InsertArtistSettings) {

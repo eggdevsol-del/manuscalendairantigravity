@@ -379,6 +379,12 @@ export type InsertPortfolio = InferInsertModel<typeof portfolios>;
 export type InsertVoucherTemplate = InferInsertModel<typeof voucherTemplates>;
 export type InsertIssuedVoucher = InferInsertModel<typeof issuedVouchers>;
 export type InsertNotificationOutbox = InferInsertModel<typeof notificationOutbox>;
+export type InsertArtistSettings = InferInsertModel<typeof artistSettings>;
+export type SelectArtistSettings = InferSelectModel<typeof artistSettings>;
+export type InsertQuickActionButton = InferInsertModel<typeof quickActionButtons>;
+export type SelectQuickActionButton = InferSelectModel<typeof quickActionButtons>;
+export type InsertNotificationTemplate = InferInsertModel<typeof notificationTemplates>;
+export type SelectNotificationTemplate = InferSelectModel<typeof notificationTemplates>;
 
 
 export const usersRelations = relations(users, ({ many }) => ({
