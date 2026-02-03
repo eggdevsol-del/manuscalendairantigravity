@@ -86,7 +86,7 @@ export default function Settings() {
     },
   });
 
-  const { data: artistSettings } = trpc.artistSettings.get.useQuery(undefined, {
+  const { data: artistSettings, isLoading: isLoadingSettings } = trpc.artistSettings.get.useQuery(undefined, {
     enabled: !!user && (user.role === "artist" || user.role === "admin"),
   });
 
@@ -193,6 +193,8 @@ export default function Settings() {
         workSchedule: artistSettings.workSchedule,
         services: artistSettings.services,
       });
+    } else {
+      toast.error("Cannot save: settings not loaded yet");
     }
   };
 
@@ -434,9 +436,9 @@ export default function Settings() {
               <Button
                 className="w-full shadow-lg shadow-primary/20"
                 onClick={handleSaveBusinessInfo}
-                disabled={upsertArtistSettingsMutation.isPending}
+                disabled={upsertArtistSettingsMutation.isPending || isLoadingSettings}
               >
-                {upsertArtistSettingsMutation.isPending ? "Saving..." : "Save Business Info"}
+                {upsertArtistSettingsMutation.isPending ? "Saving..." : isLoadingSettings ? "Loading..." : "Save Business Info"}
               </Button>
             </div>
           </div>
