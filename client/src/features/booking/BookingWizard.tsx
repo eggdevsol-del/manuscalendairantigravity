@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { Loader2, Calendar, AlertCircle, CheckCircle2, Clock, Check, X, ArrowLeft } from "lucide-react";
@@ -101,14 +101,16 @@ export function BookingWizard({ isOpen, onClose, conversationId, artistServices,
         });
     };
 
-    const reset = () => {
-        setStep('service');
-        setSelectedService(null);
-        setFrequency("consecutive");
-    };
+    // Reset state when sheet opens
+    useEffect(() => {
+        if (isOpen) {
+            setStep('service');
+            setSelectedService(null);
+            setFrequency("consecutive");
+        }
+    }, [isOpen]);
 
     const handleClose = () => {
-        reset();
         onClose();
     };
 

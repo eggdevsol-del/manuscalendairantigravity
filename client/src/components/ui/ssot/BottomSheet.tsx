@@ -75,7 +75,7 @@ export function BottomSheet({
         <DialogPrimitive.Content
           className={cn(
             tokens.sheetSecondary.content,
-            tokens.animations.modalZoom,
+            tokens.animations.sheetSlideUp,
             "will-change-transform",
             className
           )}

@@ -8,7 +8,7 @@
  * @version 1.1.0
  */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FullScreenSheet, SelectionCard } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,11 @@ interface CreatePromotionWizardProps {
 export function CreatePromotionWizard({ onClose, onSuccess, initialData }: CreatePromotionWizardProps) {
   const { user } = useAuth();
   const [step, setStep] = useState<WizardStep>('type');
+
+  // Reset step when opening
+  useEffect(() => {
+    setStep('type');
+  }, []);
 
   // Form state - Initialize with initialData if present
   const [type, setType] = useState<PromotionType>(initialData?.type || 'voucher');
