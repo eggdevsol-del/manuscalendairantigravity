@@ -18,8 +18,10 @@ import { cn } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
 import { useTotalUnreadCount } from "@/lib/selectors/conversation.selectors";
 import { useBottomNav } from "@/contexts/BottomNavContext";
+import { useTeaser } from "@/contexts/TeaserContext";
 import { useRef, useCallback } from "react";
 import { motion } from "framer-motion";
+import { Lock } from "lucide-react";
 
 // Constants
 const SWIPE_THRESHOLD = 30;
@@ -29,7 +31,7 @@ export default function BottomNav() {
     const [location] = useLocation();
     const totalUnreadCount = useTotalUnreadCount();
     const { navItems, contextualRow, isContextualVisible, setContextualVisible } = useBottomNav();
-    
+
     const swipeStartY = useRef<number | null>(null);
 
     const isActive = (p?: string) => {
@@ -49,10 +51,10 @@ export default function BottomNav() {
 
     const handleIndicatorTouchEnd = useCallback((e: React.TouchEvent) => {
         if (swipeStartY.current === null) return;
-        
+
         const deltaY = swipeStartY.current - e.changedTouches[0].clientY;
         swipeStartY.current = null;
-        
+
         if (deltaY > SWIPE_THRESHOLD && !isContextualVisible && hasContextualRow) {
             setContextualVisible(true);
         } else if (deltaY < -SWIPE_THRESHOLD && isContextualVisible) {
@@ -66,7 +68,7 @@ export default function BottomNav() {
         <nav className="fixed bottom-0 inset-x-0 z-[50] select-none">
             {/* Swipe indicator - swipe up to show contextual row */}
             {showSwipeIndicator && (
-                <div 
+                <div
                     className="absolute -top-8 left-0 right-0 h-10 flex items-center justify-center cursor-pointer"
                     onClick={() => setContextualVisible(true)}
                     onTouchStart={handleIndicatorTouchStart}
@@ -81,7 +83,7 @@ export default function BottomNav() {
 
             {/* Swipe indicator - swipe down to close contextual row */}
             {showSwipeDownIndicator && (
-                <div 
+                <div
                     className="absolute -top-8 left-0 right-0 h-10 flex items-center justify-center cursor-pointer"
                     onClick={() => setContextualVisible(false)}
                     onTouchStart={handleIndicatorTouchStart}
@@ -95,9 +97,9 @@ export default function BottomNav() {
             )}
 
             {/* Main container */}
-            <div 
+            <div
                 className="bg-gray-100/90 dark:bg-slate-950/60 backdrop-blur-[32px] border-t border-gray-200 dark:border-white/10 overflow-hidden"
-                style={{ 
+                style={{
                     height: ROW_HEIGHT,
                     paddingBottom: "env(safe-area-inset-bottom)"
                 }}
@@ -109,7 +111,7 @@ export default function BottomNav() {
                     transition={{ type: "spring", stiffness: 400, damping: 35 }}
                 >
                     {/* Row 0: Main Navigation - uses horizontal scroll */}
-                    <div 
+                    <div
                         className="w-full overflow-x-auto snap-x snap-mandatory flex items-center no-scrollbar overscroll-x-contain shrink-0"
                         style={{ height: ROW_HEIGHT }}
                     >
@@ -135,6 +137,14 @@ export default function BottomNav() {
                                             )}
                                             strokeWidth={active ? 2.5 : 2}
                                         />
+
+                                        {/* Lock Badge for Teaser Clients (Profile) */}
+                                        {isTeaserClient && item.id === 'profile' && (
+                                            <div className="absolute -top-1 -right-1 bg-background/80 backdrop-blur-sm rounded-full p-0.5 shadow-sm border border-white/10">
+                                                <Lock className="w-3 h-3 text-muted-foreground" />
+                                            </div>
+                                        )}
+
                                         {item.id === "messages" && totalUnreadCount > 0 && (
                                             <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-background">
                                                 {totalUnreadCount > 9 ? "9+" : totalUnreadCount}
@@ -180,9 +190,9 @@ export default function BottomNav() {
                      * Uses a simple flex container so buttons receive all touch events.
                      * The buttons use touch-action: none to disable browser gestures.
                      */}
-                    <div 
+                    <div
                         className="w-full flex items-center justify-start px-2 shrink-0 border-t border-gray-200 dark:border-white/5"
-                        style={{ 
+                        style={{
                             height: ROW_HEIGHT,
                             // NO overflow-x-auto - this was causing the issue!
                             // Buttons will wrap or be constrained to viewport

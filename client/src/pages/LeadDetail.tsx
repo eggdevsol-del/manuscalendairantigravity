@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { ArrowLeft, Mail, Phone, Calendar, DollarSign, Palette, MapPin, Clock, MessageCircle, MessageSquare, X } from "lucide-react";
 import { LoadingState, PageShell, GlassSheet, PageHeader } from "@/components/ui/ssot";
+import { Card } from "@/components/ui/card";
+import { tokens } from "@/ui/tokens";
+import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useLocation, useParams } from "wouter";
 import { toast } from "sonner";
@@ -75,7 +78,7 @@ export default function LeadDetail() {
     if (lead.status === 'new') {
       updateStatusMutation.mutate({ leadId: lead.id, status: 'contacted' });
     }
-    
+
     // Navigate to chat if conversation exists
     if (lead.conversationId) {
       setLocation(`/chat/${lead.conversationId}`);
@@ -108,68 +111,76 @@ export default function LeadDetail() {
         {/* Lead Content */}
         <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y">
           <div className="pb-32 max-w-lg mx-auto space-y-6">
-            
+
             {/* Client Info Card */}
-            <div className="bg-white/10 rounded-2xl p-4 space-y-3">
-              <h2 className="text-lg font-semibold text-foreground">{lead.clientName}</h2>
-              
-              <div className="space-y-2">
+            <Card className={cn(tokens.card.base, "hover:bg-white/5")}>
+              <h2 className="text-lg font-semibold text-foreground px-4 pt-4">{lead.clientName}</h2>
+
+              <div className="space-y-4 p-4">
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Mail className="w-4 h-4" />
-                  <a href={`mailto:${lead.clientEmail}`} className="hover:text-foreground">
+                  <a href={`mailto:${lead.clientEmail}`} className="hover:text-foreground transition-colors">
                     {lead.clientEmail}
                   </a>
                 </div>
-                
+
                 {lead.clientPhone && (
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Phone className="w-4 h-4" />
-                    <a href={`tel:${lead.clientPhone}`} className="hover:text-foreground">
+                    <a href={`tel:${lead.clientPhone}`} className="hover:text-foreground transition-colors">
                       {lead.clientPhone}
                     </a>
                   </div>
                 )}
-                
+
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Clock className="w-4 h-4" />
                   <span>Submitted {formatDate(lead.createdAt)}</span>
                 </div>
               </div>
-            </div>
+            </Card>
 
             {/* Project Details Card */}
-            <div className="bg-white/10 rounded-2xl p-4 space-y-4">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Project Details</h3>
-              
-              <div className="space-y-3">
+            <Card className={cn(tokens.card.base, "hover:bg-white/5")}>
+              <div className="p-4 border-b border-white/5">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Project Details</h3>
+              </div>
+
+              <div className="p-4 space-y-4">
                 {lead.projectType && (
                   <div className="flex items-start gap-3">
-                    <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                    <div className="mt-0.5 p-1.5 rounded-full bg-white/5">
+                      <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Project Type</p>
-                      <p className="text-foreground capitalize">{lead.projectType.replace(/-/g, ' ')}</p>
+                      <p className="text-xs text-muted-foreground mb-0.5">Project Type</p>
+                      <p className="text-foreground capitalize font-medium">{lead.projectType.replace(/-/g, ' ')}</p>
                     </div>
                   </div>
                 )}
-                
+
                 {lead.projectDescription && (
                   <div className="flex items-start gap-3">
-                    <MessageCircle className="w-4 h-4 text-muted-foreground mt-0.5" />
+                    <div className="mt-0.5 p-1.5 rounded-full bg-white/5">
+                      <MessageCircle className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Description</p>
-                      <p className="text-foreground">{lead.projectDescription}</p>
+                      <p className="text-xs text-muted-foreground mb-0.5">Description</p>
+                      <p className="text-foreground leading-relaxed text-sm">{lead.projectDescription}</p>
                     </div>
                   </div>
                 )}
-                
+
                 {lead.stylePreferences && lead.stylePreferences.length > 0 && (
                   <div className="flex items-start gap-3">
-                    <Palette className="w-4 h-4 text-muted-foreground mt-0.5" />
+                    <div className="mt-0.5 p-1.5 rounded-full bg-white/5">
+                      <Palette className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Style Preferences</p>
-                      <div className="flex flex-wrap gap-2 mt-1">
+                      <p className="text-xs text-muted-foreground mb-2">Style Preferences</p>
+                      <div className="flex flex-wrap gap-2">
                         {lead.stylePreferences.map((style: string, i: number) => (
-                          <span key={i} className="px-2 py-1 bg-white/10 rounded-full text-xs text-foreground">
+                          <span key={i} className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-foreground font-medium">
                             {style}
                           </span>
                         ))}
@@ -177,43 +188,48 @@ export default function LeadDetail() {
                     </div>
                   </div>
                 )}
-                
+
                 {lead.budgetLabel && (
                   <div className="flex items-start gap-3">
-                    <DollarSign className="w-4 h-4 text-muted-foreground mt-0.5" />
+                    <div className="mt-0.5 p-1.5 rounded-full bg-white/5">
+                      <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Budget</p>
-                      <p className="text-foreground">{lead.budgetLabel}</p>
+                      <p className="text-xs text-muted-foreground mb-0.5">Budget</p>
+                      <p className="text-foreground font-medium">{lead.budgetLabel}</p>
                     </div>
                   </div>
                 )}
-                
+
                 {lead.preferredTimeframe && (
                   <div className="flex items-start gap-3">
-                    <Calendar className="w-4 h-4 text-muted-foreground mt-0.5" />
+                    <div className="mt-0.5 p-1.5 rounded-full bg-white/5">
+                      <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Timeframe</p>
-                      <p className="text-foreground capitalize">{lead.preferredTimeframe.replace(/-/g, ' ')}</p>
+                      <p className="text-xs text-muted-foreground mb-0.5">Timeframe</p>
+                      <p className="text-foreground capitalize font-medium">{lead.preferredTimeframe.replace(/-/g, ' ')}</p>
                     </div>
                   </div>
                 )}
               </div>
-            </div>
+            </Card>
 
             {/* Status Card */}
-            <div className="bg-white/10 rounded-2xl p-4 space-y-3">
+            <Card className={cn(tokens.card.base, "flex items-center justify-between p-4")}>
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Status</h3>
               <div className="flex items-center gap-2">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  lead.status === 'new' ? 'bg-blue-500/20 text-blue-400' :
-                  lead.status === 'contacted' ? 'bg-green-500/20 text-green-400' :
-                  lead.status === 'archived' ? 'bg-gray-500/20 text-gray-400' :
-                  'bg-purple-500/20 text-purple-400'
-                }`}>
-                  {lead.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                <span className={cn(
+                  "px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide",
+                  lead.status === 'new' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                    lead.status === 'contacted' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                      lead.status === 'archived' ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' :
+                        'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                )}>
+                  {lead.status.replace(/_/g, ' ')}
                 </span>
               </div>
-            </div>
+            </Card>
 
             {/* Action Buttons */}
             <div className="space-y-3 pt-4">
@@ -226,7 +242,7 @@ export default function LeadDetail() {
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Open in Chat
               </Button>
-              
+
               <Button
                 variant="outline"
                 className="w-full"
@@ -235,7 +251,7 @@ export default function LeadDetail() {
                 <Mail className="w-4 h-4 mr-2" />
                 Send Email
               </Button>
-              
+
               {lead.clientPhone && (
                 <Button
                   variant="outline"
@@ -246,7 +262,7 @@ export default function LeadDetail() {
                   Call Client
                 </Button>
               )}
-              
+
               {lead.status !== 'archived' && (
                 <Button
                   variant="ghost"
