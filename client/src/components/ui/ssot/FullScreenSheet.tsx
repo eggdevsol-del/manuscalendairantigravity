@@ -70,7 +70,7 @@ export function FullScreenSheet({
             <DialogPrimitive.Portal>
                 {/* Backdrop: Subtle Blur + Dim */}
                 <DialogPrimitive.Overlay
-                    className={cn(tokens.sheetSecondary.overlay, tokens.animations.fade)}
+                    className={tokens.sheetSecondary.overlay}
                 />
 
                 {/* Full-Screen Sheet Shell */}

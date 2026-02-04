@@ -69,8 +69,7 @@ export function BottomSheet({
         <DialogPrimitive.Overlay
           className={cn(
             tokens.sheetSecondary.overlay,
-            overlayVariant === "dark" && "bg-black/60",
-            tokens.animations.fade
+            overlayVariant === "dark" && "bg-black/60"
           )}
         />
         <DialogPrimitive.Content
@@ -136,10 +135,7 @@ export function ActionSheet({
     <Dialog open={isSheetOpen} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
-          className={cn(
-            tokens.sheetSecondary.overlay,
-            tokens.animations.fade
-          )}
+          className={tokens.sheetSecondary.overlay}
         />
         <DialogPrimitive.Content
           style={{ maxHeight }}
