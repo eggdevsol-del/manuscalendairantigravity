@@ -64,6 +64,7 @@ export function HalfSheet({
                                 drag="y"
                                 dragConstraints={{ top: 0 }}
                                 dragElastic={tokens.motion.dragGesture.elastic}
+                                dragMomentum={false}
                                 onDragEnd={(_, info) => {
                                     if (info.offset.y > tokens.motion.dragGesture.threshold) {
                                         onClose();
