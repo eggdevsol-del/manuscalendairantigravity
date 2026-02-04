@@ -14,6 +14,7 @@
  * DO NOT create custom header styles in page components.
  * DO NOT add icons or buttons to the header area.
  */
+import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
@@ -27,25 +28,21 @@ interface PageHeaderProps {
 
 /**
  * PageHeader - SSOT header component with left-aligned title
- * 
- * @example
- * <PageHeader title="Dashboard" />
- * <PageHeader title="Settings" subtitle="v1.0.119" />
  */
 export function PageHeader({ title, subtitle, className }: PageHeaderProps) {
     return (
         <header
             className={cn(
-                "px-6 py-4 z-10 shrink-0 flex items-center bg-transparent",
+                tokens.shell.header,
                 className
             )}
             style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
         >
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className={tokens.header.pageTitle}>
                 {title}
             </h1>
             {subtitle && (
-                <span className="ml-2 text-sm font-medium text-muted-foreground/60">
+                <span className={tokens.header.pageSubtitle}>
                     {subtitle}
                 </span>
             )}

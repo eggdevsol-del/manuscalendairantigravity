@@ -1,6 +1,8 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { ReactNode } from "react";
+import { tokens } from "@/ui/tokens";
+import { cn } from "@/lib/utils";
 
 interface HalfSheetProps {
     /** Whether the sheet is open */
@@ -26,16 +28,6 @@ interface HalfSheetProps {
  * - Drag handle indicator
  * - Same glass styling as FullScreenSheet
  * - Backdrop blur with tap-to-dismiss
- * 
- * @example
- * <HalfSheet
- *     open={isOpen}
- *     onClose={handleClose}
- *     title="Deposit Due"
- *     subtitle="Verify payments"
- * >
- *     <Button>Execute Action</Button>
- * </HalfSheet>
  */
 export function HalfSheet({
     open,
@@ -53,7 +45,7 @@ export function HalfSheet({
                         {/* Backdrop */}
                         <DialogPrimitive.Overlay asChild>
                             <motion.div
-                                className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
+                                className={tokens.sheetSecondary.overlay}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
@@ -71,9 +63,9 @@ export function HalfSheet({
                                 transition={{ type: "spring", damping: 30, stiffness: 300 }}
                             >
                                 {/* Glass container */}
-                                <div className="relative flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden">
+                                <div className={cn("relative flex flex-col overflow-hidden", tokens.sheetSecondary.glass)}>
                                     {/* Top edge highlight */}
-                                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                                    <div className={tokens.sheetSecondary.highlight} />
 
                                     {/* Drag handle */}
                                     <div className="flex justify-center pt-3 pb-2">
@@ -82,18 +74,18 @@ export function HalfSheet({
 
                                     {/* Header with title/subtitle */}
                                     <div className="px-6 pb-6">
-                                        <DialogPrimitive.Title className="text-2xl font-semibold text-foreground">
+                                        <DialogPrimitive.Title className={tokens.header.sheetTitle}>
                                             {title}
                                         </DialogPrimitive.Title>
                                         {subtitle && (
-                                            <DialogPrimitive.Description className="text-muted-foreground mt-1">
+                                            <DialogPrimitive.Description className={tokens.header.sheetSubtitle}>
                                                 {subtitle}
                                             </DialogPrimitive.Description>
                                         )}
                                     </div>
 
                                     {/* Content */}
-                                    <div className={`px-6 pb-8 ${className}`}>
+                                    <div className={cn(tokens.spacing.containerPadding, className)}>
                                         {children}
                                     </div>
 

@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
  * - Background: bg-white/5 with hover:bg-white/10 (with primary accent for pending)
  * - Border: border-0 (no border)
  */
+import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 
@@ -31,23 +32,22 @@ export interface ConsultationCardProps {
     className?: string;
 }
 
-export function ConsultationCard({ 
-    subject, 
-    clientName, 
-    description, 
+export function ConsultationCard({
+    subject,
+    clientName,
+    description,
     isNew = false,
     onClick,
-    className 
+    className
 }: ConsultationCardProps) {
     return (
         <Card
             onClick={onClick}
             className={cn(
-                "group p-4 relative overflow-hidden transition-all duration-300",
-                "border-0 active:scale-[0.98] rounded-2xl cursor-pointer",
-                isNew 
-                    ? "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10" 
-                    : "bg-white/5 hover:bg-white/10",
+                tokens.card.base,
+                isNew ? tokens.card.bgAccent : tokens.card.bg,
+                tokens.card.interactive,
+                tokens.spacing.cardPadding,
                 className
             )}
         >

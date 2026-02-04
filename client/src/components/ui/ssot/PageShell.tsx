@@ -11,6 +11,7 @@
  * - Flex column layout for header/content/footer patterns
  * - Transparent background to show body gradient
  */
+import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 
@@ -23,9 +24,7 @@ export function PageShell({ children, className }: PageShellProps) {
   return (
     <div
       className={cn(
-        "fixed inset-0 w-full flex flex-col overflow-hidden",
-        // Transparent to allow body gradient to show through
-        "bg-transparent",
+        tokens.shell.base,
         className
       )}
       style={{

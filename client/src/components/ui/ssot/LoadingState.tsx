@@ -6,6 +6,7 @@
  * 
  * DO NOT create custom loading spinners or "Loading..." text in page components.
  */
+import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -17,21 +18,21 @@ interface LoadingStateProps {
   className?: string;
 }
 
-export function LoadingState({ 
-  message = "Loading...", 
+export function LoadingState({
+  message = "Loading...",
   fullScreen = false,
-  className 
+  className
 }: LoadingStateProps) {
   const content = (
-    <div className={cn("flex items-center justify-center gap-2", className)}>
+    <div className={cn(tokens.loading.base, className)}>
       <Spinner className="size-5" />
-      {message && <span className="text-muted-foreground">{message}</span>}
+      {message && <span className={tokens.loading.text}>{message}</span>}
     </div>
   );
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background">
+      <div className={tokens.loading.fullScreen}>
         {content}
       </div>
     );

@@ -14,6 +14,7 @@
  * 
  * @version 1.0.126
  */
+import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 import { Dialog, DialogTitle } from "@/components/ui/dialog";
@@ -42,12 +43,12 @@ interface BottomSheetProps {
   overlayVariant?: "default" | "dark";
 }
 
-export function BottomSheet({ 
-  open, 
+export function BottomSheet({
+  open,
   isOpen,
-  onOpenChange, 
+  onOpenChange,
   onClose,
-  children, 
+  children,
   title = "Sheet",
   className,
   overlayVariant = "default"
@@ -62,23 +63,20 @@ export function BottomSheet({
     }
   };
 
-  console.log(`[BottomSheet] Rendering with open=${isSheetOpen}, title="${title}"`);
-
   return (
     <Dialog open={isSheetOpen} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay 
+        <DialogPrimitive.Overlay
           className={cn(
-            "fixed inset-0 z-[100] backdrop-blur-sm",
+            tokens.sheetSecondary.overlay,
+            overlayVariant === "dark" && "bg-black/60",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
-            "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-            overlayVariant === "default" && "bg-black/30",
-            overlayVariant === "dark" && "bg-black/60"
-          )} 
+            "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          )}
         />
         <DialogPrimitive.Content
           className={cn(
-            "fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col gap-0 overflow-hidden",
+            tokens.sheetSecondary.content,
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -117,12 +115,12 @@ interface ActionSheetProps {
   maxHeight?: string;
 }
 
-export function ActionSheet({ 
-  open, 
+export function ActionSheet({
+  open,
   isOpen,
-  onOpenChange, 
+  onOpenChange,
   onClose,
-  children, 
+  children,
   title = "Action Sheet",
   className,
   maxHeight = "85vh"
@@ -140,18 +138,18 @@ export function ActionSheet({
   return (
     <Dialog open={isSheetOpen} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay 
+        <DialogPrimitive.Overlay
           className={cn(
             "fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
-          )} 
+          )}
         />
         <DialogPrimitive.Content
           style={{ maxHeight }}
           className={cn(
             "fixed inset-x-0 bottom-0 z-[101] w-full outline-none",
-            "bg-background/90 backdrop-blur-xl border-t border-white/10 rounded-t-[2rem]",
+            tokens.sheetSecondary.glass,
             "p-6 pb-12 shadow-2xl space-y-6",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",

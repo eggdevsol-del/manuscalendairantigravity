@@ -27,6 +27,7 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, X } from "lucide-react";
+import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 
 interface FullScreenSheetProps {
@@ -68,36 +69,36 @@ export function FullScreenSheet({
         <DialogPrimitive.Root open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
             <DialogPrimitive.Portal>
                 {/* Backdrop: Subtle Blur + Dim */}
-                <DialogPrimitive.Overlay 
-                    className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" 
+                <DialogPrimitive.Overlay
+                    className={cn(tokens.sheetSecondary.overlay, "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0")}
                 />
 
                 {/* Full-Screen Sheet Shell */}
                 <DialogPrimitive.Content
-                    className="fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col gap-0 overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-4 data-[state=open]:slide-in-from-bottom-4"
+                    className={cn(tokens.sheetSecondary.content, "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-4 data-[state=open]:slide-in-from-bottom-4")}
                 >
                     {/* 1. Header */}
                     <header className="px-4 py-4 z-10 shrink-0 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             {onBack && (
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="rounded-full bg-white/5 hover:bg-white/10 text-foreground -ml-2" 
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className={cn(tokens.button.icon, "-ml-2")}
                                     onClick={onBack}
                                 >
                                     <ArrowLeft className="w-5 h-5" />
                                 </Button>
                             )}
-                            <DialogPrimitive.Title className="text-2xl font-bold text-foreground">
+                            <DialogPrimitive.Title className={tokens.header.sheetTitle}>
                                 {title}
                             </DialogPrimitive.Title>
                         </div>
 
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="rounded-full bg-white/5 hover:bg-white/10 text-foreground" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className={tokens.button.icon}
                             onClick={onClose}
                         >
                             <X className="w-5 h-5" />
@@ -114,12 +115,12 @@ export function FullScreenSheet({
                         ) : (
                             <>
                                 {contextTitle && (
-                                    <p className="text-4xl font-light text-foreground/90 tracking-tight">
+                                    <p className={tokens.header.contextTitle}>
                                         {contextTitle}
                                     </p>
                                 )}
                                 {contextSubtitle && (
-                                    <p className="text-muted-foreground text-lg font-medium mt-1">
+                                    <p className={tokens.header.contextSubtitle}>
                                         {contextSubtitle}
                                     </p>
                                 )}
@@ -128,11 +129,11 @@ export function FullScreenSheet({
                     </div>
 
                     {/* 3. Glass Sheet Container */}
-                    <div className="flex-1 z-20 flex flex-col dark:bg-card backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative">
+                    <div className={cn("flex-1 z-20 flex flex-col relative overflow-hidden", tokens.sheetSecondary.glass)}>
                         {/* Light mode background gradient overlay (matches wrapper gradient at 90% opacity) */}
                         <div className="absolute inset-0 bg-gradient-to-br from-slate-100/90 via-purple-50/90 to-cyan-50/90 dark:hidden pointer-events-none" />
                         {/* Top Edge Highlight */}
-                        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none z-10" />
+                        <div className={cn(tokens.sheetSecondary.highlight, "opacity-50 z-10")} />
 
                         {/* Scrollable Content */}
                         <div className={cn(

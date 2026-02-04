@@ -11,6 +11,7 @@
  * 
  * DO NOT create custom tab styles in page components.
  */
+import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 
 interface SegmentedHeaderProps {
@@ -22,7 +23,7 @@ interface SegmentedHeaderProps {
 
 export function SegmentedHeader({ options, activeIndex, onChange, className }: SegmentedHeaderProps) {
     return (
-        <div className={cn("flex w-full items-center justify-between gap-2", className)}>
+        <div className={cn(tokens.tabs.container, className)}>
             {options.map((title, index) => {
                 const isActive = index === activeIndex;
                 return (
@@ -30,10 +31,8 @@ export function SegmentedHeader({ options, activeIndex, onChange, className }: S
                         key={title}
                         onClick={() => onChange(index)}
                         className={cn(
-                            "flex-1 text-center text-lg tracking-tight transition-all duration-300 ease-out py-2 outline-none",
-                            isActive
-                                ? "text-foreground font-bold opacity-100 scale-[1.02]"
-                                : "text-muted-foreground font-medium opacity-40 hover:opacity-70 scale-[0.98]"
+                            tokens.tabs.button,
+                            isActive ? tokens.tabs.active : tokens.tabs.inactive
                         )}
                         style={{
                             // Active tab: no blur, non-active: 4% blur (approx 0.4px)

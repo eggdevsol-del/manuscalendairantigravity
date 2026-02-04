@@ -13,6 +13,7 @@ import { Card } from "../card";
  * - Background: bg-white/5 with hover:bg-white/10
  * - Border: border-0 (no border)
  */
+import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { Check, ChevronRight } from "lucide-react";
 
@@ -31,23 +32,20 @@ export function TaskCard({ title, context, priority, status, actionType, onClick
     // - Red = urgent, Orange = time-sensitive, Green = maintenance
     // - Neutral translucent background
 
-    const priorityConfig = {
-        high: { color: "bg-red-600", gradient: "from-red-600/20" },
-        medium: { color: "bg-orange-500", gradient: "from-orange-500/20" },
-        low: { color: "bg-emerald-500", gradient: "from-emerald-500/20" }
-    }[priority];
+    const priorityConfig = tokens.card.glow[priority];
 
     return (
         <Card
             onClick={onClick}
             className={cn(
-                "group p-4 relative overflow-hidden transition-all duration-300",
-                "border-0 active:scale-[0.98] rounded-2xl cursor-pointer",
-                "bg-white/5 hover:bg-white/10" // Neutral translucent
+                tokens.card.base,
+                tokens.card.bg,
+                tokens.card.interactive,
+                tokens.spacing.cardPadding
             )}
         >
             {/* Priority Indicator: Left Edge Line */}
-            <div className={cn("absolute left-0 top-0 bottom-0 w-[3px]", priorityConfig.color)} />
+            <div className={cn("absolute left-0 top-0 bottom-0 w-[3px]", priorityConfig.line)} />
 
             {/* Priority Indicator: Soft Gradient Swath (20%) */}
             <div className={cn("absolute left-0 top-0 bottom-0 w-[20%] bg-gradient-to-r to-transparent pointer-events-none", priorityConfig.gradient)} />

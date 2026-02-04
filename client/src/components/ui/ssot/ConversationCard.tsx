@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
  * - Background: bg-white/5 with hover:bg-white/10
  * - Border: border-0 (no border)
  */
+import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 
@@ -31,21 +32,22 @@ export interface ConversationCardProps {
     className?: string;
 }
 
-export function ConversationCard({ 
-    name, 
-    avatar, 
-    timestamp, 
-    unreadCount = 0, 
+export function ConversationCard({
+    name,
+    avatar,
+    timestamp,
+    unreadCount = 0,
     onClick,
-    className 
+    className
 }: ConversationCardProps) {
     return (
         <Card
             onClick={onClick}
             className={cn(
-                "group p-4 relative overflow-hidden transition-all duration-300",
-                "border-0 active:scale-[0.98] rounded-2xl cursor-pointer",
-                "bg-white/5 hover:bg-white/10",
+                tokens.card.base,
+                tokens.card.bg,
+                tokens.card.interactive,
+                tokens.spacing.cardPadding,
                 className
             )}
         >

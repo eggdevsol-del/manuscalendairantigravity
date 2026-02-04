@@ -16,14 +16,19 @@ export const tokens = {
     sheetSecondary: {
         overlay: "fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm",
         content: "fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col gap-0 overflow-hidden",
-        container: "flex-1 z-20 flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative"
+        container: "flex-1 z-20 flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative",
+        glass: "bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)]",
+        highlight: "absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent",
+        header: "shrink-0 pt-6 pb-4 px-6 border-b border-white/5 bg-white/[0.01] backdrop-blur-md z-10 relative"
     },
 
     // 3. Cards
     // Dashboard v1.0.101 style
     card: {
-        base: "bg-white/5 border-0 rounded-2xl overflow-hidden transition-all duration-300",
-        interactive: "cursor-pointer hover:bg-white/10 active:scale-[0.98]",
+        base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-2xl",
+        bg: "bg-white/5 hover:bg-white/10",
+        bgAccent: "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
+        interactive: "cursor-pointer active:scale-[0.98]",
         glow: {
             high: { line: "bg-red-600", gradient: "from-red-600/20" },
             medium: { line: "bg-orange-500", gradient: "from-orange-500/20" },
@@ -41,14 +46,53 @@ export const tokens = {
 
     // 5. Typography
     header: {
-        pageTitle: "text-xl font-bold text-white tracking-wide",
+        pageTitle: "text-2xl font-bold text-foreground",
+        pageSubtitle: "ml-2 text-sm font-medium text-muted-foreground/60",
         sectionTitle: "text-xs font-bold text-muted-foreground tracking-widest uppercase",
-        sheetTitle: "text-2xl font-bold text-foreground"
+        sheetTitle: "text-2xl font-bold text-foreground",
+        sheetSubtitle: "text-muted-foreground mt-1",
+        contextTitle: "text-4xl font-light text-foreground/90 tracking-tight",
+        contextSubtitle: "text-muted-foreground text-lg font-medium mt-1"
     },
 
     // 6. Layout
     spacing: {
         pagePadding: "px-6 py-4",
-        sheetPadding: "px-6 pt-6 pb-2"
+        sheetPadding: "px-6 pt-6 pb-2",
+        cardPadding: "p-4",
+        containerPadding: "px-6 pb-8"
+    },
+
+    // 7. Page Shell Logic
+    shell: {
+        base: "fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden bg-transparent",
+        header: "px-6 py-4 z-10 shrink-0 flex items-center bg-transparent"
+    },
+
+    // 8. Navigation Actions
+    navAction: {
+        base: "flex flex-col items-center justify-center h-auto py-2 px-4 gap-1 min-w-[72px] shrink-0 bg-transparent border-0 rounded-xl transition-all duration-150 touch-none select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+        pressed: "scale-90 opacity-70",
+        idle: "opacity-90 hover:opacity-100 hover:bg-white/10 dark:hover:bg-white/5",
+        icon: {
+            primary: "text-blue-500 dark:text-blue-400",
+            accent: "text-amber-500 dark:text-amber-400",
+            idle: "text-foreground/80"
+        }
+    },
+
+    // 9. Loading States
+    loading: {
+        base: "flex items-center justify-center gap-2",
+        fullScreen: "fixed inset-0 flex items-center justify-center bg-background z-[200]",
+        text: "text-muted-foreground"
+    },
+
+    // 10. Tabs / Segmented Controls
+    tabs: {
+        container: "flex w-full items-center justify-between gap-2",
+        button: "flex-1 text-center text-lg tracking-tight transition-all duration-300 ease-out py-2 outline-none",
+        active: "text-foreground font-bold opacity-100 scale-[1.02]",
+        inactive: "text-muted-foreground font-medium opacity-40 hover:opacity-70 scale-[0.98]"
     }
 } as const;
