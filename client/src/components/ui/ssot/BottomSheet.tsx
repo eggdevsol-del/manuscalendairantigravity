@@ -137,7 +137,7 @@ export function ActionSheet({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
           className={cn(
-            "fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm",
+            tokens.sheetSecondary.overlay,
             tokens.animations.fade
           )}
         />

@@ -57,9 +57,9 @@ export function HalfSheet({
                         <DialogPrimitive.Content asChild>
                             <motion.div
                                 className="fixed inset-x-0 bottom-0 z-[101] flex flex-col"
-                                initial={{ y: "100%" }}
+                                initial={{ y: 77 }}
                                 animate={{ y: 0 }}
-                                exit={{ y: "100%" }}
+                                exit={{ y: 77 }}
                                 transition={{ type: "spring", damping: 30, stiffness: 300 }}
                             >
                                 {/* Glass container */}
