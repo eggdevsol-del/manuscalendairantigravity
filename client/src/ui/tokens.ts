@@ -252,5 +252,46 @@ export const tokens = {
         sheetContentPadding: "px-4 pt-4",
         timelineHeaderPadding: "px-4 py-3",
         appointmentPadding: "pt-2 px-3"
+    },
+
+    // Appointment Wizard (Calendar inline wizard)
+    appointmentWizard: {
+        // Header
+        headerPadding: "px-4 py-4",
+        backButton: "rounded-full bg-white/5 hover:bg-white/10",
+        title: "text-2xl font-bold text-foreground",
+
+        // Context Area
+        contextPadding: "px-6 pt-4 pb-8",
+        contextHeight: "h-[15vh]",
+        contextTitle: "text-4xl font-light text-foreground/90 tracking-tight",
+        serviceTitle: "text-lg font-bold text-primary",
+        contextSubtitle: "text-sm text-muted-foreground",
+
+        // Sheet Container
+        sheetBg: "bg-white/5",
+        sheetBlur: "backdrop-blur-2xl",
+        sheetRadius: "rounded-t-[2.5rem]",
+        sheetShadow: "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)]",
+        highlightGradient: "bg-gradient-to-l from-white/20 to-transparent",
+        highlightOpacity: "opacity-50",
+
+        // Content
+        contentPadding: "px-4 pt-8",
+        bottomPadding: "pb-32",
+
+        // Form Inputs
+        inputHeight: "h-14",
+        inputRadius: "rounded-xl",
+        inputBg: "bg-white/5",
+        inputBorder: "border-white/10",
+        inputBorderHover: "hover:bg-white/10",
+        inputBorderFocus: "focus:border-primary/50",
+
+        // Buttons
+        cancelButton: "bg-transparent border-white/10 hover:bg-white/5 text-muted-foreground",
+        createButton: "bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-[0_0_20px_-5px_rgba(var(--primary-rgb),0.5)]",
+        buttonHeight: "h-14",
+        buttonRadius: "rounded-full"
     }
 } as const;

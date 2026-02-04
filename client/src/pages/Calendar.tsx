@@ -917,25 +917,25 @@ export default function Calendar() {
         title="Create Appointment"
       >
         {/* Header */}
-        <header className="px-4 py-4 z-10 shrink-0 flex items-center justify-between">
+        <header className={cn("z-10 shrink-0 flex items-center justify-between", tokens.appointmentWizard.headerPadding)}>
           <div className="flex items-center gap-3">
             {step === 'details' && (
-              <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10 text-foreground -ml-2" onClick={goBack}>
+              <Button variant="ghost" size="icon" className={cn("text-foreground -ml-2", tokens.appointmentWizard.backButton)} onClick={goBack}>
                 <ArrowLeft className="w-5 h-5" />
               </Button>
             )}
-            <DialogTitle className="text-2xl font-bold text-foreground">{getStepTitle()}</DialogTitle>
+            <DialogTitle className={tokens.appointmentWizard.title}>{getStepTitle()}</DialogTitle>
           </div>
           {/* No Right Action - standardized */}
         </header>
 
         {/* Top Context Area */}
-        <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[15vh] opacity-80 transition-all duration-300">
-          {step === 'service' && <p className="text-4xl font-light text-foreground/90 tracking-tight">Booking</p>}
+        <div className={cn("z-10 shrink-0 flex flex-col justify-center opacity-80 transition-all duration-300", tokens.appointmentWizard.contextPadding, tokens.appointmentWizard.contextHeight)}>
+          {step === 'service' && <p className={tokens.appointmentWizard.contextTitle}>Booking</p>}
           {step === 'details' && (
             <div>
-              <p className="text-lg font-bold text-primary">{selectedService?.name || appointmentForm.title || "Custom Appointment"}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className={tokens.appointmentWizard.serviceTitle}>{selectedService?.name || appointmentForm.title || "Custom Appointment"}</p>
+              <p className={tokens.appointmentWizard.contextSubtitle}>
                 {new Date(appointmentForm.startTime).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
                 {" • "}
                 {new Date(appointmentForm.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -945,11 +945,11 @@ export default function Calendar() {
         </div>
 
         {/* Sheet Container */}
-        <div className="flex-1 z-20 flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative">
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none" />
+        <div className={cn("flex-1 z-20 flex flex-col overflow-hidden relative", tokens.appointmentWizard.sheetBg, tokens.appointmentWizard.sheetBlur, tokens.appointmentWizard.sheetRadius, tokens.appointmentWizard.sheetShadow)}>
+          <div className={cn("absolute top-0 inset-x-0 h-px pointer-events-none", tokens.appointmentWizard.highlightGradient, tokens.appointmentWizard.highlightOpacity)} />
 
-          <div className="flex-1 w-full h-full px-4 pt-8 overflow-y-auto mobile-scroll touch-pan-y">
-            <div className="pb-32 max-w-lg mx-auto space-y-4">
+          <div className={cn("flex-1 w-full h-full overflow-y-auto mobile-scroll touch-pan-y", tokens.appointmentWizard.contentPadding)}>
+            <div className={cn("max-w-lg mx-auto space-y-4", tokens.appointmentWizard.bottomPadding)}>
 
               {/* STEP 1: SERVICE SELECTION */}
               {step === 'service' && (
@@ -997,7 +997,7 @@ export default function Calendar() {
                         setAppointmentForm({ ...appointmentForm, clientId: value })
                       }
                     >
-                      <SelectTrigger className="h-14 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-colors">
+                      <SelectTrigger className={cn("transition-colors", tokens.appointmentWizard.inputHeight, tokens.appointmentWizard.inputRadius, tokens.appointmentWizard.inputBg, tokens.appointmentWizard.inputBorder, tokens.appointmentWizard.inputBorderHover)}>
                         <SelectValue placeholder="Select a client" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1019,7 +1019,7 @@ export default function Calendar() {
                         setAppointmentForm({ ...appointmentForm, title: e.target.value })
                       }
                       placeholder="Appointment Title"
-                      className="h-14 rounded-xl bg-white/5 border-white/10 focus:border-primary/50 transition-all font-medium"
+                      className={cn("transition-all font-medium", tokens.appointmentWizard.inputHeight, tokens.appointmentWizard.inputRadius, tokens.appointmentWizard.inputBg, tokens.appointmentWizard.inputBorder, tokens.appointmentWizard.inputBorderFocus)}
                     />
                   </div>
 
@@ -1036,7 +1036,7 @@ export default function Calendar() {
                             startTime: e.target.value,
                           })
                         }
-                        className="h-14 rounded-xl bg-white/5 border-white/10"
+                        className={cn(tokens.appointmentWizard.inputHeight, tokens.appointmentWizard.inputRadius, tokens.appointmentWizard.inputBg, tokens.appointmentWizard.inputBorder)}
                       />
                     </div>
                     <div className="space-y-2">
@@ -1051,7 +1051,7 @@ export default function Calendar() {
                             endTime: e.target.value,
                           })
                         }
-                        className="h-14 rounded-xl bg-white/5 border-white/10"
+                        className={cn(tokens.appointmentWizard.inputHeight, tokens.appointmentWizard.inputRadius, tokens.appointmentWizard.inputBg, tokens.appointmentWizard.inputBorder)}
                       />
                     </div>
                   </div>
@@ -1069,7 +1069,7 @@ export default function Calendar() {
                       }
                       placeholder="Optional details..."
                       rows={3}
-                      className="rounded-xl bg-white/5 border-white/10 focus:border-primary/50 resize-none p-4"
+                      className={cn("resize-none p-4", tokens.appointmentWizard.inputRadius, tokens.appointmentWizard.inputBg, tokens.appointmentWizard.inputBorder, tokens.appointmentWizard.inputBorderFocus)}
                     />
                   </div>
 
@@ -1078,7 +1078,7 @@ export default function Calendar() {
                       size="lg"
                       variant="outline"
                       onClick={handleClose}
-                      className="flex-1 h-14 rounded-full bg-transparent border-white/10 hover:bg-white/5 text-muted-foreground"
+                      className={cn("flex-1", tokens.appointmentWizard.buttonHeight, tokens.appointmentWizard.buttonRadius, tokens.appointmentWizard.cancelButton)}
                     >
                       Cancel
                     </Button>
@@ -1086,7 +1086,7 @@ export default function Calendar() {
                       size="lg"
                       onClick={handleCreateAppointment}
                       disabled={createAppointmentMutation.isPending || !appointmentForm.clientId || !appointmentForm.title}
-                      className="flex-1 h-14 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-[0_0_20px_-5px_rgba(var(--primary-rgb),0.5)]"
+                      className={cn("flex-1", tokens.appointmentWizard.buttonHeight, tokens.appointmentWizard.buttonRadius, tokens.appointmentWizard.createButton)}
                     >
                       {createAppointmentMutation.isPending ? <div className="flex items-center gap-2"><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> create...</div> : "Create Appointment"}
                     </Button>
