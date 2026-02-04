@@ -179,5 +179,78 @@ export const tokens = {
             threshold: 150, // Distance in pixels to trigger close
             elastic: 0.2    // Resistance when dragging beyond bounds
         }
+    },
+
+    // Calendar-specific tokens
+    calendar: {
+        // Cell backgrounds and borders
+        cellBg: "bg-white/5",
+        cellBgHover: "hover:bg-white/10",
+        cellBorder: "border-white/10",
+        cellBorderHover: "hover:border-white/20",
+        selectedBg: "bg-primary/10",
+        selectedBorder: "border-primary/50",
+        selectedCellBg: "bg-primary/20",
+        selectedCellBorder: "border-primary",
+        todayBg: "bg-primary/5",
+        todayRing: "ring-1 ring-primary/50",
+        dimmedBg: "bg-white/[0.02]",
+
+        // Timeline
+        timelineBg: "bg-black/20",
+        headerBg: "bg-white/5",
+        slotHover: "hover:bg-white/5",
+        slotActive: "active:bg-white/10",
+        appointmentBorder: "border-white/10",
+        emptyStateBg: "bg-white/5",
+
+        // Text colors
+        selectedText: "text-primary",
+        todayText: "text-primary",
+        dimmedText: "text-white/30",
+        hourLabel: "text-muted-foreground/60",
+        appointmentText: "text-foreground/90",
+
+        // Dividers
+        divider: "border-white/5",
+        hourBorder: "border-white/10",
+        minuteBorder: "border-white/[0.02]",
+
+        // Spacing
+        contextHeight: "h-[20vh]",
+        gridHeightCollapsed: "h-[25%]",
+        timelineHeightExpanded: "basis-[75%]",
+        timelineScrollHeight: "min-h-[2000px]",
+        hourSlotHeight: "h-24",
+        minuteSlotHeight: "h-6",
+
+        // Icons/Badges
+        iconBg: "bg-white/10",
+        iconText: "text-white/70",
+        badgeBg: "bg-white/5",
+        badgeText: "text-white/90",
+        dot: "bg-primary",
+        dotSelected: "bg-primary-foreground/90",
+
+        // Typography
+        cardTitle: "font-semibold text-base",
+        cardSubtitle: "text-xs text-muted-foreground",
+        contextTitle: "text-4xl font-light text-foreground/90 tracking-tight",
+        contextSubtitle: "text-muted-foreground text-lg font-medium",
+        sheetTitle: "text-lg font-semibold text-foreground tracking-tight",
+        dayLabel: "text-xs text-muted-foreground uppercase tracking-wider font-semibold",
+        dayNumber: "text-2xl font-bold",
+        timelineTitle: "text-sm font-bold text-muted-foreground uppercase tracking-widest",
+
+        // Card styling
+        card: "p-4 min-h-[120px] cursor-pointer transition-all duration-300 border-0 rounded-2xl",
+        cardWeek: "p-4 min-h-[120px]",
+
+        // Spacing presets
+        contextPadding: "px-6 pt-4",
+        sheetHeaderPadding: "pt-6 pb-2 px-6",
+        sheetContentPadding: "px-4 pt-4",
+        timelineHeaderPadding: "px-4 py-3",
+        appointmentPadding: "pt-2 px-3"
     }
 } as const;
