@@ -101,12 +101,22 @@ export function BookingWizard({ isOpen, onClose, conversationId, artistServices,
         });
     };
 
-    // Reset state when sheet opens
+    // Reset state when sheet opens (delay when closing to avoid flash during exit animation)
     useEffect(() => {
         if (isOpen) {
+            // Reset immediately when opening
             setStep('service');
             setSelectedService(null);
             setFrequency("consecutive");
+        } else {
+            // Delay reset when closing to allow exit animation to complete
+            const timer = setTimeout(() => {
+                setStep('service');
+                setSelectedService(null);
+                setFrequency("consecutive");
+            }, 500); // Match sheet exit animation duration
+
+            return () => clearTimeout(timer);
         }
     }, [isOpen]);
 

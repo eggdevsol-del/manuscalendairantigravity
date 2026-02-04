@@ -49,7 +49,7 @@ export function HalfSheet({
                                 initial={tokens.motion.overlayFade.initial}
                                 animate={tokens.motion.overlayFade.animate}
                                 exit={tokens.motion.overlayFade.exit}
-                                transition={tokens.motion.spring}
+                                transition={tokens.motion.fadeDuration}
                             />
                         </DialogPrimitive.Overlay>
 

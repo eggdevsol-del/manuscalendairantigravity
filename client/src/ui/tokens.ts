@@ -147,6 +147,12 @@ export const tokens = {
             stiffness: 300
         },
 
+        // Fixed-duration fade for symmetric overlay animations
+        fadeDuration: {
+            duration: 0.3,
+            ease: "easeInOut" as const
+        },
+
         // Sheet slide-up animation
         sheetSlide: {
             initial: { y: "100%" },
