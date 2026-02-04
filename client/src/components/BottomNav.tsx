@@ -31,6 +31,7 @@ export default function BottomNav() {
     const [location] = useLocation();
     const totalUnreadCount = useTotalUnreadCount();
     const { navItems, contextualRow, isContextualVisible, setContextualVisible } = useBottomNav();
+    const { isTeaserClient } = useTeaser();
 
     const swipeStartY = useRef<number | null>(null);
 
