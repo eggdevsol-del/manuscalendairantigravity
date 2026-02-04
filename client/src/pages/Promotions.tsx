@@ -1,17 +1,16 @@
 /**
- * Promotions Page - SSOT Compliant (Optimized)
+ * Promotions Page - SSOT Compliant
  * 
- * Elevated "Create New" action to the top of the sheet for better visibility.
- * Removed filter pills for a cleaner, unified display.
+ * Powered by usePromotionsController for logic.
+ * Uses centralized Button variants for styling.
  * 
- * @version 1.0.2
+ * @version 1.1.0
  */
 
 import { useState } from "react";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { PageShell, PageHeader, GlassSheet, FullScreenSheet } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
-import { Gift, Percent, CreditCard, Plus, Send, Calendar, Check, Info, Edit, Trash2 } from "lucide-react";
+import { Gift, Percent, CreditCard, Plus, Send, Calendar, Check, Edit, Trash2 } from "lucide-react";
 import { motion, AnimatePresence, useAnimation, useMotionValue, PanInfo } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
@@ -32,66 +31,36 @@ import {
 } from "@/features/promotions";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { usePromotionsController } from "./usePromotionsController";
 
 export default function Promotions() {
-  const { user } = useAuth();
-  const isArtist = user?.role === 'artist';
-
-  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
-  const [focalIndex, setFocalIndex] = useState(0);
-  const [showCreateWizard, setShowCreateWizard] = useState(false);
-  const [showSendSheet, setShowSendSheet] = useState(false);
-  const [showAutoApplySheet, setShowAutoApplySheet] = useState(false);
-  const [editingPromotion, setEditingPromotion] = useState<PromotionCardData | null>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
-  // Fetch all promotions
-  const { data: promotions = [], isLoading, refetch } = trpc.promotions.getPromotions.useQuery(
-    {},
-    { enabled: !!user }
-  );
-
-  const deleteMutation = trpc.promotions.deleteTemplate.useMutation({
-    onSuccess: () => {
-      toast.success('Promotion deleted');
-      setSelectedCardId(null);
-      setShowDeleteDialog(false);
-      refetch();
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to delete promotion');
-    }
-  });
-
-  const handleDelete = () => {
-    if (selectedCardId) {
-      deleteMutation.mutate({ templateId: selectedCardId });
-    }
-  };
-
-  const handleEdit = () => {
-    const card = promotions.find(p => p.id === selectedCardId);
-    if (card) {
-      setEditingPromotion(card as PromotionCardData);
-      setShowCreateWizard(true);
-    }
-  };
+  const {
+    isArtist,
+    promotions,
+    isLoading,
+    selectedCardId,
+    setSelectedCardId,
+    focalIndex,
+    setFocalIndex,
+    showCreateWizard,
+    showSendSheet,
+    setShowSendSheet,
+    showAutoApplySheet,
+    setShowAutoApplySheet,
+    editingPromotion,
+    showDeleteDialog,
+    setShowDeleteDialog,
+    deleteMutation,
+    handleDelete,
+    handleEdit,
+    handleUseOnBooking,
+    handleCreate,
+    closeCreateWizard,
+    refetch
+  } = usePromotionsController();
 
   const filteredCards = promotions || [];
   const selectedCard = filteredCards.find(c => c.id === selectedCardId);
-
-  const handleUseOnBooking = () => {
-    if (!selectedCard) return;
-    sessionStorage.setItem('pendingPromotion', JSON.stringify({
-      id: selectedCard.id,
-      type: selectedCard.type,
-      name: selectedCard.name,
-      value: selectedCard.value,
-      valueType: selectedCard.valueType,
-      code: selectedCard.code,
-    }));
-    toast.success('Promotion ready to use!');
-  };
 
   return (
     <PageShell>
@@ -111,8 +80,8 @@ export default function Promotions() {
         <div className="flex justify-center mb-8 px-4 pt-4 shrink-0">
           {isArtist && (
             <Button
-              className="w-full h-14 rounded-2xl font-bold text-base shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground"
-              onClick={() => setShowCreateWizard(true)}
+              variant="hero"
+              onClick={handleCreate}
             >
               <Plus className="w-5 h-5 mr-2" />
               Create New Voucher
@@ -127,7 +96,7 @@ export default function Promotions() {
             </div>
           ) : filteredCards.length === 0 ? (
             <div className="min-h-[300px] flex items-center justify-center">
-              <EmptyState type="voucher" isArtist={isArtist} onCreate={() => setShowCreateWizard(true)} />
+              <EmptyState type="voucher" isArtist={isArtist} onCreate={handleCreate} />
             </div>
           ) : (
             <div className="relative w-full h-full flex items-center justify-center overflow-visible">
@@ -187,23 +156,23 @@ export default function Promotions() {
               >
                 {isArtist ? (
                   <>
-                    <Button className="w-full h-12 rounded-xl font-bold text-sm" onClick={() => setShowSendSheet(true)}>
+                    <Button variant="default" className="w-full" onClick={() => setShowSendSheet(true)}>
                       <Send className="w-4 h-4 mr-2" /> Send to Client
                     </Button>
                     <div className="grid grid-cols-2 gap-2">
-                      <Button variant="outline" className="h-10 rounded-xl text-sm" onClick={handleEdit}>
+                      <Button variant="outline" className="w-full" onClick={handleEdit}>
                         <Edit className="w-4 h-4 mr-2" /> Edit
                       </Button>
-                      <Button variant="outline" className="h-10 rounded-xl text-sm text-red-500 border-red-200" onClick={() => setShowDeleteDialog(true)}>
+                      <Button variant="outline" className="w-full text-red-500 border-red-200" onClick={() => setShowDeleteDialog(true)}>
                         <Trash2 className="w-4 h-4 mr-2" /> Delete
                       </Button>
                     </div>
-                    <Button variant="outline" className="w-full h-10 rounded-xl text-sm" onClick={() => setShowAutoApplySheet(true)}>
+                    <Button variant="outline" className="w-full" onClick={() => setShowAutoApplySheet(true)}>
                       <Calendar className="w-4 h-4 mr-2" /> Auto-Apply
                     </Button>
                   </>
                 ) : (
-                  <Button className="w-full h-12 rounded-xl font-bold text-sm" disabled={selectedCard.status !== 'active'} onClick={handleUseOnBooking}>
+                  <Button variant="default" className="w-full" disabled={selectedCard.status !== 'active'} onClick={handleUseOnBooking}>
                     <Check className="w-4 h-4 mr-2" /> Use on Next Booking
                   </Button>
                 )}
@@ -214,7 +183,7 @@ export default function Promotions() {
       </GlassSheet>
 
       {showCreateWizard && (
-        <CreatePromotionWizard onClose={() => { setShowCreateWizard(false); setEditingPromotion(null); refetch(); }} initialData={editingPromotion} />
+        <CreatePromotionWizard onClose={closeCreateWizard} initialData={editingPromotion} />
       )}
 
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -255,7 +224,7 @@ function EmptyState({ type, isArtist, onCreate }: { type: PromotionType; isArtis
       <p className="text-sm text-muted-foreground max-w-xs mb-6">
         {isArtist ? `Create your first ${defaults.labelSingular.toLowerCase()} to reward your clients` : `You don't have any ${defaults.labelPlural.toLowerCase()} yet`}
       </p>
-      {isArtist && <Button onClick={onCreate} className="rounded-xl"><Plus className="w-4 h-4 mr-2" /> Create {defaults.labelSingular}</Button>}
+      {isArtist && <Button onClick={onCreate} variant="default"><Plus className="w-4 h-4 mr-2" /> Create {defaults.labelSingular}</Button>}
     </div>
   );
 }
@@ -292,7 +261,7 @@ function AutoApplySheet({ isOpen, onClose, promotion, onSave }: { isOpen: boolea
             <div><label className="block text-sm font-medium text-foreground mb-2">End Date</label><input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full p-3 rounded-xl border border-border bg-background text-foreground" /></div>
           </div>
         )}
-        <Button className="w-full h-14 rounded-xl font-bold" onClick={handleSave} disabled={updateAutoApply.isPending}>{updateAutoApply.isPending ? 'Saving...' : 'Save Settings'}</Button>
+        <Button variant="default" className="w-full" onClick={handleSave} disabled={updateAutoApply.isPending}>{updateAutoApply.isPending ? 'Saving...' : 'Save Settings'}</Button>
       </div>
     </FullScreenSheet>
   );

@@ -38,9 +38,11 @@ export const tokens = {
 
     // 4. Buttons
     button: {
-        primary: "shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-base font-semibold",
-        secondary: "bg-white/5 hover:bg-white/10 text-foreground h-12 text-base font-semibold",
-        ghost: "text-white/50 hover:text-white hover:bg-white/5",
+        primary: "shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-12 px-6 rounded-xl text-base font-semibold transition-all active:scale-[0.98]",
+        hero: "w-full h-14 rounded-2xl font-bold text-base shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-all active:scale-[0.97]",
+        secondary: "bg-white/5 hover:bg-white/10 text-foreground h-12 px-6 rounded-xl text-base font-semibold transition-all active:scale-[0.98]",
+        outline: "border border-white/10 bg-transparent hover:bg-white/5 text-foreground h-10 px-4 rounded-xl text-sm font-medium transition-all active:scale-[0.98]",
+        ghost: "text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors",
         icon: "rounded-full bg-white/5 hover:bg-white/10 text-foreground w-10 h-10 flex items-center justify-center transition-colors"
     },
 
@@ -71,12 +73,12 @@ export const tokens = {
 
     // 8. Navigation Actions
     navAction: {
-        base: "flex flex-col items-center justify-center h-auto py-2 px-4 gap-1 min-w-[72px] shrink-0 bg-transparent border-0 rounded-xl transition-all duration-150 touch-none select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+        base: "flex flex-col items-center justify-center h-full py-2 px-4 gap-1 min-w-[72px] shrink-0 bg-transparent border-0 rounded-xl transition-all duration-150 touch-none select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
         pressed: "scale-90 opacity-70",
         idle: "opacity-90 hover:opacity-100 hover:bg-white/10 dark:hover:bg-white/5",
         icon: {
-            primary: "text-blue-500 dark:text-blue-400",
-            accent: "text-amber-500 dark:text-amber-400",
+            primary: "text-blue-500 dark:text-blue-400 fill-current/10",
+            accent: "text-amber-500 dark:text-amber-400 fill-current/10",
             idle: "text-foreground/80"
         }
     },

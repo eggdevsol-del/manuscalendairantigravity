@@ -102,8 +102,8 @@ export function NavActionButton({
                 className={cn(
                     "w-6 h-6 mb-0.5 transition-colors pointer-events-none",
                     highlight
-                        ? "text-blue-500 dark:text-blue-400"
-                        : "text-amber-500 dark:text-amber-400"
+                        ? tokens.navAction.icon.primary
+                        : tokens.navAction.icon.accent
                 )}
             />
             <span className="text-[10px] font-medium truncate max-w-[80px] text-foreground/80 pointer-events-none">

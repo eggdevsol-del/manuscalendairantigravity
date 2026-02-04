@@ -7,6 +7,7 @@ import { PhotosCard, HistoryCard, SavedCard } from "@/features/profile/component
 import { EditBioModal } from "@/features/profile/components/EditBioModal";
 import { useRegisterBottomNavRow } from "@/contexts/BottomNavContext";
 import { Edit3, User, ToggleLeft, ToggleRight, LayoutTemplate } from "lucide-react";
+import { NavActionButton } from "@/components/ui/ssot";
 
 export default function ClientProfile() {
     const {
@@ -32,8 +33,6 @@ export default function ClientProfile() {
         const url = prompt("Enter new avatar URL:");
         if (url) updateAvatar.mutate({ avatarUrl: url });
     };
-
-    // BottomNav Registration
     useRegisterBottomNavRow("client-profile", (
         <>
             {[
@@ -42,7 +41,7 @@ export default function ClientProfile() {
                     label: isEditMode ? "Done" : "Edit",
                     icon: isEditMode ? ToggleRight : ToggleLeft,
                     onClick: () => setIsEditMode(!isEditMode),
-                    active: isEditMode
+                    highlight: isEditMode
                 },
                 {
                     id: "new-board",
@@ -67,16 +66,14 @@ export default function ClientProfile() {
                     onClick: () => setIsBioModalOpen(true)
                 }
             ].map(item => (
-                <button
+                <NavActionButton
                     key={item.id}
-                    onClick={item.onClick}
-                    className="flex flex-col items-center justify-center h-full py-2 px-3 gap-1 min-w-[70px] snap-center shrink-0 transition-all duration-300 text-muted-foreground opacity-70 hover:opacity-100 active:scale-95"
-                >
-                    <item.icon className={`w-6 h-6 mb-0.5 ${item.active ? "text-primary fill-current/20" : ""}`} />
-                    <span className={`text-[10px] font-medium ${item.active ? "text-primary font-bold" : ""}`}>
-                        {item.label}
-                    </span>
-                </button>
+                    id={item.id}
+                    label={item.label}
+                    icon={item.icon}
+                    onAction={item.onClick}
+                    highlight={item.highlight}
+                />
             ))}
         </>
     ));
