@@ -70,12 +70,12 @@ export function FullScreenSheet({
             <DialogPrimitive.Portal>
                 {/* Backdrop: Subtle Blur + Dim */}
                 <DialogPrimitive.Overlay
-                    className={cn(tokens.sheetSecondary.overlay, "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0")}
+                    className={cn(tokens.sheetSecondary.overlay, tokens.animations.fade)}
                 />
 
                 {/* Full-Screen Sheet Shell */}
                 <DialogPrimitive.Content
-                    className={cn(tokens.sheetSecondary.content, "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-4 data-[state=open]:slide-in-from-bottom-4")}
+                    className={cn(tokens.sheetSecondary.content, tokens.animations.sheetSlideUp)}
                 >
                     {/* 1. Header */}
                     <header className="px-4 py-4 z-10 shrink-0 flex items-center justify-between">
