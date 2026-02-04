@@ -12,6 +12,10 @@ import { X, Check, Clock, ExternalLink, MessageSquare, Mail, Play, Plus, Trash2,
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { useTeaser } from "@/contexts/TeaserContext";
+import { InstallAppModal } from "@/components/modals/InstallAppModal";
+import { Lock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // SSOT Components
 
@@ -87,6 +91,10 @@ export default function Dashboard() {
 
     // Dashboard Settings Hook
     const { settings: dashboardSettings, updateSettings, isUpdating } = useDashboardSettings();
+
+    // Teaser Mode
+    const { isTeaserClient } = useTeaser();
+    const [showInstallModal, setShowInstallModal] = useState(false);
 
 
     // UI State
@@ -254,94 +262,113 @@ export default function Dashboard() {
             </div>
 
             {/* 3. Sheet Container (Matched to Calendar.tsx) */}
-            <GlassSheet className="bg-white/5">
-
-                {/* Sheet Header Tabs */}
-                <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5">
-                    <SegmentedHeader
-                        options={TITLES}
-                        activeIndex={activeIndex}
-                        onChange={(index) => {
-                            const dir = index > activeIndex ? 1 : -1;
-                            setPage([index, dir]);
-                            setActiveIndex(index);
-                        }}
-                    />
-                </div>
-
-                {/* Sheet Content */}
-                <div className="flex-1 relative w-full overflow-hidden">
-                    <AnimatePresence initial={false} custom={direction}>
-                        <motion.div
-                            key={page}
-                            custom={direction}
-                            variants={variants}
-                            initial="enter"
-                            animate="center"
-                            exit="exit"
-                            transition={{ x: { type: "spring", stiffness: 300, damping: 30 }, opacity: { duration: 0.2 } }}
-                            drag="x"
-                            dragConstraints={{ left: 0, right: 0 }}
-                            dragElastic={0.2}
-                            onDragEnd={(e, { offset, velocity }) => {
-                                const swipe = swipePower(offset.x, velocity.x);
-                                if (swipe < -swipeConfidenceThreshold) paginate(1);
-                                else if (swipe > swipeConfidenceThreshold) paginate(-1);
-                            }}
-                            dragDirectionLock
-                            className="absolute top-0 left-0 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y"
-                        >
-                            <div className="space-y-3 pb-32 max-w-lg mx-auto">
-                                {/* Loading state for business tasks */}
-                                {activeCategory === 'business' && businessLoading ? (
-                                    <LoadingState />
-                                ) : currentTasks.length > 0 ? (
-                                    currentTasks.map(task => (
-                                        <TaskCard
-                                            key={task.id}
-                                            title={task.title}
-                                            context={task.context}
-                                            priority={task.priority}
-                                            status={task.status}
-                                            actionType={task.actionType as any}
-                                            onClick={() => handleTaskClick(task)}
-                                        />
-                                    ))
-                                ) : (
-                                    <EmptyState
-                                        category={TITLES[activeIndex]}
-                                        onAction={activeCategory === 'personal' ? () => setShowChallengeSheet(true) : undefined}
-                                    />
-                                )}
-
-                                {/* Settings button at bottom of business tasks */}
-                                {activeCategory === 'business' && !businessLoading && (
-                                    <div className="pt-4 flex justify-center gap-3">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-muted-foreground hover:text-foreground"
-                                            onClick={() => setShowSnapshotModal(true)}
-                                        >
-                                            <BarChart3 className="w-4 h-4 mr-2" />
-                                            Weekly Stats
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-muted-foreground hover:text-foreground"
-                                            onClick={() => setShowSettingsSheet(true)}
-                                        >
-                                            <Settings className="w-4 h-4 mr-2" />
-                                            Settings
-                                        </Button>
-                                    </div>
-                                )}
+            <div className="relative flex-1 flex flex-col overflow-hidden">
+                {/* Teaser Mode Overlay */}
+                {isTeaserClient && (
+                    <div
+                        className="absolute inset-0 z-50 bg-background/60 backdrop-blur-[2px] flex items-center justify-center cursor-pointer transition-all hover:bg-background/70"
+                        onClick={() => setShowInstallModal(true)}
+                    >
+                        <div className="flex flex-col items-center gap-3 p-8 rounded-[2rem] bg-card/90 border border-white/10 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in duration-300">
+                            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-2">
+                                <Lock className="w-8 h-8 text-primary" />
                             </div>
-                        </motion.div>
-                    </AnimatePresence>
+                            <h3 className="text-xl font-bold">Dashboard Locked</h3>
+                            <button className="text-sm font-medium text-primary hover:underline">
+                                Install app to unlock
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                <div className={cn("flex-1 flex flex-col overflow-hidden", isTeaserClient && "filter blur-sm pointer-events-none select-none")}>
+                    <div className="px-6 pb-2 shrink-0">
+                        <SegmentedHeader
+                            options={TITLES}
+                            activeIndex={activeIndex}
+                            onChange={(index) => {
+                                const dir = index > activeIndex ? 1 : -1;
+                                setPage([index, dir]);
+                                setActiveIndex(index);
+                            }}
+                        />
+                    </div>
+
+                    <GlassSheet className="bg-white/5 flex flex-col relative overflow-hidden">
+                        <div className="flex-1 relative w-full overflow-hidden">
+                            <AnimatePresence initial={false} custom={direction}>
+                                <motion.div
+                                    key={page}
+                                    custom={direction}
+                                    variants={variants}
+                                    initial="enter"
+                                    animate="center"
+                                    exit="exit"
+                                    transition={{ x: { type: "spring", stiffness: 300, damping: 30 }, opacity: { duration: 0.2 } }}
+                                    drag="x"
+                                    dragConstraints={{ left: 0, right: 0 }}
+                                    dragElastic={0.2}
+                                    onDragEnd={(e, { offset, velocity }) => {
+                                        const swipe = swipePower(offset.x, velocity.x);
+                                        if (swipe < -swipeConfidenceThreshold) paginate(1);
+                                        else if (swipe > swipeConfidenceThreshold) paginate(-1);
+                                    }}
+                                    dragDirectionLock
+                                    className="absolute top-0 left-0 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y"
+                                >
+                                    <div className="space-y-3 pb-32 max-w-lg mx-auto">
+                                        {/* Loading state for business tasks */}
+                                        {activeCategory === 'business' && businessLoading ? (
+                                            <LoadingState />
+                                        ) : currentTasks.length > 0 ? (
+                                            currentTasks.map(task => (
+                                                <TaskCard
+                                                    key={task.id}
+                                                    title={task.title}
+                                                    context={task.context}
+                                                    priority={task.priority}
+                                                    status={task.status}
+                                                    actionType={task.actionType as any}
+                                                    onClick={() => handleTaskClick(task)}
+                                                />
+                                            ))
+                                        ) : (
+                                            <EmptyState
+                                                category={TITLES[activeIndex]}
+                                                onAction={activeCategory === 'personal' ? () => setShowChallengeSheet(true) : undefined}
+                                            />
+                                        )}
+
+                                        {/* Settings button at bottom of business tasks */}
+                                        {activeCategory === 'business' && !businessLoading && (
+                                            <div className="pt-4 flex justify-center gap-3">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-muted-foreground hover:text-foreground"
+                                                    onClick={() => setShowSnapshotModal(true)}
+                                                >
+                                                    <BarChart3 className="w-4 h-4 mr-2" />
+                                                    Weekly Stats
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-muted-foreground hover:text-foreground"
+                                                    onClick={() => setShowSettingsSheet(true)}
+                                                >
+                                                    <Settings className="w-4 h-4 mr-2" />
+                                                    Settings
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
+                    </GlassSheet>
                 </div>
-            </GlassSheet>
+            </div>
 
 
             {/* --- TASK SHEET (HalfSheet) --- */}
@@ -609,6 +636,6 @@ export default function Dashboard() {
                 data={snapshot}
             />
 
-        </PageShell>
+        </PageShell >
     );
 }

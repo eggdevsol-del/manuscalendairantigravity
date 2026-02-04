@@ -11,6 +11,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useTabletLandscape } from "@/hooks/useTabletLandscape";
+import { TeaserProvider } from "@/contexts/TeaserContext";
 import Home from "./pages/Home";
 import Chat from "./pages/Chat";
 import Calendar from "./pages/Calendar";
@@ -106,18 +107,20 @@ function App() {
       defaultTheme="dark"
       switchable
     >
-      <UIDebugProvider>
-        <BottomNavProvider>
-          <TooltipProvider>
-            <Toaster />
-            <InstallPrompt />
-            <ConditionalIOSInstallPrompt />
-            <ErrorBoundary>
-              <Router />
-            </ErrorBoundary>
-          </TooltipProvider>
-        </BottomNavProvider>
-      </UIDebugProvider>
+      <TeaserProvider>
+        <UIDebugProvider>
+          <BottomNavProvider>
+            <TooltipProvider>
+              <Toaster />
+              <InstallPrompt />
+              <ConditionalIOSInstallPrompt />
+              <ErrorBoundary>
+                <Router />
+              </ErrorBoundary>
+            </TooltipProvider>
+          </BottomNavProvider>
+        </UIDebugProvider>
+      </TeaserProvider>
     </ThemeProvider>
   );
 }

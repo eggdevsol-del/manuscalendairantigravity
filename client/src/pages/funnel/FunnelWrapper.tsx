@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback } from "react";
 import IOSInstallPrompt from "@/components/IOSInstallPrompt";
 import ImageUploadSheet, { UploadedImage } from "./components/ImageUploadSheet";
 import { Camera, Image as ImageIcon, ChevronRight } from "lucide-react";
+import { TeaserRegistrationForm } from "@/components/auth/TeaserRegistrationForm";
 
 // Generate unique session ID
 const generateSessionId = () => {
@@ -86,8 +87,8 @@ const PROJECT_TYPES = [
 
 // Simple style options
 const STYLE_OPTIONS = [
-  'Realism', 'Traditional', 'Neo-Traditional', 'Japanese', 
-  'Blackwork', 'Dotwork', 'Watercolor', 'Geometric', 
+  'Realism', 'Traditional', 'Neo-Traditional', 'Japanese',
+  'Blackwork', 'Dotwork', 'Watercolor', 'Geometric',
   'Minimalist', 'Fine Line', 'Other'
 ];
 
@@ -120,27 +121,27 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-  
+
   // Form data - Intent
   const [projectType, setProjectType] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
-  
+
   // Form data - Contact (expanded)
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  
+
   // Form data - Style
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [referenceImages, setReferenceImages] = useState<UploadedImage[]>([]);
   const [showReferenceUpload, setShowReferenceUpload] = useState(false);
-  
+
   // Form data - Body Placement
   const [bodyPlacementImages, setBodyPlacementImages] = useState<UploadedImage[]>([]);
   const [showBodyPlacementUpload, setShowBodyPlacementUpload] = useState(false);
-  
+
   // Form data - Budget & Availability
   const [selectedBudget, setSelectedBudget] = useState<typeof BUDGET_RANGES[0] | null>(null);
   const [timeframe, setTimeframe] = useState('');
@@ -153,7 +154,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
     const initFunnel = async () => {
       try {
         setLoading(true);
-        
+
         // Generate session ID
         let storedSessionId = sessionStorage.getItem(`funnel_session_${artistSlug}`);
         if (!storedSessionId) {
@@ -161,11 +162,11 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
           sessionStorage.setItem(`funnel_session_${artistSlug}`, storedSessionId);
         }
         setSessionId(storedSessionId);
-        
+
         // Fetch artist profile
         console.log(`[Funnel] Fetching artist profile for slug: ${artistSlug}`);
         const response = await fetch(`/api/public/artist/${artistSlug}`);
-        
+
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           console.error(`[Funnel] Error fetching artist:`, errorData);
@@ -176,11 +177,11 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
           }
           return;
         }
-        
+
         const data = await response.json();
         console.log(`[Funnel] Artist profile loaded:`, data.displayName);
         setArtistProfile(data);
-        
+
       } catch (err) {
         console.error("[Funnel] Init error:", err);
         setError("Failed to load. Please try again.");
@@ -195,15 +196,15 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
   // Upload images to server
   const uploadImages = async (images: UploadedImage[]): Promise<string[]> => {
     const uploadedUrls: string[] = [];
-    
+
     for (const image of images) {
       if (image.uploadedUrl) {
         uploadedUrls.push(image.uploadedUrl);
         continue;
       }
-      
+
       if (!image.file) continue;
-      
+
       try {
         // Convert to base64
         const reader = new FileReader();
@@ -212,7 +213,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
           reader.onerror = reject;
           reader.readAsDataURL(image.file!);
         });
-        
+
         // Upload via API
         const response = await fetch('/api/trpc/upload.uploadImage', {
           method: 'POST',
@@ -225,7 +226,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
             }
           }),
         });
-        
+
         if (response.ok) {
           const result = await response.json();
           console.log('[Funnel] Upload response:', JSON.stringify(result));
@@ -243,7 +244,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         console.error('[Funnel] Image upload error:', err);
       }
     }
-    
+
     return uploadedUrls;
   };
 
@@ -253,20 +254,20 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
       console.error('[Funnel] No artist profile');
       return;
     }
-    
+
     console.log('[Funnel] Starting submission...');
     setSubmitting(true);
-    
+
     try {
       // Upload images first
       console.log('[Funnel] Uploading reference images...');
       const uploadedReferenceUrls = await uploadImages(referenceImages);
       console.log('[Funnel] Uploaded reference images:', uploadedReferenceUrls.length);
-      
+
       console.log('[Funnel] Uploading body placement images...');
       const uploadedBodyPlacementUrls = await uploadImages(bodyPlacementImages);
       console.log('[Funnel] Uploaded body placement images:', uploadedBodyPlacementUrls.length);
-      
+
       const submitData = {
         artistId: artistProfile.id,
         sessionId,
@@ -302,35 +303,35 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
           urgency: 'flexible',
         },
       };
-      
+
       console.log('[Funnel] Submit data:', JSON.stringify(submitData, null, 2));
-      
+
       const response = await fetch('/api/public/funnel/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submitData),
       });
-      
+
       console.log('[Funnel] Response status:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('[Funnel] Submit error response:', errorText);
         throw new Error(`Failed to submit: ${errorText}`);
       }
-      
+
       const result = await response.json();
       console.log('[Funnel] Submit success:', result);
-      
+
       setSubmitted(true);
       sessionStorage.removeItem(`funnel_session_${artistSlug}`);
-      
+
       // Show install prompt after a short delay on success
       setTimeout(() => {
         setShowInstallPrompt(true);
         console.log('[Funnel] Showing install prompt after successful submission');
       }, 1500);
-      
+
     } catch (err) {
       console.error("[Funnel] Submit error:", err);
       alert("Failed to submit. Please try again.");
@@ -377,8 +378,8 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
 
   // Toggle style selection
   const toggleStyle = (style: string) => {
-    setSelectedStyles(prev => 
-      prev.includes(style) 
+    setSelectedStyles(prev =>
+      prev.includes(style)
         ? prev.filter(s => s !== style)
         : [...prev, style]
     );
@@ -414,29 +415,15 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
     );
   }
 
-  // Success state
+  // Success state (Teaser Registration)
   if (submitted) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-6">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-            Request Submitted!
-          </h1>
-          <p className="text-gray-600 mb-6">
-            Thank you for your interest. {artistProfile.displayName} will review your request and get back to you soon.
-          </p>
-          <p className="text-sm text-gray-500">
-            Check your email for confirmation.
-          </p>
-        </div>
-        
-        {/* Show install prompt ONLY after successful submission */}
-        {showInstallPrompt && (
-          <IOSInstallPrompt 
-            forceShow={true} 
-            onDismiss={() => setShowInstallPrompt(false)} 
-          />
-        )}
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <TeaserRegistrationForm
+          email={email}
+          name={`${firstName} ${lastName}`.trim()}
+          artistName={artistProfile.displayName}
+        />
       </div>
     );
   }
@@ -456,7 +443,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
       {/* Progress bar */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100">
         <div className="h-1 bg-gray-100">
-          <div 
+          <div
             className="h-full bg-gray-900 transition-all duration-300"
             style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
           />
@@ -489,18 +476,17 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   <button
                     key={type.id}
                     onClick={() => setProjectType(type.id)}
-                    className={`p-3 text-left rounded-lg border transition-colors ${
-                      projectType === type.id
-                        ? 'border-gray-900 bg-gray-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    className={`p-3 text-left rounded-lg border transition-colors ${projectType === type.id
+                      ? 'border-gray-900 bg-gray-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                      }`}
                   >
                     <span className="text-sm font-medium text-gray-900">{type.label}</span>
                   </button>
                 ))}
               </div>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Describe your idea
@@ -513,7 +499,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none text-gray-900 bg-white placeholder-gray-400"
               />
               <p className="text-xs text-gray-500 mt-1">
-                {projectDescription.length < 10 
+                {projectDescription.length < 10
                   ? `At least ${10 - projectDescription.length} more characters`
                   : 'Great!'
                 }
@@ -551,7 +537,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 />
               </div>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Date of birth *
@@ -567,7 +553,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 You must be 18 or older to book a tattoo
               </p>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email *
@@ -580,7 +566,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 bg-white placeholder-gray-400"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Phone number
@@ -608,18 +594,17 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   <button
                     key={style}
                     onClick={() => toggleStyle(style)}
-                    className={`px-4 py-2 rounded-full border transition-colors ${
-                      selectedStyles.includes(style)
-                        ? 'border-gray-900 bg-gray-900 text-white'
-                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                    }`}
+                    className={`px-4 py-2 rounded-full border transition-colors ${selectedStyles.includes(style)
+                      ? 'border-gray-900 bg-gray-900 text-white'
+                      : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                      }`}
                   >
                     {style}
                   </button>
                 ))}
               </div>
             </div>
-            
+
             {/* Reference Images Upload Button */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -636,7 +621,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   </div>
                   <div className="text-left">
                     <p className="text-sm font-medium text-gray-900">
-                      {referenceImages.length > 0 
+                      {referenceImages.length > 0
                         ? `${referenceImages.length} image${referenceImages.length > 1 ? 's' : ''} added`
                         : 'Add reference images'
                       }
@@ -648,7 +633,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 </div>
                 <ChevronRight className="w-5 h-5 text-gray-400" />
               </button>
-              
+
               {/* Preview thumbnails */}
               {referenceImages.length > 0 && (
                 <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
@@ -674,7 +659,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
             <p className="text-sm text-gray-600">
               Upload photos of the body area where you'd like the tattoo. This helps the artist understand the placement and size better.
             </p>
-            
+
             <button
               type="button"
               onClick={() => setShowBodyPlacementUpload(true)}
@@ -685,7 +670,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               </div>
               <div className="text-center">
                 <p className="text-sm font-medium text-gray-900">
-                  {bodyPlacementImages.length > 0 
+                  {bodyPlacementImages.length > 0
                     ? `${bodyPlacementImages.length} photo${bodyPlacementImages.length > 1 ? 's' : ''} added`
                     : 'Add body placement photos'
                   }
@@ -695,7 +680,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 </p>
               </div>
             </button>
-            
+
             {/* Preview thumbnails */}
             {bodyPlacementImages.length > 0 && (
               <div className="grid grid-cols-3 gap-3">
@@ -706,7 +691,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 ))}
               </div>
             )}
-            
+
             <p className="text-xs text-gray-500 text-center">
               This step is optional but highly recommended
             </p>
@@ -724,11 +709,10 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 <button
                   key={budget.label}
                   onClick={() => setSelectedBudget(budget)}
-                  className={`w-full p-4 text-left rounded-lg border transition-colors ${
-                    selectedBudget?.label === budget.label
-                      ? 'border-gray-900 bg-gray-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`w-full p-4 text-left rounded-lg border transition-colors ${selectedBudget?.label === budget.label
+                    ? 'border-gray-900 bg-gray-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                    }`}
                 >
                   <span className="font-medium text-gray-900">{budget.label}</span>
                 </button>
@@ -748,11 +732,10 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 <button
                   key={option.id}
                   onClick={() => setTimeframe(option.id)}
-                  className={`w-full p-4 text-left rounded-lg border transition-colors ${
-                    timeframe === option.id
-                      ? 'border-gray-900 bg-gray-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`w-full p-4 text-left rounded-lg border transition-colors ${timeframe === option.id
+                    ? 'border-gray-900 bg-gray-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                    }`}
                 >
                   <span className="font-medium text-gray-900">{option.label}</span>
                 </button>
@@ -779,10 +762,10 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
             disabled={!canProceed() || submitting}
             className={`${currentStep === 0 ? 'w-full' : 'flex-1'} py-3 px-6 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            {submitting 
-              ? 'Submitting...' 
-              : currentStep === totalSteps - 1 
-                ? 'Submit Request' 
+            {submitting
+              ? 'Submitting...'
+              : currentStep === totalSteps - 1
+                ? 'Submit Request'
                 : currentStep === 3 && bodyPlacementImages.length === 0
                   ? 'Skip for now'
                   : 'Continue'
