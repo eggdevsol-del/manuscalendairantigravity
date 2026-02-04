@@ -183,7 +183,10 @@ export function useChatController(conversationId: number) {
             : metadata.price || 0;
 
         const appointments = bookingDates.map((dateStr: string) => {
-            const startTime = new Date(dateStr);
+            // Fix Date Shifting: If dateStr is just YYYY-MM-DD, append noon. 
+            // If it's already ISO (has T/Z), use as is.
+            const safeDateStr = dateStr.includes("T") ? dateStr : `${dateStr}T12:00:00`;
+            const startTime = new Date(safeDateStr);
             const duration = metadata.serviceDuration || 60;
 
             return {
@@ -199,9 +202,12 @@ export function useChatController(conversationId: number) {
             };
         });
 
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
         bookProjectMutation.mutate({
             conversationId,
-            appointments
+            appointments,
+            timeZone
         }, {
             onSuccess: async (result) => {
                 // If promotion was applied, redeem it on the first appointment

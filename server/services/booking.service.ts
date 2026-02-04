@@ -279,6 +279,58 @@ export function findNextAvailableSlotOptimized(
     return null;
 }
 
+/**
+ * Validates if a specific time slot falls within working hours.
+ */
+export function validateAppointmentForWorkHours(
+    startTime: Date,
+    durationMinutes: number,
+    workSchedule: WorkDay[],
+    timeZone: string
+): { valid: boolean; reason?: string } {
+    const dayName = startTime.toLocaleDateString("en-US", { weekday: "long", timeZone });
+    const schedule = workSchedule.find((d) => d.day && d.day.toLowerCase() === dayName.toLowerCase());
+
+    if (!schedule || !schedule.enabled) {
+        return { valid: false, reason: `Work day (${dayName}) is disabled.` };
+    }
+
+    const s = parseTime(schedule.start || schedule.startTime || "");
+    const e = parseTime(schedule.end || schedule.endTime || "");
+
+    if (!s || !e) {
+        return { valid: false, reason: `Invalid schedule hours for ${dayName}.` };
+    }
+
+    // Get current time in TZ
+    const timeParts = Intl.DateTimeFormat('en-US', {
+        timeZone,
+        hour: 'numeric', minute: 'numeric',
+        hour12: false
+    }).formatToParts(startTime);
+
+    const hourPart = timeParts.find(p => p.type === 'hour')?.value;
+    const minPart = timeParts.find(p => p.type === 'minute')?.value;
+
+    let currentH = parseInt(hourPart || "0");
+    if (currentH === 24) currentH = 0;
+    const currentM = parseInt(minPart || "0");
+
+    const currentTotal = currentH * 60 + currentM;
+    const startTotal = s.hour * 60 + s.minute;
+    const endTotal = e.hour * 60 + e.minute;
+
+    if (currentTotal < startTotal) {
+        return { valid: false, reason: `Start time (${currentH}:${currentM}) is before opening (${startTotal / 60}).` };
+    }
+
+    if (currentTotal + durationMinutes > endTotal) {
+        return { valid: false, reason: `End time extends past closing.` };
+    }
+
+    return { valid: true };
+}
+
 
 
 /**

@@ -9,7 +9,7 @@ import { registerSW } from 'virtual:pwa-register';
 export async function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     console.log('[PWA] Registering service worker...');
-    
+
     const updateSW = registerSW({
       immediate: true,
       onNeedRefresh() {
@@ -22,7 +22,7 @@ export async function registerServiceWorker() {
       },
       onRegistered(registration) {
         console.log('[PWA] Service Worker registered successfully');
-        
+
         if (registration) {
           // Check for updates every 60 seconds
           setInterval(() => {
@@ -47,7 +47,7 @@ export async function registerServiceWorker() {
  */
 export async function forceUpdate(): Promise<void> {
   console.log('[PWA] Force updating app...');
-  
+
   // Clear all caches
   if ('caches' in window) {
     const cacheNames = await caches.keys();
@@ -56,7 +56,7 @@ export async function forceUpdate(): Promise<void> {
       cacheNames.map(cacheName => caches.delete(cacheName))
     );
   }
-  
+
   // Unregister all service workers
   if ('serviceWorker' in navigator) {
     const registrations = await navigator.serviceWorker.getRegistrations();
@@ -65,7 +65,7 @@ export async function forceUpdate(): Promise<void> {
       registrations.map(registration => registration.unregister())
     );
   }
-  
+
   // Reload the page
   console.log('[PWA] Reloading page...');
   window.location.reload();
@@ -76,17 +76,17 @@ export async function forceUpdate(): Promise<void> {
  */
 export async function getServiceWorkerVersion(): Promise<string | null> {
   if (!('serviceWorker' in navigator)) return null;
-  
+
   const registration = await navigator.serviceWorker.ready;
   if (!registration.active) return null;
-  
+
   return new Promise((resolve) => {
     const messageChannel = new MessageChannel();
     messageChannel.port1.onmessage = (event) => {
       resolve(event.data?.version || null);
     };
     registration.active.postMessage({ type: 'GET_VERSION' }, [messageChannel.port2]);
-    
+
     // Timeout after 1 second
     setTimeout(() => resolve(null), 1000);
   });
@@ -164,32 +164,36 @@ export function isPWA(): boolean {
   );
 }
 
-/**
- * Show install prompt for PWA
- */
-export function setupInstallPrompt() {
-  let deferredPrompt: any = null;
+// Module-level variable to capture event even before React mounts
+// This is critical because beforeinstallprompt often fires before our components are ready
+let globalDeferredPrompt: any = null;
 
+if (typeof window !== 'undefined') {
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
-    deferredPrompt = e;
-    console.log('[PWA] Install prompt available');
+    globalDeferredPrompt = e;
+    console.log('[PWA] Global install prompt captured');
   });
+}
 
+/**
+ * Show install prompt for PWA (Legacy)
+ */
+export function setupInstallPrompt() {
   return {
     showPrompt: async () => {
-      if (!deferredPrompt) {
+      if (!globalDeferredPrompt) {
         console.log('[PWA] Install prompt not available');
         return false;
       }
 
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
+      globalDeferredPrompt.prompt();
+      const { outcome } = await globalDeferredPrompt.userChoice;
       console.log('[PWA] User choice:', outcome);
-      deferredPrompt = null;
+      globalDeferredPrompt = null;
       return outcome === 'accepted';
     },
-    isAvailable: () => deferredPrompt !== null,
+    isAvailable: () => globalDeferredPrompt !== null,
   };
 }
 

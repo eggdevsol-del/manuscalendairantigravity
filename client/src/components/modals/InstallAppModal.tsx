@@ -23,8 +23,24 @@ export function InstallAppModal({ isOpen, onClose }: InstallAppModalProps) {
             overlayId="teaser.install_app"
             footer={
                 <div className="flex flex-col gap-3 w-full">
-                    {/* We reuse the existing InstallPrompt logic but force it or instruct user */}
-                    <InstallPrompt />
+                    {/* Install Button Logic */}
+                    <div className="w-full">
+                        <Button
+                            className={cn("w-full", tokens.button.hero)}
+                            onClick={async () => {
+                                const { setupInstallPrompt } = await import("@/lib/pwa");
+                                const handler = setupInstallPrompt();
+                                if (handler.isAvailable()) {
+                                    handler.showPrompt();
+                                    onClose();
+                                } else {
+                                    alert("To install: Tap 'Share' -> 'Add to Home Screen'");
+                                }
+                            }}
+                        >
+                            Install Now
+                        </Button>
+                    </div>
                     {/* Fallback visual if system prompt not available (handled by InstallPrompt usually, but we add custom instruction here if needed) */}
 
                     <Button

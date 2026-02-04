@@ -97,9 +97,10 @@ export const bookingRouter = router({
     bookProject: artistProcedure
         .input(z.object({
             conversationId: z.number(),
+            timeZone: z.string().default("UTC"), // Add timezone input
             appointments: z.array(z.object({
                 startTime: z.date(),
-                endTime: z.date(),
+                endTime: z.date(), // We can derive duration from this
                 title: z.string(),
                 description: z.string().optional(),
                 serviceName: z.string(),
@@ -110,6 +111,33 @@ export const bookingRouter = router({
         .mutation(async ({ input }) => {
             const conversation = await db.getConversationById(input.conversationId);
             if (!conversation) throw new TRPCError({ code: "NOT_FOUND", message: "Conversation not found" });
+
+            // Validate Work Hours
+            const artistSettings = await db.getArtistSettings(conversation.artistId);
+            if (artistSettings) {
+                const workSchedule = BookingService.parseWorkSchedule(artistSettings.workSchedule);
+
+                for (const appt of input.appointments) {
+                    const durationMs = appt.endTime.getTime() - appt.startTime.getTime();
+                    const durationMinutes = Math.floor(durationMs / 60000);
+
+                    const validation = BookingService.validateAppointmentForWorkHours(
+                        appt.startTime,
+                        durationMinutes,
+                        workSchedule,
+                        input.timeZone
+                    );
+
+                    if (!validation.valid) {
+                        // Allow a small grace period or override? No, strict for now based on user request.
+                        // Actually, if it's "11pm" vs "work hours", it's a bug.
+                        throw new TRPCError({
+                            code: "PRECONDITION_FAILED",
+                            message: `Invalid booking time: ${validation.reason}`
+                        });
+                    }
+                }
+            }
 
             let createdCount = 0;
             const appointmentIds: number[] = [];
