@@ -293,5 +293,56 @@ export const tokens = {
         createButton: "bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-[0_0_20px_-5px_rgba(var(--primary-rgb),0.5)]",
         buttonHeight: "h-14",
         buttonRadius: "rounded-full"
+    },
+
+    // Proposal Modal (Chat feature)
+    proposalModal: {
+        // Sheet Container
+        sheetBg: "bg-white/5",
+        sheetBlur: "backdrop-blur-2xl",
+        sheetRadius: "md:rounded-t-[2.5rem]",
+        sheetShadow: "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)]",
+        highlightGradient: "bg-gradient-to-l from-white/20 to-transparent",
+        highlightOpacity: "opacity-50",
+
+        // Close Button
+        closeButton: "rounded-full bg-white/5 hover:bg-white/10",
+
+        // Cards
+        cardBg: "bg-white/5",
+        cardBorder: "border-white/10",
+        cardRadius: "rounded-2xl",
+        cardPadding: "p-4",
+
+        // Typography
+        sectionLabel: "text-xs font-bold uppercase tracking-widest text-muted-foreground",
+        badgeText: "text-[10px] font-bold",
+        badgeRadius: "rounded-full",
+        title: "text-4xl font-light text-foreground tracking-tight",
+
+        // Session Items
+        sessionBadge: "w-10 h-10 rounded-full bg-white/5 border border-white/10",
+        durationBadge: "text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md",
+
+        // Accordion
+        accordionTrigger: "text-sm hover:no-underline hover:bg-white/[0.02] px-2 rounded-lg py-3 text-foreground font-medium",
+
+        // Buttons
+        buttonHeight: "h-12",
+        buttonRadius: "rounded-xl",
+        voucherButton: "border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold",
+        declineButton: "border-white/10 bg-white/5 hover:bg-white/10 text-foreground font-semibold",
+        acceptButton: "bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/20",
+
+        // Status Indicators
+        successBg: "bg-green-500/10",
+        successBorder: "border-green-500/20",
+        warningBg: "bg-amber-500/10",
+        warningBorder: "border-amber-500/20",
+        errorBg: "bg-red-500/10",
+        errorBorder: "border-red-500/20",
+        statusPadding: "p-3",
+        statusPaddingLarge: "p-4",
+        statusRadius: "rounded-xl"
     }
 } as const;

@@ -4,6 +4,7 @@ import { Check, Calendar as CalendarIcon, DollarSign, Clock, AlertCircle, X, Tag
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import { tokens } from "@/ui/tokens";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogTitle } from "@/components/ui/dialog";
@@ -92,13 +93,13 @@ export function ProjectProposalModal({
     const ProposalDatesList = () => (
         <Card className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden p-4">
             <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">SCHEDULE BREAKDOWN</span>
-                <span className="text-[10px] font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-full">{dateList.length} Sessions</span>
+                <span className={tokens.proposalModal.sectionLabel}>SCHEDULE BREAKDOWN</span>
+                <span className={cn("bg-primary/20 text-primary px-2 py-0.5", tokens.proposalModal.badgeText, tokens.proposalModal.badgeRadius)}>{dateList.length} Sessions</span>
             </div>
             <div className="space-y-3">
                 {dateList.map((dateStr, i) => (
                     <div key={i} className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-muted-foreground font-bold text-xs border border-white/10">
+                        <div className={cn("flex items-center justify-center text-muted-foreground font-bold text-xs", tokens.proposalModal.sessionBadge)}>
                             #{i + 1}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -107,7 +108,7 @@ export function ProjectProposalModal({
                                 {format(new Date(dateStr), "h:mm a")} • {format(new Date(dateStr), "yyyy")}
                             </p>
                         </div>
-                        <div className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md whitespace-nowrap">
+                        <div className={cn("whitespace-nowrap", tokens.proposalModal.durationBadge)}>
                             {serviceDuration}m
                         </div>
                     </div>
@@ -118,16 +119,16 @@ export function ProjectProposalModal({
 
     const ProposalPolicies = () => (
         <Card className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden p-4">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Policies & Terms</h4>
+            <h4 className={cn("mb-4", tokens.proposalModal.sectionLabel)}>Policies & Terms</h4>
             <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="cancellation" className="border-white/5">
-                    <AccordionTrigger className="text-sm hover:no-underline hover:bg-white/[0.02] px-2 rounded-lg py-3 text-foreground font-medium">Cancellation Policy</AccordionTrigger>
+                    <AccordionTrigger className={tokens.proposalModal.accordionTrigger}>Cancellation Policy</AccordionTrigger>
                     <AccordionContent className="text-muted-foreground px-2 pb-3 text-xs leading-relaxed">
                         Deposits are non-refundable. Cancellations made within 48 hours of the appointment may forfeit the deposit. Please contact the artist directly for rescheduling.
                     </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="deposit" className="border-white/5">
-                    <AccordionTrigger className="text-sm hover:no-underline hover:bg-white/[0.02] px-2 rounded-lg py-3 text-foreground font-medium">Deposit Information</AccordionTrigger>
+                    <AccordionTrigger className={tokens.proposalModal.accordionTrigger}>Deposit Information</AccordionTrigger>
                     <AccordionContent className="text-muted-foreground px-2 pb-3 text-xs leading-relaxed">
                         A deposit of ${depositAmount || 0} is required to secure these dates. The remaining balance of ${totalCost - (depositAmount || 0)} is due upon completion of the service.
                     </AccordionContent>
@@ -142,7 +143,7 @@ export function ProjectProposalModal({
                 <>
                     {/* Applied Promotion Display */}
                     {appliedPromotion && (
-                        <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                        <div className={cn("border", tokens.proposalModal.statusPadding, tokens.proposalModal.statusRadius, tokens.proposalModal.successBg, tokens.proposalModal.successBorder)}>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <Tag className="w-4 h-4 text-green-500" />
@@ -159,7 +160,7 @@ export function ProjectProposalModal({
                             variant="outline"
                             size="lg"
                             onClick={() => setShowPromotionSheet(true)}
-                            className="w-full h-12 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary hover:text-primary font-semibold rounded-xl"
+                            className={cn("w-full", tokens.proposalModal.buttonHeight, tokens.proposalModal.buttonRadius, tokens.proposalModal.voucherButton)}
                         >
                             <Tag className="w-4 h-4 mr-2" />
                             Apply Voucher or Discount
@@ -173,7 +174,7 @@ export function ProjectProposalModal({
                             size="lg"
                             onClick={onReject}
                             disabled={isPendingAction}
-                            className="h-12 border-white/10 bg-white/5 hover:bg-white/10 text-foreground hover:text-foreground font-semibold rounded-xl"
+                            className={cn(tokens.proposalModal.buttonHeight, tokens.proposalModal.buttonRadius, tokens.proposalModal.declineButton)}
                         >
                             Decline
                         </Button>
@@ -185,7 +186,7 @@ export function ProjectProposalModal({
                                 finalAmount: appliedPromotion.finalAmount,
                             } : undefined)}
                             disabled={isPendingAction}
-                            className="h-12 bg-primary hover:bg-primary/90 text-primary-foreground relative overflow-hidden group border-0 shadow-lg shadow-primary/20 font-semibold rounded-xl"
+                            className={cn("relative overflow-hidden group border-0", tokens.proposalModal.buttonHeight, tokens.proposalModal.buttonRadius, tokens.proposalModal.acceptButton)}
                         >
                             {isPendingAction ? "Processing..." : "Accept & Continue"}
                         </Button>
@@ -195,10 +196,10 @@ export function ProjectProposalModal({
 
             {isArtist && status === 'pending' && (
                 <div className="col-span-2 flex flex-col gap-2">
-                    <Button variant="secondary" className="w-full h-12 rounded-xl" disabled>
+                    <Button variant="secondary" className={cn("w-full", tokens.proposalModal.buttonHeight, tokens.proposalModal.buttonRadius)} disabled>
                         Edit Proposal
                     </Button>
-                    <div className="flex items-center justify-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-medium">
+                    <div className={cn("flex items-center justify-center gap-2 text-amber-500 text-xs font-medium border rounded-lg", tokens.proposalModal.statusPadding, tokens.proposalModal.warningBg, tokens.proposalModal.warningBorder)}>
                         <span className="relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
@@ -211,7 +212,7 @@ export function ProjectProposalModal({
             {status === 'accepted' && (
                 <div className="col-span-2 space-y-2">
                     {hasStoredDiscount && (
-                        <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                        <div className={cn("border", tokens.proposalModal.statusPadding, tokens.proposalModal.statusRadius, tokens.proposalModal.successBg, tokens.proposalModal.successBorder)}>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <Tag className="w-4 h-4 text-green-500" />
@@ -221,7 +222,7 @@ export function ProjectProposalModal({
                             </div>
                         </div>
                     )}
-                    <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-center">
+                    <div className={cn("border text-center", tokens.proposalModal.statusPaddingLarge, tokens.proposalModal.statusRadius, tokens.proposalModal.successBg, tokens.proposalModal.successBorder)}>
                         <p className="text-green-500 font-bold flex items-center justify-center gap-2">
                             <Check className="w-5 h-5" /> Proposal Accepted
                         </p>
@@ -230,7 +231,7 @@ export function ProjectProposalModal({
             )}
 
             {status === 'rejected' && (
-                <div className="col-span-2 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-center">
+                <div className={cn("col-span-2 border text-center", tokens.proposalModal.statusPaddingLarge, tokens.proposalModal.statusRadius, tokens.proposalModal.errorBg, tokens.proposalModal.errorBorder)}>
                     <p className="text-red-500 font-bold flex items-center justify-center gap-2">
                         <AlertCircle className="w-5 h-5" /> Proposal Declined
                     </p>
@@ -250,13 +251,13 @@ export function ProjectProposalModal({
                     className="fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col justify-end overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-in-from-bottom-10 data-[state=open]:slide-in-from-bottom-0"
                 >
                     {/* Sheet Container */}
-                    <div className="w-full h-full flex flex-col bg-white/5 backdrop-blur-2xl px-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative mt-0 md:mt-4 md:rounded-t-[2.5rem]">
+                    <div className={cn("w-full h-full flex flex-col px-0 overflow-hidden relative mt-0 md:mt-4", tokens.proposalModal.sheetBg, tokens.proposalModal.sheetBlur, tokens.proposalModal.sheetRadius, tokens.proposalModal.sheetShadow)}>
                         {/* Top Edge Highlight */}
-                        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none" />
+                        <div className={cn("absolute top-0 inset-x-0 h-px pointer-events-none", tokens.proposalModal.highlightGradient, tokens.proposalModal.highlightOpacity)} />
 
                         {/* Fixed Close Button */}
                         <div className="absolute top-6 right-6 z-30">
-                            <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10 text-foreground" onClick={onClose}>
+                            <Button variant="ghost" size="icon" className={cn("text-foreground", tokens.proposalModal.closeButton)} onClick={onClose}>
                                 <X className="w-5 h-5" />
                             </Button>
                         </div>
@@ -268,7 +269,7 @@ export function ProjectProposalModal({
                                 {/* Header Content (Scrolls with sheet) */}
                                 <div className="mb-6 px-2">
                                     <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Review Proposal</p>
-                                    <DialogTitle className="text-4xl font-light text-foreground tracking-tight mb-6 pr-12 line-clamp-2">{serviceName}</DialogTitle>
+                                    <DialogTitle className={cn("mb-6 pr-12 line-clamp-2", tokens.proposalModal.title)}>{serviceName}</DialogTitle>
 
                                     <div className="w-full">
                                         <div className="flex flex-wrap items-center justify-between gap-y-4 gap-x-2">
