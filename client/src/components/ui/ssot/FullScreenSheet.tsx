@@ -75,7 +75,7 @@ export function FullScreenSheet({
 
                 {/* Full-Screen Sheet Shell */}
                 <DialogPrimitive.Content
-                    className={cn(tokens.sheetSecondary.content, tokens.animations.sheetSlideUp)}
+                    className={cn(tokens.sheetSecondary.content, tokens.animations.sheetSlideUp, "will-change-transform")}
                 >
                     {/* 1. Header */}
                     <header className="px-4 py-4 z-10 shrink-0 flex items-center justify-between">

@@ -16,8 +16,8 @@ export const tokens = {
     sheetSecondary: {
         overlay: "fixed inset-0 z-[100] bg-black/40 backdrop-blur-md",
         content: "fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col gap-0 overflow-hidden",
-        container: "flex-1 z-20 flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative",
-        glass: "bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)]",
+        container: "flex-1 z-20 flex flex-col bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative will-change-[backdrop-filter,transform]",
+        glass: "bg-white/5 backdrop-blur-2xl rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] will-change-[backdrop-filter]",
         highlight: "absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent",
         header: "shrink-0 pt-6 pb-4 px-6 border-b border-white/5 bg-white/[0.01] backdrop-blur-md z-10 relative"
     },

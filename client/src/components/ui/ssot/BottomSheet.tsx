@@ -76,6 +76,7 @@ export function BottomSheet({
           className={cn(
             tokens.sheetSecondary.content,
             tokens.animations.modalZoom,
+            "will-change-transform",
             className
           )}
         >
@@ -140,7 +141,7 @@ export function ActionSheet({
         <DialogPrimitive.Content
           style={{ maxHeight }}
           className={cn(
-            "fixed inset-x-0 bottom-0 z-[101] w-full outline-none",
+            "fixed inset-x-0 bottom-0 z-[101] w-full outline-none will-change-transform",
             tokens.sheetSecondary.glass,
             "p-6 pb-12 shadow-2xl space-y-6",
             tokens.animations.sheetSlideUp,

@@ -55,6 +55,8 @@ export function HalfSheet({
                                 animate={{ y: 0 }}
                                 exit={{ y: "100%" }}
                                 transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                                style={{ willChange: "transform" }}
+                                layout
                             >
                                 {/* Glass container */}
                                 <div className={cn("relative flex flex-col overflow-hidden", tokens.sheetSecondary.glass)}>
