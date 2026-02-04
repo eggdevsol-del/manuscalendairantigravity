@@ -172,6 +172,12 @@ export const tokens = {
             initial: { opacity: 0, scale: 0.95, y: 20 },
             animate: { opacity: 1, scale: 1, y: 0 },
             exit: { opacity: 0, scale: 0.95, y: 20 }
+        },
+
+        // Drag gesture configuration for swipe-to-close
+        dragGesture: {
+            threshold: 150, // Distance in pixels to trigger close
+            elastic: 0.2    // Resistance when dragging beyond bounds
         }
     }
 } as const;

@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 import { Dialog, DialogTitle } from "@/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { motion } from "framer-motion";
 
 interface BottomSheetProps {
   /** Whether the sheet is open (preferred prop name) */
@@ -72,17 +73,27 @@ export function BottomSheet({
             overlayVariant === "dark" && "bg-black/60"
           )}
         />
-        <DialogPrimitive.Content
-          className={cn(
-            tokens.sheetSecondary.content,
-            tokens.animations.sheetSlideUp,
-            "will-change-transform",
-            className
-          )}
-        >
-          {/* Accessibility: Hidden title for screen readers */}
-          <DialogTitle className="sr-only">{title}</DialogTitle>
-          {children}
+        <DialogPrimitive.Content asChild>
+          <motion.div
+            className={cn(
+              tokens.sheetSecondary.content,
+              tokens.animations.sheetSlideUp,
+              "will-change-transform",
+              className
+            )}
+            drag="y"
+            dragConstraints={{ top: 0 }}
+            dragElastic={tokens.motion.dragGesture.elastic}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > tokens.motion.dragGesture.threshold) {
+                handleOpenChange(false);
+              }
+            }}
+          >
+            {/* Accessibility: Hidden title for screen readers */}
+            <DialogTitle className="sr-only">{title}</DialogTitle>
+            {children}
+          </motion.div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </Dialog>

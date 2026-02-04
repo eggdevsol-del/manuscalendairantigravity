@@ -83,77 +83,87 @@ export function FullScreenSheet({
                         </DialogPrimitive.Overlay>
 
                         {/* Full-Screen Sheet Shell */}
-                        <DialogPrimitive.Content
-                            className={cn(tokens.sheetSecondary.content, tokens.animations.sheetSlideUp, "will-change-transform")}
-                        >
-                            {/* 1. Header */}
-                            <header className="px-4 py-4 z-10 shrink-0 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    {onBack && (
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className={cn(tokens.button.icon, "-ml-2")}
-                                            onClick={onBack}
-                                        >
-                                            <ArrowLeft className="w-5 h-5" />
-                                        </Button>
+                        <DialogPrimitive.Content asChild>
+                            <motion.div
+                                className={cn(tokens.sheetSecondary.content, tokens.animations.sheetSlideUp, "will-change-transform")}
+                                drag="y"
+                                dragConstraints={{ top: 0 }}
+                                dragElastic={tokens.motion.dragGesture.elastic}
+                                onDragEnd={(_, info) => {
+                                    if (info.offset.y > tokens.motion.dragGesture.threshold) {
+                                        onClose();
+                                    }
+                                }}
+                            >
+                                {/* 1. Header */}
+                                <header className="px-4 py-4 z-10 shrink-0 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        {onBack && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className={cn(tokens.button.icon, "-ml-2")}
+                                                onClick={onBack}
+                                            >
+                                                <ArrowLeft className="w-5 h-5" />
+                                            </Button>
+                                        )}
+                                        <DialogPrimitive.Title className={tokens.header.sheetTitle}>
+                                            {title}
+                                        </DialogPrimitive.Title>
+                                    </div>
+
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className={tokens.button.icon}
+                                        onClick={onClose}
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </Button>
+                                </header>
+
+                                {/* 2. Top Context Area */}
+                                <div className={cn(
+                                    "px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center opacity-80 transition-all duration-300",
+                                    contextHeight
+                                )}>
+                                    {contextContent ? (
+                                        contextContent
+                                    ) : (
+                                        <>
+                                            {contextTitle && (
+                                                <p className={tokens.header.contextTitle}>
+                                                    {contextTitle}
+                                                </p>
+                                            )}
+                                            {contextSubtitle && (
+                                                <p className={tokens.header.contextSubtitle}>
+                                                    {contextSubtitle}
+                                                </p>
+                                            )}
+                                        </>
                                     )}
-                                    <DialogPrimitive.Title className={tokens.header.sheetTitle}>
-                                        {title}
-                                    </DialogPrimitive.Title>
                                 </div>
 
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className={tokens.button.icon}
-                                    onClick={onClose}
-                                >
-                                    <X className="w-5 h-5" />
-                                </Button>
-                            </header>
+                                {/* 3. Glass Sheet Container */}
+                                <div className={cn("flex-1 z-20 flex flex-col relative overflow-hidden", tokens.sheetSecondary.glass)}>
+                                    {/* Light mode background gradient overlay (matches wrapper gradient at 90% opacity) */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-slate-100/90 via-purple-50/90 to-cyan-50/90 dark:hidden pointer-events-none" />
+                                    {/* Top Edge Highlight */}
+                                    <div className={cn(tokens.sheetSecondary.highlight, "opacity-50 z-10")} />
 
-                            {/* 2. Top Context Area */}
-                            <div className={cn(
-                                "px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center opacity-80 transition-all duration-300",
-                                contextHeight
-                            )}>
-                                {contextContent ? (
-                                    contextContent
-                                ) : (
-                                    <>
-                                        {contextTitle && (
-                                            <p className={tokens.header.contextTitle}>
-                                                {contextTitle}
-                                            </p>
-                                        )}
-                                        {contextSubtitle && (
-                                            <p className={tokens.header.contextSubtitle}>
-                                                {contextSubtitle}
-                                            </p>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-
-                            {/* 3. Glass Sheet Container */}
-                            <div className={cn("flex-1 z-20 flex flex-col relative overflow-hidden", tokens.sheetSecondary.glass)}>
-                                {/* Light mode background gradient overlay (matches wrapper gradient at 90% opacity) */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-slate-100/90 via-purple-50/90 to-cyan-50/90 dark:hidden pointer-events-none" />
-                                {/* Top Edge Highlight */}
-                                <div className={cn(tokens.sheetSecondary.highlight, "opacity-50 z-10")} />
-
-                                {/* Scrollable Content */}
-                                <div className={cn(
-                                    "relative z-10 flex-1 w-full h-full px-4 pt-8 overflow-y-auto mobile-scroll touch-pan-y",
-                                    className
-                                )}>
-                                    <div className="pb-32 max-w-lg mx-auto">
-                                        {children}
+                                    {/* Scrollable Content */}
+                                    <div className={cn(
+                                        "relative z-10 flex-1 w-full h-full px-4 pt-8 overflow-y-auto mobile-scroll touch-pan-y",
+                                        className
+                                    )}>
+                                        <div className="pb-32 max-w-lg mx-auto">
+                                            {children}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         </DialogPrimitive.Content>
                     </DialogPrimitive.Portal>
                 )}

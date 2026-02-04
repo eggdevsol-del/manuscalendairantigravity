@@ -61,6 +61,14 @@ export function HalfSheet({
                                 animate={tokens.motion.sheetSlide.animate}
                                 exit={tokens.motion.sheetSlide.exit}
                                 transition={tokens.motion.spring}
+                                drag="y"
+                                dragConstraints={{ top: 0 }}
+                                dragElastic={tokens.motion.dragGesture.elastic}
+                                onDragEnd={(_, info) => {
+                                    if (info.offset.y > tokens.motion.dragGesture.threshold) {
+                                        onClose();
+                                    }
+                                }}
                                 style={{ willChange: "transform" }}
                                 layout
                             >
