@@ -1108,7 +1108,7 @@ export default function Calendar() {
         overlayId="calendar.appointment_details"
         footer={
           selectedAppointment ? (
-            <div className="flex w-full gap-2 border-t border-white/10 pt-4">
+            <div className={cn("flex w-full gap-2 border-t pt-4", tokens.proposalModal.cardBorder)}>
               <Button
                 variant="destructive"
                 onClick={() => {
@@ -1127,7 +1127,7 @@ export default function Calendar() {
                   setShowAppointmentDetailDialog(false);
                   setSelectedAppointment(null);
                 }}
-                className="flex-1 bg-transparent border-white/10 hover:bg-white/5"
+                className={cn("flex-1 bg-transparent", tokens.proposalModal.cardBorder, "hover:bg-white/5")}
               >
                 Close
               </Button>
@@ -1137,8 +1137,8 @@ export default function Calendar() {
       >
         {selectedAppointment && (
           <div className="space-y-4 pt-1">
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-              <Label className="text-xs uppercase tracking-wider text-muted-foreground mb-1 block">Service</Label>
+            <div className={cn("border", tokens.proposalModal.cardBg, tokens.proposalModal.cardBorder, tokens.proposalModal.cardRadius, tokens.proposalModal.cardPadding)}>
+              <Label className={cn("mb-1 block", tokens.proposalModal.sectionLabel)}>Service</Label>
               <p className="text-xl font-bold text-foreground">{selectedAppointment.serviceName || selectedAppointment.title}</p>
             </div>
 
@@ -1162,7 +1162,7 @@ export default function Calendar() {
             {selectedAppointment.description && (
               <div>
                 <Label className="text-muted-foreground">Description</Label>
-                <p className="mt-1 text-sm bg-white/5 p-3 rounded-xl">{selectedAppointment.description}</p>
+                <p className={cn("mt-1 text-sm", tokens.proposalModal.cardBg, tokens.proposalModal.statusPadding, tokens.proposalModal.statusRadius)}>{selectedAppointment.description}</p>
               </div>
             )}
 
