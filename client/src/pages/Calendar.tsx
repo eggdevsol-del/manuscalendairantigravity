@@ -11,7 +11,7 @@ import {
   ArrowLeft,
   Clock
 } from "lucide-react";
-import { BottomSheet, LoadingState, PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
+import { BottomSheet, LoadingState, PageShell, PageHeader, GlassSheet, SegmentedHeader } from "@/components/ui/ssot";
 
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useLocation } from "wouter";
@@ -510,33 +510,25 @@ export default function Calendar() {
 
           {/* Month Navigation */}
           <div className="flex items-center justify-between">
-            <Button variant="ghost" size="icon" onClick={goToPreviousPeriod} className="rounded-full hover:bg-white/10 text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon" onClick={goToPreviousPeriod}>
               <ChevronLeft className="w-6 h-6" />
             </Button>
             <span className="text-lg font-semibold text-foreground tracking-tight">
               {currentDate.toLocaleDateString("en-US", { month: "long" })}
             </span>
-            <Button variant="ghost" size="icon" onClick={goToNextPeriod} className="rounded-full hover:bg-white/10 text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon" onClick={goToNextPeriod}>
               <ChevronRight className="w-6 h-6" />
             </Button>
           </div>
 
           {/* View Toggle */}
           <div className="flex gap-2 pb-2">
-            <Button
-              variant={viewMode === "week" ? "default" : "secondary"}
-              onClick={() => setViewMode("week")}
-              className={cn("flex-1 rounded-xl h-9", viewMode === "week" ? "" : "bg-white/5 text-muted-foreground hover:text-foreground")}
-            >
-              Week
-            </Button>
-            <Button
-              variant={viewMode === "month" ? "default" : "secondary"}
-              onClick={() => setViewMode("month")}
-              className={cn("flex-1 rounded-xl h-9", viewMode === "month" ? "" : "bg-white/5 text-muted-foreground hover:text-foreground")}
-            >
-              Month
-            </Button>
+            <SegmentedHeader
+              options={["Week", "Month"]}
+              activeIndex={viewMode === "week" ? 0 : 1}
+              onChange={(index) => setViewMode(index === 0 ? "week" : "month")}
+              className="w-full"
+            />
           </div>
 
         </div>
@@ -757,7 +749,7 @@ export default function Calendar() {
 
                   {selectedDate && isArtist && (
                     <Button
-                      size="sm" variant="ghost" className="h-6 px-2 text-primary hover:text-primary hover:bg-primary/10 -mr-2"
+                      size="sm" variant="ghost" className="h-8 text-primary"
                       onClick={() => handleDateClick(selectedDate)} // Default add (9am)
                     >
                       <Plus className="w-4 h-4 mr-1" /> Add

@@ -12,18 +12,17 @@ const buttonVariants = cva(
       variant: {
         default: tokens.button.primary,
         hero: tokens.button.hero,
-        destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60 rounded-xl px-4 py-2",
+        destructive: tokens.button.destructive,
         outline: tokens.button.outline,
         secondary: tokens.button.secondary,
         ghost: tokens.button.ghost,
-        link: "text-primary underline-offset-4 hover:underline px-0",
+        link: tokens.button.link,
       },
       size: {
-        default: "", // Sizes are now mostly handled by the tokens (h-12, h-14 etc)
+        default: "",
         sm: "h-8 rounded-md gap-1.5 px-3 text-xs",
-        lg: "h-10 rounded-md px-6 text-base",
-        icon: "size-9 rounded-full",
+        lg: tokens.button.hero, // Use hero token for LG if matches, or keep consistent
+        icon: tokens.button.icon,
         "icon-sm": "size-8 rounded-full",
         "icon-lg": "size-10 rounded-full",
       },

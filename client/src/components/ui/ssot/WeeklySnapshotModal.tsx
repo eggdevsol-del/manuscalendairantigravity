@@ -198,7 +198,7 @@ export function WeeklySnapshotModal({ open, onClose, data, isLoading }: WeeklySn
                           <span className="text-xs">Avg Response</span>
                         </div>
                         <p className="text-2xl font-bold">
-                          {data.metrics.avgConsultationResponseSeconds > 0 
+                          {data.metrics.avgConsultationResponseSeconds > 0
                             ? formatTime(data.metrics.avgConsultationResponseSeconds)
                             : '—'}
                         </p>
@@ -253,7 +253,7 @@ export function WeeklySnapshotModal({ open, onClose, data, isLoading }: WeeklySn
                       <div className="space-y-2">
                         <h3 className="text-sm font-medium text-muted-foreground">Insights</h3>
                         {data.insights.map((insight, index) => (
-                          <div 
+                          <div
                             key={index}
                             className="bg-white/5 rounded-xl p-3 text-sm"
                           >
@@ -273,8 +273,9 @@ export function WeeklySnapshotModal({ open, onClose, data, isLoading }: WeeklySn
               {/* Footer */}
               <div className="shrink-0 px-6 py-4 border-t border-white/5">
                 <Button
+                  variant="default"
                   onClick={onClose}
-                  className="w-full h-12 rounded-xl font-bold"
+                  className="w-full"
                 >
                   Got it
                 </Button>

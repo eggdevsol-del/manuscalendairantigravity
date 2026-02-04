@@ -40,7 +40,7 @@ function EmptyState({ category, onAction }: { category: string; onAction?: () =>
             </p>
             {category === 'Personal' && onAction && (
                 <div className="mt-6">
-                    <Button size="lg" onClick={onAction} className="shadow-lg shadow-primary/20 font-bold text-lg h-14 px-8 rounded-full">
+                    <Button variant="hero" onClick={onAction}>
                         Start New Challenge
                     </Button>
                 </div>
@@ -359,8 +359,7 @@ export default function Dashboard() {
                         {selectedTask.actionType !== 'none' && (
                             selectedTask.actionType === 'email' && selectedTask._serverTask ? (
                                 <Button
-                                    size="lg"
-                                    className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-primary/20"
+                                    variant="hero"
                                     onClick={() => businessActions.openEmail(selectedTask._serverTask!)}
                                 >
                                     <Mail className="mr-2 w-5 h-5" />
@@ -368,8 +367,7 @@ export default function Dashboard() {
                                 </Button>
                             ) : (
                                 <Button
-                                    size="lg"
-                                    className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-primary/20"
+                                    variant="hero"
                                     onClick={() => executeAction(selectedTask)}
                                 >
                                     {selectedTask.actionType === 'sms' && <MessageSquare className="mr-2 w-5 h-5" />}
@@ -385,9 +383,8 @@ export default function Dashboard() {
                         {/* Secondary SMS Action (if available and not primary) */}
                         {selectedTask._serverTask?.smsNumber && selectedTask._serverTask.actionType !== 'sms' && (
                             <Button
-                                size="lg"
                                 variant="secondary"
-                                className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-black/5 border border-white/5"
+                                className="w-full"
                                 onClick={() => businessActions.openSms(selectedTask._serverTask!)}
                             >
                                 <MessageSquare className="mr-2 w-5 h-5" />
@@ -398,9 +395,8 @@ export default function Dashboard() {
                         {/* Secondary Email Action (if available and not primary) */}
                         {selectedTask._serverTask?.emailRecipient && selectedTask._serverTask.actionType !== 'email' && (
                             <Button
-                                size="lg"
                                 variant="secondary"
-                                className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-black/5 border border-white/5"
+                                className="w-full"
                                 onClick={() => businessActions.openEmail(selectedTask._serverTask!)}
                             >
                                 <Mail className="mr-2 w-5 h-5" />
@@ -411,8 +407,7 @@ export default function Dashboard() {
                         {/* Task Management Actions */}
                         <Button
                             variant="secondary"
-                            size="lg"
-                            className="w-full h-14 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5"
+                            className="w-full"
                             onClick={() => handleMarkDone(selectedTask)}
                             disabled={completingTask === `${selectedTask._serverTask?.taskType}-${selectedTask._serverTask?.relatedEntityId || 'none'}`}
                         >
@@ -425,7 +420,7 @@ export default function Dashboard() {
                             <div className="grid grid-cols-2 gap-3">
                                 <Button
                                     variant="outline"
-                                    className="h-12 rounded-xl border-white/10 bg-transparent hover:bg-white/5"
+                                    className="w-full"
                                     onClick={() => handleSnooze(selectedTask)}
                                 >
                                     <Clock className="mr-2 w-4 h-4" />
@@ -433,7 +428,7 @@ export default function Dashboard() {
                                 </Button>
                                 <Button
                                     variant="outline"
-                                    className="h-12 rounded-xl border-white/10 bg-transparent hover:bg-white/5 text-muted-foreground"
+                                    className="w-full text-muted-foreground"
                                     onClick={() => handleDismiss(selectedTask)}
                                 >
                                     <X className="mr-2 w-4 h-4" />
