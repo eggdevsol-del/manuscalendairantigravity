@@ -98,9 +98,9 @@ export const tokens = {
 
     // 11. Selection Cards (Pills)
     selectionCard: {
-        base: "w-full p-4 rounded-none border transition-all text-left flex items-start gap-4 cursor-pointer group select-none",
+        base: "w-full p-4 rounded-lg border transition-all text-left flex items-start gap-4 cursor-pointer group select-none",
         selected: "bg-primary/10 border-primary/50",
-        idle: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20",
+        idle: "bg-black/5 dark:bg-white/5 border-transparent hover:bg-black/10 dark:hover:bg-white/10",
         iconContainer: {
             base: "w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-colors",
             selected: "bg-primary text-primary-foreground",
