@@ -94,5 +94,28 @@ export const tokens = {
         button: "flex-1 text-center text-lg tracking-tight transition-all duration-300 ease-out py-2 outline-none",
         active: "text-foreground font-bold opacity-100 scale-[1.02]",
         inactive: "text-muted-foreground font-medium opacity-40 hover:opacity-70 scale-[0.98]"
+    },
+
+    // 11. Selection Cards (Pills)
+    selectionCard: {
+        base: "w-full p-4 rounded-xl border transition-all text-left flex items-start gap-4 cursor-pointer group select-none",
+        selected: "bg-primary/10 border-primary/50",
+        idle: "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20",
+        iconContainer: {
+            base: "w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-colors",
+            selected: "bg-primary text-primary-foreground",
+            idle: "bg-black/10 dark:bg-white/10"
+        },
+        indicator: {
+            base: "w-8 h-8 rounded-full flex items-center justify-center border transition-all ml-4",
+            selected: "bg-primary border-primary text-primary-foreground",
+            idle: "bg-transparent border-black/20 dark:border-white/20 text-transparent group-hover:border-black/40 dark:group-hover:border-white/40"
+        },
+        title: {
+            base: "font-semibold text-base transition-colors",
+            selected: "text-primary",
+            idle: "text-foreground group-hover:text-foreground"
+        },
+        description: "text-sm text-muted-foreground mt-1"
     }
 } as const;

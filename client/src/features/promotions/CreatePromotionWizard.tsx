@@ -9,7 +9,7 @@
  */
 
 import { useState, useRef } from "react";
-import { FullScreenSheet } from "@/components/ui/ssot";
+import { FullScreenSheet, SelectionCard } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -461,39 +461,14 @@ function TypeSelectionStep({
         const isSelected = selected === t.id;
 
         return (
-          <button
+          <SelectionCard
             key={t.id}
+            selected={isSelected}
             onClick={() => onSelect(t.id)}
-            className={cn(
-              "w-full p-4 rounded-xl border transition-all text-left flex items-start gap-4",
-              isSelected
-                ? "bg-primary/10 border-primary/50"
-                : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10"
-            )}
-          >
-            <div className={cn(
-              "w-12 h-12 rounded-full flex items-center justify-center shrink-0",
-              isSelected ? "bg-primary text-primary-foreground" : "bg-black/10 dark:bg-white/10"
-            )}>
-              <Icon className="w-6 h-6" />
-            </div>
-            <div className="flex-1">
-              <h3 className={cn(
-                "font-semibold text-base",
-                isSelected ? "text-primary" : "text-foreground"
-              )}>
-                {t.title}
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                {t.description}
-              </p>
-            </div>
-            {isSelected && (
-              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0">
-                <Check className="w-4 h-4 text-primary-foreground" />
-              </div>
-            )}
-          </button>
+            icon={Icon}
+            title={t.title}
+            description={t.description}
+          />
         );
       })}
     </div>

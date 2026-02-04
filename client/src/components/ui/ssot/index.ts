@@ -20,3 +20,4 @@ export { FullScreenSheet } from "./FullScreenSheet";
 export { HalfSheet } from "./HalfSheet";
 export { WeeklySnapshotModal } from "./WeeklySnapshotModal";
 export { NavActionButton, type NavActionButtonProps } from "./NavActionButton";
+export { SelectionCard, type SelectionCardProps } from "./SelectionCard";

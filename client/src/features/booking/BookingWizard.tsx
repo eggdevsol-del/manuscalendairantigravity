@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { FullScreenSheet } from "@/components/ui/ssot";
+import { FullScreenSheet, SelectionCard } from "@/components/ui/ssot";
 
 type WizardStep = 'service' | 'frequency' | 'review' | 'manual' | 'success';
 
@@ -19,53 +19,6 @@ interface BookingWizardProps {
     onBookingSuccess: () => void;
     overlayName?: string;
     overlayId?: string;
-}
-
-// -- Canonical Components --
-
-function SelectableCard({
-    selected,
-    onClick,
-    title,
-    subtitle,
-    children,
-    rightElement
-}: {
-    selected: boolean;
-    onClick: () => void;
-    title: string;
-    subtitle?: React.ReactNode;
-    children?: React.ReactNode;
-    rightElement?: React.ReactNode;
-}) {
-    return (
-        <div
-            className={cn(
-                "p-4 border rounded-xl transition-all duration-300 cursor-pointer flex items-center justify-between group",
-                selected
-                    ? "bg-primary/10 border-primary/50"
-                    : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/20"
-            )}
-            onClick={onClick}
-        >
-            <div className="flex-1">
-                <h3 className={cn("font-semibold text-base transition-colors", selected ? "text-primary" : "text-foreground group-hover:text-foreground")}>
-                    {title}
-                </h3>
-                {subtitle && <div className="text-xs text-muted-foreground mt-0.5">{subtitle}</div>}
-                {children}
-            </div>
-
-            <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center border transition-all ml-4",
-                selected
-                    ? "bg-primary border-primary text-primary-foreground"
-                    : "bg-transparent border-black/20 dark:border-white/20 text-transparent group-hover:border-black/40 dark:group-hover:border-white/40"
-            )}>
-                {rightElement || <Check className="w-4 h-4" />}
-            </div>
-        </div>
-    );
 }
 
 export function BookingWizard({ isOpen, onClose, conversationId, artistServices, artistSettings, onBookingSuccess }: BookingWizardProps) {
@@ -226,7 +179,7 @@ export function BookingWizard({ isOpen, onClose, conversationId, artistServices,
                 {step === 'service' && (
                     <div className="space-y-3">
                         {artistServices.map(service => (
-                            <SelectableCard
+                            <SelectionCard
                                 key={service.id || service.name}
                                 selected={!!selectedService && (
                                     (selectedService.id && selectedService.id === service.id) ||
@@ -237,7 +190,7 @@ export function BookingWizard({ isOpen, onClose, conversationId, artistServices,
                                     setTimeout(() => setStep('frequency'), 200);
                                 }}
                                 title={service.name}
-                                subtitle={
+                                description={
                                     <div className="flex gap-3 text-xs text-muted-foreground font-mono">
                                         <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {service.duration}m</span>
                                         <span className={cn("font-bold", (selectedService && (
@@ -247,7 +200,6 @@ export function BookingWizard({ isOpen, onClose, conversationId, artistServices,
                                         <span>• {service.sittings || 1} sitting{(service.sittings || 1) > 1 ? 's' : ''}</span>
                                     </div>
                                 }
-                                rightElement={<Check className="w-4 h-4" />}
                             />
                         ))}
                     </div>
@@ -264,12 +216,12 @@ export function BookingWizard({ isOpen, onClose, conversationId, artistServices,
                                 { id: 'biweekly', label: 'Bi-Weekly', sub: 'Every two weeks' },
                                 { id: 'monthly', label: 'Monthly', sub: 'Once a month' }
                             ].map((opt) => (
-                                <SelectableCard
+                                <SelectionCard
                                     key={opt.id}
                                     selected={frequency === opt.id}
                                     onClick={() => setFrequency(opt.id as any)}
                                     title={opt.label}
-                                    subtitle={opt.sub}
+                                    description={opt.sub}
                                     rightElement={frequency === opt.id ? <div className="w-2.5 h-2.5 rounded-full bg-primary" /> : <div />}
                                 />
                             ))}
