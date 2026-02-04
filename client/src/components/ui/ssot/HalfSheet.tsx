@@ -44,17 +44,23 @@ export function HalfSheet({
                     <DialogPrimitive.Portal forceMount>
                         {/* Backdrop */}
                         <DialogPrimitive.Overlay asChild>
-                            <div className={tokens.sheetSecondary.overlay} />
+                            <motion.div
+                                className={tokens.sheetSecondary.overlay}
+                                initial={tokens.motion.overlayFade.initial}
+                                animate={tokens.motion.overlayFade.animate}
+                                exit={tokens.motion.overlayFade.exit}
+                                transition={tokens.motion.spring}
+                            />
                         </DialogPrimitive.Overlay>
 
                         {/* Sheet */}
                         <DialogPrimitive.Content asChild>
                             <motion.div
                                 className="fixed inset-x-0 bottom-0 z-[101] flex flex-col"
-                                initial={{ y: "100%" }}
-                                animate={{ y: 0 }}
-                                exit={{ y: "100%" }}
-                                transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                                initial={tokens.motion.sheetSlide.initial}
+                                animate={tokens.motion.sheetSlide.animate}
+                                exit={tokens.motion.sheetSlide.exit}
+                                transition={tokens.motion.spring}
                                 style={{ willChange: "transform" }}
                                 layout
                             >

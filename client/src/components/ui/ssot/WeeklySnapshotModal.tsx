@@ -8,6 +8,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, TrendingUp, Clock, CheckCircle2, Zap, Award, Target, ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { tokens } from "@/ui/tokens";
 
 interface WeeklySnapshotData {
   weekStart: string;
@@ -108,7 +109,7 @@ export function WeeklySnapshotModal({ open, onClose, data, isLoading }: WeeklySn
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            transition={tokens.motion.springModal}
             className="fixed inset-x-4 top-[10%] bottom-[10%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-md z-50 flex flex-col"
           >
             <div className="bg-background/95 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl flex flex-col h-full overflow-hidden">

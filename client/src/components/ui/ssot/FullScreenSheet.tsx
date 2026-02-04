@@ -25,6 +25,7 @@
  */
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, X } from "lucide-react";
 import { tokens } from "@/ui/tokens";
@@ -69,9 +70,15 @@ export function FullScreenSheet({
         <DialogPrimitive.Root open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
             <DialogPrimitive.Portal>
                 {/* Backdrop: Subtle Blur + Dim */}
-                <DialogPrimitive.Overlay
-                    className={tokens.sheetSecondary.overlay}
-                />
+                <DialogPrimitive.Overlay asChild>
+                    <motion.div
+                        className={tokens.sheetSecondary.overlay}
+                        initial={tokens.motion.overlayFade.initial}
+                        animate={tokens.motion.overlayFade.animate}
+                        exit={tokens.motion.overlayFade.exit}
+                        transition={tokens.motion.spring}
+                    />
+                </DialogPrimitive.Overlay>
 
                 {/* Full-Screen Sheet Shell */}
                 <DialogPrimitive.Content

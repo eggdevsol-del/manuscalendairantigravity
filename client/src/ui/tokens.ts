@@ -129,5 +129,43 @@ export const tokens = {
         sheetSlideUp: "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom-full data-[state=open]:slide-in-from-bottom-full duration-500 ease-in-out",
         sheetSlideSide: "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-right-4 data-[state=open]:slide-in-from-right-4",
         modalZoom: "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+    },
+
+    // 13. Framer Motion Variants (SSOT for framer-motion animations)
+    motion: {
+        // Standard spring transition for smooth, natural motion
+        spring: {
+            type: "spring" as const,
+            damping: 30,
+            stiffness: 300
+        },
+
+        // Softer spring for modals and overlays
+        springModal: {
+            type: "spring" as const,
+            damping: 25,
+            stiffness: 300
+        },
+
+        // Sheet slide-up animation
+        sheetSlide: {
+            initial: { y: "100%" },
+            animate: { y: 0 },
+            exit: { y: "100%" }
+        },
+
+        // Overlay fade animation (synchronized with sheet)
+        overlayFade: {
+            initial: { opacity: 0 },
+            animate: { opacity: 1 },
+            exit: { opacity: 0 }
+        },
+
+        // Modal zoom animation
+        modalZoomVariant: {
+            initial: { opacity: 0, scale: 0.95, y: 20 },
+            animate: { opacity: 1, scale: 1, y: 0 },
+            exit: { opacity: 0, scale: 0.95, y: 20 }
+        }
     }
 } as const;
