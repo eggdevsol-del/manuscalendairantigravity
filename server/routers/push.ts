@@ -32,6 +32,9 @@ export const pushRouter = router({
             userAgent: z.string().optional(),
         }))
         .mutation(async ({ ctx, input }) => {
+            const db = await getDb();
+            if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
             // Check if subscription exists
             const existing = await db.query.pushSubscriptions.findFirst({
                 where: and(
@@ -63,6 +66,9 @@ export const pushRouter = router({
             endpoint: z.string(),
         }))
         .mutation(async ({ ctx, input }) => {
+            const db = await getDb();
+            if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
             await db.delete(pushSubscriptions)
                 .where(
                     and(
@@ -78,6 +84,9 @@ export const pushRouter = router({
             targetUserId: z.string().optional(),
         }))
         .mutation(async ({ ctx, input }) => {
+            const db = await getDb();
+            if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
             const targetId = input.targetUserId || ctx.user.id;
 
             const subs = await db.query.pushSubscriptions.findMany({
