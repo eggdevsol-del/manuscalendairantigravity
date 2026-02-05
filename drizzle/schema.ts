@@ -1201,3 +1201,15 @@ export const promotionRedemptionsRelations = relations(promotionRedemptions, ({ 
 		references: [appointments.id],
 	}),
 }));
+
+export const pushSubscriptions = mysqlTable("push_subscriptions", {
+	id: int().autoincrement().notNull(),
+	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	endpoint: varchar({ length: 500 }).notNull(),
+	keys: text("keys").notNull(), // JSON { p256dh, auth }
+	userAgent: varchar({ length: 255 }),
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	primaryKey({ columns: [table.id], name: "push_subscriptions_id" }),
+	index("user_id_idx").on(table.userId),
+]);
