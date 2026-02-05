@@ -79,7 +79,7 @@ export const pushRouter = router({
             return { success: true };
         }),
 
-    test: adminProcedure
+    test: protectedProcedure
         .input(z.object({
             targetUserId: z.string().optional(),
         }))
@@ -87,7 +87,10 @@ export const pushRouter = router({
             const db = await getDb();
             if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
 
-            const targetId = input.targetUserId || ctx.user.id;
+            // Only admin can target other users
+            const targetId = (ctx.user.role === 'admin' && input.targetUserId)
+                ? input.targetUserId
+                : ctx.user.id;
 
             const subs = await db.query.pushSubscriptions.findMany({
                 where: eq(pushSubscriptions.userId, targetId),
