@@ -4,7 +4,7 @@ import webpush from "web-push";
 import { z } from "zod";
 import { pushSubscriptions } from "../../drizzle/schema";
 import { adminProcedure, protectedProcedure, router } from "../_core/trpc";
-import { db } from "../services/core";
+import { getDb } from "../services/core";
 
 // Initialize VAPID
 const publicVapidKey = process.env.VAPID_PUBLIC_KEY;
