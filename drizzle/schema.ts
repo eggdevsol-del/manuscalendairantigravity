@@ -240,16 +240,6 @@ export const portfolioLikes = mysqlTable("portfolio_likes", {
 	unique("user_portfolio_like").on(table.userId, table.portfolioId),
 ]);
 
-export const pushSubscriptions = mysqlTable("pushSubscriptions", {
-	id: int().autoincrement().notNull(),
-	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
-	endpoint: text().notNull(),
-	keys: text().notNull(),
-	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
-},
-	(table) => [
-		primaryKey({ columns: [table.id], name: "pushSubscriptions_id" }),
-	]);
 
 export const quickActionButtons = mysqlTable("quickActionButtons", {
 	id: int().autoincrement().notNull(),
