@@ -212,6 +212,46 @@ export default function LeadDetail() {
                     </div>
                   </div>
                 )}
+
+                {/* Images */}
+                {(lead.referenceImages || lead.bodyPlacementImages) && (
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 p-1.5 rounded-full bg-white/5">
+                      <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
+                    <div className="w-full">
+                      <p className="text-xs text-muted-foreground mb-2">Reference & Placement</p>
+
+                      {/* Reference Images */}
+                      {lead.referenceImages && (
+                        <div className="mb-3">
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">References</p>
+                          <div className="grid grid-cols-4 gap-2">
+                            {(Array.isArray(lead.referenceImages) ? lead.referenceImages : JSON.parse(lead.referenceImages || '[]')).map((img: string, i: number) => (
+                              <div key={i} className="aspect-square rounded-md overflow-hidden bg-white/5 border border-white/10 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.open(img, '_blank')}>
+                                <img src={img} alt="Reference" className="w-full h-full object-cover" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Placement Images */}
+                      {lead.bodyPlacementImages && (
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Placement</p>
+                          <div className="grid grid-cols-4 gap-2">
+                            {(Array.isArray(lead.bodyPlacementImages) ? lead.bodyPlacementImages : JSON.parse(lead.bodyPlacementImages || '[]')).map((img: string, i: number) => (
+                              <div key={i} className="aspect-square rounded-md overflow-hidden bg-white/5 border border-white/10 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.open(img, '_blank')}>
+                                <img src={img} alt="Placement" className="w-full h-full object-cover" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
 
