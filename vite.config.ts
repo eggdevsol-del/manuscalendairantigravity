@@ -48,16 +48,15 @@ const plugins = [
 const packageVersion = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, 'package.json'), 'utf-8')).version;
 
 export default defineConfig({
-  plugins,
-  define: {
-    '__APP_VERSION__': JSON.stringify(packageVersion),
-  },
-  // Replace %VITE_APP_VERSION% in HTML with actual version
-  html: {
-    transform(html) {
-      return html.replace(/%VITE_APP_VERSION%/g, packageVersion);
-    }
-  },
+  plugins: [
+    ...plugins,
+    {
+      name: 'html-transform',
+      transformIndexHtml(html) {
+        return html.replace(/%VITE_APP_VERSION%/g, packageVersion);
+      },
+    },
+  ],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
