@@ -19,6 +19,7 @@ import { funnelRouter } from "./funnel";
 import { portfolioRouter } from "./portfolio";
 import { walletRouter } from "./wallet";
 import { promotionsRouter } from "./promotions";
+import { pushRouter } from "./push";
 
 export const appRouter = router({
     appointments: appointmentsRouter,
@@ -40,6 +41,7 @@ export const appRouter = router({
     upload: uploadRouter,
     wallet: walletRouter,
     promotions: promotionsRouter,
+    push: pushRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -1,0 +1,133 @@
+import { useState, useEffect, useCallback } from 'react';
+import { trpc } from '@/lib/trpc';
+import { toast } from 'sonner';
+
+// Helper to convert VAPID key
+function urlBase64ToUint8Array(base64String: string) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+export type WebPushStatus = 'default' | 'granted' | 'denied' | 'unsupported' | 'loading';
+
+export function useWebPush() {
+    const [status, setStatus] = useState<WebPushStatus>('loading');
+    const [subscription, setSubscription] = useState<PushSubscription | null>(null);
+    const [isSubscribing, setIsSubscribing] = useState(false);
+
+    // tRPC mutations
+    const subscribeMutation = trpc.push.subscribe.useMutation();
+    const unsubscribeMutation = trpc.push.unsubscribe.useMutation();
+    const testPushMutation = trpc.push.test.useMutation();
+    const publicKeyQuery = trpc.push.getPublicKey.useQuery(undefined, {
+        enabled: false, // Only fetch on demand
+        staleTime: Infinity,
+    });
+
+    // Check support and current status
+    useEffect(() => {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            setStatus('unsupported');
+            return;
+        }
+
+        // Check permission
+        if (Notification.permission === 'denied') {
+            setStatus('denied');
+        } else if (Notification.permission === 'granted') {
+            setStatus('granted');
+        } else {
+            setStatus('default');
+        }
+
+        // Check if already subscribed
+        navigator.serviceWorker.ready.then(registration => {
+            registration.pushManager.getSubscription().then(sub => {
+                setSubscription(sub);
+            });
+        });
+    }, []);
+
+    const subscribe = useCallback(async () => {
+        if (status === 'unsupported' || status === 'denied') return;
+
+        setIsSubscribing(true);
+        try {
+            // 1. Request Permission
+            const permission = await Notification.requestPermission();
+            if (permission === 'denied') {
+                setStatus('denied');
+                throw new Error('Permission denied');
+            }
+            setStatus('granted');
+
+            // 2. Get Public Key from server
+            const { data: keyData } = await publicKeyQuery.refetch();
+            if (!keyData?.publicKey) {
+                throw new Error('VAPID public key not configured on server');
+            }
+
+            // 3. Register with PushManager
+            const registration = await navigator.serviceWorker.ready;
+            const sub = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(keyData.publicKey),
+            });
+
+            // 4. Send to backend
+            const p256dh = sub.getKey('p256dh');
+            const auth = sub.getKey('auth');
+
+            if (!p256dh || !auth) throw new Error('Failed to generate keys');
+
+            await subscribeMutation.mutateAsync({
+                endpoint: sub.endpoint,
+                keys: {
+                    p256dh: btoa(String.fromCharCode(...new Uint8Array(p256dh))),
+                    auth: btoa(String.fromCharCode(...new Uint8Array(auth))),
+                },
+                userAgent: navigator.userAgent,
+            });
+
+            setSubscription(sub);
+            toast.success('Notifications enabled!');
+        } catch (error: any) {
+            console.error('Subscription failed', error);
+            toast.error('Failed to enable notifications: ' + error.message);
+        } finally {
+            setIsSubscribing(false);
+        }
+    }, [status, publicKeyQuery, subscribeMutation]);
+
+    const sendTestPush = useCallback(async () => {
+        try {
+            const result = await testPushMutation.mutateAsync({});
+            if (result.success) {
+                toast.success(`Sent test push to ${result.results?.length} devices`);
+            } else {
+                toast.error('Failed to send test push: ' + result.message);
+            }
+        } catch (error: any) {
+            toast.error('Test push error: ' + error.message);
+        }
+    }, [testPushMutation]);
+
+    return {
+        status,
+        subscription,
+        subscribe,
+        isSubscribing,
+        sendTestPush,
+        isTesting: testPushMutation.isPending
+    };
+}

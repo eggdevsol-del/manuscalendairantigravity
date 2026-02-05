@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { WebPushSettings } from "@/components/WebPushSettings";
 
 interface ClientProfileSheetProps {
     isOpen: boolean;
@@ -101,6 +102,8 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
                                             : "Not set"}
                                     </p>
                                 </div>
+
+                                <WebPushSettings />
                             </div>
                         </TabsContent>
 
