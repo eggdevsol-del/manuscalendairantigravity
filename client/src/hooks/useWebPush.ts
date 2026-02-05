@@ -92,42 +92,60 @@ export function useWebPush() {
 
             await subscribeMutation.mutateAsync({
                 endpoint: sub.endpoint,
-                keys: {
-                    p256dh: btoa(String.fromCharCode(...new Uint8Array(p256dh))),
-                    auth: btoa(String.fromCharCode(...new Uint8Array(auth))),
-                },
-                userAgent: navigator.userAgent,
+
+                // Safe conversion for TS downlevelIteration
+                function arrayBufferToBase64(buffer: ArrayBuffer | null) {
+                    if(!buffer) return '';
+                    const binary = new Uint8Array(buffer);
+                    let str = '';
+                    for(let i = 0; i<binary.length; i++) {
+                str += String.fromCharCode(binary[i]);
+            }
+            return btoa(str);
+        }
+
+// ... inside hook ...
+
+            await subscribeMutation.mutateAsync({
+            endpoint: sub.endpoint,
+            keys: {
+                p256dh: arrayBufferToBase64(p256dh),
+                auth: arrayBufferToBase64(auth),
+            },
+            userAgent: navigator.userAgent,
+        });
+        userAgent: navigator.userAgent,
             });
 
-            setSubscription(sub);
-            toast.success('Notifications enabled!');
-        } catch (error: any) {
-            console.error('Subscription failed', error);
-            toast.error('Failed to enable notifications: ' + error.message);
-        } finally {
-            setIsSubscribing(false);
-        }
+    setSubscription(sub);
+    toast.success('Notifications enabled!');
+} catch (error: any) {
+    console.error('Subscription failed', error);
+    toast.error('Failed to enable notifications: ' + error.message);
+} finally {
+    setIsSubscribing(false);
+}
     }, [status, publicKeyQuery, subscribeMutation]);
 
-    const sendTestPush = useCallback(async () => {
-        try {
-            const result = await testPushMutation.mutateAsync({});
-            if (result.success) {
-                toast.success(`Sent test push to ${result.results?.length} devices`);
-            } else {
-                toast.error('Failed to send test push: ' + result.message);
-            }
-        } catch (error: any) {
-            toast.error('Test push error: ' + error.message);
+const sendTestPush = useCallback(async () => {
+    try {
+        const result = await testPushMutation.mutateAsync({});
+        if (result.success) {
+            toast.success(`Sent test push to ${result.results?.length} devices`);
+        } else {
+            toast.error('Failed to send test push: ' + result.message);
         }
-    }, [testPushMutation]);
+    } catch (error: any) {
+        toast.error('Test push error: ' + error.message);
+    }
+}, [testPushMutation]);
 
-    return {
-        status,
-        subscription,
-        subscribe,
-        isSubscribing,
-        sendTestPush,
-        isTesting: testPushMutation.isPending
-    };
+return {
+    status,
+    subscription,
+    subscribe,
+    isSubscribing,
+    sendTestPush,
+    isTesting: testPushMutation.isPending
+};
 }

@@ -1155,6 +1155,8 @@ export type InsertIssuedPromotion = InferInsertModel<typeof issuedPromotions>;
 export type SelectIssuedPromotion = InferSelectModel<typeof issuedPromotions>;
 export type InsertPromotionRedemption = InferInsertModel<typeof promotionRedemptions>;
 export type SelectPromotionRedemption = InferSelectModel<typeof promotionRedemptions>;
+export type InsertPushSubscription = InferInsertModel<typeof pushSubscriptions>;
+export type SelectPushSubscription = InferSelectModel<typeof pushSubscriptions>;
 
 // Relations for promotion tables
 export const promotionTemplatesRelations = relations(promotionTemplates, ({ one, many }) => ({
