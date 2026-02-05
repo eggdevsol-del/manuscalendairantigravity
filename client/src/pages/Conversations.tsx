@@ -7,10 +7,16 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/
 import { LoadingState, PageShell, GlassSheet, PageHeader, ConversationCard, ConsultationCard } from "@/components/ui/ssot";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { useArtistReferral } from "@/features/chat/useArtistReferral";
+import { tokens } from "@/ui/tokens";
+import { cn } from "@/lib/utils";
 
 export default function Conversations() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
+
+  // Handle referrals
+  useArtistReferral();
 
   const { data: conversations, isLoading } = trpc.conversations.list.useQuery(undefined, {
     enabled: !!user,
@@ -28,38 +34,12 @@ export default function Conversations() {
 
   const [isConsultationsOpen, setIsConsultationsOpen] = useState(true);
 
-  const createConversationMutation = trpc.conversations.getOrCreate.useMutation({
-    onSuccess: (conversation) => {
-      if (conversation) {
-        setLocation(`/chat/${conversation.id}`);
-      }
-    },
-  });
-
-  const utils = trpc.useUtils();
-
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!loading && !user) {
       setLocation("/login");
     }
   }, [user, loading, setLocation]);
-
-  // Handle artist referral link
-  useEffect(() => {
-    if (user && user.role === 'client') {
-      const params = new URLSearchParams(window.location.search);
-      const refArtistId = params.get('ref');
-
-      if (refArtistId && user.id) {
-        createConversationMutation.mutate({
-          artistId: refArtistId,
-          clientId: user.id
-        });
-        window.history.replaceState({}, '', '/conversations');
-      }
-    }
-  }, [user]);
 
   if (loading || isLoading) {
     return <LoadingState message="Loading messages..." fullScreen />;
@@ -74,10 +54,10 @@ export default function Conversations() {
       <PageHeader title="Messages" />
 
       {/* 2. Top Context Area (Non-interactive) */}
-      <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
-        <p className="text-4xl font-light text-foreground/90 tracking-tight">Inbox</p>
+      <div className={cn(tokens.spacing.containerPadding, "pt-4 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80")}>
+        <p className={tokens.header.contextTitle}>Inbox</p>
         <div className="flex items-center gap-3 mt-1">
-          <span className="text-muted-foreground text-lg font-medium">
+          <span className={tokens.header.contextSubtitle}>
             {unreadTotal > 0 ? `${unreadTotal} Unread` : "All caught up"}
           </span>
           {unreadTotal > 0 && (
@@ -87,7 +67,7 @@ export default function Conversations() {
       </div>
 
       {/* 3. Sheet Container */}
-      <GlassSheet className="bg-white/5">
+      <GlassSheet>
 
         {/* Sheet Header (Optional Actions) */}
         <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5 flex justify-end">
@@ -96,7 +76,7 @@ export default function Conversations() {
             <Button
               size="sm"
               variant="ghost"
-              className="text-muted-foreground hover:text-foreground gap-2"
+              className={cn(tokens.button.ghost, "text-muted-foreground hover:text-foreground gap-2")}
               onClick={() => setLocation("/consultations")}
             >
               <Calendar className="w-4 h-4" />
@@ -117,7 +97,7 @@ export default function Conversations() {
                 className="mb-6 space-y-2"
               >
                 <div className="flex items-center justify-between px-2 mb-3">
-                  <h2 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">Consultation Requests</h2>
+                  <h2 className={tokens.header.sectionTitle}>Consultation Requests</h2>
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" size="sm" className="w-8 h-8 p-0 rounded-full hover:bg-white/10 text-muted-foreground">
                       <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isConsultationsOpen ? '' : '-rotate-90'}`} />
