@@ -18,9 +18,11 @@ export default function Conversations() {
   // Handle referrals
   useArtistReferral();
 
-  const { data: conversations, isLoading } = trpc.conversations.list.useQuery(undefined, {
+  const { data: conversations, isLoading, isPending } = trpc.conversations.list.useQuery(undefined, {
     enabled: !!user,
     refetchInterval: 10000,
+    // Fix: Ensure we use cache even if network is slow (PWA optimization)
+    staleTime: 5000,
   });
 
   // Get new leads from funnel for artists
@@ -41,7 +43,10 @@ export default function Conversations() {
     }
   }, [user, loading, setLocation]);
 
-  if (loading || isLoading) {
+  // Combined loading state: Auth loading OR Query loading (initial fetch)
+  const isPageLoading = loading || (isLoading && !conversations);
+
+  if (isPageLoading) {
     return <LoadingState message="Loading messages..." fullScreen />;
   }
 
@@ -86,8 +91,8 @@ export default function Conversations() {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y">
-          <div className="pb-32 max-w-lg mx-auto space-y-4">
+        <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y will-change-scroll transform-gpu">
+          <div className="pb-32 max-w-lg mx-auto space-y-4 min-h-[50vh]">
 
             {/* Consultation Requests from Funnel */}
             {isArtist && leadsData?.leads && leadsData.leads.length > 0 && (
