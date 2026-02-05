@@ -48,6 +48,9 @@ const plugins = [
 const packageVersion = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, 'package.json'), 'utf-8')).version;
 
 export default defineConfig({
+  define: {
+    '__APP_VERSION__': JSON.stringify(packageVersion),
+  },
   plugins: [
     ...plugins,
     {
