@@ -1,0 +1,56 @@
+flowchart TD
+    subgraph SSOT_UI ["SSOT UI Layer"]
+        PageShell["PageShell (Layout Root)"]
+        GlassSheet["GlassSheet (Surface Element)"]
+        PageHeader["PageHeader (Contextual Title)"]
+        BottomNav["BottomNav (Action Registry)"]
+        
+        subgraph SHEETS ["Sheet System"]
+            FullScreenSheet["FullScreenSheet"]
+            HalfSheet["HalfSheet"]
+            BottomSheet["BottomSheet"]
+        end
+        
+        subgraph COMPONENTS ["Common Components"]
+            ConsultationCard["ConsultationCard"]
+            ConversationCard["ConversationCard"]
+            TaskCard["TaskCard"]
+        end
+    end
+
+    subgraph FLOW_ENGINE ["SSOT Flow Engine"]
+        FlowDefinition["FlowDefinition (JSON)"]
+        StepTypes["Step Types (Intent, Style, etc.)"]
+        RulesGuards["Rules & Guards (Time/Budget)"]
+    end
+
+    subgraph STATE ["SSOT State Layer"]
+        flow_state["flow_state (TanStack Query)"]
+        auth_state["auth_state (Auth Context)"]
+        ui_state["ui_state (BottomNav Context)"]
+    end
+
+    subgraph DATA_MODELS ["SSOT Data Layer (DB Entities)"]
+        Artists["Artists"]
+        Clients["Clients"]
+        Consults["Consults"]
+        Tags["Tags"]
+        Bookings["Bookings"]
+        Deposits["Deposits"]
+        Messages["Messages"]
+        Promotions["Promotions"]
+    end
+
+    subgraph INTEGRATIONS ["SSOT Integrations"]
+        Comms["Email/SMS/Push Provider"]
+        Payments["Payments Provider"]
+        Calendar["Calendar Sync Provider"]
+    end
+
+    %% Relationships
+    SSOT_UI --> SSOT_STATE
+    FLOW_ENGINE --> flow_state
+    flow_state --> SSOT_UI
+    SSOT_STATE --> DATA_MODELS
+    DATA_MODELS --> INTEGRATIONS
+    DATA_MODELS --> SSOT_UI

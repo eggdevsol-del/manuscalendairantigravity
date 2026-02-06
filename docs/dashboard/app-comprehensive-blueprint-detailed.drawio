@@ -1,0 +1,176 @@
+<mxfile host="Electron" modified="2024-03-22T00:00:00.000Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.6.8 Chrome/114.0.5735.289 Electron/25.5.0 Safari/537.36" version="21.6.8" type="device">
+  <diagram id="app-comp-blueprint-v2" name="Extreme Detail App Blueprint">
+    <mxGraphModel dx="1422" dy="798" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="2339" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Legend Section -->
+        <mxCell id="legend-bg" value="LEGEND" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#f5f5f5;strokeColor=#666666;" parent="1" vertex="1">
+          <mxGeometry x="40" y="40" width="220" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-ssot" value="[SSOT] COMPONENT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;strokeWidth=3" parent="legend-bg" vertex="1">
+          <mxGeometry x="20" y="40" width="180" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-logic" value="Logic / Handler" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="legend-bg" vertex="1">
+          <mxGeometry x="20" y="90" width="180" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-api" value="tRPC / API" style="shape=parallelogram;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="legend-bg" vertex="1">
+          <mxGeometry x="20" y="140" width="180" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- DASHBOARD HUB -->
+        <mxCell id="section-dash" value="DASHBOARD PAGE (/dashboard)" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#f8f9fa;strokeColor=#343a40;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="40" y="300" width="1500" height="500" as="geometry" />
+        </mxCell>
+        
+        <!-- Logic Swimlane -->
+        <mxCell id="dash-logic" value="LOGIC" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;" parent="section-dash" vertex="1">
+          <mxGeometry x="20" y="60" width="400" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="l-dash-mount" value="useBusinessTasks()&#xa;[client/src/features/dashboard/useBusinessTasks.ts]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="dash-logic" vertex="1">
+          <mxGeometry x="20" y="40" width="360" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="l-dash-handler1" value="handleTaskClick(task)&#xa;1. SET selectedTask&#xa;2. CALL businessActions.startTask()&#xa;3. SHOW TaskSheet" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=10" parent="dash-logic" vertex="1">
+          <mxGeometry x="20" y="120" width="360" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="l-dash-handler2" value="executeAction(actionType)&#xa;SWITCH:&#xa;- sms: openSms()&#xa;- email: openEmail()&#xa;- in_app: navigateToTask()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=10" parent="dash-logic" vertex="1">
+          <mxGeometry x="20" y="220" width="360" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- UI Tree Swimlane -->
+        <mxCell id="dash-ui" value="UI TREE" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="section-dash" vertex="1">
+          <mxGeometry x="440" y="60" width="600" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-dash-root" value="[SSOT] PageShell" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;strokeWidth=2" parent="dash-ui" vertex="1">
+          <mxGeometry x="20" y="40" width="560" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-dash-header" value="[SSOT] PageHeader (title='Dashboard')" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" parent="ui-dash-root" vertex="1">
+          <mxGeometry x="20" y="40" width="520" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-dash-seg" value="[SSOT] SegmentedHeader (options=['Business', 'Social', 'Personal'])" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" parent="ui-dash-root" vertex="1">
+          <mxGeometry x="20" y="100" width="520" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-dash-card" value="[SSOT] TaskCard [LIST]&#xa;Props: task={t}, onClick={handleTaskClick}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" parent="ui-dash-root" vertex="1">
+          <mxGeometry x="20" y="170" width="520" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- API Swimlane -->
+        <mxCell id="dash-api" value="API" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="section-dash" vertex="1">
+          <mxGeometry x="1060" y="60" width="420" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="api-dash-q1" value="Query: trpc.dashboardTasks.getBusinessTasks&#xa;Server: server/routers/dashboardTasks.ts" style="shape=parallelogram;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="dash-api" vertex="1">
+          <mxGeometry x="20" y="40" width="380" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="api-dash-m1" value="Mutation: trpc.dashboardTasks.completeTask&#xa;Side Effect: Toast Success + Refetch" style="shape=parallelogram;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="dash-api" vertex="1">
+          <mxGeometry x="20" y="120" width="380" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- CHAT FLOW (/chat/:id) -->
+        <mxCell id="section-chat" value="CHAT PAGE (/chat/:id)" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#f8f9fa;strokeColor=#343a40;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="40" y="850" width="1500" height="500" as="geometry" />
+        </mxCell>
+        <mxCell id="chat-logic" value="LOGIC" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;" parent="section-chat" vertex="1">
+          <mxGeometry x="20" y="60" width="400" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="l-chat-ctrl" value="useChatController(id)&#xa;[client/src/features/chat/useChatController.ts]&#xa;Managed State: messages, text, attachment preview" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="chat-logic" vertex="1">
+          <mxGeometry x="20" y="40" width="360" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="l-chat-send" value="handleSendMessage()&#xa;1. TRPC: trpc.messages.create&#xa;2. CLEAR messageText&#xa;3. SCROLL to bottom" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=10" parent="chat-logic" vertex="1">
+          <mxGeometry x="20" y="140" width="360" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="chat-ui" value="UI TREE" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="section-chat" vertex="1">
+          <mxGeometry x="440" y="60" width="600" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-chat-root" value="[SSOT] PageShell" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;strokeWidth=2" parent="chat-ui" vertex="1">
+          <mxGeometry x="20" y="40" width="560" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-chat-msgs" value="[SSOT] ScrollArea (Chat Window)&#xa;Children: ProjectProposalMessage[CUSTOM], MessagePills" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="ui-chat-root" vertex="1">
+          <mxGeometry x="20" y="100" width="520" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-chat-input" value="[CSS] Custom Floating Input Bar&#xa;Actions: handleImageUpload, handleSendMessage" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=2" parent="ui-chat-root" vertex="1">
+          <mxGeometry x="20" y="270" width="520" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- CALENDAR SECTION (/calendar) -->
+        <mxCell id="section-cal" value="CALENDAR PAGE (/calendar)" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#f8f9fa;strokeColor=#343a40;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="40" y="1400" width="1500" height="500" as="geometry" />
+        </mxCell>
+        <mxCell id="cal-logic" value="LOGIC" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;" parent="section-cal" vertex="1">
+          <mxGeometry x="20" y="60" width="400" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="l-cal-list" value="Fetch: trpc.appointments.list&#xa;Logic: appointmentsByDate (Memoized O(1) Map)&#xa;Logic: useCalendarGestures (60fps Swipe Handler)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="cal-logic" vertex="1">
+          <mxGeometry x="20" y="40" width="360" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="l-cal-click" value="handleDateClick(date)&#xa;1. SET selectedDate&#xa;2. Reset form to default (9am)&#xa;3. OPEN AppointmentDialog" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=10" parent="cal-logic" vertex="1">
+          <mxGeometry x="20" y="140" width="360" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cal-ui" value="UI TREE" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="section-cal" vertex="1">
+          <mxGeometry x="440" y="60" width="600" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-cal-root" value="[SSOT] PageShell" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;strokeWidth=2" parent="cal-ui" vertex="1">
+          <mxGeometry x="20" y="40" width="560" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-cal-grid" value="CalendarGrid (Month/Week Toggle)&#xa;Children: DateButtons (conditional today highlighting)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="ui-cal-root" vertex="1">
+          <mxGeometry x="20" y="80" width="520" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-cal-time" value="DayTimeline (Scrollable Slots)&#xa;Logic: scrollIntoView nearest appt on mount" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="ui-cal-root" vertex="1">
+          <mxGeometry x="20" y="160" width="520" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-cal-diag" value="[SSOT] HalfSheet (Appointment Entry Wizard)&#xa;Flow: Service -> Date/Time -> Finalize" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" parent="ui-cal-root" vertex="1">
+          <mxGeometry x="20" y="240" width="520" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- SETTINGS SECTION (/settings) -->
+        <mxCell id="section-set" value="SETTINGS PAGE (/settings)" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#f8f9fa;strokeColor=#343a40;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="40" y="1950" width="1500" height="400" as="geometry" />
+        </mxCell>
+        <mxCell id="set-logic" value="LOGIC" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;" parent="section-set" vertex="1">
+          <mxGeometry x="20" y="60" width="400" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="l-set-auth" value="useAuth() state (name, bio, avatar)&#xa;Mutation: trpc.auth.updateProfile&#xa;Mutation: trpc.artistSettings.upsert" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="set-logic" vertex="1">
+          <mxGeometry x="20" y="40" width="360" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="l-set-theme" value="toggleTheme() via ThemeContext&#xa;localStorage sync for persistent mode" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="set-logic" vertex="1">
+          <mxGeometry x="20" y="140" width="360" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="set-ui" value="UI TREE" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="section-set" vertex="1">
+          <mxGeometry x="440" y="60" width="600" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-set-root" value="[SSOT] PageShell" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;strokeWidth=2" parent="set-ui" vertex="1">
+          <mxGeometry x="20" y="40" width="560" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-set-glass" value="[SSOT] GlassSheet (Settings List)&#xa;Children: SectionCards (Profile, Work Hours, Business Info)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" parent="ui-set-root" vertex="1">
+          <mxGeometry x="20" y="80" width="520" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- PUBLIC FUNNEL SECTION (/start/:slug) -->
+        <mxCell id="section-fun" value="PUBLIC FUNNEL (/start/:slug)" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#f8f9fa;strokeColor=#343a40;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="40" y="2400" width="1500" height="400" as="geometry" />
+        </mxCell>
+        <mxCell id="fun-logic" value="LOGIC" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;" parent="section-fun" vertex="1">
+          <mxGeometry x="20" y="60" width="400" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="l-fun-sub" value="handleSubmit() Orchestration:&#xa;1. Upload reference images (base64)&#xa;2. POST /api/public/funnel/submit&#xa;3. SHOW TeaserRegistrationForm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="fun-logic" vertex="1">
+          <mxGeometry x="20" y="40" width="360" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="fun-ui" value="UI TREE" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="section-fun" vertex="1">
+          <mxGeometry x="440" y="60" width="600" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-fun-root" value="FunnelWrapper (Light-Mode Container)&#xa;Children: ProgressBar, StepTitles, FormFields" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="fun-ui" vertex="1">
+          <mxGeometry x="20" y="40" width="560" height="260" as="geometry" />
+        </mxCell>
+
+        <!-- FINAL CONNECTIONS -->
+        <mxCell id="flow-msg-to-cal" value="BOOKING ACTION" style="endArrow=classic;html=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" parent="1" source="ui-chat-msgs" target="l-cal-click" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,168 @@
+flowchart TD
+    %% --- STYLE DEFINITIONS ---
+    classDef page fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef container fill:#bbf,stroke:#333,stroke-width:1px;
+    classDef function fill:#fcf,stroke:#333,stroke-width:1px;
+    classDef button fill:#fb7,stroke:#333,stroke-width:1px;
+    classDef action fill:#7f7,stroke:#333,stroke-width:1px;
+    classDef file fill:#eee,stroke:#333,stroke-dasharray: 5 5;
+
+    %% --- NAVIGATION BACKBONE ---
+    subgraph NAV_BACKBONE ["System Infrastructure"]
+        APP["App.tsx (Router)"]:::file
+        BNAV["BottomNav.tsx"]:::file
+        BNC["BottomNavContext.tsx"]:::file
+        TC["TeaserContext.tsx"]:::file
+        
+        APP -- "defines routes" --> PAGES
+        BNAV -- "useBottomNav" --> BNC
+        BNAV -- "isTeaserClient" --> TC
+    end
+
+    %% --- AUTH & ENTRY ---
+    subgraph AUTH_FLOW ["Authentication (/login, /signup)"]
+        LOGIN["Login.tsx"]:::page
+        SIGNUP["Signup.tsx"]:::page
+        SETPW["SetPassword.tsx"]:::page
+        CMPL["CompleteProfile.tsx"]:::page
+        
+        LOGIN -- "Button: login" --> H_LI["handleLogin()"]:::function
+        SIGNUP -- "Button: signup" --> H_SU["handleSignup()"]:::function
+        SETPW -- "Button: setPassword" --> H_SPW["handleSetPassword()"]:::function
+        
+        H_LI -- "success" --> DASH
+        H_SU -- "success" --> CMPL
+    end
+
+    %% --- PUBLIC FUNNEL FLOW ---
+    subgraph PUBLIC_FUNNEL ["Public Funnel (/start/:slug)"]
+        PF["PublicFunnel.tsx"]:::page --> FW["FunnelWrapper.tsx"]:::container
+        FW -- "initFunnel()" --> FW_DATA["Fetch Artist Profile"]:::action
+        
+        %% Step Buttons
+        FW -- "Button: handleNext" --> S_INTENT["Step: Intent"]
+        S_INTENT -- "Button: handleNext" --> S_CONTACT["Step: Contact"]
+        S_CONTACT -- "Button: handleNext" --> S_STYLE["Step: Style/Ref"]
+        S_STYLE -- "Button: handleNext" --> S_PLACE["Step: Placement"]
+        S_PLACE -- "Button: handleNext" --> S_BUDGET["Step: Budget"]
+        S_BUDGET -- "Button: handleNext" --> S_AVAIL["Step: Availability"]
+        
+        %% Action Functions
+        FW -- "Button: toggleStyle" --> FW
+        FW -- "Button: setShowReferenceUpload" --> IU["ImageUploadSheet.tsx"]:::container
+        IU -- "handleImageSelect" --> FW
+        
+        S_AVAIL -- "Button: handleSubmit" --> FW_SUB["handleSubmit()"]:::function
+        FW_SUB -- "success" --> TR["TeaserRegistrationForm.tsx"]:::container
+        TR -- "Button: handleRegister" --> DASH
+    end
+
+    %% --- DASHBOARD FLOW ---
+    subgraph DASHBOARD ["Dashboard (/dashboard)"]
+        DASH["Dashboard.tsx"]:::page --> UBT["useBusinessTasks.ts"]:::container
+        DASH --> UDT["useDashboardTasks.ts"]:::container
+        
+        DASH -- "Button: SegmentedHeader" --> setActiveIndex["setActiveIndex()"]:::function
+        DASH -- "Click: TaskCard" --> H_TASK["handleTaskClick()"]:::function
+        H_TASK -- "trigger" --> TS["HalfSheet: Task Detail"]:::container
+        
+        %% Task Actions
+        TS -- "Button: Send SMS" --> E_SMS["businessActions.openSms()"]:::action
+        TS -- "Button: Send Email" --> E_MAIL["businessActions.openEmail()"]:::action
+        TS -- "Button: Open in App" --> E_NAV["businessActions.navigateToTask()"]:::action
+        TS -- "Button: Mark Completed" --> H_DONE["handleMarkDone()"]:::function
+        TS -- "Button: Snooze" --> H_SNOOZE["handleSnooze()"]:::function
+        
+        %% Settings/Stats
+        DASH -- "Button: Weekly Stats" --> WSM["WeeklySnapshotModal.tsx"]:::container
+        DASH -- "Button: Settings" --> DS["HalfSheet: Dashboard Settings"]:::container
+        DS -- "Button: updateSettings" --> UBT
+    end
+
+    %% --- MESSAGING FLOW ---
+    subgraph MESSAGING ["Messaging (/conversations, /chat)"]
+        CONVS["Conversations.tsx"]:::page --> UIR["useInboxRequests.ts"]:::container
+        CONVS -- "Click: ConsultationCard" --> H_CC["Redirect to Lead/Chat"]:::function
+        CONVS -- "Click: ConversationCard" --> CHAT["Chat.tsx"]:::page
+        CONVS -- "Button: New Request" --> CONS["/consultations (Consultations.tsx)"]:::page
+        
+        CHAT --> UCC["useChatController.ts"]:::container
+        CHAT -- "Button: Send" --> H_MSG["handleSendMessage()"]:::function
+        CHAT -- "Button: Attachment" --> H_IMG["handleImageUpload()"]:::function
+        
+        %% Quick Actions
+        CHAT -- "Button: Swipe Up Bar" --> QA["QuickActionsRow.tsx"]:::container
+        QA -- "Button: Send Proposal" --> BW["BookingWizard.tsx"]:::container
+        QA -- "Button: Request Deposit" --> DEP["trpc.booking.requestDeposit"]:::action
+        QA -- "Button: Referral" --> H_REF["handleArtistReferral()"]:::function
+        
+        %% Booking Wizard
+        BW -- "Button: handleSelectService" --> BW_S1["Step: Selection"]
+        BW_S1 -- "Button: handleConfirm" --> BW_S2["Step: Proposal"]
+        BW_S2 -- "Button: handleArtistBookProject" --> BW_BOOK["trpc.appointments.create"]:::action
+        
+        %% Lead Detail
+        CONVS -- "Lead Click" --> LD["LeadDetail.tsx"]:::page
+        LD -- "Button: Open Chat" --> CHAT
+        LD -- "Button: Archive" --> trpc_lead_update["trpc.funnel.updateStatus"]:::action
+    end
+
+    %% --- CALENDAR FLOW ---
+    subgraph CALENDAR ["Calendar (/calendar)"]
+        CAL["Calendar.tsx"]:::page
+        CAL -- "Button: today" --> goToToday["goToToday()"]:::function
+        CAL -- "Button: prev/next" --> goToPeriod["goToPreviousPeriod/Next()"]:::function
+        CAL -- "Button: add" --> H_ADD["handleCreateAppointment()"]:::function
+        CAL -- "Click: dateCell" --> H_DATE["handleDateClick()"]:::function
+        
+        H_DATE -- "trigger" --> ATM["AppointmentTimelineModal"]:::container
+        H_ADD -- "trigger" --> CAD["Dialog: Create Appointment"]:::container
+        CAD -- "Button: handleSelectService" --> CAL_S2["Step: Details"]
+    end
+
+    %% --- PROMOTIONS FLOW ---
+    subgraph PROMOTIONS ["Promotions (/promotions)"]
+        PROM["Promotions.tsx"]:::page --> UPC["usePromotionsController.ts"]:::container
+        PROM -- "Button: Create New Voucher" --> H_PCR["handleCreate()"]:::function
+        H_PCR -- "trigger" --> CPW["CreatePromotionWizard.tsx"]:::container
+        
+        PROM -- "Click: PromotionCard" --> H_SEL["setSelectedCardId()"]:::function
+        PROM -- "Button: Send to Client" --> SPS["SendPromotionSheet.tsx"]:::container
+        PROM -- "Button: Edit" --> H_EDIT["handleEdit()"]:::function
+        PROM -- "Button: Auto-Apply" --> AAS["AutoApplySheet"]:::container
+        PROM -- "Button: Delete" --> H_DEL["handleDelete()"]:::function
+    end
+
+    %% --- SETTINGS FLOW ---
+    subgraph SETTINGS ["Settings (/settings)"]
+        SET["Settings.tsx"]:::page
+        SET -- "Button: Profile" --> setActiveSection_Profile["setActiveSection('profile')"]:::function
+        SET -- "Button: Business Info" --> setActiveSection_Business["setActiveSection('business')"]:::function
+        SET -- "Button: Work Hours" -->setActiveSection_WH["setActiveSection('work-hours')"]:::function
+        
+        SET -- "Button: Save Changes" --> H_SAVE_P["handleSaveProfile()"]:::function
+        SET -- "Button: Save Business Info" --> H_SAVE_B["handleSaveBusinessInfo()"]:::function
+        
+        %% Sub-pages
+        WH["WorkHoursAndServices.tsx"]:::page
+        PM["PolicyManagement.tsx"]:::page
+        NM["NotificationsManagement.tsx"]:::page
+        QAM["QuickActionsManagement.tsx"]:::page
+        CLI["Clients.tsx"]:::page
+        
+        SET -- "Link" --> PM
+        SET -- "Link" --> NM
+        SET -- "Link" --> QAM
+        SET -- "Link" --> CLI
+    end
+
+    %% --- INTER-PAGE LINKS ---
+    LOGIN -- "/" --> LOGIN
+    DASH -- "nav" --> BNAV
+    BNAV -- "/dashboard" --> DASH
+    BNAV -- "/conversations" --> CONVS
+    BNAV -- "/calendar" --> CAL
+    BNAV -- "/promotions" --> PROM
+    BNAV -- "/settings" --> SET
+    CHAT -- "leads to" --> CONVS
+    PF -- "redirect" --> DASH

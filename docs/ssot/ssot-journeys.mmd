@@ -1,0 +1,28 @@
+flowchart TD
+    subgraph CLIENT_JOURNEY ["A) Client Journey Map"]
+        C1["Client Consult (Funnel)"] --> C2["Register (Account Create)"]
+        C2 --> T1{{"teaser_mode (Gated)"}}
+        T1 --> C3["Teaser Dashboard"]
+        C3 --> C4["Install Prompt (PWA)"]
+        C4 --> P1{{"installed_pwa (Unlocked)"}}
+        P1 --> C5["Booking (Wizard)"]
+        C5 --> C6["Deposit (Payment)"]
+        C6 --> D1{{"deposit_paid (Verified)"}}
+        D1 --> C7["Confirmed (Final)"]
+        C7 --> N1{{"wrapped_native (Future)"}}
+    end
+
+    subgraph ARTIST_JOURNEY ["B) Artist Journey Map"]
+        A1["Artist Config (Settings)"] --> A2["Branding (Logo/Colors)"]
+        A2 --> A3["Funnel Builder (Logic)"]
+        A3 --> A4["Publish (Public Link)"]
+        A4 --> A5["Client Entry (Lead Generation)"]
+    end
+
+    A5 --> C1
+    
+    %% Style Gating Flags
+    style T1 fill:#f96,stroke:#333,stroke-width:2px
+    style P1 fill:#f96,stroke:#333,stroke-width:2px
+    style D1 fill:#f96,stroke:#333,stroke-width:2px
+    style N1 fill:#f96,stroke:#333,stroke-width:2px

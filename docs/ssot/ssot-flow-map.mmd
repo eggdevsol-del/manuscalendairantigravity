@@ -1,0 +1,55 @@
+flowchart TD
+    subgraph UI ["UI LAYER (SSOT Components)"]
+        PageShell["PageShell (Root)"]
+        PublicFunnel["PublicFunnel (Intake)"]
+        BottomNav["BottomNav (Contextual Actions)"]
+        GlassSheet["GlassSheet (Content Layer)"]
+        FullScreenSheet["FullScreenSheet (Wizards)"]
+    end
+
+    subgraph STATE ["STATE LAYER"]
+        auth_state["auth_state (useAuth)"]
+        teaser_mode{{"isTeaserClient (Gating)"}}
+        ui_state["ui_state (BottomNavContext)"]
+        query_cache[("Query Cache (Server Sync)")]
+    end
+
+    subgraph FLOW ["FLOW/WIZARD LAYER"]
+        FunnelWrapper["FunnelWrapper (Steps)"]
+        BookingWizard["BookingWizard (Sittings)"]
+        TeaserRegistration["TeaserRegistration (Gate entry)"]
+    end
+
+    subgraph DATA ["DATA/API LAYER (Drizzle Models)"]
+        Leads[("Leads (Persisted Intake)")]
+        Consultations[("Consultations (Mapped Requests)")]
+        Appointments[("Appointments (Finalized Bookings)")]
+        Tags["tagDerivationEngine (Derived Logic)"]
+    end
+
+    subgraph INTEGRATIONS ["INTEGRATIONS (Internal/External)"]
+        OneSignal["OneSignal (Push)"]
+        EmailSMS["Email/SMS (Native URI)"]
+    end
+
+    %% Real Flows (Arrows)
+    PublicFunnel --> FunnelWrapper
+    FunnelWrapper -- "Save Data" --> Leads
+    Leads -- "Derive" --> Tags
+    FunnelWrapper -- "Register" --> TeaserRegistration
+    TeaserRegistration -- "Toggle" --> teaser_mode
+    teaser_mode -- "Lock/Blur" --> UI
+    
+    auth_state -- "Gate" --> PageShell
+    PageShell --> BottomNav
+    ui_state --> BottomNav
+    
+    UI -- "Book Intent" --> BookingWizard
+    BookingWizard -- "Confirm" --> Appointments
+    Appointments -- "Sync" --> query_cache
+    
+    query_cache --> UI
+    
+    Leads --> Consultations
+    Consultations --> EmailSMS
+    UI --> OneSignal

@@ -1,0 +1,112 @@
+<mxfile host="Electron" modified="2024-03-21T00:00:00.000Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.6.8 Chrome/114.0.5735.289 Electron/25.5.0 Safari/537.36" version="21.6.8" type="device">
+  <diagram id="app-comp-blueprint" name="Comprehensive App Blueprint">
+    <mxGraphModel dx="1422" dy="798" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Cross-Functional Swimlanes -->
+        <mxCell id="lane-router" value="ROUTING (App.tsx)" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="40" y="40" width="200" height="1200" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-logic" value="LOGIC (Hooks / Controllers)" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="240" y="40" width="300" height="1200" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-ui" value="UI (Components / SSOT)" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="540" y="40" width="400" height="1200" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-api" value="API (tRPC / Server)" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="940" y="40" width="200" height="1200" as="geometry" />
+        </mxCell>
+
+        <!-- DASHBOARD SECTION -->
+        <mxCell id="route-dash" value="/dashboard" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="lane-router" vertex="1">
+          <mxGeometry x="40" y="60" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="hook-dash" value="useBusinessTasks.ts&#xa;useDashboardTasks.ts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="lane-logic" vertex="1">
+          <mxGeometry x="40" y="60" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-dash" value="Dashboard.tsx&#xa;[SSOT] PageShell&#xa;[SSOT] PageHeader&#xa;[SSOT] TaskCard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="lane-ui" vertex="1">
+          <mxGeometry x="40" y="60" width="320" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="api-dash" value="dashboardTasksRouter" style="shape=parallelogram;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="lane-api" vertex="1">
+          <mxGeometry x="20" y="60" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- MESSAGING SECTION -->
+        <mxCell id="route-chat" value="/chat/:id" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="lane-router" vertex="1">
+          <mxGeometry x="40" y="220" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="hook-chat" value="useChatController.ts&#xa;useInboxRequests.ts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="lane-logic" vertex="1">
+          <mxGeometry x="40" y="220" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-chat" value="Chat.tsx&#xa;[SSOT] PageHeader&#xa;[SSOT] BookingWizard&#xa;[SSOT] ProjectProposalModal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="lane-ui" vertex="1">
+          <mxGeometry x="40" y="220" width="320" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="api-chat" value="conversationsRouter&#xa;messagesRouter" style="shape=parallelogram;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="lane-api" vertex="1">
+          <mxGeometry x="20" y="220" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- CALENDAR SECTION -->
+        <mxCell id="route-cal" value="/calendar" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="lane-router" vertex="1">
+          <mxGeometry x="40" y="380" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="hook-cal" value="trpc.appointments.list&#xa;useCalendarGestures" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="lane-logic" vertex="1">
+          <mxGeometry x="40" y="380" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-cal" value="Calendar.tsx&#xa;CalendarGrid&#xa;HourlyTimeline&#xa;[SSOT] HalfSheet" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="lane-ui" vertex="1">
+          <mxGeometry x="40" y="380" width="320" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="api-cal" value="appointmentsRouter" style="shape=parallelogram;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="lane-api" vertex="1">
+          <mxGeometry x="20" y="380" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- SETTINGS SECTION -->
+        <mxCell id="route-set" value="/settings" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="lane-router" vertex="1">
+          <mxGeometry x="40" y="540" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="hook-set" value="trpc.artistSettings.get&#xa;trpc.auth.updateProfile" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="lane-logic" vertex="1">
+          <mxGeometry x="40" y="540" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-set" value="Settings.tsx&#xa;[SSOT] GlassSheet&#xa;WorkHoursAndServices" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="lane-ui" vertex="1">
+          <mxGeometry x="40" y="540" width="320" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="api-set" value="artistSettingsRouter" style="shape=parallelogram;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="lane-api" vertex="1">
+          <mxGeometry x="20" y="540" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- CONNECTIONS -->
+        <mxCell id="conn1" value="" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="route-dash" target="hook-dash" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn2" value="" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="hook-dash" target="ui-dash" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn3" value="" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="hook-dash" target="api-dash" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="conn4" value="" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="route-chat" target="hook-chat" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn5" value="" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="hook-chat" target="ui-chat" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn6" value="" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="hook-chat" target="api-chat" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="conn7" value="" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="route-cal" target="hook-cal" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn8" value="" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="hook-cal" target="ui-cal" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn9" value="" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="hook-cal" target="api-cal" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

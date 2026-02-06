@@ -5,6 +5,7 @@ import { useMemo } from "react";
 export interface InboxRequest {
     type: 'lead' | 'consultation';
     id: number;
+    leadId: number | null;
     name: string;
     subject: string;
     description: string | null;
@@ -48,6 +49,7 @@ export function useInboxRequests() {
                 items.push({
                     type: 'lead',
                     id: lead.id,
+                    leadId: lead.id,
                     name: lead.clientName || 'Unknown Client',
                     subject: lead.projectType?.replace(/-/g, ' ') || 'New consultation',
                     description: lead.projectDescription || null,
@@ -67,6 +69,7 @@ export function useInboxRequests() {
                     items.push({
                         type: 'consultation',
                         id: consult.id,
+                        leadId: consult.leadId || null,
                         name: consult.client?.name || 'Unknown Client',
                         subject: consult.subject || 'Consultation Request',
                         description: consult.description || null,

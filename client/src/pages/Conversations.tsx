@@ -117,10 +117,11 @@ export default function Conversations() {
                         description={item.description || 'No description provided'}
                         isNew={true}
                         onClick={() => {
-                          if (item.type === 'lead') {
-                            setLocation(`/lead/${item.id}`);
+                          const routeId = item.leadId || (item.type === 'lead' ? item.id : null);
+                          if (routeId) {
+                            setLocation(`/lead/${routeId}`);
                           } else {
-                            // Link to conversation for this consultation
+                            // Link to conversation for this consultation if no leadId
                             if (item.data.conversationId) {
                               setLocation(`/chat/${item.data.conversationId}?consultationId=${item.id}`);
                             } else {

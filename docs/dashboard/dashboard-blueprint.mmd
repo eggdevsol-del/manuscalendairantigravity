@@ -1,0 +1,81 @@
+flowchart TD
+    subgraph ZoneA ["Zone A: Dashboard UI Tree"]
+        DS[Dashboard.tsx] --> PS[PageShell]
+        PS --> PH[PageHeader]
+        PS --> SH[SegmentedHeader]
+        PS --> GS[GlassSheet]
+        GS --> AP{AnimatePresence}
+        AP --> MD[motion.div]
+        MD --> TC[TaskCard List]
+        MD --> ES[EmptyState]
+        MD --> LS[LoadingState]
+    end
+
+    subgraph ZoneB ["Zone B: Interactions / Navigation"]
+        TC -- click --> HTC[handleTaskClick]
+        HTC --> STS[businessActions.startTask]
+        HTC --> SSTS[setShowTaskSheet]
+        
+        SH -- tab click --> SAI[setActiveIndex]
+        
+        buttonW[Weekly Stats] -- click --> SSSM[setShowSnapshotModal]
+        buttonS[Settings] -- click --> SSSS[setShowSettingsSheet]
+        
+        EA[executeAction] --> SMS[openSms]
+        EA --> Email[openEmail]
+        EA --> Nav[navigateToTask]
+    end
+
+    subgraph ZoneC ["Zone C: Sheets & Modals"]
+        STS_Sheet[HalfSheet: Task Details]
+        CS_Sheet[FullScreenSheet: Challenges]
+        SS_Sheet[HalfSheet: Settings]
+        WS_Modal[WeeklySnapshotModal]
+        IA_Modal[InstallAppModal]
+    end
+
+    subgraph ZoneD ["Zone D: State & Logic"]
+        UBT[useBusinessTasks.ts]
+        UDT[useDashboardTasks.ts]
+        UWS[useWeeklySnapshot]
+        UDS[useDashboardSettings]
+        UT[useTeaser]
+        AC[activeCategory derived]
+    end
+
+    subgraph ZoneE ["Zone E: Data Flow"]
+        TRPC_GB[tRPC: getBusinessTasks] --> BTG[businessTaskGenerator.ts]
+        BTG --> DB_LT[DB: leads / appointments]
+        
+        TRPC_CT[tRPC: completeTask] --> DB_TC[DB: task_completions]
+        
+        TRPC_GS[tRPC: getSettings] --> DB_DS[DB: dashboard_settings]
+        
+        DB_AT[DB: active_tasks] -- Cache --> TRPC_GB
+    end
+
+    subgraph ZoneF ["Zone F: Side Effects"]
+        Toast[Toast: Success/Error]
+        DeepLink[SMS/Email Linking]
+        Refetch[Query Refetch]
+        LS_Sync[LocalStorage: Legacy Tasks]
+    end
+
+    %% Connections
+    HTC --> STS_Sheet
+    ES -- challenges --> CS_Sheet
+    SSSM --> WS_Modal
+    SSSS --> SS_Sheet
+    
+    UBT --> TRPC_GB
+    UBT --> TRPC_CT
+    UDS --> TRPC_GS
+    
+    TRPC_CT -- success --> Toast
+    TRPC_CT -- success --> Refetch
+    Refetch -- trigger --> TRPC_GB
+    
+    EA -- sms --> DeepLink
+    EA -- email --> DeepLink
+    
+    UT -- gated --> IA_Modal

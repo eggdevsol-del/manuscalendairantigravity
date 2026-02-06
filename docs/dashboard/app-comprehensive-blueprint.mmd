@@ -1,0 +1,87 @@
+flowchart TD
+    subgraph Global [App.tsx Router - The Traffic Controller]
+        direction TB
+        R_Root["/ (Logic: Auth Check)"]
+        R_Dash["/dashboard (Logic: Business Hub)"]
+        R_Chat["/chat/:id (Logic: CRM/Sales)"]
+        R_Cal["/calendar (Logic: Booking)"]
+        R_Set["/settings (Logic: Identity/Config)"]
+        R_Fun["/start/:slug (Logic: Lead Gen)"]
+    end
+
+    subgraph DashDetail [Dashboard.tsx Detailed Blueprint]
+        direction TB
+        subgraph DashLogic [Logic Flow: The Brain]
+            L1["Mount: useEffect (Auth Check)"]
+            L2["Fetch: useBusinessTasks() -> trpc.getBusinessTasks"]
+            L3["Fetch: useDashboardTasks() -> localStorage sync"]
+            L4["Action: handleTaskClick() -> businessActions.startTask()"]
+            L5["Action: executeAction() -> logic(sms | email | in_app)"]
+            L6["Mutation: completeTask.mutate() -> Cache Invalidation"]
+        end
+        subgraph DashUI [UI Tree: The Skeleton]
+            U1["PageShell [SSOT]"]
+            U2["PageHeader [SSOT] (Title: 'Dashboard')"]
+            U3["SegmentedHeader [SSOT] (State: activeCategory)"]
+            U4["GlassSheet [SSOT]"]
+            U5["TaskCard [SSOT] (Props: task, onExecute, onMarkDone)"]
+            U6["EmptyState (Action: Start Challenge)"]
+            U7["LoadingState [SSOT]"]
+        end
+        U5 -- triggered by click --> L4
+        U5 -- execute button --> L5
+        L6 -- on success --> U2
+    end
+
+    subgraph ChatDetail [Chat.tsx Detailed Blueprint]
+        direction TB
+        subgraph ChatLogic [Logic Flow: The Brain]
+            CL1["Master Hook: useChatController(id)"]
+            CL2["Stream: trpc.messages.list (Query)"]
+            CL3["Mutation: trpc.messages.create (Handler: handleSendMessage)"]
+            CL4["Contextual: useRegisterBottomNavRow('chat-actions')"]
+            CL5["Feature: handleImageUpload() -> Storage -> Message"]
+        end
+        subgraph ChatUI [UI Tree: The Skeleton]
+            CU1["PageShell [SSOT]"]
+            CU2["StickyHeader (BackButton, Avatar, OnlineStatus)"]
+            CU3["ConsultationPin (Conditional logic)"]
+            CU4["ScrollArea (Message List)"]
+            CU5["ProjectProposalMessage (Complex metadata rendering)"]
+            CU6["QuickActionsRow (via BottomNavContext)"]
+            CU7["MessageInputBar (Floating Glass Container)"]
+        end
+        CU7 -- onSend --> CL3
+        CU7 -- onUpload --> CL5
+        CU6 -- click --> CL4
+    end
+
+    subgraph CalDetail [Calendar.tsx Detailed Blueprint]
+        direction TB
+        subgraph CalLogic [Logic Flow: The Brain]
+            RL1["Logic: useCalendarGestures (Swipe detection)"]
+            RL2["Fetch: trpc.appointments.list (gridStart to gridEnd)"]
+            RL3["Mutation: appointments.create (Gold Standard Step Flow)"]
+            RL4["Derived: appointmentsByDate Map (O(1) lookup)"]
+        end
+        subgraph CalUI [UI Tree: The Skeleton]
+            RU1["PageShell [SSOT]"]
+            RU2["PageHeader [SSOT] (Title: 'Calendar')"]
+            RU3["GlassSheet [SSOT] (Calendar Container)"]
+            RU4["CalendarGrid (Day headers, Date buttons)"]
+            RU5["DayTimeline (24h scrollable slots)"]
+            RU6["HalfSheet [SSOT] (Appointment Entry Wizard)"]
+        end
+        RU4 -- select date --> RU5
+        RU5 -- click slot --> RU6
+        RU6 -- submit --> RL3
+    end
+
+    %% Router Connections
+    R_Dash --> DashDetail
+    R_Chat --> ChatDetail
+    R_Cal --> CalDetail
+    
+    %% Cross-Domain Interactions
+    DashDetail -- navigate --> R_Chat
+    ChatDetail -- open wizard --> CalDetail
