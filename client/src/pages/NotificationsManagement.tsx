@@ -7,6 +7,7 @@ import { Bell, ChevronLeft, Edit, Plus, Trash2, Send } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { WebPushSettings } from "@/components/WebPushSettings";
 import { useWebPush } from "@/hooks/useWebPush";
 
@@ -459,10 +460,20 @@ export default function NotificationsManagement() {
                   variant="ghost"
                   className="w-full justify-start h-auto py-3 px-4 bg-muted/50 hover:bg-muted"
                   onClick={() => handleSendPushToClient(client.id)}
+                  disabled={!client.hasPushSubscription}
                 >
-                  <div className="text-left">
-                    <div className="font-medium">{client.name}</div>
+                  <div className="flex-1 text-left">
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium">{client.name}</div>
+                      <div className={cn(
+                        "w-2 h-2 rounded-full",
+                        client.hasPushSubscription ? "bg-green-500" : "bg-red-500"
+                      )} />
+                    </div>
                     <div className="text-xs text-muted-foreground">{client.email}</div>
+                    {!client.hasPushSubscription && (
+                      <div className="text-[10px] text-red-400 mt-1">Notifications not enabled</div>
+                    )}
                   </div>
                 </Button>
               ))}

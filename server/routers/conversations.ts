@@ -116,7 +116,7 @@ export const conversationsRouter = router({
 
             return { success: true };
         }),
-    
+
     /**
      * Get media (images) associated with a client
      * Fetches reference images and body placement images from leads
@@ -140,7 +140,7 @@ export const conversationsRouter = router({
                     eq(schema.leads.artistId, ctx.user.id),
                     or(
                         eq(schema.leads.clientId, input.clientId),
-                        eq(schema.leads.clientEmail, 
+                        eq(schema.leads.clientEmail,
                             // Get email from users table
                             database.select({ email: schema.users.email })
                                 .from(schema.users)
@@ -209,15 +209,22 @@ export const conversationsRouter = router({
 
             // Get unique clients from conversations
             const clientIds = [...new Set(convos.map(c => c.clientId))];
-            
+
             const clients = await Promise.all(
                 clientIds.map(async (clientId) => {
                     const user = await db.getUser(clientId);
-                    return user ? {
+                    if (!user) return null;
+
+                    const pushSub = await db.query.pushSubscriptions.findFirst({
+                        where: eq(schema.pushSubscriptions.userId, clientId)
+                    });
+
+                    return {
                         id: user.id,
                         name: user.name,
                         email: user.email,
-                    } : null;
+                        hasPushSubscription: !!pushSub
+                    };
                 })
             );
 
