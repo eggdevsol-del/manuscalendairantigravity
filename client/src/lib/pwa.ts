@@ -14,7 +14,9 @@ export async function registerServiceWorker() {
       immediate: false, // Don't force immediate activation to prevent reload loops
       onNeedRefresh() {
         console.log('[PWA] New content available. User will be prompted to refresh.');
-        // We'll let the UI handle the refresh prompt instead of automatic reloads
+        if (window.confirm('New version available! Reload to update?')) {
+          updateSW(true);
+        }
       },
       onOfflineReady() {
         console.log('[PWA] App ready to work offline');
