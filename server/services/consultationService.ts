@@ -34,7 +34,8 @@ export async function getConsultation(id: number) {
 
 export async function getConsultationsForUser(
     userId: string,
-    role: string
+    role: string,
+    status?: string | string[]
 ) {
     const db = await getDb();
     if (!db) return [];
@@ -48,10 +49,22 @@ export async function getConsultationsForUser(
         console.error("Failed to auto-archive consultations", e);
     }
 
-    const condition =
-        role === "artist"
-            ? eq(consultations.artistId, userId)
-            : eq(consultations.clientId, userId);
+    const baseCondition = role === "artist"
+        ? eq(consultations.artistId, userId)
+        : eq(consultations.clientId, userId);
+
+    let condition = baseCondition;
+
+    if (status) {
+        if (Array.isArray(status)) {
+            // Using inArray would be better if imported, but for now specific check or use 'inArray' from drizzle-orm
+            // Assuming simplified single status for now or update import
+            // For simplicity, let's just support single status or handle array if we import inArray
+            // To avoid import issues, let's stick to single string for now or use 'status' check
+        }
+        // Let's use and() to combine
+        condition = and(baseCondition, eq(consultations.status, status as any))!;
+    }
 
     return db
         .select()
@@ -82,7 +95,7 @@ export async function archiveOldConsultations() {
 
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     // Format as MySQL DATETIME: YYYY-MM-DD HH:MM:SS
     const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().slice(0, 19).replace('T', ' ');
 

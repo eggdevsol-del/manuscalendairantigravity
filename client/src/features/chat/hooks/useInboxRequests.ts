@@ -1,0 +1,94 @@
+import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { useMemo } from "react";
+
+export interface InboxRequest {
+    type: 'lead' | 'consultation';
+    id: number;
+    name: string;
+    subject: string;
+    description: string | null;
+    date: string | null;
+    data: any;
+}
+
+/**
+ * Hook to fetch and merge all types of inbox requests (Leads, Consultations)
+ * Centralizes deduction and sorting logic (SSOT)
+ */
+export function useInboxRequests() {
+    const { user } = useAuth();
+    const isArtist = user?.role === 'artist' || user?.role === 'admin';
+
+    // 1. Fetch Leads
+    const { data: leadsData, isLoading: leadsLoading } = trpc.funnel.getLeads.useQuery(
+        { status: 'new', limit: 50, offset: 0 },
+        {
+            enabled: !!user && isArtist,
+            refetchInterval: 10000,
+        }
+    );
+
+    // 2. Fetch Pending Consultations
+    const { data: consultationsData, isLoading: consultationsLoading } = trpc.consultations.list.useQuery(
+        { status: 'pending' },
+        {
+            enabled: !!user && isArtist,
+            refetchInterval: 10000,
+        }
+    );
+
+    // 3. Centralized Derivation (SSOT)
+    const requestItems = useMemo(() => {
+        const items: InboxRequest[] = [];
+
+        // Add leads
+        if (leadsData?.leads) {
+            leadsData.leads.forEach(lead => {
+                items.push({
+                    type: 'lead',
+                    id: lead.id,
+                    name: lead.clientName || 'Unknown Client',
+                    subject: lead.projectType?.replace(/-/g, ' ') || 'New consultation',
+                    description: lead.projectDescription || null,
+                    date: lead.createdAt || null,
+                    data: lead
+                });
+            });
+        }
+
+        // Add consultations (deduplicated)
+        if (consultationsData) {
+            consultationsData.forEach((consult: any) => {
+                // Deduplicate if linked to same lead
+                const leadId = (consult as any).leadId;
+                const isDuplicate = leadId && items.some(item => item.type === 'lead' && item.id === leadId);
+
+                if (!isDuplicate) {
+                    items.push({
+                        type: 'consultation',
+                        id: consult.id,
+                        name: consult.client?.name || 'Unknown Client',
+                        subject: consult.subject || 'Consultation Request',
+                        description: consult.description || null,
+                        date: consult.createdAt || null,
+                        data: consult
+                    });
+                }
+            });
+        }
+
+        // Sort by date (newest first)
+        return items.sort((a, b) => {
+            const dateA = a.date ? new Date(a.date).getTime() : 0;
+            const dateB = b.date ? new Date(b.date).getTime() : 0;
+            return dateB - dateA;
+        });
+    }, [leadsData, consultationsData]);
+
+    return {
+        requestItems,
+        isLoading: leadsLoading || consultationsLoading,
+        isArtist
+    };
+}

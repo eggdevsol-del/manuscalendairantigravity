@@ -10,6 +10,7 @@ import { useLocation } from "wouter";
 import { useArtistReferral } from "@/features/chat/useArtistReferral";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
+import { useInboxRequests } from "@/features/chat/hooks/useInboxRequests";
 
 export default function Conversations() {
   const { user, loading } = useAuth();
@@ -25,16 +26,11 @@ export default function Conversations() {
     staleTime: 5000,
   });
 
-  // Get new leads from funnel for artists
-  const { data: leadsData } = trpc.funnel.getLeads.useQuery(
-    { status: 'new', limit: 50, offset: 0 },
-    {
-      enabled: !!user && (user.role === 'artist' || user.role === 'admin'),
-      refetchInterval: 10000,
-    }
-  );
+  // Consolidate inbox requests (Leads + Consultations) via SSOT Hook
+  const { requestItems, isLoading: requestsLoading, isArtist } = useInboxRequests();
 
   const [isConsultationsOpen, setIsConsultationsOpen] = useState(true);
+
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -50,7 +46,6 @@ export default function Conversations() {
     return <LoadingState message="Loading messages..." fullScreen />;
   }
 
-  const isArtist = user?.role === "artist" || user?.role === "admin";
   const unreadTotal = conversations?.reduce((acc, curr) => acc + (curr.unreadCount || 0), 0) || 0;
 
   return (
@@ -94,8 +89,8 @@ export default function Conversations() {
         <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y will-change-scroll transform-gpu">
           <div className="pb-32 max-w-lg mx-auto space-y-4 min-h-[50vh]">
 
-            {/* Consultation Requests from Funnel */}
-            {isArtist && leadsData && (
+            {/* Consultation Requests from Leads AND Consultations */}
+            {isArtist && (
               <Collapsible
                 open={isConsultationsOpen}
                 onOpenChange={setIsConsultationsOpen}
@@ -103,7 +98,7 @@ export default function Conversations() {
               >
                 <div className="flex items-center justify-between px-2 mb-3">
                   <h2 className={tokens.header.sectionTitle}>
-                    Consultation Requests ({leadsData.leads?.length || 0})
+                    Consultation Requests ({requestItems.length})
                   </h2>
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" size="sm" className="w-8 h-8 p-0 rounded-full hover:bg-white/10 text-muted-foreground">
@@ -113,17 +108,26 @@ export default function Conversations() {
                 </div>
 
                 <CollapsibleContent className="space-y-3">
-                  {leadsData.leads && leadsData.leads.length > 0 ? (
-                    leadsData.leads.map((lead) => (
+                  {requestItems.length > 0 ? (
+                    requestItems.map((item) => (
                       <ConsultationCard
-                        key={`lead-${lead.id}`}
-                        subject={`${lead.projectType?.replace(/-/g, ' ') || 'New consultation'} - ${lead.clientName}`}
-                        clientName={lead.clientName}
-                        description={lead.projectDescription || 'No description provided'}
+                        key={`${item.type}-${item.id}`}
+                        subject={`${item.subject} - ${item.name}`}
+                        clientName={item.name}
+                        description={item.description || 'No description provided'}
                         isNew={true}
                         onClick={() => {
-                          // Navigate to lead detail or create conversation
-                          setLocation(`/lead/${lead.id}`);
+                          if (item.type === 'lead') {
+                            setLocation(`/lead/${item.id}`);
+                          } else {
+                            // Link to conversation for this consultation
+                            if (item.data.conversationId) {
+                              setLocation(`/chat/${item.data.conversationId}?consultationId=${item.id}`);
+                            } else {
+                              // Fallback
+                              setLocation(`/conversations`);
+                            }
+                          }
                         }}
                       />
                     ))

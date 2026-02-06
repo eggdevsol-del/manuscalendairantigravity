@@ -4,22 +4,30 @@ import { protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
 export const consultationsRouter = router({
-    list: protectedProcedure.query(async ({ ctx }) => {
-        const consultations = await db.getConsultationsForUser(ctx.user.id, ctx.user.role);
+    list: protectedProcedure
+        .input(z.object({
+            status: z.enum(["pending", "responded", "scheduled", "completed", "cancelled"]).optional()
+        }).optional())
+        .query(async ({ ctx, input }) => {
+            const consultations = await db.getConsultationsForUser(
+                ctx.user.id,
+                ctx.user.role,
+                input?.status
+            );
 
-        // Enrich with user details
-        const enriched = await Promise.all(consultations.map(async (c) => {
-            const artist = await db.getUser(c.artistId);
-            const client = await db.getUser(c.clientId);
-            return {
-                ...c,
-                artist,
-                client
-            };
-        }));
+            // Enrich with user details
+            const enriched = await Promise.all(consultations.map(async (c) => {
+                const artist = await db.getUser(c.artistId);
+                const client = await db.getUser(c.clientId);
+                return {
+                    ...c,
+                    artist,
+                    client
+                };
+            }));
 
-        return enriched;
-    }),
+            return enriched;
+        }),
     create: protectedProcedure
         .input(
             z.object({
