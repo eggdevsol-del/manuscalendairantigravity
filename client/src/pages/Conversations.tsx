@@ -11,6 +11,7 @@ import { useArtistReferral } from "@/features/chat/useArtistReferral";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { useInboxRequests } from "@/features/chat/hooks/useInboxRequests";
+import { toast } from "sonner";
 
 export default function Conversations() {
   const { user, loading } = useAuth();
