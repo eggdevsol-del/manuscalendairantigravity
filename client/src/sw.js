@@ -9,6 +9,13 @@ import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 self.skipWaiting();
 clientsClaim();
 
+// Integrate OneSignal v16 SDK
+try {
+  self.importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
+} catch (e) {
+  console.error('[SW] OneSignal importScripts failed:', e);
+}
+
 // Get app version from Vite define
 const APP_VERSION = self.__APP_VERSION__ || '0.0.0';
 console.log(`[SW] Service Worker v${APP_VERSION} initializing...`);
@@ -186,13 +193,21 @@ self.addEventListener('push', (event) => {
     const data = event.data.json();
     console.log('[SW] Push data:', data);
 
+    // If this is a OneSignal notification, it has a 'custom' property
+    // The OneSignal SDK (which we imported above) will handle this automatically.
+    // We skip our custom handler to avoid duplicate notifications.
+    if (data && (data.custom || data.userId || data.app_id)) {
+      console.log('[SW] OneSignal payload detected, letting SDK handle it');
+      return;
+    }
+
     const title = data.title || 'New Notification';
     const options = {
       body: data.body || 'You have a new notification',
       icon: '/icon-192.png',
       badge: '/icon-192.png',
       data: { url: data.data?.url || data.url || '/' },
-      requireInteraction: true, // Keep notification until user interacts
+      requireInteraction: true,
       actions: [
         { action: 'open', title: 'Open' }
       ]
@@ -203,12 +218,19 @@ self.addEventListener('push', (event) => {
         .catch(err => console.error('[SW] Show notification failed:', err))
     );
   } catch (err) {
-    console.error('[SW] Push processing failed:', err);
+    console.error('[SW] Push processing failed or non-JSON payload:', err);
   }
 });
 
 self.addEventListener('notificationclick', (event) => {
   console.log('[SW] Notification clicked', event);
+
+  // If this is a OneSignal notification, let the SDK handle it
+  if (event.notification.data && (event.notification.data.custom || event.notification.data.userId)) {
+    console.log('[SW] OneSignal click detected, letting SDK handle it');
+    return;
+  }
+
   event.notification.close();
 
   const urlToOpen = new URL(event.notification.data?.url || '/', self.location.origin).href;

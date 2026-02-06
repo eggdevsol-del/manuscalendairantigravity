@@ -14,6 +14,7 @@ export async function initializeOneSignal() {
     await OneSignal.init({
       appId: ONESIGNAL_APP_ID,
       allowLocalhostAsSecureOrigin: true, // For development
+      serviceWorkerPath: '/sw.js', // Unified with PWA
       welcomeNotification: {
         title: "Thanks for subscribing!",
         message: "You'll receive notifications about new messages and appointments.",
