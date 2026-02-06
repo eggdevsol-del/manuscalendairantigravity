@@ -173,49 +173,64 @@ self.addEventListener('message', (event) => {
 
 // -- Push Notification Handlers --
 
+// -- Push Notification Handlers --
 self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'New Notification';
-  const options = {
-    body: data.body || 'You have a new notification',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    vibrate: [200, 100, 200],
-    data: data.data || data.url || '/',
-    actions: [
-      { action: 'open', title: 'Open' },
-      { action: 'close', title: 'Close' }
-    ]
-  };
+  console.log('[SW] Push received', event);
 
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
+  if (!event.data) {
+    console.log('[SW] Push error: No data');
+    return;
+  }
+
+  try {
+    const data = event.data.json();
+    console.log('[SW] Push data:', data);
+
+    const title = data.title || 'New Notification';
+    const options = {
+      body: data.body || 'You have a new notification',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      data: { url: data.data?.url || data.url || '/' },
+      requireInteraction: true, // Keep notification until user interacts
+      actions: [
+        { action: 'open', title: 'Open' }
+      ]
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(title, options)
+        .catch(err => console.error('[SW] Show notification failed:', err))
+    );
+  } catch (err) {
+    console.error('[SW] Push processing failed:', err);
+  }
 });
 
 self.addEventListener('notificationclick', (event) => {
+  console.log('[SW] Notification clicked', event);
   event.notification.close();
 
-  if (event.action === 'open' || !event.action) {
-    const urlToOpen = event.notification.data?.url || event.notification.data || '/';
+  const urlToOpen = new URL(event.notification.data?.url || '/', self.location.origin).href;
 
-    event.waitUntil(
-      clients.matchAll({
-        type: 'window',
-        includeUncontrolled: true
-      }).then((windowClients) => {
-        // Check if there is already a window/tab open with the target URL
-        for (let i = 0; i < windowClients.length; i++) {
-          const client = windowClients[i];
-          if (client.url === urlToOpen && 'focus' in client) {
-            return client.focus();
-          }
-        }
-        // If not, open a new window
-        if (clients.openWindow) {
-          return clients.openWindow(urlToOpen);
-        }
-      })
-    );
-  }
+  const promiseChain = clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true
+  }).then((windowClients) => {
+    // Check if there is already a window/tab open with the target URL
+    for (let i = 0; i < windowClients.length; i++) {
+      const client = windowClients[i];
+      // Check if client url matches (ignoring query params if needed, or exact match)
+      // Using includes or startsWith might be safer for SPA routes
+      if (client.url === urlToOpen || client.url.startsWith(urlToOpen)) {
+        return client.focus();
+      }
+    }
+    // If not, open a new window
+    if (clients.openWindow) {
+      return clients.openWindow(urlToOpen);
+    }
+  });
+
+  event.waitUntil(promiseChain);
 });

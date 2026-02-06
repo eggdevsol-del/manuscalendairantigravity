@@ -243,7 +243,7 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-white">Tap "Add" to confirm</p>
-                <p className="text-xs text-white/60 mt-1">The app will appear on your home screen</p>
+                <p className="text-xs text-white/60 mt-1">Required for Push Notifications</p>
               </div>
             </div>
           </div>
