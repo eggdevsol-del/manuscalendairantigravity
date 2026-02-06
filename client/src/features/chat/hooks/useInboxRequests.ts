@@ -60,9 +60,8 @@ export function useInboxRequests() {
         // Add consultations (deduplicated)
         if (consultationsData) {
             consultationsData.forEach((consult: any) => {
-                // Deduplicate if linked to same lead
-                const leadId = (consult as any).leadId;
-                const isDuplicate = leadId && items.some(item => item.type === 'lead' && item.id === leadId);
+                // Check if any lead already in items points to this consultation
+                const isDuplicate = items.some(item => item.type === 'lead' && (item.data as any).consultationId === consult.id);
 
                 if (!isDuplicate) {
                     items.push({

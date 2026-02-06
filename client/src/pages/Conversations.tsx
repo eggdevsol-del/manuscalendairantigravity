@@ -96,16 +96,16 @@ export default function Conversations() {
                 onOpenChange={setIsConsultationsOpen}
                 className="mb-6 space-y-2"
               >
-                <div className="flex items-center justify-between px-2 mb-3">
-                  <h2 className={tokens.header.sectionTitle}>
-                    Consultation Requests ({requestItems.length})
-                  </h2>
-                  <CollapsibleTrigger asChild>
+                <CollapsibleTrigger asChild>
+                  <div className="flex items-center justify-between px-2 mb-3 cursor-pointer group">
+                    <h2 className={cn(tokens.header.sectionTitle, "group-hover:text-foreground transition-colors")}>
+                      Consultation Requests ({requestItems.length})
+                    </h2>
                     <Button variant="ghost" size="sm" className="w-8 h-8 p-0 rounded-full hover:bg-white/10 text-muted-foreground">
                       <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isConsultationsOpen ? '' : '-rotate-90'}`} />
                     </Button>
-                  </CollapsibleTrigger>
-                </div>
+                  </div>
+                </CollapsibleTrigger>
 
                 <CollapsibleContent className="space-y-3">
                   {requestItems.length > 0 ? (
