@@ -97,7 +97,7 @@ export const consultations = mysqlTable("consultations", {
 	description: text().notNull(),
 	preferredDate: datetime({ mode: 'string' }),
 	status: mysqlEnum(['pending', 'responded', 'scheduled', 'completed', 'cancelled', 'archived']).default('pending').notNull(),
-	leadId: int().references(() => leads.id, { onDelete: "set null" }),
+	leadId: int(),
 	viewed: tinyint().default(0),
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
@@ -110,7 +110,7 @@ export const conversations = mysqlTable("conversations", {
 	id: int().autoincrement().notNull(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
-	leadId: int().references(() => leads.id, { onDelete: "set null" }),
+	leadId: int(),
 	pinnedConsultationId: int(), // Breaking circular reference for now
 	lastMessageAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
@@ -322,6 +322,7 @@ export const issuedVouchers = mysqlTable("issued_vouchers", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	redeemedAt: timestamp({ mode: 'string' }),
 }, (table) => [
+	primaryKey({ columns: [table.id], name: "issued_vouchers_id" }),
 ]);
 
 export const notificationOutbox = mysqlTable("notification_outbox", {
@@ -423,6 +424,10 @@ export const consultationsRelations = relations(consultations, ({ one }) => ({
 	conversation: one(conversations, {
 		fields: [consultations.conversationId],
 		references: [conversations.id]
+	}),
+	lead: one(leads, {
+		fields: [consultations.leadId],
+		references: [leads.id]
 	})
 }));
 
@@ -437,7 +442,11 @@ export const conversationsRelations = relations(conversations, ({ one, many }) =
 	}),
 	messages: many(messages),
 	appointments: many(appointments),
-	consultations: many(consultations)
+	consultations: many(consultations),
+	lead: one(leads, {
+		fields: [conversations.leadId],
+		references: [leads.id]
+	})
 }));
 
 export const messagesRelations = relations(messages, ({ one }) => ({
@@ -848,8 +857,8 @@ export const leads = mysqlTable("leads", {
 	estimatedValue: int(), // In cents, computed from budget range
 
 	// Linked entities (created when lead progresses)
-	conversationId: int().references(() => conversations.id, { onDelete: "set null" }),
-	consultationId: int().references(() => consultations.id, { onDelete: "set null" }),
+	conversationId: int(),
+	consultationId: int(),
 	appointmentId: int().references(() => appointments.id, { onDelete: "set null" }),
 
 	// Proposal tracking
@@ -1196,7 +1205,7 @@ export const promotionRedemptionsRelations = relations(promotionRedemptions, ({ 
 	}),
 }));
 
-export const pushSubscriptions = mysqlTable("push_subscriptions", {
+export const pushSubscriptions = mysqlTable("pushSubscriptions", {
 	id: int().autoincrement().notNull(),
 	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	endpoint: varchar({ length: 500 }).notNull(),
@@ -1204,6 +1213,6 @@ export const pushSubscriptions = mysqlTable("push_subscriptions", {
 	userAgent: varchar({ length: 255 }),
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "push_subscriptions_id" }),
+	primaryKey({ columns: [table.id], name: "pushSubscriptions_id" }),
 	index("user_id_idx").on(table.userId),
 ]);

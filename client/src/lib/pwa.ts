@@ -11,11 +11,10 @@ export async function registerServiceWorker() {
     console.log('[PWA] Registering service worker...');
 
     const updateSW = registerSW({
-      immediate: true,
+      immediate: false, // Don't force immediate activation to prevent reload loops
       onNeedRefresh() {
-        console.log('[PWA] New content available, refreshing...');
-        // Refresh to get new content
-        updateSW(true);
+        console.log('[PWA] New content available. User will be prompted to refresh.');
+        // We'll let the UI handle the refresh prompt instead of automatic reloads
       },
       onOfflineReady() {
         console.log('[PWA] App ready to work offline');
@@ -78,14 +77,15 @@ export async function getServiceWorkerVersion(): Promise<string | null> {
   if (!('serviceWorker' in navigator)) return null;
 
   const registration = await navigator.serviceWorker.ready;
-  if (!registration.active) return null;
+  const activeWorker = registration.active;
+  if (!activeWorker) return null;
 
   return new Promise((resolve) => {
     const messageChannel = new MessageChannel();
     messageChannel.port1.onmessage = (event) => {
       resolve(event.data?.version || null);
     };
-    registration.active.postMessage({ type: 'GET_VERSION' }, [messageChannel.port2]);
+    activeWorker.postMessage({ type: 'GET_VERSION' }, [messageChannel.port2]);
 
     // Timeout after 1 second
     setTimeout(() => resolve(null), 1000);
