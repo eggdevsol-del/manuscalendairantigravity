@@ -82,6 +82,8 @@ export const pushRouter = router({
     test: protectedProcedure
         .input(z.object({
             targetUserId: z.string().optional(),
+            title: z.string().optional(),
+            body: z.string().optional(),
         }))
         .mutation(async ({ ctx, input }) => {
             const db = await getDb();
@@ -110,8 +112,8 @@ export const pushRouter = router({
                     };
 
                     const payload = JSON.stringify({
-                        title: "Test Notification",
-                        body: "This is a test web push from CalendAIr!",
+                        title: input.title || "Test Notification",
+                        body: input.body || "This is a test web push from CalendAIr!",
                         data: { url: "/" },
                     });
 

@@ -120,9 +120,12 @@ export function useWebPush() {
         }
     }, [status, publicKeyQuery, subscribeMutation]);
 
-    const sendTestPush = useCallback(async () => {
+    const sendTestPush = useCallback(async (options?: { title?: string, body?: string }) => {
         try {
-            const result = await testPushMutation.mutateAsync({});
+            const result = await testPushMutation.mutateAsync({
+                title: options?.title,
+                body: options?.body,
+            });
             if (result.success) {
                 toast.success(`Sent test push to ${result.results?.length} devices`);
             } else {

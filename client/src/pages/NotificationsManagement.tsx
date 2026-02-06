@@ -3,16 +3,18 @@ import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Inpu
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
 import { LoadingState } from "@/components/ui/ssot";
 import { trpc } from "@/lib/trpc";
-import { Bell, ChevronLeft, Edit, Plus, Trash2 } from "lucide-react";
+import { Bell, ChevronLeft, Edit, Plus, Trash2, Send } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { WebPushSettings } from "@/components/WebPushSettings";
+import { useWebPush } from "@/hooks/useWebPush";
 
 type TemplateType = "confirmation" | "reminder" | "follow_up" | "promotional" | "birthday" | "aftercare" | "preparation";
 
 export default function NotificationsManagement() {
   const { user, loading } = useAuth();
+  const { sendTestPush, isTesting } = useWebPush();
   const [, setLocation] = useLocation();
   const [showDialog, setShowDialog] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<any>(null);
@@ -235,6 +237,16 @@ export default function NotificationsManagement() {
                       </CardDescription>
                     </div>
                     <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => sendTestPush({ title: template.title, body: template.content })}
+                        disabled={isTesting}
+                        className="tap-target h-8 w-8 text-primary"
+                        title="Send Test Push"
+                      >
+                        <Send className="w-4 h-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
