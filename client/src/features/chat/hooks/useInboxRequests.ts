@@ -46,15 +46,16 @@ export function useInboxRequests() {
         // Add leads
         if (leadsData?.leads) {
             leadsData.leads.forEach(lead => {
+                const l = lead as any;
                 items.push({
                     type: 'lead',
-                    id: lead.id,
-                    leadId: lead.id,
-                    name: lead.clientName || 'Unknown Client',
-                    subject: lead.projectType?.replace(/-/g, ' ') || 'New consultation',
-                    description: lead.projectDescription || null,
-                    date: lead.createdAt || null,
-                    data: lead
+                    id: l.id,
+                    leadId: l.id,
+                    name: l.clientName || 'Unknown Client',
+                    subject: l.projectType?.replace(/-/g, ' ') || 'New consultation',
+                    description: l.projectDescription || null,
+                    date: l.createdAt || null,
+                    data: l
                 });
             });
         }

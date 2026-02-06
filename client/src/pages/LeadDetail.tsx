@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
-import { ArrowLeft, Mail, Phone, Calendar, DollarSign, Palette, MapPin, Clock, MessageCircle, MessageSquare, X } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Calendar, DollarSign, Palette, MapPin, Clock, MessageCircle, MessageSquare, X, Image as ImageIcon } from "lucide-react";
 import { LoadingState, PageShell, GlassSheet, PageHeader } from "@/components/ui/ssot";
 import { Card } from "@/components/ui/card";
 import { tokens } from "@/ui/tokens";
@@ -23,7 +23,7 @@ export default function LeadDetail() {
   );
 
   // Find the specific lead
-  const lead = leadsData?.leads?.find(l => l.id === leadId);
+  const lead = (leadsData?.leads as any[])?.find(l => l.id === leadId);
 
   // Update lead status mutation
   const updateStatusMutation = trpc.funnel.updateLeadStatus.useMutation({

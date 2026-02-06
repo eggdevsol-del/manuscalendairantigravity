@@ -10,11 +10,11 @@ import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { getDb } from "../db";
 import * as schema from "../../drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
-import { 
-  deriveTagLabels, 
-  calculatePriorityScore, 
+import {
+  deriveTagLabels,
+  calculatePriorityScore,
   getPriorityTier,
-  estimateLeadValue 
+  estimateLeadValue
 } from "../services/tagDerivationEngine";
 
 // Helper to format date for MySQL
@@ -32,11 +32,11 @@ export const funnelRouter = router({
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) return { available: false };
-      
+
       const existing = await db.query.artistSettings.findFirst({
         where: eq(schema.artistSettings.publicSlug, input.slug.toLowerCase()),
       });
-      
+
       return { available: !existing };
     }),
 
@@ -76,7 +76,7 @@ export const funnelRouter = router({
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) return null;
-      
+
       // Find artist settings by slug
       const settings = await db.query.artistSettings.findFirst({
         where: eq(schema.artistSettings.publicSlug, input.slug.toLowerCase()),
@@ -97,8 +97,8 @@ export const funnelRouter = router({
 
       return {
         id: artist.id,
-        displayName: artist.displayName || artist.username || 'Artist',
-        profileImage: artist.profileImage,
+        displayName: artist.name || 'Artist',
+        profileImage: artist.avatar || null,
         slug: settings.publicSlug,
         funnelWelcomeMessage: settings.funnelWelcomeMessage,
         styleOptions: settings.styleOptions ? JSON.parse(settings.styleOptions) : [],
@@ -148,7 +148,7 @@ export const funnelRouter = router({
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error('Database connection failed');
-      
+
       const now = new Date();
       const nowFormatted = formatDateForMySQL(now);
 
@@ -179,8 +179,8 @@ export const funnelRouter = router({
         referenceImages: input.stepData.style?.referenceImages,
         placement: input.stepData.budget?.placement,
         estimatedSize: input.stepData.budget?.estimatedSize,
-        budgetMin: input.stepData.budget?.budgetMin,
-        budgetMax: input.stepData.budget?.budgetMax,
+        budgetMin: input.stepData.budget?.budgetMin ?? undefined,
+        budgetMax: input.stepData.budget?.budgetMax ?? undefined,
         budgetLabel: input.stepData.budget?.budgetLabel,
         preferredTimeframe: input.stepData.availability?.preferredTimeframe,
         preferredMonths: input.stepData.availability?.preferredMonths,
@@ -256,7 +256,7 @@ export const funnelRouter = router({
               updatedAt: nowFormatted,
             })
             .where(eq(schema.leads.id, existingLead.id));
-          
+
           leadId = existingLead.id;
         } else {
           // Create new lead
@@ -287,7 +287,7 @@ export const funnelRouter = router({
             createdAt: nowFormatted,
             updatedAt: nowFormatted,
           });
-          
+
           leadId = newLead.insertId;
 
           // Create a consultation record linked to the lead
@@ -331,8 +331,8 @@ export const funnelRouter = router({
 
           await db.insert(schema.messages).values({
             conversationId: conversation.insertId,
-            senderId: null, // System message
-            senderType: 'system',
+            senderId: artistId, // Use artistId as a workaround if field is not null
+            messageType: 'system',
             content: summaryMessage,
             createdAt: nowFormatted,
           });
@@ -361,11 +361,11 @@ export const funnelRouter = router({
     .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) return { leads: [], total: 0 };
-      
+
       const { user } = ctx;
-      
+
       let query = db.query.leads.findMany({
-        where: input.status 
+        where: input.status
           ? and(eq(schema.leads.artistId, user.id), eq(schema.leads.status, input.status))
           : eq(schema.leads.artistId, user.id),
         orderBy: [desc(schema.leads.createdAt)],
@@ -374,15 +374,20 @@ export const funnelRouter = router({
       });
 
       const leadsResult = await query;
-      
+
       // Parse JSON fields
-      const parsedLeads = leadsResult.map(lead => ({
-        ...lead,
-        derivedTags: lead.derivedTags ? JSON.parse(lead.derivedTags) : [],
-        stylePreferences: lead.stylePreferences ? JSON.parse(lead.stylePreferences) : [],
-        referenceImages: lead.referenceImages ? JSON.parse(lead.referenceImages) : [],
-        preferredMonths: lead.preferredMonths ? JSON.parse(lead.preferredMonths) : [],
-      }));
+      // Parse JSON fields safely and ensure all fields are included
+      const parsedLeads = leadsResult.map(lead => {
+        const leadObj = lead as any;
+        return {
+          ...leadObj,
+          derivedTags: lead.derivedTags ? JSON.parse(lead.derivedTags as string) : [],
+          stylePreferences: lead.stylePreferences ? JSON.parse(lead.stylePreferences as string) : [],
+          referenceImages: lead.referenceImages ? JSON.parse(lead.referenceImages as string) : [],
+          preferredMonths: lead.preferredMonths ? JSON.parse(lead.preferredMonths as string) : [],
+          bodyPlacementImages: lead.bodyPlacementImages ? JSON.parse(lead.bodyPlacementImages as string) : [],
+        };
+      });
 
       return {
         leads: parsedLeads,
@@ -402,7 +407,7 @@ export const funnelRouter = router({
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new Error('Database connection failed');
-      
+
       const { user } = ctx;
       const now = formatDateForMySQL(new Date());
 
@@ -451,7 +456,7 @@ export const funnelRouter = router({
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new Error('Database connection failed');
-      
+
       const { user } = ctx;
       const now = formatDateForMySQL(new Date());
 
@@ -529,7 +534,7 @@ export const funnelRouter = router({
     .query(async ({ ctx }) => {
       const db = await getDb();
       if (!db) return null;
-      
+
       const { user } = ctx;
 
       const settings = await db.query.artistSettings.findFirst({

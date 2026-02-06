@@ -117,15 +117,19 @@ export default function Conversations() {
                         description={item.description || 'No description provided'}
                         isNew={true}
                         onClick={() => {
+                          console.log("Card clicked:", item);
                           const routeId = item.leadId || (item.type === 'lead' ? item.id : null);
+                          console.log("Calculated routeId:", routeId);
                           if (routeId) {
+                            console.log("Navigating to /lead/" + routeId);
                             setLocation(`/lead/${routeId}`);
                           } else {
                             // Link to conversation for this consultation if no leadId
+                            console.log("No leadId, checking conversationId:", item.data.conversationId);
                             if (item.data.conversationId) {
                               setLocation(`/chat/${item.data.conversationId}?consultationId=${item.id}`);
                             } else {
-                              // Fallback
+                              console.log("Fallback to /conversations");
                               setLocation(`/conversations`);
                             }
                           }

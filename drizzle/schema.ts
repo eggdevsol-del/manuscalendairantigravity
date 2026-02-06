@@ -97,6 +97,7 @@ export const consultations = mysqlTable("consultations", {
 	description: text().notNull(),
 	preferredDate: datetime({ mode: 'string' }),
 	status: mysqlEnum(['pending', 'responded', 'scheduled', 'completed', 'cancelled', 'archived']).default('pending').notNull(),
+	leadId: int().references(() => leads.id, { onDelete: "set null" }),
 	viewed: tinyint().default(0),
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
@@ -109,6 +110,7 @@ export const conversations = mysqlTable("conversations", {
 	id: int().autoincrement().notNull(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	leadId: int().references(() => leads.id, { onDelete: "set null" }),
 	pinnedConsultationId: int(), // Breaking circular reference for now
 	lastMessageAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
