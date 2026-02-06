@@ -1205,7 +1205,7 @@ export const promotionRedemptionsRelations = relations(promotionRedemptions, ({ 
 	}),
 }));
 
-export const pushSubscriptions = mysqlTable("pushSubscriptions", {
+export const pushSubscriptions = mysqlTable("push_subscriptions", {
 	id: int().autoincrement().notNull(),
 	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	endpoint: varchar({ length: 500 }).notNull(),
