@@ -20,6 +20,9 @@ export default function Conversations() {
   // Handle referrals
   useArtistReferral();
 
+  // Mutation to create/get conversation for fallback navigation
+  const createConversation = trpc.conversations.getOrCreate.useMutation();
+
   const { data: conversations, isLoading, isPending } = trpc.conversations.list.useQuery(undefined, {
     enabled: !!user,
     refetchInterval: 10000,
@@ -117,7 +120,7 @@ export default function Conversations() {
                         clientName={item.name}
                         description={item.description || 'No description provided'}
                         isNew={true}
-                        onClick={() => {
+                        onClick={async () => {
                           console.log("Card clicked:", item);
                           if (item.leadId) {
                             console.log("Navigating to /lead/" + item.leadId);
@@ -132,6 +135,22 @@ export default function Conversations() {
                           }
 
                           // Fallback: search for conversation with this user
+                          if (item?.data?.clientId && user) {
+                            try {
+                              const conv = await createConversation.mutateAsync({
+                                artistId: user.id,
+                                clientId: item.data.clientId
+                              });
+
+                              if (conv) {
+                                setLocation(`/chat/${conv.id}`);
+                                return;
+                              }
+                            } catch (err) {
+                              console.error("Failed to get/create conversation fallback", err);
+                            }
+                          }
+
                           console.warn("No leadId or conversationId found for item:", item);
                           toast.error("Could not open request details");
                         }}
