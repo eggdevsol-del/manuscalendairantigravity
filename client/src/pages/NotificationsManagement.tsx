@@ -141,6 +141,33 @@ export default function NotificationsManagement() {
     preparation: "Sent before appointment with preparation info",
   };
 
+  // Client selection state for push test
+  const [pushDialog, setPushDialog] = useState<{ isOpen: boolean; template: any | null }>({
+    isOpen: false,
+    template: null,
+  });
+
+  const { data: clients } = trpc.conversations.getClients.useQuery(undefined, {
+    enabled: !!user && (user.role === "artist" || user.role === "admin"),
+  });
+
+  const handleTestClick = (template: any) => {
+    setPushDialog({ isOpen: true, template });
+  };
+
+  const handleSendPushToClient = async (clientId: string) => {
+    if (!pushDialog.template) return;
+
+    await sendTestPush({
+      targetUserId: clientId,
+      title: pushDialog.template.title,
+      body: pushDialog.template.content,
+    });
+
+    // Don't close immediately if you want to send to multiple, but typically we close
+    // setPushDialog({ isOpen: false, template: null });
+  };
+
   if (loading) {
     return <LoadingState message="Loading..." fullScreen />;
   }
@@ -240,7 +267,7 @@ export default function NotificationsManagement() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => sendTestPush({ title: template.title, body: template.content })}
+                        onClick={() => handleTestClick(template)}
                         disabled={isTesting}
                         className="tap-target h-8 w-8 text-primary"
                         title="Send Test Push"
@@ -394,6 +421,53 @@ export default function NotificationsManagement() {
               }
             />
           </div>
+        </div>
+      </ModalShell>
+
+      {/* Push Target Selection Dialog */}
+      <ModalShell
+        isOpen={pushDialog.isOpen}
+        onClose={() => setPushDialog({ isOpen: false, template: null })}
+        title="Send Test Push"
+        description="Select a client to send this notification to"
+        className="max-w-md max-h-[80vh] overflow-y-auto"
+        overlayName="Push Target Selection"
+        overlayId="notifications.push_target"
+      >
+        <div className="py-4 space-y-2">
+          <Button
+            variant="outline"
+            className="w-full justify-start font-normal"
+            onClick={() => handleSendPushToClient(user?.id || "")}
+          >
+            <div className="flex flex-col items-start gap-1">
+              <span className="font-medium">Myself (Artist)</span>
+              <span className="text-xs text-muted-foreground">Test on this device</span>
+            </div>
+          </Button>
+
+          <div className="h-px bg-border my-2" />
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">My Clients</p>
+
+          {!clients?.length ? (
+            <p className="text-sm text-muted-foreground">No clients found.</p>
+          ) : (
+            <div className="space-y-2">
+              {clients.map(client => (
+                <Button
+                  key={client.id}
+                  variant="ghost"
+                  className="w-full justify-start h-auto py-3 px-4 bg-muted/50 hover:bg-muted"
+                  onClick={() => handleSendPushToClient(client.id)}
+                >
+                  <div className="text-left">
+                    <div className="font-medium">{client.name}</div>
+                    <div className="text-xs text-muted-foreground">{client.email}</div>
+                  </div>
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
       </ModalShell>
     </PageShell>
