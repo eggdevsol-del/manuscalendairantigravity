@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useUIDebug } from "@/_core/contexts/UIDebugContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import PushNotificationSettings from "@/components/PushNotificationSettings";
+import { WebPushSettings } from "@/components/WebPushSettings";
 
 import WorkHoursAndServices from "./WorkHoursAndServices";
 import ArtistLink from "@/components/ArtistLink";
@@ -566,21 +566,7 @@ export default function Settings() {
 
                 {/* Client Notifications Settings */}
                 <div className="px-1">
-                  {/* We render the component directly here, or we could wrap it in a Card if we want consistency. 
-                       PushNotificationSettings already renders a Card. 
-                       However, the existing layout uses clickable cards that navigate or expand.
-                       PushNotificationSettings is a standalone card with toggle. 
-                       Let's wrap it or adapt it.
-                       Actually, PushNotificationSettings renders a full Card. Let's toggle visibility state logic or strict rendering.
-                       Wait, PushNotificationSettings is fully self contained. 
-                       But current design uses generic clickable list items.
-                       Let's just drop it in for now as a direct child, it might look slightly different style-wise (bordered card vs the borderless list items).
-                       Let's customize PushNotificationSettings or just place it.
-                       Given it returns a <Card>, it will be a bordered card in the list.
-                       Let's make it look consistent -> modify PushNotificationSettings to accept className or variant?
-                       Or just render it. It's fine.
-                   */}
-                  <PushNotificationSettings />
+                  <WebPushSettings hideTestButton />
                 </div>
               </>
             )}

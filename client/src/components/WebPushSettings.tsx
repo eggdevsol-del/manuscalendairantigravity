@@ -3,7 +3,7 @@ import { Button } from "@/components/ui";
 import { Bell, BellOff, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function WebPushSettings() {
+export function WebPushSettings({ hideTestButton = false }: { hideTestButton?: boolean }) {
     const { status, subscription, subscribe, isSubscribing, sendTestPush, isTesting } = useWebPush();
 
     // Feature flag check (optional, can also be done by parent)
@@ -42,7 +42,7 @@ export function WebPushSettings() {
                     </Button>
                 )}
 
-                {subscription && (
+                {(subscription && !hideTestButton) && (
                     <Button
                         size="sm"
                         variant="outline"

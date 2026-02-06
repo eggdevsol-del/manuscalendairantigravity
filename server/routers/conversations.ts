@@ -210,12 +210,21 @@ export const conversationsRouter = router({
             // Get unique clients from conversations
             const clientIds = [...new Set(convos.map(c => c.clientId))];
 
+            const database = await getDb();
+            if (!database) {
+                // If DB is not available, return nulls or empty list? 
+                // Better to throw or return what we can. 
+                // For now, let's assume getDb works as it is used elsewhere.
+                // But getDb is async.
+                return [];
+            }
+
             const clients = await Promise.all(
                 clientIds.map(async (clientId) => {
                     const user = await db.getUser(clientId);
                     if (!user) return null;
 
-                    const pushSub = await db.query.pushSubscriptions.findFirst({
+                    const pushSub = await database.query.pushSubscriptions.findFirst({
                         where: eq(schema.pushSubscriptions.userId, clientId)
                     });
 

@@ -70,7 +70,10 @@ export function useWebPush() {
     }, []);
 
     const subscribe = useCallback(async () => {
-        if (status === 'unsupported' || status === 'denied') return;
+        if (status === 'unsupported' || status === 'denied') {
+            toast.error("Notifications are blocked or unsupported.");
+            return;
+        }
 
         setIsSubscribing(true);
         try {
@@ -78,7 +81,7 @@ export function useWebPush() {
             const permission = await Notification.requestPermission();
             if (permission === 'denied') {
                 setStatus('denied');
-                throw new Error('Permission denied');
+                throw new Error('Permission denied by user');
             }
             setStatus('granted');
 
@@ -90,6 +93,13 @@ export function useWebPush() {
 
             // 3. Register with PushManager
             const registration = await navigator.serviceWorker.ready;
+
+            // Unsubscribe existing to ensure fresh key usage
+            const existingSub = await registration.pushManager.getSubscription();
+            if (existingSub) {
+                await existingSub.unsubscribe();
+            }
+
             const sub = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(keyData.publicKey),
@@ -114,7 +124,8 @@ export function useWebPush() {
             toast.success('Notifications enabled!');
         } catch (error: any) {
             console.error('Subscription failed', error);
-            toast.error('Failed to enable notifications: ' + error.message);
+            // Show explicit error to user
+            toast.error('Failed to enable: ' + (error.message || 'Unknown error'));
         } finally {
             setIsSubscribing(false);
         }
