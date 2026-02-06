@@ -139,7 +139,19 @@ export function useWebPush() {
                 targetUserId: options?.targetUserId,
             });
             if (result.success) {
-                toast.success(`Sent test push to ${result.results?.length} devices`);
+                const sentCount = result.results?.filter((r: any) => r.status === 'sent').length || 0;
+                const failCount = result.results?.length ? result.results.length - sentCount : 0;
+
+                if (sentCount > 0) {
+                    toast.success(`Successfully sent to ${sentCount} device${sentCount !== 1 ? 's' : ''}`);
+                }
+                if (failCount > 0) {
+                    toast.warning(`Failed to send to ${failCount} device${failCount !== 1 ? 's' : ''} (expired/invalid)`);
+                }
+                if (sentCount === 0 && failCount === 0 && result.results?.length === 0) {
+                    // Should be covered by "No subscriptions found" check in backend, but just in case
+                    toast.info("No active subscriptions found for this user.");
+                }
             } else {
                 toast.error('Failed to send test push: ' + result.message);
             }
