@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea } from "@/components/ui";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
-import { LoadingState } from "@/components/ui/ssot";
+import { LoadingState, PageShell } from "@/components/ui/ssot";
 import { trpc } from "@/lib/trpc";
 import { Bell, ChevronLeft, Edit, Plus, Trash2, Send } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -146,8 +146,8 @@ export default function NotificationsManagement() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col pb-safe">
-      <header className="mobile-header px-4 py-4">
+    <PageShell>
+      <header className="mobile-header px-4 py-4 shrink-0">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -209,7 +209,7 @@ export default function NotificationsManagement() {
             </div>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 pb-20">
             {templates?.map((template: any) => (
               <Card key={template.id}>
                 <CardHeader className="pb-3">
@@ -396,7 +396,7 @@ export default function NotificationsManagement() {
           </div>
         </div>
       </ModalShell>
-    </div>
+    </PageShell>
   );
 }
 
