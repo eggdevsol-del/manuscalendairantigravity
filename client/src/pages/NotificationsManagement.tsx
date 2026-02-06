@@ -7,6 +7,7 @@ import { Bell, ChevronLeft, Edit, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { WebPushSettings } from "@/components/WebPushSettings";
 
 type TemplateType = "confirmation" | "reminder" | "follow_up" | "promotional" | "birthday" | "aftercare" | "preparation";
 
@@ -174,6 +175,9 @@ export default function NotificationsManagement() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Web Push Test Controls */}
+        <WebPushSettings />
 
         <Button
           onClick={() => {

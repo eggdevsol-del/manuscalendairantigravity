@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useUIDebug } from "@/_core/contexts/UIDebugContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import PushNotificationSettings from "@/components/PushNotificationSettings";
-import { useWebPush } from "@/hooks/useWebPush";
+
 import WorkHoursAndServices from "./WorkHoursAndServices";
 import ArtistLink from "@/components/ArtistLink";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Switch, Textarea } from "@/components/ui";
@@ -40,7 +40,7 @@ export default function Settings() {
   const { showDebugLabels, setShowDebugLabels } = useUIDebug();
   const [, setLocation] = useLocation();
   const [activeSection, setActiveSection] = useState<SettingsSection>("main");
-  const { sendTestPush, isTesting } = useWebPush(); // Hook
+
 
   // Profile state
   const [profileName, setProfileName] = useState("");
@@ -662,26 +662,7 @@ export default function Settings() {
               </div>
             </Card>
 
-            {/* Push Test (Dev) */}
-            {import.meta.env.VITE_FEATURE_WEBPUSH_TEST === 'true' && (
-              <Card
-                className="cursor-pointer hover:bg-white/10 transition-colors border-0 bg-white/5 rounded-2xl"
-                onClick={() => sendTestPush()}
-              >
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
-                      <Bell className="w-5 h-5" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-foreground">Test Push Notification</p>
-                      <p className="text-xs text-muted-foreground">{isTesting ? 'Sending...' : 'Send a test alert to this device'}</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                </div>
-              </Card>
-            )}
+
 
             <Card
               className="cursor-pointer hover:bg-blue-500/10 transition-colors border-0 bg-white/5 rounded-2xl group"
