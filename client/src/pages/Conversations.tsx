@@ -112,27 +112,27 @@ export default function Conversations() {
                     requestItems.map((item) => (
                       <ConsultationCard
                         key={`${item.type}-${item.id}`}
-                        subject={`${item.subject} - ${item.name}`}
+                        subject={item.subject}
                         clientName={item.name}
                         description={item.description || 'No description provided'}
                         isNew={true}
                         onClick={() => {
                           console.log("Card clicked:", item);
-                          const routeId = item.leadId || (item.type === 'lead' ? item.id : null);
-                          console.log("Calculated routeId:", routeId);
-                          if (routeId) {
-                            console.log("Navigating to /lead/" + routeId);
-                            setLocation(`/lead/${routeId}`);
-                          } else {
-                            // Link to conversation for this consultation if no leadId
-                            console.log("No leadId, checking conversationId:", item.data.conversationId);
-                            if (item.data.conversationId) {
-                              setLocation(`/chat/${item.data.conversationId}?consultationId=${item.id}`);
-                            } else {
-                              console.log("Fallback to /conversations");
-                              setLocation(`/conversations`);
-                            }
+                          if (item.leadId) {
+                            console.log("Navigating to /lead/" + item.leadId);
+                            setLocation(`/lead/${item.leadId}`);
+                            return;
                           }
+
+                          if (item.data?.conversationId) {
+                            console.log("Navigating to /chat/" + item.data.conversationId);
+                            setLocation(`/chat/${item.data.conversationId}?consultationId=${item.id}`);
+                            return;
+                          }
+
+                          // Fallback: search for conversation with this user
+                          console.warn("No leadId or conversationId found for item:", item);
+                          toast.error("Could not open request details");
                         }}
                       />
                     ))
