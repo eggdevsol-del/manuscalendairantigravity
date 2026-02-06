@@ -95,14 +95,16 @@ export default function Conversations() {
           <div className="pb-32 max-w-lg mx-auto space-y-4 min-h-[50vh]">
 
             {/* Consultation Requests from Funnel */}
-            {isArtist && leadsData?.leads && leadsData.leads.length > 0 && (
+            {isArtist && leadsData && (
               <Collapsible
                 open={isConsultationsOpen}
                 onOpenChange={setIsConsultationsOpen}
                 className="mb-6 space-y-2"
               >
                 <div className="flex items-center justify-between px-2 mb-3">
-                  <h2 className={tokens.header.sectionTitle}>Consultation Requests</h2>
+                  <h2 className={tokens.header.sectionTitle}>
+                    Consultation Requests ({leadsData.leads?.length || 0})
+                  </h2>
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" size="sm" className="w-8 h-8 p-0 rounded-full hover:bg-white/10 text-muted-foreground">
                       <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isConsultationsOpen ? '' : '-rotate-90'}`} />
@@ -111,19 +113,23 @@ export default function Conversations() {
                 </div>
 
                 <CollapsibleContent className="space-y-3">
-                  {leadsData.leads.map((lead) => (
-                    <ConsultationCard
-                      key={`lead-${lead.id}`}
-                      subject={`${lead.projectType?.replace(/-/g, ' ') || 'New consultation'} - ${lead.clientName}`}
-                      clientName={lead.clientName}
-                      description={lead.projectDescription || 'No description provided'}
-                      isNew={true}
-                      onClick={() => {
-                        // Navigate to lead detail or create conversation
-                        setLocation(`/lead/${lead.id}`);
-                      }}
-                    />
-                  ))}
+                  {leadsData.leads && leadsData.leads.length > 0 ? (
+                    leadsData.leads.map((lead) => (
+                      <ConsultationCard
+                        key={`lead-${lead.id}`}
+                        subject={`${lead.projectType?.replace(/-/g, ' ') || 'New consultation'} - ${lead.clientName}`}
+                        clientName={lead.clientName}
+                        description={lead.projectDescription || 'No description provided'}
+                        isNew={true}
+                        onClick={() => {
+                          // Navigate to lead detail or create conversation
+                          setLocation(`/lead/${lead.id}`);
+                        }}
+                      />
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground px-2">No new consultation requests found.</p>
+                  )}
                 </CollapsibleContent>
               </Collapsible>
             )}
