@@ -89,8 +89,8 @@ export const pushRouter = router({
             const db = await getDb();
             if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
 
-            // Only admin can target other users
-            const targetId = (ctx.user.role === 'admin' && input.targetUserId)
+            // Allow admin and artist to target other users
+            const targetId = ((ctx.user.role === 'admin' || ctx.user.role === 'artist') && input.targetUserId)
                 ? input.targetUserId
                 : ctx.user.id;
 
