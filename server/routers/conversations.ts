@@ -5,6 +5,7 @@ import * as db from "../db";
 import { getDb } from "../services/core";
 import * as schema from "../../drizzle/schema";
 import { eq, and, or } from "drizzle-orm";
+import * as pushService from "../services/pushService";
 
 export const conversationsRouter = router({
     list: protectedProcedure.query(async ({ ctx }) => {
@@ -208,31 +209,22 @@ export const conversationsRouter = router({
             );
 
             // Get unique clients from conversations
-            const clientIds = [...new Set(convos.map(c => c.clientId))];
-
-            const database = await getDb();
-            if (!database) {
-                // If DB is not available, return nulls or empty list? 
-                // Better to throw or return what we can. 
-                // For now, let's assume getDb works as it is used elsewhere.
-                // But getDb is async.
-                return [];
-            }
+            const clientIdsSet = new Set(convos.map(c => c.clientId));
+            const clientIds = Array.from(clientIdsSet);
 
             const clients = await Promise.all(
                 clientIds.map(async (clientId) => {
                     const user = await db.getUser(clientId);
                     if (!user) return null;
 
-                    const pushSub = await database.query.pushSubscriptions.findFirst({
-                        where: eq(schema.pushSubscriptions.userId, clientId)
-                    });
+                    // Use pushService to check subscription status (SSOT)
+                    const hasPushSubscription = await pushService.hasActiveSubscription(clientId);
 
                     return {
                         id: user.id,
                         name: user.name,
                         email: user.email,
-                        hasPushSubscription: !!pushSub
+                        hasPushSubscription
                     };
                 })
             );

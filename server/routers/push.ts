@@ -1,10 +1,8 @@
 import { TRPCError } from "@trpc/server";
-import { eq, and } from "drizzle-orm";
 import webpush from "web-push";
 import { z } from "zod";
-import { pushSubscriptions } from "../../drizzle/schema";
-import { adminProcedure, protectedProcedure, router } from "../_core/trpc";
-import { getDb } from "../services/core";
+import { protectedProcedure, router } from "../_core/trpc";
+import * as pushService from "../services/pushService";
 
 // Initialize VAPID
 const publicVapidKey = process.env.VAPID_PUBLIC_KEY;
@@ -21,6 +19,12 @@ if (publicVapidKey && privateVapidKey) {
     console.warn("VAPID keys not found. Push notifications will fail.");
 }
 
+/**
+ * Push Router - Translation layer between TRPC and Push Service
+ * 
+ * This router is intentionally thin, delegating all business logic
+ * to the pushService SSOT.
+ */
 export const pushRouter = router({
     subscribe: protectedProcedure
         .input(z.object({
@@ -32,33 +36,18 @@ export const pushRouter = router({
             userAgent: z.string().optional(),
         }))
         .mutation(async ({ ctx, input }) => {
-            const db = await getDb();
-            if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
-
-            // Check if subscription exists
-            const existing = await db.query.pushSubscriptions.findFirst({
-                where: and(
-                    eq(pushSubscriptions.userId, ctx.user.id),
-                    eq(pushSubscriptions.endpoint, input.endpoint)
-                ),
-            });
-
-            if (existing) {
-                // Update keys if changed
-                await db.update(pushSubscriptions)
-                    .set({ keys: JSON.stringify(input.keys), userAgent: input.userAgent })
-                    .where(eq(pushSubscriptions.id, existing.id));
-            } else {
-                // Create new
-                await db.insert(pushSubscriptions).values({
-                    userId: ctx.user.id,
+            try {
+                return await pushService.subscribeToPush(ctx.user.id, {
                     endpoint: input.endpoint,
-                    keys: JSON.stringify(input.keys), // keys stored as JSON string as per schema comment
+                    keys: input.keys,
                     userAgent: input.userAgent,
                 });
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: error.message || "Failed to subscribe to push notifications"
+                });
             }
-
-            return { success: true };
         }),
 
     unsubscribe: protectedProcedure
@@ -66,17 +55,14 @@ export const pushRouter = router({
             endpoint: z.string(),
         }))
         .mutation(async ({ ctx, input }) => {
-            const db = await getDb();
-            if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
-
-            await db.delete(pushSubscriptions)
-                .where(
-                    and(
-                        eq(pushSubscriptions.userId, ctx.user.id),
-                        eq(pushSubscriptions.endpoint, input.endpoint)
-                    )
-                );
-            return { success: true };
+            try {
+                return await pushService.unsubscribeFromPush(ctx.user.id, input.endpoint);
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: error.message || "Failed to unsubscribe from push notifications"
+                });
+            }
         }),
 
     test: protectedProcedure
@@ -86,52 +72,25 @@ export const pushRouter = router({
             body: z.string().optional(),
         }))
         .mutation(async ({ ctx, input }) => {
-            const db = await getDb();
-            if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+            try {
+                // Allow admin and artist to target other users
+                const targetId = ((ctx.user.role === 'admin' || ctx.user.role === 'artist') && input.targetUserId)
+                    ? input.targetUserId
+                    : ctx.user.id;
 
-            // Allow admin and artist to target other users
-            const targetId = ((ctx.user.role === 'admin' || ctx.user.role === 'artist') && input.targetUserId)
-                ? input.targetUserId
-                : ctx.user.id;
+                const result = await pushService.sendTestPush(targetId, input.title, input.body);
 
-            const subs = await db.query.pushSubscriptions.findMany({
-                where: eq(pushSubscriptions.userId, targetId),
-            });
-
-            if (subs.length === 0) {
-                return { success: false, message: "No subscriptions found for user" };
-            }
-
-            const results = [];
-            for (const sub of subs) {
-                try {
-                    const keys = JSON.parse(sub.keys);
-                    const pushConfig = {
-                        endpoint: sub.endpoint,
-                        keys: keys,
-                    };
-
-                    const payload = JSON.stringify({
-                        title: input.title || "Test Notification",
-                        body: input.body || "This is a test web push from CalendAIr!",
-                        data: { url: "/" },
-                    });
-
-                    await webpush.sendNotification(pushConfig, payload);
-                    results.push({ id: sub.id, status: 'sent' });
-                } catch (error: any) {
-                    console.error("Push failed", error);
-                    if (error.statusCode === 410 || error.statusCode === 404) {
-                        // Expired/Invalid, delete
-                        await db.delete(pushSubscriptions).where(eq(pushSubscriptions.id, sub.id));
-                        results.push({ id: sub.id, status: 'deleted (invalid)' });
-                    } else {
-                        results.push({ id: sub.id, status: 'failed', error: error.message });
-                    }
+                if (!result.success || result.results.length === 0) {
+                    return { success: false, message: "No subscriptions found for user" };
                 }
-            }
 
-            return { success: true, results };
+                return { success: true, results: result.results };
+            } catch (error: any) {
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: error.message || "Failed to send test push"
+                });
+            }
         }),
 
     // Public key exposure for client
