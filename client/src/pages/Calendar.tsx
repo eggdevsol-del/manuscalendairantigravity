@@ -584,7 +584,7 @@ export default function Calendar() {
                         key={day.toISOString()}
                         className={cn(
                           tokens.calendar.cardWeek,
-                          "bg-card/40 backdrop-blur-md border-white/10 flex flex-col overflow-hidden"
+                          "bg-card/40 backdrop-blur-md border-white/10 flex flex-col overflow-hidden relative"
                         )}
                       >
                         <div className="flex items-start justify-between px-4 pt-4 pb-2 shrink-0">
@@ -615,7 +615,7 @@ export default function Calendar() {
 
                         {/* Service Color Sections with Appointment Details */}
                         {dayAppointments.length > 0 ? (
-                          <div className={tokens.calendar.dayCard.appointmentSection}>
+                          <div className="absolute bottom-0 left-0 right-0 h-[10%] flex overflow-hidden rounded-b-2xl">
                             {dayAppointments.map((apt, idx) => {
                               const serviceColor = getServiceColor(apt);
                               const isHex = serviceColor.startsWith('#');
@@ -630,10 +630,10 @@ export default function Calendar() {
                               return (
                                 <div
                                   key={apt.id}
-                                  className={tokens.calendar.dayCard.appointmentItem}
+                                  className="flex-1 relative cursor-pointer"
                                   style={{
-                                    backgroundColor: isHex ? `${serviceColor}60` : `oklch(from ${serviceColor} l c h / 0.4)`,
-                                    borderTop: idx === 0 ? `1px solid ${serviceColor}` : 'none'
+                                    background: `linear-gradient(to top, ${isHex ? `${serviceColor}` : serviceColor} 0%, transparent 100%)`,
+                                    borderLeft: idx > 0 ? `1px solid rgba(255,255,255,0.1)` : 'none'
                                   }}
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -641,13 +641,11 @@ export default function Calendar() {
                                     setShowAppointmentDetailDialog(true);
                                   }}
                                 >
-                                  <p className={tokens.calendar.dayCard.appointmentText}>
-                                    {apt.clientName || "Unknown Client"} - {apt.serviceName || apt.title}
-                                    {sessionLabel && ` • ${sessionLabel}`}
-                                  </p>
-                                  <p className={tokens.calendar.dayCard.appointmentTime}>
-                                    {formatTime(apt.startTime)}
-                                  </p>
+                                  <div className="absolute bottom-1 left-1 right-1">
+                                    <p className="text-[8px] leading-tight font-medium truncate text-white drop-shadow-md">
+                                      {apt.clientName || "Unknown"} - {apt.serviceName || apt.title}
+                                    </p>
+                                  </div>
                                 </div>
                               );
                             })}
