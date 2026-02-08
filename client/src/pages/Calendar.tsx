@@ -12,6 +12,7 @@ import {
   Clock
 } from "lucide-react";
 import { BottomSheet, LoadingState, PageShell, PageHeader, GlassSheet, SegmentedHeader } from "@/components/ui/ssot";
+import { useConversations } from "@/hooks/useConversations";
 
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useLocation } from "wouter";
@@ -137,9 +138,8 @@ export default function Calendar() {
     }
   );
 
-  const { data: conversations } = trpc.conversations.list.useQuery(undefined, {
-    enabled: !!user && (user.role === "artist" || user.role === "admin"),
-  });
+  // Use centralized hook (SSOT)
+  const { data: conversations } = useConversations();
 
 
 

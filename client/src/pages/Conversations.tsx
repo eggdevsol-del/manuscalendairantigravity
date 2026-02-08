@@ -12,6 +12,7 @@ import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { useInboxRequests } from "@/features/chat/hooks/useInboxRequests";
 import { toast } from "sonner";
+import { useConversations } from "@/hooks/useConversations";
 
 export default function Conversations() {
   const { user, loading } = useAuth();
@@ -23,12 +24,8 @@ export default function Conversations() {
   // Mutation to create/get conversation for fallback navigation
   const createConversation = trpc.conversations.getOrCreate.useMutation();
 
-  const { data: conversations, isLoading, isPending } = trpc.conversations.list.useQuery(undefined, {
-    enabled: !!user,
-    refetchInterval: 10000,
-    // Fix: Ensure we use cache even if network is slow (PWA optimization)
-    staleTime: 5000,
-  });
+  // Use centralized hook (SSOT)
+  const { data: conversations, isLoading, isPending } = useConversations();
 
   // Consolidate inbox requests (Leads + Consultations) via SSOT Hook
   const { requestItems, isLoading: requestsLoading, isArtist } = useInboxRequests();
@@ -43,8 +40,9 @@ export default function Conversations() {
     }
   }, [user, loading, setLocation]);
 
-  // Combined loading state: Auth loading OR Query loading (initial fetch)
-  const isPageLoading = loading || (isLoading && !conversations);
+  // Combined loading state: Auth loading OR Query loading (initial fetch) OR Requests loading
+  // FIX: Include requestsLoading to prevent race condition on Android
+  const isPageLoading = loading || (isLoading && !conversations) || requestsLoading;
 
   if (isPageLoading) {
     return <LoadingState message="Loading messages..." fullScreen />;

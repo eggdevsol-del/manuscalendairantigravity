@@ -1,22 +1,17 @@
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { useMemo } from "react";
 
 /**
  * Selector to get the total unread message count across all conversations
+ * 
+ * IMPORTANT: This reads from the React Query cache, it does NOT create a new query.
+ * The cache is populated by useConversations() hook.
  */
 export const useTotalUnreadCount = () => {
-    const { user } = useAuth();
+    const utils = trpc.useUtils();
 
-    // We heavily rely on the cached query here. 
-    // Ideally this query is cheap or we have a dedicated lightweight query for counts.
-    // For now, we use the existing list query.
-    const { data: conversations } = trpc.conversations.list.useQuery(undefined, {
-        enabled: !!user,
-        // Using a longer staleTime for the count might be appropriate if we want to avoid 
-        // frequent refetches just for a badge, but for messaging, freshness is usually desired.
-        refetchInterval: 30000,
-    });
+    // Read from cache (no network request)
+    const conversations = utils.conversations.list.getData();
 
     return useMemo(() => {
         if (!conversations) return 0;
@@ -26,12 +21,15 @@ export const useTotalUnreadCount = () => {
 
 /**
  * Selector to get a specific conversation by ID from the cache
+ * 
+ * IMPORTANT: This reads from the React Query cache, it does NOT create a new query.
+ * The cache is populated by useConversations() hook.
  */
 export const useConversation = (conversationId: number) => {
-    const { user } = useAuth();
-    const { data: conversations } = trpc.conversations.list.useQuery(undefined, {
-        enabled: !!user,
-    });
+    const utils = trpc.useUtils();
+
+    // Read from cache (no network request)
+    const conversations = utils.conversations.list.getData();
 
     return useMemo(() => {
         return conversations?.find(c => c.id === Number(conversationId));

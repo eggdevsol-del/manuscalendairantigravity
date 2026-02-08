@@ -8,6 +8,7 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyCont
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { useConversations } from "@/hooks/useConversations";
 
 export default function Clients() {
   const { user, loading } = useAuth();
@@ -20,12 +21,8 @@ export default function Clients() {
     phone: "",
   });
 
-  const { data: conversations, refetch } = trpc.conversations.list.useQuery(
-    undefined,
-    {
-      enabled: !!user && (user.role === "artist" || user.role === "admin"),
-    }
-  );
+  // Use centralized hook (SSOT)
+  const { data: conversations, refetch } = useConversations();
 
   const createConversationMutation = trpc.conversations.getOrCreate.useMutation({
     onSuccess: () => {
