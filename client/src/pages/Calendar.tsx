@@ -717,43 +717,28 @@ export default function Calendar() {
                             setTimeout(() => setShowTimelineContent(true), 305);
                           }}
                         >
-                          {/* Date Section */}
-                          <div className={tokens.calendar.dayCard.dateSection}>
-                            <span className={cn(
-                              "text-[15px]",
-                              isToday(day) && !isSelected && "text-primary font-bold",
-                            )}>
-                              {day.getDate()}
-                            </span>
-                          </div>
+                          <span className={cn(
+                            "text-[15px]",
+                            isToday(day) && !isSelected && "text-primary font-bold",
+                          )}>
+                            {day.getDate()}
+                          </span>
 
-                          {/* Appointment Indicators Section */}
-                          {dayAppointments.length > 0 ? (
-                            <div className={tokens.calendar.dayCard.appointmentSection}>
-                              {dayAppointments.map((apt, idx) => {
+                          {/* Service Color Circles */}
+                          {dayAppointments.length > 0 && (
+                            <div className="absolute bottom-2 flex gap-1 justify-center">
+                              {dayAppointments.slice(0, 3).map((apt, idx) => {
                                 const serviceColor = getServiceColor(apt);
-                                const isHex = serviceColor.startsWith('#');
-
                                 return (
                                   <div
                                     key={apt.id}
-                                    className={tokens.calendar.dayCard.appointmentItem}
-                                    style={{
-                                      backgroundColor: isHex ? `${serviceColor}60` : `oklch(from ${serviceColor} l c h / 0.4)`,
-                                      borderTop: idx === 0 ? `1px solid ${serviceColor}` : 'none'
-                                    }}
-                                  >
-                                    <p className={tokens.calendar.dayCard.appointmentText}>
-                                      {apt.clientName}
-                                    </p>
-                                    <p className={tokens.calendar.dayCard.appointmentTime}>
-                                      {formatTime(apt.startTime)}
-                                    </p>
-                                  </div>
+                                    className="w-1.5 h-1.5 rounded-full"
+                                    style={{ backgroundColor: serviceColor }}
+                                  />
                                 );
                               })}
                             </div>
-                          ) : null}
+                          )}
                         </button>
                       );
                     })}
