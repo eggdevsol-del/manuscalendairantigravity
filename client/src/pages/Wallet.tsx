@@ -49,7 +49,7 @@ export default function Wallet() {
                         </div>
                     </div>
                 </div>
-            </GlassSheet>
+            \u003c/div\u003e
         </PageShell>
     );
 }

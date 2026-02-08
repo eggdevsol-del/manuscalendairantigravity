@@ -180,7 +180,7 @@ export default function Consultations() {
             )}
           </div>
         </div>
-      </GlassSheet>
+      \u003c/div\u003e
 
       <ModalShell
         isOpen={showNewDialog}

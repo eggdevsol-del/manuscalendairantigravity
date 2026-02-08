@@ -57,7 +57,7 @@ export default function LeadDetail() {
               Back to Messages
             </Button>
           </div>
-        </GlassSheet>
+        \u003c/div\u003e
       </PageShell>
     );
   }
@@ -318,7 +318,7 @@ export default function LeadDetail() {
 
           </div>
         </div>
-      </GlassSheet>
+      \u003c/div\u003e
     </PageShell>
   );
 }

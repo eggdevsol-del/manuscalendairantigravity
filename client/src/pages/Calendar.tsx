@@ -908,7 +908,7 @@ export default function Calendar() {
 
           </div>
         </div>
-      </GlassSheet>
+      \u003c/div\u003e
 
       {/* Appointment Creation Sheet (Gold Standard) */}
       <BottomSheet

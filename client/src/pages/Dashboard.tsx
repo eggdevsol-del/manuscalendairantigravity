@@ -294,7 +294,7 @@ export default function Dashboard() {
                         />
                     </div>
 
-                    <GlassSheet className="bg-white/5 flex flex-col relative overflow-hidden">
+                    <div className="bg-white/5 flex flex-col relative overflow-hidden flex-1">
                         <div className="flex-1 relative w-full overflow-hidden">
                             <AnimatePresence initial={false} custom={direction}>
                                 <motion.div
@@ -366,7 +366,7 @@ export default function Dashboard() {
                                 </motion.div>
                             </AnimatePresence>
                         </div>
-                    </GlassSheet>
+                    </div>
                 </div>
             </div>
 

@@ -453,7 +453,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
 
           </div>
         </div>
-      </GlassSheet>
+      \u003c/div\u003e
 
       {/* Project Builder Modal - keeping as is, wrapped in ModalShell it should work fine */}
       <ModalShell

@@ -304,7 +304,7 @@ export default function Settings() {
 
             </div>
           </div>
-        </GlassSheet>
+        \u003c/div\u003e
       </PageShell>
     );
   }
@@ -461,7 +461,7 @@ export default function Settings() {
               )}
             </div>
           </div>
-        </GlassSheet>
+        \u003c/div\u003e
       </PageShell>
     )
   }
@@ -705,7 +705,7 @@ export default function Settings() {
 
           </div>
         </div>
-      </GlassSheet>
+      \u003c/div\u003e
     </PageShell>
   );
 }
