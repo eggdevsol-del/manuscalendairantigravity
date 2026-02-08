@@ -724,20 +724,14 @@ export default function Calendar() {
                             {day.getDate()}
                           </span>
 
-                          {/* Service Color Circles */}
+                          {/* Service Color Gradient Overlay */}
                           {dayAppointments.length > 0 && (
-                            <div className="absolute bottom-2 flex gap-1 justify-center">
-                              {dayAppointments.slice(0, 3).map((apt, idx) => {
-                                const serviceColor = getServiceColor(apt);
-                                return (
-                                  <div
-                                    key={apt.id}
-                                    className="w-1.5 h-1.5 rounded-full"
-                                    style={{ backgroundColor: serviceColor }}
-                                  />
-                                );
-                              })}
-                            </div>
+                            <div
+                              className="absolute inset-0 rounded-[14px] pointer-events-none"
+                              style={{
+                                background: `linear-gradient(to top, ${getServiceColor(dayAppointments[0])}70, transparent 60%)`
+                              }}
+                            />
                           )}
                         </button>
                       );
