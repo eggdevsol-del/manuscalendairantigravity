@@ -77,6 +77,7 @@ export default function Calendar() {
   const [showAppointmentDialog, setShowAppointmentDialog] = useState(false);
   const [showAppointmentDetailDialog, setShowAppointmentDetailDialog] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDayView, setSelectedDayView] = useState<Date | null>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const [showTimelineContent, setShowTimelineContent] = useState(false);
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -562,364 +563,444 @@ export default function Calendar() {
         >
           <div className="w-full max-w-lg mx-auto flex flex-col h-full">
 
-            {/* Calendar Grid Area */}
-            <div
-              className={cn(
-                "flex-1 mb-4 transition-all duration-300 ease-in-out",
-                // Enable scrolling for week view
-                viewMode === 'week' ? "overflow-y-auto mobile-scroll touch-pan-y" : "",
-                // When selected, constrain grid height to allow timeline to take 75%
-                selectedDate && viewMode === 'month' ? cn(tokens.calendar.gridHeightCollapsed, "overflow-hidden shrink-0") : ""
-              )}
-              style={{ willChange: "height, flex-basis" }}
-            >
-              {viewMode === "week" ? (
-                <div className="space-y-3">
-                  {getWeekDays().map((day) => {
-                    const dayAppointments = getAppointmentsForDate(day);
-                    return (
-                      <Card
-                        key={day.toISOString()}
-                        className={cn(
-                          tokens.calendar.cardWeek,
-                          "bg-card/40 backdrop-blur-md border-white/10 flex flex-col overflow-hidden relative"
-                        )}
-                      >
-                        <div className="flex items-start justify-between px-4 pt-4 pb-2 shrink-0">
-                          <div>
-                            <p className={cn("text-xs uppercase tracking-wider", tokens.calendar.dayLabel)}>
-                              {day.toLocaleDateString("en-US", { weekday: "short" })}
-                            </p>
-                            <p className={cn("mt-1", tokens.calendar.dayNumber, isToday(day) ? tokens.calendar.todayText : "text-foreground")}>
-                              {day.getDate()}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs text-muted-foreground">
-                              {dayAppointments.length} appt{dayAppointments.length !== 1 ? "s" : ""}
-                            </p>
-                            {isArtist && (
-                              <div className="flex justify-end mt-1">
-                                <div
-                                  className={cn("w-5 h-5 rounded-full flex items-center justify-center", tokens.calendar.iconBg)}
-                                  onClick={() => handleDateClick(day)} // Add click handler to the plus icon
-                                >
-                                  <Plus className={cn("w-3 h-3", tokens.calendar.iconText)} />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
+            {/* Conditional: Day View or Week/Month View */}
+            {selectedDayView ? (
+              // DAY VIEW
+              <div className="flex-1 flex flex-col h-full">
+                {/* Day View Header */}
+                <div className="flex items-center justify-between mb-4 shrink-0">
+                  <button
+                    onClick={() => setSelectedDayView(null)}
+                    className="flex items-center gap-2 text-sm text-foreground/80 hover:text-foreground transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back to Week
+                  </button>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {selectedDayView.toLocaleDateString("en-US", { weekday: "long" })}
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {selectedDayView.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                    </p>
+                  </div>
+                  <div className="w-16" /> {/* Spacer for centering */}
+                </div>
 
-                        {/* Service Color Sections with Appointment Details */}
-                        {dayAppointments.length > 0 ? (
-                          <div className="absolute bottom-0 left-0 right-0 h-[70%] flex overflow-hidden rounded-b-2xl">
-                            {dayAppointments.map((apt, idx) => {
+                {/* 24-Hour Timeline */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar bg-transparent">
+                  <div className="relative">
+                    {/* Hour markers */}
+                    {Array.from({ length: 24 }, (_, hour) => {
+                      const dayAppointments = getAppointmentsForDate(selectedDayView);
+                      const hourAppointments = dayAppointments.filter((apt: any) => {
+                        const aptStart = new Date(apt.startTime);
+                        return aptStart.getHours() === hour;
+                      });
+
+                      return (
+                        <div key={hour} className="flex border-b border-white/5 min-h-[60px]">
+                          {/* Time label */}
+                          <div className="w-16 shrink-0 pr-3 pt-1">
+                            <span className="text-xs text-muted-foreground/60">
+                              {hour.toString().padStart(2, '0')}:00
+                            </span>
+                          </div>
+
+                          {/* Appointment area */}
+                          <div className="flex-1 relative">
+                            {hourAppointments.map((apt: any) => {
                               const serviceColor = getServiceColor(apt);
                               const isHex = serviceColor.startsWith('#');
-
-                              const sessionLabel = (() => {
-                                if (!apt.totalSessions || apt.totalSessions <= 1) return null;
-                                if (apt.sessionNumber === apt.totalSessions) return "Final Session";
-                                if (apt.sessionNumber === 1) return "Session One";
-                                return `Session ${apt.sessionNumber}`;
-                              })();
 
                               return (
                                 <div
                                   key={apt.id}
-                                  className="flex-1 relative cursor-pointer"
+                                  className="absolute left-0 right-0 mx-2 my-1 p-2 rounded-lg cursor-pointer transition-all hover:scale-[1.02]"
                                   style={{
-                                    background: `linear-gradient(to top, ${isHex ? `${serviceColor}40` : `oklch(from ${serviceColor} l c h / 0.25)`} 0%, transparent 70%)`,
-                                    borderLeft: idx > 0 ? `1px solid rgba(255,255,255,0.1)` : 'none'
+                                    background: isHex
+                                      ? `${serviceColor}30`
+                                      : `oklch(from ${serviceColor} l c h / 0.30)`,
+                                    backdropFilter: 'blur(8px)',
                                   }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
+                                  onClick={() => {
                                     setSelectedAppointment(apt);
                                     setShowAppointmentDetailDialog(true);
                                   }}
                                 >
-                                  <div className="absolute bottom-1 left-1 right-1">
-                                    <p className="text-[8px] leading-tight font-medium truncate text-white drop-shadow-md">
-                                      {apt.clientName || "Unknown"} - {apt.serviceName || apt.title}
-                                    </p>
-                                  </div>
+                                  <p className="text-sm font-medium text-foreground">
+                                    {apt.clientName || "Unknown"}
+                                  </p>
+                                  <p className="text-xs text-foreground/80">
+                                    {apt.serviceName || apt.title}
+                                  </p>
+                                  <p className="text-xs text-foreground/60 mt-1">
+                                    {formatTime(apt.startTime, apt.timeZone)} - {formatTime(apt.endTime, apt.timeZone)}
+                                  </p>
                                 </div>
                               );
                             })}
                           </div>
-                        ) : (
-                          <div className="flex items-center justify-center p-2 mt-2 border border-dashed border-white/10 rounded-lg">
-                            <span className="text-xs text-muted-foreground/40">Available</span>
-                          </div>
-                        )}
-                      </Card>
-                    );
-                  })}
-                </div>
-              ) : (
-                // MONTH VIEW
-                <div className="w-full h-full flex flex-col">
-                  {/* Day Headers */}
-                  <div className="grid grid-cols-7 gap-3 mb-2 shrink-0">
-                    {["S", "M", "T", "W", "T", "F", "S"].map((day, idx) => (
-                      <div
-                        key={`day-header-${idx}`}
-                        className="text-center text-xs font-medium text-muted-foreground/50 py-1"
-                      >
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Date Grid */}
-                  <div className={cn(
-                    "girls grid grid-cols-7 gap-3",
-                    // Ensure grid is scrollable if compressed
-                    selectedDate ? "overflow-y-auto pr-1 custom-scrollbar" : ""
-                  )}>
-                    {getMonthDays().map((day, index) => {
-                      const dayAppointments = getAppointmentsForDate(day);
-                      const dateKey = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
-
-                      // Selection Logic
-                      const isSelected = selectedDate
-                        ? (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth() && day.getFullYear() === selectedDate.getFullYear())
-                        : false;
-
-                      return (
-                        <button
-                          key={dateKey}
-                          className={cn(
-                            "aspect-square flex flex-col items-center justify-center rounded-[14px] transition-all relative font-medium",
-                            // Base Style: Use Secondary (medium greyish in dark mode, light grey in light mode)
-                            // SSOT: Use semantic tokens.
-                            "bg-secondary text-foreground border-none ring-0 outline-none",
-                            // Selection Style
-                            isSelected
-                              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 z-10 scale-105 font-bold"
-                              : "hover:bg-secondary/80",
-                            // Dim filler days
-                            !isCurrentMonth(day) && !isSelected && "opacity-30 bg-transparent text-muted-foreground"
-                          )}
-                          onClick={() => {
-                            if (selectedDate?.getTime() === day.getTime()) return;
-                            setSelectedDate(day);
-                            setShowTimelineContent(false);
-                            setTimeout(() => setShowTimelineContent(true), 305);
-                          }}
-                        >
-                          <span className={cn(
-                            "text-[15px]",
-                            isToday(day) && !isSelected && "text-primary font-bold",
-                          )}>
-                            {day.getDate()}
-                          </span>
-
-                          {/* Service Color Gradient Overlay */}
-                          {dayAppointments.length > 0 && (
-                            <div
-                              className="absolute inset-0 rounded-[14px] pointer-events-none"
-                              style={{
-                                background: `linear-gradient(135deg, ${getServiceColor(dayAppointments[0])}50 0%, transparent 30%)`
-                              }}
-                            />
-                          )}
-                        </button>
+                        </div>
                       );
                     })}
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* Hourly Day Timeline Area (Displayed in Month View) */}
-            {viewMode === "month" && (
-              <div
-                className={cn(
-                  cn("flex-1 overflow-hidden min-h-0 flex flex-col transition-all duration-300", tokens.calendar.divider, "border-t", tokens.calendar.timelineBg),
-                  selectedDate ? cn(tokens.calendar.timelineHeightExpanded, "grow-0") : ""
-                )}
-                style={{ willChange: "flex-basis", contain: "layout paint" }}
-              >
-
-                {/* Timeline Header */}
-                <div className={cn("shrink-0 flex items-center justify-between backdrop-blur-md z-10 transition-colors duration-300", tokens.calendar.timelineHeaderPadding, tokens.calendar.divider, "border-b", tokens.calendar.headerBg)}>
-                  <div className="flex items-center gap-2">
-                    {selectedDate && (
-                      <Button
-                        size="icon" variant="ghost" className="h-8 w-8 -ml-2 text-muted-foreground hover:text-foreground rounded-full"
-                        onClick={() => {
-                          setShowTimelineContent(false);
-                          setSelectedDate(null);
-                        }}
-                      >
-                        <ArrowLeft className="w-5 h-5" />
-                      </Button>
-                    )}
-                    <h3 className={cn(tokens.calendar.timelineTitle, "pl-1")}>
-                      {selectedDate
-                        ? selectedDate.toLocaleDateString("en-US", { weekday: 'long', month: 'long', day: 'numeric' })
-                        : "Select a date"}
-                    </h3>
-                  </div>
-
-                  {selectedDate && isArtist && (
-                    <Button
-                      size="sm" variant="ghost" className="h-8 text-primary"
-                      onClick={() => handleDateClick(selectedDate)} // Default add (9am)
-                    >
-                      <Plus className="w-4 h-4 mr-1" /> Add
-                    </Button>
+              </div>
+            ) : (
+              // WEEK/MONTH VIEW
+              <>
+                {/* Calendar Grid Area */}
+                <div
+                  className={cn(
+                    "flex-1 mb-4 transition-all duration-300 ease-in-out",
+                    // Enable scrolling for week view
+                    viewMode === 'week' ? "overflow-y-auto mobile-scroll touch-pan-y" : "",
+                    // When selected, constrain grid height to allow timeline to take 75%
+                    selectedDate && viewMode === 'month' ? cn(tokens.calendar.gridHeightCollapsed, "overflow-hidden shrink-0") : ""
                   )}
-                </div>
+                  style={{ willChange: "height, flex-basis" }}
+                >
+                  {viewMode === "week" ? (
+                    <div className="flex flex-col gap-2">
+                      {getWeekDays().map((day) => {
+                        const dayAppointments = getAppointmentsForDate(day);
+                        const firstAppointment = dayAppointments[0];
+                        const serviceColor = firstAppointment ? getServiceColor(firstAppointment) : null;
+                        const isHex = serviceColor?.startsWith('#');
 
-                {/* Timeline Scroll Area */}
-                {selectedDate ? (
-                  <div
-                    key={selectedDate.toISOString()}
-                    className="flex-1 overflow-y-auto relative mobile-scroll touch-pan-y"
-                    ref={timelineRef}
-                  >
-                    {showTimelineContent && (
-                      <div className={cn(tokens.calendar.timelineScrollHeight, "pb-32")}> {/* Tall container for 24h */}
-                        {Array.from({ length: 24 }).map((_, hour) => (
-                          <div key={hour} id={`time-slot-${hour}`} className={cn("relative group", tokens.calendar.hourSlotHeight, tokens.calendar.divider, "border-b")}>
-                            {/* Hour Label */}
-                            <div className="absolute top-0 left-0 w-16 text-right pr-3 -mt-2.5 z-10 pointer-events-none">
-                              <span className={cn("text-xs font-medium", tokens.calendar.hourLabel)}>
-                                {hour === 0 ? "12 AM" : hour === 12 ? "12 PM" : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
-                              </span>
+                        return (
+                          <Card
+                            key={day.toISOString()}
+                            className={cn(
+                              "border-white/10 flex items-center overflow-hidden relative cursor-pointer transition-all hover:scale-[1.02]",
+                              "backdrop-blur-sm"
+                            )}
+                            style={{
+                              height: 'calc((100vh - 232px) / 7)',
+                              minHeight: '80px',
+                              maxHeight: '120px',
+                              background: dayAppointments.length > 0 && serviceColor
+                                ? isHex
+                                  ? `${serviceColor}20` // 20 = ~12.5% opacity
+                                  : `oklch(from ${serviceColor} l c h / 0.20)`
+                                : 'transparent',
+                            }}
+                            onClick={() => setSelectedDayView(day)}
+                          >
+                            {/* Left: Date */}
+                            <div className="px-4 py-3 shrink-0">
+                              <p className={cn("text-xs uppercase tracking-wider", tokens.calendar.dayLabel)}>
+                                {day.toLocaleDateString("en-US", { weekday: "short" })}
+                              </p>
+                              <p className={cn("text-3xl font-bold mt-1", isToday(day) ? tokens.calendar.todayText : "text-foreground")}>
+                                {day.getDate()}
+                              </p>
                             </div>
 
-                            {/* 15 Minute Slots */}
-                            {[0, 15, 30, 45].map((minute) => (
-                              <div
-                                key={minute}
-                                className={cn(
-                                  "w-full pl-20 pr-4 flex items-center cursor-pointer transition-colors",
-                                  tokens.calendar.minuteSlotHeight,
-                                  tokens.calendar.divider,
-                                  "border-l",
-                                  tokens.calendar.slotHover,
-                                  tokens.calendar.slotActive,
-                                  minute === 0 ? cn(tokens.calendar.hourBorder, "border-t") : cn(tokens.calendar.minuteBorder, "border-t")
-                                )}
-                                onClick={() => {
-                                  if (!isArtist) return;
-                                  const newTime = new Date(selectedDate);
-                                  newTime.setHours(hour);
-                                  newTime.setMinutes(minute);
+                            {/* Right: Appointment Details (inline) */}
+                            <div className="flex-1 px-4 py-3 flex items-center justify-between">
+                              {dayAppointments.length > 0 ? (
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate text-foreground">
+                                    {firstAppointment.clientName || "Unknown"}
+                                  </p>
+                                  <p className="text-xs truncate text-foreground/80">
+                                    {firstAppointment.serviceName || firstAppointment.title}
+                                  </p>
+                                  <p className="text-xs text-foreground/60 mt-0.5">
+                                    {formatTime(firstAppointment.startTime, firstAppointment.timeZone)}
+                                    {dayAppointments.length > 1 && ` +${dayAppointments.length - 1} more`}
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className="flex-1">
+                                  <p className="text-xs text-muted-foreground/40">Available</p>
+                                </div>
+                              )}
 
-                                  // Use ISO string logic similar to handleDateClick but specific time
-                                  const dateStr = newTime.getFullYear() + "-" +
-                                    String(newTime.getMonth() + 1).padStart(2, '0') + "-" +
-                                    String(newTime.getDate()).padStart(2, '0');
-                                  const timeStr = String(newTime.getHours()).padStart(2, '0') + ":" + String(newTime.getMinutes()).padStart(2, '0');
-                                  const endTimeStr = String(newTime.getHours() + 1).padStart(2, '0') + ":" + String(newTime.getMinutes()).padStart(2, '0'); // Default 1h
-
-                                  setAppointmentForm({
-                                    ...appointmentForm,
-                                    startTime: `${dateStr}T${timeStr}`,
-                                    endTime: `${dateStr}T${endTimeStr}`,
-                                  });
-                                  setStep('service');
-                                  setSelectedService(null);
-                                  setShowAppointmentDialog(true);
-                                }}
-                              >
-                                {/* Use semantic border for markers */}
-                              </div>
-                            ))}
-
-                            {/* Render Appointments starting in this hour */}
-                            {getAppointmentsForDate(selectedDate).filter(apt => {
-                              const d = new Date(apt.startTime);
-                              return d.getHours() === hour;
-                            }).map(apt => {
-                              const start = new Date(apt.startTime);
-                              const end = new Date(apt.endTime);
-
-                              // Calculate styling
-                              const startMin = start.getMinutes();
-                              const durationMins = (end.getTime() - start.getTime()) / 60000;
-
-                              // 1 hour = 96px (4 * 24px slots). 
-                              // 1 min = 96/60 = 1.6px
-                              const topPx = startMin * 1.6;
-                              const heightPx = Math.max(durationMins * 1.6, 24); // Min height 1 slot
-
-                              // Get service color from availableServices or default to primary
-                              const serviceColor = availableServices.find(s => s.name === apt.serviceName || s.name === apt.title)?.color || "var(--primary)";
-                              const isHex = serviceColor.startsWith('#');
-
-                              return (
+                              {/* Plus icon for artists */}
+                              {isArtist && (
                                 <div
-                                  key={apt.id}
-                                  className={cn("absolute left-20 right-4 rounded-lg backdrop-blur-sm shadow-sm overflow-hidden z-20 hover:brightness-110 transition-all cursor-pointer flex flex-col border", tokens.calendar.appointmentPadding, tokens.calendar.appointmentBorder)}
-                                  style={{
-                                    top: `${topPx}px`,
-                                    height: `${heightPx}px`,
-                                    backgroundColor: isHex ? `${serviceColor}40` : `oklch(from ${serviceColor} l c h / 0.3)`,
-                                    borderColor: serviceColor,
-                                  }}
+                                  className={cn("w-8 h-8 rounded-full flex items-center justify-center ml-3", tokens.calendar.iconBg)}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setSelectedAppointment(apt);
-                                    setShowAppointmentDetailDialog(true);
+                                    handleDateClick(day);
                                   }}
                                 >
-                                  {(() => {
-                                    const sessionLabel = (() => {
-                                      if (!apt.totalSessions || apt.totalSessions <= 1) return null;
-                                      if (apt.sessionNumber === apt.totalSessions) return "Final Session";
-                                      if (apt.sessionNumber === 1) return "Session One";
-                                      return `Session ${apt.sessionNumber}`;
-                                    })();
-
-                                    return (
-                                      <>
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0" style={{ backgroundColor: serviceColor }} />
-                                          <p className="text-sm font-bold text-foreground truncate shadow-black drop-shadow-sm">
-                                            {apt.clientName || "Unknown Client"}
-                                          </p>
-                                        </div>
-
-                                        {heightPx > 40 && (
-                                          <div className="flex items-center gap-1.5 text-xs text-foreground/90 truncate pl-3.5 mt-0.5">
-                                            <span>{apt.serviceName || apt.title}</span>
-                                            {sessionLabel && (
-                                              <>
-                                                <span className="opacity-40">•</span>
-                                                <span className="opacity-70 font-medium">{sessionLabel}</span>
-                                              </>
-                                            )}
-                                          </div>
-                                        )}
-                                      </>
-                                    );
-                                  })()}
+                                  <Plus className={cn("w-4 h-4", tokens.calendar.iconText)} />
                                 </div>
-                              );
-                            })}
+                              )}
+                            </div>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    // MONTH VIEW
+                    <div className="w-full h-full flex flex-col">
+                      {/* Day Headers */}
+                      <div className="grid grid-cols-7 gap-3 mb-2 shrink-0">
+                        {["S", "M", "T", "W", "T", "F", "S"].map((day, idx) => (
+                          <div
+                            key={`day-header-${idx}`}
+                            className="text-center text-xs font-medium text-muted-foreground/50 py-1"
+                          >
+                            {day}
                           </div>
                         ))}
                       </div>
+
+                      {/* Date Grid */}
+                      <div className={cn(
+                        "girls grid grid-cols-7 gap-3",
+                        // Ensure grid is scrollable if compressed
+                        selectedDate ? "overflow-y-auto pr-1 custom-scrollbar" : ""
+                      )}>
+                        {getMonthDays().map((day, index) => {
+                          const dayAppointments = getAppointmentsForDate(day);
+                          const dateKey = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
+
+                          // Selection Logic
+                          const isSelected = selectedDate
+                            ? (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth() && day.getFullYear() === selectedDate.getFullYear())
+                            : false;
+
+                          return (
+                            <button
+                              key={dateKey}
+                              className={cn(
+                                "aspect-square flex flex-col items-center justify-center rounded-[14px] transition-all relative font-medium",
+                                // Base Style: Use Secondary (medium greyish in dark mode, light grey in light mode)
+                                // SSOT: Use semantic tokens.
+                                "bg-secondary text-foreground border-none ring-0 outline-none",
+                                // Selection Style
+                                isSelected
+                                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 z-10 scale-105 font-bold"
+                                  : "hover:bg-secondary/80",
+                                // Dim filler days
+                                !isCurrentMonth(day) && !isSelected && "opacity-30 bg-transparent text-muted-foreground"
+                              )}
+                              onClick={() => {
+                                if (selectedDate?.getTime() === day.getTime()) return;
+                                setSelectedDate(day);
+                                setShowTimelineContent(false);
+                                setTimeout(() => setShowTimelineContent(true), 305);
+                              }}
+                            >
+                              <span className={cn(
+                                "text-[15px]",
+                                isToday(day) && !isSelected && "text-primary font-bold",
+                              )}>
+                                {day.getDate()}
+                              </span>
+
+                              {/* Service Color Gradient Overlay */}
+                              {dayAppointments.length > 0 && (
+                                <div
+                                  className="absolute inset-0 rounded-[14px] pointer-events-none"
+                                  style={{
+                                    background: `linear-gradient(135deg, ${getServiceColor(dayAppointments[0])}50 0%, transparent 30%)`
+                                  }}
+                                />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Hourly Day Timeline Area (Displayed in Month View) */}
+                {viewMode === "month" && (
+                  <div
+                    className={cn(
+                      cn("flex-1 overflow-hidden min-h-0 flex flex-col transition-all duration-300", tokens.calendar.divider, "border-t", tokens.calendar.timelineBg),
+                      selectedDate ? cn(tokens.calendar.timelineHeightExpanded, "grow-0") : ""
+                    )}
+                    style={{ willChange: "flex-basis", contain: "layout paint" }}
+                  >
+
+                    {/* Timeline Header */}
+                    <div className={cn("shrink-0 flex items-center justify-between backdrop-blur-md z-10 transition-colors duration-300", tokens.calendar.timelineHeaderPadding, tokens.calendar.divider, "border-b", tokens.calendar.headerBg)}>
+                      <div className="flex items-center gap-2">
+                        {selectedDate && (
+                          <Button
+                            size="icon" variant="ghost" className="h-8 w-8 -ml-2 text-muted-foreground hover:text-foreground rounded-full"
+                            onClick={() => {
+                              setShowTimelineContent(false);
+                              setSelectedDate(null);
+                            }}
+                          >
+                            <ArrowLeft className="w-5 h-5" />
+                          </Button>
+                        )}
+                        <h3 className={cn(tokens.calendar.timelineTitle, "pl-1")}>
+                          {selectedDate
+                            ? selectedDate.toLocaleDateString("en-US", { weekday: 'long', month: 'long', day: 'numeric' })
+                            : "Select a date"}
+                        </h3>
+                      </div>
+
+                      {selectedDate && isArtist && (
+                        <Button
+                          size="sm" variant="ghost" className="h-8 text-primary"
+                          onClick={() => handleDateClick(selectedDate)} // Default add (9am)
+                        >
+                          <Plus className="w-4 h-4 mr-1" /> Add
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Timeline Scroll Area */}
+                    {selectedDate ? (
+                      <div
+                        key={selectedDate.toISOString()}
+                        className="flex-1 overflow-y-auto relative mobile-scroll touch-pan-y"
+                        ref={timelineRef}
+                      >
+                        {showTimelineContent && (
+                          <div className={cn(tokens.calendar.timelineScrollHeight, "pb-32")}> {/* Tall container for 24h */}
+                            {Array.from({ length: 24 }).map((_, hour) => (
+                              <div key={hour} id={`time-slot-${hour}`} className={cn("relative group", tokens.calendar.hourSlotHeight, tokens.calendar.divider, "border-b")}>
+                                {/* Hour Label */}
+                                <div className="absolute top-0 left-0 w-16 text-right pr-3 -mt-2.5 z-10 pointer-events-none">
+                                  <span className={cn("text-xs font-medium", tokens.calendar.hourLabel)}>
+                                    {hour === 0 ? "12 AM" : hour === 12 ? "12 PM" : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
+                                  </span>
+                                </div>
+
+                                {/* 15 Minute Slots */}
+                                {[0, 15, 30, 45].map((minute) => (
+                                  <div
+                                    key={minute}
+                                    className={cn(
+                                      "w-full pl-20 pr-4 flex items-center cursor-pointer transition-colors",
+                                      tokens.calendar.minuteSlotHeight,
+                                      tokens.calendar.divider,
+                                      "border-l",
+                                      tokens.calendar.slotHover,
+                                      tokens.calendar.slotActive,
+                                      minute === 0 ? cn(tokens.calendar.hourBorder, "border-t") : cn(tokens.calendar.minuteBorder, "border-t")
+                                    )}
+                                    onClick={() => {
+                                      if (!isArtist) return;
+                                      const newTime = new Date(selectedDate);
+                                      newTime.setHours(hour);
+                                      newTime.setMinutes(minute);
+
+                                      // Use ISO string logic similar to handleDateClick but specific time
+                                      const dateStr = newTime.getFullYear() + "-" +
+                                        String(newTime.getMonth() + 1).padStart(2, '0') + "-" +
+                                        String(newTime.getDate()).padStart(2, '0');
+                                      const timeStr = String(newTime.getHours()).padStart(2, '0') + ":" + String(newTime.getMinutes()).padStart(2, '0');
+                                      const endTimeStr = String(newTime.getHours() + 1).padStart(2, '0') + ":" + String(newTime.getMinutes()).padStart(2, '0'); // Default 1h
+
+                                      setAppointmentForm({
+                                        ...appointmentForm,
+                                        startTime: `${dateStr}T${timeStr}`,
+                                        endTime: `${dateStr}T${endTimeStr}`,
+                                      });
+                                      setStep('service');
+                                      setSelectedService(null);
+                                      setShowAppointmentDialog(true);
+                                    }}
+                                  >
+                                    {/* Use semantic border for markers */}
+                                  </div>
+                                ))}
+
+                                {/* Render Appointments starting in this hour */}
+                                {getAppointmentsForDate(selectedDate).filter(apt => {
+                                  const d = new Date(apt.startTime);
+                                  return d.getHours() === hour;
+                                }).map(apt => {
+                                  const start = new Date(apt.startTime);
+                                  const end = new Date(apt.endTime);
+
+                                  // Calculate styling
+                                  const startMin = start.getMinutes();
+                                  const durationMins = (end.getTime() - start.getTime()) / 60000;
+
+                                  // 1 hour = 96px (4 * 24px slots). 
+                                  // 1 min = 96/60 = 1.6px
+                                  const topPx = startMin * 1.6;
+                                  const heightPx = Math.max(durationMins * 1.6, 24); // Min height 1 slot
+
+                                  // Get service color from availableServices or default to primary
+                                  const serviceColor = availableServices.find(s => s.name === apt.serviceName || s.name === apt.title)?.color || "var(--primary)";
+                                  const isHex = serviceColor.startsWith('#');
+
+                                  return (
+                                    <div
+                                      key={apt.id}
+                                      className={cn("absolute left-20 right-4 rounded-lg backdrop-blur-sm shadow-sm overflow-hidden z-20 hover:brightness-110 transition-all cursor-pointer flex flex-col border", tokens.calendar.appointmentPadding, tokens.calendar.appointmentBorder)}
+                                      style={{
+                                        top: `${topPx}px`,
+                                        height: `${heightPx}px`,
+                                        backgroundColor: isHex ? `${serviceColor}40` : `oklch(from ${serviceColor} l c h / 0.3)`,
+                                        borderColor: serviceColor,
+                                      }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedAppointment(apt);
+                                        setShowAppointmentDetailDialog(true);
+                                      }}
+                                    >
+                                      {(() => {
+                                        const sessionLabel = (() => {
+                                          if (!apt.totalSessions || apt.totalSessions <= 1) return null;
+                                          if (apt.sessionNumber === apt.totalSessions) return "Final Session";
+                                          if (apt.sessionNumber === 1) return "Session One";
+                                          return `Session ${apt.sessionNumber}`;
+                                        })();
+
+                                        return (
+                                          <>
+                                            <div className="flex items-center gap-2">
+                                              <div className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0" style={{ backgroundColor: serviceColor }} />
+                                              <p className="text-sm font-bold text-foreground truncate shadow-black drop-shadow-sm">
+                                                {apt.clientName || "Unknown Client"}
+                                              </p>
+                                            </div>
+
+                                            {heightPx > 40 && (
+                                              <div className="flex items-center gap-1.5 text-xs text-foreground/90 truncate pl-3.5 mt-0.5">
+                                                <span>{apt.serviceName || apt.title}</span>
+                                                {sessionLabel && (
+                                                  <>
+                                                    <span className="opacity-40">•</span>
+                                                    <span className="opacity-70 font-medium">{sessionLabel}</span>
+                                                    </>
+                                                )}
+                                              </div>
+                                            )}
+                                            </>
+                                        );
+                                      })()}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground/40 space-y-4">
+                        <div className={cn("w-16 h-16 rounded-full flex items-center justify-center animate-pulse", tokens.calendar.emptyStateBg)}>
+                          <Clock className="w-8 h-8 opacity-50" />
+                        </div>
+                        <p className="text-sm font-medium">Select a date to view agenda</p>
+                      </div>
                     )}
                   </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground/40 space-y-4">
-                    <div className={cn("w-16 h-16 rounded-full flex items-center justify-center animate-pulse", tokens.calendar.emptyStateBg)}>
-                      <Clock className="w-8 h-8 opacity-50" />
-                    </div>
-                    <p className="text-sm font-medium">Select a date to view agenda</p>
-                  </div>
                 )}
-              </div>
-            )}
 
-          </div>
+              </div>
+            </>
+            )}
         </div>
       </div>
 
