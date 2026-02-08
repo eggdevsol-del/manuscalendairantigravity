@@ -149,6 +149,8 @@ export function FullScreenSheet({
 
                                 {/* 3. Glass Sheet Container */}
                                 <div className={cn("flex-1 z-20 flex flex-col relative overflow-hidden", tokens.sheetSecondary.glass)}>
+                                    {/* Light mode background gradient overlay (matches wrapper gradient at 90% opacity) */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-slate-100/90 via-purple-50/90 to-cyan-50/90 dark:hidden pointer-events-none" />
                                     {/* Top Edge Highlight */}
                                     <div className={cn(tokens.sheetSecondary.highlight, "opacity-50 z-10")} />
 

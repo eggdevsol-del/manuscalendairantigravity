@@ -1,7 +1,0 @@
---- Artist Audit ---
-Artist: Test Artist (testartist@example.com) [ID: user_1b844c65724fd6f5688462edf7394730] - Conversations: 1
-Artist: Artist Test (artist@test.com) [ID: user_5c2f4e06407b8d7720b9c478d4b99cd2] - Conversations: 1
-Artist: P mason tattoo artist (piripimason@gmail.com) [ID: user_ce549c0b4b6f90aaafad0546a0928050] - Conversations: 17
-Artist: Gary Tyres (pipmasonconsult@gmail.com) [ID: user_e5f1a5058a69bab4e5ce58001e9580d8] - Conversations: 3
-
-Total conversations in DB: 22
