@@ -1,7 +1,7 @@
 import { db } from '../db';
 import { appointments } from '../../drizzle/schema';
 import { eq } from 'drizzle-orm';
-import { zonedTimeToUtc } from 'date-fns-tz';
+import { fromZonedTime } from 'date-fns-tz';
 
 /**
  * Migration Script: Convert Appointment Timezones to UTC
