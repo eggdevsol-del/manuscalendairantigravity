@@ -50,7 +50,7 @@ export default function LeadDetail() {
     return (
       <PageShell>
         <PageHeader title="Lead Not Found" />
-        <GlassSheet className="bg-white/5">
+        <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
           <div className="p-6 text-center">
             <p className="text-muted-foreground mb-4">This lead could not be found.</p>
             <Button onClick={() => setLocation("/conversations")}>
@@ -94,7 +94,7 @@ export default function LeadDetail() {
   return (
     <PageShell>
       <PageHeader title="Consultation Request" />
-      <GlassSheet className="bg-white/5">
+      <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
         {/* Back Button */}
         <div className="shrink-0 pt-4 pb-2 px-4 border-b border-white/5">
           <Button

@@ -54,7 +54,7 @@ export default function Portfolio() {
             </div>
 
             {/* 3. Sheet Container */}
-            <GlassSheet className="bg-white/5">
+            <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
 
                 {/* Optional Sheet Header / Actions Area */}
                 <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5 flex justify-end">

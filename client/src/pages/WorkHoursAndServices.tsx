@@ -257,7 +257,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
       </div>
 
       {/* 3. Sheet Container */}
-      <GlassSheet className="bg-white/5">
+      <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
           <div className="pb-32 max-w-lg mx-auto space-y-6">
 
