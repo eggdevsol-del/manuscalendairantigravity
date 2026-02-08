@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { artistProcedure, protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { localToUTC, getBusinessTimezone } from "../../shared/utils/timezone";
 
 export const appointmentsRouter = router({
     list: protectedProcedure
@@ -52,19 +53,26 @@ export const appointmentsRouter = router({
                 clientId: z.string(),
                 title: z.string(),
                 description: z.string().optional(),
-                startTime: z.date(),
-                endTime: z.date(),
+                startTime: z.string(), // Now accepts local format "YYYY-MM-DDTHH:mm"
+                endTime: z.string(),   // Now accepts local format
+                timeZone: z.string().optional(), // Optional, defaults to business timezone
                 serviceName: z.string().optional(),
                 price: z.number().optional(),
                 depositAmount: z.number().optional(),
             })
         )
         .mutation(async ({ input }) => {
-            // Check for overlap
+            const timezone = input.timeZone || getBusinessTimezone();
+
+            // Convert local times to UTC
+            const startTimeUTC = localToUTC(input.startTime, timezone);
+            const endTimeUTC = localToUTC(input.endTime, timezone);
+
+            // Check for overlap using UTC times
             const isOverlapping = await db.checkAppointmentOverlap(
                 input.artistId,
-                input.startTime,
-                input.endTime
+                new Date(startTimeUTC),
+                new Date(endTimeUTC)
             );
 
             if (isOverlapping) {
@@ -75,7 +83,17 @@ export const appointmentsRouter = router({
             }
 
             return db.createAppointment({
-                ...input,
+                conversationId: input.conversationId,
+                artistId: input.artistId,
+                clientId: input.clientId,
+                title: input.title,
+                description: input.description,
+                startTime: new Date(startTimeUTC).toISOString(),
+                endTime: new Date(endTimeUTC).toISOString(),
+                timeZone: timezone,
+                serviceName: input.serviceName,
+                price: input.price,
+                depositAmount: input.depositAmount,
                 status: "pending",
             });
         }),
@@ -85,8 +103,9 @@ export const appointmentsRouter = router({
                 id: z.number(),
                 title: z.string().optional(),
                 description: z.string().optional(),
-                startTime: z.date().optional(),
-                endTime: z.date().optional(),
+                startTime: z.string().optional(), // Now accepts local format
+                endTime: z.string().optional(),   // Now accepts local format
+                timeZone: z.string().optional(),
                 status: z
                     .enum(["pending", "confirmed", "cancelled", "completed"])
                     .optional(),
@@ -118,7 +137,24 @@ export const appointmentsRouter = router({
             }
 
             const { id, ...updates } = input;
-            return db.updateAppointment(id, updates);
+
+            // Convert times if provided
+            const processedUpdates: any = { ...updates };
+            if (updates.startTime || updates.endTime) {
+                const timezone = updates.timeZone || appointment.timeZone || getBusinessTimezone();
+
+                if (updates.startTime) {
+                    processedUpdates.startTime = localToUTC(updates.startTime, timezone);
+                }
+                if (updates.endTime) {
+                    processedUpdates.endTime = localToUTC(updates.endTime, timezone);
+                }
+                if (updates.timeZone) {
+                    processedUpdates.timeZone = timezone;
+                }
+            }
+
+            return db.updateAppointment(id, processedUpdates);
         }),
     delete: protectedProcedure
         .input(z.number())
@@ -334,8 +370,9 @@ export const appointmentsRouter = router({
     bookProject: protectedProcedure
         .input(z.object({
             conversationId: z.number(),
+            timeZone: z.string().optional(), // Optional timezone for all appointments
             appointments: z.array(z.object({
-                startTime: z.date(),
+                startTime: z.date(), // Keep as Date for now (findProjectAvailability returns Dates)
                 endTime: z.date(),
                 title: z.string(),
                 description: z.string().optional(),
@@ -351,6 +388,8 @@ export const appointmentsRouter = router({
             if (ctx.user.id !== conversation.artistId && ctx.user.id !== conversation.clientId) {
                 throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized to book for this conversation" });
             }
+
+            const timezone = input.timeZone || getBusinessTimezone();
 
             let createdCount = 0;
             for (const appt of input.appointments) {
@@ -374,8 +413,9 @@ export const appointmentsRouter = router({
                     clientId: conversation.clientId,
                     title: appt.title,
                     description: appt.description,
-                    startTime: appt.startTime,
-                    endTime: appt.endTime,
+                    startTime: appt.startTime.toISOString(),
+                    endTime: appt.endTime.toISOString(),
+                    timeZone: timezone, // Add timezone
                     serviceName: appt.serviceName,
                     price: appt.price,
                     depositAmount: appt.depositAmount,

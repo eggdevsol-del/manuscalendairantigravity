@@ -19,6 +19,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { formatLocalTime, getBusinessTimezone } from "../../../shared/utils/timezone";
 
 type ViewMode = "month" | "week";
 
@@ -234,8 +235,9 @@ export default function Calendar() {
       clientId: appointmentForm.clientId,
       title: appointmentForm.title,
       description: appointmentForm.description,
-      startTime: new Date(appointmentForm.startTime),
-      endTime: new Date(appointmentForm.endTime),
+      startTime: appointmentForm.startTime, // Send as local format string
+      endTime: appointmentForm.endTime,     // Send as local format string
+      timeZone: getBusinessTimezone(),      // Include timezone
     });
   };
 
@@ -290,14 +292,10 @@ export default function Calendar() {
     return service?.color || "var(--primary)";
   };
 
-  // Helper: Format time for display
-  const formatTime = (dateTime: string) => {
-    const date = new Date(dateTime);
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
+  // Helper: Format time for display using timezone utils
+  const formatTime = (utcISO: string, timezone?: string) => {
+    const tz = timezone || getBusinessTimezone();
+    return formatLocalTime(utcISO, tz, 'h:mm a');
   };
 
   // Computed: Current month days

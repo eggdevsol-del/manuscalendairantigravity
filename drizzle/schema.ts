@@ -10,6 +10,7 @@ export const appointments = mysqlTable("appointments", {
 	description: text(),
 	startTime: datetime({ mode: 'string' }).notNull(),
 	endTime: datetime({ mode: 'string' }).notNull(),
+	timeZone: varchar({ length: 64 }).notNull().default('Australia/Brisbane'),
 	status: mysqlEnum(['pending', 'confirmed', 'cancelled', 'completed']).default('pending').notNull(),
 	serviceName: varchar({ length: 255 }),
 	price: int(),
