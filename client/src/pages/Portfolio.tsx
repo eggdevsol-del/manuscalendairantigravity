@@ -111,7 +111,7 @@ export default function Portfolio() {
                         )}
                     </div>
                 </div>
-            \u003c/div\u003e
+            </div>
         </PageShell>
     );
 }
