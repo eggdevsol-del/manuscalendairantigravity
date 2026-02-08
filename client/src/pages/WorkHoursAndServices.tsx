@@ -1,7 +1,8 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Switch, Textarea } from "@/components/ui";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
-import { PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
+import { LoadingState, PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
+import { tokens } from "@/ui/tokens";
 import { trpc } from "@/lib/trpc";
 import { ChevronRight, Plus, Trash2, Pencil, Check, X, Layers, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -257,7 +258,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
       </div>
 
       {/* 3. Sheet Container */}
-      <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
+      <div className={tokens.contentContainer.base}>
         <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
           <div className="pb-32 max-w-lg mx-auto space-y-6">
 

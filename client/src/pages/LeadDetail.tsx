@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { ArrowLeft, Mail, Phone, Calendar, DollarSign, Palette, MapPin, Clock, MessageCircle, MessageSquare, X, Image as ImageIcon } from "lucide-react";
-import { LoadingState, PageShell, GlassSheet, PageHeader } from "@/components/ui/ssot";
+import { LoadingState, PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
 import { Card } from "@/components/ui/card";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
@@ -50,7 +50,7 @@ export default function LeadDetail() {
     return (
       <PageShell>
         <PageHeader title="Lead Not Found" />
-        <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
+        <div className={tokens.contentContainer.base}>
           <div className="p-6 text-center">
             <p className="text-muted-foreground mb-4">This lead could not be found.</p>
             <Button onClick={() => setLocation("/conversations")}>
@@ -94,7 +94,7 @@ export default function LeadDetail() {
   return (
     <PageShell>
       <PageHeader title="Consultation Request" />
-      <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
+      <div className={tokens.contentContainer.base}>
         {/* Back Button */}
         <div className="shrink-0 pt-4 pb-2 px-4 border-b border-white/5">
           <Button

@@ -7,6 +7,7 @@ import WorkHoursAndServices from "./WorkHoursAndServices";
 import ArtistLink from "@/components/ArtistLink";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Switch, Textarea } from "@/components/ui";
 import { LoadingState, PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
+import { tokens } from "@/ui/tokens";
 import { trpc } from "@/lib/trpc";
 import {
   Bell,
@@ -232,7 +233,7 @@ export default function Settings() {
         </div>
 
         {/* 3. Sheet Container */}
-        <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
+        <div className={tokens.contentContainer.base}>
           <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
             <div className="pb-32 max-w-lg mx-auto space-y-6">
 
@@ -320,7 +321,7 @@ export default function Settings() {
           <p className="text-muted-foreground text-lg font-medium mt-1">Details & Payments (Confidential)</p>
         </div>
 
-        <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
+        <div className={tokens.contentContainer.base}>
           <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
             <div className="pb-32 max-w-lg mx-auto space-y-6">
 
@@ -493,7 +494,7 @@ export default function Settings() {
       </div>
 
       {/* 3. Sheet Container */}
-      <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
+      <div className={tokens.contentContainer.base}>
         <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5">
           <h2 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">
             Preferences

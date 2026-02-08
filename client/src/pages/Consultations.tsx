@@ -2,6 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from "@/components/ui";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
 import { LoadingState, PageShell, GlassSheet, PageHeader } from "@/components/ui/ssot";
+import { tokens } from "@/ui/tokens";
 import { trpc } from "@/lib/trpc";
 import { Calendar, ChevronRight, Clock, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -102,7 +103,7 @@ export default function Consultations() {
       </div>
 
       {/* 3. Content Container (was GlassSheet) */}
-      <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
+      <div className={tokens.contentContainer.base}>
 
         {/* Sheet Header: Filter/Sort could go here */}
         <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5">

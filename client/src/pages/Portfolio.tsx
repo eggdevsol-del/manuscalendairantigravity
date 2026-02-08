@@ -7,6 +7,7 @@ import { Button, Card, CardContent } from "@/components/ui";
 import { Heart, Trash2, Upload, Image } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { LoadingState, PageShell, GlassSheet, PageHeader } from "@/components/ui/ssot";
+import { tokens } from "@/ui/tokens";
 
 export default function Portfolio() {
     const { user } = useAuth();
@@ -54,7 +55,7 @@ export default function Portfolio() {
             </div>
 
             {/* 3. Sheet Container */}
-            <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
+            <div className={tokens.contentContainer.base}>
 
                 {/* Optional Sheet Header / Actions Area */}
                 <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5 flex justify-end">

@@ -344,5 +344,10 @@ export const tokens = {
         statusPadding: "p-3",
         statusPaddingLarge: "p-4",
         statusRadius: "rounded-xl"
-    }
+    },
+
+    // Content Container (replaces GlassSheet)
+    contentContainer: {
+        base: "flex-1 flex flex-col overflow-hidden", // Transparent version
+    },
 } as const;

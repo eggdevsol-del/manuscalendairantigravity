@@ -12,13 +12,13 @@ import {
   Clock
 } from "lucide-react";
 import { BottomSheet, LoadingState, PageShell, PageHeader, GlassSheet, SegmentedHeader } from "@/components/ui/ssot";
+import { tokens } from "@/ui/tokens";
 import { useConversations } from "@/hooks/useConversations";
 
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { tokens } from "@/ui/tokens";
 
 type ViewMode = "month" | "week";
 
@@ -506,7 +506,7 @@ export default function Calendar() {
       </div>
 
       {/* 3. Content Container (was GlassSheet) */}
-      <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
+      <div className={tokens.contentContainer.base}>
 
         {/* Sheet Header: Controls */}
         <div className={cn("shrink-0 pb-2 space-y-4", tokens.calendar.sheetHeaderPadding, tokens.calendar.divider, "border-b")}>

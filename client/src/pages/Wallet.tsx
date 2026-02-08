@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Card } from "@/components/ui";
-import { PageShell, GlassSheet, PageHeader } from "@/components/ui/ssot";
+import { LoadingState, PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
+import { tokens } from "@/ui/tokens";
 
 export default function Wallet() {
     const { user } = useAuth();
@@ -22,7 +23,7 @@ export default function Wallet() {
             </div>
 
             {/* 3. Sheet Container */}
-            <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
+            <div className={tokens.contentContainer.base}>
 
                 {/* Sheet Title */}
                 <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5">
