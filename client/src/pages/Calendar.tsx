@@ -729,7 +729,7 @@ export default function Calendar() {
                             <div
                               className="absolute inset-0 rounded-[14px] pointer-events-none"
                               style={{
-                                background: `linear-gradient(to top, ${getServiceColor(dayAppointments[0])}70, transparent 60%)`
+                                background: `linear-gradient(135deg, ${getServiceColor(dayAppointments[0])}50 0%, transparent 30%)`
                               }}
                             />
                           )}
