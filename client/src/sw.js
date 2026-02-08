@@ -191,7 +191,7 @@ self.addEventListener('push', (event) => {
 
   try {
     const data = event.data.json();
-    console.log('[SW] Push data:', data);
+    console.log('[SW] Push data:', JSON.stringify(data, null, 2));
 
     // If this is a OneSignal notification, it has a 'custom' property
     // The OneSignal SDK (which we imported above) will handle this automatically.
@@ -204,14 +204,16 @@ self.addEventListener('push', (event) => {
     const title = data.title || 'New Notification';
     const options = {
       body: data.body || 'You have a new notification',
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
+      icon: data.icon || '/icon-192.png',
+      badge: data.badge || '/icon-192.png',
       data: { url: data.data?.url || data.url || '/' },
       requireInteraction: true,
       actions: [
         { action: 'open', title: 'Open' }
       ]
     };
+
+    console.log('[SW] Showing notification:', title, options);
 
     event.waitUntil(
       self.registration.showNotification(title, options)
