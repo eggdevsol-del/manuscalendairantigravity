@@ -7,6 +7,7 @@ import { useBusinessTasks, useWeeklySnapshot, useDashboardSettings, type Busines
 import { CHALLENGE_TEMPLATES } from "@/features/dashboard/DashboardTaskRegister";
 import { DashboardTask, ChallengeTemplate } from "@/features/dashboard/types";
 import { PageShell, PageHeader, GlassSheet, HalfSheet, FullScreenSheet, WeeklySnapshotModal, TaskCard, SegmentedHeader } from "@/components/ui/ssot";
+import { tokens } from "@/ui/tokens";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X, Check, Clock, ExternalLink, MessageSquare, Mail, Play, Plus, Trash2, Smartphone, Monitor, ChevronRight, Settings, BarChart3 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -262,7 +263,7 @@ export default function Dashboard() {
             </div>
 
             {/* 3. Sheet Container (Matched to Calendar.tsx) */}
-            <div className="relative flex-1 flex flex-col overflow-hidden">
+            <div className={cn(tokens.contentContainer.base, "relative")}>
                 {/* Teaser Mode Overlay */}
                 {isTeaserClient && (
                     <div
@@ -294,7 +295,7 @@ export default function Dashboard() {
                         />
                     </div>
 
-                    <div className="bg-white/5 flex flex-col relative overflow-hidden flex-1">
+                    <div className={cn(tokens.contentContainer.base, "relative")}>
                         <div className="flex-1 relative w-full overflow-hidden">
                             <AnimatePresence initial={false} custom={direction}>
                                 <motion.div
