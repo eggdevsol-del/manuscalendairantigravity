@@ -505,8 +505,8 @@ export default function Calendar() {
         </p>
       </div>
 
-      {/* 3. Sheet Container */}
-      <GlassSheet className="bg-white/5">
+      {/* 3. Content Container (was GlassSheet) */}
+      <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
 
         {/* Sheet Header: Controls */}
         <div className={cn("shrink-0 pb-2 space-y-4", tokens.calendar.sheetHeaderPadding, tokens.calendar.divider, "border-b")}>
