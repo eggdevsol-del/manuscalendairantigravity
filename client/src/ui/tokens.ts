@@ -2,7 +2,7 @@
 export const tokens = {
     // 1. Backgrounds
     // Exact match from Calendar/Dashboard
-    bgGradient: "fixed inset-0 w-full h-[100dvh] bg-[radial-gradient(circle_at_top_right,rgba(88,28,135,0.4),rgba(2,6,23,1)_60%)]",
+    bgGradient: "fixed inset-0 w-full h-[100dvh] bg-gradient-to-br from-[#1e3a5f]/80 to-[#1a1a2e] dark:from-[#1e3a5f]/80 dark:to-[#1a1a2e]",
 
     // 2. Sheets
     // Main sheet (Dashboard, Calendar) - extends past bottom
@@ -12,14 +12,14 @@ export const tokens = {
         content: "flex-1 relative w-full overflow-hidden"
     },
 
-    // Secondary sheet (Modals, Booking Wizard)
+    // Secondary sheet (Modals, Booking Wizard) - Solid gradients, no transparency
     sheetSecondary: {
-        overlay: "fixed inset-0 z-[100] bg-black/40 backdrop-blur-md",
+        overlay: "fixed inset-0 z-[100] bg-gradient-to-br from-[#1e3a5f] to-[#1a1a2e] dark:from-[#1e3a5f] dark:to-[#1a1a2e]",
         content: "fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col gap-0 overflow-hidden",
-        container: "flex-1 z-20 flex flex-col bg-gradient-to-b from-white/10 to-[#0f172a] rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative will-change-transform",
-        glass: "bg-gradient-to-b from-white/10 to-[#0f172a] rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)]",
+        container: "flex-1 z-20 flex flex-col bg-gradient-to-b from-[#7dd3fc] to-[#e5e7eb] dark:from-[#1e3a5f] dark:to-[#2a2a3e] rounded-t-[2.5rem] overflow-hidden relative will-change-transform",
+        glass: "bg-gradient-to-b from-[#7dd3fc] to-[#e5e7eb] dark:from-[#1e3a5f] dark:to-[#2a2a3e] rounded-t-[2.5rem]",
         highlight: "absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent",
-        header: "shrink-0 pt-6 pb-4 px-6 border-b border-white/5 bg-white/[0.01] backdrop-blur-md z-10 relative"
+        header: "shrink-0 pt-6 pb-4 px-6 border-b border-white/5 bg-black/5 dark:bg-white/[0.02] z-10 relative"
     },
 
     // 3. Cards
@@ -127,6 +127,7 @@ export const tokens = {
     animations: {
         fade: "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-500",
         sheetSlideUp: "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom-full data-[state=open]:slide-in-from-bottom-full duration-500 ease-in-out",
+        sheetSlideRight: "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-right-full duration-500 ease-in-out",
         sheetSlideSide: "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-right-4 data-[state=open]:slide-in-from-right-4",
         modalZoom: "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
     },
@@ -153,11 +154,11 @@ export const tokens = {
             ease: "easeInOut" as const
         },
 
-        // Sheet slide-up animation
+        // Sheet slide-right animation (from right to left)
         sheetSlide: {
-            initial: { y: "100%" },
-            animate: { y: 0 },
-            exit: { y: "100%" }
+            initial: { x: "100%" },
+            animate: { x: 0 },
+            exit: { x: "100%" }
         },
 
         // Overlay fade animation (synchronized with sheet)

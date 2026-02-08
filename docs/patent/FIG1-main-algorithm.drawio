@@ -1,0 +1,324 @@
+<mxfile host="app.diagrams.net" modified="2026-02-08T06:57:23.000Z" agent="Antigravity" version="24.0.0" etag="patent-version-v1">
+  <diagram name="FIG. 1 - Main Algorithm Flow" id="fig1-main-flow">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="2000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Title Block -->
+        <mxCell id="title_block" value="FIG. 1: INTELLIGENT MULTI-SESSION APPOINTMENT SCHEDULING SYSTEM&#xa;WITH SELF-OVERLAP PREVENTION AND TIMEZONE-AWARE SLOT ALLOCATION" style="text;html=1;strokeColor=#666666;fillColor=#f5f5f5;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="100" y="20" width="1200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Patent Info -->
+        <mxCell id="patent_info" value="Patent Application: Automatic Date Finding Algorithm&#xa;Inventor: [Your Name]&#xa;Date: February 8, 2026" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;fontStyle=2" vertex="1" parent="1">
+          <mxGeometry x="100" y="90" width="300" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- START (100) -->
+        <mxCell id="100" value="100&#xa;START&#xa;Multi-Session Scheduling&#xa;Request Received" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="600" y="160" width="200" height="90" as="geometry" />
+        </mxCell>
+        
+        <!-- Input Parameters (110) -->
+        <mxCell id="110" value="110&#xa;INPUT PARAMETERS:&#xa;• conversationId (unique identifier)&#xa;• serviceName (string)&#xa;• serviceDuration (minutes, integer)&#xa;• sittings (session count, integer)&#xa;• price (currency, decimal)&#xa;• frequency (enum: consecutive/weekly/biweekly/monthly)&#xa;• startDate (ISO 8601 timestamp)&#xa;• timeZone (IANA timezone identifier)" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;align=left" vertex="1" parent="1">
+          <mxGeometry x="500" y="290" width="400" height="140" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge100_110" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="100" target="110">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Novel Feature Annotation 1 -->
+        <mxCell id="annotation1" value="NOVEL FEATURE 1:&#xa;Timezone-aware scheduling&#xa;enables global booking&#xa;coordination across&#xa;multiple time zones" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#ff9800;fontSize=10;fontStyle=2;dashed=1;dashPattern=5 5" vertex="1" parent="1">
+          <mxGeometry x="950" y="310" width="180" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge_ann1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#ff9800;" edge="1" parent="1" source="annotation1" target="110">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Retrieve Booking Context (120) -->
+        <mxCell id="120" value="120&#xa;Retrieve booking context&#xa;from persistent data store&#xa;using unique conversation identifier" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="550" y="470" width="300" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge110_120" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="110" target="120">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Context Validation (130) -->
+        <mxCell id="130" value="130&#xa;Booking context&#xa;exists and&#xa;valid?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="590" y="580" width="220" height="110" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge120_130" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="120" target="130">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Error 140 -->
+        <mxCell id="140" value="140&#xa;ERROR: NOT_FOUND&#xa;Booking context not found&#xa;in persistent data store" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="950" y="600" width="200" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge130_140" value="NO" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;fontStyle=1" edge="1" parent="1" source="130" target="140">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Retrieve Work Schedule (150) -->
+        <mxCell id="150" value="150&#xa;Retrieve provider availability&#xa;configuration (work schedule)&#xa;from persistent data store" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="550" y="730" width="300" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge130_150" value="YES" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;fontStyle=1" edge="1" parent="1" source="130" target="150">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Parse Work Schedule (160) -->
+        <mxCell id="160" value="160&#xa;Parse work schedule data structure&#xa;Convert JSON to normalized&#xa;WorkDay array (see FIG. 5)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="550" y="840" width="300" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge150_160" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="150" target="160">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Schedule Validation (170) -->
+        <mxCell id="170" value="170&#xa;Work schedule&#xa;valid and&#xa;contains enabled&#xa;days?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="590" y="950" width="220" height="110" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge160_170" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="160" target="170">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Error 180 -->
+        <mxCell id="180" value="180&#xa;ERROR: PRECONDITION_FAILED&#xa;Provider availability not configured&#xa;System cannot proceed without&#xa;valid work schedule" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="950" y="965" width="220" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge170_180" value="NO" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;fontStyle=1" edge="1" parent="1" source="170" target="180">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Calculate Maximum Daily Capacity (190) -->
+        <mxCell id="190" value="190&#xa;Calculate maximum daily capacity&#xa;maxMinutes = MAX(endTime - startTime)&#xa;for all enabled work days&#xa;(handles overnight shifts)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left" vertex="1" parent="1">
+          <mxGeometry x="520" y="1100" width="360" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge170_190" value="YES" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;fontStyle=1" edge="1" parent="1" source="170" target="190">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Duration Feasibility Check (200) -->
+        <mxCell id="200" value="200&#xa;serviceDuration&#xa;≤&#xa;maxDailyCapacity?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="590" y="1220" width="220" height="110" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge190_200" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="190" target="200">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Error 210 -->
+        <mxCell id="210" value="210&#xa;ERROR: PRECONDITION_FAILED&#xa;Requested service duration&#xa;exceeds maximum daily capacity&#xa;Impossible to schedule" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="950" y="1230" width="220" height="90" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge200_210" value="NO" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;fontStyle=1" edge="1" parent="1" source="200" target="210">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Initialize Search State (220) -->
+        <mxCell id="220" value="220&#xa;INITIALIZE SEARCH STATE:&#xa;• searchStart = MAX(startDate, currentTime)&#xa;• Retrieve existing appointments from data store&#xa;• Initialize busySlots = existingAppointments&#xa;• Initialize suggestedDates = [] (empty array)&#xa;• currentSearchPointer = searchStart&#xa;• totalCost = price × sittings&#xa;• Align searchPointer to 30-minute boundary:&#xa;  remainder = minutes MOD 30&#xa;  IF remainder ≠ 0 THEN minutes += (30 - remainder)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="460" y="1370" width="480" height="160" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge200_220" value="YES" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;fontStyle=1" edge="1" parent="1" source="200" target="220">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Novel Feature Annotation 2 -->
+        <mxCell id="annotation2" value="NOVEL FEATURE 2:&#xa;30-minute granularity&#xa;provides optimal balance&#xa;between scheduling&#xa;flexibility and&#xa;computational efficiency" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#ff9800;fontSize=10;fontStyle=2;dashed=1;dashPattern=5 5" vertex="1" parent="1">
+          <mxGeometry x="980" y="1400" width="180" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge_ann2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#ff9800;" edge="1" parent="1" source="annotation2" target="220">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Main Iteration Loop (230) -->
+        <mxCell id="230" value="230&#xa;FOR EACH sitting&#xa;(i = 0 to sittings - 1)&#xa;ITERATE" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="540" y="1570" width="320" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge220_230" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="220" target="230">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Call Slot Finding Algorithm (240) -->
+        <mxCell id="240" value="240&#xa;INVOKE: findNextAvailableSlot(&#xa;  searchPointer: currentSearchPointer,&#xa;  duration: serviceDuration,&#xa;  schedule: workSchedule,&#xa;  conflicts: busySlots,&#xa;  timezone: timeZone&#xa;)&#xa;RETURNS: Date | null&#xa;(See FIG. 2 for detailed subprocess)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;align=left;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="500" y="1690" width="400" height="130" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge230_240" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="230" target="240">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Reference to FIG 2 -->
+        <mxCell id="fig2_ref" value="See FIG. 2&#xa;for detailed&#xa;slot-finding&#xa;algorithm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;fontSize=10;fontStyle=2;dashed=1" vertex="1" parent="1">
+          <mxGeometry x="950" y="1710" width="120" height="90" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge_fig2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#1976d2;" edge="1" parent="1" source="fig2_ref" target="240">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Slot Found Check (250) -->
+        <mxCell id="250" value="250&#xa;Valid slot&#xa;returned?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="600" y="1860" width="200" height="90" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge240_250" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="240" target="250">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Error 260 -->
+        <mxCell id="260" value="260&#xa;ERROR: PRECONDITION_FAILED&#xa;No available slot found&#xa;for sitting (i+1)&#xa;within search window" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="950" y="1870" width="200" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge250_260" value="NO (null)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;fontStyle=1" edge="1" parent="1" source="250" target="260">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Add to Results (270) -->
+        <mxCell id="270" value="270&#xa;Append found slot to&#xa;suggestedDates array" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="570" y="1990" width="260" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge250_270" value="YES (Date)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;fontStyle=1" edge="1" parent="1" source="250" target="270">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Self-Overlap Prevention (280) -->
+        <mxCell id="280" value="280&#xa;SELF-OVERLAP PREVENTION:&#xa;Add newly scheduled slot to busySlots&#xa;busySlots.push({&#xa;  startTime: foundSlot,&#xa;  endTime: foundSlot + serviceDuration&#xa;})" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="520" y="2080" width="360" height="90" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge270_280" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="270" target="280">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Novel Feature Annotation 3 -->
+        <mxCell id="annotation3" value="NOVEL FEATURE 3:&#xa;Self-overlap prevention&#xa;ensures multi-session&#xa;bookings don't conflict&#xa;with themselves.&#xa;Critical innovation for&#xa;sequential scheduling." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#ff9800;fontSize=10;fontStyle=2;dashed=1;dashPattern=5 5" vertex="1" parent="1">
+          <mxGeometry x="950" y="2070" width="200" height="110" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge_ann3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#ff9800;" edge="1" parent="1" source="annotation3" target="280">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Calculate Next Search Date (290) -->
+        <mxCell id="290" value="290&#xa;FREQUENCY-BASED ADVANCEMENT:&#xa;Calculate next search starting point&#xa;based on scheduling frequency:&#xa;• consecutive: nextDate = foundSlot + 1 day&#xa;• weekly: nextDate = foundSlot + 7 days&#xa;• biweekly: nextDate = foundSlot + 14 days&#xa;• monthly: nextDate = foundSlot + 1 month" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="480" y="2210" width="440" height="110" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge280_290" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="280" target="290">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Update Search Pointer (300) -->
+        <mxCell id="300" value="300&#xa;Update search pointer:&#xa;currentSearchPointer = nextDate&#xa;(reset time to 00:00:00)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="540" y="2360" width="320" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge290_300" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="290" target="300">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Loop Back -->
+        <mxCell id="edge300_230" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#82b366" edge="1" parent="1" source="300" target="230">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="420" y="2390" />
+              <mxPoint x="420" y="1610" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="loop_label" value="LOOP BACK&#xa;for next sitting" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontStyle=2" vertex="1" parent="1">
+          <mxGeometry x="340" y="2000" width="80" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- All Sittings Complete (310) -->
+        <mxCell id="310" value="310&#xa;All sittings successfully&#xa;scheduled" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="1050" y="1585" width="200" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge230_310" value="Loop&#xa;Complete" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=10;fontStyle=1" edge="1" parent="1" source="230" target="310">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Return Results (320) -->
+        <mxCell id="320" value="320&#xa;RETURN SUCCESS:&#xa;{&#xa;  dates: suggestedDates[],&#xa;  totalCost: price × sittings,&#xa;  sessionCount: sittings,&#xa;  frequency: frequency&#xa;}" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;align=left;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1020" y="1690" width="260" height="110" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge310_320" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="310" target="320">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- END (330) -->
+        <mxCell id="330" value="330&#xa;END&#xa;Scheduling Complete" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1070" y="1840" width="160" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge320_330" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="320" target="330">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Legend -->
+        <mxCell id="legend_box" value="LEGEND" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;startSize=30" vertex="1" parent="1">
+          <mxGeometry x="100" y="160" width="320" height="340" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend1" value="Start/End Points" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="legend_box">
+          <mxGeometry x="20" y="40" width="120" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend2" value="Process/Operation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10" vertex="1" parent="legend_box">
+          <mxGeometry x="20" y="90" width="120" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend3" value="Decision Point" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10" vertex="1" parent="legend_box">
+          <mxGeometry x="20" y="140" width="120" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend4" value="Input/Output" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10" vertex="1" parent="legend_box">
+          <mxGeometry x="20" y="200" width="120" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend5" value="Error Condition" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="legend_box">
+          <mxGeometry x="170" y="40" width="120" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend6" value="Iteration Loop" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="legend_box">
+          <mxGeometry x="170" y="90" width="120" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend7" value="Calculation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10" vertex="1" parent="legend_box">
+          <mxGeometry x="170" y="140" width="120" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend8" value="Novel Feature" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#ff9800;fontSize=10;dashed=1;dashPattern=5 5" vertex="1" parent="legend_box">
+          <mxGeometry x="170" y="190" width="120" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend9" value="Reference Numbers:&#xa;Each element labeled&#xa;with unique identifier&#xa;(100, 110, 120, etc.)" style="text;html=1;strokeColor=#666666;fillColor=#ffffff;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=9;fontStyle=2" vertex="1" parent="legend_box">
+          <mxGeometry x="20" y="250" width="270" height="60" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
