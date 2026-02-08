@@ -48,8 +48,8 @@ async function migrateAppointmentTimezones() {
                 }
 
                 // Convert to UTC assuming they are in business timezone
-                const startUTC = zonedTimeToUtc(startLocal, BUSINESS_TIMEZONE);
-                const endUTC = zonedTimeToUtc(endLocal, BUSINESS_TIMEZONE);
+                const startUTC = fromZonedTime(startLocal, BUSINESS_TIMEZONE);
+                const endUTC = fromZonedTime(endLocal, BUSINESS_TIMEZONE);
 
                 // Log the conversion for verification
                 console.log(`📝 Appointment ${apt.id}:`);

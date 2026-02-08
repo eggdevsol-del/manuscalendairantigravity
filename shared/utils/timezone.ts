@@ -1,5 +1,5 @@
-import { zonedTimeToUtc, utcToZonedTime, format } from 'date-fns-tz';
-import { parseISO } from 'date-fns';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz';
+import { parseISO, format } from 'date-fns';
 
 /**
  * SSOT Timezone Utilities
@@ -20,7 +20,7 @@ import { parseISO } from 'date-fns';
  */
 export function localToUTC(localInput: string, timezone: string): string {
     // Parse the local input as if it's in the specified timezone
-    const zonedDate = zonedTimeToUtc(localInput, timezone);
+    const zonedDate = fromZonedTime(localInput, timezone);
     return zonedDate.toISOString();
 }
 
@@ -36,7 +36,7 @@ export function localToUTC(localInput: string, timezone: string): string {
  */
 export function utcToLocal(utcISO: string, timezone: string): Date {
     const utcDate = parseISO(utcISO);
-    return utcToZonedTime(utcDate, timezone);
+    return toZonedTime(utcDate, timezone);
 }
 
 /**
@@ -51,7 +51,7 @@ export function utcToLocal(utcISO: string, timezone: string): Date {
  */
 export function formatForInput(utcISO: string, timezone: string): string {
     const localDate = utcToLocal(utcISO, timezone);
-    return format(localDate, "yyyy-MM-dd'T'HH:mm", { timeZone: timezone });
+    return format(localDate, "yyyy-MM-dd'T'HH:mm");
 }
 
 /**
@@ -71,7 +71,7 @@ export function formatLocalTime(
     formatString: string = 'PPp'
 ): string {
     const localDate = utcToLocal(utcISO, timezone);
-    return format(localDate, formatString, { timeZone: timezone });
+    return format(localDate, formatString);
 }
 
 /**
