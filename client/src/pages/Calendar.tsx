@@ -583,19 +583,16 @@ export default function Calendar() {
                       <Card
                         key={day.toISOString()}
                         className={cn(
-                          tokens.calendar.card,
-                          tokens.calendar.cellBg,
-                          tokens.calendar.cellBgHover,
-                          isToday(day) ? cn(tokens.calendar.todayRing, tokens.calendar.todayBg) : ""
+                          tokens.calendar.cardWeek,
+                          "bg-card/40 backdrop-blur-md border-white/10 flex flex-col overflow-hidden"
                         )}
-                        onClick={() => handleDateClick(day)}
                       >
-                        <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-start justify-between px-4 pt-4 pb-2 shrink-0">
                           <div>
-                            <p className={tokens.calendar.dayLabel}>
+                            <p className={cn("text-xs uppercase tracking-wider", tokens.calendar.dayLabel)}>
                               {day.toLocaleDateString("en-US", { weekday: "short" })}
                             </p>
-                            <p className={cn(tokens.calendar.dayNumber, "mt-0.5", isToday(day) ? tokens.calendar.todayText : "text-foreground")}>
+                            <p className={cn("mt-1", tokens.calendar.dayNumber, isToday(day) ? tokens.calendar.todayText : "text-foreground")}>
                               {day.getDate()}
                             </p>
                           </div>
@@ -605,7 +602,10 @@ export default function Calendar() {
                             </p>
                             {isArtist && (
                               <div className="flex justify-end mt-1">
-                                <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", tokens.calendar.iconBg)}>
+                                <div
+                                  className={cn("w-5 h-5 rounded-full flex items-center justify-center", tokens.calendar.iconBg)}
+                                  onClick={() => handleDateClick(day)} // Add click handler to the plus icon
+                                >
                                   <Plus className={cn("w-3 h-3", tokens.calendar.iconText)} />
                                 </div>
                               </div>
@@ -613,10 +613,11 @@ export default function Calendar() {
                           </div>
                         </div>
 
+                        {/* Service Color Sections with Appointment Details */}
                         {dayAppointments.length > 0 ? (
-                          <div className="space-y-2">
-                            {dayAppointments.map((apt) => {
-                              const serviceColor = availableServices.find(s => s.name === apt.serviceName || s.name === apt.title)?.color || "var(--primary)";
+                          <div className={tokens.calendar.dayCard.appointmentSection}>
+                            {dayAppointments.map((apt, idx) => {
+                              const serviceColor = getServiceColor(apt);
                               const isHex = serviceColor.startsWith('#');
 
                               const sessionLabel = (() => {
@@ -629,10 +630,10 @@ export default function Calendar() {
                               return (
                                 <div
                                   key={apt.id}
-                                  className="p-2.5 rounded-xl border cursor-pointer transition-colors backdrop-blur-sm flex flex-col justify-center"
+                                  className={tokens.calendar.dayCard.appointmentItem}
                                   style={{
-                                    backgroundColor: isHex ? `${serviceColor}40` : `oklch(from ${serviceColor} l c h / 0.1)`,
-                                    borderColor: isHex ? `${serviceColor}60` : `oklch(from ${serviceColor} l c h / 0.2)`
+                                    backgroundColor: isHex ? `${serviceColor}60` : `oklch(from ${serviceColor} l c h / 0.4)`,
+                                    borderTop: idx === 0 ? `1px solid ${serviceColor}` : 'none'
                                   }}
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -640,18 +641,13 @@ export default function Calendar() {
                                     setShowAppointmentDetailDialog(true);
                                   }}
                                 >
-                                  <p className="text-sm font-bold text-foreground truncate">
-                                    {apt.clientName || "Unknown Client"}
+                                  <p className={tokens.calendar.dayCard.appointmentText}>
+                                    {apt.clientName || "Unknown Client"} - {apt.serviceName || apt.title}
+                                    {sessionLabel && ` • ${sessionLabel}`}
                                   </p>
-                                  <div className="flex items-center gap-1.5 text-xs text-foreground/80 truncate mt-0.5">
-                                    <span>{apt.serviceName || apt.title}</span>
-                                    {sessionLabel && (
-                                      <>
-                                        <span className="opacity-40">•</span>
-                                        <span className="opacity-60 font-medium">{sessionLabel}</span>
-                                      </>
-                                    )}
-                                  </div>
+                                  <p className={tokens.calendar.dayCard.appointmentTime}>
+                                    {formatTime(apt.startTime)}
+                                  </p>
                                 </div>
                               );
                             })}
