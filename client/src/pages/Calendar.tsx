@@ -615,7 +615,7 @@ export default function Calendar() {
 
                         {/* Service Color Sections with Appointment Details */}
                         {dayAppointments.length > 0 ? (
-                          <div className="absolute bottom-0 left-0 right-0 h-[10%] flex overflow-hidden rounded-b-2xl">
+                          <div className="absolute bottom-0 left-0 right-0 h-[70%] flex overflow-hidden rounded-b-2xl">
                             {dayAppointments.map((apt, idx) => {
                               const serviceColor = getServiceColor(apt);
                               const isHex = serviceColor.startsWith('#');
@@ -632,7 +632,7 @@ export default function Calendar() {
                                   key={apt.id}
                                   className="flex-1 relative cursor-pointer"
                                   style={{
-                                    background: `linear-gradient(to top, ${isHex ? `${serviceColor}` : serviceColor} 0%, transparent 100%)`,
+                                    background: `linear-gradient(to top, ${isHex ? `${serviceColor}40` : `oklch(from ${serviceColor} l c h / 0.25)`} 0%, transparent 70%)`,
                                     borderLeft: idx > 0 ? `1px solid rgba(255,255,255,0.1)` : 'none'
                                   }}
                                   onClick={(e) => {
