@@ -251,7 +251,16 @@ export const tokens = {
         sheetHeaderPadding: "pt-6 pb-2 px-6",
         sheetContentPadding: "px-4 pt-4",
         timelineHeaderPadding: "px-4 py-3",
-        appointmentPadding: "pt-2 px-3"
+        appointmentPadding: "pt-2 px-3",
+
+        // Day Card Appointment Indicators
+        dayCard: {
+            dateSection: "flex-shrink-0 pb-1", // Top section with date
+            appointmentSection: "flex-1 flex flex-col w-full overflow-hidden", // Bottom section with appointments
+            appointmentItem: "flex-1 flex flex-col justify-center px-1.5 py-0.5 min-h-0", // Individual appointment area
+            appointmentText: "text-[9px] leading-tight font-medium truncate text-white", // Appointment details text
+            appointmentTime: "text-[8px] opacity-80 truncate text-white", // Time text
+        },
     },
 
     // Appointment Wizard (Calendar inline wizard)

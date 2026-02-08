@@ -282,6 +282,25 @@ export default function Calendar() {
     return days;
   };
 
+  // Helper: Get service color for an appointment
+  const getServiceColor = (appointment: any) => {
+    const service = availableServices.find(
+      s => s.name === appointment.serviceName || s.name === appointment.title
+    );
+    return service?.color || "var(--primary)";
+  };
+
+  // Helper: Format time for display
+  const formatTime = (dateTime: string) => {
+    const date = new Date(dateTime);
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  // Computed: Current month days
   // Memoize month days to prevent re-renders causing visual glitches
   const monthDays = useMemo(() => {
     const firstDay = new Date(
@@ -698,20 +717,43 @@ export default function Calendar() {
                             setTimeout(() => setShowTimelineContent(true), 305);
                           }}
                         >
-                          <span className={cn(
-                            "text-[15px]",
-                            isToday(day) && !isSelected && "text-primary font-bold", // Today but not selected
-                          )}>
-                            {day.getDate()}
-                          </span>
+                          {/* Date Section */}
+                          <div className={tokens.calendar.dayCard.dateSection}>
+                            <span className={cn(
+                              "text-[15px]",
+                              isToday(day) && !isSelected && "text-primary font-bold",
+                            )}>
+                              {day.getDate()}
+                            </span>
+                          </div>
 
-                          {/* Dots */}
-                          {dayAppointments.length > 0 && (
-                            <div className={cn(
-                              "absolute bottom-2 w-1 h-1 rounded-full",
-                              isSelected ? tokens.calendar.dotSelected : tokens.calendar.dot
-                            )} />
-                          )}
+                          {/* Appointment Indicators Section */}
+                          {dayAppointments.length > 0 ? (
+                            <div className={tokens.calendar.dayCard.appointmentSection}>
+                              {dayAppointments.map((apt, idx) => {
+                                const serviceColor = getServiceColor(apt);
+                                const isHex = serviceColor.startsWith('#');
+
+                                return (
+                                  <div
+                                    key={apt.id}
+                                    className={tokens.calendar.dayCard.appointmentItem}
+                                    style={{
+                                      backgroundColor: isHex ? `${serviceColor}60` : `oklch(from ${serviceColor} l c h / 0.4)`,
+                                      borderTop: idx === 0 ? `1px solid ${serviceColor}` : 'none'
+                                    }}
+                                  >
+                                    <p className={tokens.calendar.dayCard.appointmentText}>
+                                      {apt.clientName}
+                                    </p>
+                                    <p className={tokens.calendar.dayCard.appointmentTime}>
+                                      {formatTime(apt.startTime)}
+                                    </p>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : null}
                         </button>
                       );
                     })}
