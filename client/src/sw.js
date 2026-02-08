@@ -208,6 +208,9 @@ self.addEventListener('push', (event) => {
       badge: data.badge || '/icon-192.png',
       data: { url: data.data?.url || data.url || '/' },
       requireInteraction: true,
+      vibrate: [200, 100, 200], // Triggers heads-up notification on Android
+      tag: 'calendair-notification', // Groups notifications by tag
+      renotify: true, // Shows notification even if tag already exists
       actions: [
         { action: 'open', title: 'Open' }
       ]
