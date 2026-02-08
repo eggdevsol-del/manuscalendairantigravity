@@ -101,8 +101,8 @@ export default function Consultations() {
         </p>
       </div>
 
-      {/* 3. Sheet Container */}
-      <GlassSheet className="bg-white/5">
+      {/* 3. Content Container (was GlassSheet) */}
+      <div className="bg-white/5 flex-1 flex flex-col overflow-hidden">
 
         {/* Sheet Header: Filter/Sort could go here */}
         <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5">
@@ -180,7 +180,7 @@ export default function Consultations() {
             )}
           </div>
         </div>
-      \u003c/div\u003e
+      </div>
 
       <ModalShell
         isOpen={showNewDialog}
