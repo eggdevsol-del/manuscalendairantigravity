@@ -196,6 +196,36 @@ export const tokens = {
         todayRing: "ring-1 ring-primary/50",
         dimmedBg: "bg-white/[0.02]",
 
+        // New Calendar Redesign Colors (Pastel Palette)
+        event: {
+            orange: { bg: "bg-[#FFE4C4]", text: "text-[#8B4513]", border: "border-[#DEB887]" },
+            purple: { bg: "bg-[#E6E6FA]", text: "text-[#4B0082]", border: "border-[#9370DB]" },
+            green: { bg: "bg-[#F0FFF0]", text: "text-[#006400]", border: "border-[#90EE90]" },
+            pink: { bg: "bg-[#FFF0F5]", text: "text-[#C71585]", border: "border-[#FFB6C1]" },
+            blue: { bg: "bg-[#E0F7FA]", text: "text-[#006064]", border: "border-[#4DD0E1]" },
+            // Fallback
+            default: { bg: "bg-white/5", text: "text-foreground", border: "border-white/10" }
+        },
+
+        // Date Strip (New Design)
+        dateStrip: {
+            container: "flex gap-2 w-full overflow-x-auto no-scrollbar px-4 py-4",
+            dayBtn: "flex flex-col items-center justify-center min-w-[60px] h-[80px] rounded-2xl transition-all duration-300 relative group shrink-0",
+            dayBtnActive: "bg-blue-500 text-white shadow-lg shadow-blue-500/30 scale-105",
+            dayBtnInactive: "bg-transparent text-foreground hover:bg-white/5",
+            dayName: "text-xs font-medium mb-1",
+            dayNumber: "text-xl font-bold",
+        },
+
+        // Time Grid (New Design)
+        timeGrid: {
+            timeLabel: "text-xs text-muted-foreground font-medium w-12 text-right pr-3 -mt-2",
+            line: "border-t border-gray-200 dark:border-white/10 w-full relative",
+            currentTimeIndicator: "absolute left-0 right-0 border-t-2 border-blue-500 z-20 pointer-events-none flex items-center",
+            currentTimeBubble: "absolute -left-1.5 w-3 h-3 rounded-full bg-blue-500 ring-2 ring-background",
+        },
+
+
         // Timeline
         timelineBg: "bg-black/20",
         headerBg: "bg-white/5",
