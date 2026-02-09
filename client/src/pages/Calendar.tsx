@@ -1,13 +1,10 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button, Dialog, DialogTitle, Input, Label, ModalShell, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
+import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
 import { trpc } from "@/lib/trpc";
 import {
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  MoreHorizontal
+  Plus
 } from "lucide-react";
-import { LoadingState, PageShell, PageHeader } from "@/components/ui/ssot";
+import { LoadingState, PageShell, PageHeader, SegmentedHeader } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { useConversations } from "@/hooks/useConversations";
 
@@ -17,7 +14,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatLocalTime, getBusinessTimezone } from "../../../shared/utils/timezone";
 
-type ViewMode = "month" | "week";
+type ViewMode = "month" | "week" | "day";
 
 export default function Calendar() {
   const { user, loading } = useAuth();
@@ -184,9 +181,44 @@ export default function Calendar() {
     return days;
   };
 
+  // Scroll Sync Logic for Date Strip
+  const dateStripRef = useRef<HTMLDivElement>(null);
+  const isProgrammaticScroll = useRef(false);
+
+  const handleDateStripScroll = () => {
+    if (!dateStripRef.current || isProgrammaticScroll.current) return;
+
+    const container = dateStripRef.current;
+    const center = container.scrollLeft + container.clientWidth / 2;
+
+    // Find the element closest to the center
+    const dayButtons = Array.from(container.children) as HTMLElement[];
+    let closest: HTMLElement | null = null;
+    let minDiff = Infinity;
+
+    dayButtons.forEach(btn => {
+      const btnCenter = btn.offsetLeft + btn.offsetWidth / 2;
+      const diff = Math.abs(center - btnCenter);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = btn;
+      }
+    });
+
+    if (closest) {
+      const dateStr = closest.getAttribute('data-date');
+      if (dateStr) {
+        const newDate = new Date(dateStr);
+        // Only update if different to avoid jitter
+        if (newDate.getDate() !== selectedDate?.getDate()) {
+          setSelectedDate(newDate);
+        }
+      }
+    }
+  };
+
   // Improved Color Mapping for Pastel Look
   const getEventStyle = (appointment: any) => {
-    // Simple hash to pick a pastel color
     const hash = (appointment.title?.length || 0) + (appointment.id?.length || 0);
     const palettes = [
       tokens.calendar.event.orange,
@@ -195,15 +227,19 @@ export default function Calendar() {
       tokens.calendar.event.pink,
       tokens.calendar.event.blue
     ];
-    // Use service color if it's explicitly set? 
-    // The reference image ignores specific service branding and uses a cohesive pastel palette.
-    // Let's stick to the palette for visual consistency as requested.
-    const palette = palettes[hash % palettes.length];
+    const palette = palettes[hash % palettes.length] || tokens.calendar.event.default;
 
     return {
       className: cn(palette.bg, palette.text, "border-l-4", palette.border),
       style: {}
     };
+  };
+
+  const getCurrentTimePosition = () => {
+    const tz = getBusinessTimezone();
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: tz }));
+    const minutes = now.getHours() * 60 + now.getMinutes();
+    return (minutes / 1440) * 100; // Percentage of day
   };
 
   const formatTime = (utcISO: string) => {
@@ -239,17 +275,47 @@ export default function Calendar() {
 
   const isArtist = user?.role === "artist" || user?.role === "admin";
   const todayApps = selectedDate ? getAppointmentsForDate(selectedDate) : [];
+  const currentTimePos = getCurrentTimePosition();
+
+  // Scroll active date into view on mount or change (if not scrolling manually)
+  useEffect(() => {
+    if (selectedDate && dateStripRef.current && !isProgrammaticScroll.current) {
+      // Simple logic: find button with data-date matching selectedDate
+      const btn = Array.from(dateStripRef.current.children).find((c) =>
+        (c as HTMLElement).getAttribute('data-date') === selectedDate.toISOString()
+      ) as HTMLElement;
+
+      if (btn) {
+        isProgrammaticScroll.current = true;
+        btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        setTimeout(() => { isProgrammaticScroll.current = false; }, 500);
+      }
+    }
+  }, [selectedDate]);
 
   return (
     <PageShell>
       <PageHeader title="Calendar" />
 
-      {/* Main Container - Full Width Mobile, Centered Desktop if needed */}
-      <div className="flex-1 flex flex-col pt-2 pb-24 overflow-hidden bg-background">
+      {/* Main Container - Transparent Background */}
+      <div className="flex-1 flex flex-col pt-0 pb-24 overflow-hidden bg-transparent">
+
+        {/* View Toggles (SSOT SegmentedHeader) */}
+        <div className="px-6 py-4">
+          <SegmentedHeader
+            options={["Day", "Week", "Month"]}
+            activeIndex={viewMode === 'week' ? 1 : viewMode === 'month' ? 2 : 0}
+            onChange={(i) => setViewMode(i === 0 ? 'day' : i === 1 ? 'week' : 'month' as any)}
+          />
+        </div>
 
         {/* 1. Date Strip */}
-        <div className="shrink-0 w-full bg-background border-b border-border/5 shadow-sm z-10">
-          <div className={tokens.calendar.dateStrip.container}>
+        <div className="shrink-0 w-full bg-background/50 backdrop-blur-sm border-b border-border/5 shadow-sm z-10">
+          <div
+            ref={dateStripRef}
+            className={tokens.calendar.dateStrip.container}
+            onScroll={handleDateStripScroll}
+          >
             {getWeekDays().map((day) => {
               const active = isSelected(day);
               const isTwoday = isToday(day);
@@ -257,10 +323,15 @@ export default function Calendar() {
               return (
                 <button
                   key={day.toISOString()}
-                  onClick={() => setSelectedDate(day)}
+                  data-date={day.toISOString()}
+                  onClick={() => {
+                    isProgrammaticScroll.current = true;
+                    setSelectedDate(day);
+                    setTimeout(() => { isProgrammaticScroll.current = false; }, 500);
+                  }}
                   className={cn(
-                    "flex flex-col items-center justify-center min-w-[60px] h-[84px] rounded-2xl transition-all duration-300 shrink-0",
-                    active ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20" : "bg-transparent text-foreground/70 hover:bg-black/5 dark:hover:bg-white/5"
+                    "flex flex-col items-center justify-center min-w-[60px] h-[84px] rounded-2xl transition-all duration-300 shrink-0 snap-center",
+                    active ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20 scale-105" : "bg-transparent text-foreground/70 hover:bg-black/5 dark:hover:bg-white/5"
                   )}
                 >
                   <span className="text-xs font-semibold mb-1 uppercase tracking-wide opacity-80">
@@ -269,7 +340,6 @@ export default function Calendar() {
                   <span className={cn("text-xl font-bold", active ? "text-white" : "text-foreground")}>
                     {day.getDate()}
                   </span>
-                  {/* Dot */}
                   <div className={cn(
                     "w-1.5 h-1.5 rounded-full mt-2 transition-colors",
                     getAppointmentsForDate(day).length > 0
@@ -283,7 +353,7 @@ export default function Calendar() {
 
           {/* Context Info Line */}
           {selectedDate && (
-            <div className="px-6 py-3 flex items-center justify-between text-sm border-t border-border/5 bg-muted/20">
+            <div className="px-6 py-3 flex items-center justify-between text-sm border-t border-border/5 bg-background/30">
               <span className="font-semibold text-foreground">
                 {selectedDate.toLocaleDateString("en-US", { weekday: 'long', day: 'numeric', month: 'long' })}
                 {isToday(selectedDate) && " (Today)"}
@@ -296,9 +366,12 @@ export default function Calendar() {
         </div>
 
         {/* 2. Scrollable Time Grid */}
-        <div className="flex-1 overflow-y-auto relative custom-scrollbar bg-background" ref={timelineRef}>
-          {/* Current Time Indicator logic could be refined with actual time hook */}
-          <div className="absolute left-0 right-0 top-[400px] border-t-2 border-blue-500 z-20 pointer-events-none flex items-center">
+        <div className="flex-1 overflow-y-auto relative custom-scrollbar bg-transparent" ref={timelineRef}>
+          {/* "Current Time" SSOT Indicator */}
+          <div
+            className="absolute left-0 right-0 border-t-2 border-blue-500 z-20 pointer-events-none flex items-center"
+            style={{ top: `${currentTimePos}%` }}
+          >
             <div className="absolute -left-1.5 w-3 h-3 rounded-full bg-blue-500 ring-4 ring-blue-500/20" />
           </div>
 
@@ -387,10 +460,10 @@ export default function Calendar() {
         setShowAppointmentDialog(open);
         if (!open) setTimeout(resetForm, 300);
       }}>
-        <ModalShell className="md:max-w-md">
-          <div className="p-6">
+        <DialogContent className="md:max-w-md">
+          <DialogHeader>
             <DialogTitle>{step === 'service' ? 'Select Service' : 'Details'}</DialogTitle>
-          </div>
+          </DialogHeader>
           <div className="p-6 space-y-4">
             {/* Reused form content */}
             {availableServices.length > 0 && step === 'service' ? (
@@ -420,7 +493,7 @@ export default function Calendar() {
               </div>
             )}
           </div>
-        </ModalShell>
+        </DialogContent>
       </Dialog>
     </PageShell>
   );
