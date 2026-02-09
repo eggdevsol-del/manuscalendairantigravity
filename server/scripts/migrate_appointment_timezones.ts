@@ -1,4 +1,5 @@
-import { db } from '../db';
+import "dotenv/config";
+import { getDb } from '../db';
 import { appointments } from '../../drizzle/schema';
 import { eq } from 'drizzle-orm';
 import { fromZonedTime } from 'date-fns-tz';
@@ -20,6 +21,11 @@ async function migrateAppointmentTimezones() {
     console.log('');
 
     try {
+        const db = await getDb();
+        if (!db) {
+            throw new Error('Database connection failed');
+        }
+
         // Fetch all appointments
         const allAppointments = await db.select().from(appointments);
 
