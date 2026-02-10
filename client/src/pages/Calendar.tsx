@@ -8,7 +8,7 @@ import { LoadingState, PageShell, PageHeader, SegmentedHeader } from "@/componen
 import { tokens } from "@/ui/tokens";
 import { useConversations } from "@/hooks/useConversations";
 
-import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -115,7 +115,7 @@ export default function Calendar() {
 
   const { data: appointments, isLoading, refetch } = trpc.appointments.list.useQuery(
     { startDate: gridStart, endDate: gridEnd },
-    { enabled: !!user, keepPreviousData: true }
+    { enabled: !!user, placeholderData: (prev) => prev }
   );
 
   const { data: conversations } = useConversations();
@@ -204,9 +204,27 @@ export default function Calendar() {
   const ScrollableHorizontalDateStrip = () => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const isUserScrolling = useRef(false);
-    const scrollTimeout = useRef<NodeJS.Timeout>();
+    const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const dates = useMemo(() => getBufferDays(anchorDate), [anchorDate]);
+
+    // PRESERVE SCROLL POSITION ON DATE REFRESH
+    // When anchorDate changes, 'dates' regenerates. The content shifts.
+    // We must immediately re-center the selectedDate to prevent a visual jump.
+    useLayoutEffect(() => {
+      if (scrollRef.current) {
+        const index = dates.findIndex(d => isSameDay(d, selectedDate));
+        if (index !== -1) {
+          const container = scrollRef.current;
+          const child = container.children[index] as HTMLElement;
+          if (child) {
+            // Instant jump (start of loop or data refresh)
+            const newScrollLeft = child.offsetLeft + child.offsetWidth / 2 - container.clientWidth / 2;
+            container.scrollLeft = newScrollLeft;
+          }
+        }
+      }
+    }, [dates]); // Only run when dates array changes identity (anchorDate change)
 
     // Auto-scroll to selectedDate when it changes (only if NOT user interaction)
     useEffect(() => {
@@ -218,14 +236,14 @@ export default function Calendar() {
           if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
       }
-    }, [selectedDate, dates]);
+    }, [selectedDate]); // Removed dates dependency to avoid double-scroll logic
 
     const handleScroll = () => {
       if (!scrollRef.current) return;
       isUserScrolling.current = true;
 
       // Clear existing timeout to keep "scrolling" active
-      clearTimeout(scrollTimeout.current);
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
 
       // Calculate center date
       const container = scrollRef.current;
@@ -234,12 +252,13 @@ export default function Calendar() {
       const children = Array.from(container.children) as HTMLElement[];
       let bestCandidate = null;
       let minDiff = Infinity;
+      const containerCenter = container.scrollLeft + container.clientWidth / 2;
 
       for (const child of children) {
-        const rect = child.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        const childCenter = rect.left + rect.width / 2 - containerRect.left; // relative to container
-        const diff = Math.abs(childCenter - container.clientWidth / 2);
+        // Optimization: check relative to container
+        const childLeft = child.offsetLeft;
+        const childCenter = childLeft + child.offsetWidth / 2;
+        const diff = Math.abs(childCenter - containerCenter);
 
         if (diff < minDiff) {
           minDiff = diff;
@@ -252,20 +271,28 @@ export default function Calendar() {
         if (index >= 0 && index < dates.length) {
           const newDate = dates[index];
           if (!isSameDay(newDate, selectedDate)) {
-            setSelectedDate(newDate); // Update immediately
-
-            // Anchor logic 
-            const diffDays = Math.abs((newDate.getTime() - anchorDate.getTime()) / (1000 * 60 * 60 * 24));
-            if (diffDays > BUFFER_DAYS - 15) {
-              setAnchorDate(newDate);
-            }
+            // We only update selectedDate here. 
+            // We DO NOT update anchorDate immediately to avoid "fighting".
+            // We let the user stop scrolling first? 
+            // actually, we need updates for UI even while scrolling.
+            setSelectedDate(newDate);
           }
         }
       }
 
-      // Debounce scroll end
+      // Debounce scroll end to handle anchor updates safely
       scrollTimeout.current = setTimeout(() => {
         isUserScrolling.current = false;
+
+        // Update anchor ONLY when scroll stops
+        const idx = dates.findIndex(d => isSameDay(d, selectedDate));
+        if (idx !== -1) {
+          const current = dates[idx];
+          const diffDays = Math.abs((current.getTime() - anchorDate.getTime()) / (1000 * 60 * 60 * 24));
+          if (diffDays > BUFFER_DAYS - 20) { // Threshold before end
+            setAnchorDate(current);
+          }
+        }
       }, 150);
     };
 
@@ -312,19 +339,36 @@ export default function Calendar() {
   const UnifiedVerticalWeekView = () => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const isUserScrolling = useRef(false);
-    const scrollTimeout = useRef<NodeJS.Timeout>();
+    const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
     // Use anchorDate so list doesn't shift when we just select a neighbor
     const dates = useMemo(() => getBufferDays(anchorDate), [anchorDate]);
+
+    // PRESERVE SCROLL POSITION ON DATE REFRESH
+    useLayoutEffect(() => {
+      if (scrollRef.current) {
+        const index = dates.findIndex(d => isSameDay(d, selectedDate));
+        if (index !== -1) {
+          const container = scrollRef.current;
+          const child = container.children[index] as HTMLElement;
+          if (child) {
+            // Instant jump to maintain relative position
+            // Center the element
+            const newScrollTop = child.offsetTop + child.offsetHeight / 2 - container.clientHeight / 2;
+            container.scrollTop = newScrollTop;
+          }
+        }
+      }
+    }, [dates]);
 
     // Handle Scroll to update selectedDate
     const handleScroll = () => {
       if (!scrollRef.current) return;
       isUserScrolling.current = true;
-      clearTimeout(scrollTimeout.current);
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
 
       const container = scrollRef.current;
-      const containerCenter = container.getBoundingClientRect().top + container.clientHeight / 2;
+      const containerCenter = container.scrollTop + container.clientHeight / 2;
 
       // Find element at center
       const children = Array.from(container.children) as HTMLElement[];
@@ -333,8 +377,8 @@ export default function Calendar() {
       let minDiff = Infinity;
 
       for (const child of children) {
-        const rect = child.getBoundingClientRect();
-        const childCenter = rect.top + rect.height / 2;
+        // Optimization: use offsetTop (relative to parent which is relative)
+        const childCenter = child.offsetTop + child.offsetHeight / 2;
         const diff = Math.abs(childCenter - containerCenter);
         if (diff < minDiff) {
           minDiff = diff;
@@ -348,17 +392,22 @@ export default function Calendar() {
           const newDate = dates[index];
           if (!isSameDay(newDate, selectedDate)) {
             setSelectedDate(newDate);
-
-            const diffDays = Math.abs((newDate.getTime() - anchorDate.getTime()) / (1000 * 60 * 60 * 24));
-            if (diffDays > BUFFER_DAYS - 15) {
-              setAnchorDate(newDate);
-            }
           }
         }
       }
 
       scrollTimeout.current = setTimeout(() => {
         isUserScrolling.current = false;
+
+        // Update anchor ONLY when scroll stops to prevent infinite loop
+        const idx = dates.findIndex(d => isSameDay(d, selectedDate));
+        if (idx !== -1) {
+          const current = dates[idx];
+          const diffDays = Math.abs((current.getTime() - anchorDate.getTime()) / (1000 * 60 * 60 * 24));
+          if (diffDays > BUFFER_DAYS - 20) {
+            setAnchorDate(current);
+          }
+        }
       }, 150);
     };
 
@@ -371,7 +420,7 @@ export default function Calendar() {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }
-    }, [selectedDate, dates]);
+    }, [selectedDate]);
 
     return (
       <div className="h-full relative overflow-hidden">
