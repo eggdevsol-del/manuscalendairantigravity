@@ -203,23 +203,71 @@ export default function Calendar() {
   // 1. Horizontal Scrollable Date Strip (Day View) - Enhanced
   const ScrollableHorizontalDateStrip = () => {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const isUserScrolling = useRef(false);
+    const scrollTimeout = useRef<NodeJS.Timeout>();
+
     const dates = useMemo(() => getBufferDays(anchorDate), [anchorDate]);
 
-    // Sync scroll to selectedDate on mount or external change
-    // Only if the user ISN'T actively scrolling? 
-    // For simplicity, we just scrollIntoView when selectedDate changes significantly?
-    // Actually, if anchorDate changes, we need to adjust scroll?
-
+    // Auto-scroll to selectedDate when it changes (only if NOT user interaction)
     useEffect(() => {
-      if (scrollRef.current) {
-        // Find selected date element
+      if (scrollRef.current && !isUserScrolling.current) {
         const index = dates.findIndex(d => isSameDay(d, selectedDate));
         if (index !== -1) {
           const el = scrollRef.current.children[index] as HTMLElement;
+          // Standard scrollIntoView
           if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
       }
-    }, [selectedDate, dates]); // Depend on dates to re-center after anchor shift?
+    }, [selectedDate, dates]);
+
+    const handleScroll = () => {
+      if (!scrollRef.current) return;
+      isUserScrolling.current = true;
+
+      // Clear existing timeout to keep "scrolling" active
+      clearTimeout(scrollTimeout.current);
+
+      // Calculate center date
+      const container = scrollRef.current;
+
+      // Find element closest to center
+      const children = Array.from(container.children) as HTMLElement[];
+      let bestCandidate = null;
+      let minDiff = Infinity;
+
+      for (const child of children) {
+        const rect = child.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const childCenter = rect.left + rect.width / 2 - containerRect.left; // relative to container
+        const diff = Math.abs(childCenter - container.clientWidth / 2);
+
+        if (diff < minDiff) {
+          minDiff = diff;
+          bestCandidate = child;
+        }
+      }
+
+      if (bestCandidate) {
+        const index = children.indexOf(bestCandidate);
+        if (index >= 0 && index < dates.length) {
+          const newDate = dates[index];
+          if (!isSameDay(newDate, selectedDate)) {
+            setSelectedDate(newDate); // Update immediately
+
+            // Anchor logic 
+            const diffDays = Math.abs((newDate.getTime() - anchorDate.getTime()) / (1000 * 60 * 60 * 24));
+            if (diffDays > BUFFER_DAYS - 15) {
+              setAnchorDate(newDate);
+            }
+          }
+        }
+      }
+
+      // Debounce scroll end
+      scrollTimeout.current = setTimeout(() => {
+        isUserScrolling.current = false;
+      }, 150);
+    };
 
     return (
       <div className="relative w-full h-24 mb-4 group select-none">
@@ -228,16 +276,11 @@ export default function Calendar() {
                             border-2 border-blue-500 bg-blue-500/10 rounded-2xl z-20 pointer-events-none 
                             shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300" />
 
-        {/* Scrolling Container */}
         <div
           ref={scrollRef}
-          className="flex items-center gap-4 overflow-x-auto hide-scrollbar px-[calc(50%-35px)] py-2 h-full snap-x snap-mandatory"
-          onScroll={(e) => {
-            // Debounce or logic to update selectedDate could go here if we wanted "scroll to select"
-            // For now, click to select + auto center is safer UX for this sprint.
-            // The user requested "dates scroll through it". 
-            // To implement true scroll-to-select, we'd need to detect the intersection. 
-          }}
+          className="flex items-center gap-4 overflow-x-auto hide-scrollbar px-[calc(50%-35px)] py-2 h-full"
+          onScroll={handleScroll}
+        // No snap classes!
         >
           {dates.map((date) => {
             const isActive = isSameDay(date, selectedDate);
@@ -245,9 +288,12 @@ export default function Calendar() {
             return (
               <div
                 key={date.toISOString()}
-                onClick={() => setSelectedDate(date)}
+                onClick={() => {
+                  // If clicked, it's a manual selection. 
+                  setSelectedDate(date);
+                }}
                 className={cn(
-                  "snap-center shrink-0 flex flex-col items-center justify-center w-[60px] h-[80px] rounded-xl cursor-pointer transition-all duration-300 z-10",
+                  "shrink-0 flex flex-col items-center justify-center w-[60px] h-[80px] rounded-xl cursor-pointer transition-all duration-300 z-10",
                   isActive ? "scale-110 opacity-100 font-bold" : "opacity-50 hover:opacity-80 scale-90"
                 )}
               >
@@ -262,51 +308,26 @@ export default function Calendar() {
     )
   };
 
-  // 2. Vertical Week View (Unified Scroll with Anchor)
+  // 2. Vertical Week View (Unified Scroll with Anchor) - Enhanced
   const UnifiedVerticalWeekView = () => {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const isUserScrolling = useRef(false);
+    const scrollTimeout = useRef<NodeJS.Timeout>();
+
     // Use anchorDate so list doesn't shift when we just select a neighbor
     const dates = useMemo(() => getBufferDays(anchorDate), [anchorDate]);
 
     // Handle Scroll to update selectedDate
     const handleScroll = () => {
       if (!scrollRef.current) return;
+      isUserScrolling.current = true;
+      clearTimeout(scrollTimeout.current);
+
       const container = scrollRef.current;
-      const center = container.scrollTop + container.clientHeight / 2;
+      const containerCenter = container.getBoundingClientRect().top + container.clientHeight / 2;
 
       // Find element at center
-      // Each item is h-28 (112px).
-      // Index = scrollTop / 112 approx? No, padding.
-      // Better: loop children.
-      // Or calculate:
-      // The padding is py-[40vh].
-      // So scrollTop 0 means first item is at 40vh (center?).
-      // Actually, snap-center usually puts the item in center.
-
-      // Let's rely on finding the closest element to center
-      // Optimization: Calculate index.
-      // List padding top is 40vh.
-      // So the first item starts at 40vh.
-      // itemCenter = 40vh + index * 112 + 56.
-      // containerCenter = clientHeight / 2.
-      // relativePos = itemCenter - container.scrollTop.
-      // We want relativePos near containerCenter.
-
-      // Simplified:
-      // scrollTop relative to first item top: scrollTop - (paddingTop - containerHalfHeight + itemHalfHeight)?
-      // Let's just iterate visible elements or simpler: `Math.round((scrollTop) / ITEM_HEIGHT)`?
-      // Since we have large padding, scrollTop=0 is padded.
-
-      // Use a timeout/debounce to update selectedDate to avoid thrashing?
-      // For now, let's just trigger update on scroll end (snap).
-    };
-
-    const onScrollEnd = () => {
-      if (!scrollRef.current) return;
-      const container = scrollRef.current;
-      // Find center element
       const children = Array.from(container.children) as HTMLElement[];
-      const containerCenter = container.getBoundingClientRect().top + container.clientHeight / 2;
 
       let bestCandidate = null;
       let minDiff = Infinity;
@@ -322,50 +343,35 @@ export default function Calendar() {
       }
 
       if (bestCandidate) {
-        // Extract date from key or data attribute?
-        // We need to map back to date.
-        // Let's assume order matches `dates`.
         const index = children.indexOf(bestCandidate);
         if (index >= 0 && index < dates.length) {
           const newDate = dates[index];
           if (!isSameDay(newDate, selectedDate)) {
             setSelectedDate(newDate);
 
-            // Check if we need to shift anchor
             const diffDays = Math.abs((newDate.getTime() - anchorDate.getTime()) / (1000 * 60 * 60 * 24));
             if (diffDays > BUFFER_DAYS - 15) {
-              // Near edge, reset anchor
-              // We should do this carefully to avoid jump.
-              // For now, let's rely on the huge 60 day buffer. User unlikely to scroll 2 months in one go.
-              // If they do, we can just jump.
               setAnchorDate(newDate);
             }
           }
         }
       }
+
+      scrollTimeout.current = setTimeout(() => {
+        isUserScrolling.current = false;
+      }, 150);
     };
 
     // Auto-scroll to selectedDate on mount
-    // BUT only if we haven't just scrolled there manually?
-    // State `isScrolling`?
-    // Let's rely on `scrollIntoView` only if the current selection is FAR off screen, or on init.
     useEffect(() => {
-      if (scrollRef.current) {
+      if (scrollRef.current && !isUserScrolling.current) {
         const index = dates.findIndex(d => isSameDay(d, selectedDate));
         if (index !== -1) {
           const el = scrollRef.current.children[index] as HTMLElement;
-          // Only scroll if not already visible/centered?
-          // `scrollIntoView` forces it.
-          // If we are "scrolling", this fights the user.
-          // We should only do this if `viewMode` changed or we programmatically SelectedDate (e.g. from Month View).
-          // How to detect?
-          // For this MVP, let's just do it.
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }
-    }, [anchorDate]); // Only when list changes? No selectedDate too? 
-    // If we include selectedDate, then `onScrollEnd` -> `setSelectedDate` -> `useEffect` -> `scrollIntoView` -> Loop/Jitter.
-    // Fix: Don't scrollIntoView if the date is already roughly centered.
+    }, [selectedDate, dates]);
 
     return (
       <div className="h-full relative overflow-hidden">
@@ -375,16 +381,10 @@ export default function Calendar() {
                            backdrop-blur-[1px]" />
 
         <div
-          className="h-full overflow-y-auto hide-scrollbar snap-y snap-mandatory py-[calc(50vh-56px)]"
+          className="h-full overflow-y-auto hide-scrollbar py-[calc(50vh-56px)]"
           ref={scrollRef}
-          onScroll={(e) => {
-            // Debounce logic for onScrollEnd?
-            // Or check snap?
-            // Simple debounce
-            const t = (e.target as any)._timeout;
-            clearTimeout(t);
-            (e.target as any)._timeout = setTimeout(onScrollEnd, 100);
-          }}
+          onScroll={handleScroll}
+        // No snap classes
         >
           {dates.map((date) => {
             const isActive = isSameDay(date, selectedDate);
@@ -394,7 +394,7 @@ export default function Calendar() {
                 key={date.toISOString()}
                 onClick={() => setSelectedDate(date)}
                 className={cn(
-                  "flex items-center h-28 snap-center px-4 gap-6 transition-all duration-500 group relative z-10",
+                  "flex items-center h-28 px-4 gap-6 transition-all duration-300 group relative z-10",
                   isActive ? "opacity-100 scale-100" : "opacity-40 grayscale-[0.5] scale-95"
                 )}
               >
@@ -451,12 +451,10 @@ export default function Calendar() {
 
     return (
       <div className="h-full flex flex-col pt-2 pb-20 px-4 overflow-y-auto">
-        {/* Header Days */}
         <div className="grid grid-cols-7 mb-2 text-center text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-50">
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d}>{d}</div>)}
         </div>
 
-        {/* Grid */}
         <div className="grid grid-cols-7 gap-1 auto-rows-[minmax(100px,1fr)]">
           {cells.map((date, i) => {
             if (!date) return <div key={i} className="bg-transparent" />;
@@ -481,7 +479,6 @@ export default function Calendar() {
                   {date.getDate()}
                 </span>
 
-                {/* Slot Cards */}
                 <div className="flex flex-col gap-1 overflow-hidden">
                   {apps.slice(0, 3).map(apt => {
                     const s = getEventStyle(apt);
@@ -501,18 +498,16 @@ export default function Calendar() {
     )
   };
 
-  // 4. Day View (Classic Timeline but with Scrollable Header)
+  // 4. Day View Timeline (Standard Vertical)
   const DayViewTimeline = () => {
-    // ... (Same DayView logic as before, roughly)
     const todayApps = getAppointmentsForDate(selectedDate);
     const tz = getBusinessTimezone();
     const now = new Date(new Date().toLocaleString("en-US", { timeZone: tz }));
     const currentTimePos = ((now.getHours() * 60 + now.getMinutes()) / 1440) * 100;
 
-    // Auto scroller ref
     const containerRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
-      if (containerRef.current) containerRef.current.scrollTop = 540; // 9am
+      if (containerRef.current) containerRef.current.scrollTop = 540;
     }, []);
 
     return (
