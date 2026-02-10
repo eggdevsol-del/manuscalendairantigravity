@@ -10,7 +10,7 @@ export default function CalendarAgendaPage() {
     const controller = useCalendarAgendaController();
 
     return (
-        <div className="fixed inset-0 flex flex-col bg-background">
+        <div className="fixed inset-0 flex flex-col">
             {/* Sticky Header Zone */}
             <div className="z-20 shadow-sm">
                 <CalendarMonthHeader activeDate={controller.activeDate} />
