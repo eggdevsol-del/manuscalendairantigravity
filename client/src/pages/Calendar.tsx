@@ -271,17 +271,14 @@ export default function Calendar() {
       date.getFullYear() === selectedDate.getFullYear();
   };
 
-  if (loading || isLoading) return <LoadingState message="Loading calendar..." fullScreen />;
-
-  const isArtist = user?.role === "artist" || user?.role === "admin";
-  const todayApps = selectedDate ? getAppointmentsForDate(selectedDate) : [];
-  const currentTimePos = getCurrentTimePosition();
-
   // Scroll active date into view on mount or change (if not scrolling manually)
   useEffect(() => {
     if (selectedDate && dateStripRef.current && !isProgrammaticScroll.current) {
       // Simple logic: find button with data-date matching selectedDate
-      const btn = Array.from(dateStripRef.current.children).find((c) =>
+      const children = dateStripRef.current.children;
+      if (!children) return;
+
+      const btn = Array.from(children).find((c) =>
         (c as HTMLElement).getAttribute('data-date') === selectedDate.toISOString()
       ) as HTMLElement;
 
@@ -292,6 +289,12 @@ export default function Calendar() {
       }
     }
   }, [selectedDate]);
+
+  if (loading || isLoading) return <LoadingState message="Loading calendar..." fullScreen />;
+
+  const isArtist = user?.role === "artist" || user?.role === "admin";
+  const todayApps = selectedDate ? getAppointmentsForDate(selectedDate) : [];
+  const currentTimePos = getCurrentTimePosition();
 
   return (
     <PageShell>
