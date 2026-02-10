@@ -14,11 +14,14 @@ export function useCalendarAgendaController() {
 
     // 1. Core State
     const [activeDate, setActiveDate] = useState<Date>(startOfDay(new Date()));
-    const [windowStart, setWindowStart] = useState<Date>(subDays(startOfDay(new Date()), 3)); // Start centered-ish
+    const [anchorDate, setAnchorDate] = useState<Date>(startOfDay(new Date())); // Stable anchor for grid
+    const [windowStart, setWindowStart] = useState<Date>(subDays(startOfDay(new Date()), 3));
 
     // 2. Data Fetching
-    const gridStart = useMemo(() => subDays(activeDate, BUFFER_DAYS), [activeDate]);
-    const gridEnd = useMemo(() => addDays(activeDate, BUFFER_DAYS), [activeDate]);
+    // We base the grid on 'anchorDate' which doesn't change on every scroll tick.
+    // We only update anchorDate when activeDate gets close to the edge.
+    const gridStart = useMemo(() => subDays(anchorDate, BUFFER_DAYS), [anchorDate]);
+    const gridEnd = useMemo(() => addDays(anchorDate, BUFFER_DAYS), [anchorDate]);
 
     const { data: appointments, isLoading, refetch } = trpc.appointments.list.useQuery(
         { startDate: gridStart, endDate: gridEnd },
@@ -47,15 +50,13 @@ export function useCalendarAgendaController() {
     // We need a list of days to render. Let's render a large range around activeDate?
     // Or infinite scroll? For now, let's allow scrolling within the buffer range.
     const agendaDates = useMemo(() => {
-        // Render from -BUFFER_DAYS to +BUFFER_DAYS derived from initial load?
-        // Actually, let's just render the gridStart to gridEnd range.
+        // Render from -BUFFER_DAYS to +BUFFER_DAYS derived from anchorDate
         const days = [];
         let current = gridStart;
         while (current <= gridEnd) {
             days.push(current);
             current = addDays(current, 1);
         }
-        return days;
         return days;
     }, [gridStart, gridEnd]);
 
@@ -115,8 +116,15 @@ export function useCalendarAgendaController() {
             if (diff < 1 || diff > 5) {
                 setWindowStart(subDays(date, 3));
             }
+
+            // Shift grid anchor if needed (Infinite Scroll Data)
+            // If we are within 15 days of the edge of the buffer, shift the anchor.
+            const distFromAnchor = Math.abs((date.getTime() - anchorDate.getTime()) / (1000 * 60 * 60 * 24));
+            if (distFromAnchor > BUFFER_DAYS - 15) {
+                setAnchorDate(date);
+            }
         }
-    }, [agendaDates, activeDate, windowStart]);
+    }, [agendaDates, activeDate, windowStart, anchorDate]);
 
     // Initialize Scroll Spy
     useAgendaScrollSpy({
