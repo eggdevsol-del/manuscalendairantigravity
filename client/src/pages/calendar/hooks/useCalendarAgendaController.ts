@@ -6,20 +6,20 @@ import { addDays, startOfDay, format, isSameDay, subDays, startOfWeek, endOfWeek
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useAgendaScrollSpy } from "./useAgendaScrollSpy";
 
-const BUFFER_DAYS = 60; // Fetch buffer
+const BUFFER_DAYS = 365; // Fetch buffer (1 year)
 
 export function useCalendarAgendaController() {
     const { user } = useAuth();
     const [, setLocation] = useLocation();
 
     // 1. Core State
+    // anchorDate is now fixed to initial load to prevent grid shifting jumps
+    const [anchorDate] = useState<Date>(startOfDay(new Date()));
     const [activeDate, setActiveDate] = useState<Date>(startOfDay(new Date()));
-    const [anchorDate, setAnchorDate] = useState<Date>(startOfDay(new Date())); // Stable anchor for grid
     const [windowStart, setWindowStart] = useState<Date>(subDays(startOfDay(new Date()), 3));
 
     // 2. Data Fetching
-    // We base the grid on 'anchorDate' which doesn't change on every scroll tick.
-    // We only update anchorDate when activeDate gets close to the edge.
+    // Static grid: anchor +/- 1 year.
     const gridStart = useMemo(() => subDays(anchorDate, BUFFER_DAYS), [anchorDate]);
     const gridEnd = useMemo(() => addDays(anchorDate, BUFFER_DAYS), [anchorDate]);
 
@@ -29,12 +29,10 @@ export function useCalendarAgendaController() {
     );
 
     // 3. Derived State
-    // The 7-day strip window
     const stripDates = useMemo(() => {
         return Array.from({ length: 7 }).map((_, i) => addDays(windowStart, i));
     }, [windowStart]);
 
-    // Group appointments by date for the list
     const eventsByDay = useMemo(() => {
         if (!appointments) return {};
         const groups: Record<string, any[]> = {};
@@ -46,11 +44,7 @@ export function useCalendarAgendaController() {
         return groups;
     }, [appointments]);
 
-    // 4. Virtualizer / Scroll Logic
-    // We need a list of days to render. Let's render a large range around activeDate?
-    // Or infinite scroll? For now, let's allow scrolling within the buffer range.
     const agendaDates = useMemo(() => {
-        // Render from -BUFFER_DAYS to +BUFFER_DAYS derived from anchorDate
         const days = [];
         let current = gridStart;
         while (current <= gridEnd) {
@@ -61,19 +55,37 @@ export function useCalendarAgendaController() {
     }, [gridStart, gridEnd]);
 
     const parentRef = useRef<HTMLDivElement>(null);
-    const isScrollingProgrammatically = useRef(false);
+    // Use state to ensure re-renders trigger the spy enabled/disabled prop
+    const [isScrollingProgrammatically, setIsScrollingProgrammatically] = useState(false);
+    const [isInitialScrollDone, setIsInitialScrollDone] = useState(false);
     const scrollTimeout = useRef<NodeJS.Timeout>(undefined);
 
     const virtualizer = useVirtualizer({
         count: agendaDates.length,
         getScrollElement: () => parentRef.current,
-        estimateSize: () => 100, // Estimate height of a day section
+        estimateSize: () => 100,
         overscan: 5,
     });
 
+    // Initial Scroll Effect
+    useEffect(() => {
+        if (!isInitialScrollDone && agendaDates.length > 0) {
+            const index = agendaDates.findIndex(d => isSameDay(d, anchorDate));
+            if (index !== -1) {
+                virtualizer.scrollToIndex(index, { align: 'start' });
+                // Enable spy after initial scroll is set
+                // Small timeout to ensure scroll position settles
+                setTimeout(() => {
+                    setIsInitialScrollDone(true);
+                }, 100);
+            }
+        }
+    }, [agendaDates, virtualizer, anchorDate, isInitialScrollDone]);
+
+    // 5. Actions
     // 5. Actions
     const handleDateTap = useCallback((date: Date) => {
-        isScrollingProgrammatically.current = true;
+        setIsScrollingProgrammatically(true);
         setActiveDate(date);
 
         // Scroll to that date in the list
@@ -91,7 +103,7 @@ export function useCalendarAgendaController() {
         // Reset programmatic flag after scroll settles
         if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
         scrollTimeout.current = setTimeout(() => {
-            isScrollingProgrammatically.current = false;
+            setIsScrollingProgrammatically(false);
         }, 800);
 
     }, [agendaDates, virtualizer, windowStart]);
@@ -104,7 +116,7 @@ export function useCalendarAgendaController() {
     // Sync Strip with Scroll (Scroll Spy)
     // We use a custom hook with RAF throttle for performance
     const onActiveDayChange = useCallback((dayKey: string) => {
-        if (isScrollingProgrammatically.current) return;
+        if (isScrollingProgrammatically) return;
 
         // Find date object from key
         const date = agendaDates.find(d => format(d, 'yyyy-MM-dd') === dayKey);
@@ -117,14 +129,10 @@ export function useCalendarAgendaController() {
                 setWindowStart(subDays(date, 3));
             }
 
-            // Shift grid anchor if needed (Infinite Scroll Data)
-            // If we are within 15 days of the edge of the buffer, shift the anchor.
-            const distFromAnchor = Math.abs((date.getTime() - anchorDate.getTime()) / (1000 * 60 * 60 * 24));
-            if (distFromAnchor > BUFFER_DAYS - 15) {
-                setAnchorDate(date);
-            }
+            // Removed infinite scroll shifting to prevent jumps. 
+            // We use a large static buffer (+/- 365 days) instead.
         }
-    }, [agendaDates, activeDate, windowStart, anchorDate]);
+    }, [agendaDates, activeDate, windowStart]);
 
     // Initialize Scroll Spy
     useAgendaScrollSpy({
@@ -132,7 +140,7 @@ export function useCalendarAgendaController() {
         onActiveDayChange,
         virtualizer,
         items: agendaDates,
-        enabled: !isScrollingProgrammatically.current
+        enabled: isInitialScrollDone && !isScrollingProgrammatically
     });
 
     // 6. Calculate Weekly Income
