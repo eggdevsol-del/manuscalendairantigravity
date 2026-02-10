@@ -28,7 +28,7 @@ export default function CalendarAgendaPage() {
                     agendaDates={controller.agendaDates}
                     eventsByDay={controller.eventsByDay}
                     parentRef={controller.parentRef}
-                    onScroll={controller.handleScroll}
+
                 />
             </div>
 

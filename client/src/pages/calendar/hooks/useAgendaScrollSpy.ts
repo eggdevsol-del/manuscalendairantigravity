@@ -1,0 +1,83 @@
+import { useRef, useEffect } from 'react';
+import { Virtualizer } from '@tanstack/react-virtual';
+import { format } from 'date-fns';
+
+type DayKey = string; // "YYYY-MM-DD"
+
+/**
+ * Throttles a function using requestAnimationFrame.
+ * This ensures the function runs at most once per frame (approx 60fps),
+ * which is ideal for scroll handlers.
+ */
+function rafThrottle<T extends (...args: any[]) => void>(fn: T) {
+    let raf = 0;
+    let lastArgs: any[] | null = null; // Stores the latest arguments
+    return (...args: any[]) => {
+        lastArgs = args; // Always update to the latest args
+        if (raf) return; // If a frame is pending, do nothing
+        raf = requestAnimationFrame(() => {
+            raf = 0;
+            if (lastArgs) {
+                fn(...lastArgs);
+                lastArgs = null;
+            }
+        });
+    };
+}
+
+interface UseAgendaScrollSpyOptions {
+    scrollRootRef: React.RefObject<HTMLElement | null>;
+    onActiveDayChange: (dayKey: DayKey) => void;
+    // Use 'any' for virtualizer to be flexible with specific element types (Window vs Element)
+    virtualizer: Virtualizer<any, Element>;
+    items: Date[]; // The list of dates corresponding to virtual items
+    enabled?: boolean;
+}
+
+/**
+ * Hook to synchronize the agenda scroll position with the active day state.
+ * Uses RAF throttling to prevent "machine-gunning" state updates.
+ */
+export function useAgendaScrollSpy({
+    scrollRootRef,
+    onActiveDayChange,
+    virtualizer,
+    items,
+    enabled = true
+}: UseAgendaScrollSpyOptions) {
+    const lastActiveRef = useRef<DayKey | null>(null);
+
+    useEffect(() => {
+        const scrollElement = scrollRootRef.current;
+        if (!scrollElement || !enabled) return;
+
+        const handleScroll = rafThrottle(() => {
+            // Use virtualizer to determine the top-most visible item
+            const visibleItems = virtualizer.getVirtualItems();
+
+            if (visibleItems.length === 0) return;
+
+            // The first item in the visibleItems array is the one at the top of the viewport
+            const firstVisibleItem = visibleItems[0];
+            const index = firstVisibleItem.index;
+
+            if (index >= 0 && index < items.length) {
+                const date = items[index];
+                const dayKey = format(date, 'yyyy-MM-dd');
+
+                // Only trigger update if the day has actually changed
+                if (lastActiveRef.current !== dayKey) {
+                    lastActiveRef.current = dayKey;
+                    onActiveDayChange(dayKey);
+                }
+            }
+        });
+
+        // Attach passive scroll listener
+        scrollElement.addEventListener('scroll', handleScroll, { passive: true });
+
+        return () => {
+            scrollElement.removeEventListener('scroll', handleScroll);
+        };
+    }, [scrollRootRef, onActiveDayChange, virtualizer, items, enabled]);
+}

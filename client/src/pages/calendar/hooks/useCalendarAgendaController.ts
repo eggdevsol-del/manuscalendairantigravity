@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { addDays, startOfDay, format, isSameDay, subDays, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { useAgendaScrollSpy } from "./useAgendaScrollSpy";
 
 const BUFFER_DAYS = 60; // Fetch buffer
 
@@ -60,7 +61,7 @@ export function useCalendarAgendaController() {
 
     const parentRef = useRef<HTMLDivElement>(null);
     const isScrollingProgrammatically = useRef(false);
-    const scrollTimeout = useRef<NodeJS.Timeout>();
+    const scrollTimeout = useRef<NodeJS.Timeout>(undefined);
 
     const virtualizer = useVirtualizer({
         count: agendaDates.length,
@@ -99,24 +100,32 @@ export function useCalendarAgendaController() {
     // react-virtual doesn't give "current item" easily without tracking scrollTop.
     // We can use onScroll in the parent.
 
-    const handleScroll = useCallback(() => {
-        if (!parentRef.current || isScrollingProgrammatically.current) return;
+    // Sync Strip with Scroll (Scroll Spy)
+    // We use a custom hook with RAF throttle for performance
+    const onActiveDayChange = useCallback((dayKey: string) => {
+        if (isScrollingProgrammatically.current) return;
 
-        const visible = virtualizer.getVirtualItems();
-        if (visible.length > 0) {
-            const firstVisible = visible[0];
-            const date = agendaDates[firstVisible.index];
-            if (date && !isSameDay(date, activeDate)) {
-                setActiveDate(date);
+        // Find date object from key
+        const date = agendaDates.find(d => format(d, 'yyyy-MM-dd') === dayKey);
 
-                // Shift window if needed
-                const diff = (date.getTime() - windowStart.getTime()) / (1000 * 60 * 60 * 24);
-                if (diff < 1 || diff > 5) {
-                    setWindowStart(subDays(date, 3));
-                }
+        if (date && !isSameDay(date, activeDate)) {
+            setActiveDate(date);
+            // Shift window if needed
+            const diff = (date.getTime() - windowStart.getTime()) / (1000 * 60 * 60 * 24);
+            if (diff < 1 || diff > 5) {
+                setWindowStart(subDays(date, 3));
             }
         }
-    }, [virtualizer, agendaDates, activeDate, windowStart]);
+    }, [agendaDates, activeDate, windowStart]);
+
+    // Initialize Scroll Spy
+    useAgendaScrollSpy({
+        scrollRootRef: parentRef,
+        onActiveDayChange,
+        virtualizer,
+        items: agendaDates,
+        enabled: !isScrollingProgrammatically.current
+    });
 
     // 6. Calculate Weekly Income
     const weeklyIncome = useMemo(() => {
@@ -143,7 +152,7 @@ export function useCalendarAgendaController() {
         virtualizer,
         agendaDates,
         handleDateTap,
-        handleScroll,
+        // No handleScroll anymore, handled by hook
         refetch,
         weeklyIncome
     };
