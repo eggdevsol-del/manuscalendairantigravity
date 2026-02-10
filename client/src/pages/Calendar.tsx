@@ -300,8 +300,8 @@ export default function Calendar() {
     <PageShell>
       <PageHeader title="Calendar" />
 
-      {/* Main Container - Transparent Background */}
-      <div className="flex-1 flex flex-col pt-0 pb-24 overflow-hidden bg-transparent">
+      {/* Main Container - Transparent Background, Bottom 70% */}
+      <div className="flex flex-col pt-0 pb-24 overflow-hidden bg-transparent h-[70%] mt-auto">
 
         {/* View Toggles (SSOT SegmentedHeader) */}
         <div className="px-6 py-4">
@@ -312,8 +312,8 @@ export default function Calendar() {
           />
         </div>
 
-        {/* 1. Date Strip */}
-        <div className="shrink-0 w-full bg-background/50 backdrop-blur-sm border-b border-border/5 shadow-sm z-10">
+        {/* 1. Date Strip - Transparent */}
+        <div className="shrink-0 w-full bg-transparent z-10 transition-colors">
           <div
             ref={dateStripRef}
             className={tokens.calendar.dateStrip.container}
@@ -354,9 +354,9 @@ export default function Calendar() {
             })}
           </div>
 
-          {/* Context Info Line */}
+          {/* Context Info Line - Transparent */}
           {selectedDate && (
-            <div className="px-6 py-3 flex items-center justify-between text-sm border-t border-border/5 bg-background/30">
+            <div className="px-6 py-3 flex items-center justify-between text-sm bg-transparent">
               <span className="font-semibold text-foreground">
                 {selectedDate.toLocaleDateString("en-US", { weekday: 'long', day: 'numeric', month: 'long' })}
                 {isToday(selectedDate) && " (Today)"}
