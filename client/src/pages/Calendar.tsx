@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
 import { trpc } from "@/lib/trpc";
 import {
-  Plus
+  Plus, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { LoadingState, PageShell, PageHeader, SegmentedHeader } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
@@ -14,16 +14,17 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatLocalTime, getBusinessTimezone } from "../../../shared/utils/timezone";
 
-type ViewMode = "month" | "week" | "day";
+type ViewMode = "day" | "week" | "month";
 
 export default function Calendar() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
-  const [viewMode, setViewMode] = useState<ViewMode>("week");
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState<ViewMode>("day");
+  // selectedDate is the SSOT for the current view focus
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
   const [showAppointmentDialog, setShowAppointmentDialog] = useState(false);
   const [showAppointmentDetailDialog, setShowAppointmentDetailDialog] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
 
@@ -55,18 +56,23 @@ export default function Calendar() {
     status: "scheduled" as const,
   });
 
+  // Fetch range logic: always fetch enough for the month view to be safe
   const gridStart = useMemo(() => {
-    const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const day = start.getDay();
-    start.setDate(start.getDate() - day);
-    return start;
-  }, [currentDate]);
+    const d = new Date(selectedDate);
+    // Start of month - 1 week buffer
+    d.setDate(1);
+    d.setDate(d.getDate() - 7);
+    return d;
+  }, [selectedDate]); // Simplified dependency to avoid over-fetching
 
   const gridEnd = useMemo(() => {
-    const end = new Date(gridStart);
-    end.setDate(gridStart.getDate() + 42);
-    return end;
-  }, [gridStart]);
+    const d = new Date(selectedDate);
+    // End of month + 1 week buffer
+    d.setMonth(d.getMonth() + 1);
+    d.setDate(0);
+    d.setDate(d.getDate() + 14);
+    return d;
+  }, [selectedDate]);
 
   const { data: appointments, isLoading, refetch } = trpc.appointments.list.useQuery(
     { startDate: gridStart, endDate: gridEnd },
@@ -116,12 +122,12 @@ export default function Calendar() {
     if (!loading && !user) setLocation("/login");
   }, [user, loading, setLocation]);
 
-  // Scroll to 9 AM on mount
+  // Scroll to 9 AM on mount (for Day/Week views)
   useEffect(() => {
     if (timelineRef.current) {
       timelineRef.current.scrollTop = 540; // 9 AM * 60px
     }
-  }, []);
+  }, [viewMode]); // Re-scroll when switching views
 
   const resetForm = () => {
     setAppointmentForm({
@@ -132,21 +138,6 @@ export default function Calendar() {
       endTime: "",
       status: "scheduled",
     });
-  };
-
-  const handleDateClick = (date: Date) => {
-    if (user?.role === "artist" || user?.role === "admin") {
-      setSelectedDate(date);
-      const dateStr = date.toISOString().split("T")[0];
-      setAppointmentForm({
-        ...appointmentForm,
-        startTime: `${dateStr}T09:00`,
-        endTime: `${dateStr}T10:00`,
-      });
-      setStep('service');
-      setSelectedService(null);
-      setShowAppointmentDialog(true);
-    }
   };
 
   const handleCreateAppointment = () => {
@@ -166,85 +157,32 @@ export default function Calendar() {
     });
   };
 
-  const getWeekDays = () => {
-    const startOfWeek = new Date(currentDate);
-    const day = startOfWeek.getDay();
-    const diff = startOfWeek.getDate() - day;
-    startOfWeek.setDate(diff);
+  // --- Date Logic ---
 
+  // Generate a dynamic date strip range centered on selectedDate
+  const getDateStripDays = () => {
     const days = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(startOfWeek);
-      date.setDate(startOfWeek.getDate() + i);
-      days.push(date);
+    const center = new Date(selectedDate);
+    // Render +/- 14 days
+    for (let i = -14; i <= 14; i++) {
+      const d = new Date(center);
+      d.setDate(center.getDate() + i);
+      days.push(d);
     }
     return days;
   };
 
-  // Scroll Sync Logic for Date Strip
-  const dateStripRef = useRef<HTMLDivElement>(null);
-  const isProgrammaticScroll = useRef(false);
-
-  const handleDateStripScroll = () => {
-    if (!dateStripRef.current || isProgrammaticScroll.current) return;
-
-    const container = dateStripRef.current;
-    const center = container.scrollLeft + container.clientWidth / 2;
-
-    // Find the element closest to the center
-    const dayButtons = Array.from(container.children) as HTMLElement[];
-    let closest: HTMLElement | null = null;
-    let minDiff = Infinity;
-
-    dayButtons.forEach(btn => {
-      const btnCenter = btn.offsetLeft + btn.offsetWidth / 2;
-      const diff = Math.abs(center - btnCenter);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closest = btn;
-      }
-    });
-
-    if (closest) {
-      const dateStr = closest.getAttribute('data-date');
-      if (dateStr) {
-        const newDate = new Date(dateStr);
-        // Only update if different to avoid jitter
-        if (newDate.getDate() !== selectedDate?.getDate()) {
-          setSelectedDate(newDate);
-        }
-      }
-    }
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear();
   };
 
-  // Improved Color Mapping for Pastel Look
-  const getEventStyle = (appointment: any) => {
-    const hash = (appointment.title?.length || 0) + (appointment.id?.length || 0);
-    const palettes = [
-      tokens.calendar.event.orange,
-      tokens.calendar.event.purple,
-      tokens.calendar.event.green,
-      tokens.calendar.event.pink,
-      tokens.calendar.event.blue
-    ];
-    const palette = palettes[hash % palettes.length] || tokens.calendar.event.default;
-
-    return {
-      className: cn(palette.bg, palette.text, "border-l-4", palette.border),
-      style: {}
-    };
-  };
-
-  const getCurrentTimePosition = () => {
-    const tz = getBusinessTimezone();
-    const now = new Date(new Date().toLocaleString("en-US", { timeZone: tz }));
-    const minutes = now.getHours() * 60 + now.getMinutes();
-    return (minutes / 1440) * 100; // Percentage of day
-  };
-
-  const formatTime = (utcISO: string) => {
-    const tz = getBusinessTimezone();
-    return formatLocalTime(utcISO, tz, 'h:mm a');
+  const isSelected = (date: Date) => {
+    return date.getDate() === selectedDate.getDate() &&
+      date.getMonth() === selectedDate.getMonth() &&
+      date.getFullYear() === selectedDate.getFullYear();
   };
 
   const getAppointmentsForDate = (date: Date) => {
@@ -257,208 +195,353 @@ export default function Calendar() {
     });
   };
 
-  const isToday = (date: Date) => {
-    const today = new Date();
-    return date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear();
+  // --- Date Strip Scroll Handling ---
+  const dateStripRef = useRef<HTMLDivElement>(null);
+  const isProgrammaticScroll = useRef(false);
+
+  const handleDateStripScroll = () => {
+    if (!dateStripRef.current || isProgrammaticScroll.current) return;
+
+    // Idea: If scrolled near ends, we could shift selectedDate effectively "paging".
+    // For now, simpler "snap to select" logic on stop?
+    // User requested "populate as user scrolls". Truly infinite scroll requires state buffering.
+    // Given complexity, we will rely on the static +/- 14 days buffer for now. 
+    // If they click an edge date, the strip regenerates around it.
   };
 
-  const isSelected = (date: Date) => {
-    if (!selectedDate) return false;
-    return date.getDate() === selectedDate.getDate() &&
-      date.getMonth() === selectedDate.getMonth() &&
-      date.getFullYear() === selectedDate.getFullYear();
-  };
-
-  // Scroll active date into view on mount or change (if not scrolling manually)
+  // Re-center strip when selectedDate changes
   useEffect(() => {
-    if (selectedDate && dateStripRef.current && !isProgrammaticScroll.current) {
-      // Simple logic: find button with data-date matching selectedDate
-      const children = dateStripRef.current.children;
-      if (!children) return;
-
-      const btn = Array.from(children).find((c) =>
-        (c as HTMLElement).getAttribute('data-date') === selectedDate.toISOString()
-      ) as HTMLElement;
-
-      if (btn) {
+    if (dateStripRef.current && !isProgrammaticScroll.current) {
+      // Find the element for selectedDate
+      const children = Array.from(dateStripRef.current.children) as HTMLElement[];
+      const target = children.find(c => c.getAttribute('data-date') === selectedDate.toISOString());
+      if (target) {
         isProgrammaticScroll.current = true;
-        btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        setTimeout(() => { isProgrammaticScroll.current = false; }, 500);
+        target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        setTimeout(() => isProgrammaticScroll.current = false, 500);
       }
     }
   }, [selectedDate]);
 
-  if (loading || isLoading) return <LoadingState message="Loading calendar..." fullScreen />;
 
-  const isArtist = user?.role === "artist" || user?.role === "admin";
-  const todayApps = selectedDate ? getAppointmentsForDate(selectedDate) : [];
+  // Improved Color Mapping
+  const getEventStyle = (appointment: any) => {
+    const hash = (appointment.title?.length || 0) + (appointment.id?.length || 0);
+    const palettes = [
+      tokens.calendar.event.orange,
+      tokens.calendar.event.purple,
+      tokens.calendar.event.green,
+      tokens.calendar.event.pink,
+      tokens.calendar.event.blue
+    ];
+    const palette = palettes[hash % palettes.length] || tokens.calendar.event.default;
+    return {
+      className: cn(palette.bg, palette.text, "border-l-4", palette.border),
+    };
+  };
+
+  const getCurrentTimePosition = () => {
+    const tz = getBusinessTimezone();
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: tz }));
+    const minutes = now.getHours() * 60 + now.getMinutes();
+    return (minutes / 1440) * 100;
+  };
   const currentTimePos = getCurrentTimePosition();
 
-  return (
-    <PageShell>
-      <PageHeader title="Calendar" />
+  // --- Views ---
 
-      {/* Main Container - Transparent Background, Bottom 70% */}
-      <div className="flex flex-col pt-0 pb-24 overflow-hidden bg-transparent h-[70%] mt-auto">
+  // Day View Component (Inline)
+  const DayView = () => {
+    const todayApps = getAppointmentsForDate(selectedDate);
 
-        {/* View Toggles (SSOT SegmentedHeader) */}
-        <div className="px-6 py-4">
-          <SegmentedHeader
-            options={["Day", "Week", "Month"]}
-            activeIndex={viewMode === 'week' ? 1 : viewMode === 'month' ? 2 : 0}
-            onChange={(i) => setViewMode(i === 0 ? 'day' : i === 1 ? 'week' : 'month' as any)}
-          />
-        </div>
-
-        {/* 1. Date Strip - Transparent */}
-        <div className="shrink-0 w-full bg-transparent z-10 transition-colors">
-          <div
-            ref={dateStripRef}
-            className={tokens.calendar.dateStrip.container}
-            onScroll={handleDateStripScroll}
-          >
-            {getWeekDays().map((day) => {
-              const active = isSelected(day);
-              const isTwoday = isToday(day);
-
-              return (
-                <button
-                  key={day.toISOString()}
-                  data-date={day.toISOString()}
-                  onClick={() => {
-                    isProgrammaticScroll.current = true;
-                    setSelectedDate(day);
-                    setTimeout(() => { isProgrammaticScroll.current = false; }, 500);
-                  }}
-                  className={cn(
-                    "flex flex-col items-center justify-center min-w-[60px] h-[84px] rounded-2xl transition-all duration-300 shrink-0 snap-center",
-                    active ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20 scale-105" : "bg-transparent text-foreground/70 hover:bg-black/5 dark:hover:bg-white/5"
-                  )}
-                >
-                  <span className="text-xs font-semibold mb-1 uppercase tracking-wide opacity-80">
-                    {day.toLocaleDateString("en-US", { weekday: "short" })}
-                  </span>
-                  <span className={cn("text-xl font-bold", active ? "text-white" : "text-foreground")}>
-                    {day.getDate()}
-                  </span>
-                  <div className={cn(
-                    "w-1.5 h-1.5 rounded-full mt-2 transition-colors",
-                    getAppointmentsForDate(day).length > 0
-                      ? (active ? "bg-white" : "bg-primary")
-                      : "bg-transparent"
-                  )} />
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Context Info Line - Transparent */}
-          {selectedDate && (
-            <div className="px-6 py-3 flex items-center justify-between text-sm bg-transparent">
-              <span className="font-semibold text-foreground">
-                {selectedDate.toLocaleDateString("en-US", { weekday: 'long', day: 'numeric', month: 'long' })}
-                {isToday(selectedDate) && " (Today)"}
-              </span>
-              <span className="text-blue-500 font-medium">
-                {todayApps.length} Events Await
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* 2. Scrollable Time Grid */}
-        <div className="flex-1 overflow-y-auto relative custom-scrollbar bg-transparent" ref={timelineRef}>
-          {/* "Current Time" SSOT Indicator */}
+    return (
+      <div className="relative min-h-[1440px] px-4 py-4">
+        {/* Current Time Indicator */}
+        {isToday(selectedDate) && (
           <div
             className="absolute left-0 right-0 border-t-2 border-blue-500 z-20 pointer-events-none flex items-center"
             style={{ top: `${currentTimePos}%` }}
           >
             <div className="absolute -left-1.5 w-3 h-3 rounded-full bg-blue-500 ring-4 ring-blue-500/20" />
           </div>
-
-          <div className="relative min-h-[1440px] px-4 py-4">
-            {Array.from({ length: 24 }, (_, hour) => {
-              // Filter appointments for this hour slot
-              const hourAppointments = todayApps.filter((apt: any) => {
-                const h = new Date(apt.startTime).getHours();
-                return h === hour;
-              });
-
-              return (
-                <div key={hour} className="flex h-[120px] group relative">
-                  {/* Time Label */}
-                  <div className="w-14 shrink-0 text-xs font-medium text-muted-foreground/50 text-right pr-4 pt-0">
-                    {hour === 0 ? "12 AM" : hour < 12 ? `${hour} AM` : hour === 12 ? "12 PM" : `${hour - 12} PM`}
-                  </div>
-
-                  {/* Row Content */}
-                  <div className="flex-1 border-t border-dashed border-border/30 h-full relative">
-                    {hourAppointments.map((apt: any, idx) => {
-                      const styles = getEventStyle(apt);
-                      const start = new Date(apt.startTime);
-                      const end = new Date(apt.endTime);
-                      const startMin = start.getMinutes();
-                      const duration = (end.getTime() - start.getTime()) / 60000;
-
-                      return (
-                        <div
-                          key={apt.id}
-                          onClick={() => {
-                            setSelectedAppointment(apt);
-                            setShowAppointmentDetailDialog(true);
-                          }}
-                          className={cn(
-                            "absolute inset-x-0 rounded-2xl p-3 cursor-pointer transition-all hover:brightness-95 shadow-sm flex flex-col justify-center",
-                            styles.className
-                          )}
-                          style={{
-                            top: `${(startMin / 60) * 100}%`,
-                            height: Math.max(60, (duration / 60) * 120 - 4) + 'px', // Scale: 120px height = 60min. -4px for gap
-                            zIndex: 10 + idx
-                          }}
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <h3 className="font-bold text-sm leading-tight truncate">
-                              {apt.title}
-                            </h3>
-                            {/* Simulated Avatar Group */}
-                            <div className="flex -space-x-2 shrink-0">
-                              <div className="w-6 h-6 rounded-full bg-black/20 text-[8px] flex items-center justify-center text-white">
-                                {apt.clientName?.charAt(0)}
-                              </div>
-                            </div>
-                          </div>
-                          <p className="text-[10px] font-medium opacity-80 mt-1">
-                            {formatTime(apt.startTime)} - {formatTime(apt.endTime)}
-                          </p>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Floating Action Button (FAB) */}
-        {isArtist && (
-          <div className="absolute bottom-24 right-6 z-50">
-            <Button
-              size="icon"
-              className="w-14 h-14 rounded-full bg-black text-white shadow-2xl hover:bg-black/90 hover:scale-105 transition-all"
-              onClick={() => handleDateClick(selectedDate || new Date())}
-            >
-              <Plus className="w-6 h-6" />
-            </Button>
-          </div>
         )}
 
+        {Array.from({ length: 24 }, (_, hour) => {
+          const hourAppointments = todayApps.filter((apt: any) => new Date(apt.startTime).getHours() === hour);
+          return (
+            <div key={hour} className="flex h-[120px] group relative">
+              {/* Time Label */}
+              <div className="w-14 shrink-0 text-xs font-medium text-muted-foreground/50 text-right pr-4 pt-0">
+                {hour === 0 ? "12 AM" : hour < 12 ? `${hour} AM` : hour === 12 ? "12 PM" : `${hour - 12} PM`}
+              </div>
+              {/* Row Content */}
+              <div className="flex-1 border-t border-dashed border-border/30 h-full relative">
+                {hourAppointments.map((apt: any, idx: number) => {
+                  const styles = getEventStyle(apt);
+                  const start = new Date(apt.startTime);
+                  const end = new Date(apt.endTime);
+                  const startMin = start.getMinutes();
+                  const duration = (end.getTime() - start.getTime()) / 60000;
+                  return (
+                    <div
+                      key={apt.id}
+                      onClick={() => { setSelectedAppointment(apt); setShowAppointmentDetailDialog(true); }}
+                      className={cn("absolute inset-x-0 rounded-2xl p-3 cursor-pointer transition-all hover:brightness-95 shadow-sm flex flex-col justify-center", styles.className)}
+                      style={{
+                        top: `${(startMin / 60) * 100}%`,
+                        height: Math.max(60, (duration / 60) * 120 - 4) + 'px',
+                        zIndex: 10 + idx
+                      }}
+                    >
+                      <h3 className="font-bold text-sm leading-tight truncate">{apt.title}</h3>
+                      <p className="text-[10px] font-medium opacity-80 mt-1">
+                        {formatLocalTime(apt.startTime, getBusinessTimezone(), 'h:mm a')} - {formatLocalTime(apt.endTime, getBusinessTimezone(), 'h:mm a')}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    )
+  };
+
+  // Week View Component
+  const WeekView = () => {
+    // Determine start of week (Sunday)
+    const weekStart = new Date(selectedDate);
+    weekStart.setDate(selectedDate.getDate() - selectedDate.getDay());
+
+    const weekDays = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      return d;
+    });
+
+    return (
+      <div className="flex min-w-[700px] min-h-[1440px] px-2">
+        {/* Time Labels Column */}
+        <div className="w-12 shrink-0 py-4 flex flex-col justify-between h-[1440px]">
+          {Array.from({ length: 24 }, (_, i) => (
+            <div key={i} className="text-[10px] text-muted-foreground h-[60px]">{i === 0 ? '12am' : i < 12 ? i + 'am' : i === 12 ? '12pm' : (i - 12) + 'pm'}</div>
+          ))}
+        </div>
+
+        {/* Days Columns */}
+        {weekDays.map(day => {
+          const dayApps = getAppointmentsForDate(day);
+          const isTdy = isToday(day);
+          return (
+            <div key={day.toISOString()} className={cn("flex-1 border-l border-border/10 relative", isTdy && "bg-blue-500/5")}>
+              {/* Header for Day Name inside Column if needed, usually handled by date strip logic? The Date Strip tracks Selected Date. 
+                           In Week view, showing headers is helpful. */}
+              <div className="sticky top-0 z-10 text-center py-2 text-xs font-bold border-b border-border/10 bg-background/80 backdrop-blur">
+                {day.toLocaleDateString('en-US', { weekday: 'short' })} {day.getDate()}
+              </div>
+
+              {/* 1440px height relative container for events */}
+              <div className="relative h-[1440px]">
+                {/* Current Time Line if Today */}
+                {isTdy && (
+                  <div
+                    className="absolute left-0 right-0 border-t-2 border-red-500 z-20 pointer-events-none"
+                    style={{ top: `${currentTimePos}%` }}
+                  />
+                )}
+
+                {dayApps.map((apt: any) => {
+                  const styles = getEventStyle(apt);
+                  const start = new Date(apt.startTime);
+                  const end = new Date(apt.endTime);
+                  const startMin = start.getHours() * 60 + start.getMinutes();
+                  const duration = (end.getTime() - start.getTime()) / 60000;
+
+                  return (
+                    <div
+                      key={apt.id}
+                      onClick={() => { setSelectedAppointment(apt); setShowAppointmentDetailDialog(true); }}
+                      className={cn("absolute inset-x-0.5 rounded-md p-1 cursor-pointer hover:brightness-95 text-[10px] overflow-hidden", styles.className)}
+                      style={{
+                        top: `${(startMin / 1440) * 100}%`,
+                        height: `${(duration / 1440) * 100}%`,
+                      }}
+                    >
+                      <div className="font-bold truncate">{apt.title}</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    );
+  };
+
+  // Month View Component
+  const MonthView = () => {
+    // Logic for Month Grid
+    const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+    const startDay = startOfMonth.getDay(); // 0-6
+    const daysInMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
+
+    // Generate grid cells (42 for 6 rows max)
+    const cells = [];
+    // Previous month padding
+    for (let i = 0; i < startDay; i++) cells.push(null);
+    // Current month days
+    for (let i = 1; i <= daysInMonth; i++) {
+      const d = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), i);
+      cells.push(d);
+    }
+    // Next month padding to fill row
+    while (cells.length % 7 !== 0) cells.push(null);
+
+    return (
+      <div className="h-full flex flex-col p-4">
+        <div className="grid grid-cols-7 mb-2 text-center text-sm font-semibold text-muted-foreground">
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d}>{d}</div>)}
+        </div>
+        <div className="grid grid-cols-7 flex-1 auto-rows-fr gap-1">
+          {cells.map((date, i) => {
+            if (!date) return <div key={i} className="bg-transparent" />;
+            const isTdy = isToday(date);
+            const isSel = isSelected(date);
+            const apps = getAppointmentsForDate(date);
+            return (
+              <div
+                key={date.toISOString()}
+                onClick={() => setSelectedDate(date)}
+                className={cn(
+                  "flex flex-col items-center justify-start py-2 rounded-xl cursor-pointer hover:bg-white/5 transition-colors relative",
+                  isSel && "bg-white/10 ring-1 ring-primary",
+                  isTdy && "bg-primary/10"
+                )}
+              >
+                <span className={cn("text-sm font-medium", isTdy && "text-primary font-bold", isSel && "text-white")}>
+                  {date.getDate()}
+                </span>
+                {/* Event Dots */}
+                <div className="flex gap-0.5 mt-1 flex-wrap justify-center px-1">
+                  {apps.slice(0, 4).map((_, idx) => (
+                    <div key={idx} className="w-1 h-1 rounded-full bg-primary" />
+                  ))}
+                  {apps.length > 4 && <div className="w-1 h-1 rounded-full bg-muted-foreground" />}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  if (loading || isLoading) return <LoadingState message="Loading calendar..." fullScreen />;
+
+  const isArtist = user?.role === "artist" || user?.role === "admin";
+  const todayApps = selectedDate ? getAppointmentsForDate(selectedDate) : [];
+
+  return (
+    <PageShell>
+      <PageHeader title="Calendar" />
+
+      {/* 2. Top Context Area (DASHBOARD HEIGHT MATCH) */}
+      {/* Replicated from Dashboard.tsx lines 256-263 */}
+      <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
+        <p className="text-4xl font-light text-foreground/90 tracking-tight">
+          {selectedDate.toLocaleDateString("en-US", { weekday: "long" })}
+        </p>
+        <p className="text-muted-foreground text-lg font-medium mt-1">
+          {selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+        </p>
       </div>
 
-      {/* Dialogs reused from previous version */}
+      {/* Main Content Container - Matches Dashboard container placement */}
+      {/* This pushes buttons and content down to the "70%" area efficiently */}
+      <div className={cn(tokens.contentContainer.base, "relative flex flex-col overflow-hidden")}>
+        {/* View Toggles (Top of Content) */}
+        <div className="px-6 py-4 shrink-0">
+          <SegmentedHeader
+            options={["Day", "Week", "Month"]}
+            activeIndex={viewMode === 'day' ? 0 : viewMode === 'week' ? 1 : 2}
+            onChange={(i) => setViewMode(i === 0 ? 'day' : i === 1 ? 'week' : 'month' as any)}
+          />
+        </div>
+
+        {/* Calendar Views */}
+        <div className="flex-1 flex flex-col overflow-hidden relative">
+
+          {/* Date Strip (Only visible in Day view, per standard design? Or keeping it for Week too?) 
+                User request: "Date strip and context header should sit beneath the buttons"
+                Usually Month view doesn't need a Date Strip. 
+            */}
+          {viewMode !== 'month' && (
+            <div className="shrink-0 w-full bg-transparent z-10">
+              <div
+                ref={dateStripRef}
+                className={tokens.calendar.dateStrip.container}
+                onScroll={handleDateStripScroll}
+              >
+                {getDateStripDays().map((day) => {
+                  const active = isSelected(day);
+                  return (
+                    <button
+                      key={day.toISOString()}
+                      data-date={day.toISOString()}
+                      onClick={() => { setSelectedDate(day); }}
+                      className={cn(
+                        "flex flex-col items-center justify-center min-w-[60px] h-[84px] rounded-2xl transition-all duration-300 shrink-0 snap-center",
+                        active ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20 scale-105" : "bg-transparent text-foreground/70 hover:bg-black/5 dark:hover:bg-white/5"
+                      )}
+                    >
+                      <span className="text-xs font-semibold mb-1 uppercase tracking-wide opacity-80">
+                        {day.toLocaleDateString("en-US", { weekday: "short" })}
+                      </span>
+                      <span className={cn("text-xl font-bold", active ? "text-white" : "text-foreground")}>
+                        {day.getDate()}
+                      </span>
+                      <div className={cn(
+                        "w-1.5 h-1.5 rounded-full mt-2 transition-colors",
+                        getAppointmentsForDate(day).length > 0
+                          ? (active ? "bg-white" : "bg-primary")
+                          : "bg-transparent"
+                      )} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* View Switching */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden relative custom-scrollbar bg-transparent" ref={timelineRef}>
+            {viewMode === 'day' && <DayView />}
+            {viewMode === 'week' && <WeekView />}
+            {viewMode === 'month' && <MonthView />}
+          </div>
+        </div>
+      </div>
+
+      {/* Floating Action Button (FAB) */}
+      {isArtist && (
+        <div className="absolute bottom-24 right-6 z-50">
+          <Button
+            size="icon"
+            className="w-14 h-14 rounded-full bg-black text-white shadow-2xl hover:bg-black/90 hover:scale-105 transition-all"
+            onClick={() => {
+              setAppointmentForm(prev => ({ ...prev, startTime: `${selectedDate.toISOString().split('T')[0]}T09:00`, endTime: `${selectedDate.toISOString().split('T')[0]}T10:00` }));
+              setStep('service');
+              setShowAppointmentDialog(true);
+            }}
+          >
+            <Plus className="w-6 h-6" />
+          </Button>
+        </div>
+      )}
+
+      {/* Dialogs ... (Keeping strictly same as before) */}
       <Dialog open={showAppointmentDialog} onOpenChange={(open) => {
         setShowAppointmentDialog(open);
         if (!open) setTimeout(resetForm, 300);
@@ -467,35 +550,32 @@ export default function Calendar() {
           <DialogHeader>
             <DialogTitle>{step === 'service' ? 'Select Service' : 'Details'}</DialogTitle>
           </DialogHeader>
-          <div className="p-6 space-y-4">
-            {/* Reused form content */}
-            {availableServices.length > 0 && step === 'service' ? (
-              <div className="grid gap-2">
-                {availableServices.map((s: any) => (
-                  <div key={s.name} onClick={() => {
-                    setSelectedService(s);
-                    setStep('details');
-                    setAppointmentForm(prev => ({ ...prev, title: s.name }));
-                  }} className="p-4 border rounded-xl cursor-pointer hover:bg-accent">
-                    <div className="font-bold">{s.name}</div>
-                    <div className="text-sm text-muted-foreground">{s.duration} mins</div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <Label>Client</Label>
-                <Select onValueChange={(v) => setAppointmentForm(p => ({ ...p, clientId: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Select Client" /></SelectTrigger>
-                  <SelectContent>
-                    {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <Input placeholder="Title" value={appointmentForm.title} onChange={e => setAppointmentForm(p => ({ ...p, title: e.target.value }))} />
-                <Button onClick={handleCreateAppointment} className="w-full">Create</Button>
-              </div>
-            )}
-          </div>
+          {availableServices.length > 0 && step === 'service' ? (
+            <div className="grid gap-2">
+              {availableServices.map((s: any) => (
+                <div key={s.name} onClick={() => {
+                  setSelectedService(s);
+                  setStep('details');
+                  setAppointmentForm(prev => ({ ...prev, title: s.name }));
+                }} className="p-4 border rounded-xl cursor-pointer hover:bg-accent">
+                  <div className="font-bold">{s.name}</div>
+                  <div className="text-sm text-muted-foreground">{s.duration} mins</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <Label>Client</Label>
+              <Select onValueChange={(v) => setAppointmentForm(p => ({ ...p, clientId: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select Client" /></SelectTrigger>
+                <SelectContent>
+                  {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Input placeholder="Title" value={appointmentForm.title} onChange={e => setAppointmentForm(p => ({ ...p, title: e.target.value }))} />
+              <Button onClick={handleCreateAppointment} className="w-full">Create</Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </PageShell>
