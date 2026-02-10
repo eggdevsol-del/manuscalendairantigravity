@@ -424,10 +424,12 @@ export default function Calendar() {
 
     return (
       <div className="h-full relative overflow-hidden">
-        {/* Stationary Highlight Overlay */}
-        <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-28 
-                           border-y-2 border-primary/20 bg-primary/5 z-0 pointer-events-none 
-                           backdrop-blur-[1px]" />
+        {/* Stationary Highlight Overlay - MATCHING DAY VIEW STYLE */}
+        {/* Positioned to align with the left date column (w-20 + px-4 = ~left 56px center) */}
+        <div className="absolute top-1/2 left-[56px] -translate-x-1/2 -translate-y-1/2 
+                           w-[70px] h-[86px] 
+                           border-2 border-blue-500 bg-blue-500/10 rounded-2xl z-0 pointer-events-none 
+                           shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300" />
 
         <div
           className="h-full overflow-y-auto hide-scrollbar py-[calc(50vh-56px)]"
@@ -438,27 +440,29 @@ export default function Calendar() {
           {dates.map((date) => {
             const isActive = isSameDay(date, selectedDate);
             const apps = getAppointmentsForDate(date);
+            const hasApps = apps.length > 0;
+
             return (
               <div
                 key={date.toISOString()}
                 onClick={() => setSelectedDate(date)}
-                className={cn(
-                  "flex items-center h-28 px-4 gap-6 transition-all duration-300 group relative z-10",
-                  isActive ? "opacity-100 scale-100" : "opacity-40 grayscale-[0.5] scale-95"
-                )}
+                className="flex items-center h-28 px-4 gap-6 group relative z-10"
               >
-                {/* Left: Date */}
-                <div className="w-20 text-right shrink-0">
-                  <div className="text-xs uppercase font-bold text-muted-foreground mb-1">
-                    {date.toLocaleDateString('en-US', { weekday: 'short' })}
-                  </div>
-                  <div className={cn("text-3xl font-black", isActive ? "text-primary" : "text-foreground")}>
-                    {date.getDate()}
-                  </div>
+                {/* Left: Date - REUSED STYLE FROM DAY STRIP */}
+                <div className={cn(
+                  "shrink-0 flex flex-col items-center justify-center w-[84px] h-[86px] rounded-xl transition-all duration-300",
+                  isActive ? "scale-110 opacity-100 font-bold" : "opacity-40 hover:opacity-80 scale-90"
+                )}>
+                  <span className="text-xs uppercase tracking-wider mb-1">{date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                  <span className="text-2xl">{date.getDate()}</span>
+                  <div className={cn("w-1.5 h-1.5 rounded-full mt-1", hasApps ? "bg-primary" : "bg-transparent")} />
                 </div>
 
                 {/* Right: Cards */}
-                <div className="flex-1 flex gap-3 overflow-x-auto hide-scrollbar items-center pr-4">
+                <div className={cn(
+                  "flex-1 flex gap-3 overflow-x-auto hide-scrollbar items-center pr-4 transition-all duration-300",
+                  isActive ? "opacity-100" : "opacity-40 grayscale-[0.5]"
+                )}>
                   {apps.length > 0 ? (
                     apps.map(apt => {
                       const s = getEventStyle(apt);
