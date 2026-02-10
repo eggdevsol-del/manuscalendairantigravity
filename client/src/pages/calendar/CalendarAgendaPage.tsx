@@ -12,7 +12,7 @@ export default function CalendarAgendaPage() {
     return (
         <div className="fixed inset-0 flex flex-col bg-background">
             {/* Sticky Header Zone */}
-            <div className="z-20 bg-background/95 backdrop-blur shadow-sm">
+            <div className="z-20 shadow-sm">
                 <CalendarMonthHeader activeDate={controller.activeDate} />
                 <CalendarDateStrip7
                     stripDates={controller.stripDates}

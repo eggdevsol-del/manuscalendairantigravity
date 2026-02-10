@@ -53,12 +53,20 @@ export function useAgendaScrollSpy({
 
         const handleScroll = rafThrottle(() => {
             // Use virtualizer to determine the top-most visible item
+            // virtualizer.getVirtualItems() often includes overscan items (which are above the viewport)
+            // So we can't just take the first item.
             const visibleItems = virtualizer.getVirtualItems();
+            const scrollOffset = virtualizer.scrollOffset;
 
             if (visibleItems.length === 0) return;
 
-            // The first item in the visibleItems array is the one at the top of the viewport
-            const firstVisibleItem = visibleItems[0];
+            // Find the first item whose bottom edge extends into the visible area (below scrollTop)
+            // item.start is top position, item.size is height.
+            // We want item where (start + size) > scrollOffset.
+            const firstVisibleItem = visibleItems.find(item => (item.start + item.size) > scrollOffset);
+
+            if (!firstVisibleItem) return;
+
             const index = firstVisibleItem.index;
 
             if (index >= 0 && index < items.length) {
@@ -75,6 +83,9 @@ export function useAgendaScrollSpy({
 
         // Attach passive scroll listener
         scrollElement.addEventListener('scroll', handleScroll, { passive: true });
+
+        // Run immediately to sync state if we just became enabled (e.g. after programmatic scroll)
+        handleScroll();
 
         return () => {
             scrollElement.removeEventListener('scroll', handleScroll);

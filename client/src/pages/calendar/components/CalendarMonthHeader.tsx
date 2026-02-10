@@ -11,7 +11,7 @@ export function CalendarMonthHeader({ activeDate }: CalendarMonthHeaderProps) {
     const { user } = useAuth();
 
     return (
-        <header className="flex items-center justify-between px-4 py-3 bg-background/95 backdrop-blur z-20 sticky top-0 border-b border-border/10">
+        <header className="flex items-center justify-between px-4 py-3 z-20 sticky top-0 border-b border-border/10">
             {/* Left: Hamburger */}
             <Button variant="ghost" size="icon" className="shrink-0">
                 <Menu className="w-6 h-6" />

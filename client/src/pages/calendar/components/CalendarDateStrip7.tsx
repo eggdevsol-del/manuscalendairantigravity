@@ -10,7 +10,7 @@ interface CalendarDateStrip7Props {
 
 export function CalendarDateStrip7({ stripDates, activeDate, onDateTap }: CalendarDateStrip7Props) {
     return (
-        <div className="flex justify-between items-center px-4 py-2 bg-background/95 backdrop-blur z-10 sticky top-[60px]">
+        <div className="flex justify-between items-center px-4 py-2 z-10 sticky top-[60px]">
             {stripDates.map((date) => {
                 const isActive = isSameDay(date, activeDate);
                 return (
