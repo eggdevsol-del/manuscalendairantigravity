@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { addDays, startOfDay, format, isSameDay, subDays, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { useAgendaScrollSpy } from "./useAgendaScrollSpy";
 
 const BUFFER_DAYS = 60; // Fetch buffer
 
@@ -143,7 +144,10 @@ export function useCalendarAgendaController() {
         virtualizer,
         agendaDates,
         handleDateTap,
-        handleScroll,
+        virtualizer,
+        agendaDates,
+        handleDateTap,
+        handleScroll: undefined, // No longer needed
         refetch,
         weeklyIncome
     };
