@@ -132,7 +132,7 @@ export function useCalendarAgendaController() {
             // Removed infinite scroll shifting to prevent jumps. 
             // We use a large static buffer (+/- 365 days) instead.
         }
-    }, [agendaDates, activeDate, windowStart]);
+    }, [agendaDates, activeDate, windowStart, isScrollingProgrammatically]);
 
     // Initialize Scroll Spy
     useAgendaScrollSpy({
