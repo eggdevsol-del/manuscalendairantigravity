@@ -19,7 +19,7 @@ type ViewMode = "day" | "week" | "month";
 // --- Date Logic Helpers ---
 
 // Generate a larger buffer for smoother scrolling feel
-const BUFFER_DAYS = 60; // +/- 60 days for stable scroll
+const BUFFER_DAYS = 90; // +/- 90 days for stable scroll
 const ITEM_HEIGHT = 112; // 28 * 4 = 112px (h-28)
 
 const getBufferDays = (centerDate: Date) => {
@@ -555,7 +555,7 @@ export default function Calendar() {
   }
 
 
-  if (loading || isLoading) return <LoadingState message="Loading calendar..." fullScreen />;
+  if (loading || (isLoading && !appointments)) return <LoadingState message="Loading calendar..." fullScreen />;
 
   const isArtist = user?.role === "artist" || user?.role === "admin";
 
