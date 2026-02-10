@@ -88,8 +88,8 @@ export const appointmentsRouter = router({
                 clientId: input.clientId,
                 title: input.title,
                 description: input.description,
-                startTime: new Date(startTimeUTC).toISOString(),
-                endTime: new Date(endTimeUTC).toISOString(),
+                startTime: new Date(startTimeUTC).toISOString().slice(0, 19).replace('T', ' '),
+                endTime: new Date(endTimeUTC).toISOString().slice(0, 19).replace('T', ' '),
                 timeZone: timezone,
                 serviceName: input.serviceName,
                 price: input.price,
@@ -302,8 +302,8 @@ export const appointmentsRouter = router({
             );
 
             const busySlots = existingAppointments.map(a => ({
-                startTime: a.startTime,
-                endTime: a.endTime
+                startTime: new Date(a.startTime),
+                endTime: new Date(a.endTime)
             }));
 
             const suggestedDates: Date[] = [];
@@ -413,8 +413,8 @@ export const appointmentsRouter = router({
                     clientId: conversation.clientId,
                     title: appt.title,
                     description: appt.description,
-                    startTime: appt.startTime.toISOString(),
-                    endTime: appt.endTime.toISOString(),
+                    startTime: appt.startTime.toISOString().slice(0, 19).replace('T', ' '),
+                    endTime: appt.endTime.toISOString().slice(0, 19).replace('T', ' '),
                     timeZone: timezone, // Add timezone
                     serviceName: appt.serviceName,
                     price: appt.price,
