@@ -30,7 +30,7 @@ export default function CalendarAgendaPage() {
             <div
                 className={cn(
                     "fixed inset-0 flex flex-col transition-transform duration-500 ease-in-out z-10",
-                    "md:relative md:inset-auto md:w-1/2 md:translate-y-0 md:bg-transparent md:border-l md:border-white/10",
+                    "md:relative md:inset-auto md:w-1/2 md:translate-y-0 md:bg-transparent md:border-l md:border-white/10 md:pt-5",
                     controller.isBreakdownOpen ? "translate-y-[55vh] rounded-t-[2.5rem] bg-background/95 backdrop-blur-sm shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.5)] overflow-hidden" : "translate-y-0 bg-transparent"
                 )}
             >
