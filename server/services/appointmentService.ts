@@ -2,6 +2,29 @@ import { and, desc, eq, gte, lte, gt, lt, ne, sql } from "drizzle-orm";
 import { appointments, InsertAppointment, users } from "../../drizzle/schema";
 import { getDb } from "./core";
 
+// Helper to ensure dates are ISO formatted (UTC) for the client
+// MySQL returns "YYYY-MM-DD HH:mm:ss", we need "YYYY-MM-DDTHH:mm:ssZ"
+function toISO(dateStr: string | null | undefined): string {
+    if (!dateStr) return dateStr as any;
+    // If it's already a Date object (shouldn't be with mode: string, but safety check)
+    if (dateStr instanceof Date) return (dateStr as Date).toISOString();
+
+    let s = String(dateStr);
+    if (s.includes('T') && s.endsWith('Z')) return s;
+    return s.replace(' ', 'T') + 'Z';
+}
+
+function normalizeAppointment(appt: any) {
+    if (!appt) return appt;
+    return {
+        ...appt,
+        startTime: toISO(appt.startTime),
+        endTime: toISO(appt.endTime),
+        createdAt: toISO(appt.createdAt),
+        updatedAt: toISO(appt.updatedAt),
+    };
+}
+
 // ============================================================================
 // Appointment operations
 // ============================================================================
@@ -18,7 +41,7 @@ export async function createAppointment(appointment: InsertAppointment) {
         .where(eq(appointments.id, Number(result[0].insertId)))
         .limit(1);
 
-    return inserted[0];
+    return normalizeAppointment(inserted[0]);
 }
 
 export async function getAppointment(id: number) {
@@ -31,7 +54,7 @@ export async function getAppointment(id: number) {
         .where(eq(appointments.id, id))
         .limit(1);
 
-    return result.length > 0 ? result[0] : undefined;
+    return result.length > 0 ? normalizeAppointment(result[0]) : undefined;
 }
 
 export async function updateAppointment(
@@ -120,25 +143,27 @@ export async function getAppointmentsForUser(
         .where(and(...conditions))
         .orderBy(appointments.startTime);
 
-    return results;
+    return results.map(normalizeAppointment);
 }
 
 export async function getAppointmentsByConversation(conversationId: number) {
     const db = await getDb();
     if (!db) return [];
 
-    return db
+    const results = await db
         .select()
         .from(appointments)
         .where(eq(appointments.conversationId, conversationId))
         .orderBy(desc(appointments.startTime));
+
+    return results.map(normalizeAppointment);
 }
 
 export async function getPendingAppointmentsByConversation(conversationId: number) {
     const db = await getDb();
     if (!db) return [];
 
-    return db
+    const results = await db
         .select()
         .from(appointments)
         .where(
@@ -147,6 +172,8 @@ export async function getPendingAppointmentsByConversation(conversationId: numbe
                 eq(appointments.status, "pending")
             )
         );
+
+    return results.map(normalizeAppointment);
 }
 
 export async function confirmAppointments(conversationId: number, paymentProof?: string) {
