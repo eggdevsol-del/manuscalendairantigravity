@@ -73,7 +73,10 @@ export default function Promotions() {
     <PageShell>
       <InstallAppModal isOpen={showInstallModal} onClose={() => setShowInstallModal(false)} />
 
-      <PageHeader title="Promotions" />
+      <PageHeader
+        title="Promotions"
+        subtitle={isArtist ? 'Create and send promotions to clients' : 'Redeem your vouchers and discounts'}
+      />
 
       <div className="relative flex-1 flex flex-col overflow-hidden h-full">
         {/* Teaser Mode Overlay */}
@@ -93,15 +96,6 @@ export default function Promotions() {
             </div>
           </div>
         )}
-
-        <div className={cn("hidden px-6 pt-4 pb-8 z-10 shrink-0 flex-col justify-center h-[15vh] opacity-80", !isTeaserClient && "flex")}>
-          <p className="text-4xl font-light text-foreground/90 tracking-tight">
-            {isArtist ? 'Your Cards' : 'My Rewards'}
-          </p>
-          <p className="text-muted-foreground text-lg font-medium mt-1">
-            {isArtist ? 'Create and send promotions to clients' : 'Redeem your vouchers and discounts'}
-          </p>
-        </div>
 
         <div className={cn("flex flex-col h-full overflow-hidden", isTeaserClient && "filter blur-sm pointer-events-none")}>
           {/* Elevated Create Action */}
