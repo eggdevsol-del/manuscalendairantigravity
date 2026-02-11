@@ -178,7 +178,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
         <div className={cn("flex flex-col h-full relative", className)}>
 
             {/* Fixed Header & Consultation Pin */}
-            <div className="flex-none z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 shadow-sm supports-[backdrop-filter]:bg-background/60">
+            <div className="flex-none z-50 bg-transparent">
                 <header className="mobile-header px-4 py-3 pb-4">
                     <div className="flex items-center justify-between">
 

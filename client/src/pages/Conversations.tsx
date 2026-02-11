@@ -65,7 +65,7 @@ export default function Conversations() {
       <div className="hidden md:flex h-full overflow-hidden pt-6">
         {/* Left Panel: List (50%) */}
         <div className="w-1/2 border-r border-white/5 flex flex-col h-full">
-          <PageHeader title="Messages" />
+          <PageHeader title="Messages" className="bg-transparent" />
           <ConversationsList className="bg-transparent" />
         </div>
 
