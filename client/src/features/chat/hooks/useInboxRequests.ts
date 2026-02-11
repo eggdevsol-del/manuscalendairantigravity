@@ -63,6 +63,10 @@ export function useInboxRequests() {
         // Add consultations (deduplicated)
         if (consultationsData) {
             consultationsData.forEach((consult: any) => {
+                // SSOT: Only show unviewed consultations in the "New Requests" list
+                // Viewed consultations will appear in the main conversation list
+                if (consult.viewed) return;
+
                 // Check if any lead already in items points to this consultation
                 const isDuplicate = items.some(item => item.type === 'lead' && (item.data as any).consultationId === consult.id);
 

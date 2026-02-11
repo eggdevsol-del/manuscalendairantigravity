@@ -27,8 +27,38 @@ export default function Conversations() {
   // Use centralized hook (SSOT)
   const { data: conversations, isLoading, isPending } = useConversations();
 
+  // Mutations to mark items as read/contacted
+  const updateLeadStatus = trpc.funnel.updateLeadStatus.useMutation();
+  const updateConsultation = trpc.consultations.update.useMutation();
+  const utils = trpc.useUtils(); // For invalidating queries (v11)
+
   // Consolidate inbox requests (Leads + Consultations) via SSOT Hook
   const { requestItems, isLoading: requestsLoading, isArtist } = useInboxRequests();
+
+  // Helper to mark item as read/viewed (Optimistic UI happens via invalidation/refetch)
+  const handleMarkAsRead = async (item: any) => {
+    try {
+      if (item.type === 'lead' && item.leadId) {
+        // Mark lead as 'contacted' -> removes from "New" list
+        await updateLeadStatus.mutateAsync({
+          leadId: item.leadId,
+          status: 'contacted'
+        });
+        utils.funnel.getLeads.invalidate(); // Refresh leads list
+      }
+      else if (item.type === 'consultation' && item.id) {
+        // Mark consultation as 'viewed' -> removes from "New" list
+        await updateConsultation.mutateAsync({
+          id: item.id,
+          viewed: 1
+        });
+        utils.consultations.list.invalidate(); // Refresh consultations list
+      }
+    } catch (error) {
+      console.error("Failed to mark item as read:", error);
+      // Non-blocking error, user still navigates
+    }
+  };
 
 
   // Redirect to login if not authenticated
@@ -105,6 +135,10 @@ export default function Conversations() {
                     }) : undefined}
                     onClick={async () => {
                       console.log("Card clicked:", item);
+
+                      // Trigger Read Status Update (Fire-and-forget/Background)
+                      handleMarkAsRead(item);
+
                       if (item.leadId) {
                         setLocation(`/lead/${item.leadId}`);
                         return;
