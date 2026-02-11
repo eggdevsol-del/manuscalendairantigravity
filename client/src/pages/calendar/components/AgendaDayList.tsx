@@ -74,7 +74,7 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                                             <div
                                                 key={apt.id}
                                                 className={cn(
-                                                    "p-3 rounded-xl flex flex-col gap-1 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer shadow-sm border",
+                                                    "p-3 rounded-sm flex flex-col gap-1 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer shadow-sm border",
                                                     style.className
                                                 )}
                                             >
@@ -97,6 +97,6 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                     );
                 })}
             </div>
-        </div>
+        </div >
     );
 }

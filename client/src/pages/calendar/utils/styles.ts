@@ -2,7 +2,13 @@ import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 
 export const getEventStyle = (appointment: any) => {
-    const hash = (appointment.title?.length || 0) + (appointment.id?.length || 0);
+    // Use serviceName for stable coloring if available, otherwise title or id
+    const key = appointment.serviceName || appointment.title || appointment.id || "";
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) {
+        hash = key.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    hash = Math.abs(hash);
     const palettes = [
         tokens.calendar.event.orange,
         tokens.calendar.event.purple,
