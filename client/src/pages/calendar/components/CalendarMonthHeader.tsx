@@ -64,7 +64,7 @@ export function CalendarMonthHeader({ activeDate, onToggleBreakdown, isBreakdown
                     )}
                     onClick={onToggleBreakdown}
                 >
-                    B
+                    M
                 </Button>
             </div>
         </header>
