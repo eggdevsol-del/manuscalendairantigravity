@@ -193,6 +193,7 @@ export function useCalendarAgendaController() {
         weeklyIncome,
         isBreakdownOpen,
         toggleBreakdown,
-        workSchedule
+        workSchedule,
+        setActiveDate
     };
 }

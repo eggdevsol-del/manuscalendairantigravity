@@ -34,6 +34,7 @@ export default function CalendarAgendaPage() {
                         activeDate={controller.activeDate}
                         onToggleBreakdown={controller.toggleBreakdown}
                         isBreakdownOpen={controller.isBreakdownOpen}
+                        onDateChange={controller.setActiveDate}
                     />
                     <CalendarDateStrip7
                         stripDates={controller.stripDates}

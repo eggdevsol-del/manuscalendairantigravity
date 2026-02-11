@@ -103,9 +103,9 @@ export default function Promotions() {
           </p>
         </div>
 
-        <div className={cn("bg-card flex flex-col h-full overflow-hidden", isTeaserClient && "filter blur-sm pointer-events-none")}>
+        <div className={cn("flex flex-col h-full overflow-hidden", isTeaserClient && "filter blur-sm pointer-events-none")}>
           {/* Elevated Create Action */}
-          <div className="flex justify-center mb-8 px-4 pt-4 shrink-0">
+          <div className="flex justify-center mb-2 px-4 pt-4 shrink-0">
             {isArtist && (
               <Button
                 variant="hero"
