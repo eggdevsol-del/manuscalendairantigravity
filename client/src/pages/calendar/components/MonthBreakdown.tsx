@@ -63,9 +63,9 @@ export function MonthBreakdown({ month, eventsByDay = {} }: MonthBreakdownProps)
     }
 
     return (
-        <div className="absolute inset-0 z-0 pt-16 px-0 pb-6 flex flex-col w-full h-[60vh]">
+        <div className="absolute top-0 left-0 right-0 z-0 pt-16 px-0 pb-6 flex flex-col w-full h-[60vh]">
             <div className="px-6 mb-4">
-                <h2 className="text-xl font-light text-muted-foreground uppercase tracking-widest">Month at a Glimpse</h2>
+                <h2 className="text-xl font-light text-muted-foreground uppercase tracking-widest">My Month</h2>
             </div>
 
             <div className="flex flex-col h-full w-full">
