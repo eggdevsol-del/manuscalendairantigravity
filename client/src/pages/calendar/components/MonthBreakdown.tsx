@@ -6,21 +6,33 @@ import { getEventStyle } from "../utils/styles";
 interface MonthBreakdownProps {
     month: Date;
     eventsByDay?: Record<string, any[]>;
+    workSchedule?: any;
 }
 
-export function MonthBreakdown({ month, eventsByDay = {} }: MonthBreakdownProps) {
+export function MonthBreakdown({ month, eventsByDay = {}, workSchedule }: MonthBreakdownProps) {
     const start = startOfMonth(month);
     const end = endOfMonth(month);
     const days = eachDayOfInterval({ start, end });
 
+    const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
     // --- Stats Calculation ---
     // 1. Dates Free (this month)
-    // Assume a day is "free" if it has 0 appointments.
+    // Only count ENABLED WORK days that have no appointments.
     const freeDatesCount = days.reduce((acc, day) => {
         const key = format(day, "yyyy-MM-dd");
         const hasEvents = eventsByDay[key] && eventsByDay[key].length > 0;
-        // Also exclude weekends? Usually tattoo artists work specific days.
-        // For simplicity, we count all days without events as "free".
+
+        const dayIndex = getDay(day);
+        const dayKey = dayKeys[dayIndex];
+        const config = workSchedule?.[dayKey];
+
+        // If no config or disabled, it's not a "free work day".
+        if (!config?.enabled) return acc;
+
+        // If type is design or personal, it's also not a "free work day"
+        if (config.type === 'design' || config.type === 'personal') return acc;
+
         return acc + (hasEvents ? 0 : 1);
     }, 0);
 
@@ -95,6 +107,10 @@ export function MonthBreakdown({ month, eventsByDay = {} }: MonthBreakdownProps)
                                     const dayEvents = eventsByDay[dateKey] || [];
                                     const hasEvents = dayEvents.length > 0;
 
+                                    const dayOfWeekIndex = getDay(day);
+                                    const config = workSchedule?.[dayKeys[dayOfWeekIndex]];
+                                    const isDesign = config?.enabled && config?.type === 'design';
+
                                     // Get service color if event exists
                                     let bgClass = "bg-white/5";
                                     if (hasEvents) {
@@ -112,7 +128,7 @@ export function MonthBreakdown({ month, eventsByDay = {} }: MonthBreakdownProps)
                                             )}
                                         >
                                             <span className={cn(hasEvents ? "opacity-100" : "opacity-30")}>
-                                                {format(day, "d")}
+                                                {isDesign ? "D" : format(day, "d")}
                                             </span>
                                         </div>
                                     );

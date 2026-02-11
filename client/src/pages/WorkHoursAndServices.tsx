@@ -24,6 +24,7 @@ interface DaySchedule {
   enabled: boolean;
   start: string;
   end: string;
+  type?: 'work' | 'design' | 'personal';
 }
 
 interface WorkSchedule {
@@ -46,13 +47,13 @@ interface Service {
 }
 
 const defaultSchedule: WorkSchedule = {
-  monday: { enabled: true, start: "09:00", end: "17:00" },
-  tuesday: { enabled: true, start: "09:00", end: "17:00" },
-  wednesday: { enabled: true, start: "09:00", end: "17:00" },
-  thursday: { enabled: true, start: "09:00", end: "17:00" },
-  friday: { enabled: true, start: "09:00", end: "17:00" },
-  saturday: { enabled: false, start: "09:00", end: "17:00" },
-  sunday: { enabled: false, start: "09:00", end: "17:00" },
+  monday: { enabled: true, start: "09:00", end: "17:00", type: "work" },
+  tuesday: { enabled: true, start: "09:00", end: "17:00", type: "work" },
+  wednesday: { enabled: true, start: "09:00", end: "17:00", type: "work" },
+  thursday: { enabled: true, start: "09:00", end: "17:00", type: "work" },
+  friday: { enabled: true, start: "09:00", end: "17:00", type: "work" },
+  saturday: { enabled: false, start: "09:00", end: "17:00", type: "work" },
+  sunday: { enabled: false, start: "09:00", end: "17:00", type: "work" },
 };
 
 export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesProps) {
@@ -144,6 +145,13 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
     setWorkSchedule(prev => ({
       ...prev,
       [day]: { ...prev[day], [field]: value }
+    }));
+  };
+
+  const handleTypeChange = (day: keyof WorkSchedule, value: 'work' | 'design' | 'personal') => {
+    setWorkSchedule(prev => ({
+      ...prev,
+      [day]: { ...prev[day], type: value }
     }));
   };
 
@@ -280,27 +288,46 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
                           onCheckedChange={() => handleDayToggle(key)}
                         />
                       </div>
+
                       {daySchedule.enabled && (
-                        <div className="flex gap-2 ml-4">
-                          <div className="flex-1">
-                            <Input
-                              type="time"
-                              value={daySchedule.start}
-                              onChange={(e) => handleTimeChange(key, 'start', e.target.value)}
-                              className="bg-white/5 border-white/10"
-                            />
-                          </div>
-                          <span className="flex items-center text-muted-foreground text-xs">TO</span>
-                          <div className="flex-1">
-                            <Input
-                              type="time"
-                              value={daySchedule.end}
-                              onChange={(e) => handleTimeChange(key, 'end', e.target.value)}
-                              className="bg-white/5 border-white/10"
-                            />
+                        <div className="flex flex-col gap-2 ml-4">
+                          {/* Type Selector */}
+                          <Select
+                            value={daySchedule.type || "work"}
+                            onValueChange={(val: any) => handleTypeChange(key, val)}
+                          >
+                            <SelectTrigger className="h-8 bg-white/5 border-white/10 text-xs w-full mb-1">
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="work">Work</SelectItem>
+                              <SelectItem value="design">Design</SelectItem>
+                              <SelectItem value="personal">Personal</SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          <div className="flex gap-2">
+                            <div className="flex-1">
+                              <Input
+                                type="time"
+                                value={daySchedule.start}
+                                onChange={(e) => handleTimeChange(key, 'start', e.target.value)}
+                                className="bg-white/5 border-white/10"
+                              />
+                            </div>
+                            <span className="flex items-center text-muted-foreground text-xs">TO</span>
+                            <div className="flex-1">
+                              <Input
+                                type="time"
+                                value={daySchedule.end}
+                                onChange={(e) => handleTimeChange(key, 'end', e.target.value)}
+                                className="bg-white/5 border-white/10"
+                              />
+                            </div>
                           </div>
                         </div>
-                      )}
+                      )
+                      }
                     </div>
                   );
                 })}
@@ -454,22 +481,23 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
 
           </div>
         </div>
-      </div>
+      </div >
 
       {/* Project Builder Modal - keeping as is, wrapped in ModalShell it should work fine */}
-      <ModalShell
+      < ModalShell
         isOpen={showProjectBuilder}
-        onClose={() => setShowProjectBuilder(false)}
+        onClose={() => setShowProjectBuilder(false)
+        }
         title="Add Project Service"
         description="Create a multi-sitting project package based on an existing service."
         className="max-w-md"
         overlayName="Project Service Builder"
         overlayId="work_hours.project_builder"
         footer={
-          <div className="flex w-full gap-2">
+          < div className="flex w-full gap-2" >
             <Button variant="outline" className="flex-1 bg-transparent border-white/10 hover:bg-white/5" onClick={() => setShowProjectBuilder(false)}>Cancel</Button>
             <Button className="flex-1" onClick={handleAddProjectService}>Add Project Service</Button>
-          </div>
+          </div >
         }
       >
         <div className="space-y-4 py-2">
@@ -499,8 +527,8 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
             </div>
           </div>
         </div>
-      </ModalShell>
+      </ModalShell >
 
-    </PageShell>
+    </PageShell >
   );
 }

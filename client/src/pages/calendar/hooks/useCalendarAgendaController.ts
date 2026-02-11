@@ -163,6 +163,21 @@ export function useCalendarAgendaController() {
     }, [appointments, activeDate]);
 
 
+    // 7. Fetch Settings for Schedule (Day Types)
+    const { data: artistSettings } = trpc.artistSettings.get.useQuery(undefined, {
+        enabled: !!user,
+        placeholderData: undefined
+    });
+
+    const workSchedule = useMemo(() => {
+        if (!artistSettings?.workSchedule) return null;
+        try {
+            return JSON.parse(artistSettings.workSchedule);
+        } catch (e) {
+            return null;
+        }
+    }, [artistSettings]);
+
     return {
         user,
         activeDate,
@@ -177,6 +192,7 @@ export function useCalendarAgendaController() {
         refetch,
         weeklyIncome,
         isBreakdownOpen,
-        toggleBreakdown
+        toggleBreakdown,
+        workSchedule
     };
 }

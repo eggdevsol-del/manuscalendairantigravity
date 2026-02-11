@@ -17,6 +17,7 @@ export default function CalendarAgendaPage() {
                 <MonthBreakdown
                     month={controller.activeDate}
                     eventsByDay={controller.eventsByDay}
+                    workSchedule={controller.workSchedule}
                 />
             </div>
 
@@ -48,6 +49,7 @@ export default function CalendarAgendaPage() {
                         agendaDates={controller.agendaDates}
                         eventsByDay={controller.eventsByDay}
                         parentRef={controller.parentRef}
+                        workSchedule={controller.workSchedule}
                     />
                 </div>
 

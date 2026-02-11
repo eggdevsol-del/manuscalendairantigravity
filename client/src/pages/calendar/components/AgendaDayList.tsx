@@ -1,10 +1,9 @@
-import { format, isToday } from "date-fns";
+import { format, isToday, getDay } from "date-fns";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { tokens } from "@/ui/tokens"; // Assuming tokens still valid
-import { formatLocalTime, getBusinessTimezone } from "../../../../../shared/utils/timezone"; // Fix path if needed
-import { getEventStyle } from "../utils/styles"; // Import style util
+import { formatLocalTime, getBusinessTimezone } from "../../../../../shared/utils/timezone";
+import { getEventStyle } from "../utils/styles";
 
 interface AgendaDayListProps {
     virtualizer: any;
@@ -12,9 +11,12 @@ interface AgendaDayListProps {
     eventsByDay: Record<string, any[]>;
     parentRef: React.RefObject<HTMLDivElement | null>;
     onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
+    workSchedule?: any;
 }
 
-export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef, onScroll }: AgendaDayListProps) {
+const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef, onScroll, workSchedule }: AgendaDayListProps) {
     return (
         <div
             ref={parentRef}
@@ -35,6 +37,11 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                     const dateKey = format(date, "yyyy-MM-dd");
                     const dayEvents = eventsByDay[dateKey] || [];
                     const isTdy = isToday(date);
+
+                    const dayIndex = getDay(date);
+                    const dayKey = dayKeys[dayIndex];
+                    const config = workSchedule?.[dayKey];
+                    const isDesign = config?.enabled && config?.type === 'design';
 
                     return (
                         <div
@@ -61,15 +68,15 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
 
                             {/* Events List */}
                             <div className="flex flex-col gap-2">
+                                {isDesign && (
+                                    <div className="py-2 px-3 bg-purple-500/10 border border-purple-500/20 rounded-md">
+                                        <span className="text-xs font-bold text-purple-400 uppercase tracking-widest">Design Day</span>
+                                    </div>
+                                )}
+
                                 {dayEvents.length > 0 ? (
                                     dayEvents.map((apt: any) => {
-                                        // Apply legacy style logic or new one?
-                                        // "soft tinted background, left colored vertical bar, title bold, subtitle and time"
-                                        // This matches getEventStyle utility we saved
                                         const style = getEventStyle(apt);
-                                        // We need to parse color from style.className if meaningful, or use utility classes.
-                                        // The utility returns className with bg, text, border.
-
                                         return (
                                             <div
                                                 key={apt.id}
@@ -81,16 +88,17 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                                                 <div className="font-bold text-sm">{apt.title}</div>
                                                 <div className="text-xs opacity-70 flex justify-between">
                                                     <span>{formatLocalTime(apt.startTime, getBusinessTimezone(), 'h:mm a')} - {formatLocalTime(apt.endTime, getBusinessTimezone(), 'h:mm a')}</span>
-                                                    {/* Client name if available */}
                                                     <span>{apt.clientName || ""}</span>
                                                 </div>
                                             </div>
                                         )
                                     })
                                 ) : (
-                                    <div className="py-4 text-center text-sm text-muted-foreground/30 italic">
-                                        Nothing planned
-                                    </div>
+                                    !isDesign && (
+                                        <div className="py-4 text-center text-sm text-muted-foreground/30 italic">
+                                            Nothing planned
+                                        </div>
+                                    )
                                 )}
                             </div>
                         </div>
