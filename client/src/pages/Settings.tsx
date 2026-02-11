@@ -505,7 +505,7 @@ export default function Settings() {
           <div className="pb-32 max-w-lg mx-auto space-y-1">
 
             <Card className="cursor-pointer hover:bg-white/10 transition-colors border-0 bg-transparent" onClick={() => setActiveSection("profile")}>
-              <div className="p-2 flex items-center justify-between">
+              <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-xl bg-primary/20 text-primary">
                     <User className="w-5 h-5" />
@@ -520,7 +520,7 @@ export default function Settings() {
             </Card>
 
             <Card className="border-0 bg-transparent overflow-hidden">
-              <div className="p-2 flex items-center justify-between">
+              <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
                     {theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
@@ -537,7 +537,7 @@ export default function Settings() {
             {!isArtist && (
               <>
                 <Card className="cursor-pointer hover:bg-white/10 transition-colors border-0 bg-transparent" onClick={() => setLocation("/consultations")}>
-                  <div className="p-2 flex items-center justify-between">
+                  <div className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400">
                         <Calendar className="w-5 h-5" />
@@ -551,7 +551,7 @@ export default function Settings() {
                   </div>
                 </Card>
                 <Card className="cursor-pointer hover:bg-white/10 transition-colors border-0 bg-transparent" onClick={() => setLocation("/policies")}>
-                  <div className="p-2 flex items-center justify-between">
+                  <div className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400">
                         <Bell className="w-5 h-5" />
@@ -575,7 +575,7 @@ export default function Settings() {
             {isArtist && (
               <>
                 <Card className="cursor-pointer hover:bg-white/10 transition-colors border-0 bg-transparent" onClick={() => setLocation("/clients")}>
-                  <div className="p-2 flex items-center justify-between">
+                  <div className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-green-500/20 text-green-400">
                         <User className="w-5 h-5" />
@@ -592,7 +592,7 @@ export default function Settings() {
                 {user && <ArtistLink artistId={user.id} artistName={user.name || "Artist"} />}
 
                 <Card className="cursor-pointer hover:bg-white/10 transition-colors border-0 bg-transparent" onClick={() => setActiveSection("business")}>
-                  <div className="p-2 flex items-center justify-between">
+                  <div className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400">
                         <MapPin className="w-5 h-5" />
@@ -607,7 +607,7 @@ export default function Settings() {
                 </Card>
 
                 <Card className="cursor-pointer hover:bg-white/10 transition-colors border-0 bg-transparent" onClick={() => setActiveSection("work-hours")}>
-                  <div className="p-2 flex items-center justify-between">
+                  <div className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-pink-500/20 text-pink-400">
                         <Clock className="w-5 h-5" />
@@ -622,7 +622,7 @@ export default function Settings() {
                 </Card>
 
                 <Card className="cursor-pointer hover:bg-white/10 transition-colors border-0 bg-transparent" onClick={() => setLocation("/quick-actions")}>
-                  <div className="p-2 flex items-center justify-between">
+                  <div className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-yellow-500/20 text-yellow-400">
                         <Zap className="w-5 h-5" />
@@ -637,7 +637,7 @@ export default function Settings() {
                 </Card>
 
                 <Card className="cursor-pointer hover:bg-white/10 transition-colors border-0 bg-transparent" onClick={() => setLocation("/notifications-management")}>
-                  <div className="p-2 flex items-center justify-between">
+                  <div className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400">
                         <Bell className="w-5 h-5" />
@@ -654,7 +654,7 @@ export default function Settings() {
             )}
 
             <Card className="border-0 bg-transparent overflow-hidden">
-              <div className="p-2 flex items-center justify-between">
+              <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-xl bg-slate-500/20 text-slate-400">
                     <Zap className="w-5 h-5" />
@@ -677,7 +677,7 @@ export default function Settings() {
                 forceUpdate();
               }}
             >
-              <div className="p-2 flex items-center justify-between">
+              <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30 transition-colors">
                     <RefreshCw className="w-5 h-5" />
@@ -691,7 +691,7 @@ export default function Settings() {
             </Card>
 
             <Card className="cursor-pointer hover:bg-destructive/10 transition-colors border-0 bg-transparent group" onClick={handleLogout}>
-              <div className="p-2 flex items-center justify-between">
+              <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-xl bg-destructive/10 text-destructive group-hover:bg-destructive/20 transition-colors">
                     <LogOut className="w-5 h-5" />

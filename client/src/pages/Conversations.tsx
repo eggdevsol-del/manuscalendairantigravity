@@ -139,7 +139,7 @@ export default function Conversations() {
                             try {
                               const conv = await createConversation.mutateAsync({
                                 artistId: user.id,
-                                clientId: item.data.clientId
+                                clientId: item.data.clientId as string // Assert string if check passed
                               });
 
                               if (conv) {
@@ -163,13 +163,13 @@ export default function Conversations() {
 
             {/* Conversations List */}
             {conversations && conversations.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-1">
                 {conversations.map((conv) => (
                   <ConversationCard
                     key={conv.id}
                     name={conv.otherUser?.name || "Unknown User"}
                     avatar={conv.otherUser?.avatar}
-                    timestamp={new Date(conv.updatedAt).toLocaleDateString("en-US", {
+                    timestamp={new Date(conv.createdAt!).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                     })}

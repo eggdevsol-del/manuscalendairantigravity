@@ -317,7 +317,7 @@ export default function Dashboard() {
                                     dragDirectionLock
                                     className="absolute top-0 left-0 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y"
                                 >
-                                    <div className="space-y-3 pb-32 max-w-lg mx-auto">
+                                    <div className="space-y-1 pb-32 max-w-lg mx-auto">
                                         {/* Loading state for business tasks */}
                                         {activeCategory === 'business' && businessLoading ? (
                                             <LoadingState />

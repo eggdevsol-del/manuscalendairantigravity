@@ -180,7 +180,7 @@ export default function Clients() {
             </Empty>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-1">
             {filteredClients.map((client: any) => (
               <Card key={client.id} className="hover:bg-accent/5 transition-colors">
                 <CardHeader className="pb-3">

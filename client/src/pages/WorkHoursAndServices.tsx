@@ -268,7 +268,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
       {/* 3. Sheet Container */}
       <div className={tokens.contentContainer.base}>
         <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
-          <div className="pb-32 max-w-lg mx-auto space-y-6">
+          <div className="pb-32 max-w-lg mx-auto space-y-1">
 
             {/* Work Schedule Card */}
             <Card className="border-0 bg-white/5 overflow-hidden">
@@ -276,7 +276,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
                 <h3 className="font-semibold text-foreground">Start / Finish Times</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">Set enabled days and hours</p>
               </div>
-              <div className="p-4 space-y-4">
+              <div className="p-4 space-y-1">
                 {days.map(({ key, label }) => {
                   const daySchedule = workSchedule[key] || { enabled: false, start: "09:00", end: "17:00" };
                   return (
@@ -360,7 +360,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
                 </div>
               </div>
 
-              <div className="p-4 space-y-4">
+              <div className="p-4 space-y-1">
                 {services.map((service, index) => (
                   <div key={index} className="p-4 border border-white/10 rounded-[4px] bg-white/5">
                     {editingIndex === index && editingService ? (
