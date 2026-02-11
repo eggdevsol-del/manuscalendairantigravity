@@ -34,6 +34,8 @@ export interface ConversationCardProps {
     subject?: string;
     /** Whether this is a new request */
     isNew?: boolean;
+    /** Whether this card is currently selected (for split view) */
+    isActive?: boolean;
 }
 
 export function ConversationCard({
@@ -44,7 +46,8 @@ export function ConversationCard({
     onClick,
     className,
     subject,
-    isNew
+    isNew,
+    isActive
 }: ConversationCardProps) {
     return (
         <Card
@@ -54,6 +57,7 @@ export function ConversationCard({
                 tokens.card.bg,
                 tokens.card.interactive,
                 tokens.spacing.cardPadding,
+                isActive && "bg-primary/10 border-primary/50",
                 className
             )}
         >

@@ -11,9 +11,13 @@ export default function CalendarAgendaPage() {
     const controller = useCalendarAgendaController();
 
     return (
-        <div className="fixed inset-0 flex flex-col bg-transparent">
+        <div className="fixed inset-0 flex flex-col md:flex-row bg-transparent">
             {/* 1. Underlying Breakdown Layer (visible when top layer slides down) */}
-            <div className={cn("absolute inset-0 transition-opacity duration-300", controller.isBreakdownOpen ? "opacity-100 z-0" : "opacity-0 -z-10")}>
+            {/* iPad: Relative, 50% width, always visible, z-0 */}
+            <div className={cn(
+                "absolute inset-0 transition-opacity duration-300 md:relative md:inset-auto md:w-1/2 md:opacity-100 md:z-0",
+                controller.isBreakdownOpen ? "opacity-100 z-0" : "opacity-0 -z-10"
+            )}>
                 <MonthBreakdown
                     month={controller.activeDate}
                     eventsByDay={controller.eventsByDay}
@@ -22,19 +26,26 @@ export default function CalendarAgendaPage() {
             </div>
 
             {/* 2. Sliding Main Content Layer */}
+            {/* iPad: Relative, 50% width, no transform, always visible, z-10 */}
             <div
                 className={cn(
                     "fixed inset-0 flex flex-col transition-transform duration-500 ease-in-out z-10",
+                    "md:relative md:inset-auto md:w-1/2 md:translate-y-0 md:bg-transparent md:border-l md:border-white/10",
                     controller.isBreakdownOpen ? "translate-y-[55vh] rounded-t-[2.5rem] bg-background/95 backdrop-blur-sm shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.5)] overflow-hidden" : "translate-y-0 bg-transparent"
                 )}
             >
                 {/* Sticky Header Zone */}
+                {/* iPad: Ensure header is visible and functional */}
                 <div className="z-20 shadow-sm bg-transparent backdrop-blur-md">
                     <CalendarMonthHeader
                         activeDate={controller.activeDate}
                         onToggleBreakdown={controller.toggleBreakdown}
                         isBreakdownOpen={controller.isBreakdownOpen}
                         onDateChange={controller.handleDateTap}
+                    // iPad: Hide toggle button on split view since both are visible? 
+                    // Actually per user request "MY MONTH side by side", so toggle might be redundant on iPad
+                    // but let's keep it functional or hide it via CSS in child if needed.
+                    // For now we just layout.
                     />
                     <CalendarDateStrip7
                         stripDates={controller.stripDates}

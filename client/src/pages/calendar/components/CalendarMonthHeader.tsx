@@ -53,8 +53,8 @@ export function CalendarMonthHeader({ activeDate, onToggleBreakdown, isBreakdown
                 </Button>
             </div>
 
-            {/* Right: B Button */}
-            <div>
+            {/* Right: M Button (Hidden on iPad split view) */}
+            <div className="md:hidden">
                 <Button
                     variant="ghost"
                     size="icon"
