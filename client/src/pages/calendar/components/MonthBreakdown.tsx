@@ -123,7 +123,7 @@ export function MonthBreakdown({ month, eventsByDay = {} }: MonthBreakdownProps)
                 </div>
 
                 {/* Bottom: Stats (Underneath, Evenly Spaced) */}
-                <div className="mt-8 px-6 grid grid-cols-3 gap-4 border-t border-white/5 pt-6">
+                <div className="mt-2 px-6 grid grid-cols-3 gap-4 border-t border-white/5 pt-2">
                     {/* Dates Free */}
                     <div className="text-center">
                         <div className="text-xl font-medium text-foreground">{freeDatesCount}</div>
