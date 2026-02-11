@@ -13,20 +13,22 @@ export default function CalendarAgendaPage() {
     return (
         <div className="fixed inset-0 flex flex-col bg-transparent">
             {/* 1. Underlying Breakdown Layer (visible when top layer slides down) */}
-            <MonthBreakdown
-                month={controller.activeDate}
-                eventsByDay={controller.eventsByDay}
-            />
+            <div className={cn("absolute inset-0 transition-opacity duration-300", controller.isBreakdownOpen ? "opacity-100 z-0" : "opacity-0 -z-10")}>
+                <MonthBreakdown
+                    month={controller.activeDate}
+                    eventsByDay={controller.eventsByDay}
+                />
+            </div>
 
             {/* 2. Sliding Main Content Layer */}
             <div
                 className={cn(
-                    "fixed inset-0 flex flex-col bg-background transition-transform duration-500 ease-in-out z-10",
-                    controller.isBreakdownOpen ? "translate-y-[60vh] rounded-t-[2.5rem] shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.5)] overflow-hidden" : "translate-y-0"
+                    "fixed inset-0 flex flex-col transition-transform duration-500 ease-in-out z-10",
+                    controller.isBreakdownOpen ? "translate-y-[60vh] rounded-t-[2.5rem] bg-background/95 backdrop-blur-sm shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.5)] overflow-hidden" : "translate-y-0 bg-transparent"
                 )}
             >
                 {/* Sticky Header Zone */}
-                <div className="z-20 shadow-sm bg-background">
+                <div className="z-20 shadow-sm bg-transparent backdrop-blur-md">
                     <CalendarMonthHeader
                         activeDate={controller.activeDate}
                         onToggleBreakdown={controller.toggleBreakdown}
@@ -40,7 +42,7 @@ export default function CalendarAgendaPage() {
                 </div>
 
                 {/* Scrollable Agenda List */}
-                <div className="flex-1 relative overflow-hidden bg-background">
+                <div className="flex-1 relative overflow-hidden bg-transparent">
                     <AgendaDayList
                         virtualizer={controller.virtualizer}
                         agendaDates={controller.agendaDates}
@@ -53,7 +55,7 @@ export default function CalendarAgendaPage() {
                 {/* We need to be careful with z-indexing if bottom nav is outside this content. 
                    Typically BottomNav is in PageShell. This Page IS the content. 
                    If we transform this div, the income bar moves with it. Correct. */}
-                <div className="absolute bottom-16 left-0 right-0 h-10 bg-background/80 backdrop-blur-md border-t flex items-center justify-between px-4 z-40">
+                <div className="absolute bottom-16 left-0 right-0 h-10 bg-white/5 backdrop-blur-md border-t border-white/10 flex items-center justify-between px-4 z-40">
                     <span className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">This week's income</span>
                     <span className="text-sm font-bold text-foreground">
                         {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(controller.weeklyIncome)}
