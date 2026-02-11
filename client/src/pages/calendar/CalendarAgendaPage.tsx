@@ -11,7 +11,7 @@ export default function CalendarAgendaPage() {
     const controller = useCalendarAgendaController();
 
     return (
-        <div className="fixed inset-0 flex flex-col bg-background">
+        <div className="fixed inset-0 flex flex-col bg-transparent">
             {/* 1. Underlying Breakdown Layer (visible when top layer slides down) */}
             <MonthBreakdown
                 month={controller.activeDate}
