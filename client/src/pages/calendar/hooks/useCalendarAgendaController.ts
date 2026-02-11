@@ -17,6 +17,11 @@ export function useCalendarAgendaController() {
     const [anchorDate] = useState<Date>(startOfDay(new Date()));
     const [activeDate, setActiveDate] = useState<Date>(startOfDay(new Date()));
     const [windowStart, setWindowStart] = useState<Date>(subDays(startOfDay(new Date()), 3));
+    const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);
+
+    const toggleBreakdown = useCallback(() => {
+        setIsBreakdownOpen(prev => !prev);
+    }, []);
 
     // 2. Data Fetching
     // Static grid: anchor +/- 1 year.
@@ -170,6 +175,8 @@ export function useCalendarAgendaController() {
         handleDateTap,
         // No handleScroll anymore, handled by hook
         refetch,
-        weeklyIncome
+        weeklyIncome,
+        isBreakdownOpen,
+        toggleBreakdown
     };
 }
