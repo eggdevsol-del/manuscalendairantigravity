@@ -57,7 +57,7 @@ export default function Conversations() {
     <PageShell>
       {/* Mobile: Full List */}
       <div className="md:hidden h-full">
-        <PageHeader title="Messages" />
+        <PageHeader title="Messages" className="bg-transparent" />
         <ConversationsList />
       </div>
 
