@@ -1,4 +1,4 @@
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth } from "date-fns";
+import { format, startOfMonth, getDay, isSameMonth, startOfWeek, addDays } from "date-fns";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { getEventStyle } from "../utils/styles";
@@ -10,16 +10,25 @@ interface MonthBreakdownProps {
 }
 
 export function MonthBreakdown({ month, eventsByDay = {}, workSchedule }: MonthBreakdownProps) {
-    const start = startOfMonth(month);
-    const end = endOfMonth(month);
-    const days = eachDayOfInterval({ start, end });
+    // Generate fixed 5 weeks (35 days)
+    const start = startOfWeek(startOfMonth(month)); // Default to Sunday start
+    // We want exactly 35 days
+    // Note: This might clip the end of some months (e.g. 30/31 day months starting on Sat)
+    // but the user explicitly requested "5 weeks only no more no less".
+    const days: Date[] = [];
+    let d = start;
+    for (let i = 0; i < 35; i++) {
+        days.push(d);
+        d = addDays(d, 1);
+    }
 
     const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
     // --- Stats Calculation ---
-    // 1. Dates Free (this month)
-    // Only count ENABLED WORK days that have no appointments.
+    // 1. Dates Free (this month only)
     const freeDatesCount = days.reduce((acc, day) => {
+        if (!isSameMonth(day, month)) return acc; // specific to current month stats
+
         const key = format(day, "yyyy-MM-dd");
         const hasEvents = eventsByDay[key] && eventsByDay[key].length > 0;
 
@@ -27,51 +36,30 @@ export function MonthBreakdown({ month, eventsByDay = {}, workSchedule }: MonthB
         const dayKey = dayKeys[dayIndex];
         const config = workSchedule?.[dayKey];
 
-        // If no config or disabled, it's not a "free work day".
         if (!config?.enabled) return acc;
-
-        // If type is design or personal, it's also not a "free work day"
         if (config.type === 'design' || config.type === 'personal') return acc;
 
         return acc + (hasEvents ? 0 : 1);
     }, 0);
 
-    // 2. Total Revenue (this month)
+    // 2. Total Revenue (this month only)
     let totalRevenue = 0;
     days.forEach(day => {
+        if (!isSameMonth(day, month)) return;
+
         const key = format(day, "yyyy-MM-dd");
         const events = eventsByDay[key] || [];
         events.forEach(evt => {
-            // Check if price exists.
             if (evt.price) totalRevenue += Number(evt.price);
         });
     });
 
-    // 3. Months in Advance
-    // Placeholder logic: "How many months ahead has at least 1 booking?"
-    const monthsInAdvance = 0; // Default to 0 as requested if no data
+    const monthsInAdvance = 0;
 
-    // Helper to group days into weeks
-    const weeks: (Date | null)[][] = [];
-    let currentWeek: (Date | null)[] = [];
-    // Pad first week
-    const firstDay = getDay(days[0]);
-    for (let i = 0; i < firstDay; i++) {
-        currentWeek.push(null);
-    }
-    days.forEach(day => {
-        currentWeek.push(day);
-        if (currentWeek.length === 7) {
-            weeks.push(currentWeek);
-            currentWeek = [];
-        }
-    });
-    // Pad last week
-    if (currentWeek.length > 0) {
-        while (currentWeek.length < 7) {
-            currentWeek.push(null);
-        }
-        weeks.push(currentWeek);
+    // Helper to chunk days into weeks for grid rendering
+    const weeks: Date[][] = [];
+    for (let i = 0; i < days.length; i += 7) {
+        weeks.push(days.slice(i, i + 7));
     }
 
     return (
@@ -101,8 +89,7 @@ export function MonthBreakdown({ month, eventsByDay = {}, workSchedule }: MonthB
                                 </div>
                                 {/* Days */}
                                 {week.map((day, dayIndex) => {
-                                    if (!day) return <div key={`empty-${weekIndex}-${dayIndex}`} className="aspect-square bg-transparent" />;
-
+                                    const isCurrentMonth = isSameMonth(day, month);
                                     const dateKey = format(day, "yyyy-MM-dd");
                                     const dayEvents = eventsByDay[dateKey] || [];
                                     const hasEvents = dayEvents.length > 0;
@@ -123,11 +110,14 @@ export function MonthBreakdown({ month, eventsByDay = {}, workSchedule }: MonthB
                                             key={day.toISOString()}
                                             className={cn(
                                                 "aspect-square flex items-center justify-center text-[10px] font-medium transition-all relative",
-                                                hasEvents ? bgClass : "bg-white/5 text-muted-foreground/30",
-                                                hasEvents ? "rounded-[1px]" : "rounded-none" // Square indicators
+                                                hasEvents ? bgClass : "bg-white/5",
+                                                !isCurrentMonth && "opacity-30", // Dim non-current month
+                                                hasEvents ? "rounded-[1px]" : "rounded-none",
+                                                !isCurrentMonth && !hasEvents && "text-muted-foreground/20",
+                                                isCurrentMonth && !hasEvents && "text-muted-foreground/30"
                                             )}
                                         >
-                                            <span className={cn(hasEvents ? "opacity-100" : "opacity-30")}>
+                                            <span>
                                                 {isDesign ? "D" : format(day, "d")}
                                             </span>
                                         </div>
