@@ -75,7 +75,7 @@ export function MonthBreakdown({ month, eventsByDay = {}, workSchedule }: MonthB
     }
 
     return (
-        <div className="absolute top-0 left-0 right-0 z-0 pt-16 px-0 pb-6 flex flex-col w-full h-[50vh]">
+        <div className="absolute top-0 left-0 right-0 z-0 pt-16 px-0 pb-6 flex flex-col w-full h-[55vh]">
             <div className="px-6 mb-4">
                 <h2 className="text-xl font-light text-muted-foreground uppercase tracking-widest">My Month</h2>
             </div>

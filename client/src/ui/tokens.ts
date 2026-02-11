@@ -25,7 +25,7 @@ export const tokens = {
     // 3. Cards
     // Dashboard v1.0.101 style
     card: {
-        base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-2xl",
+        base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px]",
         bg: "bg-white/5 hover:bg-white/10",
         bgAccent: "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
         interactive: "cursor-pointer active:scale-[0.98]",
@@ -273,7 +273,7 @@ export const tokens = {
         timelineTitle: "text-sm font-bold text-muted-foreground uppercase tracking-widest",
 
         // Card styling
-        card: "p-4 min-h-[120px] cursor-pointer transition-all duration-300 border-0 rounded-2xl",
+        card: "p-4 min-h-[120px] cursor-pointer transition-all duration-300 border-0 rounded-[4px]",
         cardWeek: "p-4 min-h-[120px]",
 
         // Spacing presets
@@ -350,7 +350,7 @@ export const tokens = {
         // Cards
         cardBg: "bg-white/5",
         cardBorder: "border-white/10",
-        cardRadius: "rounded-2xl",
+        cardRadius: "rounded-[4px]",
         cardPadding: "p-4",
 
         // Typography
