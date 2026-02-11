@@ -36,7 +36,7 @@ export default function CalendarAgendaPage() {
             >
                 {/* Sticky Header Zone */}
                 {/* iPad: Ensure header is visible and functional */}
-                <div className="z-20 shadow-sm bg-transparent backdrop-blur-md">
+                <div className="z-20 bg-transparent">
                     <CalendarMonthHeader
                         activeDate={controller.activeDate}
                         onToggleBreakdown={controller.toggleBreakdown}

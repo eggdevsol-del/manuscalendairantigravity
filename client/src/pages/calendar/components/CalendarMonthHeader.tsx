@@ -12,7 +12,7 @@ export interface CalendarMonthHeaderProps {
 
 export function CalendarMonthHeader({ activeDate, onToggleBreakdown, isBreakdownOpen, onDateChange }: CalendarMonthHeaderProps) {
     return (
-        <header className="flex items-center justify-between px-4 py-3 z-20 sticky top-0 border-b border-white/5 bg-background/80 backdrop-blur-md">
+        <header className="flex items-center justify-between px-4 py-3 z-20 sticky top-0 bg-transparent">
             {/* Left: Today Button */}
             <div className="flex items-center">
                 <Button
