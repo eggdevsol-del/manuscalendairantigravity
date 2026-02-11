@@ -37,101 +37,114 @@ export function MonthBreakdown({ month, eventsByDay = {} }: MonthBreakdownProps)
 
     // 3. Months in Advance
     // Placeholder logic: "How many months ahead has at least 1 booking?"
-    // Since we only have current month data passed in typically, getting future months is hard without global data.
-    // For now, hardcode or randomize based on "glimpse" nature, or just say "3.5" as a placeholder for the UI.
-    // In a real app, this would come from the backend.
-    const monthsInAdvance = 2.5; // Placeholder
+    const monthsInAdvance = 0; // Default to 0 as requested if no data
+
+    // Helper to group days into weeks
+    const weeks: (Date | null)[][] = [];
+    let currentWeek: (Date | null)[] = [];
+    // Pad first week
+    const firstDay = getDay(days[0]);
+    for (let i = 0; i < firstDay; i++) {
+        currentWeek.push(null);
+    }
+    days.forEach(day => {
+        currentWeek.push(day);
+        if (currentWeek.length === 7) {
+            weeks.push(currentWeek);
+            currentWeek = [];
+        }
+    });
+    // Pad last week
+    if (currentWeek.length > 0) {
+        while (currentWeek.length < 7) {
+            currentWeek.push(null);
+        }
+        weeks.push(currentWeek);
+    }
 
     return (
-        <div className="absolute inset-0 bg-background z-0 pt-20 px-6 pb-6 flex flex-col">
-            <h2 className="text-xl font-light text-muted-foreground uppercase tracking-widest mb-6">Month at a Glimpse</h2>
+        <div className="absolute inset-0 z-0 pt-16 px-0 pb-6 flex flex-col w-full h-[60vh]">
+            <div className="px-6 mb-4">
+                <h2 className="text-xl font-light text-muted-foreground uppercase tracking-widest">Month at a Glimpse</h2>
+            </div>
 
-            <div className="flex gap-8 h-full">
-                {/* Left: Month Grid */}
-                <div className="flex-1 max-w-sm">
-                    {/* Days of week header */}
-                    <div className="grid grid-cols-7 gap-2 mb-2 text-center text-xs text-muted-foreground font-bold">
+            <div className="flex flex-col h-full w-full">
+                {/* Top: Month Grid (Edge to Edge) */}
+                <div className="w-full px-2">
+                    {/* Header Row: Spacer + S M T W T F S */}
+                    <div className="grid grid-cols-[30px_repeat(7,1fr)] gap-0.5 mb-0.5 text-center text-[10px] text-muted-foreground font-bold">
+                        <div></div> {/* Spacer for Week Numbers */}
                         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
                             <div key={i}>{d}</div>
                         ))}
                     </div>
 
-                    <div className="grid grid-cols-7 gap-2">
-                        {/* Empty padding for start of month */}
-                        {Array.from({ length: getDay(start) }).map((_, i) => (
-                            <div key={`empty-${i}`} />
-                        ))}
-
-                        {days.map((day) => {
-                            const dateKey = format(day, "yyyy-MM-dd");
-                            const dayEvents = eventsByDay[dateKey] || [];
-                            const hasEvents = dayEvents.length > 0;
-
-                            // Determine color. If multiple, pick first? Or split?
-                            // User said "if an appointment is on... the square is coloured with the service color".
-                            // We use the first event's service style.
-                            let bgClass = "bg-white/5";
-                            let textClass = "";
-
-                            if (hasEvents) {
-                                const style = getEventStyle(dayEvents[0]);
-                                // style.className contains "bg-x text-x border-x". 
-                                // We want just the bg color logic. 
-                                // Ideally we extract it or reuse the style. 
-                                // The utility returns a string class. We can apply it but override rounding/size.
-                                // Or we can try to extract just the bg part if possible, but applying the whole class 
-                                // might add borders we don't want.
-                                // Let's just use the style.className and rely on CSS specificity or twMerge if needed.
-
-                                // Simple approach: standard bg-white/5 if empty.
-                                // If full, use the style classes.
-                                bgClass = style.className;
-                            } else {
-                                // Empty state
-                            }
-
-                            return (
-                                <div
-                                    key={day.toISOString()}
-                                    className={cn(
-                                        "aspect-square rounded-sm flex items-center justify-center text-xs font-medium relative transition-all",
-                                        hasEvents ? bgClass : "bg-white/5 text-muted-foreground/30",
-                                        !hasEvents && "border border-white/5" // border for empty cells
-                                    )}
-                                >
-                                    {/* Number */}
-                                    <span className={cn(hasEvents ? "opacity-100" : "opacity-30")}>
-                                        {format(day, "d")}
-                                    </span>
+                    {/* Weeks */}
+                    <div className="flex flex-col gap-0.5">
+                        {weeks.map((week, weekIndex) => (
+                            <div key={weekIndex} className="grid grid-cols-[30px_repeat(7,1fr)] gap-0.5">
+                                {/* Week Number */}
+                                <div className="flex items-center justify-center text-[10px] text-muted-foreground font-medium">
+                                    W{weekIndex + 1}
                                 </div>
-                            );
-                        })}
+                                {/* Days */}
+                                {week.map((day, dayIndex) => {
+                                    if (!day) return <div key={`empty-${weekIndex}-${dayIndex}`} className="aspect-square bg-transparent" />;
+
+                                    const dateKey = format(day, "yyyy-MM-dd");
+                                    const dayEvents = eventsByDay[dateKey] || [];
+                                    const hasEvents = dayEvents.length > 0;
+
+                                    // Get service color if event exists
+                                    let bgClass = "bg-white/5";
+                                    if (hasEvents) {
+                                        const style = getEventStyle(dayEvents[0]);
+                                        bgClass = style.className; // Contains bg-x and text-x
+                                    }
+
+                                    return (
+                                        <div
+                                            key={day.toISOString()}
+                                            className={cn(
+                                                "aspect-square flex items-center justify-center text-[10px] font-medium transition-all relative",
+                                                hasEvents ? bgClass : "bg-white/5 text-muted-foreground/30",
+                                                hasEvents ? "rounded-[1px]" : "rounded-none" // Square indicators
+                                            )}
+                                        >
+                                            <span className={cn(hasEvents ? "opacity-100" : "opacity-30")}>
+                                                {format(day, "d")}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-                {/* Right: Stats */}
-                <div className="flex-1 flex flex-col justify-center gap-8 pl-8 border-l border-white/5">
+                {/* Bottom: Stats (Underneath, Evenly Spaced) */}
+                <div className="mt-8 px-6 grid grid-cols-3 gap-4 border-t border-white/5 pt-6">
                     {/* Dates Free */}
-                    <div>
-                        <div className="text-4xl font-light text-foreground">{freeDatesCount}</div>
-                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1">Dates Free</div>
-                        <div className="text-[10px] text-muted-foreground/60">(This Month)</div>
+                    <div className="text-center">
+                        <div className="text-xl font-medium text-foreground">{freeDatesCount}</div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Dates Free</div>
+                        <div className="text-[9px] text-muted-foreground/60">(this month)</div>
                     </div>
 
                     {/* Total Revenue */}
-                    <div>
-                        <div className="text-4xl font-light text-green-400">
+                    <div className="text-center">
+                        <div className="text-xl font-medium text-green-400">
                             {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(totalRevenue)}
                         </div>
-                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1">Total Revenue</div>
-                        <div className="text-[10px] text-muted-foreground/60">(This Month)</div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Total Revenue</div>
+                        <div className="text-[9px] text-muted-foreground/60">(this month)</div>
                     </div>
 
                     {/* Months in Advance */}
-                    <div>
-                        <div className="text-4xl font-light text-blue-400">{monthsInAdvance}</div>
-                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1">Mths in Advance</div>
-                        <div className="text-[10px] text-muted-foreground/60">(@ 90% Capacity)</div>
+                    <div className="text-center">
+                        <div className="text-xl font-medium text-blue-400">{monthsInAdvance}</div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Mths Adv</div>
+                        <div className="text-[9px] text-muted-foreground/60">(booked out)</div>
                     </div>
                 </div>
             </div>
