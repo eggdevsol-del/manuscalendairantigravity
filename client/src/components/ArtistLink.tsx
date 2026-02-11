@@ -111,7 +111,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
 
   if (isLoading) {
     return (
-      <Card className="border-0 bg-white/5 rounded-2xl">
+      <Card className="border-0 bg-white/5">
         <CardContent className="p-6 flex items-center justify-center">
           <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
         </CardContent>
@@ -120,7 +120,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
   }
 
   return (
-    <Card className="border-0 bg-white/5 rounded-2xl">
+    <Card className="border-0 bg-white/5">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

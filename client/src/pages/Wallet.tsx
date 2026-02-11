@@ -36,7 +36,7 @@ export default function Wallet() {
                 <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y">
                     <div className="space-y-3 pb-32 max-w-lg mx-auto">
                         {/* Placeholder Card */}
-                        <Card className="p-4 rounded-2xl bg-white/5 border-white/5 shadow-none">
+                        <Card className="p-4 bg-white/5 border-white/5 shadow-none">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="font-medium text-foreground">Account Created</p>

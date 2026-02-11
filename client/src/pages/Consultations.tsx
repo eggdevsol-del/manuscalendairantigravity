@@ -124,7 +124,7 @@ export default function Consultations() {
               consultations.map((consultation) => (
                 <Card
                   key={consultation.id}
-                  className="overflow-hidden cursor-pointer group border-0 bg-white/5 hover:bg-white/10 rounded-[2rem] transition-all duration-300 relative"
+                  className="overflow-hidden cursor-pointer group border-0 bg-white/5 hover:bg-white/10 rounded-[4px] transition-all duration-300 relative"
                   onClick={() => {
                     if (consultation.conversationId) {
                       setLocation(`/chat/${consultation.conversationId}`);
@@ -133,7 +133,7 @@ export default function Consultations() {
                     }
                   }}
                 >
-                  <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                  <div className="absolute inset-0 rounded-[4px] bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                   <div className="p-5 relative z-10">
                     <div className="flex items-start justify-between mb-3">

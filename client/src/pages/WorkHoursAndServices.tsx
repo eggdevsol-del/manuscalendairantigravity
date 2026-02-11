@@ -271,7 +271,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
           <div className="pb-32 max-w-lg mx-auto space-y-6">
 
             {/* Work Schedule Card */}
-            <Card className="border-0 bg-white/5 rounded-2xl overflow-hidden">
+            <Card className="border-0 bg-white/5 overflow-hidden">
               <div className="p-4 border-b border-white/5">
                 <h3 className="font-semibold text-foreground">Start / Finish Times</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">Set enabled days and hours</p>
@@ -335,7 +335,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
             </Card>
 
             {/* Services Card */}
-            <Card className="border-0 bg-white/5 rounded-2xl overflow-hidden">
+            <Card className="border-0 bg-white/5 overflow-hidden">
               <div className="p-4 border-b border-white/5 flex items-center justify-between">
                 <div>
                   <h3 className="font-semibold text-foreground">Service Menu</h3>
@@ -362,7 +362,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
 
               <div className="p-4 space-y-4">
                 {services.map((service, index) => (
-                  <div key={index} className="p-4 border border-white/10 rounded-xl bg-white/5">
+                  <div key={index} className="p-4 border border-white/10 rounded-[4px] bg-white/5">
                     {editingIndex === index && editingService ? (
                       // Edit Mode
                       <div className="space-y-3">
@@ -446,7 +446,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
                 ))}
 
                 {showAddForm && (
-                  <div className="p-4 border border-dashed border-white/20 rounded-xl space-y-3 bg-white/5">
+                  <div className="p-4 border border-dashed border-white/20 rounded-[4px] space-y-3 bg-white/5">
                     <h3 className="font-semibold text-sm">New Service Details</h3>
                     <Input placeholder="Name" value={newService.name} onChange={e => setNewService({ ...newService, name: e.target.value })} className="bg-white/5 border-white/10" />
                     <div className="flex gap-2">
