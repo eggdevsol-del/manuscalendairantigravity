@@ -63,8 +63,8 @@ export default function Conversations() {
 
       {/* iPad/Desktop: Split View */}
       <div className="hidden md:flex h-full overflow-hidden">
-        {/* Left Panel: List (350px fixed or 30%) */}
-        <div className="w-[350px] border-r border-white/5 flex flex-col h-full bg-background/50 backdrop-blur-xl">
+        {/* Left Panel: List (50%) */}
+        <div className="w-1/2 border-r border-white/5 flex flex-col h-full">
           <PageHeader title="Messages" />
           <ConversationsList className="bg-transparent" />
         </div>

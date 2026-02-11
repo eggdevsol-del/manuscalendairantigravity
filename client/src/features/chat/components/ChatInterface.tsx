@@ -175,7 +175,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
     ];
 
     return (
-        <div className={cn("flex flex-col h-full relative bg-background/50 backdrop-blur-xl", className)}>
+        <div className={cn("flex flex-col h-full relative", className)}>
 
             {/* Fixed Header & Consultation Pin */}
             <div className="flex-none z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 shadow-sm supports-[backdrop-filter]:bg-background/60">
@@ -308,7 +308,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                     viewportRef={viewportRef}
                     onScroll={handleScroll}
                 >
-                    <div className="space-y-4 pb-[182px]">
+                    <div className="space-y-4 pb-[182px] md:pb-24">
                         {messages && messages.length > 0 ? (
                             messages.map((message) => {
                                 const isOwn = message.senderId === user?.id;
@@ -394,44 +394,36 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
             </div>
 
             {/* Floating Bottom Input & Actions */}
-            {/* Input Bar */}
-            <div className="absolute bottom-4 left-4 right-4 z-[40]">
-                {/* Changed fixed to absolute relative to container, assuming container is full height relative */}
-                {/* Actually for fixed bottom nav it needs to be higher? 
-                   On iPad split view, bottoms might differ.
-                   If we use `absolute bottom-4`, it works inside the relative parent `flex-1`.
-                   Original was `fixed bottom-[110px]`.
-                   For split view, it should be sticky or absolute within the panel.
-                   Let's use absolute.
-                */}
-                <div className="relative">
-                    <div className="flex items-center gap-2 p-2 rounded-2xl bg-muted/80 backdrop-blur-xl border border-white/10 shadow-lg">
-                        <label className="cursor-pointer p-2 hover:bg-white/10 rounded-xl transition-colors">
-                            <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleImageUpload}
-                                disabled={uploadingImage}
-                            />
-                            <ImagePlus className={cn("w-5 h-5", uploadingImage ? "text-muted-foreground animate-pulse" : "text-muted-foreground hover:text-foreground")} />
-                        </label>
-                        <Input
-                            value={messageText}
-                            onChange={(e) => setMessageText(e.target.value)}
-                            onKeyDown={handleKeyPress}
-                            placeholder="Type a message..."
-                            className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60"
+            <div className={cn(
+                "fixed bottom-[110px] left-4 right-4 z-[60]",
+                "md:absolute md:bottom-[110px] md:left-4 md:right-4"
+            )}>
+                <div className="flex items-center gap-2 p-2 rounded-2xl bg-muted/80 backdrop-blur-xl border border-white/10 shadow-lg">
+                    <label className="cursor-pointer p-2 hover:bg-white/10 rounded-xl transition-colors">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleImageUpload}
+                            disabled={uploadingImage}
                         />
-                        <Button
-                            onClick={handleSendMessage}
-                            disabled={!messageText.trim() || sendMessageMutation.isPending}
-                            size="icon"
-                            className="rounded-xl bg-primary hover:bg-primary/90 transition-all shadow-md"
-                        >
-                            <Send className="w-4 h-4" />
-                        </Button>
-                    </div>
+                        <ImagePlus className={cn("w-5 h-5", uploadingImage ? "text-muted-foreground animate-pulse" : "text-muted-foreground hover:text-foreground")} />
+                    </label>
+                    <Input
+                        value={messageText}
+                        onChange={(e) => setMessageText(e.target.value)}
+                        onKeyDown={handleKeyPress}
+                        placeholder="Type a message..."
+                        className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60"
+                    />
+                    <Button
+                        onClick={handleSendMessage}
+                        disabled={!messageText.trim() || sendMessageMutation.isPending}
+                        size="icon"
+                        className="rounded-xl bg-primary hover:bg-primary/90 transition-all shadow-md"
+                    >
+                        <Send className="w-4 h-4" />
+                    </Button>
                 </div>
             </div>
 
@@ -499,25 +491,27 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
             />
 
             {/* Media Image Lightbox */}
-            {selectedMediaImage && (
-                <div
-                    className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
-                    onClick={() => setSelectedMediaImage(null)}
-                >
-                    <button
-                        className="absolute top-4 right-4 text-white/70 hover:text-white text-sm px-3 py-1 rounded-lg bg-white/10"
+            {
+                selectedMediaImage && (
+                    <div
+                        className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
                         onClick={() => setSelectedMediaImage(null)}
                     >
-                        Close
-                    </button>
-                    <img
-                        src={selectedMediaImage}
-                        alt="Full size"
-                        className="max-w-full max-h-full object-contain rounded-lg"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                </div>
-            )}
-        </div>
+                        <button
+                            className="absolute top-4 right-4 text-white/70 hover:text-white text-sm px-3 py-1 rounded-lg bg-white/10"
+                            onClick={() => setSelectedMediaImage(null)}
+                        >
+                            Close
+                        </button>
+                        <img
+                            src={selectedMediaImage}
+                            alt="Full size"
+                            className="max-w-full max-h-full object-contain rounded-lg"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                )
+            }
+        </div >
     );
 }

@@ -60,7 +60,7 @@ export function ConversationsList({ className, onSelect, activeId }: Conversatio
     const unreadTotal = conversations?.reduce((acc, curr) => acc + (curr.unreadCount || 0), 0) || 0;
 
     return (
-        <div className={cn("flex flex-col h-full bg-background/50 backdrop-blur-xl", className)}>
+        <div className={cn("flex flex-col h-full", className)}>
             {/* 2. Top Context Area (Non-interactive) */}
             <div className={cn(tokens.spacing.containerPadding, "pt-4 z-10 shrink-0 flex flex-col justify-center min-h-[140px] opacity-80")}>
                 <p className={tokens.header.contextTitle}>Inbox</p>

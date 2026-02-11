@@ -18,8 +18,8 @@ export default function Chat() {
 
       {/* iPad/Desktop: Split View */}
       <div className="hidden md:flex h-full overflow-hidden">
-        {/* Left Panel: List (350px fixed or 30%) */}
-        <div className="w-[350px] border-r border-white/5 flex flex-col h-full bg-background/50 backdrop-blur-xl">
+        {/* Left Panel: List (50%) */}
+        <div className="w-1/2 border-r border-white/5 flex flex-col h-full">
           <PageHeader title="Messages" />
           <ConversationsList
             className="bg-transparent"
@@ -28,7 +28,7 @@ export default function Chat() {
         </div>
 
         {/* Right Panel: Chat Interface */}
-        <div className="flex-1 flex flex-col h-full bg-background/5">
+        <div className="flex-1 flex flex-col h-full relative">
           <ChatInterface
             conversationId={conversationId}
             className="bg-transparent"
