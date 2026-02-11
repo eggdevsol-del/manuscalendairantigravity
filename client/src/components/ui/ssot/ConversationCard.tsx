@@ -30,6 +30,10 @@ export interface ConversationCardProps {
     onClick?: () => void;
     /** Additional classes */
     className?: string;
+    /** Subject line (for new requests) */
+    subject?: string;
+    /** Whether this is a new request */
+    isNew?: boolean;
 }
 
 export function ConversationCard({
@@ -38,7 +42,9 @@ export function ConversationCard({
     timestamp,
     unreadCount = 0,
     onClick,
-    className
+    className,
+    subject,
+    isNew
 }: ConversationCardProps) {
     return (
         <Card
@@ -51,7 +57,16 @@ export function ConversationCard({
                 className
             )}
         >
-            <div className="flex items-center gap-4">
+            {isNew && (
+                <>
+                    {/* New Indicator: Left Edge Line (Emerald) */}
+                    <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-emerald-500" />
+                    {/* New Indicator: Soft Gradient Swath */}
+                    <div className="absolute left-0 top-0 bottom-0 w-[20%] bg-gradient-to-r from-emerald-500/20 to-transparent pointer-events-none" />
+                </>
+            )}
+
+            <div className="flex items-center gap-4 relative z-10">
                 {/* Avatar */}
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-white/5">
                     {avatar ? (
@@ -75,15 +90,28 @@ export function ConversationCard({
                             </p>
                         )}
                     </div>
-                    <p className="text-sm text-muted-foreground truncate flex items-center gap-2 group-hover:text-muted-foreground/80 transition-colors duration-300">
-                        {unreadCount > 0 && <span className="w-2 h-2 rounded-full bg-primary inline-block" />}
-                        Click to view messages
-                    </p>
+
+                    {subject ? (
+                        <p className="text-sm font-medium text-foreground/90 truncate flex items-center gap-2">
+                            {subject}
+                        </p>
+                    ) : (
+                        <p className="text-sm text-muted-foreground truncate flex items-center gap-2 group-hover:text-muted-foreground/80 transition-colors duration-300">
+                            {unreadCount > 0 && <span className="w-2 h-2 rounded-full bg-primary inline-block" />}
+                            Click to view messages
+                        </p>
+                    )}
                 </div>
 
-                {/* Right side: Unread badge + Chevron */}
+                {/* Right side: Unread badge / New badge + Chevron */}
                 <div className="flex items-center gap-2 flex-shrink-0">
-                    {unreadCount > 0 && (
+                    {isNew && (
+                        <div className="bg-emerald-500/20 text-emerald-500 border border-emerald-500/50 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                            New
+                        </div>
+                    )}
+
+                    {!isNew && unreadCount > 0 && (
                         <div className="bg-primary text-white shadow-[0_0_10px_rgba(var(--primary),0.5)] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
                             {unreadCount}
                         </div>

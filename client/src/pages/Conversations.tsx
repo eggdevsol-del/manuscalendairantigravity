@@ -1,11 +1,11 @@
 
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button, Card, Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui";
+import { Button, Card } from "@/components/ui";
 import { trpc } from "@/lib/trpc";
-import { Calendar, ChevronDown, ChevronRight, MessageCircle, User } from "lucide-react";
+import { Calendar, MessageCircle, User } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
-import { LoadingState, PageShell, GlassSheet, PageHeader, ConversationCard, ConsultationCard } from "@/components/ui/ssot";
-import { useEffect, useState } from "react";
+import { LoadingState, PageShell, GlassSheet, PageHeader, ConversationCard } from "@/components/ui/ssot";
+import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useArtistReferral } from "@/features/chat/useArtistReferral";
 import { tokens } from "@/ui/tokens";
@@ -29,8 +29,6 @@ export default function Conversations() {
 
   // Consolidate inbox requests (Leads + Consultations) via SSOT Hook
   const { requestItems, isLoading: requestsLoading, isArtist } = useInboxRequests();
-
-  const [isConsultationsOpen, setIsConsultationsOpen] = useState(true);
 
 
   // Redirect to login if not authenticated
@@ -91,80 +89,57 @@ export default function Conversations() {
         <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y will-change-scroll transform-gpu">
           <div className="pb-32 max-w-lg mx-auto space-y-4 min-h-[50vh]">
 
-            {/* Consultation Requests from Leads AND Consultations */}
-            {isArtist && (
-              <Collapsible
-                open={isConsultationsOpen}
-                onOpenChange={setIsConsultationsOpen}
-                className="mb-6 space-y-2"
-              >
-                <CollapsibleTrigger className="w-full group">
-                  <div className="flex items-center justify-between w-full px-2 py-1">
-                    <h2 className={cn(tokens.header.sectionTitle, "text-left")}>
-                      Consultation Requests ({requestItems.length})
-                    </h2>
-                    {isConsultationsOpen ? (
-                      <ChevronDown className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                    )}
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-3">
-                  {requestItems.length === 0 ? (
-                    <p className="text-sm text-muted-foreground px-2 py-4">No pending requests</p>
-                  ) : (
-                    requestItems.map((item) => (
-                      <ConsultationCard
-                        key={`${item.type}-${item.id}`}
-                        name={item.name}
-                        subject={item.subject}
-                        description={item.description}
-                        onClick={async () => {
-                          console.log("Card clicked:", item);
-                          if (item.leadId) {
-                            console.log("Navigating to /lead/" + item.leadId);
-                            setLocation(`/lead/${item.leadId}`);
-                            return;
-                          }
-
-                          if (item.data?.conversationId) {
-                            console.log("Navigating to /chat/" + item.data.conversationId);
-                            setLocation(`/chat/${item.data.conversationId}?consultationId=${item.id}`);
-                            return;
-                          }
-
-                          // Fallback: search for conversation with this user
-                          if (item?.data?.clientId && user) {
-                            try {
-                              const conv = await createConversation.mutateAsync({
-                                artistId: user.id,
-                                clientId: item.data.clientId as string // Assert string if check passed
-                              });
-
-                              if (conv) {
-                                setLocation(`/chat/${conv.id}`);
-                                return;
-                              }
-                            } catch (err) {
-                              console.error("Failed to get/create conversation fallback", err);
-                            }
-                          }
-
-                          console.warn("No leadId or conversationId found for item:", item);
-                          toast.error("Could not open request details");
-                        }}
-                      />
-                    ))
-                  )}
-                </CollapsibleContent>
-              </Collapsible>
-            )}
-
-            {/* Conversations List */}
-            {conversations && conversations.length > 0 ? (
+            {/* Combined List: Requests + Conversations */}
+            {(requestItems.length > 0 || (conversations && conversations.length > 0)) ? (
               <div className="space-y-1">
-                {conversations.map((conv) => (
+                {/* 1. New Requests (Pinned to top) */}
+                {isArtist && requestItems.map((item) => (
+                  <ConversationCard
+                    key={`${item.type}-${item.id}`}
+                    name={item.name}
+                    subject={item.subject}
+                    isNew={true}
+                    timestamp={item.date ? new Date(item.date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    }) : undefined}
+                    onClick={async () => {
+                      console.log("Card clicked:", item);
+                      if (item.leadId) {
+                        setLocation(`/lead/${item.leadId}`);
+                        return;
+                      }
+
+                      if (item.data?.conversationId) {
+                        setLocation(`/chat/${item.data.conversationId}?consultationId=${item.id}`);
+                        return;
+                      }
+
+                      // Fallback: search for conversation with this user
+                      if (item?.data?.clientId && user) {
+                        try {
+                          const conv = await createConversation.mutateAsync({
+                            artistId: user.id,
+                            clientId: item.data.clientId as string
+                          });
+
+                          if (conv) {
+                            setLocation(`/chat/${conv.id}`);
+                            return;
+                          }
+                        } catch (err) {
+                          console.error("Failed to get/create conversation fallback", err);
+                        }
+                      }
+
+                      console.warn("No leadId or conversationId found for item:", item);
+                      toast.error("Could not open request details");
+                    }}
+                  />
+                ))}
+
+                {/* 2. Standard Conversations */}
+                {conversations?.map((conv) => (
                   <ConversationCard
                     key={conv.id}
                     name={conv.otherUser?.name || "Unknown User"}
