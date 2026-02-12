@@ -2,7 +2,7 @@
 export const tokens = {
     // 1. Backgrounds
     // Exact match from Calendar/Dashboard
-    bgGradient: "fixed inset-0 w-full h-[100dvh] bg-[radial-gradient(circle_at_top_right,rgba(70,22,108,0.4),rgba(2,6,23,1)_60%)]",
+    bgGradient: "fixed inset-0 w-full h-[100dvh] bg-[radial-gradient(circle_at_top_right,rgba(30,58,138,0.4),rgba(2,6,23,1)_60%)]",
 
     // 2. Sheets
     // Main sheet (Dashboard, Calendar) - extends past bottom
