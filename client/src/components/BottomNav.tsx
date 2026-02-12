@@ -33,16 +33,8 @@ export default function BottomNav() {
     const totalUnreadCount = useTotalUnreadCount();
     const { navItems, contextualRow, isContextualVisible, setContextualVisible } = useBottomNav();
     const { isTeaserClient } = useTeaser();
-    const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
     const swipeStartY = useRef<number | null>(null);
-
-    // Split nav items into Primary and Secondary (More)
-    const { primaryItems, moreItems } = useMemo(() => {
-        const primary = navItems.filter(item => PRIMARY_NAV_IDS.includes(item.id));
-        const secondary = navItems.filter(item => !PRIMARY_NAV_IDS.includes(item.id));
-        return { primaryItems: primary, moreItems: secondary };
-    }, [navItems]);
 
     const isActive = useCallback((p?: string) => {
         if (!p) return false;
@@ -50,10 +42,6 @@ export default function BottomNav() {
         if (p !== "/" && location.startsWith(p)) return true;
         return false;
     }, [location]);
-
-    const isMoreActive = useMemo(() => {
-        return moreItems.some(item => isActive(item.path));
-    }, [moreItems, isActive]);
 
     const hasContextualRow = contextualRow !== null;
     const showSwipeIndicator = hasContextualRow && !isContextualVisible;
@@ -78,22 +66,19 @@ export default function BottomNav() {
         }
     }, [isContextualVisible, hasContextualRow, setContextualVisible]);
 
-    const moreButtonRef = useRef<HTMLButtonElement>(null);
-
-    const renderButton = (item: any, isMoreButton = false, ref?: React.Ref<HTMLButtonElement>) => {
-        const active = isMoreButton ? (isMoreActive || isMoreMenuOpen) : isActive(item.path);
+    const renderButton = (item: any) => {
+        const active = isActive(item.path);
         const unreadCount = item.id === "messages" ? totalUnreadCount : (item.badgeCount || 0);
 
         return (
             <Button
-                ref={ref}
+                key={item.id} // moved key here
                 variant="ghost"
                 className={cn(
-                    "flex flex-col items-center justify-center gap-1.5 h-full w-full rounded-none hover:bg-gray-200/50 dark:hover:bg-white/5 transition-all relative shrink-0",
-                    "flex-1", // Distribute space equally
+                    "flex flex-col items-center justify-center gap-1.5 h-full min-w-[80px] rounded-none hover:bg-gray-200/50 dark:hover:bg-white/5 transition-all relative shrink-0", // min-w-[80px] for scrollable target size
                     active ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-white/40"
                 )}
-                onClick={item.action || (isMoreButton ? () => setIsMoreMenuOpen(!isMoreMenuOpen) : undefined)}
+                onClick={item.action}
             >
                 <div className="relative p-1">
                     <item.icon
@@ -134,16 +119,6 @@ export default function BottomNav() {
 
     return (
         <nav className="fixed bottom-0 inset-x-0 z-[50] select-none">
-            {/* More Menu Popup */}
-            <BottomNavMoreMenu
-                isOpen={isMoreMenuOpen}
-                onClose={() => setIsMoreMenuOpen(false)}
-                items={moreItems}
-                isActive={isActive}
-                isTeaserClient={isTeaserClient}
-                triggerRef={moreButtonRef as React.RefObject<HTMLElement | null>}
-            />
-
             {/* Swipe indicator - swipe up to show contextual row */}
             {showSwipeIndicator && (
                 <div
@@ -176,7 +151,7 @@ export default function BottomNav() {
 
             {/* Main container */}
             <div
-                className="bg-gray-100/90 dark:bg-slate-950/60 backdrop-blur-[32px] border-t border-gray-200 dark:border-white/10 overflow-hidden"
+                className="bg-gray-100/90 dark:bg-slate-950/60 backdrop-blur-[32px] border-t border-gray-200 dark:border-white/10"
                 style={{
                     height: ROW_HEIGHT,
                     paddingBottom: "env(safe-area-inset-bottom)"
@@ -188,37 +163,21 @@ export default function BottomNav() {
                     animate={{ y: isContextualVisible ? -ROW_HEIGHT : 0 }}
                     transition={{ type: "spring", stiffness: 400, damping: 35 }}
                 >
-                    {/* Row 0: Main Navigation - Fixed 4-item layout */}
+                    {/* Row 0: Main Navigation - Reverted to SCROLLABLE */}
                     <div
-                        className="w-full flex items-center justify-between shrink-0 px-0"
+                        className="w-full flex items-center overflow-x-auto no-scrollbar mask-gradient-x" // Restore scrolling
                         style={{ height: ROW_HEIGHT }}
                     >
-                        {/* Primary Items */}
-                        {primaryItems.map((item) => (
+                        {/* Render ALL items in scrollable list */}
+                        {navItems.map((item) => (
                             <Link key={item.id} href={item.path || '#'} className="contents">
                                 {renderButton(item)}
                             </Link>
                         ))}
-
-                        {/* More Button */}
-                        {moreItems.length > 0 && (
-                            <div className="contents">
-                                {renderButton({
-                                    id: 'more',
-                                    label: 'More',
-                                    icon: MoreHorizontal,
-                                    path: null // No path, triggers menu
-                                }, true, moreButtonRef)}
-                            </div>
-                        )}
                     </div>
 
                     {/* 
                      * Row 1: Contextual Actions
-                     * 
-                     * CRITICAL: NO SCROLL on this container!
-                     * Uses a simple flex container so buttons receive all touch events.
-                     * The buttons use touch-action: none to disable browser gestures.
                      */}
                     <div
                         className="w-full flex items-center justify-start px-2 shrink-0 border-t border-gray-200 dark:border-white/5"
