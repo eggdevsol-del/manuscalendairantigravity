@@ -36,11 +36,10 @@ export function CalendarMonthHeader({ activeDate, onToggleBreakdown, isBreakdown
                     <ChevronLeft className="w-4 h-4" />
                 </Button>
 
-                <div className="flex items-center gap-1 cursor-pointer hover:opacity-70 transition-opacity min-w-[140px] justify-center">
+                <div className="flex items-center gap-1 min-w-[140px] justify-center">
                     <h1 className="text-lg font-bold whitespace-nowrap">
                         {format(activeDate, "MMMM yyyy")}
                     </h1>
-                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
                 </div>
 
                 <Button
@@ -53,20 +52,8 @@ export function CalendarMonthHeader({ activeDate, onToggleBreakdown, isBreakdown
                 </Button>
             </div>
 
-            {/* Right: M Button (Hidden on iPad split view) */}
-            <div className="md:hidden">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                        "w-10 h-10 rounded-full font-bold text-lg transition-all",
-                        isBreakdownOpen ? "bg-primary text-primary-foreground" : "bg-accent/20 text-foreground"
-                    )}
-                    onClick={onToggleBreakdown}
-                >
-                    M
-                </Button>
-            </div>
+            {/* Right: Spacer to balance the Left Today button (hidden on desktop if needed, or just empty) */}
+            <div className="w-16" />
         </header>
     );
 }

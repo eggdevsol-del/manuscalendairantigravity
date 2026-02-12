@@ -76,15 +76,18 @@ export default function CalendarAgendaPage() {
                     </span>
                 </div>
 
-                {/* FAB (Floating Action Button) */}
-                <div className="absolute bottom-28 right-6 z-50">
+                {/* FAB (Floating Action Button) - Toggles Month View */}
+                <div className="absolute bottom-28 right-6 z-50 md:hidden">
                     <button
-                        onClick={() => {
-                            // TODO: Open appointment creation logic
-                        }}
-                        className="w-14 h-14 rounded-full bg-black text-white shadow-2xl flex items-center justify-center hover:scale-105 transition-all"
+                        onClick={controller.toggleBreakdown}
+                        className={cn(
+                            "w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-all",
+                            controller.isBreakdownOpen
+                                ? "bg-white text-primary"
+                                : "bg-primary text-white"
+                        )}
                     >
-                        <span className="text-3xl font-light mb-1">+</span>
+                        <span className="text-xl font-bold">M</span>
                     </button>
                 </div>
             </div>

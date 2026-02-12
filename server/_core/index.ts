@@ -145,3 +145,4 @@ async function startServer() {
 }
 
 startServer().catch(console.error);
+// Trigger restart for DB migration v1.0.304
