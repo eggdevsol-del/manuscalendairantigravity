@@ -90,8 +90,7 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                                                     style.className
                                                 )}
                                             >
-                                                {/* Left Accent explicitly for Agenda Items? The tokens.card.leftAccent is a string class. We need to render the div. */}
-                                                <div className={cn(tokens.card.leftAccent, "bg-primary")} />
+
 
                                                 <div className="font-bold text-sm z-10 relative">{apt.title}</div>
                                                 <div className="text-xs opacity-70 flex justify-between z-10 relative">

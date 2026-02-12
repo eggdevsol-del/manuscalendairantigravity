@@ -279,8 +279,8 @@ export const tokens = {
 
         // Specific Event Card (Agenda) - Rectangular, Tight Stack
         eventCard: {
-            base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px] mb-2",
-            bg: "bg-primary/10 hover:bg-primary/15",
+            base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px]", // Removed mb-2
+            bg: "", // Cleared to allow getEventStyle palette to win and prevent purple tint/hover color change
             interactive: "cursor-pointer active:scale-[0.98]",
             padding: "p-3"
         },
