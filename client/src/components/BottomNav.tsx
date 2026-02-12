@@ -75,7 +75,7 @@ export default function BottomNav() {
                 key={item.id} // moved key here
                 variant="ghost"
                 className={cn(
-                    "flex flex-col items-center justify-center gap-1.5 h-full min-w-[68px] rounded-none hover:bg-gray-200/50 dark:hover:bg-white/5 transition-all relative shrink-0", // min-w-[68px] allows 5 items on ~360px+ screens
+                    "flex flex-col items-center justify-center gap-1.5 h-full min-w-[64px] flex-1 rounded-none hover:bg-gray-200/50 dark:hover:bg-white/5 transition-all relative shrink-0", // flex-1 for equal width, min-w-[64px] for safety
                     active ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-white/40"
                 )}
                 onClick={item.action}
