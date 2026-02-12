@@ -3,6 +3,8 @@ import { Avatar, AvatarFallback, AvatarImage, Button, Card, CardContent } from "
 import { Clock, MapPin, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
+import { cn } from "@/lib/utils";
+import { tokens } from "@/ui/tokens";
 
 interface NextAppointmentCardProps {
     appointment: any; // Using any for simplicity in wiring, ideally typed from TRPC router output
@@ -27,9 +29,12 @@ export function NextAppointmentCard({ appointment }: NextAppointmentCardProps) {
     return (
         <div className="mb-6">
             <h2 className="text-lg font-semibold mb-3">Up Next</h2>
-            <Card className="border-none shadow-md bg-gradient-to-br from-card to-secondary/10 overflow-hidden">
-                <CardContent className="p-0">
-                    <div className="p-5">
+            <Card className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "p-0 overflow-hidden")}>
+                {/* Left Accent - Teal/Primary for Next Appointment */}
+                <div className={cn(tokens.card.leftAccent, "bg-primary")} />
+
+                <CardContent className="p-0 pl-2"> {/* Add pl-2 to account for the border if not absolute overlap, but it is absolute. So maybe standard padding. */}
+                    <div className="p-5 pl-7"> {/* pl-7 to clear the w-2 (0.5rem) border + spacing */}
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex gap-3 items-center">
                                 <Avatar className="h-12 w-12 border-2 border-background shadow-sm">

@@ -45,7 +45,7 @@ export function TaskCard({ title, context, priority, status, actionType, onClick
             )}
         >
             {/* Priority Indicator: Left Edge Line */}
-            <div className={cn("absolute left-0 top-0 bottom-0 w-[3px]", priorityConfig.line)} />
+            <div className={cn(tokens.card.leftAccent, priorityConfig.line)} />
 
             {/* Priority Indicator: Soft Gradient Swath (20%) */}
             <div className={cn("absolute left-0 top-0 bottom-0 w-[20%] bg-gradient-to-r to-transparent pointer-events-none", priorityConfig.gradient)} />

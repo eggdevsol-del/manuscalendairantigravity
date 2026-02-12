@@ -51,9 +51,13 @@ export function ConsultationCard({
                 className
             )}
         >
+            {/* Standardized Left Accent (Primary for new, Transparent/Border for others if needed, or just Primary generic) */}
+            {/* User said "every card". For consistency, let's add the accent. If isNew, it's primary. Else? Maybe transparent or muted. */}
+            <div className={cn(tokens.card.leftAccent, isNew ? "bg-primary" : "bg-white/5")} />
+
             {/* New indicator glow effect */}
             {isNew && (
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
             )}
 
             <div className="flex items-center justify-between relative z-10">

@@ -23,16 +23,18 @@ export const tokens = {
     },
 
     // 3. Cards
-    // Dashboard v1.0.101 style
+    // Dashboard v1.0.311 style (Standardized)
     card: {
-        base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px]",
-        bg: "bg-white/5 hover:bg-white/10",
+        base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-lg mb-3",
+        bg: "bg-white/10 hover:bg-white/15", // 10% opacity as requested
         bgAccent: "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
         interactive: "cursor-pointer active:scale-[0.98]",
+        leftAccent: "absolute left-0 top-0 bottom-0 w-2", // 8px left border
         glow: {
             high: { line: "bg-red-600", gradient: "from-red-600/20" },
             medium: { line: "bg-orange-500", gradient: "from-orange-500/20" },
-            low: { line: "bg-emerald-500", gradient: "from-emerald-500/20" }
+            low: { line: "bg-emerald-500", gradient: "from-emerald-500/20" },
+            default: { line: "bg-primary", gradient: "from-primary/20" }
         }
     },
 
