@@ -2,6 +2,7 @@ import { format, isToday, getDay } from "date-fns";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { tokens } from "@/ui/tokens";
 import { formatLocalTime, getBusinessTimezone } from "../../../../../shared/utils/timezone";
 import { getEventStyle } from "../utils/styles";
 
@@ -81,12 +82,20 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                                             <div
                                                 key={apt.id}
                                                 className={cn(
-                                                    "p-3 rounded-[4px] flex flex-col gap-1 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer shadow-sm border",
+                                                    tokens.card.base,
+                                                    tokens.card.bg,
+                                                    tokens.card.interactive,
+                                                    "p-3 shadow-sm flex flex-col gap-1", // Keep p-3 or move to tokens? tokens has p-4. Let's stick to tokens for consistency? Or p-3 for density. The image looks like p-4.
+                                                    // Add left accent manually if tokens doesn't encapsulate it perfectly for this list. 
+                                                    // Actually, let's use the style classname for specific event colors but base structure from tokens.
                                                     style.className
                                                 )}
                                             >
-                                                <div className="font-bold text-sm">{apt.title}</div>
-                                                <div className="text-xs opacity-70 flex justify-between">
+                                                {/* Left Accent explicitly for Agenda Items? The tokens.card.leftAccent is a string class. We need to render the div. */}
+                                                <div className={cn(tokens.card.leftAccent, "bg-primary")} />
+
+                                                <div className="font-bold text-sm z-10 relative">{apt.title}</div>
+                                                <div className="text-xs opacity-70 flex justify-between z-10 relative">
                                                     <span>{formatLocalTime(apt.startTime, getBusinessTimezone(), 'h:mm a')} - {formatLocalTime(apt.endTime, getBusinessTimezone(), 'h:mm a')}</span>
                                                     <span>{apt.clientName || ""}</span>
                                                 </div>
