@@ -149,20 +149,20 @@ export default function BottomNav() {
                 </div>
             )}
 
-            {/* Main container */}
-            <div
-                className="bg-gray-100/90 dark:bg-slate-950/60 backdrop-blur-[32px] border-t border-gray-200 dark:border-white/10"
+            {/* Main container - Animating Height instead of Transform */}
+            <motion.div
+                className="bg-gray-100/90 dark:bg-slate-950/60 backdrop-blur-[32px] border-t border-gray-200 dark:border-white/10 overflow-hidden"
+                initial={false}
+                animate={{
+                    height: isContextualVisible ? ROW_HEIGHT * 2 : ROW_HEIGHT
+                }}
+                transition={{ type: "spring", stiffness: 400, damping: 35 }}
                 style={{
-                    height: ROW_HEIGHT,
                     paddingBottom: "env(safe-area-inset-bottom)"
                 }}
             >
-                {/* Row Container - slides up/down */}
-                <motion.div
-                    className="flex flex-col"
-                    animate={{ y: isContextualVisible ? -ROW_HEIGHT : 0 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                >
+                {/* Row Container */}
+                <div className="flex flex-col">
                     {/* Row 0: Main Navigation - Reverted to SCROLLABLE */}
                     <div
                         className="w-full flex items-center overflow-x-auto no-scrollbar mask-gradient-x" // Restore scrolling
@@ -187,8 +187,8 @@ export default function BottomNav() {
                     >
                         {contextualRow}
                     </div>
-                </motion.div>
-            </div>
+                </div>
+            </motion.div>
         </nav>
     );
 }

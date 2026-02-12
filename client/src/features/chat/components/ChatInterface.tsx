@@ -9,7 +9,7 @@ import { ProjectProposalMessage } from "@/components/chat/ProjectProposalMessage
 import { ProjectProposalModal } from "@/features/chat/components/ProjectProposalModal";
 import { ArrowLeft, Send, Zap, MessageCircle, ImagePlus, Pin, PinOff, Calendar, FileText, ImageIcon } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
-import { useRegisterBottomNavRow } from "@/contexts/BottomNavContext";
+import { useRegisterBottomNavRow, useBottomNav } from "@/contexts/BottomNavContext";
 import { QuickActionsRow, ChatAction } from "@/features/chat/components/QuickActionsRow";
 import { useLocation } from "wouter";
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -25,6 +25,7 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ conversationId, className, onBack }: ChatInterfaceProps) {
     const [, setLocation] = useLocation();
+    const { isContextualVisible } = useBottomNav();
 
     const {
         user,
@@ -397,10 +398,17 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
             </div>
 
             {/* Floating Bottom Input & Actions */}
-            <div className={cn(
-                "fixed bottom-[110px] left-4 right-4 z-[60]",
-                "md:absolute md:bottom-[110px] md:left-4 md:right-4"
-            )}>
+            <div
+                className={cn(
+                    "fixed left-4 right-4 z-[60] transition-all duration-300 ease-spring", // added transition
+                    "md:absolute md:bottom-[110px] md:left-4 md:right-4"
+                )}
+                style={{
+                    // Dynamic bottom position based on nav state
+                    // Base: 110px. Expanded: 110px + 77px (ROW_HEIGHT) = 187px
+                    bottom: isContextualVisible ? "187px" : "110px"
+                }}
+            >
                 <div className="flex items-center gap-2 p-2 rounded-2xl bg-muted/80 backdrop-blur-xl border border-white/10 shadow-lg">
                     <label className="cursor-pointer p-2 hover:bg-white/10 rounded-xl transition-colors">
                         <input
