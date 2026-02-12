@@ -15,7 +15,7 @@ export default function CalendarAgendaPage() {
             {/* 1. Underlying Breakdown Layer (visible when top layer slides down) */}
             {/* iPad: Relative, 50% width, always visible, z-0 */}
             <div className={cn(
-                "absolute inset-0 transition-opacity duration-300 md:relative md:inset-auto md:w-1/2 md:opacity-100 md:z-0",
+                "absolute inset-0 transition-opacity duration-300 md:relative md:inset-auto md:w-1/2 md:opacity-100 md:z-0 pt-[env(safe-area-inset-top)]",
                 controller.isBreakdownOpen ? "opacity-100 z-0" : "opacity-0 -z-10"
             )}>
                 <MonthBreakdown
@@ -36,7 +36,7 @@ export default function CalendarAgendaPage() {
             >
                 {/* Sticky Header Zone */}
                 {/* iPad: Ensure header is visible and functional */}
-                <div className="z-20 bg-transparent">
+                <div className="z-20 bg-transparent pt-[env(safe-area-inset-top)]">
                     <CalendarMonthHeader
                         activeDate={controller.activeDate}
                         onToggleBreakdown={controller.toggleBreakdown}
