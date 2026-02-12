@@ -82,12 +82,11 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                                             <div
                                                 key={apt.id}
                                                 className={cn(
-                                                    tokens.card.base,
-                                                    tokens.card.bg,
-                                                    tokens.card.interactive,
-                                                    "p-3 shadow-sm flex flex-col gap-1", // Keep p-3 or move to tokens? tokens has p-4. Let's stick to tokens for consistency? Or p-3 for density. The image looks like p-4.
-                                                    // Add left accent manually if tokens doesn't encapsulate it perfectly for this list. 
-                                                    // Actually, let's use the style classname for specific event colors but base structure from tokens.
+                                                    tokens.calendar.eventCard.base,
+                                                    tokens.calendar.eventCard.bg,
+                                                    tokens.calendar.eventCard.interactive,
+                                                    tokens.calendar.eventCard.padding,
+                                                    "shadow-sm flex flex-col gap-1",
                                                     style.className
                                                 )}
                                             >

@@ -23,13 +23,13 @@ export const tokens = {
     },
 
     // 3. Cards
-    // Dashboard v1.0.312 Refined Rectangular Style
+    // Global App Card (Dashboard, Settings, etc.) - Premium Rounded
     card: {
-        base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px] mb-2", // Rectangular with small radius (4px), tighter gap (8px) matches stack image
-        bg: "bg-primary/10 hover:bg-primary/15", // 10% opacity primary
+        base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-lg mb-3", // Back to rounded-lg
+        bg: "bg-white/10 hover:bg-white/15", // Back to white/10 generic glass
         bgAccent: "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
         interactive: "cursor-pointer active:scale-[0.98]",
-        leftAccent: "absolute left-0 top-0 bottom-0 w-2", // 8px left border
+        leftAccent: "absolute left-0 top-0 bottom-0 w-2", // Shared left accent style
         glow: {
             high: { line: "bg-red-600", gradient: "from-red-600/20" },
             medium: { line: "bg-orange-500", gradient: "from-orange-500/20" },
@@ -276,6 +276,15 @@ export const tokens = {
 
         // Card styling
         card: "p-4 min-h-[120px] cursor-pointer transition-all duration-300 border-0 rounded-[4px]",
+
+        // Specific Event Card (Agenda) - Rectangular, Tight Stack
+        eventCard: {
+            base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px] mb-2",
+            bg: "bg-primary/10 hover:bg-primary/15",
+            interactive: "cursor-pointer active:scale-[0.98]",
+            padding: "p-3"
+        },
+
         cardWeek: "p-4 min-h-[120px]",
 
         // Spacing presets
