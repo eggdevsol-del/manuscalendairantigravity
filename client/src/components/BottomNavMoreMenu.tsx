@@ -12,16 +12,21 @@ interface BottomNavMoreMenuProps {
     items: BottomNavButton[];
     isActive: (path?: string) => boolean;
     isTeaserClient?: boolean;
+    triggerRef?: React.RefObject<HTMLElement | null>;
 }
 
-export function BottomNavMoreMenu({ isOpen, onClose, items, isActive, isTeaserClient }: BottomNavMoreMenuProps) {
+export function BottomNavMoreMenu({ isOpen, onClose, items, isActive, isTeaserClient, triggerRef }: BottomNavMoreMenuProps) {
     const totalUnreadCount = useTotalUnreadCount();
     const menuRef = useRef<HTMLDivElement>(null);
 
     // Click outside to close
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+            if (
+                menuRef.current &&
+                !menuRef.current.contains(event.target as Node) &&
+                (!triggerRef?.current || !triggerRef.current.contains(event.target as Node))
+            ) {
                 onClose();
             }
         };

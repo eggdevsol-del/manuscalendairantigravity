@@ -78,12 +78,15 @@ export default function BottomNav() {
         }
     }, [isContextualVisible, hasContextualRow, setContextualVisible]);
 
-    const renderButton = (item: any, isMoreButton = false) => {
+    const moreButtonRef = useRef<HTMLButtonElement>(null);
+
+    const renderButton = (item: any, isMoreButton = false, ref?: React.Ref<HTMLButtonElement>) => {
         const active = isMoreButton ? (isMoreActive || isMoreMenuOpen) : isActive(item.path);
         const unreadCount = item.id === "messages" ? totalUnreadCount : (item.badgeCount || 0);
 
         return (
             <Button
+                ref={ref}
                 variant="ghost"
                 className={cn(
                     "flex flex-col items-center justify-center gap-1.5 h-full w-full rounded-none hover:bg-gray-200/50 dark:hover:bg-white/5 transition-all relative shrink-0",
@@ -138,6 +141,7 @@ export default function BottomNav() {
                 items={moreItems}
                 isActive={isActive}
                 isTeaserClient={isTeaserClient}
+                triggerRef={moreButtonRef as React.RefObject<HTMLElement | null>}
             />
 
             {/* Swipe indicator - swipe up to show contextual row */}
@@ -204,7 +208,7 @@ export default function BottomNav() {
                                     label: 'More',
                                     icon: MoreHorizontal,
                                     path: null // No path, triggers menu
-                                }, true)}
+                                }, true, moreButtonRef)}
                             </div>
                         )}
                     </div>
