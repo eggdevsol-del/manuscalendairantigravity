@@ -5,6 +5,8 @@ import { ChevronLeft, FileText, Shield } from "lucide-react";
 import { LoadingState } from "@/components/ui/ssot";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { tokens } from "@/ui/tokens";
+import { cn } from "@/lib/utils";
 
 type PolicyType = "deposit" | "design" | "reschedule" | "cancellation";
 
@@ -75,7 +77,7 @@ export default function Policies() {
               <LoadingState message="Loading policy..." />
             </div>
           ) : !policy || !policy.enabled ? (
-            <Card className="p-8 text-center">
+            <Card className={cn(tokens.card.base, tokens.card.bg, "p-8 text-center")}>
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                 <FileText className="w-8 h-8 text-muted-foreground" />
               </div>
@@ -87,7 +89,7 @@ export default function Policies() {
               </p>
             </Card>
           ) : (
-            <Card>
+            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0")}>
               <CardHeader>
                 <CardTitle>{policy.title}</CardTitle>
                 <CardDescription>
@@ -127,7 +129,7 @@ export default function Policies() {
 
       <main className="flex-1 px-4 py-4 mobile-scroll overflow-y-auto">
         {!artistId ? (
-          <Card className="p-8 text-center">
+          <Card className={cn(tokens.card.base, tokens.card.bg, "p-8 text-center")}>
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
               <Shield className="w-8 h-8 text-muted-foreground" />
             </div>
@@ -143,7 +145,7 @@ export default function Policies() {
             {policyTypes.map(({ type, label, icon: Icon }) => (
               <Card
                 key={type}
-                className="cursor-pointer hover:bg-accent/5 transition-colors"
+                className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0")}
                 onClick={() => setSelectedType(type)}
               >
                 <CardHeader className="pb-3">

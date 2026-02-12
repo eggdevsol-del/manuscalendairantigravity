@@ -9,6 +9,8 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { useConversations } from "@/hooks/useConversations";
+import { tokens } from "@/ui/tokens";
+import { cn } from "@/lib/utils";
 
 export default function Clients() {
   const { user, loading } = useAuth();
@@ -147,7 +149,7 @@ export default function Clients() {
         </div>
 
         {/* Stats */}
-        <Card className="bg-gradient-to-br from-primary/10 to-accent/10">
+        <Card className={cn(tokens.card.base, "bg-gradient-to-br from-primary/10 to-accent/10 hover:from-primary/15 hover:to-accent/15")}>
           <CardContent className="pt-6">
             <div className="text-center">
               <p className="text-4xl font-bold text-foreground">
@@ -162,7 +164,7 @@ export default function Clients() {
 
         {/* Client List */}
         {filteredClients.length === 0 ? (
-          <Card className="p-8">
+          <Card className={cn(tokens.card.base, tokens.card.bg, "p-8")}>
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon" className="w-16 h-16 rounded-full bg-muted">
@@ -182,7 +184,7 @@ export default function Clients() {
         ) : (
           <div className="space-y-1">
             {filteredClients.map((client: any) => (
-              <Card key={client.id} className="hover:bg-accent/5 transition-colors">
+              <Card key={client.id} className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0")}>
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3 flex-1">
@@ -211,7 +213,10 @@ export default function Clients() {
                       variant="ghost"
                       size="icon"
                       className="text-muted-foreground hover:text-destructive h-8 w-8 -mr-2 -mt-2"
-                      onClick={() => handleDeleteClick({ id: client.id, name: client.name })}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick({ id: client.id, name: client.name });
+                      }}
                       title="Delete all bookings"
                     >
                       <Trash className="w-4 h-4" />

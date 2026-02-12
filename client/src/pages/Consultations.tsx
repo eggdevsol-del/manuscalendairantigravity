@@ -124,7 +124,7 @@ export default function Consultations() {
               consultations.map((consultation) => (
                 <Card
                   key={consultation.id}
-                  className="overflow-hidden cursor-pointer group border-0 bg-white/5 hover:bg-white/10 rounded-[4px] transition-all duration-300 relative"
+                  className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0")}
                   onClick={() => {
                     if (consultation.conversationId) {
                       setLocation(`/chat/${consultation.conversationId}`);

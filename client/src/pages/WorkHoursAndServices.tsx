@@ -271,7 +271,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
           <div className="pb-32 max-w-lg mx-auto space-y-1">
 
             {/* Work Schedule Card */}
-            <Card className="border-0 bg-white/5 overflow-hidden">
+            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 overflow-hidden")}>
               <div className="p-4 border-b border-white/5">
                 <h3 className="font-semibold text-foreground">Start / Finish Times</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">Set enabled days and hours</p>
@@ -335,7 +335,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
             </Card>
 
             {/* Services Card */}
-            <Card className="border-0 bg-white/5 overflow-hidden">
+            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 overflow-hidden")}>
               <div className="p-4 border-b border-white/5 flex items-center justify-between">
                 <div>
                   <h3 className="font-semibold text-foreground">Service Menu</h3>
