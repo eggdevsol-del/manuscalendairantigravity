@@ -41,13 +41,25 @@ export function BottomNavMoreMenu({ isOpen, onClose, items, isActive, isTeaserCl
         <div
             ref={menuRef}
             className={cn(
-                "absolute bottom-[85px] right-2 z-50 flex flex-col overflow-hidden",
-                "w-48 max-w-[50vw]", // Max 50% width constraint
-                "bg-background/95 backdrop-blur-3xl border border-white/10 shadow-2xl rounded-2xl",
-                "animate-in fade-in slide-in-from-bottom-4 duration-200"
+                // Position it flush with the bottom nav (ROW_HEIGHT = 77px)
+                // removing the gap to make it look "attached"
+                "absolute bottom-[77px] right-0 z-40 flex flex-col overflow-hidden",
+                "w-1/2 max-w-[200px]", // Max 50% screen width, capped at 200px
+
+                // EXACT match of BottomNav visual properties
+                "bg-gray-100/95 dark:bg-slate-950/80 backdrop-blur-[32px]",
+                "border-t border-l border-gray-200 dark:border-white/10",
+
+                // Rounded top-left mainly, maybe top-right too. Bottom corners square to attach.
+                "rounded-tl-2xl",
+
+                // Shadow for depth above the content
+                "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.3)]",
+
+                "animate-in slide-in-from-bottom-2 fade-in duration-200"
             )}
         >
-            <div className="flex flex-col p-1.5 space-y-0.5">
+            <div className="flex flex-col py-2">
                 {items.map((item) => {
                     const active = isActive(item.path);
                     const unreadCount = item.id === "messages" ? totalUnreadCount : (item.badgeCount || 0);
