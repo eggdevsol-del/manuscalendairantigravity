@@ -23,10 +23,10 @@ export const tokens = {
     },
 
     // 3. Cards
-    // Dashboard v1.0.311 style (Standardized)
+    // Dashboard v1.0.312 Refined Rectangular Style
     card: {
-        base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-md mb-3", // rounded-md for tighter corners
-        bg: "bg-primary/10 hover:bg-primary/15", // 10% opacity primary (Teal/Cyan) as requested
+        base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px] mb-2", // Rectangular with small radius (4px), tighter gap (8px) matches stack image
+        bg: "bg-primary/10 hover:bg-primary/15", // 10% opacity primary
         bgAccent: "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
         interactive: "cursor-pointer active:scale-[0.98]",
         leftAccent: "absolute left-0 top-0 bottom-0 w-2", // 8px left border
