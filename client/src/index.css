@@ -148,8 +148,8 @@
   --sidebar-ring: oklch(0.70 0.15 280);
 
   /* Dark Mode Gradient */
-  --bg-gradient: radial-gradient(circle at 100% 0%, #4c1d95 0%, transparent 40%),
-    radial-gradient(circle at 0% 100%, #312e81 0%, transparent 40%),
+  --bg-gradient: radial-gradient(circle at 100% 0%, #3d1777 0%, transparent 40%),
+    radial-gradient(circle at 0% 100%, #272567 0%, transparent 40%),
     #0f172a;
 }
 
