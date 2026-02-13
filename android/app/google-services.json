@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "596652086632",
+    "project_id": "calendair-androidios",
+    "storage_bucket": "calendair-androidios.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:596652086632:android:575dd1ff28e0e5691732dd",
+        "android_client_info": {
+          "package_name": "com.manus.calendair"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-Dcjru0r7tNnDVKirQGJZbaiUGlJBz1Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
