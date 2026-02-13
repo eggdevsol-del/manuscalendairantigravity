@@ -56,7 +56,7 @@ export function PromotionBurgerMenu({
                         animate="visible"
                         exit="hidden"
                         variants={containerVariants}
-                        className="mb-4 p-4 rounded-[2rem] border border-white/10 shadow-2xl flex flex-col items-end gap-4 bg-gray-100/[0.85] dark:bg-slate-950/[0.85] backdrop-blur-[32px]"
+                        className="mb-4 p-4 rounded-[2rem] border border-white/10 shadow-2xl flex flex-col items-end gap-4 bg-gray-100/[0.75] dark:bg-slate-950/[0.75] backdrop-blur-[32px]"
                     >
                         {/* View Toggle */}
                         <motion.div variants={itemVariants} className="flex items-center justify-end gap-3 w-full">
