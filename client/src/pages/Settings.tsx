@@ -15,6 +15,7 @@ import {
   Calendar,
   ChevronRight,
   Clock,
+  Link2,
   LogOut,
   MapPin,
   Moon,
@@ -34,7 +35,9 @@ import { useDebounce } from "@/hooks/useDebounce";
 // If not, I can implement a simple one inside component or create the hook.
 // Let's check for hooks first.
 
-type SettingsSection = "main" | "profile" | "work-hours" | "quick-actions" | "notifications" | "business";
+type SettingsSection = "main" | "profile" | "work-hours" | "quick-actions" | "notifications" | "business" | "booking-link";
+
+
 
 export default function Settings() {
   const { user, loading, logout } = useAuth();
@@ -208,6 +211,20 @@ export default function Settings() {
       toast.error("Cannot save: settings not loaded yet");
     }
   };
+
+  // --- Sub-View: Booking Link ---
+  if (activeSection === "booking-link" && isArtist) {
+    return (
+      <PageShell>
+        <PageHeader title="Booking Link" />
+        <div className={tokens.contentContainer.base}>
+          <div className="p-6">
+            {user && <ArtistLink artistId={user.id} artistName={user.name || "Artist"} />}
+          </div>
+        </div>
+      </PageShell>
+    );
+  }
 
   // --- Sub-View: Work Hours --- 
   // WorkHoursAndServices should ideally be migrated to Sheet Layout as well.
@@ -505,205 +522,272 @@ export default function Settings() {
         <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y">
           <div className="pb-32 max-w-lg mx-auto space-y-1">
 
-            <Card className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0")} onClick={() => setActiveSection("profile")}>
-              <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-primary/20 text-primary">
-                    <User className="w-5 h-5" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-foreground">Profile</p>
-                    <p className="text-xs text-muted-foreground">Manage personal details</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </div>
-            </Card>
-
-            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0")}>
-              <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
-                    {theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-foreground">Appearance</p>
-                    <p className="text-xs text-muted-foreground">{theme === "dark" ? "Dark Mode" : "Light Mode"}</p>
-                  </div>
-                </div>
-                <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
-              </div>
-            </Card>
-
-            {!isArtist && (
-              <>
-                <Card className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0")} onClick={() => setLocation("/consultations")}>
-                  <div className="p-4 flex items-center justify-between">
+            {/* 1. Account Section */}
+            <div className="space-y-3">
+              <h3 className="px-1 text-xs font-bold text-muted-foreground uppercase tracking-wider">Account</h3>
+              <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")}>
+                <div className="divide-y divide-white/5">
+                  {/* Profile */}
+                  <div
+                    className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                    onClick={() => setActiveSection("profile")}
+                  >
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400">
-                        <Calendar className="w-5 h-5" />
-                      </div>
-                      <div className="text-left">
-                        <p className="font-semibold text-foreground">Consultations</p>
-                        <p className="text-xs text-muted-foreground">Manage booking requests</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                </Card>
-                <Card className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0")} onClick={() => setLocation("/policies")}>
-                  <div className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400">
-                        <Bell className="w-5 h-5" />
-                      </div>
-                      <div className="text-left">
-                        <p className="font-semibold text-foreground">Policies</p>
-                        <p className="text-xs text-muted-foreground">View term & conditions</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                </Card>
-
-                {/* Client Notifications Settings */}
-                <div className="px-1">
-                  <WebPushSettings hideTestButton />
-                </div>
-              </>
-            )}
-
-            {isArtist && (
-              <>
-                <Card className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0")} onClick={() => setLocation("/clients")}>
-                  <div className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-green-500/20 text-green-400">
+                      <div className="p-2 rounded-xl bg-primary/20 text-primary">
                         <User className="w-5 h-5" />
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold text-foreground">Clients</p>
-                        <p className="text-xs text-muted-foreground">Manage client list</p>
+                        <p className="font-semibold text-foreground">Profile</p>
+                        <p className="text-xs text-muted-foreground">Manage personal details</p>
                       </div>
                     </div>
                     <ChevronRight className="w-5 h-5 text-muted-foreground" />
                   </div>
-                </Card>
 
-                {user && <ArtistLink artistId={user.id} artistName={user.name || "Artist"} />}
-
-                <Card className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0")} onClick={() => setActiveSection("business")}>
-                  <div className="p-4 flex items-center justify-between">
+                  {/* Appearance */}
+                  <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400">
-                        <MapPin className="w-5 h-5" />
+                      <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
+                        {theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold text-foreground">Business Info</p>
-                        <p className="text-xs text-muted-foreground">Set address & payments</p>
+                        <p className="font-semibold text-foreground">Appearance</p>
+                        <p className="text-xs text-muted-foreground">{theme === "dark" ? "Dark Mode" : "Light Mode"}</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
                   </div>
-                </Card>
+                </div>
+              </Card>
+            </div>
 
-                <Card className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0")} onClick={() => setActiveSection("work-hours")}>
-                  <div className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-pink-500/20 text-pink-400">
-                        <Clock className="w-5 h-5" />
+            {/* 2. Role Specific Section */}
+            <div className="space-y-3 pt-2">
+              <h3 className="px-1 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                {isArtist ? "Business & Management" : "Bookings"}
+              </h3>
+              <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")}>
+                <div className="divide-y divide-white/5">
+                  {!isArtist && (
+                    <>
+                      {/* Consultations */}
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setLocation("/consultations")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400">
+                            <Calendar className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">Consultations</p>
+                            <p className="text-xs text-muted-foreground">Manage booking requests</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
-                      <div className="text-left">
-                        <p className="font-semibold text-foreground">Work Hours & Services</p>
-                        <p className="text-xs text-muted-foreground">Manage schedule</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                </Card>
 
-                <Card className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0")} onClick={() => setLocation("/quick-actions")}>
-                  <div className="p-4 flex items-center justify-between">
+                      {/* Policies */}
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setLocation("/policies")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400">
+                            <Bell className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">Policies</p>
+                            <p className="text-xs text-muted-foreground">View term & conditions</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                    </>
+                  )}
+
+                  {isArtist && (
+                    <>
+                      {/* Clients */}
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setLocation("/clients")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-green-500/20 text-green-400">
+                            <User className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">Clients</p>
+                            <p className="text-xs text-muted-foreground">Manage client list</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+
+                      {/* Booking Link */}
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setActiveSection("booking-link")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
+                            <Link2 className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">Booking Link</p>
+                            <p className="text-xs text-muted-foreground">Share your link</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+
+                      {/* Business Info */}
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setActiveSection("business")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400">
+                            <MapPin className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">Business Info</p>
+                            <p className="text-xs text-muted-foreground">Set address & payments</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+
+                      {/* Work Hours */}
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setActiveSection("work-hours")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-pink-500/20 text-pink-400">
+                            <Clock className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">Work Hours & Services</p>
+                            <p className="text-xs text-muted-foreground">Manage schedule</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+
+                      {/* Quick Actions */}
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setLocation("/quick-actions")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-yellow-500/20 text-yellow-400">
+                            <Zap className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">Quick Actions</p>
+                            <p className="text-xs text-muted-foreground">Chat shortcuts</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+
+                      {/* Notifications Page Link */}
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setLocation("/notifications-management")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400">
+                            <Bell className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">Notifications</p>
+                            <p className="text-xs text-muted-foreground">Manage templates</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </Card>
+            </div>
+
+            {/* Notifications Toggle Section (Both Roles - Client only logic preserved for now, but grouping) 
+                 Actually, client specific notification toggles were inline. Let's group them or keep them in the main list. 
+                 The original had WebPushSettings inline for clients.
+             */}
+            {!isArtist && (
+              <div className="space-y-3 pt-2">
+                <h3 className="px-1 text-xs font-bold text-muted-foreground uppercase tracking-wider">Notification Preferences</h3>
+                <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-4")}>
+                  <WebPushSettings hideTestButton />
+                </Card>
+              </div>
+            )}
+
+            {/* 3. System Section */}
+            <div className="space-y-3 pt-2">
+              <h3 className="px-1 text-xs font-bold text-muted-foreground uppercase tracking-wider">System</h3>
+              <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")}>
+                <div className="divide-y divide-white/5">
+                  {/* UI Debug */}
+                  <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-yellow-500/20 text-yellow-400">
+                      <div className="p-2 rounded-xl bg-slate-500/20 text-slate-400">
                         <Zap className="w-5 h-5" />
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold text-foreground">Quick Actions</p>
-                        <p className="text-xs text-muted-foreground">Chat shortcuts</p>
+                        <p className="font-semibold text-foreground">UI Debug</p>
+                        <p className="text-xs text-muted-foreground">Show technical IDs</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    <Switch checked={showDebugLabels} onCheckedChange={setShowDebugLabels} />
                   </div>
-                </Card>
 
-                <Card className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0")} onClick={() => setLocation("/notifications-management")}>
-                  <div className="p-4 flex items-center justify-between">
+                  {/* Updates */}
+                  <div
+                    className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99] group"
+                    onClick={() => {
+                      toast.info("Checking for updates...");
+                      forceUpdate();
+                    }}
+                  >
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400">
-                        <Bell className="w-5 h-5" />
+                      <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30 transition-colors">
+                        <RefreshCw className="w-5 h-5" />
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold text-foreground">Notifications</p>
-                        <p className="text-xs text-muted-foreground">Manage templates</p>
+                        <p className="font-semibold text-foreground">Check for Updates</p>
+                        <p className="text-xs text-muted-foreground">Force refresh app to latest version</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                </Card>
-              </>
-            )}
-
-            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0")}>
-              <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-slate-500/20 text-slate-400">
-                    <Zap className="w-5 h-5" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-foreground">UI Debug</p>
-                    <p className="text-xs text-muted-foreground">Show technical IDs</p>
                   </div>
                 </div>
-                <Switch checked={showDebugLabels} onCheckedChange={setShowDebugLabels} />
-              </div>
-            </Card>
+              </Card>
+            </div>
 
-
-
-            <Card
-              className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0", "group")}
-              onClick={() => {
-                toast.info("Checking for updates...");
-                forceUpdate();
-              }}
-            >
-              <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30 transition-colors">
-                    <RefreshCw className="w-5 h-5" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-foreground">Check for Updates</p>
-                    <p className="text-xs text-muted-foreground">Force refresh app to latest version</p>
+            {/* 4. Logout (Keep separate) */}
+            <div className="pt-4">
+              <Card
+                className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0 group")}
+                onClick={handleLogout}
+              >
+                <div className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-destructive/10 text-destructive group-hover:bg-destructive/20 transition-colors">
+                      <LogOut className="w-5 h-5" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-foreground group-hover:text-destructive transition-colors">Log Out</p>
+                      <p className="text-xs text-muted-foreground">Sign out of your account</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-
-            <Card className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0", "group")} onClick={handleLogout}>
-              <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-destructive/10 text-destructive group-hover:bg-destructive/20 transition-colors">
-                    <LogOut className="w-5 h-5" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-foreground group-hover:text-destructive transition-colors">Log Out</p>
-                    <p className="text-xs text-muted-foreground">Sign out of your account</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
+              </Card>
+            </div>
 
           </div>
         </div>
