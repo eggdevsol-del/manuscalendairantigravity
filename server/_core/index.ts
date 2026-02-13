@@ -53,20 +53,38 @@ async function startServer() {
 
   const app = express();
   const server = createServer(app);
-  // Configure body parser with larger size limit for file uploads
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // Enable CORS for native platforms
+  // 1. Move CORS to the very top to handle preflight requests first
   app.use(cors({
-    origin: [
-      "http://localhost",
-      "capacitor://localhost",
-      "https://artist-booking-app-production.up.railway.app"
-    ],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps often have no origin header)
+      if (!origin) return callback(null, true);
+
+      const allowedOrigins = [
+        "http://localhost",
+        "https://localhost",
+        "capacitor://localhost",
+        "https://artist-booking-app-production.up.railway.app"
+      ];
+
+      // Allow exact matches or any localhost port
+      if (allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
+        callback(null, true);
+      } else {
+        // Log unauthorized origins for debugging in server logs
+        console.log(`[CORS] Blocked origin: ${origin}`);
+        callback(null, false);
+      }
+    },
     credentials: true,
   }));
 
+  // Handle preflight for all routes
+  app.options('*', cors());
+
+  // 2. Configure body parsers
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
