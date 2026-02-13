@@ -1,11 +1,15 @@
 import { ScrollArea, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
-import { User, Mail, Phone, Cake, BadgeCheck, Image as ImageIcon, Camera, Loader2 } from "lucide-react";
-import { format } from "date-fns";
+import { User, Mail, Phone, Cake, BadgeCheck, Image as ImageIcon, Camera, Loader2, Ticket, Calendar, Edit2, Check, X } from "lucide-react";
+import { format, addDays } from "date-fns";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { WebPushSettings } from "@/components/WebPushSettings";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 interface ClientProfileSheetProps {
     isOpen: boolean;
@@ -22,6 +26,9 @@ interface ClientProfileSheetProps {
 
 export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileSheetProps) {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editDate, setEditDate] = useState<string>("");
+    const utils = trpc.useUtils();
 
     // Fetch client media from leads
     const { data: mediaData, isLoading: mediaLoading } = trpc.conversations.getClientMedia.useQuery(
@@ -31,6 +38,24 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
             staleTime: 30000, // Cache for 30 seconds
         }
     );
+
+    // Fetch client promotions
+    const { data: promotions, isLoading: promotionsLoading } = trpc.promotions.getClientPromotions.useQuery(
+        { clientId: client?.id || '' },
+        {
+            enabled: isOpen && !!client?.id,
+        }
+    );
+
+    const updatePromotionMutation = trpc.promotions.updateIssuedPromotion.useMutation({
+        onSuccess: () => {
+            toast.success("Promotion updated");
+            utils.promotions.getClientPromotions.invalidate({ clientId: client?.id || '' });
+        },
+        onError: (err) => {
+            toast.error(err.message);
+        }
+    });
 
     if (!client) return null;
 
@@ -67,12 +92,15 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
                 </div>
 
                 <Tabs defaultValue="info" className="flex-1">
-                    <TabsList className="grid w-full grid-cols-3 bg-muted/20 p-1 rounded-xl">
-                        <TabsTrigger value="info" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-lg">Info</TabsTrigger>
-                        <TabsTrigger value="media" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-lg">
-                            Media {hasMedia && <span className="ml-1 text-xs opacity-70">({mediaData.totalCount})</span>}
+                    <TabsList className="grid w-full grid-cols-4 bg-muted/20 p-1 rounded-xl">
+                        <TabsTrigger value="info" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-lg text-xs sm:text-sm">Info</TabsTrigger>
+                        <TabsTrigger value="promotions" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-lg text-xs sm:text-sm">
+                            Promos {promotions && promotions.length > 0 && <span className="ml-1 text-[10px] opacity-70">({promotions.length})</span>}
                         </TabsTrigger>
-                        <TabsTrigger value="history" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-lg">History</TabsTrigger>
+                        <TabsTrigger value="media" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-lg text-xs sm:text-sm">
+                            Media {hasMedia && <span className="ml-1 text-[10px] opacity-70">({mediaData.totalCount})</span>}
+                        </TabsTrigger>
+                        <TabsTrigger value="history" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-lg text-xs sm:text-sm">History</TabsTrigger>
                     </TabsList>
 
                     <ScrollArea className="h-[calc(100vh-250px)] mt-6 -mr-6 pr-6">
@@ -105,6 +133,123 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
 
                                 <WebPushSettings />
                             </div>
+                        </TabsContent>
+
+                        <TabsContent value="promotions" className="space-y-4 animate-in fade-in-50 slide-in-from-bottom-2 duration-500">
+                            {promotionsLoading ? (
+                                <div className="flex flex-col items-center justify-center py-12 space-y-3">
+                                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                    <p className="text-sm text-muted-foreground">Loading promotions...</p>
+                                </div>
+                            ) : !promotions || promotions.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-12 text-center space-y-3 opacity-50">
+                                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                                        <Ticket className="w-6 h-6" />
+                                    </div>
+                                    <p className="text-sm font-medium">No active promotions</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {promotions.map((promo) => {
+                                        const isEditing = editingId === promo.id;
+                                        const isExpired = promo.expiresAt && new Date(promo.expiresAt) < new Date();
+
+                                        return (
+                                            <div key={promo.id} className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <h4 className="font-bold text-base">{promo.name}</h4>
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {promo.valueType === 'percentage'
+                                                                ? `${promo.value}% Discount`
+                                                                : `$${(promo.originalAmount / 100).toFixed(2)} Value`
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                    <div className={cn(
+                                                        "px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider",
+                                                        isExpired ? "bg-red-500/20 text-red-500" : "bg-green-500/20 text-green-500"
+                                                    )}>
+                                                        {isExpired ? 'Expired' : promo.status === 'active' ? 'Active' : promo.status}
+                                                    </div>
+                                                </div>
+
+                                                <div className="pt-3 border-t border-white/5 flex items-center justify-between">
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <Calendar className="w-4 h-4" />
+                                                        {isEditing ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <Input
+                                                                    type="date"
+                                                                    value={editDate}
+                                                                    onChange={(e) => setEditDate(e.target.value)}
+                                                                    className="h-8 w-32 px-2 text-xs"
+                                                                />
+                                                                <Button
+                                                                    size="icon"
+                                                                    variant="ghost"
+                                                                    className="h-8 w-8 text-green-500 hover:text-green-400"
+                                                                    onClick={() => {
+                                                                        // Save
+                                                                        const date = new Date(editDate);
+                                                                        // Set to end of day? Or just date. Backend expects ISO string.
+                                                                        // Let's ensure time is preserved or set to end of day.
+                                                                        // Simple approach: set to 23:59:59 of that day
+                                                                        date.setHours(23, 59, 59);
+                                                                        const iso = date.toISOString().slice(0, 19).replace('T', ' ');
+
+                                                                        updatePromotionMutation.mutate({
+                                                                            id: promo.id,
+                                                                            expiresAt: iso
+                                                                        });
+                                                                        setEditingId(null);
+                                                                    }}
+                                                                >
+                                                                    <Check className="w-4 h-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    size="icon"
+                                                                    variant="ghost"
+                                                                    className="h-8 w-8 text-red-500 hover:text-red-400"
+                                                                    onClick={() => setEditingId(null)}
+                                                                >
+                                                                    <X className="w-4 h-4" />
+                                                                </Button>
+                                                            </div>
+                                                        ) : (
+                                                            <span>
+                                                                Expires: {promo.expiresAt
+                                                                    ? format(new Date(promo.expiresAt), 'MMM do, yyyy')
+                                                                    : 'Never'
+                                                                }
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {!isEditing && (
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                            onClick={() => {
+                                                                setEditingId(promo.id);
+                                                                // Initialize edit date
+                                                                if (promo.expiresAt) {
+                                                                    setEditDate(format(new Date(promo.expiresAt), 'yyyy-MM-dd'));
+                                                                } else {
+                                                                    setEditDate('');
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Edit2 className="w-4 h-4" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </TabsContent>
 
                         <TabsContent value="media" className="animate-in fade-in-50 slide-in-from-bottom-2 duration-500">

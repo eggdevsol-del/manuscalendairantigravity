@@ -15,9 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gift, Percent, CreditCard, Check, ChevronRight, Upload, X, Image as ImageIcon, Palette, ZoomIn, Move } from "lucide-react";
+import { Gift, Percent, CreditCard, Check, ChevronRight, Upload, X, Image as ImageIcon, Palette, ZoomIn, Move, Clock, Zap } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { PromotionCard, PromotionCardData } from "./PromotionCard";
@@ -32,7 +33,7 @@ import {
 import { InteractiveCardPreview } from "./InteractiveCardPreview";
 import { useAuth } from "@/_core/hooks/useAuth";
 
-type WizardStep = 'type' | 'value' | 'design' | 'preview';
+type WizardStep = 'type' | 'value' | 'rules' | 'design' | 'preview';
 
 interface CreatePromotionWizardProps {
   onClose: () => void;
@@ -64,6 +65,15 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
   const [value, setValue] = useState(initialValue);
 
   const [templateDesign, setTemplateDesign] = useState(initialData?.templateDesign || 'classic');
+
+  // Rules State
+  const [validityDuration, setValidityDuration] = useState<string>(
+    initialData?.validityDuration ? initialData.validityDuration.toString() : ''
+  );
+  const [noExpiry, setNoExpiry] = useState<boolean>(!initialData?.validityDuration);
+  const [autoApplyTrigger, setAutoApplyTrigger] = useState<'none' | 'new_client' | 'birthday'>(
+    initialData?.autoApplyTrigger || 'none'
+  );
 
   // Determine color mode from initial data
   const getInitialColorMode = () => {
@@ -214,7 +224,7 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
 
   // Step navigation
   const goNext = () => {
-    const steps: WizardStep[] = ['type', 'value', 'design', 'preview'];
+    const steps: WizardStep[] = ['type', 'value', 'rules', 'design', 'preview'];
     const currentIndex = steps.indexOf(step);
     if (currentIndex < steps.length - 1) {
       setStep(steps[currentIndex + 1]);
@@ -222,7 +232,7 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
   };
 
   const goBack = () => {
-    const steps: WizardStep[] = ['type', 'value', 'design', 'preview'];
+    const steps: WizardStep[] = ['type', 'value', 'rules', 'design', 'preview'];
     const currentIndex = steps.indexOf(step);
     if (currentIndex > 0) {
       setStep(steps[currentIndex - 1]);
@@ -234,6 +244,7 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
     switch (step) {
       case 'type': return 'Choose Type';
       case 'value': return 'Set Value';
+      case 'rules': return 'Set Rules';
       case 'design': return 'Customize Design';
       case 'preview': return 'Preview & Create';
     }
@@ -259,6 +270,8 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
     backgroundPositionY,
     artistName,
     status: 'active',
+    validityDuration: noExpiry ? null : (parseInt(validityDuration) || null),
+    autoApplyTrigger,
   };
 
   // Handle create/update
@@ -279,6 +292,8 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
       backgroundScale,
       backgroundPositionX,
       backgroundPositionY,
+      validityDuration: noExpiry ? null : (parseInt(validityDuration) || null),
+      autoApplyTrigger,
     };
 
     if (initialData) {
@@ -299,6 +314,7 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
     switch (step) {
       case 'type': return true;
       case 'value': return value && parseFloat(value) > 0;
+      case 'rules': return true;
       case 'design': return true;
       case 'preview': return true;
     }
@@ -312,7 +328,7 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
       onBack={step !== 'type' ? goBack : undefined}
       contextContent={
         <div className="flex items-center gap-2">
-          {['type', 'value', 'design', 'preview'].map((s, i) => (
+          {['type', 'value', 'rules', 'design', 'preview'].map((s, i) => (
             <div
               key={s}
               className={cn(
@@ -353,6 +369,18 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
               setValueType={setValueType}
               value={value}
               setValue={setValue}
+            />
+          )}
+
+          {/* Step: Rules Configuration */}
+          {step === 'rules' && (
+            <RulesConfigStep
+              validityDuration={validityDuration}
+              setValidityDuration={setValidityDuration}
+              noExpiry={noExpiry}
+              setNoExpiry={setNoExpiry}
+              autoApplyTrigger={autoApplyTrigger}
+              setAutoApplyTrigger={setAutoApplyTrigger}
             />
           )}
 
@@ -427,6 +455,122 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
         )}
       </div>
     </FullScreenSheet>
+  );
+}
+
+// Rules Configuration Step
+function RulesConfigStep({
+  validityDuration,
+  setValidityDuration,
+  noExpiry,
+  setNoExpiry,
+  autoApplyTrigger,
+  setAutoApplyTrigger,
+}: {
+  validityDuration: string;
+  setValidityDuration: (v: string) => void;
+  noExpiry: boolean;
+  setNoExpiry: (v: boolean) => void;
+  autoApplyTrigger: 'none' | 'new_client' | 'birthday';
+  setAutoApplyTrigger: (v: 'none' | 'new_client' | 'birthday') => void;
+}) {
+  return (
+    <div className="space-y-8">
+      {/* Validity Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold flex items-center gap-2">
+          <Clock className="w-5 h-5 text-primary" />
+          Validity Period
+        </h3>
+
+        <div className="space-y-4 bg-white/5 p-4 rounded-xl border border-white/10">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="no-expiry" className="cursor-pointer">No Expiry Date</Label>
+            <Switch
+              id="no-expiry"
+              checked={noExpiry}
+              onCheckedChange={(checked) => {
+                setNoExpiry(checked);
+                if (checked) setValidityDuration('');
+              }}
+            />
+          </div>
+
+          {!noExpiry && (
+            <div className="space-y-2 pt-2">
+              <Label>Valid for (Days)</Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  value={validityDuration}
+                  onChange={(e) => setValidityDuration(e.target.value)}
+                  placeholder="e.g. 30"
+                  className="rounded-xl pl-4"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                  days after issuing
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Voucher will expire automatically after this period.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Auto-Apply Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold flex items-center gap-2">
+          <Zap className="w-5 h-5 text-yellow-400" />
+          Automation Rules
+        </h3>
+
+        <div className="space-y-2">
+          <Label>Auto-Issue Trigger</Label>
+          <div className="grid grid-cols-1 gap-2">
+            <button
+              onClick={() => setAutoApplyTrigger('none')}
+              className={cn(
+                "p-4 rounded-xl border text-left transition-all",
+                autoApplyTrigger === 'none'
+                  ? "bg-primary/10 border-primary/50"
+                  : "bg-white/5 border-white/10 hover:bg-white/10"
+              )}
+            >
+              <div className="font-semibold">Manual Issue Only</div>
+              <div className="text-xs text-muted-foreground">You manually send this to specific clients</div>
+            </button>
+
+            <button
+              onClick={() => setAutoApplyTrigger('new_client')}
+              className={cn(
+                "p-4 rounded-xl border text-left transition-all",
+                autoApplyTrigger === 'new_client'
+                  ? "bg-primary/10 border-primary/50"
+                  : "bg-white/5 border-white/10 hover:bg-white/10"
+              )}
+            >
+              <div className="font-semibold">New Clients</div>
+              <div className="text-xs text-muted-foreground">Automatically verified when a new client books their first appointment</div>
+            </button>
+
+            <button
+              onClick={() => setAutoApplyTrigger('birthday')}
+              className={cn(
+                "p-4 rounded-xl border text-left transition-all",
+                autoApplyTrigger === 'birthday'
+                  ? "bg-primary/10 border-primary/50"
+                  : "bg-white/5 border-white/10 hover:bg-white/10"
+              )}
+            >
+              <div className="font-semibold">Birthday</div>
+              <div className="text-xs text-muted-foreground">Sent automatically on client's birthday (requires DOB)</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

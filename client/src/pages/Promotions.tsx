@@ -31,6 +31,8 @@ import {
   getTypeDefaults,
   SendPromotionSheet,
   CreatePromotionWizard,
+  PromotionBurgerMenu,
+  PromotionGrid
 } from "@/features/promotions";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -59,15 +61,49 @@ export default function Promotions() {
     handleUseOnBooking,
     handleCreate,
     closeCreateWizard,
-    refetch
+    refetch,
+    setShowCreateWizard
   } = usePromotionsController();
 
   // Teaser Mode
   const { isTeaserClient } = useTeaser();
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [viewMode, setViewMode] = useState<'swipe' | 'grid'>('swipe');
 
   const filteredCards = promotions || [];
   const selectedCard = filteredCards.find(c => c.id === selectedCardId);
+
+  // Auto-select first card if none selected (for swipe view mainly) - actually logic handles this via focalIndex
+  const activeCard = selectedCard || (viewMode === 'swipe' ? filteredCards[focalIndex] : null);
+
+  const handleMenuAction = (action: 'create' | 'send' | 'auto-apply' | 'settings') => {
+    switch (action) {
+      case 'create':
+        handleCreate();
+        break;
+      case 'send':
+        if (activeCard) {
+          // If we're using the focal card, we might want to ensure it's "selected" for other logic, but for now just using it for the sheet is enough.
+          // However, for consistency, let's just use activeCard in the sheet render.
+          setShowSendSheet(true);
+        }
+        else toast.error("Please select a promotion first");
+        break;
+      case 'auto-apply':
+        if (activeCard) setShowAutoApplySheet(true);
+        else toast.error("Please select a promotion first");
+        break;
+      case 'settings':
+        // Placeholder for voucher settings or specific edit
+        if (activeCard && isArtist) {
+          // If using focal card, we should probably select it so edit works expectedly if it relies on selection
+          if (!selectedCardId) setSelectedCardId(activeCard.id);
+          handleEdit();
+        }
+        else toast.error("Select a voucher to edit settings");
+        break;
+    }
+  };
 
   return (
     <PageShell>
@@ -97,21 +133,11 @@ export default function Promotions() {
           </div>
         )}
 
-        <div className={cn("flex flex-col h-full overflow-hidden", isTeaserClient && "filter blur-sm pointer-events-none")}>
-          {/* Elevated Create Action */}
-          <div className="flex justify-center mb-2 px-4 pt-4 shrink-0">
-            {isArtist && (
-              <Button
-                variant="hero"
-                onClick={handleCreate}
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Create New Voucher
-              </Button>
-            )}
-          </div>
+        <div className={cn("flex flex-col h-full overflow-hidden relative", isTeaserClient && "filter blur-sm pointer-events-none")}>
 
-          <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center">
+          <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center pb pb-[80px]">
+            {/* Added padding bottom to account for BottomNav area */}
+
             {isLoading ? (
               <div className="flex items-center justify-center h-48">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -120,7 +146,7 @@ export default function Promotions() {
               <div className="min-h-[300px] flex items-center justify-center">
                 <EmptyState type="voucher" isArtist={isArtist} onCreate={handleCreate} />
               </div>
-            ) : (
+            ) : viewMode === 'swipe' ? (
               <div className="relative w-full h-full flex items-center justify-center overflow-visible">
                 <AnimatePresence>
                   {filteredCards.map((card, index) => {
@@ -128,13 +154,17 @@ export default function Promotions() {
                     const isSelected = selectedCardId === card.id;
                     const isFocal = focalIndex === index;
                     const cardOffset = 180;
+
+                    // Only render cards within range to improve performance
+                    if (Math.abs(position) > 2) return null;
+
                     return (
                       <motion.div
                         key={card.id}
                         initial={{ opacity: 0, y: 100 }}
                         animate={{
                           opacity: Math.max(0, 1 - Math.abs(position) * 0.4),
-                          y: position * cardOffset,
+                          y: position * cardOffset, // Vertical Stack
                           scale: 1 - Math.abs(position) * 0.05,
                           zIndex: 50 - Math.abs(position),
                           filter: `blur(${Math.min(4, Math.abs(position) * 2)}px)`,
@@ -161,48 +191,31 @@ export default function Promotions() {
                   })}
                 </AnimatePresence>
               </div>
+            ) : (
+              /* GRID VIEW */
+              <PromotionGrid
+                cards={filteredCards}
+                onSelect={(card) => {
+                  setSelectedCardId(card.id);
+                  // Sync focal index for smooth transition back to swipe
+                  const idx = filteredCards.findIndex(c => c.id === card.id);
+                  if (idx !== -1) setFocalIndex(idx);
+                }}
+                selectedCardId={selectedCardId}
+              />
             )}
           </div>
-
-          {/* Stable Footer Actions */}
-          <div className="shrink-0 z-[60] bg-gradient-to-t from-card via-card to-transparent px-4 pb-24 pt-4 w-full relative min-h-[160px] flex items-center justify-center">
-            <AnimatePresence mode="popLayout">
-              {selectedCard && (
-                <motion.div
-                  key="actions"
-                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="w-full space-y-2 absolute top-1/2 left-0 right-0 -translate-y-1/2 px-4"
-                >
-                  {isArtist ? (
-                    <>
-                      <Button variant="default" className="w-full" onClick={() => setShowSendSheet(true)}>
-                        <Send className="w-4 h-4 mr-2" /> Send to Client
-                      </Button>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button variant="outline" className="w-full" onClick={handleEdit}>
-                          <Edit className="w-4 h-4 mr-2" /> Edit
-                        </Button>
-                        <Button variant="outline" className="w-full text-red-500 border-red-200" onClick={() => setShowDeleteDialog(true)}>
-                          <Trash2 className="w-4 h-4 mr-2" /> Delete
-                        </Button>
-                      </div>
-                      <Button variant="outline" className="w-full" onClick={() => setShowAutoApplySheet(true)}>
-                        <Calendar className="w-4 h-4 mr-2" /> Auto-Apply
-                      </Button>
-                    </>
-                  ) : (
-                    <Button variant="default" className="w-full" disabled={selectedCard.status !== 'active'} onClick={handleUseOnBooking}>
-                      <Check className="w-4 h-4 mr-2" /> Use on Next Booking
-                    </Button>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
         </div>
+
+        {/* FAB Menu */}
+        {isArtist && (
+          <PromotionBurgerMenu
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            onAction={handleMenuAction}
+          />
+        )}
+
 
         {showCreateWizard && (
           <CreatePromotionWizard onClose={closeCreateWizard} initialData={editingPromotion} />
@@ -212,7 +225,7 @@ export default function Promotions() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Delete Promotion?</DialogTitle>
-              <DialogDescription>Permanently delete "{selectedCard?.name}"? This action cannot be undone.</DialogDescription>
+              <DialogDescription>Permanently delete "{activeCard?.name}"? This action cannot be undone.</DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button variant="ghost" onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
@@ -223,12 +236,12 @@ export default function Promotions() {
           </DialogContent>
         </Dialog>
 
-        {showSendSheet && selectedCard && (
-          <SendPromotionSheet isOpen={showSendSheet} onClose={() => setShowSendSheet(false)} promotion={selectedCard as PromotionCardData} />
+        {showSendSheet && activeCard && (
+          <SendPromotionSheet isOpen={showSendSheet} onClose={() => setShowSendSheet(false)} promotion={activeCard as PromotionCardData} />
         )}
 
-        {showAutoApplySheet && selectedCard && (
-          <AutoApplySheet isOpen={showAutoApplySheet} onClose={() => setShowAutoApplySheet(false)} promotion={selectedCard as PromotionCardData} onSave={() => { setShowAutoApplySheet(false); refetch(); }} />
+        {showAutoApplySheet && activeCard && (
+          <AutoApplySheet isOpen={showAutoApplySheet} onClose={() => setShowAutoApplySheet(false)} promotion={activeCard as PromotionCardData} onSave={() => { setShowAutoApplySheet(false); refetch(); }} />
         )}
       </div>
     </PageShell>

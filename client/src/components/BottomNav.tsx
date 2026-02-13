@@ -122,7 +122,7 @@ export default function BottomNav() {
             {/* Swipe indicator - swipe up to show contextual row */}
             {showSwipeIndicator && (
                 <div
-                    className="absolute -top-8 left-0 right-0 h-10 flex items-center justify-center cursor-pointer"
+                    className="absolute -top-12 left-0 right-0 h-16 flex items-center justify-center cursor-pointer z-10"
                     onClick={() => setContextualVisible(true)}
                     onTouchStart={handleIndicatorTouchStart}
                     onTouchEnd={handleIndicatorTouchEnd}
@@ -137,7 +137,7 @@ export default function BottomNav() {
             {/* Swipe indicator - swipe down to close contextual row */}
             {showSwipeDownIndicator && (
                 <div
-                    className="absolute -top-8 left-0 right-0 h-10 flex items-center justify-center cursor-pointer"
+                    className="absolute -top-12 left-0 right-0 h-16 flex items-center justify-center cursor-pointer z-10"
                     onClick={() => setContextualVisible(false)}
                     onTouchStart={handleIndicatorTouchStart}
                     onTouchEnd={handleIndicatorTouchEnd}
@@ -160,6 +160,8 @@ export default function BottomNav() {
                 style={{
                     paddingBottom: "env(safe-area-inset-bottom)"
                 }}
+                onTouchStart={handleIndicatorTouchStart}
+                onTouchEnd={handleIndicatorTouchEnd}
             >
                 {/* Row Container */}
                 <div className="flex flex-col">

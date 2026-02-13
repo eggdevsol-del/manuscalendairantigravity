@@ -7,7 +7,7 @@
  */
 
 import { useState } from "react";
-import { FullScreenSheet, HalfSheet } from "@/components/ui/ssot";
+import { FullScreenSheet } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,15 +38,18 @@ export function SendPromotionSheet({
   const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
   const [autoApplyStartDate, setAutoApplyStartDate] = useState('');
   const [autoApplyEndDate, setAutoApplyEndDate] = useState('');
-  
+  const [expiresInDays, setExpiresInDays] = useState<string>(
+    promotion.validityDuration ? promotion.validityDuration.toString() : ''
+  );
+
   const utils = trpc.useUtils();
-  
+
   // Fetch clients
   const { data: clients, isLoading: loadingClients } = trpc.conversations.getClients.useQuery(
     undefined,
     { enabled: mode === 'specific' }
   );
-  
+
   // Send mutation
   const sendMutation = trpc.promotions.issuePromotion.useMutation({
     onSuccess: () => {
@@ -59,7 +62,7 @@ export function SendPromotionSheet({
       toast.error(error.message || 'Failed to send promotion');
     },
   });
-  
+
   // Auto-apply mutation
   const autoApplyMutation = trpc.promotions.createAutoApply.useMutation({
     onSuccess: () => {
@@ -72,26 +75,28 @@ export function SendPromotionSheet({
       toast.error(error.message || 'Failed to create auto-apply rule');
     },
   });
-  
+
   // Filter clients by search
-  const filteredClients = (clients || []).filter(client => {
+  const validClients = (clients || []).filter((c): c is NonNullable<typeof c> => c !== null && c !== undefined);
+
+  const filteredClients = validClients.filter(client => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
-      client.name?.toLowerCase().includes(query) ||
-      client.email?.toLowerCase().includes(query)
+      (client.name?.toLowerCase() || '').includes(query) ||
+      (client.email?.toLowerCase() || '').includes(query)
     );
   });
-  
+
   // Toggle client selection
   const toggleClient = (clientId: string) => {
-    setSelectedClientIds(prev => 
+    setSelectedClientIds(prev =>
       prev.includes(clientId)
         ? prev.filter(id => id !== clientId)
         : [...prev, clientId]
     );
   };
-  
+
   // Handle send
   const handleSend = () => {
     if (mode === 'specific') {
@@ -99,12 +104,13 @@ export function SendPromotionSheet({
         toast.error('Please select at least one client');
         return;
       }
-      
+
       // Send to each selected client
       selectedClientIds.forEach(clientId => {
         sendMutation.mutate({
           templateId: promotion.id,
           clientId,
+          expiresInDays: expiresInDays ? parseInt(expiresInDays) : undefined,
         });
       });
     } else {
@@ -112,7 +118,7 @@ export function SendPromotionSheet({
         toast.error('Please select date range');
         return;
       }
-      
+
       autoApplyMutation.mutate({
         templateId: promotion.id,
         startDate: autoApplyStartDate,
@@ -120,9 +126,9 @@ export function SendPromotionSheet({
       });
     }
   };
-  
+
   const isPending = sendMutation.isPending || autoApplyMutation.isPending;
-  
+
   return (
     <FullScreenSheet
       open={isOpen}
@@ -132,8 +138,8 @@ export function SendPromotionSheet({
         <div>
           <p className="text-lg font-bold text-white">{promotion.name}</p>
           <p className="text-sm text-white/70">
-            {promotion.valueType === 'percentage' 
-              ? `${promotion.value}% discount` 
+            {promotion.valueType === 'percentage'
+              ? `${promotion.value}% discount`
               : `$${(promotion.value / 100).toFixed(2)} value`
             }
           </p>
@@ -167,7 +173,7 @@ export function SendPromotionSheet({
           <span className="text-sm font-medium">Auto-Apply</span>
         </button>
       </div>
-      
+
       {mode === 'specific' ? (
         <>
           {/* Search */}
@@ -180,7 +186,29 @@ export function SendPromotionSheet({
               className="h-12 rounded-xl pl-10"
             />
           </div>
-          
+
+          {/* Validity Override */}
+          <div className="mb-4 space-y-2">
+            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Validity for this issue (Optional)
+            </Label>
+            <div className="relative">
+              <Input
+                type="number"
+                value={expiresInDays}
+                onChange={(e) => setExpiresInDays(e.target.value)}
+                placeholder={promotion.validityDuration ? `Default: ${promotion.validityDuration} days` : "No expiry"}
+                className="h-12 rounded-xl pl-4"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                days
+              </span>
+            </div>
+            <p className="text-[10px] text-muted-foreground">
+              Leave blank to use default rules or set to 0 for no expiry.
+            </p>
+          </div>
+
           {/* Client List */}
           <div className="space-y-2 max-h-[40vh] overflow-y-auto">
             {loadingClients ? (
@@ -226,7 +254,7 @@ export function SendPromotionSheet({
               })
             )}
           </div>
-          
+
           {selectedClientIds.length > 0 && (
             <p className="text-sm text-muted-foreground mt-4 text-center">
               {selectedClientIds.length} client{selectedClientIds.length > 1 ? 's' : ''} selected
@@ -248,7 +276,7 @@ export function SendPromotionSheet({
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Start Date</Label>
@@ -260,7 +288,7 @@ export function SendPromotionSheet({
                   min={format(new Date(), 'yyyy-MM-dd')}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label>End Date</Label>
                 <Input
@@ -272,14 +300,14 @@ export function SendPromotionSheet({
                 />
               </div>
             </div>
-            
+
             <p className="text-sm text-muted-foreground text-center">
               After the end date, this promotion will stop being automatically applied.
             </p>
           </div>
         </>
       )}
-      
+
       {/* Send Button */}
       <div className="mt-8">
         <Button

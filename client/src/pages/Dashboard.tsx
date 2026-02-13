@@ -6,7 +6,7 @@ import { useDashboardTasks } from "@/features/dashboard/useDashboardTasks";
 import { useBusinessTasks, useWeeklySnapshot, useDashboardSettings, type BusinessTask as ServerBusinessTask } from "@/features/dashboard/useBusinessTasks";
 import { CHALLENGE_TEMPLATES } from "@/features/dashboard/DashboardTaskRegister";
 import { DashboardTask, ChallengeTemplate } from "@/features/dashboard/types";
-import { PageShell, PageHeader, GlassSheet, HalfSheet, FullScreenSheet, WeeklySnapshotModal, TaskCard, SegmentedHeader } from "@/components/ui/ssot";
+import { PageShell, PageHeader, GlassSheet, FullScreenSheet, WeeklySnapshotModal, TaskCard, SegmentedHeader } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X, Check, Clock, ExternalLink, MessageSquare, Mail, Play, Plus, Trash2, Smartphone, Monitor, ChevronRight, Settings, BarChart3 } from "lucide-react";
@@ -372,12 +372,13 @@ export default function Dashboard() {
             </div>
 
 
-            {/* --- TASK SHEET (HalfSheet) --- */}
-            <HalfSheet
+            {/* --- TASK SHEET (FullScreenSheet) --- */}
+            <FullScreenSheet
                 open={showTaskSheet}
                 onClose={() => setShowTaskSheet(false)}
                 title={selectedTask?.title || "Task"}
-                subtitle={selectedTask?.context}
+                contextTitle={selectedTask?.title}
+                contextSubtitle={selectedTask?.context}
             >
                 {selectedTask && (
                     <div className="grid gap-3">
@@ -478,7 +479,7 @@ export default function Dashboard() {
                         )}
                     </div>
                 )}
-            </HalfSheet>
+            </FullScreenSheet>
 
             {/* --- CHALLENGE SHEET (FullScreenSheet) --- */}
             <FullScreenSheet
@@ -515,12 +516,13 @@ export default function Dashboard() {
                 </div>
             </FullScreenSheet>
 
-            {/* --- SETTINGS SHEET (HalfSheet) --- */}
-            <HalfSheet
+            {/* --- SETTINGS SHEET (FullScreenSheet) --- */}
+            <FullScreenSheet
                 open={showSettingsSheet}
                 onClose={() => setShowSettingsSheet(false)}
                 title="Dashboard Settings"
-                subtitle="Configure your revenue protection dashboard."
+                contextTitle="Configure Dashboard"
+                contextSubtitle="Customize your revenue protection dashboard."
             >
                 <div className="space-y-6">
                     {/* Max Visible Tasks */}
@@ -623,7 +625,7 @@ export default function Dashboard() {
                         </Select>
                     </div>
                 </div>
-            </HalfSheet>
+            </FullScreenSheet>
 
             {/* --- WEEKLY SNAPSHOT MODAL --- */}
             <WeeklySnapshotModal

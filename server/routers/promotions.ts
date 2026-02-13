@@ -44,6 +44,8 @@ export const promotionsRouter = router({
       backgroundScale: z.number().min(0.5).max(3).optional(),
       backgroundPositionX: z.number().min(0).max(100).optional(),
       backgroundPositionY: z.number().min(0).max(100).optional(),
+      validityDuration: z.number().min(1).nullable().optional(),
+      autoApplyTrigger: z.enum(['none', 'new_client', 'birthday']).default('none'),
     }))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -75,6 +77,8 @@ export const promotionsRouter = router({
           backgroundPositionX: input.backgroundPositionX || 50,
           backgroundPositionY: input.backgroundPositionY || 50,
           isActive: 1,
+          validityDuration: input.validityDuration || null,
+          autoApplyTrigger: input.autoApplyTrigger,
         });
 
         console.log(`[promotions.createTemplate] Created template for artist ${ctx.user.id}`);
@@ -106,6 +110,8 @@ export const promotionsRouter = router({
       backgroundScale: z.number().min(0.5).max(3).optional(),
       backgroundPositionX: z.number().min(0).max(100).optional(),
       backgroundPositionY: z.number().min(0).max(100).optional(),
+      validityDuration: z.number().min(1).nullable().optional(),
+      autoApplyTrigger: z.enum(['none', 'new_client', 'birthday']).default('none'),
     }))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -147,6 +153,8 @@ export const promotionsRouter = router({
             backgroundScale: input.backgroundScale?.toString() || '1.00',
             backgroundPositionX: input.backgroundPositionX || 50,
             backgroundPositionY: input.backgroundPositionY || 50,
+            validityDuration: input.validityDuration || null,
+            autoApplyTrigger: input.autoApplyTrigger,
             updatedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
           })
           .where(eq(schema.promotionTemplates.id, input.id));
@@ -210,6 +218,8 @@ export const promotionsRouter = router({
             status: 'active' as const,
             code: null,
             expiresAt: null,
+            validityDuration: t.validityDuration, // Return validityDuration
+            autoApplyTrigger: t.autoApplyTrigger, // Return autoApplyTrigger
           }));
         } else {
           // Clients see promotions issued to them
@@ -245,6 +255,7 @@ export const promotionsRouter = router({
             status: p.status,
             code: p.code,
             expiresAt: p.expiresAt,
+            // Clients don't need to see logic fields
           }));
         }
       } catch (error) {
@@ -291,9 +302,13 @@ export const promotionsRouter = router({
 
         // Calculate expiry
         let expiresAt: string | null = null;
-        if (input.expiresInDays) {
+
+        // Priority: Input override > Template default > No expiry
+        const daysValid = input.expiresInDays || template.validityDuration;
+
+        if (daysValid) {
           const date = new Date();
-          date.setDate(date.getDate() + input.expiresInDays);
+          date.setDate(date.getDate() + daysValid);
           expiresAt = date.toISOString().slice(0, 19).replace('T', ' ');
         }
 
@@ -656,4 +671,167 @@ export const promotionsRouter = router({
         throw error;
       }
     }),
+
+  /**
+   * Get all promotions issued to a specific client (Artist view)
+   */
+  getClientPromotions: protectedProcedure
+    .input(z.object({
+      clientId: z.string(),
+    }))
+    .query(async ({ ctx, input }) => {
+      try {
+        if (ctx.user.role !== 'artist' && ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can view client promotions" });
+        }
+
+        const db = await getDb();
+        if (!db) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+        }
+
+        const promotions = await db.query.issuedPromotions.findMany({
+          where: and(
+            eq(schema.issuedPromotions.clientId, input.clientId),
+            eq(schema.issuedPromotions.artistId, ctx.user.id)
+          ),
+          with: {
+            template: true,
+          },
+          orderBy: desc(schema.issuedPromotions.createdAt),
+        });
+
+        return promotions.map(p => ({
+          id: p.id,
+          type: p.type,
+          name: p.template?.name || 'Promotion',
+          valueType: p.valueType,
+          originalValue: p.originalValue,
+          remainingValue: p.remainingValue,
+          originalAmount: p.originalValue, // Alias for consistency if needed
+          code: p.code,
+          status: p.status,
+          expiresAt: p.expiresAt,
+          issuedAt: p.createdAt,
+          redeemedAt: p.redeemedAt,
+        }));
+      } catch (error) {
+        console.error('[promotions.getClientPromotions] Error:', error);
+        throw error;
+      }
+    }),
+
+  /**
+   * Update an issued promotion (e.g. change expiry)
+   */
+  updateIssuedPromotion: protectedProcedure
+    .input(z.object({
+      id: z.number(),
+      expiresAt: z.string().nullable(), // ISO date string or null
+      status: statusEnum.optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        if (ctx.user.role !== 'artist' && ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can update issued promotions" });
+        }
+
+        const db = await getDb();
+        if (!db) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+        }
+
+        // Verify ownership
+        const existing = await db.query.issuedPromotions.findFirst({
+          where: and(
+            eq(schema.issuedPromotions.id, input.id),
+            eq(schema.issuedPromotions.artistId, ctx.user.id)
+          )
+        });
+
+        if (!existing) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Promotion not found" });
+        }
+
+        await db.update(schema.issuedPromotions)
+          .set({
+            expiresAt: input.expiresAt,
+            status: input.status || existing.status,
+            updatedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+          })
+          .where(eq(schema.issuedPromotions.id, input.id));
+
+        console.log(`[promotions.updateIssuedPromotion] Updated promotion ${input.id}`);
+        return { success: true };
+      } catch (error) {
+        console.error('[promotions.updateIssuedPromotion] Error:', error);
+        throw error;
+      }
+    }),
 });
+
+/**
+ * Helper to check and apply 'New Client' promotions
+ * Should be called when a client makes their first booking
+ */
+export async function checkAndApplyNewClient(artistId: string, clientId: string) {
+  try {
+    const db = await getDb();
+    if (!db) return;
+
+    // 1. Get all active 'new_client' templates for this artist
+    const templates = await db.query.promotionTemplates.findMany({
+      where: and(
+        eq(schema.promotionTemplates.artistId, artistId),
+        eq(schema.promotionTemplates.isActive, 1),
+        eq(schema.promotionTemplates.autoApplyTrigger, 'new_client')
+      )
+    });
+
+    if (templates.length === 0) return;
+
+    console.log(`[checkAndApplyNewClient] Found ${templates.length} templates for artist ${artistId}`);
+
+    for (const template of templates) {
+      // 2. Check if client already has this promotion (to prevent duplicates)
+      const existing = await db.query.issuedPromotions.findFirst({
+        where: and(
+          eq(schema.issuedPromotions.templateId, template.id),
+          eq(schema.issuedPromotions.clientId, clientId)
+        )
+      });
+
+      if (existing) {
+        continue;
+      }
+
+      // 3. Issue the promotion
+      const code = randomBytes(4).toString('hex').toUpperCase();
+      let expiresAt: string | null = null;
+
+      if (template.validityDuration) {
+        const date = new Date();
+        date.setDate(date.getDate() + template.validityDuration);
+        expiresAt = date.toISOString().slice(0, 19).replace('T', ' ');
+      }
+
+      await db.insert(schema.issuedPromotions).values({
+        templateId: template.id,
+        artistId: artistId,
+        clientId: clientId,
+        code,
+        type: template.type,
+        valueType: template.valueType,
+        originalValue: template.value,
+        remainingValue: template.value,
+        isAutoApply: 1,
+        status: 'active',
+        expiresAt,
+      });
+
+      console.log(`[checkAndApplyNewClient] Issued auto-promotion ${code} to ${clientId}`);
+    }
+  } catch (error) {
+    console.error('[checkAndApplyNewClient] Error:', error);
+  }
+}

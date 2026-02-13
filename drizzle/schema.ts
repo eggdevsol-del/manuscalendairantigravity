@@ -1085,6 +1085,10 @@ export const promotionTemplates = mysqlTable("promotion_templates", {
 	// Status
 	isActive: tinyint().default(1),
 
+	// Advanced Logic
+	validityDuration: int(), // Days until expiry (null = no expiry)
+	autoApplyTrigger: mysqlEnum(['none', 'new_client', 'birthday']).default('none').notNull(),
+
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [

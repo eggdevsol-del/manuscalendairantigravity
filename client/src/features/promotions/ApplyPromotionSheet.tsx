@@ -8,7 +8,7 @@
  */
 
 import { useState } from "react";
-import { HalfSheet } from "@/components/ui/ssot";
+import { FullScreenSheet } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -47,29 +47,29 @@ export function ApplyPromotionSheet({
   onApply,
 }: ApplyPromotionSheetProps) {
   const [selectedPromotion, setSelectedPromotion] = useState<AvailablePromotion | null>(null);
-  
+
   // Fetch available promotions
   const { data: promotions, isLoading } = trpc.promotions.getAvailableForBooking.useQuery(
     { artistId },
     { enabled: isOpen }
   );
-  
+
   // Calculate discount for selected promotion
   const calculateDiscount = (promo: AvailablePromotion): { discountAmount: number; finalAmount: number } => {
     let discountAmount: number;
-    
+
     if (promo.valueType === 'percentage') {
       discountAmount = Math.round(originalAmount * (promo.remainingValue / 100));
     } else {
       discountAmount = Math.min(promo.remainingValue, originalAmount);
     }
-    
+
     const finalAmount = Math.max(0, originalAmount - discountAmount);
     return { discountAmount, finalAmount };
   };
-  
+
   const selectedDiscount = selectedPromotion ? calculateDiscount(selectedPromotion) : null;
-  
+
   // Handle apply
   const handleApply = () => {
     if (selectedPromotion && selectedDiscount) {
@@ -77,12 +77,14 @@ export function ApplyPromotionSheet({
       onClose();
     }
   };
-  
+
   return (
-    <HalfSheet
+    <FullScreenSheet
       open={isOpen}
       onClose={onClose}
       title="Apply Promotion"
+      contextTitle="Select Promotion"
+      contextSubtitle="Choose a voucher or discount to apply to this booking"
     >
       <div className="space-y-6">
         {/* Original Amount Display */}
@@ -92,7 +94,7 @@ export function ApplyPromotionSheet({
             ${(originalAmount / 100).toFixed(2)}
           </span>
         </div>
-        
+
         {/* Available Promotions */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
@@ -115,12 +117,12 @@ export function ApplyPromotionSheet({
             <p className="text-sm font-medium text-muted-foreground">
               Select a promotion to apply:
             </p>
-            
+
             {promotions.map((promo) => {
               const isSelected = selectedPromotion?.id === promo.id;
               const { discountAmount, finalAmount } = calculateDiscount(promo as AvailablePromotion);
               const Icon = promo.type === 'voucher' ? Gift : promo.type === 'discount' ? Percent : CreditCard;
-              
+
               return (
                 <button
                   key={promo.id}
@@ -139,7 +141,7 @@ export function ApplyPromotionSheet({
                     )}>
                       <Icon className="w-5 h-5" />
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <h4 className="font-semibold text-foreground truncate">
@@ -151,7 +153,7 @@ export function ApplyPromotionSheet({
                           </div>
                         )}
                       </div>
-                      
+
                       <p className="text-sm text-muted-foreground mt-0.5">
                         {formatPromotionValue(promo.remainingValue, promo.type, promo.valueType)}
                         {promo.valueType === 'fixed' && promo.remainingValue < promo.value && (
@@ -160,7 +162,7 @@ export function ApplyPromotionSheet({
                           </span>
                         )}
                       </p>
-                      
+
                       {isSelected && (
                         <motion.div
                           initial={{ opacity: 0, height: 0 }}
@@ -188,7 +190,7 @@ export function ApplyPromotionSheet({
             })}
           </div>
         )}
-        
+
         {/* Summary & Apply Button */}
         {selectedPromotion && selectedDiscount && (
           <motion.div
@@ -216,7 +218,7 @@ export function ApplyPromotionSheet({
                 </span>
               </div>
             </div>
-            
+
             <Button
               className="w-full h-14 rounded-xl font-bold text-base"
               onClick={handleApply}
@@ -225,7 +227,7 @@ export function ApplyPromotionSheet({
             </Button>
           </motion.div>
         )}
-        
+
         {/* Skip Button */}
         <Button
           variant="ghost"
@@ -235,7 +237,7 @@ export function ApplyPromotionSheet({
           Continue Without Promotion
         </Button>
       </div>
-    </HalfSheet>
+    </FullScreenSheet>
   );
 }
 

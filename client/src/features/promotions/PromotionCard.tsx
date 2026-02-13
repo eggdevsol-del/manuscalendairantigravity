@@ -47,6 +47,9 @@ export interface PromotionCardData {
   isAutoApply?: boolean;
   autoApplyStartDate?: string | null;
   autoApplyEndDate?: string | null;
+  // New Logic Fields
+  validityDuration?: number | null;
+  autoApplyTrigger?: 'none' | 'new_client' | 'birthday';
   // Computed fields handling
   originalValue?: number;
 }

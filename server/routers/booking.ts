@@ -3,6 +3,7 @@ import { z } from "zod";
 import { artistProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import * as BookingService from "../services/booking.service";
+import { checkAndApplyNewClient } from "./promotions";
 
 export const bookingRouter = router({
     checkAvailability: artistProcedure
@@ -129,8 +130,6 @@ export const bookingRouter = router({
                     );
 
                     if (!validation.valid) {
-                        // Allow a small grace period or override? No, strict for now based on user request.
-                        // Actually, if it's "11pm" vs "work hours", it's a bug.
                         throw new TRPCError({
                             code: "PRECONDITION_FAILED",
                             message: `Invalid booking time: ${validation.reason}`
@@ -138,6 +137,22 @@ export const bookingRouter = router({
                     }
                 }
             }
+
+            // Check if this is a new client (no prior appointments)
+            // We check BEFORE creating the new ones to see if they had 0 count
+            const distinctAppointments = await db.getAppointmentsForUser(
+                conversation.artistId, // context is artist
+                "artist",   // query as artist to finding *this* client's appointments? No wait.
+                // Helper asks for (userId, role, fromDate?)
+            );
+            // db.getAppointmentsForUser might not filter by specific client if querying as artist.
+            // Let's use getAppointmentsForUser(conversation.clientId, "client")
+
+            const priorAppointments = await db.getAppointmentsForUser(
+                conversation.clientId,
+                "client"
+            );
+            const isNewClient = priorAppointments.length === 0;
 
             let createdCount = 0;
             const appointmentIds: number[] = [];
@@ -148,8 +163,8 @@ export const bookingRouter = router({
                     clientId: conversation.clientId,
                     title: appt.title,
                     description: appt.description,
-                    startTime: appt.startTime,
-                    endTime: appt.endTime,
+                    startTime: appt.startTime.toISOString().slice(0, 19).replace('T', ' '),
+                    endTime: appt.endTime.toISOString().slice(0, 19).replace('T', ' '),
                     serviceName: appt.serviceName,
                     price: appt.price,
                     depositAmount: appt.depositAmount,
@@ -159,6 +174,14 @@ export const bookingRouter = router({
                     appointmentIds.push(created.id);
                 }
                 createdCount++;
+            }
+
+            // Trigger Auto-Apply Promotions if new client
+            if (isNewClient) {
+                // Fire and forget - don't await strictly or catch error to not block booking
+                checkAndApplyNewClient(conversation.artistId, conversation.clientId).catch(err => {
+                    console.error("[BookingRouter] Auto-apply promotion failed:", err);
+                });
             }
 
             // Create Proposal Message

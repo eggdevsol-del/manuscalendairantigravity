@@ -5,8 +5,8 @@ import { WebPushSettings } from "@/components/WebPushSettings";
 
 import WorkHoursAndServices from "./WorkHoursAndServices";
 import ArtistLink from "@/components/ArtistLink";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Switch, Textarea } from "@/components/ui";
-import { LoadingState, PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
+import { Button, Card, Input, Label, Switch, Textarea } from "@/components/ui";
+import { LoadingState, PageShell, PageHeader } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
@@ -22,30 +22,37 @@ import {
   Sun,
   User,
   Zap,
+  RefreshCw,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { toast } from "sonner";
 import { forceUpdate } from "@/lib/pwa";
-import { RefreshCw } from "lucide-react";
 import { APP_VERSION } from "@/lib/version";
 import { getGoogleMapsEmbedUrl } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
-// Actually, I should check if useDebounce exists first. 
-// If not, I can implement a simple one inside component or create the hook.
-// Let's check for hooks first.
 
 type SettingsSection = "main" | "profile" | "work-hours" | "quick-actions" | "notifications" | "business" | "booking-link";
-
-
 
 export default function Settings() {
   const { user, loading, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { showDebugLabels, setShowDebugLabels } = useUIDebug();
-  const [, setLocation] = useLocation();
-  const [activeSection, setActiveSection] = useState<SettingsSection>("main");
+  const [location, setLocation] = useLocation();
+  const search = useSearch();
 
+  // Derive active section from URL search params
+  const params = new URLSearchParams(search);
+  const activeSection = (params.get("section") as SettingsSection) || "main";
+
+  // Helper to change section
+  const navigateToSection = (section: SettingsSection) => {
+    if (section === "main") {
+      setLocation("/settings");
+    } else {
+      setLocation(`/settings?section=${section}`);
+    }
+  };
 
   // Profile state
   const [profileName, setProfileName] = useState("");
@@ -230,7 +237,7 @@ export default function Settings() {
   // WorkHoursAndServices should ideally be migrated to Sheet Layout as well.
   // Since we assume we will migrate it next, we render it directly.
   if (activeSection === "work-hours" && isArtist) {
-    return <WorkHoursAndServices onBack={() => setActiveSection("main")} />;
+    return <WorkHoursAndServices onBack={() => navigateToSection("main")} />;
   }
 
   if (activeSection === "profile") {
@@ -530,7 +537,7 @@ export default function Settings() {
                   {/* Profile */}
                   <div
                     className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
-                    onClick={() => setActiveSection("profile")}
+                    onClick={() => navigateToSection("profile")}
                   >
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-primary/20 text-primary">
@@ -628,7 +635,7 @@ export default function Settings() {
                       {/* Booking Link */}
                       <div
                         className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
-                        onClick={() => setActiveSection("booking-link")}
+                        onClick={() => navigateToSection("booking-link")}
                       >
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
@@ -645,7 +652,7 @@ export default function Settings() {
                       {/* Business Info */}
                       <div
                         className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
-                        onClick={() => setActiveSection("business")}
+                        onClick={() => navigateToSection("business")}
                       >
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400">
@@ -662,7 +669,7 @@ export default function Settings() {
                       {/* Work Hours */}
                       <div
                         className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
-                        onClick={() => setActiveSection("work-hours")}
+                        onClick={() => navigateToSection("work-hours")}
                       >
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-xl bg-pink-500/20 text-pink-400">
