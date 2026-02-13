@@ -44,8 +44,6 @@ interface FABMenuItemsProps extends FABMenuBaseProps {
 interface FABMenuChildrenProps extends FABMenuBaseProps {
     /** Custom panel content (for complex flows like the Booking wizard) */
     children: ReactNode;
-    /** Optional panel class overrides (width, max-height, etc.) */
-    panelClassName?: string;
     items?: never;
 }
 
@@ -70,10 +68,7 @@ export function FABMenu(props: FABMenuProps) {
                         animate="visible"
                         exit="hidden"
                         variants={fab.animation.panel}
-                        className={cn(
-                            fab.panel,
-                            'items' in props && props.items ? "" : (props as FABMenuChildrenProps).panelClassName
-                        )}
+                        className={fab.panel}
                     >
                         {'items' in props && props.items ? (
                             // Items mode — render labeled icon buttons

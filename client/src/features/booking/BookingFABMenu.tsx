@@ -159,7 +159,6 @@ export function BookingFABMenu({
             isOpen={isOpen}
             onOpenChange={setIsOpen}
             toggleIcon={<span className="text-xl font-black tracking-tight select-none">B</span>}
-            panelClassName="w-[280px] items-stretch"
             className={className}
         >
             {/* Panel Header — SSOT label style */}

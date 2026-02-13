@@ -55,8 +55,8 @@ export const tokens = {
         // Outer container positioning
         container: "fixed bottom-[176px] right-5 z-[55] flex flex-col items-end gap-3",
 
-        // The expanding glassmorphism panel
-        panel: "mb-2 p-4 rounded-[2rem] border border-white/10 shadow-2xl flex flex-col items-end gap-4 bg-gray-100/[0.75] dark:bg-slate-950/[0.75] backdrop-blur-[32px]",
+        // The expanding glassmorphism panel — fixed dimensions, scroll if needed
+        panel: "mb-2 p-4 rounded-[2rem] border border-white/10 shadow-2xl flex flex-col items-end gap-4 bg-gray-100/[0.75] dark:bg-slate-950/[0.75] backdrop-blur-[32px] w-[220px] max-h-[50vh] overflow-y-auto",
 
         // Individual menu item row (label + button)
         itemRow: "flex items-center justify-end gap-3 w-full",
