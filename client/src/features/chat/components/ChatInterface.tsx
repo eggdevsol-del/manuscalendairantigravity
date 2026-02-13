@@ -2,17 +2,17 @@ import { Button, Input, Label, ScrollArea, DialogTitle } from "@/components/ui";
 import { useChatController } from "@/features/chat/useChatController";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "@/components/ui/ssot";
-import { BookingWizard } from "@/features/booking/BookingWizard";
+import { BookingFABMenu } from "@/features/booking/BookingFABMenu";
 import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
 // ProposalSheet removed - not needed
 import { ProjectProposalMessage } from "@/components/chat/ProjectProposalMessage";
 import { ProjectProposalModal } from "@/features/chat/components/ProjectProposalModal";
-import { ArrowLeft, Send, Zap, MessageCircle, ImagePlus, Pin, PinOff, Calendar, FileText, ImageIcon } from "lucide-react";
+import { ArrowLeft, Send, Zap, MessageCircle, ImagePlus, Pin, PinOff, FileText, ImageIcon } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { useRegisterBottomNavRow, useBottomNav } from "@/contexts/BottomNavContext";
 import { QuickActionsRow, ChatAction } from "@/features/chat/components/QuickActionsRow";
 import { useLocation } from "wouter";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { LoadingState } from "@/components/ui/ssot";
@@ -94,26 +94,12 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
     // State for selected image lightbox
     const [selectedMediaImage, setSelectedMediaImage] = useState<string | null>(null);
 
-    // Stable callback references for quick actions
-    const handleBookClick = useCallback(() => {
-        console.log('[Chat] Book button clicked');
-        setShowBookingCalendar(true);
-    }, [setShowBookingCalendar]);
-
     // Register Bottom Nav Contextual Row (Quick Actions + System Actions)
     const quickActionsRow = useMemo(() => {
         const isAuthorized = user?.role === 'artist' || user?.role === 'admin';
 
-        // System Actions (Fixed) - Only for Artists
-        const systemActions: ChatAction[] = isAuthorized ? [
-            {
-                id: 'chat.book',
-                label: 'Book',
-                icon: Calendar,
-                onClick: handleBookClick,
-                highlight: true
-            }
-        ] : [];
+        // System Actions (Fixed) - booking now handled by FAB
+        const systemActions: ChatAction[] = [];
 
         // User Configured Actions
         const userActions: ChatAction[] = isAuthorized && quickActions ? quickActions.map(qa => {
@@ -141,7 +127,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
         return (
             <QuickActionsRow actions={allActions} />
         );
-    }, [user?.role, quickActions, handleQuickAction, handleBookClick]);
+    }, [user?.role, quickActions, handleQuickAction]);
 
     useRegisterBottomNavRow("chat-actions", quickActionsRow);
 
@@ -438,18 +424,17 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                 </div>
             </div>
 
-            {/* Booking Wizard */}
-            <BookingWizard
-                isOpen={showBookingCalendar}
-                onClose={() => setShowBookingCalendar(false)}
-                conversationId={conversationId}
-                artistServices={availableServices || []}
-                artistSettings={artistSettings}
-                onBookingSuccess={() => {
-                    setShowBookingCalendar(false);
-                    toast.success('Booking proposal sent!');
-                }}
-            />
+            {/* Booking FAB Menu - Artist Only */}
+            {isArtist && (
+                <BookingFABMenu
+                    conversationId={conversationId}
+                    artistServices={availableServices || []}
+                    artistSettings={artistSettings}
+                    onBookingSuccess={() => {
+                        toast.success('Booking proposal sent!');
+                    }}
+                />
+            )}
 
             {/* Client Confirm Dates Dialog */}
             <BottomSheet
