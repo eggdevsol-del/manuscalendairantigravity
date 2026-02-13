@@ -111,7 +111,6 @@ export default function Promotions() {
 
       <PageHeader
         title="Promotions"
-        subtitle={isArtist ? 'Create and send promotions to clients' : 'Redeem your vouchers and discounts'}
       />
 
       <div className="relative flex-1 flex flex-col overflow-hidden h-full">

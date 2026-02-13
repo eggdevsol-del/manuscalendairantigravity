@@ -1,0 +1,2 @@
+ALTER TABLE `promotion_templates` ADD `validityDuration` int;--> statement-breakpoint
+ALTER TABLE `promotion_templates` ADD `autoApplyTrigger` enum('none','new_client','birthday') DEFAULT 'none' NOT NULL;
