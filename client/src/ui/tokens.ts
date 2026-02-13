@@ -26,7 +26,7 @@ export const tokens = {
     // Global App Card (Dashboard, Settings, etc.) - Rectangular SSOT (v1.0.319)
     card: {
         base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px] mb-2", // Global 4px radius, mb-2 spacing
-        bg: "bg-white/10 hover:bg-white/15", // Keep premium glass background
+        bg: "bg-transparent hover:bg-white/5", // Transparent base, subtle hover
         bgAccent: "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
         interactive: "cursor-pointer active:scale-[0.98]",
         leftAccent: "absolute left-0 top-0 bottom-0 w-2", // Shared left accent style
