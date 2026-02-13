@@ -2,6 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useUIDebug } from "@/_core/contexts/UIDebugContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { WebPushSettings } from "@/components/WebPushSettings";
+import { getAssetUrl } from "@/lib/assets";
 
 import WorkHoursAndServices from "./WorkHoursAndServices";
 import ArtistLink from "@/components/ArtistLink";
@@ -250,7 +251,7 @@ export default function Settings() {
         <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
           <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center overflow-hidden mb-2">
             {profileAvatar ? (
-              <img src={profileAvatar} alt="Profile" className="w-full h-full object-cover" />
+              <img src={getAssetUrl(profileAvatar)} alt="Profile" className="w-full h-full object-cover" />
             ) : (
               <User className="w-10 h-10 text-white/50" />
             )}
@@ -506,7 +507,7 @@ export default function Settings() {
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border-2 border-white/5 shadow-lg">
             {user?.avatar ? (
-              <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+              <img src={getAssetUrl(user.avatar)} alt="Profile" className="w-full h-full object-cover" />
             ) : (
               <User className="w-8 h-8 text-white/50" />
             )}

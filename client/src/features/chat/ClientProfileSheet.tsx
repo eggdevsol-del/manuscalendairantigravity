@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { getAssetUrl } from "@/lib/assets";
 
 interface ClientProfileSheetProps {
     isOpen: boolean;
@@ -75,7 +76,7 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
                 <div className="flex items-center gap-4 mb-6 px-1">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center overflow-hidden ring-4 ring-background/50 shadow-xl">
                         {client.avatar ? (
-                            <img src={client.avatar} alt={client.name || "Client"} className="w-full h-full object-cover" />
+                            <img src={getAssetUrl(client.avatar)} alt={client.name || "Client"} className="w-full h-full object-cover" />
                         ) : (
                             <span className="text-2xl text-white font-bold">
                                 {(client.name || "?").charAt(0).toUpperCase()}
@@ -161,7 +162,7 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
                                                         <h4 className="font-bold text-base">{promo.name}</h4>
                                                         <p className="text-sm text-muted-foreground">
                                                             {promo.valueType === 'percentage'
-                                                                ? `${promo.value}% Discount`
+                                                                ? `${promo.originalAmount}% Discount` // Using originalAmount as placeholder if value is missing
                                                                 : `$${(promo.originalAmount / 100).toFixed(2)} Value`
                                                             }
                                                         </p>
@@ -274,7 +275,7 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
                                                         className="aspect-square rounded-lg overflow-hidden bg-muted/30 border border-white/5 hover:border-primary/50 transition-colors"
                                                     >
                                                         <img
-                                                            src={img.url}
+                                                            src={getAssetUrl(img.url)}
                                                             alt={`Reference ${index + 1}`}
                                                             className="w-full h-full object-cover"
                                                         />
@@ -298,7 +299,7 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
                                                         className="aspect-square rounded-lg overflow-hidden bg-muted/30 border border-white/5 hover:border-primary/50 transition-colors"
                                                     >
                                                         <img
-                                                            src={img.url}
+                                                            src={getAssetUrl(img.url)}
                                                             alt={`Body placement ${index + 1}`}
                                                             className="w-full h-full object-cover"
                                                         />
@@ -346,7 +347,7 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
                         Close
                     </button>
                     <img
-                        src={selectedImage}
+                        src={getAssetUrl(selectedImage)}
                         alt="Full size"
                         className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                         onClick={(e) => e.stopPropagation()}

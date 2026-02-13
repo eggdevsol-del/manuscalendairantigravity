@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useLocation, useParams } from "wouter";
 import { toast } from "sonner";
+import { getAssetUrl } from "@/lib/assets";
 
 export default function LeadDetail() {
   const { user, loading } = useAuth();
@@ -228,8 +229,8 @@ export default function LeadDetail() {
                           <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">References</p>
                           <div className="grid grid-cols-4 gap-2">
                             {(Array.isArray(lead.referenceImages) ? lead.referenceImages : JSON.parse(lead.referenceImages || '[]')).map((img: string, i: number) => (
-                              <div key={i} className="aspect-square rounded-md overflow-hidden bg-white/5 border border-white/10 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.open(img, '_blank')}>
-                                <img src={img} alt="Reference" className="w-full h-full object-cover" />
+                              <div key={i} className="aspect-square rounded-md overflow-hidden bg-white/5 border border-white/10 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.open(getAssetUrl(img), '_blank')}>
+                                <img src={getAssetUrl(img)} alt="Reference" className="w-full h-full object-cover" />
                               </div>
                             ))}
                           </div>
@@ -242,8 +243,8 @@ export default function LeadDetail() {
                           <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Placement</p>
                           <div className="grid grid-cols-4 gap-2">
                             {(Array.isArray(lead.bodyPlacementImages) ? lead.bodyPlacementImages : JSON.parse(lead.bodyPlacementImages || '[]')).map((img: string, i: number) => (
-                              <div key={i} className="aspect-square rounded-md overflow-hidden bg-white/5 border border-white/10 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.open(img, '_blank')}>
-                                <img src={img} alt="Placement" className="w-full h-full object-cover" />
+                              <div key={i} className="aspect-square rounded-md overflow-hidden bg-white/5 border border-white/10 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.open(getAssetUrl(img), '_blank')}>
+                                <img src={getAssetUrl(img)} alt="Placement" className="w-full h-full object-cover" />
                               </div>
                             ))}
                           </div>

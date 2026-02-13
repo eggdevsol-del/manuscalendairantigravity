@@ -19,6 +19,7 @@ import {
   formatPromotionValue,
   getContrastTextColor,
 } from "./cardTemplates";
+import { getAssetUrl } from "@/lib/assets";
 
 export interface PromotionCardData {
   id: number;
@@ -101,12 +102,13 @@ export function PromotionCard({
   // Background Image with defensive quoting and cache busting
   const getProcessedImageUrl = (url: string) => {
     if (!url) return null;
-    const separator = url.includes('?') ? '&' : '?';
+    const resolvedUrl = getAssetUrl(url);
+    const separator = resolvedUrl.includes('?') ? '&' : '?';
     // Use stable app version for cache busting instead of Date.now()
     // This allows PWA caching to work across sessions until a new version is deployed.
     const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
-    const cacheBuster = url.startsWith('/api/') ? `${separator}v=${version}` : '';
-    return `url("${url}${cacheBuster}")`;
+    const cacheBuster = resolvedUrl.startsWith('/api/') ? `${separator}v=${version}` : '';
+    return `url("${resolvedUrl}${cacheBuster}")`;
   };
 
   const bgImageUrl = getProcessedImageUrl(data.backgroundImageUrl || '');
@@ -203,7 +205,7 @@ export function PromotionCard({
         {/* Logo area */}
         {data.logoUrl ? (
           <img
-            src={data.logoUrl}
+            src={getAssetUrl(data.logoUrl)}
             alt="Logo"
             className={cn(
               "absolute w-12 h-12 object-contain bg-white/90 rounded-lg p-1",

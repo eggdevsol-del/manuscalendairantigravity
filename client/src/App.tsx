@@ -43,6 +43,13 @@ function Router() {
   const isTabletLandscape = useTabletLandscape();
   const isArtist = user?.role === 'artist';
 
+  // Initialize OneSignal
+  React.useEffect(() => {
+    import("@/lib/onesignal").then(({ initializeOneSignal }) => {
+      initializeOneSignal();
+    });
+  }, []);
+
   // Initialize OneSignal user
   React.useEffect(() => {
     if (user?.id) {

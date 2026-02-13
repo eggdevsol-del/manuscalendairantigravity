@@ -185,6 +185,9 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      onesignal-cordova-plugin:
+        specifier: ^5.3.1
+        version: 5.3.1
       react:
         specifier: ^19.1.1
         version: 19.2.3
@@ -4566,6 +4569,10 @@ packages:
   on-finished@2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
     engines: {node: '>= 0.8'}
+
+  onesignal-cordova-plugin@5.3.1:
+    resolution: {integrity: sha512-bwU6ePQ1lYfX16Ny9Dp+6H81vPrEfA8UWd2Zeo7Zd5rwUr5ZGoVsawelMQnvzUtk5AtQWJQrhxCz9sH88uTfjw==}
+    engines: {'0': {name: cordova-android, version: '>=4.0.0'}, '1': {name: apple-xcode, version: '>=8.0.0'}, '2': {name: apple-ios, version: '>=7.0.0'}, '3': {name: cordova, version: '>=6.4.0'}, '4': {name: cordova-ios, version: '>=4.3.0'}}
 
   open@8.4.2:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
@@ -10161,6 +10168,8 @@ snapshots:
   on-finished@2.4.1:
     dependencies:
       ee-first: 1.1.1
+
+  onesignal-cordova-plugin@5.3.1: {}
 
   open@8.4.2:
     dependencies:

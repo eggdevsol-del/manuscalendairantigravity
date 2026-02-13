@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { tokens } from "@/ui/tokens";
+import { getAssetUrl } from "@/lib/assets";
 
 interface NextAppointmentCardProps {
     appointment: any; // Using any for simplicity in wiring, ideally typed from TRPC router output
@@ -38,7 +39,7 @@ export function NextAppointmentCard({ appointment }: NextAppointmentCardProps) {
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex gap-3 items-center">
                                 <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
-                                    <AvatarImage src={client?.avatar} />
+                                    <AvatarImage src={getAssetUrl(client?.avatar)} />
                                     <AvatarFallback>{client?.name?.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div>
