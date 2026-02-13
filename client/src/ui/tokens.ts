@@ -50,7 +50,56 @@ export const tokens = {
         icon: "rounded-full bg-white/5 hover:bg-white/10 text-foreground w-10 h-10 flex items-center justify-center transition-all active:scale-90"
     },
 
-    // 5. Typography
+    // 5. FAB Menu (Floating Action Button Menu) — SSOT for all FAB menus
+    fab: {
+        // Outer container positioning
+        container: "fixed bottom-[176px] right-5 z-[55] flex flex-col items-end gap-3",
+
+        // The expanding glassmorphism panel
+        panel: "mb-2 p-4 rounded-[2rem] border border-white/10 shadow-2xl flex flex-col items-end gap-4 bg-gray-100/[0.75] dark:bg-slate-950/[0.75] backdrop-blur-[32px]",
+
+        // Individual menu item row (label + button)
+        itemRow: "flex items-center justify-end gap-3 w-full",
+
+        // Menu item label text
+        itemLabel: "text-xs font-medium text-muted-foreground",
+
+        // Menu item icon button (default)
+        itemButton: "h-10 w-10 rounded-full shadow-lg border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all active:scale-95",
+
+        // Menu item icon button (highlighted / primary)
+        itemButtonHighlight: "h-10 w-10 rounded-full shadow-lg border border-white/10 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center transition-all active:scale-95",
+
+        // Menu item button icon size
+        itemIconSize: "h-4 w-4",
+
+        // Main toggle FAB button
+        toggle: "h-14 w-14 rounded-full shadow-2xl flex items-center justify-center transition-colors border border-white/10",
+        toggleOpen: "bg-white text-slate-900 dark:bg-white dark:text-slate-900",
+        toggleClosed: "bg-primary text-white",
+        toggleIconSize: "h-6 w-6",
+
+        // Animation variants (used as framer-motion presets)
+        animation: {
+            panel: {
+                hidden: { opacity: 0, scale: 0.8 },
+                visible: {
+                    opacity: 1,
+                    scale: 1,
+                    transition: {
+                        delayChildren: 0.1,
+                        staggerChildren: 0.05
+                    }
+                }
+            },
+            item: {
+                hidden: { y: 20, opacity: 0 },
+                visible: { y: 0, opacity: 1 }
+            }
+        }
+    },
+
+    // 6. Typography
     header: {
         pageTitle: "text-2xl font-bold text-foreground",
         pageSubtitle: "ml-2 text-sm font-medium text-muted-foreground/60",
