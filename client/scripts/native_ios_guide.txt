@@ -1,0 +1,79 @@
+
+// --- FILE: ios/App/App/NativeWidgetBridge.swift ---
+import Foundation
+import Capacitor
+
+/**
+ * NativeWidgetBridge
+ * 
+ * A Capacitor plugin that saves data to a shared App Group suited for Widgets.
+ */
+@objc(NativeWidgetBridge)
+public class NativeWidgetBridge: CAPPlugin {
+    
+    @objc func updateWidgetData(_ call: CAPPluginCall) {
+        let key = call.getString("key") ?? ""
+        let data = call.getString("data") ?? ""
+        let group = call.getString("group") ?? "group.com.manus.calendair"
+        
+        guard let sharedDefaults = UserDefaults(suiteName: group) else {
+            call.reject("Could not find App Group: \(group)")
+            return
+        }
+        
+        sharedDefaults.set(data, forKey: key)
+        sharedDefaults.synchronize()
+        
+        // This tells iOS to reload the widgets immediately
+        if #available(iOS 14.0, *) {
+            #if canImport(WidgetKit)
+            import WidgetKit
+            WidgetCenter.shared.reloadAllTimelines()
+            #endif
+        }
+        
+        call.resolve([
+            "success": true
+        ])
+    }
+}
+
+// --- FILE: ios/App/App/AppointmentWidget.swift (SwiftUI Template) ---
+/*
+import WidgetKit
+import SwiftUI
+
+struct AppointmentEntry: TimelineEntry {
+    let date: Date
+    let clientName: String
+    let time: String
+    let service: String
+}
+
+struct AppointmentWidgetEntryView : View {
+    var entry: AppointmentEntry
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Next Appointment")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            Text(entry.clientName)
+                .font(.headline)
+            
+            Text(entry.time)
+                .font(.subheadline)
+                .foregroundColor(.blue)
+            
+            Spacer()
+            
+            Text(entry.service)
+                .font(.system(size: 10))
+                .italic()
+        }
+        .padding()
+        .containerBackground(.fill.tertiary, for: .widget)
+    }
+}
+*/

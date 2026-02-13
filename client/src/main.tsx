@@ -1,11 +1,12 @@
 import { trpc } from "@/lib/trpc";
+import { Capacitor } from "@capacitor/core";
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
-import { getLoginUrl } from "./const";
+import { getLoginUrl, API_BASE_URL } from "./const";
 import "./index.css";
 import { registerServiceWorker } from "./lib/pwa";
 import { initializeOneSignal } from "./lib/onesignal";
@@ -47,7 +48,7 @@ queryClient.getMutationCache().subscribe(event => {
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: `${API_BASE_URL}/api/trpc`,
       transformer: superjson,
       fetch(input, init) {
         // Get JWT token from localStorage OR sessionStorage
