@@ -727,14 +727,13 @@ export default function Settings() {
                  Actually, client specific notification toggles were inline. Let's group them or keep them in the main list. 
                  The original had WebPushSettings inline for clients.
              */}
-            {!isArtist && (
-              <div className="space-y-3 pt-2">
-                <h3 className="px-1 text-xs font-bold text-muted-foreground uppercase tracking-wider">Notification Preferences</h3>
-                <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-4")}>
-                  <WebPushSettings hideTestButton />
-                </Card>
-              </div>
-            )}
+            {/* Notification Preferences (All Roles) */}
+            <div className="space-y-3 pt-2">
+              <h3 className="px-1 text-xs font-bold text-muted-foreground uppercase tracking-wider">Notification Preferences</h3>
+              <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-4")}>
+                <WebPushSettings hideTestButton />
+              </Card>
+            </div>
 
             {/* 3. System Section */}
             <div className="space-y-3 pt-2">

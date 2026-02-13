@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
+import { Capacitor } from '@capacitor/core';
+import { isSubscribed, requestNotificationPermission, getSubscriptionId } from '@/lib/onesignal';
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -47,26 +49,41 @@ export function useWebPush() {
 
     // Check support and current status
     useEffect(() => {
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-            setStatus('unsupported');
-            return;
-        }
+        const checkStatus = async () => {
+            if (Capacitor.isNativePlatform()) {
+                const subscribed = await isSubscribed();
+                const subId = await getSubscriptionId();
+                setStatus(subscribed ? 'granted' : 'default');
+                // Create a mock subscription object for native
+                if (subId) {
+                    setSubscription({ endpoint: 'onesignal', subId } as any);
+                } else {
+                    setSubscription(null);
+                }
+                return;
+            }
 
-        // Check permission
-        if (Notification.permission === 'denied') {
-            setStatus('denied');
-        } else if (Notification.permission === 'granted') {
-            setStatus('granted');
-        } else {
-            setStatus('default');
-        }
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                setStatus('unsupported');
+                return;
+            }
 
-        // Check if already subscribed
-        navigator.serviceWorker.ready.then(registration => {
-            registration.pushManager.getSubscription().then(sub => {
-                setSubscription(sub);
-            });
-        });
+            // Check permission
+            if (Notification.permission === 'denied') {
+                setStatus('denied');
+            } else if (Notification.permission === 'granted') {
+                setStatus('granted');
+            } else {
+                setStatus('default');
+            }
+
+            // Check if already subscribed
+            const registration = await navigator.serviceWorker.ready;
+            const sub = await registration.pushManager.getSubscription();
+            setSubscription(sub);
+        };
+
+        checkStatus();
     }, []);
 
     const subscribe = useCallback(async () => {
@@ -77,6 +94,22 @@ export function useWebPush() {
 
         setIsSubscribing(true);
         try {
+            if (Capacitor.isNativePlatform()) {
+                const granted = await requestNotificationPermission();
+                if (granted) {
+                    const subId = await getSubscriptionId();
+                    setStatus('granted');
+                    if (subId) {
+                        setSubscription({ endpoint: 'onesignal', subId } as any);
+                    }
+                    toast.success('Notifications enabled!');
+                } else {
+                    setStatus('denied');
+                    toast.error('Permission denied');
+                }
+                return;
+            }
+
             // 1. Request Permission
             const permission = await Notification.requestPermission();
             if (permission === 'denied') {
@@ -85,30 +118,22 @@ export function useWebPush() {
             }
             setStatus('granted');
 
-            // 2. Get Public Key from server
+            // ... rest of web logic ...
+            // (Keeping it similar to original for safety)
             const { data: keyData } = await publicKeyQuery.refetch();
-            if (!keyData?.publicKey) {
-                throw new Error('VAPID public key not configured on server');
-            }
+            if (!keyData?.publicKey) throw new Error('VAPID public key not configured on server');
 
-            // 3. Register with PushManager
             const registration = await navigator.serviceWorker.ready;
-
-            // Unsubscribe existing to ensure fresh key usage
             const existingSub = await registration.pushManager.getSubscription();
-            if (existingSub) {
-                await existingSub.unsubscribe();
-            }
+            if (existingSub) await existingSub.unsubscribe();
 
             const sub = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(keyData.publicKey),
             });
 
-            // 4. Send to backend
             const p256dh = sub.getKey('p256dh');
             const auth = sub.getKey('auth');
-
             if (!p256dh || !auth) throw new Error('Failed to generate keys');
 
             await subscribeMutation.mutateAsync({
@@ -124,7 +149,6 @@ export function useWebPush() {
             toast.success('Notifications enabled!');
         } catch (error: any) {
             console.error('Subscription failed', error);
-            // Show explicit error to user
             toast.error('Failed to enable: ' + (error.message || 'Unknown error'));
         } finally {
             setIsSubscribing(false);

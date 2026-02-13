@@ -17,7 +17,7 @@ export function WebPushSettings({ hideTestButton = false }: { hideTestButton?: b
             <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <Bell className="w-4 h-4 text-primary" />
-                    Push Notifications (Test)
+                    Push Notifications
                 </h3>
                 <span className={cn(
                     "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border",
@@ -26,7 +26,7 @@ export function WebPushSettings({ hideTestButton = false }: { hideTestButton?: b
                             status === 'unsupported' ? "bg-gray-500/10 text-gray-400 border-gray-500/20" :
                                 "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
                 )}>
-                    {status === 'granted' && subscription ? 'Active' : status}
+                    {status === 'granted' && subscription ? 'Active' : status === 'default' ? 'Ready' : status}
                 </span>
             </div>
 
