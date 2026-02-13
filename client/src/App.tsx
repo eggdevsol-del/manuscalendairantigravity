@@ -43,6 +43,15 @@ function Router() {
   const isTabletLandscape = useTabletLandscape();
   const isArtist = user?.role === 'artist';
 
+  // Initialize OneSignal user
+  React.useEffect(() => {
+    if (user?.id) {
+      import("@/lib/onesignal").then(({ setExternalUserId }) => {
+        setExternalUserId(user.id);
+      });
+    }
+  }, [user?.id]);
+
   const hideBottomNavPaths = ["/", "/login", "/signup", "/set-password", "/complete-profile"];
   const isPublicFunnel = location.startsWith("/start/") || location.startsWith("/deposit/");
   const shouldShowBottomNav = !hideBottomNavPaths.includes(location) && !location.startsWith("/404") && !isPublicFunnel;

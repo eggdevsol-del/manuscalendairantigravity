@@ -326,6 +326,22 @@ export const promotionsRouter = router({
           expiresAt,
         });
 
+        // Add to notification outbox
+        await db.insert(schema.notificationOutbox).values({
+          eventType: 'push_message',
+          payloadJson: JSON.stringify({
+            targetUserId: input.clientId,
+            title: 'You received a new promotion!',
+            body: `You have received a ${template.name} voucher!`,
+            data: {
+              url: '/promotions',
+              promotionId: input.templateId,
+              code
+            }
+          }),
+          status: 'pending',
+        });
+
         console.log(`[promotions.issuePromotion] Issued promotion ${code} to client ${input.clientId}`);
         return { success: true, code };
       } catch (error) {
