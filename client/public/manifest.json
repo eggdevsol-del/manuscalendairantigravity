@@ -3,9 +3,9 @@
   "short_name": "Calendair",
   "description": "Beautiful appointments made simple",
   "start_url": "/",
-  "display": "fullscreen",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "display": "standalone",
+  "background_color": "#020511",
+  "theme_color": "#020511",
   "orientation": "portrait",
   "icons": [
     {
