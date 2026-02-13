@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Manus Calendair</string>
-    <string name="title_activity_main">Manus Calendair</string>
+    <string name="app_name">calendair android</string>
+    <string name="title_activity_main">calendair android</string>
     <string name="package_name">com.manus.calendair</string>
     <string name="custom_url_scheme">com.manus.calendair</string>
 </resources>
