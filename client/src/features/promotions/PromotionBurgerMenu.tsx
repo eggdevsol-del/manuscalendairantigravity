@@ -56,39 +56,43 @@ export function PromotionBurgerMenu({
                         animate="visible"
                         exit="hidden"
                         variants={containerVariants}
-                        className="flex flex-col items-end gap-3 mb-2"
+                        className="mb-4 p-4 rounded-[2rem] border border-white/10 shadow-2xl flex flex-col items-end gap-4"
+                        style={{
+                            backgroundImage: "var(--bg-gradient)",
+                            backgroundAttachment: "fixed" // Optional: gives a cool 'window' effect into the bg
+                        }}
                     >
                         {/* View Toggle */}
-                        <motion.div variants={itemVariants} className="flex items-center gap-3">
-                            <span className="bg-black/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm shadow-sm">
+                        <motion.div variants={itemVariants} className="flex items-center justify-end gap-3 w-full">
+                            <span className="text-xs font-medium text-muted-foreground">
                                 Switch View
                             </span>
                             <Button
                                 size="icon"
                                 variant="secondary"
                                 className={cn(
-                                    "h-12 w-12 rounded-full shadow-lg border border-white/10",
-                                    "bg-card/80 backdrop-blur-lg hover:bg-card"
+                                    "h-10 w-10 rounded-full shadow-lg border border-white/10",
+                                    "bg-white/5 hover:bg-white/10"
                                 )}
                                 onClick={() => {
                                     onViewModeChange(viewMode === 'swipe' ? 'grid' : 'swipe');
                                     setIsOpen(false);
                                 }}
                             >
-                                {viewMode === 'swipe' ? <Grid className="h-5 w-5" /> : <GalleryVertical className="h-5 w-5" />}
+                                {viewMode === 'swipe' ? <Grid className="h-4 w-4" /> : <GalleryVertical className="h-4 w-4" />}
                             </Button>
                         </motion.div>
 
                         {/* Create New */}
-                        <motion.div variants={itemVariants} className="flex items-center gap-3">
-                            <span className="bg-black/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm shadow-sm">
+                        <motion.div variants={itemVariants} className="flex items-center justify-end gap-3 w-full">
+                            <span className="text-xs font-medium text-muted-foreground">
                                 New Promotion
                             </span>
                             <Button
                                 size="icon"
                                 variant="secondary"
                                 className={cn(
-                                    "h-12 w-12 rounded-full shadow-lg border border-white/10",
+                                    "h-10 w-10 rounded-full shadow-lg border border-white/10",
                                     "bg-primary text-primary-foreground hover:bg-primary/90"
                                 )}
                                 onClick={() => {
@@ -96,61 +100,61 @@ export function PromotionBurgerMenu({
                                     setIsOpen(false);
                                 }}
                             >
-                                <Plus className="h-5 w-5" />
+                                <Plus className="h-4 w-4" />
                             </Button>
                         </motion.div>
 
                         {/* Send to Client */}
-                        <motion.div variants={itemVariants} className="flex items-center gap-3">
-                            <span className="bg-black/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm shadow-sm">
+                        <motion.div variants={itemVariants} className="flex items-center justify-end gap-3 w-full">
+                            <span className="text-xs font-medium text-muted-foreground">
                                 Send to Client
                             </span>
                             <Button
                                 size="icon"
                                 variant="secondary"
-                                className="h-12 w-12 rounded-full shadow-lg border border-white/10 bg-card/80 backdrop-blur-lg"
+                                className="h-10 w-10 rounded-full shadow-lg border border-white/10 bg-white/5 hover:bg-white/10"
                                 onClick={() => {
                                     onAction('send');
                                     setIsOpen(false);
                                 }}
                             >
-                                <Send className="h-5 w-5" />
+                                <Send className="h-4 w-4" />
                             </Button>
                         </motion.div>
 
                         {/* Auto Apply */}
-                        <motion.div variants={itemVariants} className="flex items-center gap-3">
-                            <span className="bg-black/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm shadow-sm">
+                        <motion.div variants={itemVariants} className="flex items-center justify-end gap-3 w-full">
+                            <span className="text-xs font-medium text-muted-foreground">
                                 Auto-Apply
                             </span>
                             <Button
                                 size="icon"
                                 variant="secondary"
-                                className="h-12 w-12 rounded-full shadow-lg border border-white/10 bg-card/80 backdrop-blur-lg"
+                                className="h-10 w-10 rounded-full shadow-lg border border-white/10 bg-white/5 hover:bg-white/10"
                                 onClick={() => {
                                     onAction('auto-apply');
                                     setIsOpen(false);
                                 }}
                             >
-                                <CalendarIcon className="h-5 w-5" />
+                                <CalendarIcon className="h-4 w-4" />
                             </Button>
                         </motion.div>
 
                         {/* Voucher Settings */}
-                        <motion.div variants={itemVariants} className="flex items-center gap-3">
-                            <span className="bg-black/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm shadow-sm">
+                        <motion.div variants={itemVariants} className="flex items-center justify-end gap-3 w-full">
+                            <span className="text-xs font-medium text-muted-foreground">
                                 Voucher Settings
                             </span>
                             <Button
                                 size="icon"
                                 variant="secondary"
-                                className="h-12 w-12 rounded-full shadow-lg border border-white/10 bg-card/80 backdrop-blur-lg"
+                                className="h-10 w-10 rounded-full shadow-lg border border-white/10 bg-white/5 hover:bg-white/10"
                                 onClick={() => {
                                     onAction('settings');
                                     setIsOpen(false);
                                 }}
                             >
-                                <Settings className="h-5 w-5" />
+                                <Settings className="h-4 w-4" />
                             </Button>
                         </motion.div>
                     </motion.div>
