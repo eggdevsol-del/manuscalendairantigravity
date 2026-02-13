@@ -64,6 +64,7 @@ async function startServer() {
         "http://localhost",
         "https://localhost",
         "capacitor://localhost",
+        "http://artist-booking-app-production.up.railway.app",
         "https://artist-booking-app-production.up.railway.app"
       ];
 
