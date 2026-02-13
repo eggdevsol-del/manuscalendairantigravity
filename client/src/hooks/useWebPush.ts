@@ -51,17 +51,19 @@ export function useWebPush() {
     useEffect(() => {
         const checkStatus = async () => {
             const platform = Capacitor.getPlatform();
-            const isNative = platform === 'android' || platform === 'ios';
+            // Force native mode if platform is android/ios OR if Capacitor says it is native
+            const isNative = platform === 'android' || platform === 'ios' || Capacitor.isNativePlatform();
 
             if (isNative) {
-                console.log('[useWebPush] Running in native mode:', platform);
+                console.log('[useWebPush] Detected Native Platform:', platform);
                 try {
                     const subscribed = await isSubscribed();
                     const subId = await getSubscriptionId();
 
-                    console.log('[useWebPush] Native status:', { subscribed, subId });
+                    console.log('[useWebPush] Native status check:', { subscribed, subId });
 
-                    setStatus(subscribed ? 'granted' : 'default');
+                    // If we have a subscription ID, it's definitely granted
+                    setStatus(subscribed || subId ? 'granted' : 'default');
 
                     if (subId) {
                         setSubscription({ endpoint: 'onesignal', subId } as any);
@@ -69,7 +71,7 @@ export function useWebPush() {
                         setSubscription(null);
                     }
                 } catch (err) {
-                    console.error('[useWebPush] Native check failed:', err);
+                    console.error('[useWebPush] Native status check failed:', err);
                     setStatus('default');
                 }
                 return;

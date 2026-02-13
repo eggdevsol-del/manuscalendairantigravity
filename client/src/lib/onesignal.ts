@@ -15,20 +15,30 @@ const getNativeOneSignal = () => {
 
 export async function initializeOneSignal() {
   if (isInitialized || !ONESIGNAL_APP_ID) {
-    console.log('[OneSignal] Already initialized or missing App ID');
+    if (!ONESIGNAL_APP_ID) console.warn('[OneSignal] Missing App ID');
     return;
   }
 
+  // Helper to wait for plugin to be available
+  const waitForPlugin = async (retries = 5): Promise<any> => {
+    for (let i = 0; i < retries; i++) {
+      const os = getNativeOneSignal();
+      if (os) return os;
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    return null;
+  };
+
   try {
     if (Capacitor.isNativePlatform()) {
-      const NativeOneSignal = getNativeOneSignal();
+      console.log('[OneSignal] Initializing Native SDK...');
+      const NativeOneSignal = await waitForPlugin();
       if (NativeOneSignal) {
-        NativeOneSignal.Debug.setLogLevel(4); // Verbose for debugging
+        NativeOneSignal.Debug.setLogLevel(4);
         NativeOneSignal.initialize(ONESIGNAL_APP_ID);
-        console.log('[OneSignal] Native SDK initialized');
+        console.log('[OneSignal] Native SDK initialized successfully');
       } else {
-        console.warn('[OneSignal] Native plugin not found on window');
-        // Fallback to web SDK might not work on native but we can try
+        console.warn('[OneSignal] Native plugin not found after retries. Falling back to web.');
         await initWebOneSignal();
       }
     } else {
