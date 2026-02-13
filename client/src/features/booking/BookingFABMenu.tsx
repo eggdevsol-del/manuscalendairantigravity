@@ -139,7 +139,7 @@ export function BookingFABMenu({
             scale: 1,
             y: 0,
             transition: {
-                type: "spring",
+                type: "spring" as const,
                 stiffness: 300,
                 damping: 25,
                 delayChildren: 0.1,
@@ -170,7 +170,7 @@ export function BookingFABMenu({
     };
 
     return (
-        <div className={cn("fixed bottom-24 right-5 z-[55] flex flex-col items-end gap-3", className)}>
+        <div className={cn("fixed bottom-[126px] right-5 z-[55] flex flex-col items-end gap-3", className)}>
             <AnimatePresence>
                 {isOpen && (
                     <motion.div

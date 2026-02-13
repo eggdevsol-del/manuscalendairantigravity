@@ -48,7 +48,7 @@ export function PromotionBurgerMenu({
     };
 
     return (
-        <div className={cn("fixed bottom-24 right-5 z-50 flex flex-col items-end gap-4", className)}>
+        <div className={cn("fixed bottom-[126px] right-5 z-50 flex flex-col items-end gap-4", className)}>
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
