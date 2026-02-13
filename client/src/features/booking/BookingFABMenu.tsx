@@ -170,7 +170,7 @@ export function BookingFABMenu({
     };
 
     return (
-        <div className={cn("fixed bottom-[126px] right-5 z-[55] flex flex-col items-end gap-3", className)}>
+        <div className={cn("fixed bottom-[176px] right-5 z-[55] flex flex-col items-end gap-3", className)}>
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
