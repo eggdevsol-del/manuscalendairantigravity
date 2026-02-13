@@ -387,12 +387,19 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
             <div
                 className={cn(
                     "fixed left-4 right-4 z-[60] transition-all duration-300 ease-spring", // added transition
-                    "md:absolute md:bottom-[110px] md:left-4 md:right-4"
+                    "md:absolute md:left-4 md:right-4"
                 )}
                 style={{
                     // Dynamic bottom position based on nav state
                     // Base: 110px. Expanded: 110px + 77px (ROW_HEIGHT) = 187px
-                    bottom: isContextualVisible ? "187px" : "110px"
+                    // iPad gets +40px offset for better reachability
+                    bottom: (() => {
+                        const isIPad = typeof navigator !== 'undefined' &&
+                            (/iPad/.test(navigator.userAgent) ||
+                                (navigator.userAgent.includes('Macintosh') && 'ontouchend' in document));
+                        const base = isContextualVisible ? 187 : 110;
+                        return isIPad ? `${base + 40}px` : `${base}px`;
+                    })()
                 }}
             >
                 <div className="flex items-center gap-2 p-2 rounded-2xl bg-muted/80 backdrop-blur-xl border border-white/10 shadow-lg">
