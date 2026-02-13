@@ -6,7 +6,12 @@ const ONESIGNAL_APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID;
 let isInitialized = false;
 
 // Access the native OneSignal plugin if on Capacitor
-const getNativeOneSignal = () => (window as any).OneSignal;
+const getNativeOneSignal = () => {
+  const os = (window as any).OneSignal || (window as any).plugins?.OneSignal;
+  if (os) return os;
+  // Fallback for some Capacitor/Cordova environments
+  return (window as any).cordova?.plugins?.OneSignal;
+};
 
 export async function initializeOneSignal() {
   if (isInitialized || !ONESIGNAL_APP_ID) {
@@ -161,5 +166,10 @@ export async function removeTag(key: string) {
   } catch (error) {
     console.error('[OneSignal] Failed to remove tag:', error);
   }
+}
+
+// Helper to check if OneSignal is available at all
+export function isOneSignalAvailable(): boolean {
+  return !!getNativeOneSignal() || !!OneSignal;
 }
 

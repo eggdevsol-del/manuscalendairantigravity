@@ -1,7 +1,8 @@
 import { useWebPush } from "@/hooks/useWebPush";
 import { Button } from "@/components/ui";
-import { Bell, BellOff, Send } from "lucide-react";
+import { Bell, BellOff, Send, Smartphone, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Capacitor } from '@capacitor/core';
 
 export function WebPushSettings({ hideTestButton = false }: { hideTestButton?: boolean }) {
     const { status, subscription, subscribe, isSubscribing, sendTestPush, isTesting } = useWebPush();
@@ -30,6 +31,14 @@ export function WebPushSettings({ hideTestButton = false }: { hideTestButton?: b
                 </span>
             </div>
 
+            {/* Platform Debug (only in dev/debug mode) */}
+            {import.meta.env.DEV && (
+                <div className="flex items-center gap-1.5 opacity-30 text-[9px] font-mono uppercase tracking-tighter">
+                    {Capacitor.getPlatform() === 'web' ? <Globe className="w-2 h-2" /> : <Smartphone className="w-2 h-2" />}
+                    {Capacitor.getPlatform()} mode
+                </div>
+            )}
+
             <div className="space-y-2">
                 {(!subscription && status !== 'denied' && status !== 'unsupported') && (
                     <Button
@@ -57,7 +66,10 @@ export function WebPushSettings({ hideTestButton = false }: { hideTestButton?: b
 
                 {status === 'denied' && (
                     <p className="text-xs text-red-300">
-                        Notifications are blocked. Please enable them in your browser settings.
+                        {Capacitor.getPlatform() === 'web'
+                            ? "Notifications are blocked. Please enable them in your browser settings."
+                            : "Notifications are blocked. Please enable them in your system settings."
+                        }
                     </p>
                 )}
 

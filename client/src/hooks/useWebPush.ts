@@ -50,19 +50,32 @@ export function useWebPush() {
     // Check support and current status
     useEffect(() => {
         const checkStatus = async () => {
-            if (Capacitor.isNativePlatform()) {
-                const subscribed = await isSubscribed();
-                const subId = await getSubscriptionId();
-                setStatus(subscribed ? 'granted' : 'default');
-                // Create a mock subscription object for native
-                if (subId) {
-                    setSubscription({ endpoint: 'onesignal', subId } as any);
-                } else {
-                    setSubscription(null);
+            const platform = Capacitor.getPlatform();
+            const isNative = platform === 'android' || platform === 'ios';
+
+            if (isNative) {
+                console.log('[useWebPush] Running in native mode:', platform);
+                try {
+                    const subscribed = await isSubscribed();
+                    const subId = await getSubscriptionId();
+
+                    console.log('[useWebPush] Native status:', { subscribed, subId });
+
+                    setStatus(subscribed ? 'granted' : 'default');
+
+                    if (subId) {
+                        setSubscription({ endpoint: 'onesignal', subId } as any);
+                    } else {
+                        setSubscription(null);
+                    }
+                } catch (err) {
+                    console.error('[useWebPush] Native check failed:', err);
+                    setStatus('default');
                 }
                 return;
             }
 
+            console.log('[useWebPush] Running in web mode');
             if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
                 setStatus('unsupported');
                 return;
