@@ -465,7 +465,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                     })()
                 }}
             >
-                <div className="flex items-center gap-2 p-2 rounded-2xl bg-muted/80 backdrop-blur-xl border border-white/10 shadow-lg">
+                <div className="flex items-center gap-2 p-2 rounded-2xl bg-gray-100/80 dark:bg-slate-950/80 backdrop-blur-xl border border-white/10 shadow-lg">
                     <label className="cursor-pointer p-2 hover:bg-white/10 rounded-xl transition-colors">
                         <input
                             type="file"

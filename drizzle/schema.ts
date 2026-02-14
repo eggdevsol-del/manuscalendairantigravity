@@ -32,6 +32,18 @@ export const appointments = mysqlTable("appointments", {
 	(table) => [
 	]);
 
+export const appointmentLogs = mysqlTable("appointment_logs", {
+	id: int().primaryKey().autoincrement(),
+	appointmentId: int().notNull().references(() => appointments.id, { onDelete: "cascade" }),
+	action: mysqlEnum(['created', 'rescheduled', 'cancelled', 'completed', 'proposal_revoked']).notNull(),
+	oldValue: text(), // JSON
+	newValue: text(), // JSON
+	performedBy: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	index("log_appt_idx").on(table.appointmentId),
+]);
+
 export const artistSettings = mysqlTable("artistSettings", {
 	id: int().primaryKey().autoincrement(),
 	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -59,9 +71,9 @@ export const artistSettings = mysqlTable("artistSettings", {
 	]);
 
 export const clientContent = mysqlTable("client_content", {
-	id: int().autoincrement().notNull(),
-	clientId: varchar("client_id", { length: 255 }).notNull().references(() => users.id, { onDelete: "cascade" }),
-	artistId: varchar("artist_id", { length: 255 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	id: int().primaryKey().autoincrement(),
+	clientId: varchar("client_id", { length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	artistId: varchar("artist_id", { length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	fileKey: varchar("file_key", { length: 255 }).notNull(),
 	fileName: varchar("file_name", { length: 255 }).notNull(),
 	fileType: mysqlEnum("file_type", ['image', 'video']).notNull(),
@@ -76,13 +88,12 @@ export const clientContent = mysqlTable("client_content", {
 		index("artist_id").on(table.artistId),
 		index("idx_client_artist").on(table.clientId, table.artistId),
 		index("idx_file_key").on(table.fileKey),
-		primaryKey({ columns: [table.id], name: "client_content_id" }),
 	]);
 
 export const clientNotes = mysqlTable("client_notes", {
-	id: varchar({ length: 255 }).notNull(),
-	artistId: varchar("artist_id", { length: 255 }).notNull().references(() => users.id, { onDelete: "cascade" }),
-	clientId: varchar("client_id", { length: 255 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	id: varchar({ length: 255 }).primaryKey(),
+	artistId: varchar("artist_id", { length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	clientId: varchar("client_id", { length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	note: text().notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().onUpdateNow(),
@@ -90,11 +101,10 @@ export const clientNotes = mysqlTable("client_notes", {
 	(table) => [
 		index("client_id").on(table.clientId),
 		index("idx_artist_client").on(table.artistId, table.clientId),
-		primaryKey({ columns: [table.id], name: "client_notes_id" }),
 	]);
 
 export const consultations = mysqlTable("consultations", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	conversationId: int().references(() => conversations.id, { onDelete: "cascade" }),
@@ -108,11 +118,10 @@ export const consultations = mysqlTable("consultations", {
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 },
 	(table) => [
-		primaryKey({ columns: [table.id], name: "consultations_id" }),
 	]);
 
 export const conversations = mysqlTable("conversations", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	leadId: int(),
@@ -121,21 +130,21 @@ export const conversations = mysqlTable("conversations", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 },
 	(table) => [
-		primaryKey({ columns: [table.id], name: "conversations_id" }),
+		index("conv_artist_idx").on(table.artistId),
+		index("conv_client_idx").on(table.clientId),
 	]);
 
 export const fileStorage = mysqlTable("file_storage", {
-	fileKey: varchar("file_key", { length: 255 }).notNull(),
+	fileKey: varchar("file_key", { length: 255 }).primaryKey(),
 	fileData: longtext("file_data").notNull(),
 	mimeType: varchar("mime_type", { length: 100 }).notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
 },
 	(table) => [
-		primaryKey({ columns: [table.fileKey], name: "file_storage_file_key" }),
 	]);
 
 export const messages = mysqlTable("messages", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	conversationId: int().notNull().references(() => conversations.id, { onDelete: "cascade" }),
 	senderId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	content: text().notNull(),
@@ -145,12 +154,12 @@ export const messages = mysqlTable("messages", {
 	readBy: text(),
 },
 	(table) => [
-		primaryKey({ columns: [table.id], name: "messages_id" }),
+		index("msg_conversation_idx").on(table.conversationId),
 	]);
 
 export const notificationSettings = mysqlTable("notificationSettings", {
-	id: int().autoincrement().notNull(),
-	userId: varchar({ length: 255 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	id: int().primaryKey().autoincrement(),
+	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	followupEnabled: tinyint().default(0),
 	followupSms: tinyint().default(0),
 	followupEmail: tinyint().default(0),
@@ -193,12 +202,11 @@ export const notificationSettings = mysqlTable("notificationSettings", {
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow(),
 },
 	(table) => [
-		primaryKey({ columns: [table.id], name: "notificationSettings_id" }),
 		unique("userId").on(table.userId),
 	]);
 
 export const notificationTemplates = mysqlTable("notificationTemplates", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	templateType: mysqlEnum(['confirmation', 'reminder', 'follow_up', 'birthday', 'promotional', 'aftercare', 'preparation', 'custom']).notNull(),
 	title: varchar({ length: 255 }).notNull(),
@@ -209,11 +217,10 @@ export const notificationTemplates = mysqlTable("notificationTemplates", {
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 },
 	(table) => [
-		primaryKey({ columns: [table.id], name: "notificationTemplates_id" }),
 	]);
 
 export const policies = mysqlTable("policies", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	policyType: mysqlEnum(['deposit', 'design', 'reschedule', 'cancellation']).notNull(),
 	title: varchar({ length: 255 }).notNull(),
@@ -223,33 +230,30 @@ export const policies = mysqlTable("policies", {
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 },
 	(table) => [
-		primaryKey({ columns: [table.id], name: "policies_id" }),
 	]);
 
 export const portfolios = mysqlTable("portfolios", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	imageUrl: text().notNull(),
 	description: text(),
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "portfolios_id" }),
 ]);
 
 export const portfolioLikes = mysqlTable("portfolio_likes", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	portfolioId: int().notNull().references(() => portfolios.id, { onDelete: "cascade" }),
 	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "portfolio_likes_id" }),
 	unique("user_portfolio_like").on(table.userId, table.portfolioId),
 ]);
 
 
 export const quickActionButtons = mysqlTable("quickActionButtons", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	label: varchar({ length: 100 }).notNull(),
 	actionType: mysqlEnum(['send_text', 'find_availability', 'deposit_info', 'custom']).notNull(),
@@ -260,11 +264,10 @@ export const quickActionButtons = mysqlTable("quickActionButtons", {
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 },
 	(table) => [
-		primaryKey({ columns: [table.id], name: "quickActionButtons_id" }),
 	]);
 
 export const socialMessageSync = mysqlTable("socialMessageSync", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	platform: mysqlEnum(['instagram', 'facebook']).notNull(),
 	lastSyncedAt: timestamp({ mode: 'string' }),
@@ -277,11 +280,10 @@ export const socialMessageSync = mysqlTable("socialMessageSync", {
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 },
 	(table) => [
-		primaryKey({ columns: [table.id], name: "socialMessageSync_id" }),
 	]);
 
 export const users = mysqlTable("users", {
-	id: varchar({ length: 64 }).notNull(),
+	id: varchar({ length: 64 }).primaryKey(),
 	clerkId: varchar({ length: 255 }).unique(),
 	name: text(),
 	email: varchar({ length: 320 }),
@@ -301,11 +303,10 @@ export const users = mysqlTable("users", {
 	birthday: datetime({ mode: 'string' }),
 },
 	(table) => [
-		primaryKey({ columns: [table.id], name: "users_id" }),
 	]);
 
 export const voucherTemplates = mysqlTable("voucher_templates", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	name: varchar({ length: 255 }).notNull(),
 	value: int().notNull(), // stored in cents
@@ -313,11 +314,10 @@ export const voucherTemplates = mysqlTable("voucher_templates", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "voucher_templates_id" }),
 ]);
 
 export const issuedVouchers = mysqlTable("issued_vouchers", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	templateId: int().notNull().references(() => voucherTemplates.id, { onDelete: "cascade" }),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -327,11 +327,11 @@ export const issuedVouchers = mysqlTable("issued_vouchers", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	redeemedAt: timestamp({ mode: 'string' }),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "issued_vouchers_id" }),
+	index("idx_templateId").on(table.templateId),
 ]);
 
 export const notificationOutbox = mysqlTable("notification_outbox", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	eventType: varchar({ length: 100 }).notNull(),
 	payloadJson: text().notNull(),
 	status: mysqlEnum(['pending', 'sent', 'failed']).default('pending'),
@@ -342,27 +342,24 @@ export const notificationOutbox = mysqlTable("notification_outbox", {
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 },
 	(table) => [
-		primaryKey({ columns: [table.id], name: "notification_outbox_id" }),
 		index("idx_status_next_attempt").on(table.status, table.nextAttemptAt),
 	]);
 
 export const moodboards = mysqlTable("moodboards", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	title: varchar({ length: 255 }).notNull(),
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "moodboards_id" }),
 ]);
 
 export const moodboardItems = mysqlTable("moodboard_items", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	moodboardId: int().notNull().references(() => moodboards.id, { onDelete: "cascade" }),
 	imageUrl: text().notNull(),
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "moodboard_items_id" }),
 ]);
 
 
@@ -534,7 +531,7 @@ export const moodboardItemsRelations = relations(moodboardItems, ({ one }) => ({
  * Records every task completion for analytics
  */
 export const taskCompletions = mysqlTable("task_completions", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	taskType: varchar({ length: 100 }).notNull(), // e.g., 'new_consultation', 'deposit_collection', 'birthday_outreach'
 	taskTier: mysqlEnum(['tier1', 'tier2', 'tier3', 'tier4']).notNull(),
@@ -549,7 +546,6 @@ export const taskCompletions = mysqlTable("task_completions", {
 	actionTaken: varchar({ length: 50 }), // 'sms', 'email', 'in_app', 'manual'
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "task_completions_id" }),
 	index("idx_artist_task_type").on(table.artistId, table.taskType),
 	index("idx_artist_completed").on(table.artistId, table.completedAt),
 	index("idx_task_domain").on(table.taskDomain),
@@ -560,7 +556,7 @@ export const taskCompletions = mysqlTable("task_completions", {
  * Pre-computed weekly metrics for the analytics modal
  */
 export const weeklyAnalytics = mysqlTable("weekly_analytics", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	weekStartDate: datetime({ mode: 'string' }).notNull(), // Monday of the week
 	weekEndDate: datetime({ mode: 'string' }).notNull(), // Sunday of the week
@@ -610,7 +606,6 @@ export const weeklyAnalytics = mysqlTable("weekly_analytics", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "weekly_analytics_id" }),
 	unique("artist_week").on(table.artistId, table.weekStartDate),
 	index("idx_artist_week").on(table.artistId, table.weekStartDate),
 ]);
@@ -620,7 +615,7 @@ export const weeklyAnalytics = mysqlTable("weekly_analytics", {
  * Stores artist preferences for dashboard behavior
  */
 export const dashboardSettings = mysqlTable("dashboard_settings", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 
 	// Task display settings
@@ -639,7 +634,6 @@ export const dashboardSettings = mysqlTable("dashboard_settings", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "dashboard_settings_id" }),
 	unique("artist_dashboard_settings").on(table.artistId),
 ]);
 
@@ -649,7 +643,7 @@ export const dashboardSettings = mysqlTable("dashboard_settings", {
  * Regenerated on relevant data changes
  */
 export const activeTasks = mysqlTable("active_tasks", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	taskDomain: mysqlEnum(['business', 'social', 'personal']).default('business').notNull(),
 	taskType: varchar({ length: 100 }).notNull(),
@@ -684,7 +678,6 @@ export const activeTasks = mysqlTable("active_tasks", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "active_tasks_id" }),
 	index("idx_artist_domain").on(table.artistId, table.taskDomain),
 	index("idx_artist_score").on(table.artistId, table.priorityScore),
 ]);
@@ -746,7 +739,7 @@ export const activeTasksRelations = relations(activeTasks, ({ one }) => ({
  * Stores artist's public link configuration and customization
  */
 export const artistPublicProfile = mysqlTable("artist_public_profile", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 
 	// Public link slug (e.g., "pmason" for calendair.app/start/pmason)
@@ -784,7 +777,6 @@ export const artistPublicProfile = mysqlTable("artist_public_profile", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "artist_public_profile_id" }),
 	unique("artist_public_profile_artist").on(table.artistId),
 	index("idx_slug").on(table.slug),
 ]);
@@ -795,7 +787,7 @@ export const artistPublicProfile = mysqlTable("artist_public_profile", {
  * This is the core entity that drives the Revenue Protection Algorithm
  */
 export const leads = mysqlTable("leads", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 
 	// Client info (may or may not have a user account yet)
@@ -890,7 +882,6 @@ export const leads = mysqlTable("leads", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "leads_id" }),
 	index("idx_artist_status").on(table.artistId, table.status),
 	index("idx_artist_priority").on(table.artistId, table.priorityScore),
 	index("idx_client_email").on(table.clientEmail),
@@ -903,7 +894,7 @@ export const leads = mysqlTable("leads", {
  * Used for analytics and abandoned funnel recovery
  */
 export const funnelSessions = mysqlTable("funnel_sessions", {
-	id: varchar({ length: 64 }).notNull(), // UUID
+	id: varchar({ length: 64 }).primaryKey(), // UUID
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 
 	// Session tracking
@@ -934,7 +925,6 @@ export const funnelSessions = mysqlTable("funnel_sessions", {
 
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "funnel_sessions_id" }),
 	index("idx_artist_session").on(table.artistId),
 	index("idx_abandoned").on(table.abandoned, table.recoveryEmailSent),
 ]);
@@ -944,7 +934,7 @@ export const funnelSessions = mysqlTable("funnel_sessions", {
  * Tracks all activity on a lead for timeline display
  */
 export const leadActivityLog = mysqlTable("lead_activity_log", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	leadId: int().notNull().references(() => leads.id, { onDelete: "cascade" }),
 
 	activityType: mysqlEnum([
@@ -980,7 +970,6 @@ export const leadActivityLog = mysqlTable("lead_activity_log", {
 
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "lead_activity_log_id" }),
 	index("idx_lead_activity").on(table.leadId, table.createdAt),
 ]);
 
@@ -1107,7 +1096,7 @@ export const issuedPromotions = mysqlTable("issued_promotions", {
 	id: int().primaryKey().autoincrement(),
 	templateId: int().notNull().references(() => promotionTemplates.id, { onDelete: "cascade" }),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
-	clientId: varchar({ length: 64 }).references(() => users.id, { onDelete: "cascade" }), // Null for auto-apply promotions
+	clientId: varchar({ length: 64 }).references(() => users.id, { onDelete: "set null" }), // Null for auto-apply promotions
 
 	// Unique code for redemption
 	code: varchar({ length: 32 }).notNull(),
@@ -1140,6 +1129,7 @@ export const issuedPromotions = mysqlTable("issued_promotions", {
 	index("idx_client_promotions").on(table.clientId, table.status),
 	index("idx_artist_promotions").on(table.artistId, table.status),
 	index("idx_auto_apply").on(table.isAutoApply, table.autoApplyStartDate, table.autoApplyEndDate),
+	index("idx_templateId").on(table.templateId),
 ]);
 
 /**
