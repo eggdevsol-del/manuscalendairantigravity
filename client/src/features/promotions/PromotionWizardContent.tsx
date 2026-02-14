@@ -15,7 +15,8 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gift, Percent, CreditCard, Check, ChevronRight, Upload, X, Image as ImageIcon, Palette, ZoomIn, Move, Clock, Zap, ArrowLeft } from "lucide-react";
+import { Gift, Percent, CreditCard, Check, ChevronRight, Upload, X, Image as ImageIcon, Palette, ZoomIn, Move, Clock, Zap, ArrowLeft, Maximize2 } from "lucide-react";
+import { tokens } from "@/ui/tokens";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { PromotionCard, PromotionCardData } from "./PromotionCard";
@@ -246,25 +247,28 @@ export function PromotionWizardContent({ onClose, onSuccess, initialData, onStep
         if (uploadingLogo || uploadingBackground) return false;
         switch (step) {
             case 'type': return true;
-            case 'value': return !!value && parseFloat(value) > 0;
+            case 'value': return !!value && parseFloat(value) > 0 && !!name.trim();
             default: return true;
         }
     };
 
+    const fab = tokens.fab;
+    const card = tokens.card;
+
     return (
         <div className="flex flex-col h-full overflow-hidden">
-            {/* Dynamic Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
-                <div className="flex items-center gap-3">
-                    <button onClick={goBack} className="p-2 hover:bg-white/5 rounded-full">
-                        <ArrowLeft className="w-5 h-5" />
-                    </button>
-                    <div>
-                        <h3 className="font-bold">{getStepTitle(step)}</h3>
-                        <p className="text-xs text-muted-foreground">Step {getStepIndex(step)} of 5</p>
-                    </div>
+            {/* Header */}
+            <motion.div variants={fab.animation.item} className={cn(fab.itemRow, "p-4 border-b border-white/10 shrink-0 mb-2")}>
+                <button onClick={goBack} className={fab.itemButton}>
+                    <ArrowLeft className={fab.itemIconSize} />
+                </button>
+                <div className="flex-1 min-w-0 ml-1">
+                    <p className={cn(fab.itemLabel, "uppercase tracking-widest font-bold truncate")}>
+                        {getStepTitle(step)}
+                    </p>
+                    <p className="text-[8px] text-muted-foreground font-mono">STEP {getStepIndex(step)} OF 5</p>
                 </div>
-            </div>
+            </motion.div>
 
             {/* Main Content Area */}
             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
@@ -287,15 +291,23 @@ export function PromotionWizardContent({ onClose, onSuccess, initialData, onStep
             </div>
 
             {/* Action Footer */}
-            <div className="p-4 border-t border-white/10 flex gap-2 shrink-0">
+            <div className="p-4 pt-2 border-t border-white/10 flex gap-2 shrink-0">
                 {step === 'preview' ? (
-                    <Button className="flex-1 font-bold h-12" onClick={handleSave} disabled={!canProceed() || createMutation.isPending || updateMutation.isPending}>
-                        {(createMutation.isPending || updateMutation.isPending) ? 'Saving...' : (initialData ? 'Save Changes' : 'Create')}
-                    </Button>
+                    <button
+                        className="flex-1 py-3 rounded-[4px] text-xs font-bold uppercase tracking-widest transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                        onClick={handleSave}
+                        disabled={!canProceed() || createMutation.isPending || updateMutation.isPending}
+                    >
+                        {(createMutation.isPending || updateMutation.isPending) ? '...' : (initialData ? 'Update' : 'Create')}
+                    </button>
                 ) : (
-                    <Button className="flex-1 h-12" onClick={goNext} disabled={!canProceed()}>
+                    <button
+                        className="flex-1 py-3 rounded-[4px] text-xs font-bold uppercase tracking-widest transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                        onClick={goNext}
+                        disabled={!canProceed()}
+                    >
                         Continue
-                    </Button>
+                    </button>
                 )}
             </div>
         </div>
@@ -309,103 +321,309 @@ function TypeSelectionStep({ selected, onSelect }: { selected: PromotionType; on
         { id: 'discount', icon: Percent, title: 'Discount Card', description: 'Percentage off' },
         { id: 'credit', icon: CreditCard, title: 'Store Credit', description: 'Balance used across bookings' },
     ];
+    const fab = tokens.fab;
+    const card = tokens.card;
+
     return (
-        <div className="grid gap-3">
-            {types.map(t => (
-                <SelectionCard key={t.id} selected={selected === t.id} onClick={() => onSelect(t.id)} icon={t.icon} title={t.title} description={t.description} />
-            ))}
+        <div className="flex flex-col -my-2 w-full">
+            {types.map(t => {
+                const isSelected = selected === t.id;
+                return (
+                    <motion.div
+                        key={t.id}
+                        variants={fab.animation.item}
+                        className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center gap-2 w-full")}
+                        onClick={() => onSelect(t.id)}
+                    >
+                        <div className={cn(isSelected ? fab.itemButtonHighlight : fab.itemButton, "shrink-0 !w-8 !h-8")}>
+                            <t.icon className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-bold text-foreground truncate">{t.title}</p>
+                            <p className="text-[8px] text-muted-foreground truncate">{t.description}</p>
+                        </div>
+                        {isSelected && (
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                        )}
+                    </motion.div>
+                );
+            })}
         </div>
     );
 }
 
 function ValueConfigStep({ type, name, setName, description, setDescription, valueType, setValueType, value, setValue }: any) {
     const defaults = getTypeDefaults(type);
+    const fab = tokens.fab;
+    const card = tokens.card;
+
     return (
-        <div className="space-y-4">
-            <div className="space-y-2">
-                <Label>Name</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={defaults.labelSingular} className="h-11" />
-            </div>
-            <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Add a description..." className="min-h-[80px]" />
-            </div>
-            <div className="space-y-2">
-                <Label>{valueType === 'percentage' ? 'Percentage' : 'Value'}</Label>
-                <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">{valueType === 'percentage' ? '' : '$'}</span>
-                    <Input type="number" value={value} onChange={(e) => setValue(e.target.value)} className="h-12 pl-8 text-xl font-bold" />
-                    {valueType === 'percentage' && <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-xl">%</span>}
+        <div className="flex flex-col gap-3 w-full">
+            <motion.div variants={fab.animation.item} className="space-y-1">
+                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Identity</p>
+                <div className={cn(card.base, card.bg, "p-2 space-y-2")}>
+                    <Input
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Voucher Name"
+                        className="h-9 text-xs bg-white/5 border-white/10"
+                    />
+                    <Textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Public description..."
+                        className="min-h-[50px] text-[10px] bg-white/5 border-white/10 p-2"
+                    />
                 </div>
-            </div>
+            </motion.div>
+
+            <motion.div variants={fab.animation.item} className="space-y-1">
+                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Configuration</p>
+                <div className={cn(card.base, card.bg, "p-2 space-y-2")}>
+                    <div className="flex gap-1">
+                        <button
+                            onClick={() => setValueType('fixed')}
+                            className={cn("flex-1 py-1.5 rounded-[4px] text-[10px] font-bold transition-all", valueType === 'fixed' ? "bg-primary text-primary-foreground" : "bg-white/5 text-muted-foreground")}
+                        >
+                            Fixed
+                        </button>
+                        <button
+                            onClick={() => setValueType('percentage')}
+                            className={cn("flex-1 py-1.5 rounded-[4px] text-[10px] font-bold transition-all", valueType === 'percentage' ? "bg-primary text-primary-foreground" : "bg-white/5 text-muted-foreground")}
+                        >
+                            Percent
+                        </button>
+                    </div>
+                    <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">{valueType === 'fixed' ? '$' : ''}</span>
+                        <Input
+                            type="number"
+                            value={value}
+                            onChange={(e) => setValue(e.target.value)}
+                            className="h-10 pl-7 text-sm font-bold bg-white/5 border-white/10"
+                            placeholder="0"
+                        />
+                        {valueType === 'percentage' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">%</span>}
+                    </div>
+                </div>
+            </motion.div>
         </div>
     );
 }
 
 function RulesConfigStep({ validityDuration, setValidityDuration, noExpiry, setNoExpiry, autoApplyTrigger, setAutoApplyTrigger }: any) {
+    const fab = tokens.fab;
+    const card = tokens.card;
+
     return (
-        <div className="space-y-6">
-            <div className="space-y-3">
-                <h4 className="text-sm font-medium flex items-center gap-2"><Clock className="w-4 h-4" /> Validity</h4>
-                <div className="bg-white/5 p-4 rounded-xl space-y-3">
-                    <div className="flex items-center justify-between"><Label>No Expiry</Label><Switch checked={noExpiry} onCheckedChange={setNoExpiry} /></div>
-                    {!noExpiry && <Input type="number" value={validityDuration} onChange={(e: any) => setValidityDuration(e.target.value)} placeholder="Days" />}
+        <div className="flex flex-col gap-3 w-full">
+            <motion.div variants={fab.animation.item} className="space-y-1">
+                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Validity</p>
+                <div className={cn(card.base, card.bg, "p-2 space-y-3")}>
+                    <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-semibold text-foreground">No Expiry</span>
+                        <Switch checked={noExpiry} onCheckedChange={setNoExpiry} className="scale-75 origin-right" />
+                    </div>
+                    {!noExpiry && (
+                        <div className="relative">
+                            <Input
+                                type="number"
+                                value={validityDuration}
+                                onChange={(e: any) => setValidityDuration(e.target.value)}
+                                placeholder="Days"
+                                className="h-9 text-xs bg-white/5 border-white/10 pr-12"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground uppercase font-bold">Days</span>
+                        </div>
+                    )}
                 </div>
-            </div>
-            <div className="space-y-3">
-                <h4 className="text-sm font-medium flex items-center gap-2"><Zap className="w-4 h-4" /> Trigger</h4>
-                <div className="grid gap-2">
-                    {['none', 'new_client', 'birthday'].map(t => (
-                        <button key={t} onClick={() => setAutoApplyTrigger(t as any)} className={cn("p-3 rounded-lg border text-left text-sm transition-all", autoApplyTrigger === t ? "bg-primary/20 border-primary" : "bg-white/5 border-white/10")}>
-                            <div className="capitalize font-medium">{t.replace('_', ' ')}</div>
-                        </button>
-                    ))}
+            </motion.div>
+
+            <motion.div variants={fab.animation.item} className="space-y-1">
+                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Auto-Apply Trigger</p>
+                <div className="flex flex-col gap-1">
+                    {['none', 'new_client', 'birthday'].map(t => {
+                        const isSelected = autoApplyTrigger === t;
+                        return (
+                            <button
+                                key={t}
+                                onClick={() => setAutoApplyTrigger(t as any)}
+                                className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center justify-between w-full")}
+                            >
+                                <span className="text-[10px] font-medium text-foreground capitalize">{t.replace('_', ' ')}</span>
+                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                            </button>
+                        );
+                    })}
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 }
 
-function DesignCustomizationStep({ colorMode, setColorMode, gradientId, setGradientId, previewData, handleLogoUpload, uploadingLogo, logoInputRef }: any) {
+function DesignCustomizationStep({
+    colorMode, setColorMode, gradientId, setGradientId, previewData,
+    handleLogoUpload, uploadingLogo, logoInputRef,
+    backgroundImageUrl, setBackgroundImageUrl, backgroundScale, setBackgroundScale,
+    backgroundPositionX, setBackgroundPositionX, backgroundPositionY, setBackgroundPositionY,
+    uploadingBackground, handleBackgroundUpload, backgroundInputRef
+}: any) {
+    const fab = tokens.fab;
+    const card = tokens.card;
+
     return (
-        <div className="space-y-6">
-            <div className="aspect-video w-full">
-                <PromotionCard data={previewData} size="sm" className="w-full h-full" />
-            </div>
-            <div className="space-y-3">
-                <Label>Theme</Label>
-                <div className="flex gap-2">
-                    {['solid', 'gradient', 'custom'].map(m => (
-                        <button key={m} onClick={() => setColorMode(m as any)} className={cn("flex-1 py-2 rounded-lg border text-xs capitalize", colorMode === m ? "bg-primary/20 border-primary" : "bg-white/5 border-white/10")}>{m}</button>
-                    ))}
+        <div className="flex flex-col gap-3 w-full">
+            {/* Real-time Preview */}
+            <motion.div variants={fab.animation.item} className="flex justify-center -mx-2">
+                <div className="w-full scale-[0.6] origin-top">
+                    <PromotionCard data={previewData} size="lg" className="shadow-2xl" />
                 </div>
-            </div>
-            {colorMode === 'gradient' && (
-                <div className="grid grid-cols-4 gap-2">
-                    {Object.keys(GRADIENTS).map(g => (
-                        <button key={g} onClick={() => setGradientId(g)} className={cn("h-10 rounded-md border-2", gradientId === g ? "border-white" : "border-transparent text-[0px]")} style={{ background: (GRADIENTS as any)[g].css }} />
-                    ))}
-                </div>
-            )}
-            <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
-                <div className="flex items-center gap-3"><Palette className="w-5 h-5" /><span>Update Logo</span></div>
-                <Button variant="outline" size="sm" disabled={uploadingLogo} onClick={() => logoInputRef.current?.click()}>
-                    <Upload className="w-4 h-4 mr-2" /> {uploadingLogo ? '...' : 'Upload'}
-                </Button>
-                <input type="file" ref={logoInputRef} onChange={handleLogoUpload} className="hidden" accept="image/*" />
+            </motion.div>
+
+            <div className="-mt-16 space-y-3">
+                {/* Theme Toggle */}
+                <motion.div variants={fab.animation.item} className="space-y-1">
+                    <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Theme Mode</p>
+                    <div className="flex gap-1">
+                        {['solid', 'gradient', 'custom'].map(m => (
+                            <button
+                                key={m}
+                                onClick={() => setColorMode(m as any)}
+                                className={cn("flex-1 py-1.5 rounded-[4px] text-[9px] font-bold uppercase transition-all", colorMode === m ? "bg-primary text-primary-foreground" : "bg-white/5 text-muted-foreground")}
+                            >
+                                {m}
+                            </button>
+                        ))}
+                    </div>
+                </motion.div>
+
+                {/* Gradient Selection */}
+                {colorMode === 'gradient' && (
+                    <motion.div variants={fab.animation.item} className="grid grid-cols-4 gap-1.5 p-2 bg-white/5 rounded-[4px]">
+                        {Object.keys(GRADIENTS).map(g => (
+                            <button
+                                key={g}
+                                onClick={() => setGradientId(g)}
+                                className={cn("h-6 rounded-sm border transition-all", gradientId === g ? "border-white scale-110 shadow-lg" : "border-white/10 opacity-60")}
+                                style={{ background: (GRADIENTS as any)[g].css }}
+                            />
+                        ))}
+                    </motion.div>
+                )}
+
+                {/* Background Customization */}
+                <motion.div variants={fab.animation.item} className="space-y-1">
+                    <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Card Background</p>
+                    <div className={cn(card.base, card.bg, "p-2 space-y-3")}>
+                        <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-semibold text-foreground">Custom Image</span>
+                            <button
+                                onClick={() => backgroundInputRef.current?.click()}
+                                disabled={uploadingBackground}
+                                className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all"
+                            >
+                                {uploadingBackground ? <Clock className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                            </button>
+                            <input type="file" ref={backgroundInputRef} onChange={handleBackgroundUpload} className="hidden" accept="image/*" />
+                        </div>
+
+                        {backgroundImageUrl && (
+                            <div className="space-y-3 pt-1 border-t border-white/5">
+                                <div className="space-y-1.5">
+                                    <div className="flex items-center justify-between text-[8px] text-muted-foreground uppercase font-bold">
+                                        <div className="flex items-center gap-1"><Maximize2 className="w-2.5 h-2.5" /> Scale</div>
+                                        <span>{Math.round(backgroundScale * 100)}%</span>
+                                    </div>
+                                    <Slider
+                                        value={[backgroundScale]}
+                                        min={0.5}
+                                        max={3}
+                                        step={0.05}
+                                        onValueChange={([val]) => setBackgroundScale(val)}
+                                        className="py-1"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <div className="flex items-center justify-between text-[8px] text-muted-foreground uppercase font-bold">
+                                        <div className="flex items-center gap-1"><Move className="w-2.5 h-2.5" /> Position X</div>
+                                        <span>{backgroundPositionX}%</span>
+                                    </div>
+                                    <Slider
+                                        value={[backgroundPositionX]}
+                                        min={0}
+                                        max={100}
+                                        step={1}
+                                        onValueChange={([val]) => setBackgroundPositionX(val)}
+                                        className="py-1"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <div className="flex items-center justify-between text-[8px] text-muted-foreground uppercase font-bold">
+                                        <div className="flex items-center gap-1"><Move className="w-2.5 h-2.5 rotate-90" /> Position Y</div>
+                                        <span>{backgroundPositionY}%</span>
+                                    </div>
+                                    <Slider
+                                        value={[backgroundPositionY]}
+                                        min={0}
+                                        max={100}
+                                        step={1}
+                                        onValueChange={([val]) => setBackgroundPositionY(val)}
+                                        className="py-1"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </motion.div>
+
+                {/* Logo Branding */}
+                <motion.div variants={fab.animation.item} className="space-y-1">
+                    <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Branding</p>
+                    <div className={cn(card.base, card.bg, "p-2 flex items-center justify-between")}>
+                        <span className="text-[10px] font-semibold text-foreground">Custom Logo</span>
+                        <button
+                            onClick={() => logoInputRef.current?.click()}
+                            disabled={uploadingLogo}
+                            className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all"
+                        >
+                            {uploadingLogo ? <Clock className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                        </button>
+                        <input type="file" ref={logoInputRef} onChange={handleLogoUpload} className="hidden" accept="image/*" />
+                    </div>
+                </motion.div>
             </div>
         </div>
     );
 }
 
 function PreviewStep({ previewData, isCreating }: { previewData: PromotionCardData, isCreating: boolean }) {
+    const fab = tokens.fab;
+    const card = tokens.card;
+
     return (
-        <div className="space-y-6 text-center">
-            <h4 className="text-lg font-bold">Does it look good?</h4>
-            <div className="max-w-sm mx-auto">
-                <PromotionCard data={previewData} size="lg" className="shadow-2xl" />
-            </div>
-            <p className="text-sm text-muted-foreground">This will be saved to your templates and can be issued to clients immediately.</p>
+        <div className="flex flex-col gap-4 w-full text-center">
+            <motion.div variants={fab.animation.item}>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-1">Final Preview</p>
+                <h4 className="text-sm font-black text-foreground">Ready to Deploy?</h4>
+            </motion.div>
+
+            <motion.div variants={fab.animation.item} className="flex justify-center -mx-4">
+                <div className="w-full scale-[0.65] origin-top">
+                    <PromotionCard data={previewData} size="lg" className="shadow-2xl" />
+                </div>
+            </motion.div>
+
+            <motion.div variants={fab.animation.item} className="-mt-12 space-y-2">
+                <div className={cn(card.base, card.bg, "p-3")}>
+                    <p className="text-[9px] leading-relaxed text-muted-foreground font-medium italic">
+                        "Your new {previewData.type} template is ready. Once created, you can issue it to clients directly from your dashboard."
+                    </p>
+                </div>
+                <div className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[4px] bg-emerald-500/10">
+                    <Check className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Validated</span>
+                </div>
+            </motion.div>
         </div>
     );
 }

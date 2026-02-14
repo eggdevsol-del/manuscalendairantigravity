@@ -73,8 +73,6 @@ export function PromotionBurgerMenu({
         if (onOpenChange) onOpenChange(false);
     };
 
-    // Responsive panel width/height based on step
-    const isLargeStep = currentStep === 'design' || currentStep === 'preview';
 
     if (isCreating) {
         return (
@@ -85,15 +83,9 @@ export function PromotionBurgerMenu({
                     if (!open) setIsCreating(false);
                     if (onOpenChange) onOpenChange(open);
                 }}
-                className={cn(
-                    className,
-                    isLargeStep ? "[&>div:nth-child(2)]:w-full [&>div:nth-child(2)]:max-w-[400px]" : ""
-                )}
+                className={className}
             >
-                <div className={cn(
-                    "transition-all duration-300 ease-in-out",
-                    isLargeStep ? "min-h-[500px]" : "min-h-[350px]"
-                )}>
+                <div className="w-full">
                     <PromotionWizardContent
                         onClose={handleClose}
                         onStepChange={setCurrentStep}
