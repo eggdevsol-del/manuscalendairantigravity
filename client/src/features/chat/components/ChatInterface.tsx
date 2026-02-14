@@ -6,7 +6,7 @@ import { BookingFABMenu } from "@/features/booking/BookingFABMenu";
 import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
 // ProposalSheet removed - not needed
 import { ProjectProposalMessage } from "@/components/chat/ProjectProposalMessage";
-import { ProjectProposalModal } from "@/features/chat/components/ProjectProposalModal";
+import { ProposalFABMenu } from "@/features/chat/components/ProposalFABMenu";
 import { ArrowLeft, Send, Zap, MessageCircle, ImagePlus, Pin, PinOff, FileText, ImageIcon } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { useRegisterBottomNavRow, useBottomNav } from "@/contexts/BottomNavContext";
@@ -75,11 +75,28 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
         showClientConfirmDialog, setShowClientConfirmDialog,
         clientConfirmDates, setClientConfirmDates,
 
-        // Proposal Modal
+        // Proposal
         selectedProposal, setSelectedProposal,
         handleViewProposal,
+        handleCancelProposal,
 
     } = useChatController(conversationId);
+
+    // Derive pending proposals from messages for header pinning
+    const pendingProposals = useMemo(() => {
+        if (!messages) return [];
+        return messages.filter((msg: any) => {
+            try {
+                const meta = msg.metadata ? JSON.parse(msg.metadata) : null;
+                return meta?.type === 'project_proposal' && meta?.status === 'pending';
+            } catch { return false; }
+        }).map((msg: any) => ({
+            message: msg,
+            metadata: JSON.parse(msg.metadata),
+        }));
+    }, [messages]);
+
+    const [proposalFabOpen, setProposalFabOpen] = useState(false);
 
     // Fetch client media for the media quick links bar
     const clientId = conversation?.otherUser?.id;
@@ -289,6 +306,25 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                         )}
                     </div>
                 )}
+
+                {/* Pinned Pending Proposals — under header */}
+                {pendingProposals.length > 0 && (
+                    <div className="px-3 py-2 border-b border-white/5 bg-white/[0.01] space-y-1">
+                        {pendingProposals.map(({ message: msg, metadata: meta }: any) => (
+                            <ProjectProposalMessage
+                                key={msg.id}
+                                metadata={meta}
+                                isArtist={isArtist}
+                                variant="pinned"
+                                onPress={() => {
+                                    handleViewProposal(msg, meta);
+                                    setProposalFabOpen(true);
+                                }}
+                                onCancel={() => handleCancelProposal(msg, meta)}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Messages */}
@@ -318,12 +354,22 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                                         id={`message-${message.id}`}
                                         className={`flex ${isProjectProposal ? "justify-center w-full" : (isOwn ? "justify-end" : "justify-start")}`}
                                     >
-                                        {isProjectProposal ? (
+                                        {isProjectProposal && metadata?.status === 'canceled' ? (
+                                            null
+                                        ) : isProjectProposal && metadata?.status === 'pending' ? (
+                                            // Pending proposals are pinned to the header — skip inline render
+                                            null
+                                        ) : isProjectProposal ? (
                                             <div className="w-full flex justify-center">
                                                 <ProjectProposalMessage
                                                     metadata={metadata}
                                                     isArtist={isArtist}
-                                                    onViewDetails={() => handleViewProposal(message, metadata)}
+                                                    variant="inline"
+                                                    onPress={() => {
+                                                        handleViewProposal(message, metadata);
+                                                        setProposalFabOpen(true);
+                                                    }}
+                                                    onCancel={() => handleCancelProposal(message, metadata)}
                                                 />
                                             </div>
                                         ) : (
@@ -482,14 +528,20 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                 onClose={() => setShowClientInfo(false)}
                 client={conversation?.otherUser}
             />
-            <ProjectProposalModal
-                isOpen={!!selectedProposal}
-                onClose={() => setSelectedProposal(null)}
+            {/* Proposal FAB Menu — replaces full-screen modal */}
+            <ProposalFABMenu
+                isOpen={proposalFabOpen}
+                onOpenChange={setProposalFabOpen}
                 metadata={selectedProposal?.metadata}
+                message={selectedProposal?.message}
                 isArtist={isArtist}
                 onAccept={(appliedPromotion) => handleClientAcceptProposal(selectedProposal?.message, appliedPromotion)}
-                onReject={() => setSelectedProposal(null)}
-                isPendingAction={false}
+                onReject={() => { setSelectedProposal(null); setProposalFabOpen(false); }}
+                onCancel={() => {
+                    if (selectedProposal) handleCancelProposal(selectedProposal.message, selectedProposal.metadata);
+                    setProposalFabOpen(false);
+                }}
+                isPendingAction={bookProjectMutation.isPending}
                 artistId={conversation?.artistId}
             />
 

@@ -265,6 +265,20 @@ export function useChatController(conversationId: number) {
         setSelectedProposal({ message, metadata });
     }, [setSelectedProposal]);
 
+    const handleCancelProposal = useCallback((message: any, metadata: any) => {
+        if (!message?.id) return;
+        const newMetadata = JSON.stringify({ ...metadata, status: 'canceled' });
+        updateMetadataMutation.mutate(
+            { messageId: message.id, metadata: newMetadata },
+            {
+                onSuccess: () => {
+                    toast.success('Proposal canceled');
+                    setSelectedProposal(null);
+                }
+            }
+        );
+    }, [updateMetadataMutation.mutate, setSelectedProposal]);
+
     const handleArtistBookProject = useCallback((metadata: any) => {
         if (!metadata.confirmedDates || !metadata.serviceName) return;
 
@@ -337,6 +351,7 @@ export function useChatController(conversationId: number) {
         handleClientAcceptProposal,
         handleArtistBookProject,
         handleViewProposal,
+        handleCancelProposal,
 
         // Mutations
         sendMessageMutation,
