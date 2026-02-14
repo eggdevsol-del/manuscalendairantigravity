@@ -1,5 +1,5 @@
 import { and, desc, eq, gte, lte, gt, lt, ne, sql } from "drizzle-orm";
-import { appointments, InsertAppointment, users, appointmentLogs, InsertAppointmentLog } from "../../drizzle/schema";
+import { appointments, InsertAppointment, users, appointmentLogs, InsertAppointmentLog, procedureLogs, artistSettings, consentForms } from "../../drizzle/schema";
 import { getDb } from "./core";
 
 // Helper to ensure dates are ISO formatted (UTC) for the client
@@ -109,6 +109,11 @@ export async function updateAppointment(
         oldValue: JSON.stringify(oldAppt),
         newValue: JSON.stringify(newAppt)
     });
+
+    // QLD REGULATION: Auto-generate procedure log on completion
+    if (updates.status === 'completed') {
+        await createProcedureLog(id);
+    }
 
     return newAppt;
 }
@@ -248,7 +253,21 @@ export async function confirmAppointments(conversationId: number, paymentProof?:
         updateData.paymentProof = paymentProof;
     }
 
-    return db
+    // Get the IDs of appointments being confirmed to trigger form generation
+    const dbInst = await getDb();
+    if (!dbInst) throw new Error("Database not available");
+
+    const pendingAppts = await dbInst
+        .select({ id: appointments.id })
+        .from(appointments)
+        .where(
+            and(
+                eq(appointments.conversationId, conversationId),
+                eq(appointments.status, "pending")
+            )
+        );
+
+    const result = await db
         .update(appointments)
         .set(updateData)
         .where(
@@ -257,6 +276,13 @@ export async function confirmAppointments(conversationId: number, paymentProof?:
                 eq(appointments.status, "pending")
             )
         );
+
+    // Trigger form generation for each confirmed appointment
+    for (const appt of pendingAppts) {
+        await generateRequiredForms(appt.id);
+    }
+
+    return result;
 }
 export async function deleteAppointmentsForClient(artistId: string, clientId: string) {
     const db = await getDb();
@@ -309,4 +335,83 @@ export async function checkAppointmentOverlap(
         .limit(1);
 
     return conflicts.length > 0;
+}
+
+/**
+ * QLD Form 9 Procedure Log Automation
+ * Snapshots current data into procedure_logs table
+ */
+export async function createProcedureLog(appointmentId: number) {
+    const db = await getDb();
+    if (!db) return;
+
+    const appt = await db.query.appointments.findFirst({
+        where: eq(appointments.id, appointmentId),
+        with: {
+            client: true,
+            artist: true
+        }
+    });
+
+    if (!appt) return;
+
+    // Get artist settings for license
+    const settings = await db.query.artistSettings.findFirst({
+        where: eq(artistSettings.userId, appt.artistId)
+    });
+
+    await db.insert(procedureLogs).values({
+        appointmentId,
+        artistId: appt.artistId,
+        clientId: appt.clientId,
+        date: appt.actualStartTime || appt.startTime,
+        clientName: appt.client?.name || 'Unknown',
+        clientDob: appt.client?.birthday,
+        artistLicenceNumber: settings?.licenceNumber || "000000000",
+        amountPaid: appt.amountPaid || appt.price || 0,
+        paymentMethod: appt.paymentMethod || 'cash'
+    });
+}
+
+/**
+ * Auto-generate required forms for a newly confirmed appointment
+ */
+export async function generateRequiredForms(appointmentId: number) {
+    const db = await getDb();
+    if (!db) return;
+
+    const appt = await getAppointment(appointmentId);
+    if (!appt) return;
+
+    const settings = await db.query.artistSettings.findFirst({
+        where: eq(artistSettings.userId, appt.artistId)
+    });
+
+    if (!settings) return;
+
+    const forms = [];
+
+    // Procedure Consent
+    forms.push({
+        appointmentId,
+        clientId: appt.clientId,
+        artistId: appt.artistId,
+        formType: 'procedure_consent' as const,
+        title: 'Tattoo Procedure Consent',
+        content: settings.consentTemplate || "I consent to the tattoo procedure...",
+        status: 'pending' as const
+    });
+
+    // Medical Release
+    forms.push({
+        appointmentId,
+        clientId: appt.clientId,
+        artistId: appt.artistId,
+        formType: 'medical_release' as const,
+        title: 'Medical History & Release',
+        content: settings.medicalTemplate || "I confirm I have no medical conditions...",
+        status: 'pending' as const
+    });
+
+    await db.insert(consentForms).values(forms);
 }

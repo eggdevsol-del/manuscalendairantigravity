@@ -223,11 +223,6 @@ export default function Promotions() {
           />
         )}
 
-
-        {showCreateWizard && (
-          <CreatePromotionWizard onClose={closeCreateWizard} initialData={editingPromotion} />
-        )}
-
         <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <DialogContent>
             <DialogHeader>

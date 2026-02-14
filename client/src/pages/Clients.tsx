@@ -237,7 +237,7 @@ export default function Clients() {
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => setLocation(`/profile?tab=history`)}
+                      onClick={() => setLocation(`/profile?tab=history&clientId=${client.id}`)}
                       className="w-full"
                     >
                       <Clock className="w-4 h-4 mr-2" />
@@ -247,7 +247,7 @@ export default function Clients() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setLocation(`/profile`)}
+                    onClick={() => setLocation(`/profile?clientId=${client.id}`)}
                     className="w-full mt-2 text-xs opacity-70"
                   >
                     View Full Profile

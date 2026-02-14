@@ -69,6 +69,9 @@ export const artistSettings = mysqlTable("artistSettings", {
 	styleOptions: text(), // JSON array of style options
 	placementOptions: text(), // JSON array of placement options
 	budgetRanges: text(), // JSON array of budget range objects
+	licenceNumber: varchar({ length: 100 }),
+	consentTemplate: text(),
+	medicalTemplate: text(),
 },
 	(table) => [
 		unique("artistSettings_publicSlug_unique").on(table.publicSlug),
@@ -1263,3 +1266,24 @@ export const consentForms = mysqlTable("consent_forms", {
 	index("cf_artist_idx").on(table.artistId),
 	index("cf_appointment_idx").on(table.appointmentId),
 ]);
+
+export const procedureLogs = mysqlTable("procedure_logs", {
+	id: int().primaryKey().autoincrement(),
+	appointmentId: int().notNull().references(() => appointments.id, { onDelete: "cascade" }),
+	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	date: datetime({ mode: 'string' }).notNull(),
+	clientName: varchar({ length: 255 }).notNull(),
+	clientDob: datetime({ mode: 'string' }),
+	artistLicenceNumber: varchar({ length: 100 }).notNull(),
+	amountPaid: int().notNull(), // stored in cents
+	paymentMethod: varchar({ length: 50 }).notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	index("pl_artist_idx").on(table.artistId),
+	index("pl_client_idx").on(table.clientId),
+	index("pl_appointment_idx").on(table.appointmentId),
+]);
+
+export type InsertProcedureLog = InferInsertModel<typeof procedureLogs>;
+export type SelectProcedureLog = InferSelectModel<typeof procedureLogs>;

@@ -6,13 +6,19 @@ import { eq, desc, and, gte } from "drizzle-orm";
 import { z } from "zod";
 
 export const clientProfileRouter = router({
-    getProfile: protectedProcedure.query(async ({ ctx }) => {
-        const user = await db.getUser(ctx.user.id);
-        if (!user) {
-            throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
-        }
-        return user;
-    }),
+    getProfile: protectedProcedure
+        .input(z.object({ clientId: z.string().optional() }).optional())
+        .query(async ({ ctx, input }) => {
+            const targetId = (ctx.user.role === 'artist' || ctx.user.role === 'admin') && input?.clientId
+                ? input.clientId
+                : ctx.user.id;
+
+            const user = await db.getUser(targetId);
+            if (!user) {
+                throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+            }
+            return user;
+        }),
 
     updateBio: protectedProcedure
         .input(z.object({ bio: z.string().max(500) }))
@@ -40,142 +46,172 @@ export const clientProfileRouter = router({
             return { success: true };
         }),
 
-    getSpendSummary: protectedProcedure.query(async ({ ctx }) => {
-        const appointments = await db.getAppointmentsForUser(ctx.user.id, "client");
+    getSpendSummary: protectedProcedure
+        .input(z.object({ clientId: z.string().optional() }).optional())
+        .query(async ({ ctx, input }) => {
+            const targetId = (ctx.user.role === 'artist' || ctx.user.role === 'admin') && input?.clientId
+                ? input.clientId
+                : ctx.user.id;
 
-        const validAppointments = appointments.filter(a =>
-            a.status === 'completed' || a.status === 'confirmed'
-        );
+            const appointments = await db.getAppointmentsForUser(targetId, "client");
 
-        let totalSpend = 0;
-        let maxSingleSpend = 0;
+            const validAppointments = appointments.filter(a =>
+                a.status === 'completed' || a.status === 'confirmed'
+            );
 
-        validAppointments.forEach(appt => {
-            const price = Number(appt.price || 0);
-            totalSpend += price;
-            if (price > maxSingleSpend) {
-                maxSingleSpend = price;
-            }
-        });
+            let totalSpend = 0;
+            let maxSingleSpend = 0;
 
-        return {
-            totalSpend,
-            maxSingleSpend,
-            appointmentCount: validAppointments.length
-        };
-    }),
-
-    getHistory: protectedProcedure.query(async ({ ctx }) => {
-        const database = await db.getDb();
-        if (!database) return [];
-
-        // Fetch both appointments and their logs
-        const clientAppointments = await database.query.appointments.findMany({
-            where: eq(appointments.clientId, ctx.user.id),
-            with: {
-                logs: true
-            },
-            orderBy: desc(appointments.startTime)
-        });
-
-        const historyItems: any[] = [];
-
-        clientAppointments.forEach(appt => {
-            // Add the appointment itself (as a "completed" or "milestone" event if needed)
-            if (appt.status === 'completed' || appt.status === 'confirmed') {
-                historyItems.push({
-                    id: `appt-${appt.id}`,
-                    type: 'appointment',
-                    date: appt.startTime,
-                    title: appt.title,
-                    description: appt.serviceName,
-                    status: appt.status,
-                    price: appt.price,
-                    depositAmount: appt.depositAmount,
-                    clientPaid: appt.clientPaid,
-                    paymentMethod: appt.paymentMethod,
-                    actualStartTime: appt.actualStartTime,
-                    actualEndTime: appt.actualEndTime,
-                    appointmentId: appt.id
-                });
-            }
-
-            // Add lifecycle events from logs
-            if (appt.logs && appt.logs.length > 0) {
-                appt.logs.forEach((log: any) => {
-                    historyItems.push({
-                        id: `log-${log.id}`,
-                        type: 'log',
-                        date: log.createdAt,
-                        action: log.action,
-                        title: getActionTitle(log.action),
-                        description: getActionDescription(log.action, appt),
-                        performedBy: log.performedBy,
-                        appointmentId: appt.id
-                    });
-                });
-            }
-        });
-
-        return historyItems.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    }),
-
-    getUpcoming: protectedProcedure.query(async ({ ctx }) => {
-        const allAppointments = await db.getAppointmentsForUser(ctx.user.id, "client");
-        const now = new Date();
-        return allAppointments
-            .filter(a =>
-                (a.status === 'pending' || a.status === 'confirmed') &&
-                new Date(a.startTime) > now
-            )
-            .map(a => ({
-                id: a.id,
-                date: a.startTime,
-                endDate: a.endTime,
-                title: a.title,
-                serviceName: a.serviceName,
-                status: a.status,
-                price: a.price,
-                depositAmount: a.depositAmount,
-                sessionNumber: a.sessionNumber,
-                totalSessions: a.totalSessions,
-            }))
-            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }),
-
-    getConsentForms: protectedProcedure.query(async ({ ctx }) => {
-        const database = await db.getDb();
-        if (!database) return [];
-
-        return database.select()
-            .from(consentForms)
-            .where(eq(consentForms.clientId, ctx.user.id))
-            .orderBy(desc(consentForms.createdAt));
-    }),
-
-    getBoards: protectedProcedure.query(async ({ ctx }) => {
-        const database = await db.getDb();
-        if (!database) return [];
-
-        const userBoards = await database.select().from(moodboards)
-            .where(eq(moodboards.clientId, ctx.user.id))
-            .orderBy(desc(moodboards.createdAt));
-
-        const boardsWithItems = await Promise.all(userBoards.map(async (board) => {
-            const items = await database.select().from(moodboardItems)
-                .where(eq(moodboardItems.moodboardId, board.id))
-                .orderBy(desc(moodboardItems.createdAt))
-                .limit(4);
+            validAppointments.forEach(appt => {
+                const price = Number(appt.price || 0);
+                totalSpend += price;
+                if (price > maxSingleSpend) {
+                    maxSingleSpend = price;
+                }
+            });
 
             return {
-                ...board,
-                previewImages: items.map(i => i.imageUrl),
-                itemCount: items.length
+                totalSpend,
+                maxSingleSpend,
+                appointmentCount: validAppointments.length
             };
-        }));
+        }),
 
-        return boardsWithItems;
-    }),
+    getHistory: protectedProcedure
+        .input(z.object({ clientId: z.string().optional() }).optional())
+        .query(async ({ ctx, input }) => {
+            const targetId = (ctx.user.role === 'artist' || ctx.user.role === 'admin') && input?.clientId
+                ? input.clientId
+                : ctx.user.id;
+
+            const database = await db.getDb();
+            if (!database) return [];
+
+            // Fetch both appointments and their logs
+            const clientAppointments = await database.query.appointments.findMany({
+                where: eq(appointments.clientId, targetId),
+                with: {
+                    logs: true
+                },
+                orderBy: desc(appointments.startTime)
+            });
+
+            const historyItems: any[] = [];
+
+            clientAppointments.forEach(appt => {
+                // Add the appointment itself (as a "completed" or "milestone" event if needed)
+                if (appt.status === 'completed' || appt.status === 'confirmed') {
+                    historyItems.push({
+                        id: `appt-${appt.id}`,
+                        type: 'appointment',
+                        date: appt.startTime,
+                        title: appt.title,
+                        description: appt.serviceName,
+                        status: appt.status,
+                        price: appt.price,
+                        depositAmount: appt.depositAmount,
+                        clientPaid: appt.clientPaid,
+                        paymentMethod: appt.paymentMethod,
+                        actualStartTime: appt.actualStartTime,
+                        actualEndTime: appt.actualEndTime,
+                        appointmentId: appt.id
+                    });
+                }
+
+                // Add lifecycle events from logs
+                if (appt.logs && appt.logs.length > 0) {
+                    appt.logs.forEach((log: any) => {
+                        historyItems.push({
+                            id: `log-${log.id}`,
+                            type: 'log',
+                            date: log.createdAt,
+                            action: log.action,
+                            title: getActionTitle(log.action),
+                            description: getActionDescription(log.action, appt),
+                            performedBy: log.performedBy,
+                            appointmentId: appt.id
+                        });
+                    });
+                }
+            });
+
+            return historyItems.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        }),
+
+    getUpcoming: protectedProcedure
+        .input(z.object({ clientId: z.string().optional() }).optional())
+        .query(async ({ ctx, input }) => {
+            const targetId = (ctx.user.role === 'artist' || ctx.user.role === 'admin') && input?.clientId
+                ? input.clientId
+                : ctx.user.id;
+
+            const allAppointments = await db.getAppointmentsForUser(targetId, "client");
+            const now = new Date();
+            return allAppointments
+                .filter(a =>
+                    (a.status === 'pending' || a.status === 'confirmed') &&
+                    new Date(a.startTime) > now
+                )
+                .map(a => ({
+                    id: a.id,
+                    date: a.startTime,
+                    endDate: a.endTime,
+                    title: a.title,
+                    serviceName: a.serviceName,
+                    status: a.status,
+                    price: a.price,
+                    depositAmount: a.depositAmount,
+                    sessionNumber: a.sessionNumber,
+                    totalSessions: a.totalSessions,
+                }))
+                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        }),
+
+    getConsentForms: protectedProcedure
+        .input(z.object({ clientId: z.string().optional() }).optional())
+        .query(async ({ ctx, input }) => {
+            const targetId = (ctx.user.role === 'artist' || ctx.user.role === 'admin') && input?.clientId
+                ? input.clientId
+                : ctx.user.id;
+
+            const database = await db.getDb();
+            if (!database) return [];
+
+            return database.select()
+                .from(consentForms)
+                .where(eq(consentForms.clientId, targetId))
+                .orderBy(desc(consentForms.createdAt));
+        }),
+
+    getBoards: protectedProcedure
+        .input(z.object({ clientId: z.string().optional() }).optional())
+        .query(async ({ ctx, input }) => {
+            const targetId = (ctx.user.role === 'artist' || ctx.user.role === 'admin') && input?.clientId
+                ? input.clientId
+                : ctx.user.id;
+
+            const database = await db.getDb();
+            if (!database) return [];
+
+            const userBoards = await database.select().from(moodboards)
+                .where(eq(moodboards.clientId, targetId))
+                .orderBy(desc(moodboards.createdAt));
+
+            const boardsWithItems = await Promise.all(userBoards.map(async (board) => {
+                const items = await database.select().from(moodboardItems)
+                    .where(eq(moodboardItems.moodboardId, board.id))
+                    .orderBy(desc(moodboardItems.createdAt))
+                    .limit(4);
+
+                return {
+                    ...board,
+                    previewImages: items.map(i => i.imageUrl),
+                    itemCount: items.length
+                };
+            }));
+
+            return boardsWithItems;
+        }),
 
     createMoodboard: protectedProcedure
         .input(z.object({ title: z.string().min(1) }))
@@ -224,26 +260,32 @@ export const clientProfileRouter = router({
             return { success: true };
         }),
 
-    getPhotos: protectedProcedure.query(async ({ ctx }) => {
-        const conversations = await db.getConversationsForUser(ctx.user.id, "client");
+    getPhotos: protectedProcedure
+        .input(z.object({ clientId: z.string().optional() }).optional())
+        .query(async ({ ctx, input }) => {
+            const targetId = (ctx.user.role === 'artist' || ctx.user.role === 'admin') && input?.clientId
+                ? input.clientId
+                : ctx.user.id;
 
-        const allPhotos: { id: number, url: string, createdAt: Date }[] = [];
+            const conversations = await db.getConversationsForUser(targetId, "client");
 
-        for (const conv of conversations) {
-            const msgs = await db.getMessages(conv.id, 50);
-            msgs.forEach(m => {
-                if (m.senderId === ctx.user.id && m.messageType === 'image') {
-                    allPhotos.push({
-                        id: m.id,
-                        url: m.content,
-                        createdAt: m.createdAt ? new Date(m.createdAt) : new Date()
-                    });
-                }
-            });
-        }
+            const allPhotos: { id: number, url: string, createdAt: Date }[] = [];
 
-        return allPhotos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    })
+            for (const conv of conversations) {
+                const msgs = await db.getMessages(conv.id, 50);
+                msgs.forEach(m => {
+                    if (m.senderId === ctx.user.id && m.messageType === 'image') {
+                        allPhotos.push({
+                            id: m.id,
+                            url: m.content,
+                            createdAt: m.createdAt ? new Date(m.createdAt) : new Date()
+                        });
+                    }
+                });
+            }
+
+            return allPhotos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        })
 });
 
 function getActionTitle(action: string) {

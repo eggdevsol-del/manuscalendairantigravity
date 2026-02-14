@@ -8,7 +8,10 @@ import {
     GalleryVertical,
     CreditCard
 } from "lucide-react";
+import { useState } from "react";
 import { FABMenu, type FABMenuItem } from "@/ui/FABMenu";
+import { PromotionWizardContent, WizardStep } from "./PromotionWizardContent";
+import { cn } from "@/lib/utils";
 
 interface PromotionBurgerMenuProps {
     viewMode: 'swipe' | 'grid';
@@ -27,6 +30,8 @@ export function PromotionBurgerMenu({
     onOpenChange,
     className
 }: PromotionBurgerMenuProps) {
+    const [isCreating, setIsCreating] = useState(false);
+    const [currentStep, setCurrentStep] = useState<WizardStep>('type');
 
     const items: FABMenuItem[] = [
         {
@@ -39,7 +44,7 @@ export function PromotionBurgerMenu({
             id: 'create',
             label: 'New Promotion',
             icon: Plus,
-            onClick: () => onAction('create'),
+            onClick: () => setIsCreating(true),
             highlight: true,
         },
         {
@@ -62,13 +67,39 @@ export function PromotionBurgerMenu({
         },
     ];
 
+    // Close handler for wizard
+    const handleClose = () => {
+        setIsCreating(false);
+        if (onOpenChange) onOpenChange(false);
+    };
+
+    // Responsive panel width/height based on step
+    const isLargeStep = currentStep === 'design' || currentStep === 'preview';
+
     return (
         <FABMenu
-            items={items}
             toggleIcon={<CreditCard className="h-6 w-6" />}
             isOpen={isOpen}
-            onOpenChange={onOpenChange}
-            className={className}
-        />
+            onOpenChange={(open) => {
+                if (!open) setIsCreating(false);
+                if (onOpenChange) onOpenChange(open);
+            }}
+            className={cn(
+                className,
+                isCreating && isLargeStep ? "[&>div:nth-child(2)]:w-full [&>div:nth-child(2)]:max-w-[400px]" : ""
+            )}
+        >
+            {isCreating ? (
+                <div className={cn(
+                    "transition-all duration-300 ease-in-out",
+                    isLargeStep ? "min-h-[500px]" : "min-h-[350px]"
+                )}>
+                    <PromotionWizardContent
+                        onClose={handleClose}
+                        onStepChange={setCurrentStep}
+                    />
+                </div>
+            ) : null}
+        </FABMenu>
     );
 }

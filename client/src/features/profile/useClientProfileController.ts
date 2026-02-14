@@ -2,32 +2,36 @@ import { trpc } from "@/lib/trpc";
 import { useMemo } from "react";
 
 export function useClientProfileController() {
+    const params = new URLSearchParams(window.location.search);
+    const clientIdParam = params.get("clientId");
+    const input = clientIdParam ? { clientId: clientIdParam } : undefined;
+
     // Queries
-    const { data: profile, isLoading: loadingProfile } = trpc.clientProfile.getProfile.useQuery();
-    const { data: spend, isLoading: loadingSpend } = trpc.clientProfile.getSpendSummary.useQuery();
-    const { data: history, isLoading: loadingHistory } = trpc.clientProfile.getHistory.useQuery();
-    const { data: boards, isLoading: loadingBoards } = trpc.clientProfile.getBoards.useQuery();
-    const { data: photos, isLoading: loadingPhotos } = trpc.clientProfile.getPhotos.useQuery();
-    const { data: upcoming, isLoading: loadingUpcoming } = trpc.clientProfile.getUpcoming.useQuery();
-    const { data: forms, isLoading: loadingForms } = trpc.clientProfile.getConsentForms.useQuery();
+    const { data: profile, isLoading: loadingProfile } = trpc.clientProfile.getProfile.useQuery(input);
+    const { data: spend, isLoading: loadingSpend } = trpc.clientProfile.getSpendSummary.useQuery(input);
+    const { data: history, isLoading: loadingHistory } = trpc.clientProfile.getHistory.useQuery(input);
+    const { data: boards, isLoading: loadingBoards } = trpc.clientProfile.getBoards.useQuery(input);
+    const { data: photos, isLoading: loadingPhotos } = trpc.clientProfile.getPhotos.useQuery(input);
+    const { data: upcoming, isLoading: loadingUpcoming } = trpc.clientProfile.getUpcoming.useQuery(input);
+    const { data: forms, isLoading: loadingForms } = trpc.clientProfile.getConsentForms.useQuery(input);
 
     const utils = trpc.useContext();
 
     // Mutations
     const updateBio = trpc.clientProfile.updateBio.useMutation({
-        onSuccess: () => utils.clientProfile.getProfile.invalidate()
+        onSuccess: () => utils.clientProfile.getProfile.invalidate(input)
     });
     const updateAvatar = trpc.clientProfile.updateAvatar.useMutation({
-        onSuccess: () => utils.clientProfile.getProfile.invalidate()
+        onSuccess: () => utils.clientProfile.getProfile.invalidate(input)
     });
     const createMoodboard = trpc.clientProfile.createMoodboard.useMutation({
-        onSuccess: () => utils.clientProfile.getBoards.invalidate()
+        onSuccess: () => utils.clientProfile.getBoards.invalidate(input)
     });
     const deleteMoodboard = trpc.clientProfile.deleteMoodboard.useMutation({
-        onSuccess: () => utils.clientProfile.getBoards.invalidate()
+        onSuccess: () => utils.clientProfile.getBoards.invalidate(input)
     });
     const addMoodboardImage = trpc.clientProfile.addMoodboardImage.useMutation({
-        onSuccess: () => utils.clientProfile.getBoards.invalidate()
+        onSuccess: () => utils.clientProfile.getBoards.invalidate(input)
     });
 
     // Trust Badge Logic (Selector)
