@@ -496,7 +496,10 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                     isPendingProposalAction={bookProjectMutation.isPending}
                     artistId={conversation?.artistId}
                     externalOpen={proposalFabOpen || undefined}
-                    onExternalOpenChange={setProposalFabOpen}
+                    onExternalOpenChange={(open) => {
+                        setProposalFabOpen(open);
+                        if (!open) setSelectedProposal(null);
+                    }}
                 />
             )}
 
