@@ -198,7 +198,10 @@ export function BookingFABMenu({
     const proposalMeta = selectedProposal?.metadata;
 
     // Proposal display values
-    const proposalDates = proposalMeta ? (Array.isArray(proposalMeta.dates) ? proposalMeta.dates : []) : [];
+    const proposalDates = proposalMeta ? (
+        Array.isArray(proposalMeta.dates) ? proposalMeta.dates
+            : Array.isArray(proposalMeta.proposedDates) ? proposalMeta.proposedDates : []
+    ) : [];
     const proposalTotalMinutes = proposalMeta ? ((proposalMeta.sittings || 1) * (proposalMeta.serviceDuration || 60)) : 0;
     const proposalHours = Math.floor(proposalTotalMinutes / 60);
     const hasStoredDiscount = proposalMeta?.discountApplied && proposalMeta?.finalAmount !== undefined;

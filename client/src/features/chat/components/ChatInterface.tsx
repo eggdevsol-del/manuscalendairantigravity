@@ -92,7 +92,8 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                 if (meta.status === 'pending') return true;
                 if (meta.status === 'accepted') {
                     // Pin until all appointment dates have passed
-                    const dates = Array.isArray(meta.dates) ? meta.dates : [];
+                    const dates = Array.isArray(meta.dates) ? meta.dates
+                        : Array.isArray(meta.proposedDates) ? meta.proposedDates : [];
                     const lastDate = dates.length > 0 ? new Date(dates[dates.length - 1]) : null;
                     return lastDate ? lastDate > now : false;
                 }
@@ -369,7 +370,8 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                                             null
                                         ) : isProjectProposal && metadata?.status === 'accepted' && (() => {
                                             // Skip accepted proposals that are still pinned (future dates)
-                                            const dates = Array.isArray(metadata?.dates) ? metadata.dates : [];
+                                            const dates = Array.isArray(metadata?.dates) ? metadata.dates
+                                                : Array.isArray(metadata?.proposedDates) ? metadata.proposedDates : [];
                                             const lastDate = dates.length > 0 ? new Date(dates[dates.length - 1]) : null;
                                             return lastDate ? lastDate > new Date() : false;
                                         })() ? (

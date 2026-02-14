@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { artistProcedure, router } from "../_core/trpc";
+import { artistProcedure, protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
 export const artistSettingsRouter = router({
@@ -22,6 +22,17 @@ export const artistSettingsRouter = router({
             updatedAt: new Date(),
         };
     }),
+    // Public-safe subset for clients viewing an artist's chat
+    getPublicByArtistId: protectedProcedure
+        .input(z.object({ artistId: z.string() }))
+        .query(async ({ input }) => {
+            const settings = await db.getArtistSettings(input.artistId);
+            if (!settings) return null;
+            return {
+                businessName: settings.businessName,
+                businessAddress: settings.businessAddress,
+            };
+        }),
     upsert: artistProcedure
         .input(
             z.object({

@@ -29,6 +29,14 @@ export function useChatData(conversationId: number) {
         enabled: !!user && (user.role === "artist" || user.role === "admin"),
     });
 
+    // For clients: fetch artist's public settings (businessAddress) via conversation's artistId
+    const { data: artistPublicSettings } = trpc.artistSettings.getPublicByArtistId.useQuery(
+        { artistId: conversation?.artistId || '' },
+        {
+            enabled: !!user && user.role === "client" && !!conversation?.artistId,
+        }
+    );
+
     const { data: consultationList } = trpc.consultations.list.useQuery(undefined, {
         enabled: !!user,
     });
@@ -65,7 +73,11 @@ export function useChatData(conversationId: number) {
         messages,
         messagesLoading,
         quickActions,
-        artistSettings,
+        artistSettings: isArtist ? artistSettings : {
+            ...artistSettings,
+            businessAddress: artistPublicSettings?.businessAddress ?? artistSettings?.businessAddress,
+            businessName: artistPublicSettings?.businessName ?? artistSettings?.businessName,
+        },
         consultationList,
         consultationData,
         paramConsultationId,
