@@ -398,7 +398,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                             (/iPad/.test(navigator.userAgent) ||
                                 (navigator.userAgent.includes('Macintosh') && 'ontouchend' in document));
                         const base = isContextualVisible ? 187 : 110;
-                        return isIPad ? `${base + 40}px` : `${base}px`;
+                        return isIPad ? `${base - 40}px` : `${base}px`;
                     })()
                 }}
             >
