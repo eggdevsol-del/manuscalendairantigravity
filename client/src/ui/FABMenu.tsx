@@ -9,11 +9,17 @@
  * 2. `children` mode — custom content rendered inside the panel (like Booking)
  */
 
-import { useState, ReactNode } from "react";
+import { useState, useMemo, ReactNode } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { tokens } from "@/ui/tokens";
+
+/** Detect iPad (including iPadOS which reports as Macintosh) */
+const getIsIPad = () =>
+    typeof navigator !== 'undefined' &&
+    (/iPad/.test(navigator.userAgent) ||
+        (navigator.userAgent.includes('Macintosh') && 'ontouchend' in document));
 
 export interface FABMenuItem {
     id: string;
@@ -58,17 +64,22 @@ export function FABMenu(props: FABMenuProps) {
     const toggle = () => setIsOpen(!isOpen);
 
     const fab = tokens.fab;
+    const isIPad = useMemo(() => getIsIPad(), []);
 
     return (
         <div className={cn(fab.container, props.className)}>
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
                 {isOpen && (
                     <motion.div
+                        key="fab-panel"
                         initial="hidden"
                         animate="visible"
                         exit="hidden"
                         variants={fab.animation.panel}
-                        className={fab.panel}
+                        className={cn(
+                            fab.panel,
+                            isIPad && "w-[440px] max-h-[60vh] p-6 gap-5"
+                        )}
                     >
                         {'items' in props && props.items ? (
                             // Items mode — render labeled icon buttons

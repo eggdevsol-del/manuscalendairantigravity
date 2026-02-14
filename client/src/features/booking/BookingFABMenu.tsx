@@ -4,7 +4,6 @@ import {
     Loader2,
     AlertCircle,
     CheckCircle2,
-    Scissors,
     CalendarSearch,
     Repeat,
     Repeat1,
@@ -190,9 +189,6 @@ export function BookingFABMenu({
                                 setTimeout(() => setStep('frequency'), 150);
                             }}
                         >
-                            <div className={cn(fab.itemButton, "shrink-0")}>
-                                <Scissors className={fab.itemIconSize} />
-                            </div>
                             <div className="flex-1 min-w-0 text-left">
                                 <p className="text-xs font-semibold text-foreground truncate">{service.name}</p>
                                 <p className="text-[9px] text-muted-foreground font-mono flex items-center gap-1">
