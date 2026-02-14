@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { Bookmark, Clock, Grid, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 // ============================================================================
 // Photos Card
@@ -150,21 +151,76 @@ export function HistoryCard({ history }: { history: any[] }) {
                 </div>
             ) : (
                 <div className="space-y-0 relative border-l border-white/10 ml-3 pl-6 py-2">
-                    {history?.map((item) => (
-                        <div key={item.id} className="relative mb-8 last:mb-0">
-                            <span className="absolute -left-[29px] top-1.5 h-2.5 w-2.5 rounded-full bg-primary ring-4 ring-background" />
-                            <div className="flex flex-col">
-                                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-0.5">
-                                    {format(new Date(item.date), 'MMM d, yyyy')}
+                    {history?.map((item) => {
+                        const isLog = item.type === 'log';
+
+                        // Map actions to icons/colors
+                        const getIcon = () => {
+                            if (!isLog) return <Check className="w-3 h-3 text-emerald-500" />;
+                            switch (item.action) {
+                                case 'created': return <Clock className="w-3 h-3 text-primary" />;
+                                case 'rescheduled': return <Clock className="w-3 h-3 text-orange-400" />;
+                                case 'cancelled': return <AlertCircle className="w-3 h-3 text-red-500" />;
+                                case 'proposal_revoked': return <AlertCircle className="w-3 h-3 text-red-500" />;
+                                case 'confirmed': return <Check className="w-3 h-3 text-emerald-500" />;
+                                default: return <Check className="w-3 h-3 text-muted-foreground" />;
+                            }
+                        };
+
+                        const getStatusColor = () => {
+                            if (!isLog) return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+                            switch (item.action) {
+                                case 'cancelled':
+                                case 'proposal_revoked': return 'bg-red-500/10 text-red-500 border-red-500/20';
+                                case 'rescheduled': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+                                case 'confirmed': return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+                                default: return 'bg-white/5 text-muted-foreground border-white/5';
+                            }
+                        };
+
+                        return (
+                            <div key={item.id} className="relative mb-8 last:mb-0">
+                                <span className={cn(
+                                    "absolute -left-[30px] top-1.5 h-3 w-3 rounded-full ring-4 ring-background flex items-center justify-center bg-background border",
+                                    !isLog ? "border-emerald-500" : "border-white/20"
+                                )}>
+                                    <div className={cn("w-1.5 h-1.5 rounded-full", !isLog ? "bg-emerald-500" : "bg-muted-foreground")} />
                                 </span>
-                                <h4 className="text-sm font-semibold text-foreground">{item.title}</h4>
-                                <p className="text-xs text-muted-foreground/80 mt-0.5">{item.description}</p>
-                                <span className="inline-flex mt-2 text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/5 text-muted-foreground w-fit capitalize">
-                                    {item.status}
-                                </span>
+
+                                <div className="flex flex-col">
+                                    <div className="flex items-center justify-between mb-0.5">
+                                        <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                                            {format(new Date(item.date), 'MMM d, yyyy')}
+                                        </span>
+                                        {isLog && (
+                                            <span className="text-[10px] text-muted-foreground/60 italic">
+                                                Audited Action
+                                            </span>
+                                        )}
+                                    </div>
+                                    <h4 className={cn("text-sm font-semibold flex items-center gap-2", !isLog ? "text-foreground" : "text-foreground/80")}>
+                                        {item.title}
+                                        {getIcon()}
+                                    </h4>
+                                    <p className="text-xs text-muted-foreground/70 mt-0.5 leading-relaxed">{item.description}</p>
+
+                                    <div className="mt-2 flex items-center gap-2">
+                                        <span className={cn(
+                                            "inline-flex text-[9px] px-2 py-0.5 rounded-full border capitalize font-bold tracking-tight",
+                                            getStatusColor()
+                                        )}>
+                                            {isLog ? item.action.replace('_', ' ') : item.status}
+                                        </span>
+                                        {!isLog && item.price > 0 && (
+                                            <span className="text-[10px] text-muted-foreground font-medium">
+                                                ${item.price} Total
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>

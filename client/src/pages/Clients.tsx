@@ -3,7 +3,7 @@ import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Inpu
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
 import { LoadingState } from "@/components/ui/ssot";
 import { trpc } from "@/lib/trpc";
-import { ChevronLeft, Mail, MessageCircle, Phone, Plus, Search, Trash, User } from "lucide-react";
+import { ChevronLeft, Clock, Mail, MessageCircle, Phone, Plus, Search, Trash, User } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
@@ -224,14 +224,33 @@ export default function Clients() {
                   </div>
                 </CardHeader>
                 <CardContent>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setLocation(`/chat/${client.conversationId}`)}
+                      className="w-full"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Chat
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setLocation(`/profile?tab=history`)}
+                      className="w-full"
+                    >
+                      <Clock className="w-4 h-4 mr-2" />
+                      History
+                    </Button>
+                  </div>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    onClick={() => setLocation(`/chat/${client.conversationId}`)}
-                    className="w-full"
+                    onClick={() => setLocation(`/profile`)}
+                    className="w-full mt-2 text-xs opacity-70"
                   >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Message
+                    View Full Profile
                   </Button>
                 </CardContent>
               </Card>

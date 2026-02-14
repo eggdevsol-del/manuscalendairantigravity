@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useClientProfileController } from "@/features/profile/useClientProfileController";
 import { ProfileHeader } from "@/features/profile/components/ProfileHeader";
 import { ProfileSwipeCarousel } from "@/features/profile/components/ProfileSwipeCarousel";
@@ -33,6 +33,15 @@ export default function ClientProfile() {
     const [isEditMode, setIsEditMode] = useState(false);
     const [isBioModalOpen, setIsBioModalOpen] = useState(false);
     const [activeTabId, setActiveTabId] = useState("upcoming");
+
+    // Deep-linking to tabs via query param
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const tab = params.get("tab");
+        if (tab && ["upcoming", "forms", "history", "photos"].includes(tab)) {
+            setActiveTabId(tab);
+        }
+    }, []);
 
     // File Input Ref for Profile Pic
     const handleProfilePicUpload = () => {

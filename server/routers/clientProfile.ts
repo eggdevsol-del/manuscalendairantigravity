@@ -66,24 +66,58 @@ export const clientProfileRouter = router({
     }),
 
     getHistory: protectedProcedure.query(async ({ ctx }) => {
-        const allAppointments = await db.getAppointmentsForUser(ctx.user.id, "client");
-        return allAppointments
-            .filter(a => a.status === 'completed' || a.status === 'confirmed')
-            .map(a => ({
-                id: a.id,
-                type: 'appointment',
-                date: a.startTime,
-                title: a.title,
-                description: a.serviceName,
-                status: a.status,
-                price: a.price,
-                depositAmount: a.depositAmount,
-                clientPaid: a.clientPaid,
-                paymentMethod: a.paymentMethod,
-                actualStartTime: a.actualStartTime,
-                actualEndTime: a.actualEndTime,
-            }))
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const database = await db.getDb();
+        if (!database) return [];
+
+        // Fetch both appointments and their logs
+        const clientAppointments = await database.query.appointments.findMany({
+            where: eq(appointments.clientId, ctx.user.id),
+            with: {
+                logs: true
+            },
+            orderBy: desc(appointments.startTime)
+        });
+
+        const historyItems: any[] = [];
+
+        clientAppointments.forEach(appt => {
+            // Add the appointment itself (as a "completed" or "milestone" event if needed)
+            if (appt.status === 'completed' || appt.status === 'confirmed') {
+                historyItems.push({
+                    id: `appt-${appt.id}`,
+                    type: 'appointment',
+                    date: appt.startTime,
+                    title: appt.title,
+                    description: appt.serviceName,
+                    status: appt.status,
+                    price: appt.price,
+                    depositAmount: appt.depositAmount,
+                    clientPaid: appt.clientPaid,
+                    paymentMethod: appt.paymentMethod,
+                    actualStartTime: appt.actualStartTime,
+                    actualEndTime: appt.actualEndTime,
+                    appointmentId: appt.id
+                });
+            }
+
+            // Add lifecycle events from logs
+            if (appt.logs && appt.logs.length > 0) {
+                appt.logs.forEach((log: any) => {
+                    historyItems.push({
+                        id: `log-${log.id}`,
+                        type: 'log',
+                        date: log.createdAt,
+                        action: log.action,
+                        title: getActionTitle(log.action),
+                        description: getActionDescription(log.action, appt),
+                        performedBy: log.performedBy,
+                        appointmentId: appt.id
+                    });
+                });
+            }
+        });
+
+        return historyItems.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }),
 
     getUpcoming: protectedProcedure.query(async ({ ctx }) => {
@@ -211,3 +245,27 @@ export const clientProfileRouter = router({
         return allPhotos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     })
 });
+
+function getActionTitle(action: string) {
+    switch (action) {
+        case 'created': return 'Appointment Requested';
+        case 'rescheduled': return 'Appointment Rescheduled';
+        case 'cancelled': return 'Appointment Cancelled';
+        case 'completed': return 'Appointment Completed';
+        case 'confirmed': return 'Appointment Confirmed';
+        case 'proposal_revoked': return 'Proposal Revoked';
+        default: return 'Appointment Update';
+    }
+}
+
+function getActionDescription(action: string, appt: any) {
+    switch (action) {
+        case 'created': return `Request sent for ${appt.serviceName}`;
+        case 'rescheduled': return `Time updated to ${new Date(appt.startTime).toLocaleString()}`;
+        case 'cancelled': return `Appointment for ${appt.serviceName} was cancelled`;
+        case 'completed': return `Service finalized and paid`;
+        case 'confirmed': return `Deposit confirmed for ${appt.serviceName}`;
+        case 'proposal_revoked': return `The artist revoked the project proposal`;
+        default: return `Action: ${action} on ${appt.serviceName}`;
+    }
+}

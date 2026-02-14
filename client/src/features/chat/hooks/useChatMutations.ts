@@ -94,13 +94,24 @@ export function useChatMutations(
         },
     });
 
+    const deleteProposalMutation = trpc.appointments.deleteProposal.useMutation({
+        onSuccess: () => {
+            toast.success("Proposal revoked");
+            utils.messages.list.invalidate({ conversationId });
+        },
+        onError: (err) => {
+            toast.error("Failed to revoke proposal: " + err.message);
+        }
+    });
+
     return {
-        utils, // Expose utils if needed, mostly internal
+        utils,
         pinConsultationMutation,
         markAsReadMutation,
         updateMetadataMutation,
         sendMessageMutation,
         bookProjectMutation,
-        uploadImageMutation
+        uploadImageMutation,
+        deleteProposalMutation
     };
 }

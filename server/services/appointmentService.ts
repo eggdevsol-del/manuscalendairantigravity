@@ -1,13 +1,14 @@
 import { and, desc, eq, gte, lte, gt, lt, ne, sql } from "drizzle-orm";
-import { appointments, InsertAppointment, users } from "../../drizzle/schema";
+import { appointments, InsertAppointment, users, appointmentLogs, InsertAppointmentLog } from "../../drizzle/schema";
 import { getDb } from "./core";
 
 // Helper to ensure dates are ISO formatted (UTC) for the client
 // MySQL returns "YYYY-MM-DD HH:mm:ss", we need "YYYY-MM-DDTHH:mm:ssZ"
-function toISO(dateStr: string | null | undefined): string {
+function toISO(dateStr: any): string {
     if (!dateStr) return dateStr as any;
-    // If it's already a Date object (shouldn't be with mode: string, but safety check)
-    if (dateStr instanceof Date) return (dateStr as Date).toISOString();
+
+    // Handle Date objects
+    if (dateStr instanceof Date) return dateStr.toISOString();
 
     let s = String(dateStr);
     if (s.includes('T') && s.endsWith('Z')) return s;
@@ -36,14 +37,31 @@ export async function createAppointment(appointment: InsertAppointment) {
     if (!db) return undefined;
 
     const result = await db.insert(appointments).values(appointment);
+    const appointmentId = Number(result[0].insertId);
 
     const inserted = await db
         .select()
         .from(appointments)
-        .where(eq(appointments.id, Number(result[0].insertId)))
+        .where(eq(appointments.id, appointmentId))
         .limit(1);
 
-    return normalizeAppointment(inserted[0]);
+    const appt = normalizeAppointment(inserted[0]);
+
+    // Log the creation
+    await logAppointmentAction({
+        appointmentId,
+        action: 'created',
+        performedBy: appt.artistId, // For now assuming artist creates, but could be dynamic
+        newValue: JSON.stringify(appt)
+    });
+
+    return appt;
+}
+
+export async function logAppointmentAction(log: InsertAppointmentLog) {
+    const db = await getDb();
+    if (!db) return;
+    await db.insert(appointmentLogs).values(log);
 }
 
 export async function getAppointment(id: number) {
@@ -61,22 +79,53 @@ export async function getAppointment(id: number) {
 
 export async function updateAppointment(
     id: number,
-    updates: Partial<InsertAppointment>
+    updates: Partial<InsertAppointment>,
+    performedBy: string
 ) {
     const db = await getDb();
     if (!db) return undefined;
+
+    const oldAppt = await getAppointment(id);
 
     await db
         .update(appointments)
         .set({ ...updates, updatedAt: new Date().toISOString() })
         .where(eq(appointments.id, id));
 
-    return getAppointment(id);
+    const newAppt = await getAppointment(id);
+
+    // Determine action - rescheduled if time changed, else status change, etc.
+    let action: any = 'completed'; // default
+    if (updates.status) {
+        action = updates.status;
+    } else if (updates.startTime || updates.endTime) {
+        action = 'rescheduled';
+    }
+
+    await logAppointmentAction({
+        appointmentId: id,
+        action,
+        performedBy,
+        oldValue: JSON.stringify(oldAppt),
+        newValue: JSON.stringify(newAppt)
+    });
+
+    return newAppt;
 }
 
-export async function deleteAppointment(id: number) {
+export async function deleteAppointment(id: number, performedBy: string) {
     const db = await getDb();
     if (!db) return false;
+
+    const oldAppt = await getAppointment(id);
+
+    await logAppointmentAction({
+        appointmentId: id,
+        action: 'cancelled',
+        performedBy,
+        oldValue: JSON.stringify(oldAppt),
+        newValue: null
+    });
 
     await db.delete(appointments).where(eq(appointments.id, id));
     return true;

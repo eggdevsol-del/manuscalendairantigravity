@@ -44,6 +44,10 @@ export const appointmentLogs = mysqlTable("appointment_logs", {
 	index("log_appt_idx").on(table.appointmentId),
 ]);
 
+export type InsertAppointmentLog = InferInsertModel<typeof appointmentLogs>;
+export type SelectAppointmentLog = InferSelectModel<typeof appointmentLogs>;
+
+
 export const artistSettings = mysqlTable("artistSettings", {
 	id: int().primaryKey().autoincrement(),
 	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -395,7 +399,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 	moodboards: many(moodboards),
 }));
 
-export const appointmentsRelations = relations(appointments, ({ one }) => ({
+export const appointmentsRelations = relations(appointments, ({ one, many }) => ({
 	artist: one(users, {
 		fields: [appointments.artistId],
 		references: [users.id],
@@ -409,8 +413,21 @@ export const appointmentsRelations = relations(appointments, ({ one }) => ({
 	conversation: one(conversations, {
 		fields: [appointments.conversationId],
 		references: [conversations.id]
+	}),
+	logs: many(appointmentLogs),
+}));
+
+export const appointmentLogsRelations = relations(appointmentLogs, ({ one }) => ({
+	appointment: one(appointments, {
+		fields: [appointmentLogs.appointmentId],
+		references: [appointments.id]
+	}),
+	performer: one(users, {
+		fields: [appointmentLogs.performedBy],
+		references: [users.id]
 	})
 }));
+
 
 export const consultationsRelations = relations(consultations, ({ one }) => ({
 	artist: one(users, {
@@ -1163,6 +1180,9 @@ export type SelectIssuedPromotion = InferSelectModel<typeof issuedPromotions>;
 export type InsertPromotionRedemption = InferInsertModel<typeof promotionRedemptions>;
 export type SelectPromotionRedemption = InferSelectModel<typeof promotionRedemptions>;
 export type InsertPushSubscription = InferInsertModel<typeof pushSubscriptions>;
+export type InsertPaymentMethodSettings = InferInsertModel<typeof paymentMethodSettings>;
+export type InsertConsentForm = InferInsertModel<typeof consentForms>;
+
 export type SelectPushSubscription = InferSelectModel<typeof pushSubscriptions>;
 
 // Relations for promotion tables

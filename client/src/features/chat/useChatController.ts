@@ -53,6 +53,7 @@ export function useChatController(conversationId: number) {
         updateMetadataMutation,
         pinConsultationMutation,
         markAsReadMutation,
+        deleteProposalMutation,
         utils
     } = mutations;
 
@@ -261,23 +262,25 @@ export function useChatController(conversationId: number) {
         });
     }, [conversationId, selectedProposal, bookProjectMutation.mutate, updateMetadataMutation.mutate, sendMessageMutation.mutate, redeemPromotionMutation, scrollToBottom, setScrollIntent, setSelectedProposal]);
 
+    const handleRevokeProposal = undefined; // Removed in favor of consolidated handleCancelProposal
+
     const handleViewProposal = useCallback((message: any, metadata: any) => {
         setSelectedProposal({ message, metadata });
     }, [setSelectedProposal]);
 
     const handleCancelProposal = useCallback((message: any, metadata: any) => {
         if (!message?.id) return;
-        const newMetadata = JSON.stringify({ ...metadata, status: 'canceled' });
-        updateMetadataMutation.mutate(
-            { messageId: message.id, metadata: newMetadata },
-            {
+
+        if (window.confirm("Are you sure you want to revoke this proposal? This will cancel the associated appointment.")) {
+            deleteProposalMutation.mutate({
+                messageId: message.id
+            }, {
                 onSuccess: () => {
-                    toast.success('Proposal canceled');
                     setSelectedProposal(null);
                 }
-            }
-        );
-    }, [updateMetadataMutation.mutate, setSelectedProposal]);
+            });
+        }
+    }, [deleteProposalMutation.mutate, setSelectedProposal]);
 
     const handleArtistBookProject = useCallback((metadata: any) => {
         if (!metadata.confirmedDates || !metadata.serviceName) return;

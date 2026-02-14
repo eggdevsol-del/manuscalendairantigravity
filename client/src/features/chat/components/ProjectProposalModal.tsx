@@ -19,11 +19,10 @@ interface ProposalMetadata {
     status: 'pending' | 'accepted' | 'rejected';
     serviceDuration?: number;
     depositAmount?: number;
-    policies?: string[]; // Assuming policies might be passed or valid defaults
-    // Discount info (stored when accepted with promotion)
+    policies?: string[];
     discountApplied?: boolean;
-    discountAmount?: number; // in cents
-    finalAmount?: number; // in cents
+    discountAmount?: number;
+    finalAmount?: number;
     promotionName?: string;
 }
 
@@ -36,6 +35,7 @@ interface ProjectProposalModalProps {
     onReject: () => void;
     isPendingAction: boolean;
     artistId?: string;
+    onRevoke?: () => void;
 }
 
 export function ProjectProposalModal({
@@ -47,6 +47,7 @@ export function ProjectProposalModal({
     onReject,
     isPendingAction,
     artistId,
+    onRevoke,
 }: ProjectProposalModalProps) {
     const [showPromotionSheet, setShowPromotionSheet] = useState(false);
     const [appliedPromotion, setAppliedPromotion] = useState<{
@@ -60,7 +61,6 @@ export function ProjectProposalModal({
 
     const { serviceName, totalCost, sittings, dates, status, serviceDuration, depositAmount, discountApplied, discountAmount: storedDiscountAmount, finalAmount: storedFinalAmount, promotionName } = metadata;
 
-    // Calculate display amounts (with promotion if applied - either from current session or stored from acceptance)
     const hasStoredDiscount = discountApplied && storedFinalAmount !== undefined;
     const hasCurrentDiscount = appliedPromotion !== null;
     const hasDiscount = hasCurrentDiscount || hasStoredDiscount;
@@ -68,7 +68,7 @@ export function ProjectProposalModal({
     const displayTotal = hasCurrentDiscount
         ? appliedPromotion.finalAmount / 100
         : hasStoredDiscount
-            ? storedFinalAmount / 100
+            ? (storedFinalAmount || 0) / 100
             : totalCost;
 
     const displayDiscountAmount = hasCurrentDiscount
@@ -82,13 +82,9 @@ export function ProjectProposalModal({
         : promotionName || 'Promotion';
 
     const dateList = Array.isArray(dates) ? dates : [];
-
-    // Calculate total time
     const totalMinutes = (sittings || 1) * (serviceDuration || 60);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-
-
 
     const ProposalDatesList = () => (
         <Card className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden p-4">
@@ -141,7 +137,6 @@ export function ProjectProposalModal({
         <div className="space-y-3 w-full pt-2">
             {!isArtist && status === 'pending' && (
                 <>
-                    {/* Applied Promotion Display */}
                     {appliedPromotion && (
                         <div className={cn("border", tokens.proposalModal.statusPadding, tokens.proposalModal.statusRadius, tokens.proposalModal.successBg, tokens.proposalModal.successBorder)}>
                             <div className="flex items-center justify-between">
@@ -154,7 +149,6 @@ export function ProjectProposalModal({
                         </div>
                     )}
 
-                    {/* Apply Promotion Button */}
                     {!appliedPromotion && artistId && (
                         <Button
                             variant="outline"
@@ -167,7 +161,6 @@ export function ProjectProposalModal({
                         </Button>
                     )}
 
-                    {/* Accept/Decline Buttons */}
                     <div className="grid grid-cols-2 gap-3">
                         <Button
                             variant="outline"
@@ -196,8 +189,13 @@ export function ProjectProposalModal({
 
             {isArtist && status === 'pending' && (
                 <div className="col-span-2 flex flex-col gap-2">
-                    <Button variant="secondary" className={cn("w-full", tokens.proposalModal.buttonHeight, tokens.proposalModal.buttonRadius)} disabled>
-                        Edit Proposal
+                    <Button
+                        variant="destructive"
+                        className={cn("w-full opacity-60 hover:opacity-100", tokens.proposalModal.buttonHeight, tokens.proposalModal.buttonRadius)}
+                        onClick={onRevoke}
+                        disabled={isPendingAction}
+                    >
+                        {isPendingAction ? "Revoking..." : "Revoke Proposal"}
                     </Button>
                     <div className={cn("flex items-center justify-center gap-2 text-amber-500 text-xs font-medium border rounded-lg", tokens.proposalModal.statusPadding, tokens.proposalModal.warningBg, tokens.proposalModal.warningBorder)}>
                         <span className="relative flex h-2 w-2">
@@ -243,34 +241,22 @@ export function ProjectProposalModal({
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogPrimitive.Portal>
-                {/* Backdrop */}
                 <DialogPrimitive.Overlay className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-
-                {/* Content */}
                 <DialogPrimitive.Content
                     className="fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col justify-end overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-in-from-bottom-10 data-[state=open]:slide-in-from-bottom-0"
                 >
-                    {/* Sheet Container */}
                     <div className={cn("w-full h-full flex flex-col px-0 overflow-hidden relative mt-0 md:mt-4", tokens.proposalModal.sheetBg, tokens.proposalModal.sheetBlur, tokens.proposalModal.sheetRadius, tokens.proposalModal.sheetShadow)}>
-                        {/* Top Edge Highlight */}
                         <div className={cn("absolute top-0 inset-x-0 h-px pointer-events-none", tokens.proposalModal.highlightGradient, tokens.proposalModal.highlightOpacity)} />
-
-                        {/* Fixed Close Button */}
                         <div className="absolute top-6 right-6 z-30">
                             <Button variant="ghost" size="icon" className={cn("text-foreground", tokens.proposalModal.closeButton)} onClick={onClose}>
                                 <X className="w-5 h-5" />
                             </Button>
                         </div>
-
-                        {/* Scrollable Content (Header + Body) */}
                         <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y pt-12 px-4">
                             <div className="pb-32 max-w-lg mx-auto space-y-4">
-
-                                {/* Header Content (Scrolls with sheet) */}
                                 <div className="mb-6 px-2">
                                     <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Review Proposal</p>
                                     <DialogTitle className={cn("mb-6 pr-12 line-clamp-2", tokens.proposalModal.title)}>{serviceName}</DialogTitle>
-
                                     <div className="w-full">
                                         <div className="flex flex-wrap items-center justify-between gap-y-4 gap-x-2">
                                             <div className="flex items-center gap-3">
@@ -300,7 +286,6 @@ export function ProjectProposalModal({
                                         </div>
                                     </div>
                                 </div>
-
                                 <ProposalDatesList />
                                 <ProposalPolicies />
                                 <ProposalActions />
@@ -310,13 +295,12 @@ export function ProjectProposalModal({
                 </DialogPrimitive.Content>
             </DialogPrimitive.Portal>
 
-            {/* Apply Promotion Sheet */}
             {artistId && (
                 <ApplyPromotionSheet
                     isOpen={showPromotionSheet}
                     onClose={() => setShowPromotionSheet(false)}
                     artistId={artistId}
-                    originalAmount={totalCost * 100} // Convert to cents
+                    originalAmount={totalCost * 100}
                     onApply={(promo, discountAmount, finalAmount) => {
                         setAppliedPromotion({
                             id: promo.id,

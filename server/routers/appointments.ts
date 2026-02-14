@@ -160,7 +160,7 @@ export const appointmentsRouter = router({
                 }
             }
 
-            return db.updateAppointment(id, processedUpdates);
+            return db.updateAppointment(id, processedUpdates, ctx.user.id);
         }),
     delete: protectedProcedure
         .input(z.number())
@@ -185,8 +185,7 @@ export const appointmentsRouter = router({
                 });
             }
 
-            return db.deleteAppointment(input);
-            return db.deleteAppointment(input);
+            return db.deleteAppointment(input, ctx.user.id);
         }),
 
     deleteAllForClient: protectedProcedure
@@ -398,6 +397,7 @@ export const appointmentsRouter = router({
             const timezone = input.timeZone || getBusinessTimezone();
 
             let createdCount = 0;
+            const appointmentIds: number[] = [];
             for (const appt of input.appointments) {
                 // Check for overlap
                 const isOverlapping = await db.checkAppointmentOverlap(
@@ -413,7 +413,7 @@ export const appointmentsRouter = router({
                     });
                 }
 
-                await db.createAppointment({
+                const created = await db.createAppointment({
                     conversationId: input.conversationId,
                     artistId: conversation.artistId,
                     clientId: conversation.clientId,
@@ -427,7 +427,11 @@ export const appointmentsRouter = router({
                     depositAmount: appt.depositAmount,
                     status: "pending",
                 });
-                createdCount++;
+
+                if (created) {
+                    appointmentIds.push(created.id);
+                    createdCount++;
+                }
             }
 
             // Auto-send deposit info if enabled
@@ -437,7 +441,66 @@ export const appointmentsRouter = router({
             }
 
 
-            return { success: true, count: createdCount };
+            return { success: true, count: createdCount, appointmentIds };
+        }),
+
+    deleteProposal: artistProcedure
+        .input(z.object({
+            messageId: z.number(),
+        }))
+        .mutation(async ({ input, ctx }) => {
+            const message = await db.getMessageById(input.messageId);
+            if (!message) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Message not found",
+                });
+            }
+
+            if (message.messageType !== 'appointment_request' && !message.content.includes('project_proposal')) {
+                // Fallback check if it's a proposal
+            }
+
+            // Parse metadata
+            let metadata: any = {};
+            try {
+                metadata = message.metadata ? JSON.parse(message.metadata) : {};
+            } catch (e) { }
+
+            const appointmentId = metadata.appointmentId || metadata.id; // handle different structures
+
+            if (!appointmentId) {
+                throw new TRPCError({
+                    code: "PRECONDITION_FAILED",
+                    message: "No appointment associated with this proposal",
+                });
+            }
+
+            // Cancel the appointment
+            await db.updateAppointment(appointmentId, { status: 'cancelled' }, ctx.user.id);
+
+            // Log special action
+            await db.logAppointmentAction({
+                appointmentId,
+                action: 'proposal_revoked',
+                performedBy: ctx.user.id,
+                newValue: JSON.stringify({ messageId: input.messageId })
+            });
+
+            // Mark message as deleted/hidden
+            metadata.isDeleted = true;
+            metadata.deletedAt = new Date().toISOString();
+            await db.updateMessageMetadata(input.messageId, JSON.stringify(metadata));
+
+            // Optional: Insert system message
+            await db.createMessage({
+                conversationId: message.conversationId,
+                senderId: ctx.user.id,
+                content: "Proposal was revoked by the artist.",
+                messageType: "system"
+            });
+
+            return { success: true };
         }),
 });
 
