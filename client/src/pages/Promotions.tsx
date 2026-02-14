@@ -68,7 +68,8 @@ export default function Promotions() {
   // Teaser Mode
   const { isTeaserClient } = useTeaser();
   const [showInstallModal, setShowInstallModal] = useState(false);
-  const [viewMode, setViewMode] = useState<'swipe' | 'grid'>('swipe');
+  const [viewMode, setViewMode] = useState<'swipe' | 'grid'>('grid');
+  const [fabOpen, setFabOpen] = useState(false);
 
   const filteredCards = promotions || [];
   const selectedCard = filteredCards.find(c => c.id === selectedCardId);
@@ -172,7 +173,11 @@ export default function Promotions() {
                         transition={{ type: "spring", stiffness: 280, damping: 28, mass: 0.8 }}
                         style={{ position: 'absolute', width: '100%', transformOrigin: 'center center', cursor: isFocal ? 'grab' : 'pointer', touchAction: 'none' }}
                         onClick={() => {
-                          if (isFocal) setSelectedCardId(prev => prev === card.id ? null : card.id);
+                          if (isFocal) {
+                            const newId = selectedCardId === card.id ? null : card.id;
+                            setSelectedCardId(newId);
+                            if (newId) setFabOpen(true);
+                          }
                           else { setFocalIndex(index); setSelectedCardId(null); }
                         }}
                       >
@@ -196,6 +201,7 @@ export default function Promotions() {
                 cards={filteredCards}
                 onSelect={(card) => {
                   setSelectedCardId(card.id);
+                  setFabOpen(true);
                   // Sync focal index for smooth transition back to swipe
                   const idx = filteredCards.findIndex(c => c.id === card.id);
                   if (idx !== -1) setFocalIndex(idx);
@@ -212,6 +218,8 @@ export default function Promotions() {
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             onAction={handleMenuAction}
+            isOpen={fabOpen}
+            onOpenChange={setFabOpen}
           />
         )}
 

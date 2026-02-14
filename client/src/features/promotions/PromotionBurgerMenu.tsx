@@ -14,6 +14,8 @@ interface PromotionBurgerMenuProps {
     viewMode: 'swipe' | 'grid';
     onViewModeChange: (mode: 'swipe' | 'grid') => void;
     onAction: (action: 'create' | 'send' | 'auto-apply' | 'settings') => void;
+    isOpen?: boolean;
+    onOpenChange?: (open: boolean) => void;
     className?: string;
 }
 
@@ -21,6 +23,8 @@ export function PromotionBurgerMenu({
     viewMode,
     onViewModeChange,
     onAction,
+    isOpen,
+    onOpenChange,
     className
 }: PromotionBurgerMenuProps) {
 
@@ -62,6 +66,8 @@ export function PromotionBurgerMenu({
         <FABMenu
             items={items}
             toggleIcon={<CreditCard className="h-6 w-6" />}
+            isOpen={isOpen}
+            onOpenChange={onOpenChange}
             className={className}
         />
     );
