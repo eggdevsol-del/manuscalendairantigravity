@@ -81,13 +81,22 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
 
     } = useChatController(conversationId);
 
-    // Derive pending proposals from messages for header pinning
-    const pendingProposals = useMemo(() => {
+    // Derive pinned proposals: pending + accepted with future dates
+    const pinnedProposals = useMemo(() => {
         if (!messages) return [];
+        const now = new Date();
         return messages.filter((msg: any) => {
             try {
                 const meta = msg.metadata ? JSON.parse(msg.metadata) : null;
-                return meta?.type === 'project_proposal' && meta?.status === 'pending';
+                if (meta?.type !== 'project_proposal') return false;
+                if (meta.status === 'pending') return true;
+                if (meta.status === 'accepted') {
+                    // Pin until all appointment dates have passed
+                    const dates = Array.isArray(meta.dates) ? meta.dates : [];
+                    const lastDate = dates.length > 0 ? new Date(dates[dates.length - 1]) : null;
+                    return lastDate ? lastDate > now : false;
+                }
+                return false;
             } catch { return false; }
         }).map((msg: any) => ({
             message: msg,
@@ -306,10 +315,10 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                     </div>
                 )}
 
-                {/* Pinned Pending Proposals — under header */}
-                {pendingProposals.length > 0 && (
+                {/* Pinned Proposals — pending + accepted with future dates */}
+                {pinnedProposals.length > 0 && (
                     <div className="px-3 py-2 border-b border-white/5 bg-white/[0.01] space-y-1">
-                        {pendingProposals.map(({ message: msg, metadata: meta }: any) => (
+                        {pinnedProposals.map(({ message: msg, metadata: meta }: any) => (
                             <ProjectProposalMessage
                                 key={msg.id}
                                 metadata={meta}
@@ -356,7 +365,14 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                                         {isProjectProposal && metadata?.status === 'canceled' ? (
                                             null
                                         ) : isProjectProposal && metadata?.status === 'pending' ? (
-                                            // Pending proposals are pinned to the header — skip inline render
+                                            // Pending proposals are pinned to the header — skip inline
+                                            null
+                                        ) : isProjectProposal && metadata?.status === 'accepted' && (() => {
+                                            // Skip accepted proposals that are still pinned (future dates)
+                                            const dates = Array.isArray(metadata?.dates) ? metadata.dates : [];
+                                            const lastDate = dates.length > 0 ? new Date(dates[dates.length - 1]) : null;
+                                            return lastDate ? lastDate > new Date() : false;
+                                        })() ? (
                                             null
                                         ) : isProjectProposal ? (
                                             <div className="w-full flex justify-center">

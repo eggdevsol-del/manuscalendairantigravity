@@ -13,6 +13,7 @@ import {
     ArrowLeft,
     Check,
     Tag,
+    MapPin,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -341,6 +342,24 @@ export function BookingFABMenu({
                             <motion.div variants={fab.animation.item} className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-emerald-500/10">
                                 <Check className="w-3.5 h-3.5 text-emerald-500" />
                                 <span className="text-[10px] font-bold text-emerald-500">Accepted</span>
+                            </motion.div>
+                        )}
+
+                        {/* Open in Maps — client only, accepted */}
+                        {!isArtist && proposalMeta.status === 'accepted' && artistSettings?.businessAddress && (
+                            <motion.div variants={fab.animation.item}>
+                                <button
+                                    className={cn(card.base, card.bg, card.interactive, "flex items-center gap-2 p-2 w-full rounded-[4px]")}
+                                    onClick={() => {
+                                        const addr = encodeURIComponent(artistSettings.businessAddress);
+                                        window.open(`https://maps.google.com/?q=${addr}`, '_blank');
+                                    }}
+                                >
+                                    <div className={cn(fab.itemButton, "shrink-0 !w-7 !h-7")}>
+                                        <MapPin className="w-3 h-3" />
+                                    </div>
+                                    <span className="text-[10px] font-semibold text-foreground">Open in Maps</span>
+                                </button>
                             </motion.div>
                         )}
 
