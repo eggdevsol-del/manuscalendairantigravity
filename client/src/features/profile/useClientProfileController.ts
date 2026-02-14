@@ -8,6 +8,8 @@ export function useClientProfileController() {
     const { data: history, isLoading: loadingHistory } = trpc.clientProfile.getHistory.useQuery();
     const { data: boards, isLoading: loadingBoards } = trpc.clientProfile.getBoards.useQuery();
     const { data: photos, isLoading: loadingPhotos } = trpc.clientProfile.getPhotos.useQuery();
+    const { data: upcoming, isLoading: loadingUpcoming } = trpc.clientProfile.getUpcoming.useQuery();
+    const { data: forms, isLoading: loadingForms } = trpc.clientProfile.getConsentForms.useQuery();
 
     const utils = trpc.useContext();
 
@@ -53,10 +55,12 @@ export function useClientProfileController() {
         history,
         boards,
         photos,
+        forms,
+        upcoming,
         trustBadges,
 
         // Loading States
-        isLoading: loadingProfile || loadingSpend || loadingHistory || loadingBoards || loadingPhotos,
+        isLoading: loadingProfile || loadingSpend || loadingHistory || loadingBoards || loadingPhotos || loadingUpcoming || loadingForms,
 
         // Mutations
         updateBio,

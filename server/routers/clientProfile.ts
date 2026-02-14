@@ -1,8 +1,8 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import * as db from "../db";
-import { moodboards, moodboardItems, users } from "../../drizzle/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { moodboards, moodboardItems, users, consentForms, appointments } from "../../drizzle/schema";
+import { eq, desc, and, gte } from "drizzle-orm";
 import { z } from "zod";
 
 export const clientProfileRouter = router({
@@ -66,15 +66,57 @@ export const clientProfileRouter = router({
     }),
 
     getHistory: protectedProcedure.query(async ({ ctx }) => {
-        const appointments = await db.getAppointmentsForUser(ctx.user.id, "client");
-        return appointments.map(a => ({
-            id: a.id,
-            type: 'appointment',
-            date: a.startTime,
-            title: a.title,
-            description: a.serviceName,
-            status: a.status
-        })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const allAppointments = await db.getAppointmentsForUser(ctx.user.id, "client");
+        return allAppointments
+            .filter(a => a.status === 'completed' || a.status === 'confirmed')
+            .map(a => ({
+                id: a.id,
+                type: 'appointment',
+                date: a.startTime,
+                title: a.title,
+                description: a.serviceName,
+                status: a.status,
+                price: a.price,
+                depositAmount: a.depositAmount,
+                clientPaid: a.clientPaid,
+                paymentMethod: a.paymentMethod,
+                actualStartTime: a.actualStartTime,
+                actualEndTime: a.actualEndTime,
+            }))
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }),
+
+    getUpcoming: protectedProcedure.query(async ({ ctx }) => {
+        const allAppointments = await db.getAppointmentsForUser(ctx.user.id, "client");
+        const now = new Date();
+        return allAppointments
+            .filter(a =>
+                (a.status === 'pending' || a.status === 'confirmed') &&
+                new Date(a.startTime) > now
+            )
+            .map(a => ({
+                id: a.id,
+                date: a.startTime,
+                endDate: a.endTime,
+                title: a.title,
+                serviceName: a.serviceName,
+                status: a.status,
+                price: a.price,
+                depositAmount: a.depositAmount,
+                sessionNumber: a.sessionNumber,
+                totalSessions: a.totalSessions,
+            }))
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }),
+
+    getConsentForms: protectedProcedure.query(async ({ ctx }) => {
+        const database = await db.getDb();
+        if (!database) return [];
+
+        return database.select()
+            .from(consentForms)
+            .where(eq(consentForms.clientId, ctx.user.id))
+            .orderBy(desc(consentForms.createdAt));
     }),
 
     getBoards: protectedProcedure.query(async ({ ctx }) => {

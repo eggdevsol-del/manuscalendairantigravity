@@ -2,8 +2,8 @@ import { useState, useMemo } from "react";
 import { useClientProfileController } from "@/features/profile/useClientProfileController";
 import { ProfileHeader } from "@/features/profile/components/ProfileHeader";
 import { ProfileSwipeCarousel } from "@/features/profile/components/ProfileSwipeCarousel";
-import { MoodboardCard } from "@/features/profile/components/MoodboardCard";
-import { PhotosCard, HistoryCard, SavedCard } from "@/features/profile/components/ContentCards";
+
+import { PhotosCard, HistoryCard, UpcomingCard, FormsCard } from "@/features/profile/components/ContentCards";
 import { EditBioModal } from "@/features/profile/components/EditBioModal";
 import { useRegisterBottomNavRow } from "@/contexts/BottomNavContext";
 import { Edit3, User, ToggleLeft, ToggleRight, LayoutTemplate } from "lucide-react";
@@ -21,19 +21,18 @@ export default function ClientProfile() {
     const {
         profile,
         trustBadges,
-        boards,
+
         photos,
         history,
-        createMoodboard,
-        deleteMoodboard,
-        addMoodboardImage,
+        upcoming,
+        forms,
         updateBio,
         updateAvatar
     } = useClientProfileController();
 
     const [isEditMode, setIsEditMode] = useState(false);
     const [isBioModalOpen, setIsBioModalOpen] = useState(false);
-    const [activeTabId, setActiveTabId] = useState("boards");
+    const [activeTabId, setActiveTabId] = useState("upcoming");
 
     // File Input Ref for Profile Pic
     const handleProfilePicUpload = () => {
@@ -50,16 +49,6 @@ export default function ClientProfile() {
                     icon: isEditMode ? ToggleRight : ToggleLeft,
                     onClick: () => setIsEditMode(!isEditMode),
                     highlight: isEditMode
-                },
-                {
-                    id: "new-board",
-                    label: "New Board",
-                    icon: LayoutTemplate,
-                    onClick: () => {
-                        setActiveTabId("boards");
-                        const title = prompt("New Board Title:");
-                        if (title) createMoodboard.mutate({ title });
-                    }
                 },
                 {
                     id: "profile-pic",
@@ -88,22 +77,14 @@ export default function ClientProfile() {
 
     const tabs = useMemo(() => [
         {
-            id: "boards",
-            label: "Moodboards",
-            content: (
-                <MoodboardCard
-                    boards={boards || []}
-                    isEditMode={isEditMode}
-                    onCreateBoard={async (t) => createMoodboard.mutate({ title: t })}
-                    onDeleteBoard={async (id) => deleteMoodboard.mutate({ boardId: id })}
-                    onAddImage={async (id, url) => addMoodboardImage.mutate({ boardId: id, imageUrl: url })}
-                />
-            )
+            id: "upcoming",
+            label: "Upcoming",
+            content: <UpcomingCard upcoming={upcoming || []} />
         },
         {
-            id: "photos",
-            label: "Photos",
-            content: <PhotosCard photos={photos || []} isEditMode={isEditMode} />
+            id: "forms",
+            label: "Forms",
+            content: <FormsCard forms={forms || []} />
         },
         {
             id: "history",
@@ -111,11 +92,11 @@ export default function ClientProfile() {
             content: <HistoryCard history={history || []} />
         },
         {
-            id: "saved",
-            label: "Saved",
-            content: <SavedCard />
+            id: "photos",
+            label: "Photos",
+            content: <PhotosCard photos={photos || []} isEditMode={isEditMode} />
         }
-    ], [boards, photos, history, isEditMode, createMoodboard, deleteMoodboard, addMoodboardImage]);
+    ], [upcoming, forms, history, photos, isEditMode]);
 
     return (
         <div className="flex flex-col h-full bg-gradient-to-b from-background to-background/80 relative overflow-hidden">

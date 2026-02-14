@@ -40,8 +40,105 @@ export function PhotosCard({ photos, isEditMode }: { photos: any[], isEditMode: 
 }
 
 // ============================================================================
-// History Card
+// Upcoming Card
 // ============================================================================
+
+export function UpcomingCard({ upcoming }: { upcoming: any[] }) {
+    return (
+        <div className="h-full">
+            {upcoming?.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground opacity-50">
+                    <Clock className="w-10 h-10 mb-4" />
+                    <p>No upcoming sittings</p>
+                </div>
+            ) : (
+                <div className="space-y-4 px-1">
+                    {upcoming?.map((item) => {
+                        const date = new Date(item.date);
+                        const now = new Date();
+                        const daysAway = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+                        return (
+                            <div key={item.id} className="relative p-4 rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
+                                {daysAway <= 5 && (
+                                    <div className="absolute top-0 right-0 px-3 py-1 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
+                                        In {daysAway} days
+                                    </div>
+                                )}
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs text-primary font-bold uppercase tracking-wider">
+                                        {format(date, 'MMM d, yyyy • h:mm a')}
+                                    </span>
+                                    <h4 className="text-lg font-bold text-foreground">{item.title}</h4>
+                                    <p className="text-sm text-muted-foreground">{item.serviceName}</p>
+
+                                    <div className="mt-4 flex items-center gap-3">
+                                        {item.depositAmount > 0 && (
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Deposit</span>
+                                                <span className="text-xs font-medium text-foreground">${item.depositAmount}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Price Estimate</span>
+                                            <span className="text-xs font-medium text-foreground">${item.price}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ============================================================================
+// Forms Card
+// ============================================================================
+
+import { FileText, Check, AlertCircle } from "lucide-react";
+
+export function FormsCard({ forms }: { forms: any[] }) {
+    // Mock upcoming forms if none exist, just for UI demo in this phase since we don't have form assignment logic yet
+    const displayForms = forms;
+
+    return (
+        <div className="h-full">
+            {displayForms?.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground opacity-50">
+                    <FileText className="w-10 h-10 mb-4" />
+                    <p>No forms on file</p>
+                </div>
+            ) : (
+                <div className="space-y-3 px-1">
+                    {displayForms?.map((form) => (
+                        <div key={form.id} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${form.status === 'signed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-orange-500/10 text-orange-500'
+                                }`}>
+                                {form.status === 'signed' ? <Check className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-semibold text-foreground truncate">{form.title}</h4>
+                                <p className="text-xs text-muted-foreground">
+                                    {form.status === 'signed'
+                                        ? `Signed ${format(new Date(form.signedAt || form.updatedAt), 'MMM d, yyyy')}`
+                                        : 'Pending signature'}
+                                </p>
+                            </div>
+                            {form.status !== 'signed' && (
+                                <Button size="sm" variant="ghost" className="shrink-0 text-xs">
+                                    Sign
+                                </Button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
 
 export function HistoryCard({ history }: { history: any[] }) {
     return (
