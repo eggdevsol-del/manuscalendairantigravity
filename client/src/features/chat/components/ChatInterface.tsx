@@ -6,7 +6,6 @@ import { BookingFABMenu } from "@/features/booking/BookingFABMenu";
 import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
 // ProposalSheet removed - not needed
 import { ProjectProposalMessage } from "@/components/chat/ProjectProposalMessage";
-import { ProposalFABMenu } from "@/features/chat/components/ProposalFABMenu";
 import { ArrowLeft, Send, Zap, MessageCircle, ImagePlus, Pin, PinOff, FileText, ImageIcon } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { useRegisterBottomNavRow, useBottomNav } from "@/contexts/BottomNavContext";
@@ -477,15 +476,27 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                 </div>
             </div>
 
-            {/* Booking FAB Menu - Artist Only */}
-            {isArtist && (
+            {/* Universal FAB Menu — Booking + Proposal Details */}
+            {(isArtist || !!selectedProposal) && (
                 <BookingFABMenu
                     conversationId={conversationId}
                     artistServices={availableServices || []}
                     artistSettings={artistSettings}
+                    isArtist={isArtist}
                     onBookingSuccess={() => {
                         toast.success('Booking proposal sent!');
                     }}
+                    selectedProposal={selectedProposal}
+                    onAcceptProposal={(appliedPromotion) => handleClientAcceptProposal(selectedProposal?.message, appliedPromotion)}
+                    onRejectProposal={() => { setSelectedProposal(null); setProposalFabOpen(false); }}
+                    onCancelProposal={() => {
+                        if (selectedProposal) handleCancelProposal(selectedProposal.message, selectedProposal.metadata);
+                        setProposalFabOpen(false);
+                    }}
+                    isPendingProposalAction={bookProjectMutation.isPending}
+                    artistId={conversation?.artistId}
+                    externalOpen={proposalFabOpen || undefined}
+                    onExternalOpenChange={setProposalFabOpen}
                 />
             )}
 
@@ -528,22 +539,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                 onClose={() => setShowClientInfo(false)}
                 client={conversation?.otherUser}
             />
-            {/* Proposal FAB Menu — replaces full-screen modal */}
-            <ProposalFABMenu
-                isOpen={proposalFabOpen}
-                onOpenChange={setProposalFabOpen}
-                metadata={selectedProposal?.metadata}
-                message={selectedProposal?.message}
-                isArtist={isArtist}
-                onAccept={(appliedPromotion) => handleClientAcceptProposal(selectedProposal?.message, appliedPromotion)}
-                onReject={() => { setSelectedProposal(null); setProposalFabOpen(false); }}
-                onCancel={() => {
-                    if (selectedProposal) handleCancelProposal(selectedProposal.message, selectedProposal.metadata);
-                    setProposalFabOpen(false);
-                }}
-                isPendingAction={bookProjectMutation.isPending}
-                artistId={conversation?.artistId}
-            />
+
 
             {/* Media Image Lightbox */}
             {

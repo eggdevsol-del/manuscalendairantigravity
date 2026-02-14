@@ -11,6 +11,8 @@ import {
     CalendarDays,
     Send,
     ArrowLeft,
+    Check,
+    Tag,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -19,14 +21,31 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { FABMenu } from "@/ui/FABMenu";
 import { tokens } from "@/ui/tokens";
+import { ApplyPromotionSheet } from "@/features/promotions";
 
 type BookingStep = 'service' | 'frequency' | 'review' | 'success';
+
+interface ProposalData {
+    metadata: any;
+    message: any;
+}
 
 interface BookingFABMenuProps {
     conversationId: number;
     artistServices: any[];
     artistSettings?: any;
+    isArtist: boolean;
     onBookingSuccess: () => void;
+    /** Proposal to show in the FAB (overrides booking wizard) */
+    selectedProposal?: ProposalData | null;
+    onAcceptProposal?: (appliedPromotion?: { id: number; discountAmount: number; finalAmount: number }) => void;
+    onRejectProposal?: () => void;
+    onCancelProposal?: () => void;
+    isPendingProposalAction?: boolean;
+    artistId?: string;
+    /** External open control */
+    externalOpen?: boolean;
+    onExternalOpenChange?: (open: boolean) => void;
     className?: string;
 }
 
@@ -34,12 +53,31 @@ export function BookingFABMenu({
     conversationId,
     artistServices,
     artistSettings,
+    isArtist,
     onBookingSuccess,
+    selectedProposal,
+    onAcceptProposal,
+    onRejectProposal,
+    onCancelProposal,
+    isPendingProposalAction,
+    artistId,
+    externalOpen,
+    onExternalOpenChange,
     className
 }: BookingFABMenuProps) {
-    const [isOpen, setIsOpen] = useState(false);
+    const [internalOpen, setInternalOpen] = useState(false);
+    // Use external control when provided, otherwise internal
+    const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
+    const setIsOpen = (v: boolean) => {
+        if (onExternalOpenChange) onExternalOpenChange(v);
+        setInternalOpen(v);
+    };
     const [step, setStep] = useState<BookingStep>('service');
     const [selectedService, setSelectedService] = useState<any>(null);
+    const [showPromotionSheet, setShowPromotionSheet] = useState(false);
+    const [appliedPromotion, setAppliedPromotion] = useState<{
+        id: number; name: string; discountAmount: number; finalAmount: number;
+    } | null>(null);
     const [frequency, setFrequency] = useState<"single" | "consecutive" | "weekly" | "biweekly" | "monthly">("consecutive");
     const [startDate] = useState(new Date());
 
@@ -154,184 +192,358 @@ export function BookingFABMenu({
         }
     };
 
+    // Whether to show the proposal view
+    const showProposal = !!selectedProposal?.metadata;
+    const proposalMeta = selectedProposal?.metadata;
+
+    // Proposal display values
+    const proposalDates = proposalMeta ? (Array.isArray(proposalMeta.dates) ? proposalMeta.dates : []) : [];
+    const proposalTotalMinutes = proposalMeta ? ((proposalMeta.sittings || 1) * (proposalMeta.serviceDuration || 60)) : 0;
+    const proposalHours = Math.floor(proposalTotalMinutes / 60);
+    const hasStoredDiscount = proposalMeta?.discountApplied && proposalMeta?.finalAmount !== undefined;
+    const hasCurrentDiscount = appliedPromotion !== null;
+    const hasDiscount = hasCurrentDiscount || hasStoredDiscount;
+    const displayTotal = hasCurrentDiscount
+        ? appliedPromotion.finalAmount / 100
+        : hasStoredDiscount ? proposalMeta.finalAmount / 100 : proposalMeta?.totalCost;
+
     return (
-        <FABMenu
-            isOpen={isOpen}
-            onOpenChange={setIsOpen}
-            toggleIcon={<span className="text-xl font-black tracking-tight select-none">B</span>}
-            className={className}
-        >
-            {/* Panel Header — SSOT label style */}
-            <motion.div variants={fab.animation.item} className={fab.itemRow}>
-                {step !== 'service' && step !== 'success' && (
-                    <button onClick={goBack} className={fab.itemButton}>
-                        <ArrowLeft className={fab.itemIconSize} />
-                    </button>
-                )}
-                <span className={fab.itemLabel + " uppercase tracking-widest font-bold flex-1"}>
-                    {getStepTitle()}
-                </span>
-                {selectedService && step !== 'service' && (
-                    <span className={fab.itemLabel}>{selectedService.name}</span>
-                )}
-            </motion.div>
-
-            {/* STEP: SERVICE — SSOT cards: transparent bg, 4px radius, no gap */}
-            {step === 'service' && (
-                <div className="flex flex-col -my-2 w-full">
-                    {artistServices.map(service => (
-                        <motion.div
-                            key={service.id || service.name}
-                            variants={fab.animation.item}
-                            className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center gap-2 w-full")}
-                            onClick={() => {
-                                setSelectedService(service);
-                                setTimeout(() => setStep('frequency'), 150);
-                            }}
-                        >
-                            <div className="flex-1 min-w-0 text-left">
-                                <p className="text-xs font-semibold text-foreground truncate">{service.name}</p>
-                                <p className="text-[9px] text-muted-foreground font-mono flex items-center gap-1">
-                                    <Clock className="w-2.5 h-2.5 shrink-0" />
-                                    {service.duration}m · ${service.price} · {service.sittings || 1}s
-                                </p>
-                            </div>
+        <>
+            <FABMenu
+                isOpen={isOpen}
+                onOpenChange={setIsOpen}
+                toggleIcon={<span className="text-xl font-black tracking-tight select-none">B</span>}
+                className={className}
+            >
+                {/* ===== PROPOSAL VIEW ===== */}
+                {showProposal && proposalMeta && (
+                    <div className="flex flex-col gap-2 w-full">
+                        {/* Header */}
+                        <motion.div variants={fab.animation.item}>
+                            <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-primary/70 mb-0.5">
+                                Project Proposal
+                            </p>
+                            <h3 className="text-sm font-bold text-foreground leading-tight">
+                                {proposalMeta.serviceName}
+                            </h3>
                         </motion.div>
-                    ))}
-                </div>
-            )}
 
-            {step === 'service' && artistServices.length === 0 && (
-                <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 w-full")}>
-                    <span className={fab.itemLabel}>No services configured.</span>
-                </motion.div>
-            )}
-
-            {/* STEP: FREQUENCY — SSOT cards: transparent bg, 4px radius, no gap */}
-            {step === 'frequency' && (
-                <div className="flex flex-col -my-2 w-full">
-                    {freqOptions.map(({ id, label, Icon }) => {
-                        const isSelected = frequency === id;
-                        return (
-                            <motion.div
-                                key={id}
-                                variants={fab.animation.item}
-                                className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center gap-2 w-full")}
-                                onClick={() => setFrequency(id as any)}
-                            >
-                                <div className={cn(isSelected ? fab.itemButtonHighlight : fab.itemButton, "shrink-0")}>
-                                    <Icon className={fab.itemIconSize} />
+                        {/* Stats */}
+                        <motion.div
+                            variants={fab.animation.item}
+                            className={cn(card.base, "grid grid-cols-3 gap-px rounded-[4px] overflow-hidden bg-white/[0.03]")}
+                        >
+                            {[
+                                { label: "Total", value: hasDiscount ? `$${displayTotal}` : `$${proposalMeta.totalCost}`, accent: hasDiscount },
+                                { label: "Time", value: `${proposalHours}h`, accent: false },
+                                { label: "Sittings", value: String(proposalMeta.sittings), accent: false },
+                            ].map(({ label, value, accent }) => (
+                                <div key={label} className="p-2 flex flex-col items-center gap-0.5">
+                                    <span className="text-[8px] text-muted-foreground uppercase tracking-wider font-medium">{label}</span>
+                                    <span className={cn("text-xs font-bold", accent ? "text-emerald-500" : "text-foreground")}>{value}</span>
                                 </div>
-                                <span className="text-xs font-semibold text-foreground flex-1">{label}</span>
-                                {isSelected && (
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                            ))}
+                        </motion.div>
+
+                        {/* Discount badge */}
+                        {hasDiscount && (
+                            <motion.div variants={fab.animation.item} className="flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-emerald-500/10">
+                                <Tag className="w-3 h-3 text-emerald-500" />
+                                <span className="text-[9px] font-medium text-emerald-500">
+                                    {hasCurrentDiscount ? appliedPromotion.name : proposalMeta.promotionName || 'Promotion'} applied
+                                </span>
+                            </motion.div>
+                        )}
+
+                        {/* Dates */}
+                        {proposalDates.length > 0 && (
+                            <motion.div variants={fab.animation.item} className="space-y-1">
+                                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Schedule</p>
+                                {proposalDates.slice(0, 4).map((dateStr: string, i: number) => (
+                                    <div key={i} className={cn(card.base, card.bg, "flex items-center gap-2 p-1.5 rounded-[4px]")}>
+                                        <span className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
+                                            {i + 1}
+                                        </span>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] font-semibold text-foreground truncate">
+                                                {format(new Date(dateStr), "EEE, MMM d")}
+                                            </p>
+                                            <p className="text-[8px] text-muted-foreground">
+                                                {format(new Date(dateStr), "h:mm a")} · {proposalMeta.serviceDuration}m
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                                {proposalDates.length > 4 && (
+                                    <p className="text-[8px] text-muted-foreground text-center">+{proposalDates.length - 4} more</p>
                                 )}
                             </motion.div>
-                        );
-                    })}
+                        )}
 
-                    {/* Find Dates action card */}
-                    <motion.div
-                        variants={fab.animation.item}
-                        className={cn(card.base, card.bgAccent, card.interactive, "p-2 flex items-center gap-2 w-full mt-1")}
-                        onClick={() => setStep('review')}
-                    >
-                        <div className={cn(fab.itemButtonHighlight, "shrink-0")}>
-                            <CalendarSearch className={fab.itemIconSize} />
-                        </div>
-                        <span className="text-xs font-bold text-foreground flex-1">Find Dates</span>
-                    </motion.div>
-                </div>
-            )}
-
-            {/* STEP: REVIEW — SSOT cards for data rows */}
-            {step === 'review' && (
-                <>
-                    {isLoadingAvailability && (
-                        <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-3 flex items-center justify-center gap-2 w-full")}>
-                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                            <span className={cn(fab.itemLabel, "animate-pulse")}>Scanning...</span>
-                        </motion.div>
-                    )}
-
-                    {availabilityError && (
-                        <motion.div variants={fab.animation.item} className={cn(card.base, "bg-destructive/10 p-2 w-full")}>
-                            <span className={fab.itemLabel + " text-destructive"}>
-                                <AlertCircle className="w-3 h-3 inline mr-1" />
-                                {availabilityError.message}
-                            </span>
-                        </motion.div>
-                    )}
-
-                    {availability && (
-                        <div className="flex flex-col -my-2 w-full">
-                            {/* Metrics */}
-                            <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 flex items-center justify-between w-full")}>
-                                <span className={fab.itemLabel}>Cost</span>
-                                <span className="text-xs font-bold text-foreground">${availability.totalCost}</span>
-                            </motion.div>
-                            <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 flex items-center justify-between w-full")}>
-                                <span className={fab.itemLabel}>Sittings</span>
-                                <span className="text-xs font-bold text-foreground">
-                                    {frequency === 'single' ? 1 : (selectedService?.sittings || 1)}
-                                </span>
-                            </motion.div>
-                            <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 flex items-center justify-between w-full")}>
-                                <span className={fab.itemLabel}>Duration</span>
-                                <span className="text-xs font-bold text-foreground">{selectedService?.duration}m</span>
-                            </motion.div>
-
-                            {/* Dates */}
-                            {availability.dates.map((date: string | Date, i: number) => (
-                                <motion.div key={i} variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 flex items-center justify-between w-full")}>
-                                    <span className={fab.itemLabel}>{format(new Date(date), "EEE, MMM do")}</span>
-                                    <span className="text-[10px] font-bold text-primary">{format(new Date(date), "h:mm a")}</span>
-                                </motion.div>
-                            ))}
-
-                            {/* Send action */}
-                            <motion.div
-                                variants={fab.animation.item}
-                                className={cn(card.base, card.bgAccent, card.interactive, "p-2 flex items-center gap-2 w-full mt-1")}
-                                onClick={handleConfirmBooking}
-                            >
-                                <div className={cn(fab.itemButtonHighlight, "shrink-0")}>
-                                    {sendMessageMutation.isPending ? (
-                                        <Loader2 className={cn(fab.itemIconSize, "animate-spin")} />
-                                    ) : (
-                                        <Send className={fab.itemIconSize} />
-                                    )}
+                        {/* Client actions — pending */}
+                        {!isArtist && proposalMeta.status === 'pending' && (
+                            <motion.div variants={fab.animation.item} className="space-y-2 pt-1">
+                                {!appliedPromotion && artistId && (
+                                    <button
+                                        className={cn(card.base, card.bg, card.interactive, "flex items-center gap-2 p-2 w-full rounded-[4px]")}
+                                        onClick={() => setShowPromotionSheet(true)}
+                                    >
+                                        <div className={cn(fab.itemButton, "shrink-0 !w-7 !h-7")}>
+                                            <Tag className="w-3 h-3" />
+                                        </div>
+                                        <span className="text-[10px] font-semibold text-foreground">Apply Voucher</span>
+                                    </button>
+                                )}
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        onClick={onRejectProposal}
+                                        disabled={isPendingProposalAction}
+                                        className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-white/5 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                                    >
+                                        Decline
+                                    </button>
+                                    <button
+                                        onClick={() => onAcceptProposal?.(appliedPromotion ? {
+                                            id: appliedPromotion.id,
+                                            discountAmount: appliedPromotion.discountAmount,
+                                            finalAmount: appliedPromotion.finalAmount,
+                                        } : undefined)}
+                                        disabled={isPendingProposalAction}
+                                        className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90"
+                                    >
+                                        {isPendingProposalAction ? "..." : "Accept"}
+                                    </button>
                                 </div>
-                                <span className="text-xs font-bold text-foreground flex-1">
-                                    {sendMessageMutation.isPending ? "Sending..." : "Send Proposal"}
-                                </span>
                             </motion.div>
-                        </div>
-                    )}
-                </>
-            )}
+                        )}
 
-            {/* STEP: SUCCESS — SSOT cards */}
-            {step === 'success' && (
-                <div className="flex flex-col -my-2 w-full">
-                    <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-4 flex flex-col items-center gap-2 w-full")}>
-                        <div className={fab.itemButtonHighlight}>
-                            <CheckCircle2 className={fab.itemIconSize} />
-                        </div>
-                        <span className="text-xs font-bold text-foreground">Proposal Sent!</span>
-                    </motion.div>
-                    <motion.div
-                        variants={fab.animation.item}
-                        className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center gap-2 w-full")}
-                        onClick={handleClose}
-                    >
-                        <div className={cn(fab.itemButton, "shrink-0")}>
-                            <CheckCircle2 className={fab.itemIconSize} />
-                        </div>
-                        <span className="text-xs font-semibold text-foreground flex-1">Close</span>
-                    </motion.div>
-                </div>
+                        {/* Artist actions — pending */}
+                        {isArtist && proposalMeta.status === 'pending' && (
+                            <motion.div variants={fab.animation.item} className="space-y-2 pt-1">
+                                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] bg-orange-500/10">
+                                    <span className="relative flex h-1.5 w-1.5">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-500 opacity-75" />
+                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500" />
+                                    </span>
+                                    <span className="text-[9px] font-medium text-orange-500">Awaiting client response</span>
+                                </div>
+                                <button
+                                    onClick={onCancelProposal}
+                                    className="w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-white/5 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                                >
+                                    Cancel Proposal
+                                </button>
+                            </motion.div>
+                        )}
+
+                        {/* Status — accepted */}
+                        {proposalMeta.status === 'accepted' && (
+                            <motion.div variants={fab.animation.item} className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-emerald-500/10">
+                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                <span className="text-[10px] font-bold text-emerald-500">Accepted</span>
+                            </motion.div>
+                        )}
+
+                        {/* Status — rejected */}
+                        {proposalMeta.status === 'rejected' && (
+                            <motion.div variants={fab.animation.item} className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-red-500/10">
+                                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                                <span className="text-[10px] font-bold text-red-500">Declined</span>
+                            </motion.div>
+                        )}
+                    </div>
+                )}
+
+                {/* ===== BOOKING WIZARD (hidden when proposal is shown) ===== */}
+                {!showProposal && (
+                    <>
+                        {/* Panel Header — SSOT label style */}
+                        <motion.div variants={fab.animation.item} className={fab.itemRow}>
+                            {step !== 'service' && step !== 'success' && (
+                                <button onClick={goBack} className={fab.itemButton}>
+                                    <ArrowLeft className={fab.itemIconSize} />
+                                </button>
+                            )}
+                            <span className={fab.itemLabel + " uppercase tracking-widest font-bold flex-1"}>
+                                {getStepTitle()}
+                            </span>
+                            {selectedService && step !== 'service' && (
+                                <span className={fab.itemLabel}>{selectedService.name}</span>
+                            )}
+                        </motion.div>
+
+                        {/* STEP: SERVICE — SSOT cards: transparent bg, 4px radius, no gap */}
+                        {step === 'service' && (
+                            <div className="flex flex-col -my-2 w-full">
+                                {artistServices.map(service => (
+                                    <motion.div
+                                        key={service.id || service.name}
+                                        variants={fab.animation.item}
+                                        className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center gap-2 w-full")}
+                                        onClick={() => {
+                                            setSelectedService(service);
+                                            setTimeout(() => setStep('frequency'), 150);
+                                        }}
+                                    >
+                                        <div className="flex-1 min-w-0 text-left">
+                                            <p className="text-xs font-semibold text-foreground truncate">{service.name}</p>
+                                            <p className="text-[9px] text-muted-foreground font-mono flex items-center gap-1">
+                                                <Clock className="w-2.5 h-2.5 shrink-0" />
+                                                {service.duration}m · ${service.price} · {service.sittings || 1}s
+                                            </p>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        )}
+
+                        {step === 'service' && artistServices.length === 0 && (
+                            <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 w-full")}>
+                                <span className={fab.itemLabel}>No services configured.</span>
+                            </motion.div>
+                        )}
+
+                        {/* STEP: FREQUENCY — SSOT cards: transparent bg, 4px radius, no gap */}
+                        {step === 'frequency' && (
+                            <div className="flex flex-col -my-2 w-full">
+                                {freqOptions.map(({ id, label, Icon }) => {
+                                    const isSelected = frequency === id;
+                                    return (
+                                        <motion.div
+                                            key={id}
+                                            variants={fab.animation.item}
+                                            className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center gap-2 w-full")}
+                                            onClick={() => setFrequency(id as any)}
+                                        >
+                                            <div className={cn(isSelected ? fab.itemButtonHighlight : fab.itemButton, "shrink-0")}>
+                                                <Icon className={fab.itemIconSize} />
+                                            </div>
+                                            <span className="text-xs font-semibold text-foreground flex-1">{label}</span>
+                                            {isSelected && (
+                                                <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                                            )}
+                                        </motion.div>
+                                    );
+                                })}
+
+                                {/* Find Dates action card */}
+                                <motion.div
+                                    variants={fab.animation.item}
+                                    className={cn(card.base, card.bgAccent, card.interactive, "p-2 flex items-center gap-2 w-full mt-1")}
+                                    onClick={() => setStep('review')}
+                                >
+                                    <div className={cn(fab.itemButtonHighlight, "shrink-0")}>
+                                        <CalendarSearch className={fab.itemIconSize} />
+                                    </div>
+                                    <span className="text-xs font-bold text-foreground flex-1">Find Dates</span>
+                                </motion.div>
+                            </div>
+                        )}
+
+                        {/* STEP: REVIEW — SSOT cards for data rows */}
+                        {step === 'review' && (
+                            <>
+                                {isLoadingAvailability && (
+                                    <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-3 flex items-center justify-center gap-2 w-full")}>
+                                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                        <span className={cn(fab.itemLabel, "animate-pulse")}>Scanning...</span>
+                                    </motion.div>
+                                )}
+
+                                {availabilityError && (
+                                    <motion.div variants={fab.animation.item} className={cn(card.base, "bg-destructive/10 p-2 w-full")}>
+                                        <span className={fab.itemLabel + " text-destructive"}>
+                                            <AlertCircle className="w-3 h-3 inline mr-1" />
+                                            {availabilityError.message}
+                                        </span>
+                                    </motion.div>
+                                )}
+
+                                {availability && (
+                                    <div className="flex flex-col -my-2 w-full">
+                                        {/* Metrics */}
+                                        <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 flex items-center justify-between w-full")}>
+                                            <span className={fab.itemLabel}>Cost</span>
+                                            <span className="text-xs font-bold text-foreground">${availability.totalCost}</span>
+                                        </motion.div>
+                                        <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 flex items-center justify-between w-full")}>
+                                            <span className={fab.itemLabel}>Sittings</span>
+                                            <span className="text-xs font-bold text-foreground">
+                                                {frequency === 'single' ? 1 : (selectedService?.sittings || 1)}
+                                            </span>
+                                        </motion.div>
+                                        <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 flex items-center justify-between w-full")}>
+                                            <span className={fab.itemLabel}>Duration</span>
+                                            <span className="text-xs font-bold text-foreground">{selectedService?.duration}m</span>
+                                        </motion.div>
+
+                                        {/* Dates */}
+                                        {availability.dates.map((date: string | Date, i: number) => (
+                                            <motion.div key={i} variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 flex items-center justify-between w-full")}>
+                                                <span className={fab.itemLabel}>{format(new Date(date), "EEE, MMM do")}</span>
+                                                <span className="text-[10px] font-bold text-primary">{format(new Date(date), "h:mm a")}</span>
+                                            </motion.div>
+                                        ))}
+
+                                        {/* Send action */}
+                                        <motion.div
+                                            variants={fab.animation.item}
+                                            className={cn(card.base, card.bgAccent, card.interactive, "p-2 flex items-center gap-2 w-full mt-1")}
+                                            onClick={handleConfirmBooking}
+                                        >
+                                            <div className={cn(fab.itemButtonHighlight, "shrink-0")}>
+                                                {sendMessageMutation.isPending ? (
+                                                    <Loader2 className={cn(fab.itemIconSize, "animate-spin")} />
+                                                ) : (
+                                                    <Send className={fab.itemIconSize} />
+                                                )}
+                                            </div>
+                                            <span className="text-xs font-bold text-foreground flex-1">
+                                                {sendMessageMutation.isPending ? "Sending..." : "Send Proposal"}
+                                            </span>
+                                        </motion.div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {/* STEP: SUCCESS — SSOT cards */}
+                        {step === 'success' && (
+                            <div className="flex flex-col -my-2 w-full">
+                                <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-4 flex flex-col items-center gap-2 w-full")}>
+                                    <div className={fab.itemButtonHighlight}>
+                                        <CheckCircle2 className={fab.itemIconSize} />
+                                    </div>
+                                    <span className="text-xs font-bold text-foreground">Proposal Sent!</span>
+                                </motion.div>
+                                <motion.div
+                                    variants={fab.animation.item}
+                                    className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center gap-2 w-full")}
+                                    onClick={handleClose}
+                                >
+                                    <div className={cn(fab.itemButton, "shrink-0")}>
+                                        <CheckCircle2 className={fab.itemIconSize} />
+                                    </div>
+                                    <span className="text-xs font-semibold text-foreground flex-1">Close</span>
+                                </motion.div>
+                            </div>
+                        )}
+                    </>
+                )}
+            </FABMenu>
+
+            {/* Proposal Promotion Sheet */}
+            {artistId && (
+                <ApplyPromotionSheet
+                    isOpen={showPromotionSheet}
+                    onClose={() => setShowPromotionSheet(false)}
+                    artistId={artistId}
+                    originalAmount={(proposalMeta?.totalCost || 0) * 100}
+                    onApply={(promo, discountAmount, finalAmount) => {
+                        setAppliedPromotion({ id: promo.id, name: promo.name, discountAmount, finalAmount });
+                    }}
+                />
             )}
-        </FABMenu>
+        </>
     );
 }
