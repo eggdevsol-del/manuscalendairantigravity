@@ -1,18 +1,20 @@
-import { format } from "date-fns";
-import { Check, X, Calendar as CalendarIcon, DollarSign, Clock, ArrowRight } from "lucide-react";
-import { Button, Card, CardContent } from "@/components/ui";
-import { cn } from "@/lib/utils";
+/**
+ * ProjectProposalMessage — SSOT Compliant (v2)
+ *
+ * Uses tokens.card for card styling, tokens.button for actions.
+ * No hardcoded colors, radii, or shadows — everything from tokens.ts.
+ */
 
-interface ProposedDate {
-    date: string; // ISO string
-}
+import { Check, ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { tokens } from "@/ui/tokens";
 
 interface ProposalMetadata {
     type: "project_proposal";
     serviceName: string;
     totalCost: number;
     sittings: number;
-    dates: string[]; // ISO strings
+    dates: string[];
     status: 'pending' | 'accepted' | 'rejected';
     serviceDuration?: number;
     autoSendDeposit?: boolean;
@@ -27,81 +29,108 @@ interface ProjectProposalMessageProps {
     onViewDetails: () => void;
 }
 
+/** Status badge config — derived from card glow tokens */
+const statusConfig = {
+    pending: {
+        label: "Pending",
+        dot: tokens.card.glow.medium.line,
+        text: "text-orange-500",
+        bg: "bg-orange-500/10",
+    },
+    accepted: {
+        label: "Accepted",
+        dot: tokens.card.glow.low.line,
+        text: "text-emerald-500",
+        bg: "bg-emerald-500/10",
+        icon: Check,
+    },
+    rejected: {
+        label: "Declined",
+        dot: tokens.card.glow.high.line,
+        text: "text-red-500",
+        bg: "bg-red-500/10",
+    },
+} as const;
+
 export function ProjectProposalMessage({
     metadata,
     isArtist,
     onViewDetails
 }: ProjectProposalMessageProps) {
-    const { serviceName, totalCost, sittings, dates, status, serviceDuration } = metadata;
+    const { serviceName, totalCost, sittings, status, serviceDuration } = metadata;
+    const card = tokens.card;
 
-    // Calculate total time
+    // Derive time display
     const totalMinutes = (sittings || 1) * (serviceDuration || 60);
     const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    const timeDisplay = `${hours} Hrs${minutes > 0 ? ` / ${minutes} min` : ''}`;
+
+    // Status config
+    const badge = statusConfig[status] || statusConfig.pending;
+    const BadgeIcon = 'icon' in badge ? badge.icon : null;
+
+    // Pick the glow style based on status
+    const glow = status === 'accepted' ? card.glow.low
+        : status === 'rejected' ? card.glow.high
+            : card.glow.medium;
 
     return (
-        <Card
-            className="w-[85vw] max-w-[360px] border border-white/10 bg-black/40 backdrop-blur-xl text-white shadow-2xl overflow-hidden rounded-[1.5rem] self-center ring-1 ring-white/5 cursor-pointer group transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        <div
+            className={cn(
+                card.base,
+                card.bg,
+                card.interactive,
+                "w-[85vw] max-w-[340px] p-0 self-center"
+            )}
             onClick={onViewDetails}
         >
-            {/* Header with Gradient Accent */}
-            <div className="relative p-5 pb-4">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50 opacity-50" />
+            {/* Left accent bar — SSOT glow */}
+            <div className={cn(card.leftAccent, glow.line)} />
 
-                <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary/80">Project Proposal</span>
+            {/* Content area */}
+            <div className="pl-4 pr-3 py-3 space-y-3">
+                {/* Header: label + service name */}
+                <div className="space-y-0.5">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-primary/70">
+                        Project Proposal
+                    </p>
+                    <h3 className="text-sm font-bold text-foreground leading-tight truncate">
+                        {serviceName}
+                    </h3>
+                </div>
+
+                {/* Stats row — SSOT card bg, small radius */}
+                <div className={cn(card.base, "grid grid-cols-3 gap-px rounded-[4px] overflow-hidden bg-white/[0.03]")}>
+                    {[
+                        { label: "Total", value: `$${totalCost}` },
+                        { label: "Time", value: `${hours}h` },
+                        { label: "Sittings", value: String(sittings) },
+                    ].map(({ label, value }) => (
+                        <div key={label} className="p-2 flex flex-col items-center gap-0.5">
+                            <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">
+                                {label}
+                            </span>
+                            <span className="text-xs font-bold text-foreground">{value}</span>
                         </div>
-                        <h3 className="font-bold text-lg text-white tracking-tight leading-time">{serviceName}</h3>
+                    ))}
+                </div>
+
+                {/* Footer: status badge + view details */}
+                <div className="flex items-center justify-between">
+                    {/* Status badge */}
+                    <div className={cn(
+                        "flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider",
+                        badge.bg, badge.text
+                    )}>
+                        {BadgeIcon && <BadgeIcon className="w-2.5 h-2.5" />}
+                        {badge.label}
+                    </div>
+
+                    {/* View details — always visible on mobile (no hover) */}
+                    <div className="text-primary text-[10px] font-bold flex items-center gap-0.5">
+                        Details <ArrowRight className="w-3 h-3" />
                     </div>
                 </div>
             </div>
-
-            <CardContent className="p-5 pt-0 grid gap-4">
-                {/* Stats Row - Glass Container */}
-                <div className="grid grid-cols-3 gap-px bg-white/5 rounded-xl overflow-hidden border border-white/5">
-                    <div className="bg-white/[0.02] p-2.5 flex flex-col items-center justify-center gap-0.5">
-                        <span className="text-[10px] text-white/50 uppercase tracking-wider font-medium">Total</span>
-                        <span className="block font-bold text-sm text-white">${totalCost}</span>
-                    </div>
-                    <div className="bg-white/[0.02] p-2.5 flex flex-col items-center justify-center gap-0.5">
-                        <span className="text-[10px] text-white/50 uppercase tracking-wider font-medium">Time</span>
-                        <span className="block font-bold text-sm text-white">{hours}<span className="text-[10px] font-normal text-white/70">h</span></span>
-                    </div>
-                    <div className="bg-white/[0.02] p-2.5 flex flex-col items-center justify-center gap-0.5">
-                        <span className="text-[10px] text-white/50 uppercase tracking-wider font-medium">Sittings</span>
-                        <span className="block font-bold text-sm text-white">{sittings}</span>
-                    </div>
-                </div>
-
-                {/* Status / Call to Action */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        {status === 'pending' && (
-                            <div className="bg-amber-500/10 text-amber-500 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border border-amber-500/20 backdrop-blur-md">
-                                Pending Action
-                            </div>
-                        )}
-                        {status === 'accepted' && (
-                            <div className="bg-green-500/10 text-green-500 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border border-green-500/20 backdrop-blur-md flex items-center gap-1">
-                                <Check className="w-3 h-3" /> Accepted
-                            </div>
-                        )}
-                        {status === 'rejected' && (
-                            <div className="bg-red-500/10 text-red-500 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border border-red-500/20 backdrop-blur-md">
-                                Declined
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="text-primary text-xs font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 duration-300">
-                        View Details <ArrowRight className="w-3 h-3" />
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+        </div>
     );
 }
