@@ -12,6 +12,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useTabletLandscape } from "@/hooks/useTabletLandscape";
 import { TeaserProvider } from "@/contexts/TeaserContext";
+import { useAppointmentCheckIn } from "@/features/appointments/useAppointmentCheckIn";
+import { AppointmentCheckInModal } from "@/components/modals/AppointmentCheckInModal";
 import Home from "./pages/Home";
 import Chat from "./pages/Chat";
 import Calendar from "./pages/Calendar";
@@ -97,7 +99,34 @@ function Router() {
         <Route component={NotFound} />
       </Switch>
       {shouldShowBottomNav && <BottomNav />}
+      {isArtist && <AppointmentCheckInOverlay />}
     </div>
+  );
+}
+
+/**
+ * Global overlay that shows appointment check-in modals for artists.
+ */
+function AppointmentCheckInOverlay() {
+  const [dismissed, setDismissed] = React.useState<number | null>(null);
+  const { activeCheckIn, updateAppointment } = useAppointmentCheckIn();
+
+  // Reset dismissed state when the active appointment changes
+  const activeId = activeCheckIn?.appointment?.id;
+  React.useEffect(() => {
+    if (activeId && activeId !== dismissed) {
+      setDismissed(null);
+    }
+  }, [activeId]);
+
+  if (!activeCheckIn || dismissed === activeCheckIn.appointment.id) return null;
+
+  return (
+    <AppointmentCheckInModal
+      checkIn={activeCheckIn}
+      onDismiss={() => setDismissed(activeCheckIn.appointment.id)}
+      updateAppointment={updateAppointment}
+    />
   );
 }
 
