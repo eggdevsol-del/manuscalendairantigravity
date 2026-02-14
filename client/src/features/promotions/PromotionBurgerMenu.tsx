@@ -76,20 +76,20 @@ export function PromotionBurgerMenu({
     // Responsive panel width/height based on step
     const isLargeStep = currentStep === 'design' || currentStep === 'preview';
 
-    return (
-        <FABMenu
-            toggleIcon={<CreditCard className="h-6 w-6" />}
-            isOpen={isOpen}
-            onOpenChange={(open) => {
-                if (!open) setIsCreating(false);
-                if (onOpenChange) onOpenChange(open);
-            }}
-            className={cn(
-                className,
-                isCreating && isLargeStep ? "[&>div:nth-child(2)]:w-full [&>div:nth-child(2)]:max-w-[400px]" : ""
-            )}
-        >
-            {isCreating ? (
+    if (isCreating) {
+        return (
+            <FABMenu
+                toggleIcon={<CreditCard className="h-6 w-6" />}
+                isOpen={isOpen}
+                onOpenChange={(open) => {
+                    if (!open) setIsCreating(false);
+                    if (onOpenChange) onOpenChange(open);
+                }}
+                className={cn(
+                    className,
+                    isLargeStep ? "[&>div:nth-child(2)]:w-full [&>div:nth-child(2)]:max-w-[400px]" : ""
+                )}
+            >
                 <div className={cn(
                     "transition-all duration-300 ease-in-out",
                     isLargeStep ? "min-h-[500px]" : "min-h-[350px]"
@@ -99,7 +99,17 @@ export function PromotionBurgerMenu({
                         onStepChange={setCurrentStep}
                     />
                 </div>
-            ) : null}
-        </FABMenu>
+            </FABMenu>
+        );
+    }
+
+    return (
+        <FABMenu
+            items={items}
+            toggleIcon={<CreditCard className="h-6 w-6" />}
+            isOpen={isOpen}
+            onOpenChange={onOpenChange}
+            className={className}
+        />
     );
 }
