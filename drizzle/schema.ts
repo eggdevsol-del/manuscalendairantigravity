@@ -1,8 +1,8 @@
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, foreignKey, primaryKey, int, varchar, text, datetime, mysqlEnum, timestamp, index, longtext, unique, tinyint, decimal } from "drizzle-orm/mysql-core"
+import { mysqlTable, mysqlSchema, AnyMySqlColumn, primaryKey, int, varchar, text, datetime, mysqlEnum, timestamp, index, longtext, unique, tinyint, decimal } from "drizzle-orm/mysql-core"
 import { sql, type InferSelectModel, type InferInsertModel, relations } from "drizzle-orm"
 
 export const appointments = mysqlTable("appointments", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	conversationId: int().notNull().references(() => conversations.id, { onDelete: "cascade" }),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -30,11 +30,10 @@ export const appointments = mysqlTable("appointments", {
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 },
 	(table) => [
-		primaryKey({ columns: [table.id], name: "appointments_id" }),
 	]);
 
 export const artistSettings = mysqlTable("artistSettings", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	businessName: text(),
 	businessAddress: text(),
@@ -56,7 +55,6 @@ export const artistSettings = mysqlTable("artistSettings", {
 	budgetRanges: text(), // JSON array of budget range objects
 },
 	(table) => [
-		primaryKey({ columns: [table.id], name: "artistSettings_id" }),
 		unique("artistSettings_publicSlug_unique").on(table.publicSlug),
 	]);
 
@@ -1062,7 +1060,7 @@ export const leadActivityLogRelations = relations(leadActivityLog, ({ one }) => 
  * Artist-created templates for vouchers, discounts, and credits
  */
 export const promotionTemplates = mysqlTable("promotion_templates", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 
 	// Template type
@@ -1098,7 +1096,6 @@ export const promotionTemplates = mysqlTable("promotion_templates", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "promotion_templates_id" }),
 	index("idx_artist_templates").on(table.artistId, table.type),
 ]);
 
@@ -1107,7 +1104,7 @@ export const promotionTemplates = mysqlTable("promotion_templates", {
  * Individual promotions issued to clients (instances of templates)
  */
 export const issuedPromotions = mysqlTable("issued_promotions", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	templateId: int().notNull().references(() => promotionTemplates.id, { onDelete: "cascade" }),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	clientId: varchar({ length: 64 }).references(() => users.id, { onDelete: "cascade" }), // Null for auto-apply promotions
@@ -1139,7 +1136,6 @@ export const issuedPromotions = mysqlTable("issued_promotions", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "issued_promotions_id" }),
 	unique("issued_promotions_code").on(table.code),
 	index("idx_client_promotions").on(table.clientId, table.status),
 	index("idx_artist_promotions").on(table.artistId, table.status),
@@ -1151,7 +1147,7 @@ export const issuedPromotions = mysqlTable("issued_promotions", {
  * Track partial or full redemptions of promotions
  */
 export const promotionRedemptions = mysqlTable("promotion_redemptions", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	promotionId: int().notNull().references(() => issuedPromotions.id, { onDelete: "cascade" }),
 	appointmentId: int().notNull().references(() => appointments.id, { onDelete: "cascade" }),
 
@@ -1165,7 +1161,6 @@ export const promotionRedemptions = mysqlTable("promotion_redemptions", {
 
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "promotion_redemptions_id" }),
 	index("idx_promotion_redemptions").on(table.promotionId),
 	index("idx_appointment_redemptions").on(table.appointmentId),
 ]);
@@ -1217,19 +1212,18 @@ export const promotionRedemptionsRelations = relations(promotionRedemptions, ({ 
 }));
 
 export const pushSubscriptions = mysqlTable("push_subscriptions", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	endpoint: varchar({ length: 500 }).notNull(),
 	keys: text("keys").notNull(), // JSON { p256dh, auth }
 	userAgent: varchar({ length: 255 }),
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "pushSubscriptions_id" }),
 	index("user_id_idx").on(table.userId),
 ]);
 
 export const paymentMethodSettings = mysqlTable("payment_method_settings", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	stripeEnabled: tinyint().default(0),
 	paypalEnabled: tinyint().default(0),
@@ -1238,12 +1232,11 @@ export const paymentMethodSettings = mysqlTable("payment_method_settings", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "payment_method_settings_id" }),
 	index("pms_artist_idx").on(table.artistId),
 ]);
 
 export const consentForms = mysqlTable("consent_forms", {
-	id: int().autoincrement().notNull(),
+	id: int().primaryKey().autoincrement(),
 	appointmentId: int().references(() => appointments.id, { onDelete: "set null" }),
 	clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -1256,7 +1249,6 @@ export const consentForms = mysqlTable("consent_forms", {
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [
-	primaryKey({ columns: [table.id], name: "consent_forms_id" }),
 	index("cf_client_idx").on(table.clientId),
 	index("cf_artist_idx").on(table.artistId),
 	index("cf_appointment_idx").on(table.appointmentId),
