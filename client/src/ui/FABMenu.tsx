@@ -68,6 +68,21 @@ export function FABMenu(props: FABMenuProps) {
 
     return (
         <div className={cn(fab.container, props.className)}>
+            {/* Backdrop blur — 3% opacity with blur when open */}
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        key="fab-backdrop"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="fixed inset-0 z-[-1] bg-black/[0.03] backdrop-blur-[2px]"
+                        onClick={toggle}
+                    />
+                )}
+            </AnimatePresence>
+
             <AnimatePresence mode="wait">
                 {isOpen && (
                     <motion.div
@@ -78,6 +93,7 @@ export function FABMenu(props: FABMenuProps) {
                         variants={fab.animation.panel}
                         className={cn(
                             fab.panel,
+                            "overflow-y-auto max-h-[70vh]",
                             isIPad && "w-[440px] max-h-[60vh] p-6 gap-5"
                         )}
                     >

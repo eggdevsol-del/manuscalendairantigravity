@@ -31,6 +31,7 @@ export const artistSettingsRouter = router({
             return {
                 businessName: settings.businessName,
                 businessAddress: settings.businessAddress,
+                depositAmount: settings.depositAmount,
             };
         }),
     upsert: artistProcedure

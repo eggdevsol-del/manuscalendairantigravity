@@ -14,12 +14,14 @@ import {
     Check,
     Tag,
     MapPin,
+    ChevronDown,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { Capacitor } from "@capacitor/core";
 import { FABMenu } from "@/ui/FABMenu";
 import { tokens } from "@/ui/tokens";
 import { ApplyPromotionSheet } from "@/features/promotions";
@@ -48,6 +50,55 @@ interface BookingFABMenuProps {
     externalOpen?: boolean;
     onExternalOpenChange?: (open: boolean) => void;
     className?: string;
+}
+
+/** Collapsible policy dropdown — fetches policy content from server */
+function PolicyDropdown({ label, artistId, policyType, depositAmount, totalCost }: {
+    label: string;
+    artistId: string;
+    policyType: 'cancellation' | 'deposit';
+    depositAmount?: number | null;
+    totalCost?: number;
+}) {
+    const [open, setOpen] = useState(false);
+    const { data: policy } = trpc.policies.getByType.useQuery(
+        { artistId, policyType },
+        { enabled: !!artistId }
+    );
+
+    const fallbackContent = policyType === 'cancellation'
+        ? 'Deposits are non-refundable. Cancellations made within 48 hours of the appointment may forfeit the deposit. Please contact the artist directly for rescheduling.'
+        : depositAmount
+            ? `A deposit of $${depositAmount} is required to secure these dates.${totalCost ? ` The remaining balance of $${totalCost - depositAmount} is due upon completion.` : ''}`
+            : 'Contact the artist for deposit requirements.';
+
+    return (
+        <div className="rounded-[4px] border border-white/5 overflow-hidden">
+            <button
+                type="button"
+                className="flex items-center justify-between w-full px-2.5 py-2 text-[10px] font-semibold text-foreground/80 hover:bg-white/[0.02] transition-colors"
+                onClick={() => setOpen(!open)}
+            >
+                {label}
+                <ChevronDown className={cn("w-3 h-3 transition-transform duration-200", open && "rotate-180")} />
+            </button>
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                    >
+                        <p className="px-2.5 pb-2.5 text-[9px] leading-relaxed text-muted-foreground">
+                            {policy?.content || fallbackContent}
+                        </p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
 }
 
 export function BookingFABMenu({
@@ -278,9 +329,7 @@ export function BookingFABMenu({
                                         </div>
                                     </div>
                                 ))}
-                                {proposalDates.length > 4 && (
-                                    <p className="text-[8px] text-muted-foreground text-center">+{proposalDates.length - 4} more</p>
-                                )}
+
                             </motion.div>
                         )}
 
@@ -298,6 +347,27 @@ export function BookingFABMenu({
                                         <span className="text-[10px] font-semibold text-foreground">Apply Voucher</span>
                                     </button>
                                 )}
+
+                                {/* Cancellation Policy dropdown */}
+                                {artistId && (
+                                    <PolicyDropdown
+                                        label="Cancellation Policy"
+                                        artistId={artistId}
+                                        policyType="cancellation"
+                                    />
+                                )}
+
+                                {/* Deposit Info dropdown */}
+                                {artistId && (
+                                    <PolicyDropdown
+                                        label="Deposit Information"
+                                        artistId={artistId}
+                                        policyType="deposit"
+                                        depositAmount={artistSettings?.depositAmount}
+                                        totalCost={proposalMeta.totalCost}
+                                    />
+                                )}
+
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
                                         onClick={onRejectProposal}
@@ -318,6 +388,9 @@ export function BookingFABMenu({
                                         {isPendingProposalAction ? "..." : "Accept"}
                                     </button>
                                 </div>
+                                <p className="text-[8px] text-muted-foreground text-center leading-tight">
+                                    By accepting, you agree to the cancellation and deposit policies above.
+                                </p>
                             </motion.div>
                         )}
 
@@ -355,7 +428,14 @@ export function BookingFABMenu({
                                     className={cn(card.base, card.bg, card.interactive, "flex items-center gap-2 p-2 w-full rounded-[4px]")}
                                     onClick={() => {
                                         const addr = encodeURIComponent(artistSettings.businessAddress);
-                                        window.open(`https://maps.google.com/?q=${addr}`, '_blank');
+                                        const platform = Capacitor.getPlatform();
+                                        if (platform === 'ios') {
+                                            window.location.href = `maps://?q=${addr}`;
+                                        } else if (platform === 'android') {
+                                            window.location.href = `geo:0,0?q=${addr}`;
+                                        } else {
+                                            window.open(`https://maps.google.com/?q=${addr}`, '_blank');
+                                        }
                                     }}
                                 >
                                     <div className={cn(fab.itemButton, "shrink-0 !w-7 !h-7")}>
