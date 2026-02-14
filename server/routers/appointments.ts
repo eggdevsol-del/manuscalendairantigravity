@@ -113,6 +113,12 @@ export const appointmentsRouter = router({
                 price: z.number().optional(),
                 depositAmount: z.number().optional(),
                 depositPaid: z.boolean().optional(),
+                actualStartTime: z.string().optional(),
+                actualEndTime: z.string().optional(),
+                clientArrived: z.boolean().optional(),
+                clientPaid: z.boolean().optional(),
+                amountPaid: z.number().optional(),
+                paymentMethod: z.enum(['stripe', 'paypal', 'bank', 'cash']).optional(),
             })
         )
         .mutation(async ({ input, ctx }) => {

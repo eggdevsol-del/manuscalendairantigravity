@@ -20,6 +20,12 @@ export const appointments = mysqlTable("appointments", {
 	confirmationSent: tinyint().default(0),
 	reminderSent: tinyint().default(0),
 	followUpSent: tinyint().default(0),
+	actualStartTime: datetime({ mode: 'string' }),
+	actualEndTime: datetime({ mode: 'string' }),
+	clientArrived: tinyint().default(0),
+	clientPaid: tinyint().default(0),
+	amountPaid: int(),
+	paymentMethod: mysqlEnum('payment_method', ['stripe', 'paypal', 'bank', 'cash']),
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 },
@@ -1220,4 +1226,38 @@ export const pushSubscriptions = mysqlTable("push_subscriptions", {
 }, (table) => [
 	primaryKey({ columns: [table.id], name: "pushSubscriptions_id" }),
 	index("user_id_idx").on(table.userId),
+]);
+
+export const paymentMethodSettings = mysqlTable("payment_method_settings", {
+	id: int().autoincrement().notNull(),
+	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	stripeEnabled: tinyint().default(0),
+	paypalEnabled: tinyint().default(0),
+	bankEnabled: tinyint().default(0),
+	cashEnabled: tinyint().default(1),
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	primaryKey({ columns: [table.id], name: "payment_method_settings_id" }),
+	index("pms_artist_idx").on(table.artistId),
+]);
+
+export const consentForms = mysqlTable("consent_forms", {
+	id: int().autoincrement().notNull(),
+	appointmentId: int().references(() => appointments.id, { onDelete: "set null" }),
+	clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	formType: mysqlEnum('form_type', ['procedure_consent', 'medical_release']).notNull(),
+	title: varchar({ length: 255 }).notNull(),
+	content: text(),
+	signedAt: datetime({ mode: 'string' }),
+	formData: text(), // JSON blob
+	status: mysqlEnum('consent_status', ['pending', 'signed']).default('pending').notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	primaryKey({ columns: [table.id], name: "consent_forms_id" }),
+	index("cf_client_idx").on(table.clientId),
+	index("cf_artist_idx").on(table.artistId),
+	index("cf_appointment_idx").on(table.appointmentId),
 ]);

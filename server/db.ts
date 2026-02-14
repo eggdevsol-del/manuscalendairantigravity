@@ -5,3 +5,4 @@ export * from "./services/conversationService";
 export * from "./services/appointmentService";
 export * from "./services/policyService";
 export * from "./services/consultationService";
+export * from "./services/paymentMethodSettingsService";

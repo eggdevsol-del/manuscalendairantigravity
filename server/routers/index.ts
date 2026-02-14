@@ -20,6 +20,7 @@ import { portfolioRouter } from "./portfolio";
 import { walletRouter } from "./wallet";
 import { promotionsRouter } from "./promotions";
 import { pushRouter } from "./push";
+import { paymentMethodSettingsRouter } from "./paymentMethodSettings";
 
 export const appRouter = router({
     appointments: appointmentsRouter,
@@ -42,6 +43,7 @@ export const appRouter = router({
     wallet: walletRouter,
     promotions: promotionsRouter,
     push: pushRouter,
+    paymentMethodSettings: paymentMethodSettingsRouter,
 });
 
 export type AppRouter = typeof appRouter;

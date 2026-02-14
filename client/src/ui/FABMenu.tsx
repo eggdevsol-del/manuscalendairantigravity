@@ -68,7 +68,7 @@ export function FABMenu(props: FABMenuProps) {
 
     return (
         <div className={cn(fab.container, props.className)}>
-            {/* Backdrop blur — 3% opacity with blur when open */}
+            {/* Backdrop — light overlay when open (GPU-accelerated for iOS) */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -77,7 +77,14 @@ export function FABMenu(props: FABMenuProps) {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-[-1] bg-black/[0.03] backdrop-blur-[2px]"
+                        className="fixed inset-0 z-[-1]"
+                        style={{
+                            backgroundColor: 'rgba(0,0,0,0.03)',
+                            WebkitBackdropFilter: 'blur(2px)',
+                            backdropFilter: 'blur(2px)',
+                            transform: 'translateZ(0)',
+                            willChange: 'opacity',
+                        }}
                         onClick={toggle}
                     />
                 )}
