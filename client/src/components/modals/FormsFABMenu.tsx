@@ -40,7 +40,7 @@ export function FormsFABMenu() {
             <div className="fixed bottom-24 right-6 z-50">
                 <FABMenu
                     items={menuItems}
-                    mainIcon={mainIcon}
+                    toggleIcon={mainIcon}
                 />
             </div>
 
