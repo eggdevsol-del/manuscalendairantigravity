@@ -224,7 +224,7 @@ export function FormsCard({ forms }: { forms: any[] }) {
                                         : 'Pending signature'}
                                 </p>
                             </div>
-                            {form.status !== 'signed' && (
+                            {form.status !== 'signed' ? (
                                 <Button
                                     size="sm"
                                     variant="outline"
@@ -232,6 +232,15 @@ export function FormsCard({ forms }: { forms: any[] }) {
                                     onClick={() => setSigningForm(form)}
                                 >
                                     Sign Now
+                                </Button>
+                            ) : (
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="shrink-0 text-xs hover:bg-white/5 opacity-60 hover:opacity-100"
+                                    onClick={() => setSigningForm(form)}
+                                >
+                                    View
                                 </Button>
                             )}
                         </div>
@@ -247,6 +256,8 @@ export function FormsCard({ forms }: { forms: any[] }) {
                     formTitle={signingForm.title}
                     formContent={signingForm.content}
                     isSigning={signForm.isPending}
+                    signature={signingForm.signature}
+                    viewOnly={signingForm.status === 'signed'}
                 />
             )}
         </div>

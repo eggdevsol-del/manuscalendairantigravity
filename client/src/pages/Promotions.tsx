@@ -245,6 +245,14 @@ export default function Promotions() {
         {showAutoApplySheet && activeCard && (
           <AutoApplySheet isOpen={showAutoApplySheet} onClose={() => setShowAutoApplySheet(false)} promotion={activeCard as PromotionCardData} onSave={() => { setShowAutoApplySheet(false); refetch(); }} />
         )}
+
+        {showCreateWizard && (
+          <CreatePromotionWizard
+            onClose={closeCreateWizard}
+            onSuccess={refetch}
+            initialData={editingPromotion}
+          />
+        )}
       </div>
     </PageShell>
   );

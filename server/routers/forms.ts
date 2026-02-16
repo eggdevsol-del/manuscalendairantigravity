@@ -85,4 +85,14 @@ export const formsRouter = router({
 
             return { success: true };
         }),
+
+    getProcedureLogs: artistProcedure.query(async ({ ctx }) => {
+        const database = await db.getDb();
+        if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        return database.select()
+            .from(procedureLogs)
+            .where(eq(procedureLogs.artistId, ctx.user.id))
+            .orderBy(desc(procedureLogs.date));
+    }),
 });

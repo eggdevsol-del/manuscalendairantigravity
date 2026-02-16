@@ -42,15 +42,17 @@ export function MonthBreakdown({ month, eventsByDay = {}, workSchedule }: MonthB
         return acc + (hasEvents ? 0 : 1);
     }, 0);
 
-    // 2. Total Revenue (this month only)
-    let totalRevenue = 0;
+    // 2. Remaining Balance (this month only)
+    let totalRemainingBalance = 0;
     days.forEach(day => {
         if (!isSameMonth(day, month)) return;
 
         const key = format(day, "yyyy-MM-dd");
         const events = eventsByDay[key] || [];
         events.forEach(evt => {
-            if (evt.price) totalRevenue += Number(evt.price);
+            const price = Number(evt.price || 0);
+            const deposit = Number(evt.depositAmount || 0);
+            totalRemainingBalance += (price - deposit);
         });
     });
 
@@ -137,12 +139,12 @@ export function MonthBreakdown({ month, eventsByDay = {}, workSchedule }: MonthB
                         <div className="text-[9px] text-muted-foreground/60">(this month)</div>
                     </div>
 
-                    {/* Total Revenue */}
+                    {/* Remaining Balance */}
                     <div className="text-center">
                         <div className="text-xl font-medium text-green-400">
-                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(totalRevenue)}
+                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(totalRemainingBalance)}
                         </div>
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Total Revenue</div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Remaining Bal</div>
                         <div className="text-[9px] text-muted-foreground/60">(this month)</div>
                     </div>
 

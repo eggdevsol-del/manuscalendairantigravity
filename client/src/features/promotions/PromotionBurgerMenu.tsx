@@ -33,6 +33,11 @@ export function PromotionBurgerMenu({
     const [isCreating, setIsCreating] = useState(false);
     const [currentStep, setCurrentStep] = useState<WizardStep>('type');
 
+    const handleClose = () => {
+        setIsCreating(false);
+        if (onOpenChange) onOpenChange(false);
+    };
+
     const items: FABMenuItem[] = [
         {
             id: 'switch-view',
@@ -50,7 +55,7 @@ export function PromotionBurgerMenu({
         },
         {
             id: 'send',
-            label: 'Send to Client',
+            label: 'Send Voucher',
             icon: Send,
             onClick: () => onAction('send'),
         },
@@ -62,18 +67,11 @@ export function PromotionBurgerMenu({
         },
         {
             id: 'settings',
-            label: 'Voucher Settings',
+            label: 'Promotion Settings',
             icon: Settings,
             onClick: () => onAction('settings'),
         },
     ];
-
-    // Close handler for wizard
-    const handleClose = () => {
-        setIsCreating(false);
-        if (onOpenChange) onOpenChange(false);
-    };
-
 
     if (isCreating) {
         return (
@@ -99,7 +97,7 @@ export function PromotionBurgerMenu({
     return (
         <FABMenu
             items={items}
-            toggleIcon={<CreditCard className="h-6 w-6" />}
+            toggleIcon={<Settings className="h-6 w-6" />}
             isOpen={isOpen}
             onOpenChange={onOpenChange}
             className={className}

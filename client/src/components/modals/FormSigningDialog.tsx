@@ -15,10 +15,12 @@ import { tokens } from "@/ui/tokens";
 interface FormSigningDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onSign: (signature: string) => void;
+    onSign?: (signature: string) => void;
     formTitle: string;
     formContent: string;
-    isSigning: boolean;
+    isSigning?: boolean;
+    signature?: string | null;
+    viewOnly?: boolean;
 }
 
 export function FormSigningDialog({
@@ -27,12 +29,14 @@ export function FormSigningDialog({
     onSign,
     formTitle,
     formContent,
-    isSigning
+    isSigning,
+    signature,
+    viewOnly
 }: FormSigningDialogProps) {
-    const [step, setStep] = useState<'content' | 'signature'>('content');
+    const [step, setStep] = useState<'content' | 'signature'>(viewOnly ? 'content' : 'content');
 
     const handleSign = (signature: string) => {
-        onSign(signature);
+        onSign?.(signature);
     };
 
     return (
@@ -41,9 +45,11 @@ export function FormSigningDialog({
                 <DialogHeader className="p-6 border-b border-white/10 shrink-0">
                     <DialogTitle className="text-xl font-bold">{formTitle}</DialogTitle>
                     <DialogDescription className="text-muted-foreground text-sm">
-                        {step === 'content'
-                            ? "Please review the document below before signing."
-                            : "Provide your digital signature below."}
+                        {viewOnly
+                            ? "This document has been signed and recorded."
+                            : step === 'content'
+                                ? "Please review the document below before signing."
+                                : "Provide your digital signature below."}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -54,15 +60,29 @@ export function FormSigningDialog({
                                 <div className="prose prose-invert prose-sm max-w-none text-foreground/80 leading-relaxed whitespace-pre-wrap">
                                     {formContent}
                                 </div>
+                                {viewOnly && signature && (
+                                    <div className="mt-12 pt-8 border-t border-white/10">
+                                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-4">Digitally Signed By Client</p>
+                                        <div className="bg-white/5 rounded-2xl border border-white/10 p-6 inline-block">
+                                            <img
+                                                src={signature}
+                                                alt="Client Signature"
+                                                className="h-20 w-auto invert dark:invert-0 grayscale opacity-90"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </ScrollArea>
-                            <div className="p-6 border-t border-white/10 bg-black/20 shrink-0">
-                                <Button
-                                    className="w-full h-12 shadow-lg shadow-primary/20"
-                                    onClick={() => setStep('signature')}
-                                >
-                                    Proceed to Signature
-                                </Button>
-                            </div>
+                            {!viewOnly && (
+                                <div className="p-6 border-t border-white/10 bg-black/20 shrink-0">
+                                    <Button
+                                        className="w-full h-12 shadow-lg shadow-primary/20"
+                                        onClick={() => setStep('signature')}
+                                    >
+                                        Proceed to Signature
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="h-full p-6 flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
