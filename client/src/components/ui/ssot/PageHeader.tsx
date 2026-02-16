@@ -10,12 +10,15 @@
  * - Fixed positioning at top of screen
  * - Consistent title size and placement
  * - Safe area inset handling
+ * - Optional back button
  * 
  * DO NOT create custom header styles in page components.
  * DO NOT add icons or buttons to the header area.
  */
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
+import { ChevronLeft } from "lucide-react";
+import { Button } from "../button";
 
 interface PageHeaderProps {
     /** Page title - rendered with consistent SSOT styling */
@@ -24,12 +27,14 @@ interface PageHeaderProps {
     subtitle?: string;
     /** Additional classes for the header container */
     className?: string;
+    /** Optional back action - renders a back button */
+    onBack?: () => void;
 }
 
 /**
  * PageHeader - SSOT header component with left-aligned title
  */
-export function PageHeader({ title, subtitle, className }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, className, onBack }: PageHeaderProps) {
     // Check for Artist Branding (Teaser Mode or Client View)
     // We check localStorage directly to avoid prop drilling, as this is a global branding requirement
     const artistBranding = typeof window !== 'undefined' ? localStorage.getItem("calendair_artist_branding") : null;
@@ -51,9 +56,21 @@ export function PageHeader({ title, subtitle, className }: PageHeaderProps) {
             )}
             style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
         >
-            <h1 className={tokens.header.pageTitle}>
-                {artistBranding ? displayTitle : title}
-            </h1>
+            <div className="flex items-center gap-2">
+                {onBack && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onBack}
+                        className="-ml-2 h-8 w-8 text-foreground/70 hover:text-foreground"
+                    >
+                        <ChevronLeft className="w-6 h-6" />
+                    </Button>
+                )}
+                <h1 className={tokens.header.pageTitle}>
+                    {artistBranding ? displayTitle : title}
+                </h1>
+            </div>
             {subtitle && !artistBranding && (
                 <span className={tokens.header.pageSubtitle}>
                     {subtitle}

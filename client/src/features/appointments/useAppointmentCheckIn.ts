@@ -23,6 +23,7 @@ export function useAppointmentCheckIn() {
         },
         {
             refetchInterval: 30_000, // Poll every 30s
+            placeholderData: (prev) => prev,
         }
     );
 

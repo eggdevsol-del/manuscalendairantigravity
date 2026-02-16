@@ -44,7 +44,15 @@ const PAYMENT_METHODS = [
 
 export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment }: Props) {
     const { appointment, phase } = checkIn;
-    const [step, setStep] = useState<Step>(phase === 'arrival' ? 'arrival' : 'completion');
+    const [step, setStep] = useState<Step>(() => phase === 'arrival' ? 'arrival' : 'completion');
+
+    // Sync step with phase if not in 'done' state
+    if (step !== 'done') {
+        const expectedStep = phase === 'arrival' ? 'arrival' : 'completion';
+        if (step !== expectedStep && (step === 'arrival' || step === 'completion')) {
+            setStep(expectedStep);
+        }
+    }
     const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
     const [manualEndTime, setManualEndTime] = useState('');
     const [manualAmount, setManualAmount] = useState('');

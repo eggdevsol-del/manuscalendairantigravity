@@ -34,6 +34,13 @@ export function useClientProfileController() {
         onSuccess: () => utils.clientProfile.getBoards.invalidate(input)
     });
 
+    const signForm = trpc.forms.signForm.useMutation({
+        onSuccess: () => {
+            utils.clientProfile.getConsentForms.invalidate(input);
+            utils.forms.getPendingForms.invalidate();
+        }
+    });
+
     // Trust Badge Logic (Selector)
     const trustBadges = useMemo(() => {
         if (!spend) return [];
@@ -71,6 +78,7 @@ export function useClientProfileController() {
         updateAvatar,
         createMoodboard,
         deleteMoodboard,
-        addMoodboardImage
+        addMoodboardImage,
+        signForm
     };
 }

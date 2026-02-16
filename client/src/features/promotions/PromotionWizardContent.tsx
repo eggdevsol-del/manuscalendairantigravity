@@ -281,7 +281,7 @@ export function PromotionWizardContent({ onClose, onSuccess, initialData, onStep
                         transition={{ duration: 0.2 }}
                         className="space-y-6"
                     >
-                        {step === 'type' && <TypeSelectionStep selected={type} onSelect={setType} />}
+                        {step === 'type' && <TypeSelectionStep selected={type} onSelect={setType} goNext={goNext} />}
                         {step === 'value' && <ValueConfigStep type={type} name={name} setName={setName} description={description} setDescription={setDescription} valueType={valueType} setValueType={setValueType} value={value} setValue={setValue} />}
                         {step === 'rules' && <RulesConfigStep validityDuration={validityDuration} setValidityDuration={setValidityDuration} noExpiry={noExpiry} setNoExpiry={setNoExpiry} autoApplyTrigger={autoApplyTrigger} setAutoApplyTrigger={setAutoApplyTrigger} />}
                         {step === 'design' && <DesignCustomizationStep type={type} templateDesign={templateDesign} setTemplateDesign={setTemplateDesign} colorMode={colorMode} setColorMode={setColorMode} primaryColor={primaryColor} setPrimaryColor={setPrimaryColor} gradientId={gradientId} setGradientId={setGradientId} customColor={customColor} setCustomColor={setCustomColor} customText={customText} setCustomText={setCustomText} logoUrl={logoUrl} setLogoUrl={setLogoUrl} backgroundImageUrl={backgroundImageUrl} setBackgroundImageUrl={setBackgroundImageUrl} backgroundScale={backgroundScale} setBackgroundScale={setBackgroundScale} backgroundPositionX={backgroundPositionX} setBackgroundPositionX={setBackgroundPositionX} backgroundPositionY={backgroundPositionY} setBackgroundPositionY={setBackgroundPositionY} uploadingLogo={uploadingLogo} uploadingBackground={uploadingBackground} handleLogoUpload={handleLogoUpload} handleBackgroundUpload={handleBackgroundUpload} logoInputRef={logoInputRef} backgroundInputRef={backgroundInputRef} previewData={previewData} />}
@@ -315,7 +315,7 @@ export function PromotionWizardContent({ onClose, onSuccess, initialData, onStep
 }
 
 // Sub-components extracted from CreatePromotionWizard.tsx
-function TypeSelectionStep({ selected, onSelect }: { selected: PromotionType; onSelect: (type: PromotionType) => void; }) {
+function TypeSelectionStep({ selected, onSelect, goNext }: { selected: PromotionType; onSelect: (type: PromotionType) => void; goNext: () => void; }) {
     const types: { id: PromotionType; icon: any; title: string; description: string }[] = [
         { id: 'voucher', icon: Gift, title: 'Gift Voucher', description: 'Fixed dollar amount' },
         { id: 'discount', icon: Percent, title: 'Discount Card', description: 'Percentage off' },
@@ -332,8 +332,10 @@ function TypeSelectionStep({ selected, onSelect }: { selected: PromotionType; on
                     <motion.div
                         key={t.id}
                         variants={fab.animation.item}
-                        className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center gap-2 w-full")}
-                        onClick={() => onSelect(t.id)}
+                        onClick={() => {
+                            onSelect(t.id);
+                            goNext();
+                        }}
                     >
                         <div className={cn(isSelected ? fab.itemButtonHighlight : fab.itemButton, "shrink-0 !w-8 !h-8")}>
                             <t.icon className="w-3.5 h-3.5" />

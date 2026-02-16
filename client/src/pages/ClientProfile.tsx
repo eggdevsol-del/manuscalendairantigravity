@@ -12,6 +12,7 @@ import { NavActionButton } from "@/components/ui/ssot";
 import { useTeaser } from "@/contexts/TeaserContext";
 import { Lock } from "lucide-react";
 import { InstallAppModal } from "@/components/modals/InstallAppModal";
+import { FormsFABMenu } from "@/components/modals/FormsFABMenu";
 import { cn } from "@/lib/utils";
 
 export default function ClientProfile() {
@@ -110,6 +111,7 @@ export default function ClientProfile() {
     return (
         <div className="flex flex-col h-full bg-gradient-to-b from-background to-background/80 relative overflow-hidden">
             <InstallAppModal isOpen={showInstallModal} onClose={() => setShowInstallModal(false)} />
+            <FormsFABMenu />
 
             {/* Teaser Mode Overlay */}
             {isTeaserClient && (

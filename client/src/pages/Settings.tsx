@@ -6,6 +6,7 @@ import { getAssetUrl } from "@/lib/assets";
 
 import WorkHoursAndServices from "./WorkHoursAndServices";
 import ArtistLink from "@/components/ArtistLink";
+import RegulationPage from "./settings/RegulationPage";
 import { Button, Card, Input, Label, Switch, Textarea } from "@/components/ui";
 import { LoadingState, PageShell, PageHeader } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
@@ -24,6 +25,7 @@ import {
   User,
   Zap,
   RefreshCw,
+  Scale,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useSearch } from "wouter";
@@ -33,7 +35,7 @@ import { APP_VERSION } from "@/lib/version";
 import { getGoogleMapsEmbedUrl } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 
-type SettingsSection = "main" | "profile" | "work-hours" | "quick-actions" | "notifications" | "business" | "booking-link";
+type SettingsSection = "main" | "profile" | "work-hours" | "quick-actions" | "notifications" | "business" | "booking-link" | "regulation";
 
 export default function Settings() {
   const { user, loading, logout } = useAuth();
@@ -239,6 +241,10 @@ export default function Settings() {
   // Since we assume we will migrate it next, we render it directly.
   if (activeSection === "work-hours" && isArtist) {
     return <WorkHoursAndServices onBack={() => navigateToSection("main")} />;
+  }
+
+  if (activeSection === "regulation" && isArtist) {
+    return <RegulationPage onBack={() => navigateToSection("main")} />;
   }
 
   if (activeSection === "profile") {
@@ -679,6 +685,23 @@ export default function Settings() {
                           <div className="text-left">
                             <p className="font-semibold text-foreground">Work Hours & Services</p>
                             <p className="text-xs text-muted-foreground">Manage schedule</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+
+                      {/* Regulation */}
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => navigateToSection("regulation")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400">
+                            <Scale className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">Regulation & Forms</p>
+                            <p className="text-xs text-muted-foreground">Form 9, Medical, Consent</p>
                           </div>
                         </div>
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />

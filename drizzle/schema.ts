@@ -72,6 +72,7 @@ export const artistSettings = mysqlTable("artistSettings", {
 	licenceNumber: varchar({ length: 100 }),
 	consentTemplate: text(),
 	medicalTemplate: text(),
+	form9Template: text(),
 },
 	(table) => [
 		unique("artistSettings_publicSlug_unique").on(table.publicSlug),
@@ -1253,9 +1254,10 @@ export const consentForms = mysqlTable("consent_forms", {
 	appointmentId: int().references(() => appointments.id, { onDelete: "set null" }),
 	clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
-	formType: mysqlEnum('form_type', ['procedure_consent', 'medical_release']).notNull(),
+	formType: mysqlEnum('form_type', ['procedure_consent', 'medical_release', 'form_9']).notNull(),
 	title: varchar({ length: 255 }).notNull(),
 	content: text(),
+	signature: longtext(), // Base64 signature
 	signedAt: datetime({ mode: 'string' }),
 	formData: text(), // JSON blob
 	status: mysqlEnum('consent_status', ['pending', 'signed']).default('pending').notNull(),

@@ -46,6 +46,7 @@ export function PromotionBurgerMenu({
             icon: Plus,
             onClick: () => setIsCreating(true),
             highlight: true,
+            closeOnClick: false,
         },
         {
             id: 'send',

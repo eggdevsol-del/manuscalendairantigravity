@@ -28,6 +28,8 @@ export interface FABMenuItem {
     onClick: () => void;
     /** If true, uses the primary/highlight button style */
     highlight?: boolean;
+    /** Whether to close the menu when this item is clicked. Defaults to true. */
+    closeOnClick?: boolean;
 }
 
 interface FABMenuBaseProps {
@@ -119,7 +121,7 @@ export function FABMenu(props: FABMenuProps) {
                                         )}
                                         onClick={() => {
                                             item.onClick();
-                                            setIsOpen(false);
+                                            if (item.closeOnClick !== false) setIsOpen(false);
                                         }}
                                     >
                                         <item.icon className={fab.itemIconSize} />

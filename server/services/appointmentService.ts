@@ -413,5 +413,16 @@ export async function generateRequiredForms(appointmentId: number) {
         status: 'pending' as const
     });
 
+    // QLD REGULATION: Form 9
+    forms.push({
+        appointmentId,
+        clientId: appt.clientId,
+        artistId: appt.artistId,
+        formType: 'form_9' as const,
+        title: 'Form 9 - Tattoo Procedure Log',
+        content: settings.form9Template || "Standard Form 9 legal content...",
+        status: 'pending' as const
+    });
+
     await db.insert(consentForms).values(forms);
 }

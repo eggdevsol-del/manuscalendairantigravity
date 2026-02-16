@@ -2,6 +2,10 @@ import { format } from "date-fns";
 import { Bookmark, Clock, Grid, Image as ImageIcon, Check, AlertCircle, FileText } from "lucide-react";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { FormSigningDialog } from "../../modals/FormSigningDialog";
+import { useClientProfileController } from "../useClientProfileController";
+import { toast } from "sonner";
 
 // ============================================================================
 // Photos Card
@@ -9,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 export function HistoryCard({ history }: { history: any[] }) {
     return (
-        <div className="h-full overflow-y-auto custom-scrollbar px-1 pb-20">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-1 pb-24">
             {history?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground opacity-50">
                     <Clock className="w-10 h-10 mb-4" />
@@ -97,7 +101,7 @@ export function HistoryCard({ history }: { history: any[] }) {
 
 export function UpcomingCard({ upcoming }: { upcoming: any[] }) {
     return (
-        <div className="h-full overflow-y-auto custom-scrollbar px-1 pb-20">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-1 pb-24">
             {upcoming?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground opacity-50">
                     <Clock className="w-10 h-10 mb-4" />
@@ -148,7 +152,7 @@ export function UpcomingCard({ upcoming }: { upcoming: any[] }) {
 
 export function PhotosCard({ photos, isEditMode }: { photos: any[], isEditMode: boolean }) {
     return (
-        <div className="h-full overflow-y-auto custom-scrollbar px-1 pb-20">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-1 pb-24">
             {photos?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground opacity-50">
                     <Grid className="w-10 h-10 mb-4" />
@@ -180,8 +184,25 @@ export function PhotosCard({ photos, isEditMode }: { photos: any[], isEditMode: 
 }
 
 export function FormsCard({ forms }: { forms: any[] }) {
+    const { signForm } = useClientProfileController();
+    const [signingForm, setSigningForm] = useState<any>(null);
+
+    const handleSign = async (signature: string) => {
+        if (!signingForm) return;
+        try {
+            await signForm.mutateAsync({
+                formId: signingForm.id,
+                signature
+            });
+            toast.success("Form signed successfully");
+            setSigningForm(null);
+        } catch (err) {
+            toast.error("Failed to sign form");
+        }
+    };
+
     return (
-        <div className="h-full overflow-y-auto custom-scrollbar px-1 pb-20">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-1 pb-24">
             {forms?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground opacity-50">
                     <FileText className="w-10 h-10 mb-4" />
@@ -204,13 +225,29 @@ export function FormsCard({ forms }: { forms: any[] }) {
                                 </p>
                             </div>
                             {form.status !== 'signed' && (
-                                <Button size="sm" variant="ghost" className="shrink-0 text-xs">
-                                    Sign
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="shrink-0 text-xs border-orange-500/20 text-orange-400 hover:text-orange-300 hover:bg-orange-500/10"
+                                    onClick={() => setSigningForm(form)}
+                                >
+                                    Sign Now
                                 </Button>
                             )}
                         </div>
                     ))}
                 </div>
+            )}
+
+            {signingForm && (
+                <FormSigningDialog
+                    isOpen={!!signingForm}
+                    onClose={() => setSigningForm(null)}
+                    onSign={handleSign}
+                    formTitle={signingForm.title}
+                    formContent={signingForm.content}
+                    isSigning={signForm.isPending}
+                />
             )}
         </div>
     );
