@@ -84,12 +84,10 @@ export function PromotionBurgerMenu({
                 }}
                 className={className}
             >
-                <div className="w-full">
-                    <PromotionWizardContent
-                        onClose={handleClose}
-                        onStepChange={setCurrentStep}
-                    />
-                </div>
+                <PromotionWizardContent
+                    onClose={handleClose}
+                    onStepChange={setCurrentStep}
+                />
             </FABMenu>
         );
     }

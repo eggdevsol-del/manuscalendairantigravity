@@ -271,14 +271,14 @@ export function PromotionWizardContent({ onClose, onSuccess, initialData, onStep
             </motion.div>
 
             {/* Main Content Area */}
-            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar min-h-0">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={step}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
+                        initial="hidden"
+                        animate="visible"
+                        exit="hidden"
+                        variants={fab.animation.panel}
                         className="space-y-6"
                     >
                         {step === 'type' && <TypeSelectionStep selected={type} onSelect={setType} goNext={goNext} />}
@@ -325,28 +325,26 @@ function TypeSelectionStep({ selected, onSelect, goNext }: { selected: Promotion
     const card = tokens.card;
 
     return (
-        <div className="flex flex-col -my-2 w-full">
+        <div className="flex flex-col gap-2 w-full pt-2">
             {types.map(t => {
                 const isSelected = selected === t.id;
                 return (
                     <motion.div
                         key={t.id}
                         variants={fab.animation.item}
+                        className={cn(fab.itemRow, "cursor-pointer active:scale-95 transition-transform px-1")}
                         onClick={() => {
                             onSelect(t.id);
                             goNext();
                         }}
                     >
-                        <div className={cn(isSelected ? fab.itemButtonHighlight : fab.itemButton, "shrink-0 !w-8 !h-8")}>
-                            <t.icon className="w-3.5 h-3.5" />
+                        <div className="flex-1 min-w-0 flex flex-col items-end">
+                            <p className={cn(fab.itemLabel, "font-bold text-foreground")}>{t.title}</p>
+                            <p className="text-[9px] text-muted-foreground opacity-70">{t.description}</p>
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-[10px] font-bold text-foreground truncate">{t.title}</p>
-                            <p className="text-[8px] text-muted-foreground truncate">{t.description}</p>
+                        <div className={cn(isSelected ? fab.itemButtonHighlight : fab.itemButton, "shrink-0")}>
+                            <t.icon className={fab.itemIconSize} />
                         </div>
-                        {isSelected && (
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                        )}
                     </motion.div>
                 );
             })}
