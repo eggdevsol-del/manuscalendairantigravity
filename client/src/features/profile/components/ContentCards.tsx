@@ -3,7 +3,7 @@ import { Bookmark, Clock, Grid, Image as ImageIcon, Check, AlertCircle, FileText
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { FormSigningDialog } from "../../modals/FormSigningDialog";
+import { FormSigningDialog } from "@/components/modals/FormSigningDialog";
 import { useClientProfileController } from "../useClientProfileController";
 import { toast } from "sonner";
 
