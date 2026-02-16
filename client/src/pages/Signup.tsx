@@ -28,8 +28,8 @@ export default function Signup() {
 
       toast.success("Account created successfully!");
 
-      // Redirect based on role
-      setLocation(role === "artist" ? "/conversations" : "/conversations");
+      // Redirect to calendar
+      setLocation("/calendar");
 
       setIsLoading(false);
     },
@@ -83,7 +83,7 @@ export default function Signup() {
     }
 
     setIsLoading(true);
-    
+
     // First check if email exists and is a funnel client
     checkEmailMutation.mutate(
       { email },
@@ -221,8 +221,8 @@ export default function Signup() {
                   type="button"
                   onClick={() => setRole("artist")}
                   className={`p-4 rounded-lg border-2 transition-all ${role === "artist"
-                      ? "border-primary bg-primary/5 shadow-sm"
-                      : "border-border hover:border-primary/50"
+                    ? "border-primary bg-primary/5 shadow-sm"
+                    : "border-border hover:border-primary/50"
                     }`}
                   disabled={isLoading}
                 >
@@ -238,8 +238,8 @@ export default function Signup() {
                   type="button"
                   onClick={() => setRole("client")}
                   className={`p-4 rounded-lg border-2 transition-all ${role === "client"
-                      ? "border-primary bg-primary/5 shadow-sm"
-                      : "border-border hover:border-primary/50"
+                    ? "border-primary bg-primary/5 shadow-sm"
+                    : "border-border hover:border-primary/50"
                     }`}
                   disabled={isLoading}
                 >

@@ -19,7 +19,7 @@ export default function CompleteProfile() {
   const updateProfileMutation = trpc.auth.updateProfile.useMutation({
     onSuccess: () => {
       toast.success("Profile completed successfully!");
-      setLocation("/conversations");
+      setLocation("/calendar");
     },
     onError: (error: any) => {
       toast.error("Failed to update profile: " + error.message);
@@ -32,7 +32,7 @@ export default function CompleteProfile() {
     }
     if (user?.name && user?.phone) {
       // Profile already complete
-      setLocation("/conversations");
+      setLocation("/calendar");
     }
     if (user) {
       setFormData({

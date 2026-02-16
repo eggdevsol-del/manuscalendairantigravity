@@ -1,0 +1,101 @@
+=== PROPOSAL METADATA DUMP ===
+
+[ID: 283] Created: 2026-02-16 10:06:38
+METADATA:
+{"type":"project_proposal","serviceName":"1 hour","serviceDuration":60,"sittings":1,"price":330,"totalCost":330,"frequency":"single","dates":["2026-02-17T06:00:00.000Z"],"proposedDates":["2026-02-17T06:00:00.000Z"],"status":"pending","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1}
+-----------------------------------
+
+[ID: 280] Created: 2026-02-16 06:26:40
+METADATA:
+{"type":"project_proposal","serviceName":"1 hour","serviceDuration":60,"sittings":1,"price":330,"totalCost":330,"frequency":"single","dates":["2026-02-17T05:00:00.000Z"],"proposedDates":["2026-02-17T05:00:00.000Z"],"status":"accepted","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1,"discountApplied":false}
+-----------------------------------
+
+[ID: 278] Created: 2026-02-15 05:38:53
+METADATA:
+{"type":"project_proposal","serviceName":"arm sleeve","serviceDuration":420,"sittings":6,"price":2000,"totalCost":12000,"frequency":"monthly","dates":["2026-03-04T23:00:00.000Z","2026-04-05T23:00:00.000Z","2026-05-05T23:00:00.000Z","2026-06-07T23:00:00.000Z","2026-07-07T23:00:00.000Z","2026-08-09T23:00:00.000Z"],"proposedDates":["2026-03-04T23:00:00.000Z","2026-04-05T23:00:00.000Z","2026-05-05T23:00:00.000Z","2026-06-07T23:00:00.000Z","2026-07-07T23:00:00.000Z","2026-08-09T23:00:00.000Z"],"status":"pending","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1}
+-----------------------------------
+
+[ID: 275] Created: 2026-02-14 11:10:03
+METADATA:
+{"type":"project_proposal","serviceName":"2 hour sitting","serviceDuration":120,"sittings":1,"price":600,"totalCost":600,"frequency":"consecutive","dates":["2026-02-16T05:00:00.000Z"],"proposedDates":["2026-02-16T05:00:00.000Z"],"status":"accepted","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1,"discountApplied":false}
+-----------------------------------
+
+[ID: 272] Created: 2026-02-14 08:36:22
+METADATA:
+{"type":"project_proposal","serviceName":"arm sleeve","serviceDuration":420,"sittings":6,"price":2000,"totalCost":12000,"frequency":"consecutive","dates":["2026-02-19T23:00:00.000Z","2026-02-20T23:00:00.000Z","2026-02-21T23:00:00.000Z","2026-02-25T23:00:00.000Z","2026-02-26T23:00:00.000Z","2026-02-27T23:00:00.000Z"],"proposedDates":["2026-02-19T23:00:00.000Z","2026-02-20T23:00:00.000Z","2026-02-21T23:00:00.000Z","2026-02-25T23:00:00.000Z","2026-02-26T23:00:00.000Z","2026-02-27T23:00:00.000Z"],"status":"accepted","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1,"discountApplied":false}
+-----------------------------------
+
+[ID: 269] Created: 2026-02-14 05:09:31
+METADATA:
+{"type":"project_proposal","serviceName":"Full day sitting ","serviceDuration":420,"sittings":1,"price":2000,"totalCost":2000,"frequency":"single","dates":["2026-02-18T23:00:00.000Z"],"proposedDates":["2026-02-18T23:00:00.000Z"],"status":"canceled","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1,"discountApplied":false}
+-----------------------------------
+
+[ID: 268] Created: 2026-02-14 04:53:10
+METADATA:
+{"type":"project_proposal","serviceName":"Full day sitting ","serviceDuration":420,"sittings":1,"price":2000,"totalCost":2000,"frequency":"single","dates":["2026-02-18T23:00:00.000Z"],"proposedDates":["2026-02-18T23:00:00.000Z"],"status":"canceled","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1}
+-----------------------------------
+
+[ID: 265] Created: 2026-02-14 04:41:11
+METADATA:
+{"type":"project_proposal","serviceName":"Half day sitting ","serviceDuration":210,"sittings":1,"price":1200,"totalCost":1200,"frequency":"single","dates":["2026-02-14T23:00:00.000Z"],"proposedDates":["2026-02-14T23:00:00.000Z"],"status":"canceled","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1,"discountApplied":true,"discountAmount":30000,"finalAmount":90000,"promotionName":"Promotion","appliedPromotion":{"id":12,"discountAmount":30000,"finalAmount":90000}}
+-----------------------------------
+
+[ID: 264] Created: 2026-02-14 02:46:34
+METADATA:
+{"type":"project_proposal","serviceName":"arm sleeve","serviceDuration":420,"sittings":6,"price":2000,"totalCost":12000,"frequency":"monthly","dates":["2026-02-14T23:00:00.000Z","2026-03-14T23:00:00.000Z","2026-04-14T23:00:00.000Z","2026-05-14T23:00:00.000Z","2026-06-14T23:00:00.000Z","2026-07-14T23:00:00.000Z"],"proposedDates":["2026-02-14T23:00:00.000Z","2026-03-14T23:00:00.000Z","2026-04-14T23:00:00.000Z","2026-05-14T23:00:00.000Z","2026-06-14T23:00:00.000Z","2026-07-14T23:00:00.000Z"],"status":"canceled","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1}
+-----------------------------------
+
+[ID: 263] Created: 2026-02-13 23:34:23
+METADATA:
+{"type":"project_proposal","serviceName":"arm sleeve","serviceDuration":420,"sittings":6,"price":2000,"totalCost":12000,"frequency":"monthly","dates":["2026-02-14T00:00:00.000Z","2026-03-14T00:00:00.000Z","2026-04-14T00:00:00.000Z","2026-05-14T00:00:00.000Z","2026-06-14T00:00:00.000Z","2026-07-14T00:00:00.000Z"],"proposedDates":["2026-02-14T00:00:00.000Z","2026-03-14T00:00:00.000Z","2026-04-14T00:00:00.000Z","2026-05-14T00:00:00.000Z","2026-06-14T00:00:00.000Z","2026-07-14T00:00:00.000Z"],"status":"canceled","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1}
+-----------------------------------
+
+[ID: 262] Created: 2026-02-13 13:39:44
+METADATA:
+{"type":"project_proposal","serviceName":"arm sleeve","serviceDuration":420,"sittings":6,"price":2000,"totalCost":12000,"frequency":"biweekly","dates":["2026-02-13T23:00:00.000Z","2026-02-27T23:00:00.000Z","2026-03-13T23:00:00.000Z","2026-03-27T23:00:00.000Z","2026-04-10T23:00:00.000Z","2026-04-24T23:00:00.000Z"],"proposedDates":["2026-02-13T23:00:00.000Z","2026-02-27T23:00:00.000Z","2026-03-13T23:00:00.000Z","2026-03-27T23:00:00.000Z","2026-04-10T23:00:00.000Z","2026-04-24T23:00:00.000Z"],"status":"pending","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1}
+-----------------------------------
+
+[ID: 261] Created: 2026-02-13 12:54:56
+METADATA:
+{"type":"project_proposal","serviceName":"arm sleeve","serviceDuration":420,"sittings":6,"price":2000,"totalCost":12000,"frequency":"weekly","dates":["2026-02-13T23:00:00.000Z","2026-02-20T23:00:00.000Z","2026-02-27T23:00:00.000Z","2026-03-06T23:00:00.000Z","2026-03-13T23:00:00.000Z","2026-03-20T23:00:00.000Z"],"proposedDates":["2026-02-13T23:00:00.000Z","2026-02-20T23:00:00.000Z","2026-02-27T23:00:00.000Z","2026-03-06T23:00:00.000Z","2026-03-13T23:00:00.000Z","2026-03-20T23:00:00.000Z"],"status":"canceled","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1}
+-----------------------------------
+
+[ID: 252] Created: 2026-02-10 13:37:16
+METADATA:
+{"type":"project_proposal","serviceName":"2 hour sitting","serviceDuration":120,"sittings":1,"price":600,"totalCost":600,"frequency":"single","dates":["2026-02-12T03:00:00.000Z"],"proposedDates":["2026-02-12T03:00:00.000Z"],"status":"accepted","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1,"discountApplied":false}
+-----------------------------------
+
+[ID: 251] Created: 2026-02-10 09:24:21
+METADATA:
+{"type":"project_proposal","serviceName":"arm sleeve","serviceDuration":420,"sittings":6,"price":2000,"totalCost":12000,"frequency":"biweekly","dates":["2026-02-18T23:00:00.000Z","2026-03-04T23:00:00.000Z","2026-03-18T23:00:00.000Z","2026-04-01T23:00:00.000Z","2026-04-15T23:00:00.000Z","2026-04-29T23:00:00.000Z"],"proposedDates":["2026-02-18T23:00:00.000Z","2026-03-04T23:00:00.000Z","2026-03-18T23:00:00.000Z","2026-04-01T23:00:00.000Z","2026-04-15T23:00:00.000Z","2026-04-29T23:00:00.000Z"],"status":"canceled","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1}
+-----------------------------------
+
+[ID: 248] Created: 2026-02-08 12:39:11
+METADATA:
+{"type":"project_proposal","serviceName":"2 hour sitting","serviceDuration":120,"sittings":1,"price":600,"totalCost":600,"frequency":"consecutive","dates":["2026-02-12T01:00:00.000Z"],"proposedDates":["2026-02-12T01:00:00.000Z"],"status":"accepted","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1,"discountApplied":false}
+-----------------------------------
+
+[ID: 245] Created: 2026-02-08 12:37:48
+METADATA:
+{"type":"project_proposal","serviceName":"2 hour sitting","serviceDuration":120,"sittings":1,"price":600,"totalCost":600,"frequency":"weekly","dates":["2026-02-11T23:00:00.000Z"],"proposedDates":["2026-02-11T23:00:00.000Z"],"status":"accepted","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1,"discountApplied":true,"discountAmount":15000,"finalAmount":45000,"promotionName":"Promotion","appliedPromotion":{"id":12,"discountAmount":15000,"finalAmount":45000}}
+-----------------------------------
+
+[ID: 243] Created: 2026-02-08 05:43:59
+METADATA:
+{"type":"project_proposal","serviceName":"arm sleeve","serviceDuration":420,"sittings":6,"price":2000,"totalCost":12000,"frequency":"monthly","dates":["2026-02-11T22:00:00.000Z","2026-03-11T22:00:00.000Z","2026-04-12T23:00:00.000Z","2026-05-12T23:00:00.000Z","2026-06-14T23:00:00.000Z","2026-07-14T23:00:00.000Z"],"proposedDates":["2026-02-11T22:00:00.000Z","2026-03-11T22:00:00.000Z","2026-04-12T23:00:00.000Z","2026-05-12T23:00:00.000Z","2026-06-14T23:00:00.000Z","2026-07-14T23:00:00.000Z"],"status":"canceled","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1}
+-----------------------------------
+
+[ID: 242] Created: 2026-02-05 10:00:28
+METADATA:
+{"type":"project_proposal","serviceName":"Full day sitting ","serviceDuration":420,"sittings":1,"price":2000,"totalCost":2000,"frequency":"consecutive","dates":["2026-02-11T23:00:00.000Z"],"proposedDates":["2026-02-11T23:00:00.000Z"],"status":"canceled","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1}
+-----------------------------------
+
+[ID: 241] Created: 2026-02-05 05:00:46
+METADATA:
+{"type":"project_proposal","serviceName":"arm sleeve","serviceDuration":420,"sittings":6,"price":2000,"totalCost":12000,"frequency":"biweekly","dates":["2026-02-11T23:00:00.000Z","2026-02-25T23:00:00.000Z","2026-03-11T23:00:00.000Z","2026-03-25T23:00:00.000Z","2026-04-08T23:00:00.000Z","2026-04-22T23:00:00.000Z"],"proposedDates":["2026-02-11T23:00:00.000Z","2026-02-25T23:00:00.000Z","2026-03-11T23:00:00.000Z","2026-03-25T23:00:00.000Z","2026-04-08T23:00:00.000Z","2026-04-22T23:00:00.000Z"],"status":"pending","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1}
+-----------------------------------
+
+[ID: 236] Created: 2026-02-04 22:58:46
+METADATA:
+{"type":"project_proposal","serviceName":"Full day sitting ","serviceDuration":420,"sittings":1,"price":2000,"totalCost":2000,"frequency":"single","dates":["2026-02-04T23:00:00.000Z"],"proposedDates":["2026-02-04T23:00:00.000Z"],"status":"accepted","bsb":"013711","accountNumber":"679808","depositAmount":500,"autoSendDeposit":1,"discountApplied":false}
+-----------------------------------

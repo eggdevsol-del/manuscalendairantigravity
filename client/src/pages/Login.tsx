@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Checkbox, Input, Label } from "@/components/ui";
 import { trpc } from "@/lib/trpc";
@@ -13,6 +14,13 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const { user, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      setLocation("/calendar");
+    }
+  }, [user, authLoading, setLocation]);
 
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: (data) => {
@@ -34,9 +42,9 @@ export default function Login() {
 
       // Redirect based on onboarding status
       if (!data.user.hasCompletedOnboarding) {
-        setLocation("/role-selection");
+        setLocation("/complete-profile");
       } else {
-        setLocation("/conversations");
+        setLocation("/calendar");
       }
 
       setIsLoading(false);

@@ -138,24 +138,23 @@ export function ProposalFABMenu({
                     {dateList.length > 0 && (
                         <motion.div variants={fab.animation.item} className="space-y-1">
                             <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Schedule</p>
-                            {dateList.slice(0, 4).map((dateStr, i) => (
-                                <div key={i} className={cn(card.base, card.bg, "flex items-center gap-2 p-1.5 rounded-[4px]")}>
-                                    <span className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
-                                        {i + 1}
-                                    </span>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[10px] font-semibold text-foreground truncate">
-                                            {format(new Date(dateStr), "EEE, MMM d")}
-                                        </p>
-                                        <p className="text-[8px] text-muted-foreground">
-                                            {format(new Date(dateStr), "h:mm a")} · {serviceDuration}m
-                                        </p>
+                            <div className="max-h-[220px] overflow-y-auto pr-1 -mr-1 space-y-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                                {dateList.map((dateStr, i) => (
+                                    <div key={i} className={cn(card.base, card.bg, "flex items-center gap-2 p-1.5 rounded-[4px]")}>
+                                        <span className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
+                                            {i + 1}
+                                        </span>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] font-semibold text-foreground truncate">
+                                                {format(new Date(dateStr), "EEE, MMM d")}
+                                            </p>
+                                            <p className="text-[8px] text-muted-foreground">
+                                                {format(new Date(dateStr), "h:mm a")} · {serviceDuration}m
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                            {dateList.length > 4 && (
-                                <p className="text-[8px] text-muted-foreground text-center">+{dateList.length - 4} more sessions</p>
-                            )}
+                                ))}
+                            </div>
                         </motion.div>
                     )}
 

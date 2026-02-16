@@ -72,6 +72,7 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
         <Route path="/set-password" component={SetPassword} />
+        <Route path="/complete-profile" component={CompleteProfile} />
 
         {/* Public funnel - no auth required */}
         <Route path="/start/:slug" component={PublicFunnel} />
