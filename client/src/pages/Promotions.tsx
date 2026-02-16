@@ -77,15 +77,13 @@ export default function Promotions() {
   // Auto-select first card if none selected (for swipe view mainly) - actually logic handles this via focalIndex
   const activeCard = selectedCard || (viewMode === 'swipe' ? filteredCards[focalIndex] : null);
 
-  const handleMenuAction = (action: 'create' | 'send' | 'auto-apply' | 'settings') => {
+  const handleMenuAction = (action: 'create' | 'send' | 'auto-apply' | 'settings' | 'delete') => {
     switch (action) {
       case 'create':
         handleCreate();
         break;
       case 'send':
         if (activeCard) {
-          // If we're using the focal card, we might want to ensure it's "selected" for other logic, but for now just using it for the sheet is enough.
-          // However, for consistency, let's just use activeCard in the sheet render.
           setShowSendSheet(true);
         }
         else toast.error("Please select a promotion first");
@@ -95,13 +93,18 @@ export default function Promotions() {
         else toast.error("Please select a promotion first");
         break;
       case 'settings':
-        // Placeholder for voucher settings or specific edit
         if (activeCard && isArtist) {
-          // If using focal card, we should probably select it so edit works expectedly if it relies on selection
           if (!selectedCardId) setSelectedCardId(activeCard.id);
           handleEdit();
         }
         else toast.error("Select a voucher to edit settings");
+        break;
+      case 'delete':
+        if (activeCard && isArtist) {
+          if (!selectedCardId) setSelectedCardId(activeCard.id);
+          setShowDeleteDialog(true);
+        }
+        else toast.error("Select a voucher to delete");
         break;
     }
   };

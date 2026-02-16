@@ -1289,3 +1289,22 @@ export const procedureLogs = mysqlTable("procedure_logs", {
 
 export type InsertProcedureLog = InferInsertModel<typeof procedureLogs>;
 export type SelectProcedureLog = InferSelectModel<typeof procedureLogs>;
+
+export const systemLogs = mysqlTable("system_logs", {
+	id: int().primaryKey().autoincrement(),
+	level: mysqlEnum('level', ['debug', 'info', 'warn', 'error']).default('info').notNull(),
+	category: varchar({ length: 100 }).notNull(), // e.g., 'auth', 'trpc', 'mutation', 'client'
+	message: text().notNull(),
+	metadata: text(), // JSON blob
+	userId: varchar({ length: 64 }).references(() => users.id, { onDelete: "set null" }),
+	ipAddress: varchar({ length: 45 }),
+	userAgent: text(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	index("sl_level_idx").on(table.level),
+	index("sl_category_idx").on(table.category),
+	index("sl_user_idx").on(table.userId),
+]);
+
+export type InsertSystemLog = InferInsertModel<typeof systemLogs>;
+export type SelectSystemLog = InferSelectModel<typeof systemLogs>;

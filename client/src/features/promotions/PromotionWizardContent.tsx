@@ -475,12 +475,12 @@ function DesignCustomizationStep({
         <div className="flex flex-col gap-3 w-full">
             {/* Real-time Preview */}
             <motion.div variants={fab.animation.item} className="flex justify-center -mx-2">
-                <div className="w-full scale-[0.75] origin-top">
-                    <PromotionCard data={previewData} size="lg" className="shadow-2xl" />
+                <div className="w-full scale-[0.85] origin-top mb-[-20px]">
+                    <PromotionCard data={previewData} size="md" className="shadow-2xl mx-auto" />
                 </div>
             </motion.div>
 
-            <div className="-mt-16 space-y-3">
+            <div className="space-y-3">
                 {/* Theme Toggle */}
                 <motion.div variants={fab.animation.item} className="space-y-1">
                     <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Theme Mode</p>
@@ -608,12 +608,12 @@ function PreviewStep({ previewData, isCreating }: { previewData: PromotionCardDa
             </motion.div>
 
             <motion.div variants={fab.animation.item} className="flex justify-center -mx-4">
-                <div className="w-full scale-[0.65] origin-top">
-                    <PromotionCard data={previewData} size="lg" className="shadow-2xl" />
+                <div className="w-full scale-[0.9] origin-top mb-[-20px]">
+                    <PromotionCard data={previewData} size="md" className="shadow-2xl mx-auto" />
                 </div>
             </motion.div>
 
-            <motion.div variants={fab.animation.item} className="-mt-12 space-y-2">
+            <motion.div variants={fab.animation.item} className="space-y-2">
                 <div className={cn(card.base, card.bg, "p-3")}>
                     <p className="text-[9px] leading-relaxed text-muted-foreground font-medium italic">
                         "Your new {previewData.type} template is ready. Once created, you can issue it to clients directly from your dashboard."

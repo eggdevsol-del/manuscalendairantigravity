@@ -3,12 +3,44 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import type { TrpcContext } from "./context";
 
+import { sysLogger, createLog } from '../services/systemLogService';
+
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
 });
 
+const loggingMiddleware = t.middleware(async (opts) => {
+  const start = Date.now();
+  const { path, type, ctx, next, input } = opts;
+
+  const result = await next();
+
+  const durationMs = Date.now() - start;
+  const level = result.ok ? 'info' : 'error';
+
+  // Log all mutations and any errors (including queries)
+  if (type === 'mutation' || !result.ok) {
+    await createLog({
+      level,
+      category: `trpc:${type}`,
+      message: `[TRPC] ${type} ${path} - ${result.ok ? 'SUCCESS' : 'FAILURE'} (${durationMs}ms)`,
+      metadata: JSON.stringify({
+        path,
+        type,
+        durationMs,
+        ok: result.ok,
+        error: !result.ok ? result.error : undefined,
+        input: (type === 'mutation' && input) ? input : undefined
+      }),
+      userId: ctx.user?.id,
+    });
+  }
+
+  return result;
+});
+
 export const router = t.router;
-export const publicProcedure = t.procedure;
+export const publicProcedure = t.procedure.use(loggingMiddleware);
 
 const requireUser = t.middleware(async opts => {
   const { ctx, next } = opts;

@@ -6,6 +6,7 @@ import { useChatState } from "./hooks/useChatState";
 import { useChatData } from "./hooks/useChatData";
 import { useChatMutations } from "./hooks/useChatMutations";
 import { trpc } from "@/lib/trpc";
+import { loggy } from '../../lib/loggy';
 
 export function useChatController(conversationId: number) {
     // 1. Initialize State
@@ -204,6 +205,14 @@ export function useChatController(conversationId: number) {
         });
 
         const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        loggy.info('chat:acceptance', 'Client accepting proposal', {
+            messageIdToUpdate: message?.id || selectedProposal?.message?.id,
+            proposalDate: metadata.date,
+            serviceName: metadata.serviceName,
+            finalPrice,
+            appliedPromotionId: appliedPromotion?.id
+        });
 
         bookProjectMutation.mutate({
             conversationId,
