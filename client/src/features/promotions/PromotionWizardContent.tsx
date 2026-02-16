@@ -475,7 +475,7 @@ function DesignCustomizationStep({
         <div className="flex flex-col gap-3 w-full">
             {/* Real-time Preview */}
             <motion.div variants={fab.animation.item} className="flex justify-center -mx-2">
-                <div className="w-full scale-[0.6] origin-top">
+                <div className="w-full scale-[0.75] origin-top">
                     <PromotionCard data={previewData} size="lg" className="shadow-2xl" />
                 </div>
             </motion.div>
@@ -545,7 +545,7 @@ function DesignCustomizationStep({
                                 </div>
                                 <div className="space-y-1.5">
                                     <div className="flex items-center justify-between text-[8px] text-muted-foreground uppercase font-bold">
-                                        <div className="flex items-center gap-1"><Move className="w-2.5 h-2.5" /> Position X</div>
+                                        <div className="flex items-center gap-1"><Move className="w-2.5 h-2.5" /> Horizontal Position</div>
                                         <span>{backgroundPositionX}%</span>
                                     </div>
                                     <Slider
@@ -559,7 +559,7 @@ function DesignCustomizationStep({
                                 </div>
                                 <div className="space-y-1.5">
                                     <div className="flex items-center justify-between text-[8px] text-muted-foreground uppercase font-bold">
-                                        <div className="flex items-center gap-1"><Move className="w-2.5 h-2.5 rotate-90" /> Position Y</div>
+                                        <div className="flex items-center gap-1"><Move className="w-2.5 h-2.5 rotate-90" /> Vertical Position</div>
                                         <span>{backgroundPositionY}%</span>
                                     </div>
                                     <Slider

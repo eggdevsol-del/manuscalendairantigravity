@@ -95,8 +95,17 @@ export function ProjectProposalMessage({
                     </p>
                 </div>
 
-                {/* Status dot */}
-                <div className={cn("w-2 h-2 rounded-full shrink-0 animate-pulse", glow.line)} />
+                {/* Status Dot + Label */}
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                    <div className={cn("w-2 h-2 rounded-full", isPending && "animate-pulse", glow.line)} />
+                    <span className={cn("text-[8px] font-bold uppercase tracking-wider",
+                        isAccepted ? "text-emerald-500" :
+                            status === 'rejected' ? "text-red-500" :
+                                "text-orange-500"
+                    )}>
+                        {statusLabel}
+                    </span>
+                </div>
 
                 {/* Cancel button (artist) */}
                 {isArtist && onCancel && (

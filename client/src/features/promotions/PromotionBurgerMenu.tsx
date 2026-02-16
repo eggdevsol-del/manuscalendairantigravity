@@ -6,7 +6,10 @@ import {
     Settings,
     Grid,
     GalleryVertical,
-    CreditCard
+    CreditCard,
+    Monitor,
+    Layout,
+    Trash2
 } from "lucide-react";
 import { useState } from "react";
 import { FABMenu, type FABMenuItem } from "@/ui/FABMenu";
@@ -16,7 +19,7 @@ import { cn } from "@/lib/utils";
 interface PromotionBurgerMenuProps {
     viewMode: 'swipe' | 'grid';
     onViewModeChange: (mode: 'swipe' | 'grid') => void;
-    onAction: (action: 'create' | 'send' | 'auto-apply' | 'settings') => void;
+    onAction: (action: 'create' | 'send' | 'auto-apply' | 'settings' | 'delete') => void;
     isOpen?: boolean;
     onOpenChange?: (open: boolean) => void;
     className?: string;
@@ -31,7 +34,7 @@ export function PromotionBurgerMenu({
     className
 }: PromotionBurgerMenuProps) {
     const [isCreating, setIsCreating] = useState(false);
-    const [currentStep, setCurrentStep] = useState<WizardStep>('type');
+    const [currentStep, setCurrentStep] = useState<string>('');
 
     const handleClose = () => {
         setIsCreating(false);
@@ -65,12 +68,8 @@ export function PromotionBurgerMenu({
             icon: CalendarIcon,
             onClick: () => onAction('auto-apply'),
         },
-        {
-            id: 'settings',
-            label: 'Promotion Settings',
-            icon: Settings,
-            onClick: () => onAction('settings'),
-        },
+        { id: 'settings', label: 'Voucher Settings', icon: Settings, onClick: () => onAction('settings') },
+        { id: 'delete', label: 'Delete Card', icon: Trash2, onClick: () => onAction('delete'), highlight: true },
     ];
 
     if (isCreating) {
@@ -82,6 +81,7 @@ export function PromotionBurgerMenu({
                     if (!open) setIsCreating(false);
                     if (onOpenChange) onOpenChange(open);
                 }}
+                panelClassName={(currentStep === 'design' || currentStep === 'preview') ? "w-[330px]" : undefined}
                 className={className}
             >
                 <PromotionWizardContent

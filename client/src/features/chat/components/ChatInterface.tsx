@@ -368,14 +368,6 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                                         ) : isProjectProposal && metadata?.status === 'pending' ? (
                                             // Pending proposals are pinned to the header — skip inline
                                             null
-                                        ) : isProjectProposal && metadata?.status === 'accepted' && (() => {
-                                            // Skip accepted proposals that are still pinned (future dates)
-                                            const dates = Array.isArray(metadata?.dates) ? metadata.dates
-                                                : Array.isArray(metadata?.proposedDates) ? metadata.proposedDates : [];
-                                            const lastDate = dates.length > 0 ? new Date(dates[dates.length - 1]) : null;
-                                            return lastDate ? lastDate > new Date() : false;
-                                        })() ? (
-                                            null
                                         ) : isProjectProposal ? (
                                             <div className="w-full flex justify-center">
                                                 <ProjectProposalMessage

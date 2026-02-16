@@ -41,6 +41,8 @@ interface FABMenuBaseProps {
     isOpen?: boolean;
     /** Controlled open setter (optional) */
     onOpenChange?: (open: boolean) => void;
+    /** Additional classes for the panel (e.g. for dynamic width) */
+    panelClassName?: string;
 }
 
 interface FABMenuItemsProps extends FABMenuBaseProps {
@@ -102,6 +104,7 @@ export function FABMenu(props: FABMenuProps) {
                         variants={fab.animation.panel}
                         className={cn(
                             fab.panel,
+                            props.panelClassName,
                             "overflow-y-auto max-h-[70vh]",
                             isIPad && "w-[440px] max-h-[60vh] p-6 gap-5"
                         )}
