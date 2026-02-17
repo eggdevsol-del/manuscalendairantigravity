@@ -16,11 +16,13 @@ export interface ActiveCheckIn {
 }
 
 export function useAppointmentCheckIn() {
+    const queryRange = useMemo(() => ({
+        startDate: new Date(new Date().setHours(0, 0, 0, 0)),
+        endDate: new Date(new Date().setHours(23, 59, 59, 999)),
+    }), []); // Stable for the component lifecycle
+
     const { data: appointments } = trpc.appointments.list.useQuery(
-        {
-            startDate: new Date(new Date().setHours(0, 0, 0, 0)),
-            endDate: new Date(new Date().setHours(23, 59, 59, 999)),
-        },
+        queryRange,
         {
             refetchInterval: 30_000, // Poll every 30s
             placeholderData: (prev) => prev,

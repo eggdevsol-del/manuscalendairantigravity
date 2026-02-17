@@ -68,17 +68,23 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment 
     });
 
     const handleUpdate = async (data: Record<string, any>) => {
-        await updateAppointment.mutateAsync({
-            id: appointment.id,
-            ...data,
-        });
+        try {
+            await updateAppointment.mutateAsync({
+                id: appointment.id,
+                ...data,
+            });
+        } catch (error) {
+            console.error("Failed to update appointment:", error);
+            alert("Failed to update appointment. Please try again.");
+            throw error;
+        }
     };
 
     // ── Step handlers ──────────────────────────────────
 
     const handleArrivalYes = async () => {
         await handleUpdate({
-            clientArrived: true,
+            clientArrived: 1, // Explicit numeric for tinyint
             actualStartTime: appointment.startTime, // default to scheduled start
             status: 'confirmed',
         });
@@ -101,7 +107,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment 
         if (!selectedMethod) return;
         await handleUpdate({
             status: 'completed',
-            clientPaid: true,
+            clientPaid: 1,
             amountPaid: appointment.price || 0,
             paymentMethod: selectedMethod,
             actualEndTime: new Date().toISOString(),
@@ -113,7 +119,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment 
     const handleSendPaymentNo = async () => {
         await handleUpdate({
             status: 'completed',
-            clientPaid: false,
+            clientPaid: 0,
             actualEndTime: new Date().toISOString(),
         });
         setStep('done');
@@ -123,7 +129,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment 
         // In future: trigger payment request via selected method
         await handleUpdate({
             status: 'completed',
-            clientPaid: false,
+            clientPaid: 0,
             paymentMethod: selectedMethod,
             actualEndTime: new Date().toISOString(),
         });
@@ -137,7 +143,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment 
             status: 'completed',
             actualEndTime: endTime,
             amountPaid: amount,
-            clientPaid: !!manualAmount,
+            clientPaid: manualAmount ? 1 : 0,
             paymentMethod: selectedMethod,
         });
         setStep('done');
@@ -165,21 +171,25 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment 
         variant: 'primary' | 'secondary' | 'danger';
         children: React.ReactNode;
         disabled?: boolean;
-    }) => (
-        <button
-            onClick={onClick}
-            disabled={disabled}
-            className={cn(
-                "w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all active:scale-95",
-                variant === 'primary' && "bg-primary text-primary-foreground hover:bg-primary/90",
-                variant === 'secondary' && "bg-white/5 text-foreground/80 hover:bg-white/10",
-                variant === 'danger' && "bg-red-500/10 text-red-500 hover:bg-red-500/20",
-                disabled && "opacity-50 pointer-events-none"
-            )}
-        >
-            {children}
-        </button>
-    );
+    }) => {
+        const isPending = updateAppointment.isLoading || updateAppointment.status === 'loading';
+        return (
+            <button
+                onClick={onClick}
+                disabled={disabled || isPending}
+                className={cn(
+                    "w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-2",
+                    variant === 'primary' && "bg-primary text-primary-foreground hover:bg-primary/90",
+                    variant === 'secondary' && "bg-white/5 text-foreground/80 hover:bg-white/10",
+                    variant === 'danger' && "bg-red-500/10 text-red-500 hover:bg-red-500/20",
+                    (disabled || isPending) && "opacity-50 pointer-events-none"
+                )}
+            >
+                {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                {children}
+            </button>
+        );
+    };
 
     const MethodGrid = ({ onSelect }: { onSelect: (id: string) => void }) => (
         <div className="grid grid-cols-2 gap-2 w-full">
