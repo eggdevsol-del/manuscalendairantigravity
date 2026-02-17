@@ -38,18 +38,16 @@ export function useAppointmentCheckIn() {
             const start = new Date(appt.startTime);
             const end = new Date(appt.endTime);
 
-            // Check arrival window: ±15 min of start time, client not yet arrived
+            // Check arrival phase: from 15 min prior, until clientArrived is true
             if (!appt.clientArrived) {
-                const diff = Math.abs(now.getTime() - start.getTime());
-                if (diff <= WINDOW_MS) {
+                if (now.getTime() >= start.getTime() - WINDOW_MS) {
                     return { appointment: appt, phase: 'arrival' };
                 }
             }
 
-            // Check completion window: ±15 min of end time, client arrived but not yet completed
+            // Check completion phase: from 15 min prior to end time, until status is completed
             if (appt.clientArrived && appt.status !== 'completed') {
-                const diff = Math.abs(now.getTime() - end.getTime());
-                if (diff <= WINDOW_MS) {
+                if (now.getTime() >= end.getTime() - WINDOW_MS) {
                     return { appointment: appt, phase: 'completion' };
                 }
             }
