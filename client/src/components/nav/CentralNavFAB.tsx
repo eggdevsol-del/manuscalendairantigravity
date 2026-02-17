@@ -27,12 +27,13 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
     ];
 
     return (
-        <div className={cn("relative flex items-center justify-center w-16 h-full", className)}>
+        <div className={cn("relative flex items-center justify-center w-16 h-full transition-none", className)}>
             <FABMenu
                 toggleIcon={<Plus className="w-6 h-6" />}
                 items={items}
-                className="!static !bottom-auto !right-auto" // Reset FAB default fixed position
-                panelClassName="bottom-20 right-1/2 translate-x-1/2 !items-center" // Center the panel above the button
+                className="!static !bottom-auto !right-auto transition-none" // Reset FAB default fixed position
+                portalContainerClassName="bottom-[90px] left-1/2 -translate-x-1/2 items-center"
+                panelClassName="!items-center" // Center the panel content
             />
         </div>
     );

@@ -9,7 +9,8 @@
  * 2. `children` mode — custom content rendered inside the panel (like Booking)
  */
 
-import { useState, useMemo, ReactNode } from "react";
+import { useState, useMemo, ReactNode, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -43,6 +44,8 @@ interface FABMenuBaseProps {
     onOpenChange?: (open: boolean) => void;
     /** Additional classes for the panel (e.g. for dynamic width) */
     panelClassName?: string;
+    /** Positioning for the portaled container (e.g. "bottom-[240px] right-5") */
+    portalContainerClassName?: string;
 }
 
 interface FABMenuItemsProps extends FABMenuBaseProps {
@@ -61,6 +64,11 @@ type FABMenuProps = FABMenuItemsProps | FABMenuChildrenProps;
 
 export function FABMenu(props: FABMenuProps) {
     const [internalOpen, setInternalOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const isOpen = props.isOpen ?? internalOpen;
     const setIsOpen = props.onOpenChange ?? setInternalOpen;
@@ -70,18 +78,18 @@ export function FABMenu(props: FABMenuProps) {
     const fab = tokens.fab;
     const isIPad = useMemo(() => getIsIPad(), []);
 
-    return (
-        <div className={cn(fab.container, props.className)}>
-            {/* Backdrop — light overlay when open (GPU-accelerated for iOS) */}
-            <AnimatePresence>
-                {isOpen && (
+    const portalContent = (
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-[999] pointer-events-none">
+                    {/* Backdrop — light overlay when open (GPU-accelerated for iOS) */}
                     <motion.div
                         key="fab-backdrop"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-[-1]"
+                        className="absolute inset-0 pointer-events-auto"
                         style={{
                             backgroundColor: 'rgba(0,0,0,0.03)',
                             WebkitBackdropFilter: 'blur(2px)',
@@ -91,53 +99,62 @@ export function FABMenu(props: FABMenuProps) {
                         }}
                         onClick={toggle}
                     />
-                )}
-            </AnimatePresence>
 
-            <AnimatePresence mode="wait">
-                {isOpen && (
-                    <motion.div
-                        key="fab-panel"
-                        initial="hidden"
-                        animate="visible"
-                        exit="hidden"
-                        variants={fab.animation.panel}
-                        className={cn(
-                            fab.panel,
-                            props.panelClassName,
-                            "overflow-y-auto max-h-[70vh]",
-                            isIPad && "w-[440px] max-h-[60vh] p-6 gap-5"
-                        )}
-                    >
-                        {'items' in props && props.items ? (
-                            // Items mode — render labeled icon buttons
-                            props.items.map((item) => (
-                                <motion.div
-                                    key={item.id}
-                                    variants={fab.animation.item}
-                                    className={fab.itemRow}
-                                >
-                                    <span className={fab.itemLabel}>{item.label}</span>
-                                    <button
-                                        className={cn(
-                                            item.highlight ? fab.itemButtonHighlight : fab.itemButton
-                                        )}
-                                        onClick={() => {
-                                            item.onClick();
-                                            if (item.closeOnClick !== false) setIsOpen(false);
-                                        }}
+                    {/* Portaled Panel Container */}
+                    <div className={cn(
+                        "absolute flex flex-col items-end",
+                        props.portalContainerClassName || "bottom-[240px] right-5", // Default positioning
+                        "pointer-events-none"
+                    )}>
+                        <motion.div
+                            key="fab-panel"
+                            initial="hidden"
+                            animate="visible"
+                            exit="hidden"
+                            variants={fab.animation.panel}
+                            className={cn(
+                                fab.panel,
+                                props.panelClassName,
+                                "overflow-y-auto max-h-[70vh] pointer-events-auto",
+                                isIPad && "w-[440px] max-h-[60vh] p-6 gap-5"
+                            )}
+                        >
+                            {'items' in props && props.items ? (
+                                // Items mode — render labeled icon buttons
+                                props.items.map((item) => (
+                                    <motion.div
+                                        key={item.id}
+                                        variants={fab.animation.item}
+                                        className={fab.itemRow}
                                     >
-                                        <item.icon className={fab.itemIconSize} />
-                                    </button>
-                                </motion.div>
-                            ))
-                        ) : (
-                            // Children mode — render custom content
-                            (props as FABMenuChildrenProps).children
-                        )}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                                        <span className={fab.itemLabel}>{item.label}</span>
+                                        <button
+                                            className={cn(
+                                                item.highlight ? fab.itemButtonHighlight : fab.itemButton
+                                            )}
+                                            onClick={() => {
+                                                item.onClick();
+                                                if (item.closeOnClick !== false) setIsOpen(false);
+                                            }}
+                                        >
+                                            <item.icon className={fab.itemIconSize} />
+                                        </button>
+                                    </motion.div>
+                                ))
+                            ) : (
+                                // Children mode — render custom content
+                                (props as FABMenuChildrenProps).children
+                            )}
+                        </motion.div>
+                    </div>
+                </div>
+            )}
+        </AnimatePresence>
+    );
+
+    return (
+        <div className={cn(fab.container, props.className)}>
+            {mounted && createPortal(portalContent, document.body)}
 
             {/* Main Toggle Button */}
             <motion.button
