@@ -22,6 +22,7 @@ import { useRef, useCallback, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, MoreHorizontal } from "lucide-react";
 import { BottomNavMoreMenu } from "./BottomNavMoreMenu";
+import { CentralNavFAB } from "./nav/CentralNavFAB";
 
 // Constants
 const SWIPE_THRESHOLD = 30;
@@ -170,12 +171,30 @@ export default function BottomNav() {
                         className="w-full flex items-center overflow-x-auto no-scrollbar mask-gradient-x" // Restore scrolling
                         style={{ height: ROW_HEIGHT }}
                     >
-                        {/* Render ALL items in scrollable list */}
-                        {navItems.map((item) => (
-                            <Link key={item.id} href={item.path || '#'} className="contents">
-                                {renderButton(item)}
-                            </Link>
-                        ))}
+                        {/* Render items split by Central FAB */}
+                        {(() => {
+                            const mid = Math.ceil(navItems.length / 2);
+                            const leftItems = navItems.slice(0, mid);
+                            const rightItems = navItems.slice(mid);
+
+                            return (
+                                <>
+                                    {leftItems.map((item) => (
+                                        <Link key={item.id} href={item.path || '#'} className="contents">
+                                            {renderButton(item)}
+                                        </Link>
+                                    ))}
+
+                                    <CentralNavFAB />
+
+                                    {rightItems.map((item) => (
+                                        <Link key={item.id} href={item.path || '#'} className="contents">
+                                            {renderButton(item)}
+                                        </Link>
+                                    ))}
+                                </>
+                            );
+                        })()}
                     </div>
 
                     {/* 

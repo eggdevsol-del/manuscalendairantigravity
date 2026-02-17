@@ -6,7 +6,6 @@ export const ARTIST_NAV_ITEMS: BottomNavButton[] = [
     { id: "messages", path: "/conversations", label: "Messages", icon: MessageCircle, badgeCount: 0 }, // Badge logic handles count dynamically
     { id: "calendar", path: "/calendar", label: "Calendar", icon: Calendar },
     { id: "promotions", path: "/promotions", label: "Promotions", icon: Gift },
-    { id: "settings", path: "/settings", label: "Settings", icon: Settings },
 ];
 
 export const CLIENT_NAV_ITEMS: BottomNavButton[] = [
@@ -14,7 +13,6 @@ export const CLIENT_NAV_ITEMS: BottomNavButton[] = [
     { id: "messages", path: "/conversations", label: "Messages", icon: MessageCircle },
     { id: "calendar", path: "/calendar", label: "Calendar", icon: Calendar },
     { id: "promotions", path: "/promotions", label: "Promotions", icon: Gift },
-    { id: "settings", path: "/settings", label: "Settings", icon: Settings },
 ];
 
 // Default to artist for backward compatibility or initial load
