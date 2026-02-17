@@ -20,6 +20,7 @@ import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { type FABMenuItem } from "@/ui/FABMenu";
+import { DashboardFABActions } from "@/features/dashboard/DashboardActions";
 
 // SSOT Components
 
