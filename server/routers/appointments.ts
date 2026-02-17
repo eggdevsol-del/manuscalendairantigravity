@@ -144,27 +144,20 @@ export const appointmentsRouter = router({
 
             const { id, ...updates } = input;
 
-            // Helper to ensure dates are in MySQL format (YYYY-MM-DD HH:mm:ss)
-            const formatToMySQL = (dateStr: string | undefined | null) => {
-                if (!dateStr) return dateStr;
-                // If it's an ISO string (contains T and ends with Z), convert it
-                if (dateStr.includes('T')) {
-                    return dateStr.replace('T', ' ').split('.')[0].split('Z')[0];
-                }
-                return dateStr;
-            };
-
             // Convert times if provided
             const processedUpdates: any = { ...updates };
+            if (updates.startTime || updates.endTime) {
+                const timezone = updates.timeZone || appointment.timeZone || getBusinessTimezone();
 
-            // Sanitize all potential date fields for MySQL compatibility
-            if (updates.startTime) processedUpdates.startTime = formatToMySQL(localToUTC(updates.startTime, updates.timeZone || appointment.timeZone || getBusinessTimezone()));
-            if (updates.endTime) processedUpdates.endTime = formatToMySQL(localToUTC(updates.endTime, updates.timeZone || appointment.timeZone || getBusinessTimezone()));
-            if (updates.actualStartTime) processedUpdates.actualStartTime = formatToMySQL(updates.actualStartTime);
-            if (updates.actualEndTime) processedUpdates.actualEndTime = formatToMySQL(updates.actualEndTime);
-
-            if (updates.timeZone) {
-                processedUpdates.timeZone = updates.timeZone;
+                if (updates.startTime) {
+                    processedUpdates.startTime = localToUTC(updates.startTime, timezone);
+                }
+                if (updates.endTime) {
+                    processedUpdates.endTime = localToUTC(updates.endTime, timezone);
+                }
+                if (updates.timeZone) {
+                    processedUpdates.timeZone = timezone;
+                }
             }
 
             return db.updateAppointment(id, processedUpdates, ctx.user.id);

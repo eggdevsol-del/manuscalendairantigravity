@@ -15,6 +15,26 @@ function toISO(dateStr: any): string {
     return s.replace(' ', 'T') + 'Z';
 }
 
+// Helper to ensure dates are MySQL formatted (UTC) for the DB
+// Converts Date objects or ISO strings to "YYYY-MM-DD HH:mm:ss"
+function toMySQL(date: any): string | any {
+    if (!date) return date;
+
+    let d: Date;
+    if (date instanceof Date) {
+        d = date;
+    } else {
+        const s = String(date);
+        // If already in MySQL format, return as is
+        if (!s.includes('T') && !s.includes('Z')) return s;
+        d = new Date(s);
+    }
+
+    if (isNaN(d.getTime())) return date;
+
+    return d.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 function normalizeAppointment(appt: any) {
     if (!appt) return appt;
     return {
@@ -87,9 +107,18 @@ export async function updateAppointment(
 
     const oldAppt = await getAppointment(id);
 
+    // Sanitize any incoming date fields for MySQL
+    const sanitizedUpdates: any = { ...updates };
+    const dateFields = ['startTime', 'endTime', 'actualStartTime', 'actualEndTime'] as const;
+    dateFields.forEach(field => {
+        if (sanitizedUpdates[field]) {
+            sanitizedUpdates[field] = toMySQL(sanitizedUpdates[field]);
+        }
+    });
+
     await db
         .update(appointments)
-        .set({ ...updates, updatedAt: new Date().toISOString() })
+        .set({ ...sanitizedUpdates, updatedAt: toMySQL(new Date()) })
         .where(eq(appointments.id, id));
 
     const newAppt = await getAppointment(id);
