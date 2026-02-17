@@ -105,92 +105,27 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
         }));
     }, [messages]);
 
+    const [showBookingWizard, setShowBookingWizard] = useState(false);
     const [proposalFabOpen, setProposalFabOpen] = useState(false);
+    const [selectedMediaImage, setSelectedMediaImage] = useState<string | null>(null);
 
-    // Fetch client media for the media quick links bar
+    // Fetch client media (Conditionally enabled, but hook is always called)
     const clientId = conversation?.otherUser?.id;
     const { data: mediaData } = trpc.conversations.getClientMedia.useQuery(
         { clientId: clientId || '' },
         {
-            enabled: isArtist && !!clientId,
+            enabled: isArtist && !!clientId && !!conversation,
             staleTime: 30000,
         }
     );
 
-    // State for selected image lightbox
-    const [selectedMediaImage, setSelectedMediaImage] = useState<string | null>(null);
-
-    // Register Bottom Nav Contextual Row (Quick Actions + System Actions)
-    const quickActionsRow = useMemo(() => {
-        const isAuthorized = user?.role === 'artist' || user?.role === 'admin';
-
-        // System Actions (Fixed) - booking now handled by FAB
-        const systemActions: ChatAction[] = [];
-
-        // User Configured Actions
-        const userActions: ChatAction[] = isAuthorized && quickActions ? quickActions.map(qa => {
-            // Icon Mapping
-            let Icon = Zap;
-            if (qa.actionType === 'find_availability') Icon = FileText;
-            else if (qa.actionType === 'deposit_info') Icon = Send;
-
-            return {
-                id: qa.id,
-                label: qa.label,
-                icon: Icon,
-                onClick: () => handleQuickAction(qa),
-                highlight: false
-            };
-        }) : [];
-
-        // Validated Composition
-        const allActions = [...systemActions, ...userActions];
-
-        if (allActions.length === 0) {
-            return null;
-        }
-
-        return (
-            <QuickActionsRow actions={allActions} />
-        );
-    }, [user?.role, quickActions, handleQuickAction]);
-
-    useRegisterBottomNavRow("chat-actions", quickActionsRow);
-
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage();
-        }
-    };
-
-    if (authLoading || convLoading || messagesLoading) {
-        return <LoadingState message="Loading..." />;
-    }
-
-    if (!conversation) {
-        return (
-            <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-muted-foreground">Conversation not found</p>
-                    <Button onClick={() => setLocation("/conversations")} className="mt-4">
-                        Back to Messages
-                    </Button>
-                </div>
-            </div>
-        );
-    }
-
-    const hasMedia = mediaData && mediaData.totalCount > 0;
-    const allMediaImages = [
-        ...(mediaData?.referenceImages || []),
-        ...(mediaData?.bodyPlacementImages || [])
-    ];
-
     // Register FAB Actions
-    const [showBookingWizard, setShowBookingWizard] = useState(false);
-
     const fabContent = useMemo(() => {
+        // If loading or no conversation, return empty items to keep hooks stable
+        if (authLoading || convLoading || messagesLoading || !conversation) {
+            return [];
+        }
+
         if (showBookingWizard || !!selectedProposal) {
             return (
                 <BookingWizardContent
@@ -239,14 +174,45 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
         }
         return items;
     }, [
+        authLoading, convLoading, messagesLoading, conversation,
         showBookingWizard, selectedProposal, conversationId,
         availableServices, artistSettings, isArtist,
         showClientInfo, bookProjectMutation.isPending,
-        conversation?.artistId, handleClientAcceptProposal,
-        handleCancelProposal
+        handleClientAcceptProposal,
+        handleCancelProposal,
+        setSelectedProposal,
     ]);
 
     useRegisterFABActions("chat-" + conversationId, fabContent);
+
+    // Register Bottom Nav Contextual Row
+    const quickActionsRow = useMemo(() => {
+        if (!user || !conversation) return null;
+
+        const isAuthorized = user?.role === 'artist' || user?.role === 'admin';
+        const systemActions: ChatAction[] = [];
+
+        const userActions: ChatAction[] = isAuthorized && quickActions ? quickActions.map(qa => {
+            let Icon = Zap;
+            if (qa.actionType === 'find_availability') Icon = FileText;
+            else if (qa.actionType === 'deposit_info') Icon = Send;
+
+            return {
+                id: qa.id,
+                label: qa.label,
+                icon: Icon,
+                onClick: () => handleQuickAction(qa),
+                highlight: false
+            };
+        }) : [];
+
+        const allActions = [...systemActions, ...userActions];
+        if (allActions.length === 0) return null;
+
+        return <QuickActionsRow actions={allActions} />;
+    }, [user, conversation, quickActions, handleQuickAction]);
+
+    useRegisterBottomNavRow("chat-actions", quickActionsRow);
 
     // Sync proposal open state
     useEffect(() => {
@@ -254,6 +220,37 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
             setProposalFabOpen(true);
         }
     }, [selectedProposal]);
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    };
+
+    if (authLoading || convLoading || messagesLoading) {
+        return <LoadingState message="Loading..." />;
+    }
+
+    if (!conversation) {
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-muted-foreground">Conversation not found</p>
+                    <Button onClick={() => setLocation("/conversations")} className="mt-4">
+                        Back to Messages
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // Safe derivations after checks
+    const hasMedia = !!mediaData && mediaData.totalCount > 0;
+    const allMediaImages = [
+        ...(mediaData?.referenceImages || []),
+        ...(mediaData?.bodyPlacementImages || [])
+    ];
 
     return (
         <div className={cn("flex flex-col h-full relative", className)}>
@@ -312,7 +309,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                             Media
                         </span>
                         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                            {allMediaImages.slice(0, 6).map((img, index) => (
+                            {allMediaImages.slice(0, 6).map((img: any, index: number) => (
                                 <button
                                     key={`media-${index}`}
                                     onClick={() => setSelectedMediaImage(img.url)}
