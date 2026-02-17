@@ -16,12 +16,6 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const { user, loading: authLoading } = useAuth();
 
-  useEffect(() => {
-    if (!authLoading && user) {
-      setLocation("/calendar");
-    }
-  }, [user, authLoading, setLocation]);
-
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: (data) => {
       // Clear legacy/other storage first to avoid conflicts

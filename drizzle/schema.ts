@@ -313,6 +313,8 @@ export const users = mysqlTable("users", {
 	(table) => [
 	]);
 
+export type User = InferSelectModel<typeof users>;
+
 export const voucherTemplates = mysqlTable("voucher_templates", {
 	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),

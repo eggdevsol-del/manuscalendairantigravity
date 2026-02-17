@@ -256,7 +256,7 @@ class SDKServer {
     } as GetUserInfoWithJwtResponse;
   }
 
-  async authenticateRequest(req: Request): Promise<User> {
+  async authenticateRequest(req: Request): Promise<User | null> {
     // Check for JWT token in Authorization header
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -279,7 +279,7 @@ class SDKServer {
     // Check for session cookie (legacy OAuth)
     const cookies = this.parseCookies(req.headers.cookie);
     const sessionCookie = cookies.get(COOKIE_NAME);
-    
+
     if (sessionCookie) {
       const session = await this.verifySession(sessionCookie);
       if (session) {
@@ -290,30 +290,7 @@ class SDKServer {
       }
     }
 
-    // FALLBACK: Demo mode - return mock user if no authentication
-    const mockUserId = "demo_user_001";
-    const signedInAt = new Date();
-    let user = await db.getUser(mockUserId);
-
-    // Create mock user if doesn't exist
-    if (!user) {
-      await db.upsertUser({
-        id: mockUserId,
-        name: "Demo User",
-        email: "demo@example.com",
-        loginMethod: "demo",
-        role: "artist",
-        hasCompletedOnboarding: true,
-        lastSignedIn: signedInAt,
-      });
-      user = await db.getUser(mockUserId);
-    }
-
-    if (!user) {
-      throw ForbiddenError("Failed to create demo user");
-    }
-
-    return user;
+    return null;
   }
 }
 
