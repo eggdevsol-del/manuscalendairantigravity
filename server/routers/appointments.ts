@@ -107,7 +107,7 @@ export const appointmentsRouter = router({
                 endTime: z.string().optional(),   // Now accepts local format
                 timeZone: z.string().optional(),
                 status: z
-                    .enum(["pending", "confirmed", "cancelled", "completed"])
+                    .enum(["pending", "confirmed", "cancelled", "completed", "no-show"])
                     .optional(),
                 serviceName: z.string().optional(),
                 price: z.number().optional(),

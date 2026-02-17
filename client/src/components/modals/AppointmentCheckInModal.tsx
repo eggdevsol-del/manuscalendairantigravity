@@ -15,18 +15,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { tokens } from "@/ui/tokens";
-import { CheckCircle2, XCircle, CalendarClock, CreditCard, DollarSign, Clock } from "lucide-react";
+import { CheckCircle2, XCircle, CalendarClock, CreditCard, DollarSign, Clock, Loader2 } from "lucide-react";
 import type { ActiveCheckIn } from "@/features/appointments/useAppointmentCheckIn";
 
 type Step =
     | 'arrival'           // Has the client arrived?
     | 'arrival_no'        // Client didn't arrive — future: reschedule
+    | 'arrival_retry'     // 10 mins later — did they show up?
+    | 'arrival_fail'      // Second fail — no-show or reschedule?
+    | 'no_show_confirm'   // Confirm no-show
     | 'completion'        // Client done?
     | 'payment_check'     // Has the client paid?
     | 'payment_method'    // Which payment method?
     | 'send_payment'      // Send payment details?
     | 'send_method'       // Which method to send?
     | 'manual_end'        // Provide end time + amount
+    | 'payment_link_sent' // Confirmation of sent link
     | 'done';             // All data stored
 
 interface Props {
@@ -56,6 +60,9 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment 
     const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
     const [manualEndTime, setManualEndTime] = useState('');
     const [manualAmount, setManualAmount] = useState('');
+    const [useCustomAmount, setUseCustomAmount] = useState(false);
+    const [customAmount, setCustomAmount] = useState('');
+    const [retryCount, setRetryCount] = useState(0);
 
     // Fetch artist's enabled payment methods
     const { data: paymentSettings } = trpc.paymentMethodSettings.get.useQuery(undefined, {
@@ -84,20 +91,42 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment 
 
     const handleArrivalYes = async () => {
         await handleUpdate({
-            clientArrived: 1, // Explicit numeric for tinyint
-            actualStartTime: appointment.startTime, // default to scheduled start
+            clientArrived: 1,
+            actualStartTime: appointment.startTime,
             status: 'confirmed',
         });
         setStep('done');
     };
 
-    const handleArrivalNo = () => setStep('arrival_no');
+    const handleArrivalNo = () => {
+        if (retryCount === 0) {
+            setStep('arrival_no');
+            setRetryCount(1);
+        } else {
+            setStep('arrival_fail');
+        }
+    };
+
     const handleArrivalRescheduled = async () => {
         await handleUpdate({ status: 'cancelled' });
         setStep('done');
     };
 
-    const handleCompletionYes = () => setStep('payment_check');
+    const handleNoShowBtn = () => setStep('no_show_confirm');
+
+    const handleConfirmNoShow = async () => {
+        await handleUpdate({ status: 'no-show' });
+        setStep('done');
+    };
+
+    const handleCompletionYes = async () => {
+        // Record finish time in SSOT
+        await handleUpdate({
+            actualEndTime: new Date().toISOString(),
+        });
+        setStep('payment_check');
+    };
+
     const handleCompletionNo = () => setStep('manual_end');
 
     const handlePaidYes = () => setStep('payment_method');
@@ -110,7 +139,6 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment 
             clientPaid: 1,
             amountPaid: appointment.price || 0,
             paymentMethod: selectedMethod,
-            actualEndTime: new Date().toISOString(),
         });
         setStep('done');
     };
@@ -126,24 +154,26 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment 
     };
 
     const handleSendMethodDone = async () => {
-        // In future: trigger payment request via selected method
+        const finalAmount = useCustomAmount ? parseInt(customAmount) : (appointment.price || 0) - (appointment.depositAmount || 0);
+
         await handleUpdate({
             status: 'completed',
             clientPaid: 0,
             paymentMethod: selectedMethod,
-            actualEndTime: new Date().toISOString(),
+            amountPaid: appointment.depositAmount || 0, // Recorded revenue is only deposit for now
         });
-        setStep('done');
+        // In reality we trigger a message with the payment link
+        setStep('payment_link_sent');
     };
 
     const handleManualEndDone = async () => {
         const endTime = manualEndTime ? new Date(manualEndTime).toISOString() : new Date().toISOString();
-        const amount = manualAmount ? parseInt(manualAmount) : appointment.price || 0;
+        const amount = manualAmount ? parseInt(manualAmount) : (appointment.price || 0);
         await handleUpdate({
             status: 'completed',
             actualEndTime: endTime,
             amountPaid: amount,
-            clientPaid: manualAmount ? 1 : 0,
+            clientPaid: 1, // Assumed paid if manually entered with amount
             paymentMethod: selectedMethod,
         });
         setStep('done');
@@ -228,7 +258,8 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment 
                         <div className="w-full space-y-2">
                             <ActionButton onClick={handleArrivalYes} variant="primary">Yes</ActionButton>
                             <ActionButton onClick={handleArrivalNo} variant="secondary">No</ActionButton>
-                            <ActionButton onClick={handleArrivalRescheduled} variant="danger">Rescheduled</ActionButton>
+                            <ActionButton onClick={handleArrivalRescheduled} variant="secondary">Rescheduled</ActionButton>
+                            <ActionButton onClick={handleNoShowBtn} variant="danger">No-Show</ActionButton>
                         </div>
                     </StepContainer>
                 );
@@ -241,9 +272,41 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment 
                         </div>
                         <h3 className="text-lg font-bold text-foreground">Client hasn't arrived</h3>
                         <p className="text-xs text-muted-foreground">
-                            You'll be notified again shortly. You can dismiss for now.
+                            You'll be notified again shortly (10 mins). You can dismiss for now.
                         </p>
                         <ActionButton onClick={onDismiss} variant="secondary">Dismiss</ActionButton>
+                    </StepContainer>
+                );
+
+            case 'arrival_fail':
+                return (
+                    <StepContainer>
+                        <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
+                            <XCircle className="w-7 h-7 text-red-500" />
+                        </div>
+                        <h3 className="text-lg font-bold text-foreground">Client still hasn't arrived?</h3>
+                        <p className="text-xs text-muted-foreground">Did the client:</p>
+                        <div className="w-full space-y-2">
+                            <ActionButton onClick={handleNoShowBtn} variant="danger">No-Show</ActionButton>
+                            <ActionButton onClick={handleArrivalRescheduled} variant="secondary">Reschedule</ActionButton>
+                        </div>
+                    </StepContainer>
+                );
+
+            case 'no_show_confirm':
+                return (
+                    <StepContainer>
+                        <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
+                            <XCircle className="w-7 h-7 text-red-500" />
+                        </div>
+                        <h3 className="text-lg font-bold text-foreground">Record as No-Show?</h3>
+                        <p className="text-xs text-muted-foreground">
+                            This will cancel the booking and mark them in your records.
+                        </p>
+                        <div className="w-full space-y-2">
+                            <ActionButton onClick={handleConfirmNoShow} variant="danger">Yes, No-Show</ActionButton>
+                            <ActionButton onClick={() => setStep('arrival')} variant="secondary">Back</ActionButton>
+                        </div>
                     </StepContainer>
                 );
 
@@ -307,15 +370,52 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment 
             case 'send_method':
                 return (
                     <StepContainer>
-                        <h3 className="text-lg font-bold text-foreground">Which payment method?</h3>
-                        <MethodGrid onSelect={() => { }} />
-                        <ActionButton
-                            onClick={handleSendMethodDone}
-                            variant="primary"
-                            disabled={!selectedMethod}
-                        >
-                            Send & Complete
-                        </ActionButton>
+                        <h3 className="text-lg font-bold text-foreground">Specify Payment Link</h3>
+                        <div className="w-full space-y-4">
+                            <div className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
+                                <span className="text-xs font-medium">Use Custom Amount?</span>
+                                <input
+                                    type="checkbox"
+                                    checked={useCustomAmount}
+                                    onChange={(e) => setUseCustomAmount(e.target.checked)}
+                                />
+                            </div>
+
+                            {useCustomAmount ? (
+                                <input
+                                    type="number"
+                                    value={customAmount}
+                                    onChange={(e) => setCustomAmount(e.target.value)}
+                                    placeholder="Enter amount ($)"
+                                    className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-foreground"
+                                />
+                            ) : (
+                                <p className="text-xs text-muted-foreground">
+                                    Link for balance: ${(appointment.price || 0) - (appointment.depositAmount || 0)}
+                                </p>
+                            )}
+
+                            <MethodGrid onSelect={() => { }} />
+                            <ActionButton
+                                onClick={handleSendMethodDone}
+                                variant="primary"
+                                disabled={!selectedMethod}
+                            >
+                                Send & Complete
+                            </ActionButton>
+                        </div>
+                    </StepContainer>
+                );
+
+            case 'payment_link_sent':
+                return (
+                    <StepContainer>
+                        <div className="w-14 h-14 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                            <CheckCircle2 className="w-7 h-7 text-emerald-500" />
+                        </div>
+                        <h3 className="text-lg font-bold text-foreground">Payment Link Sent!</h3>
+                        <p className="text-xs text-muted-foreground">Procedure log was updated automatically.</p>
+                        <ActionButton onClick={onDismiss} variant="primary">Dismiss</ActionButton>
                     </StepContainer>
                 );
 

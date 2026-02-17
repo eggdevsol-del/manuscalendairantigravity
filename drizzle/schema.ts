@@ -11,7 +11,7 @@ export const appointments = mysqlTable("appointments", {
 	startTime: datetime({ mode: 'string' }).notNull(),
 	endTime: datetime({ mode: 'string' }).notNull(),
 	timeZone: varchar({ length: 64 }).notNull().default('Australia/Brisbane'),
-	status: mysqlEnum(['pending', 'confirmed', 'cancelled', 'completed']).default('pending').notNull(),
+	status: mysqlEnum(['pending', 'confirmed', 'cancelled', 'completed', 'no-show']).default('pending').notNull(),
 	serviceName: varchar({ length: 255 }),
 	price: int(),
 	depositAmount: int(),
@@ -35,7 +35,7 @@ export const appointments = mysqlTable("appointments", {
 export const appointmentLogs = mysqlTable("appointment_logs", {
 	id: int().primaryKey().autoincrement(),
 	appointmentId: int().notNull().references(() => appointments.id, { onDelete: "cascade" }),
-	action: mysqlEnum(['created', 'rescheduled', 'cancelled', 'completed', 'proposal_revoked']).notNull(),
+	action: mysqlEnum(['created', 'rescheduled', 'cancelled', 'completed', 'proposal_revoked', 'no-show']).notNull(),
 	oldValue: text(), // JSON
 	newValue: text(), // JSON
 	performedBy: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),

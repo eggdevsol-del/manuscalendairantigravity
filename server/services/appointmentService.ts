@@ -1,5 +1,5 @@
 import { and, desc, eq, gte, lte, gt, lt, ne, sql } from "drizzle-orm";
-import { appointments, InsertAppointment, users, appointmentLogs, InsertAppointmentLog, procedureLogs, artistSettings, consentForms } from "../../drizzle/schema";
+import { appointments, InsertAppointment, users, appointmentLogs, InsertAppointmentLog, procedureLogs, artistSettings, consentForms, messages } from "../../drizzle/schema";
 import { getDb } from "./core";
 
 // Helper to ensure dates are ISO formatted (UTC) for the client
@@ -139,9 +139,30 @@ export async function updateAppointment(
         newValue: JSON.stringify(newAppt)
     });
 
-    // QLD REGULATION: Auto-generate procedure log on completion
+    // Handle special outcome-based logic
     if (updates.status === 'completed') {
+        // QLD REGULATION: Auto-generate procedure log on completion
         await createProcedureLog(id);
+    } else if (updates.status === 'no-show') {
+        // Ensure revenue is only deposit (revenue metrics usually sum amountPaid)
+        // We calculate this in the analytics, but let's ensure the record is clean
+        await db
+            .update(appointments)
+            .set({
+                amountPaid: oldAppt.depositPaid ? (oldAppt.depositAmount || 0) : 0,
+                clientPaid: 0
+            })
+            .where(eq(appointments.id, id));
+    }
+
+    // Trigger payment link message if paymentMethod was set but not yet paid
+    if (updates.paymentMethod && updates.clientPaid === 0 && updates.status === 'completed') {
+        await db.insert(messages).values({
+            conversationId: oldAppt.conversationId,
+            senderId: oldAppt.artistId,
+            content: `Session complete! Please pay the balance for "${oldAppt.title}" via ${updates.paymentMethod}.`,
+            messageType: 'text',
+        });
     }
 
     return newAppt;
