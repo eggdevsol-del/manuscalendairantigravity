@@ -10,6 +10,14 @@
  * 6. MANUAL_END: Enter end time + amount + payment method (if "No" to client done)
  */
 
+import { toast } from "sonner";
+import {
+    Drawer,
+    DrawerContent,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerOverlay
+} from "@/components/ui/drawer";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -37,6 +45,7 @@ interface Props {
     checkIn: ActiveCheckIn;
     onDismiss: () => void;
     updateAppointment: any; // useMutation return
+    isOpen: boolean; // Added for Drawer control
 }
 
 const PAYMENT_METHODS = [
@@ -46,7 +55,7 @@ const PAYMENT_METHODS = [
     { id: 'cash' as const, label: 'Cash', icon: DollarSign },
 ] as const;
 
-export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment }: Props) {
+export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment, isOpen }: Props) {
     const { appointment, phase } = checkIn;
     const [step, setStep] = useState<Step>(() => phase === 'arrival' ? 'arrival' : 'completion');
 
@@ -76,13 +85,22 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment 
 
     const handleUpdate = async (data: Record<string, any>) => {
         try {
+            console.log("[AppointmentCheckIn] Updating with payload:", {
+                id: appointment.id,
+                ...data,
+            });
             await updateAppointment.mutateAsync({
                 id: appointment.id,
                 ...data,
             });
-        } catch (error) {
-            console.error("Failed to update appointment:", error);
-            alert("Failed to update appointment. Please try again.");
+            toast.success("Appointment updated");
+        } catch (error: any) {
+            console.error("[AppointmentCheckIn] Failed to update appointment:", error);
+            // Deep logging for debugging Railway/MySQL mismatches
+            if (error?.shape?.message) {
+                console.error("[AppointmentCheckIn] Server error message:", error.shape.message);
+            }
+            toast.error("Failed to update appointment. Please try again.");
             throw error;
         }
     };

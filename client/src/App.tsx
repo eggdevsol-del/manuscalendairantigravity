@@ -124,6 +124,7 @@ function AppointmentCheckInOverlay() {
 
   return (
     <AppointmentCheckInModal
+      isOpen={!!activeCheckIn}
       checkIn={activeCheckIn}
       onDismiss={() => setDismissed(activeCheckIn.appointment.id)}
       updateAppointment={updateAppointment}
