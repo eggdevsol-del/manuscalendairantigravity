@@ -10,6 +10,9 @@ import { useInboxRequests, InboxRequest } from "@/features/chat/hooks/useInboxRe
 import { useConversations } from "@/hooks/useConversations";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
+import { useRegisterFABActions } from "@/contexts/BottomNavContext";
+import { useMemo } from "react";
+import { FABMenuItem } from "@/ui/FABMenu";
 
 interface ConversationsListProps {
     className?: string;
@@ -51,6 +54,37 @@ export function ConversationsList({ className, onSelect, activeId }: Conversatio
         }
     };
 
+    // Register FAB Actions
+    const fabActions = useMemo<FABMenuItem[]>(() => {
+        const res: FABMenuItem[] = [];
+        if (!isArtist) {
+            res.push({
+                id: 'new-request',
+                label: 'New Request',
+                icon: Calendar,
+                onClick: () => {
+                    setLocation("/consultations");
+                    onSelect?.();
+                },
+                highlight: true
+            });
+        } else {
+            res.push({
+                id: 'new-chat',
+                label: 'New Chat',
+                icon: MessageCircle,
+                onClick: () => {
+                    setLocation("/clients");
+                    onSelect?.();
+                },
+                highlight: true
+            });
+        }
+        return res;
+    }, [isArtist, setLocation, onSelect]);
+
+    useRegisterFABActions("conversations-list", fabActions);
+
     const isListLoading = loading || (isLoading && !conversations) || requestsLoading;
 
     if (isListLoading) {
@@ -76,24 +110,6 @@ export function ConversationsList({ className, onSelect, activeId }: Conversatio
 
             {/* 3. Content Container */}
             <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Sheet Header (Optional Actions) */}
-                <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5 flex justify-end">
-                    {!isArtist && (
-                        <Button
-                            size="sm"
-                            variant="ghost"
-                            className={cn(tokens.button.ghost, "text-muted-foreground hover:text-foreground gap-2")}
-                            onClick={() => {
-                                setLocation("/consultations");
-                                onSelect?.();
-                            }}
-                        >
-                            <Calendar className="w-4 h-4" />
-                            New Request
-                        </Button>
-                    )}
-                </div>
-
                 {/* Scrollable Content */}
                 <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y will-change-scroll transform-gpu">
                     <div className="pb-32 max-w-lg mx-auto space-y-4 min-h-[50vh]">

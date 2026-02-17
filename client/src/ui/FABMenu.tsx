@@ -33,7 +33,7 @@ export interface FABMenuItem {
     closeOnClick?: boolean;
 }
 
-interface FABMenuBaseProps {
+interface FABMenuProps {
     /** Icon or element to show on the toggle button when closed */
     toggleIcon: ReactNode;
     /** Override container class (for positioning tweaks) */
@@ -46,21 +46,11 @@ interface FABMenuBaseProps {
     panelClassName?: string;
     /** Positioning for the portaled container (e.g. "bottom-[240px] right-5") */
     portalContainerClassName?: string;
-}
-
-interface FABMenuItemsProps extends FABMenuBaseProps {
     /** Simple list of menu items with icons */
-    items: FABMenuItem[];
-    children?: never;
-}
-
-interface FABMenuChildrenProps extends FABMenuBaseProps {
+    items?: FABMenuItem[];
     /** Custom panel content (for complex flows like the Booking wizard) */
-    children: ReactNode;
-    items?: never;
+    children?: ReactNode;
 }
-
-type FABMenuProps = FABMenuItemsProps | FABMenuChildrenProps;
 
 export function FABMenu(props: FABMenuProps) {
     const [internalOpen, setInternalOpen] = useState(false);
@@ -119,31 +109,34 @@ export function FABMenu(props: FABMenuProps) {
                                 isIPad && "w-[440px] max-h-[60vh] p-6 gap-5"
                             )}
                         >
-                            {'items' in props && props.items ? (
+                            {props.items && props.items.length > 0 ? (
                                 // Items mode — render labeled icon buttons
                                 props.items.map((item) => (
-                                    <motion.div
+                                    <motion.button
                                         key={item.id}
                                         variants={fab.animation.item}
-                                        className={fab.itemRow}
+                                        className={cn(fab.itemRow, "group outline-none border-none bg-transparent")}
+                                        onClick={() => {
+                                            item.onClick();
+                                            if (item.closeOnClick !== false) setIsOpen(false);
+                                        }}
                                     >
-                                        <span className={fab.itemLabel}>{item.label}</span>
-                                        <button
+                                        <span className={cn(fab.itemLabel, "group-hover:text-foreground transition-colors")}>
+                                            {item.label}
+                                        </span>
+                                        <div
                                             className={cn(
-                                                item.highlight ? fab.itemButtonHighlight : fab.itemButton
+                                                item.highlight ? fab.itemButtonHighlight : fab.itemButton,
+                                                "group-hover:scale-110 group-active:scale-95 transition-all"
                                             )}
-                                            onClick={() => {
-                                                item.onClick();
-                                                if (item.closeOnClick !== false) setIsOpen(false);
-                                            }}
                                         >
                                             <item.icon className={fab.itemIconSize} />
-                                        </button>
-                                    </motion.div>
+                                        </div>
+                                    </motion.button>
                                 ))
                             ) : (
                                 // Children mode — render custom content
-                                (props as FABMenuChildrenProps).children
+                                props.children
                             )}
                         </motion.div>
                     </div>

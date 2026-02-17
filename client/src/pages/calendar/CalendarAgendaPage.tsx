@@ -6,9 +6,27 @@ import { MonthBreakdown } from "./components/MonthBreakdown";
 import { PageShell } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
+import { useRegisterFABActions } from "@/contexts/BottomNavContext";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { useMemo } from "react";
+import { type FABMenuItem } from "@/ui/FABMenu";
 
 export default function CalendarAgendaPage() {
     const controller = useCalendarAgendaController();
+
+    // Register FAB Actions
+    const fabActions = useMemo<FABMenuItem[]>(() => [
+        {
+            id: "toggle-month",
+            label: controller.isBreakdownOpen ? "Close Month" : "Month View",
+            icon: CalendarIcon,
+            onClick: controller.toggleBreakdown,
+            highlight: controller.isBreakdownOpen,
+            closeOnClick: true
+        }
+    ], [controller.isBreakdownOpen, controller.toggleBreakdown]);
+
+    useRegisterFABActions("calendar", fabActions);
 
     return (
         <div className="fixed inset-0 flex flex-col md:flex-row bg-transparent">
@@ -76,22 +94,6 @@ export default function CalendarAgendaPage() {
                     </span>
                 </div>
 
-            </div>
-
-            {/* FAB (Floating Action Button) - Toggles Month View */}
-            {/* Moved outside the sliding container so it stays fixed on screen */}
-            <div className="absolute bottom-28 right-6 z-50 md:hidden">
-                <button
-                    onClick={controller.toggleBreakdown}
-                    className={cn(
-                        "w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-all",
-                        controller.isBreakdownOpen
-                            ? "bg-white text-primary"
-                            : "bg-primary text-white"
-                    )}
-                >
-                    <span className="text-xl font-bold">M</span>
-                </button>
             </div>
         </div>
     );

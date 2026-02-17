@@ -18,6 +18,8 @@ export const artistSettingsRouter = router({
             autoSendDepositInfo: false,
             workSchedule: JSON.stringify({}),
             services: JSON.stringify([]),
+            publicSlug: null,
+            funnelEnabled: false,
             createdAt: new Date(),
             updatedAt: new Date(),
         };
@@ -46,12 +48,16 @@ export const artistSettingsRouter = router({
                 autoSendDepositInfo: z.boolean().optional(),
                 workSchedule: z.string(),
                 services: z.string(),
+                publicSlug: z.string().optional(),
+                funnelEnabled: z.boolean().optional(),
             })
         )
         .mutation(async ({ ctx, input }) => {
             return db.upsertArtistSettings({
                 userId: ctx.user.id,
                 ...input,
-            });
+                autoSendDepositInfo: input.autoSendDepositInfo !== undefined ? (input.autoSendDepositInfo ? 1 : 0) : undefined,
+                funnelEnabled: input.funnelEnabled !== undefined ? (input.funnelEnabled ? 1 : 0) : undefined,
+            } as any);
         }),
 });

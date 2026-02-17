@@ -2,19 +2,19 @@ import { Button, Input, Label, ScrollArea, DialogTitle } from "@/components/ui";
 import { useChatController } from "@/features/chat/useChatController";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "@/components/ui/ssot";
-import { BookingFABMenu } from "@/features/booking/BookingFABMenu";
 import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
 // ProposalSheet removed - not needed
 import { ProjectProposalMessage } from "@/components/chat/ProjectProposalMessage";
-import { ArrowLeft, Send, Zap, MessageCircle, ImagePlus, Pin, PinOff, FileText, ImageIcon } from "lucide-react";
+import { ArrowLeft, Send, Zap, MessageCircle, ImagePlus, Pin, PinOff, FileText, ImageIcon, Calendar } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
-import { useRegisterBottomNavRow, useBottomNav } from "@/contexts/BottomNavContext";
+import { useRegisterBottomNavRow, useBottomNav, useRegisterFABActions } from "@/contexts/BottomNavContext";
 import { QuickActionsRow, ChatAction } from "@/features/chat/components/QuickActionsRow";
 import { useLocation } from "wouter";
 import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { LoadingState } from "@/components/ui/ssot";
+import { BookingWizardContent } from "@/features/booking/BookingWizardContent";
 
 interface ChatInterfaceProps {
     conversationId: number;
@@ -186,6 +186,74 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
         ...(mediaData?.referenceImages || []),
         ...(mediaData?.bodyPlacementImages || [])
     ];
+
+    // Register FAB Actions
+    const [showBookingWizard, setShowBookingWizard] = useState(false);
+
+    const fabContent = useMemo(() => {
+        if (showBookingWizard || !!selectedProposal) {
+            return (
+                <BookingWizardContent
+                    conversationId={conversationId}
+                    artistServices={availableServices || []}
+                    artistSettings={artistSettings}
+                    isArtist={isArtist}
+                    onBookingSuccess={() => {
+                        toast.success('Booking proposal sent!');
+                        setShowBookingWizard(false);
+                    }}
+                    onClose={() => {
+                        setShowBookingWizard(false);
+                        setSelectedProposal(null);
+                        setProposalFabOpen(false);
+                    }}
+                    selectedProposal={selectedProposal}
+                    onAcceptProposal={(promo) => handleClientAcceptProposal(selectedProposal?.message, promo)}
+                    onRejectProposal={() => { setSelectedProposal(null); setProposalFabOpen(false); }}
+                    onCancelProposal={() => {
+                        if (selectedProposal) handleCancelProposal(selectedProposal.message, selectedProposal.metadata);
+                        setProposalFabOpen(false);
+                        setSelectedProposal(null);
+                    }}
+                    isPendingProposalAction={bookProjectMutation.isPending}
+                    artistId={conversation?.artistId}
+                />
+            );
+        }
+
+        const items = [];
+        if (isArtist) {
+            items.push({
+                id: 'book',
+                label: 'Book Project',
+                icon: Calendar,
+                onClick: () => setShowBookingWizard(true),
+                highlight: true
+            });
+            items.push({
+                id: 'client-info',
+                label: showClientInfo ? 'Hide Client Info' : 'View Client Info',
+                icon: FileText,
+                onClick: () => setShowClientInfo(!showClientInfo),
+            });
+        }
+        return items;
+    }, [
+        showBookingWizard, selectedProposal, conversationId,
+        availableServices, artistSettings, isArtist,
+        showClientInfo, bookProjectMutation.isPending,
+        conversation?.artistId, handleClientAcceptProposal,
+        handleCancelProposal
+    ]);
+
+    useRegisterFABActions("chat-" + conversationId, fabContent);
+
+    // Sync proposal open state
+    useEffect(() => {
+        if (selectedProposal) {
+            setProposalFabOpen(true);
+        }
+    }, [selectedProposal]);
 
     return (
         <div className={cn("flex flex-col h-full relative", className)}>
@@ -486,33 +554,6 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                 </div>
             </div>
 
-            {/* Universal FAB Menu — Booking + Proposal Details */}
-            {(isArtist || !!selectedProposal) && (
-                <BookingFABMenu
-                    conversationId={conversationId}
-                    artistServices={availableServices || []}
-                    artistSettings={artistSettings}
-                    isArtist={isArtist}
-                    onBookingSuccess={() => {
-                        toast.success('Booking proposal sent!');
-                    }}
-                    selectedProposal={selectedProposal}
-                    onAcceptProposal={(appliedPromotion) => handleClientAcceptProposal(selectedProposal?.message, appliedPromotion)}
-                    onRejectProposal={() => { setSelectedProposal(null); setProposalFabOpen(false); }}
-                    onCancelProposal={() => {
-                        if (selectedProposal) handleCancelProposal(selectedProposal.message, selectedProposal.metadata);
-                        setProposalFabOpen(false);
-                    }}
-                    isPendingProposalAction={bookProjectMutation.isPending}
-                    artistId={conversation?.artistId}
-                    externalOpen={proposalFabOpen || undefined}
-                    onExternalOpenChange={(open) => {
-                        setProposalFabOpen(open);
-                        if (!open) setSelectedProposal(null);
-                    }}
-                />
-            )}
-
             {/* Client Confirm Dates Dialog */}
             <BottomSheet
                 isOpen={showClientConfirmDialog}
@@ -544,9 +585,6 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                 </div>
             </BottomSheet>
 
-            {/* Quick Actions Modal - handled by system but kept here if triggered locally? 
-               Actually bottom nav handles context. 
-            */}
             <ClientProfileSheet
                 isOpen={showClientInfo}
                 onClose={() => setShowClientInfo(false)}
@@ -555,27 +593,25 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
 
 
             {/* Media Image Lightbox */}
-            {
-                selectedMediaImage && (
-                    <div
-                        className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+            {selectedMediaImage && (
+                <div
+                    className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+                    onClick={() => setSelectedMediaImage(null)}
+                >
+                    <button
+                        className="absolute top-4 right-4 text-white/70 hover:text-white text-sm px-3 py-1 rounded-lg bg-white/10"
                         onClick={() => setSelectedMediaImage(null)}
                     >
-                        <button
-                            className="absolute top-4 right-4 text-white/70 hover:text-white text-sm px-3 py-1 rounded-lg bg-white/10"
-                            onClick={() => setSelectedMediaImage(null)}
-                        >
-                            Close
-                        </button>
-                        <img
-                            src={selectedMediaImage}
-                            alt="Full size"
-                            className="max-w-full max-h-full object-contain rounded-lg"
-                            onClick={(e) => e.stopPropagation()}
-                        />
-                    </div>
-                )
-            }
-        </div >
+                        Close
+                    </button>
+                    <img
+                        src={selectedMediaImage}
+                        alt="Full size"
+                        className="max-w-full max-h-full object-contain rounded-lg"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
+            )}
+        </div>
     );
 }

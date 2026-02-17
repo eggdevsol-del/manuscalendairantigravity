@@ -7,7 +7,7 @@
  * @version 1.1.0
  */
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTeaser } from "@/contexts/TeaserContext";
 import { InstallAppModal } from "@/components/modals/InstallAppModal";
 import { Lock } from "lucide-react";
@@ -31,12 +31,14 @@ import {
   getTypeDefaults,
   SendPromotionSheet,
   CreatePromotionWizard,
-  PromotionBurgerMenu,
+  PromotionWizardContent,
   PromotionGrid
 } from "@/features/promotions";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { usePromotionsController } from "./usePromotionsController";
+import { useBottomNav, useRegisterFABActions } from "@/contexts/BottomNavContext";
+import { type FABMenuItem } from "@/ui/FABMenu";
 
 export default function Promotions() {
   const {
@@ -69,45 +71,73 @@ export default function Promotions() {
   const { isTeaserClient } = useTeaser();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [viewMode, setViewMode] = useState<'swipe' | 'grid'>('grid');
-  const [fabOpen, setFabOpen] = useState(false);
 
   const filteredCards = promotions || [];
   const selectedCard = filteredCards.find(c => c.id === selectedCardId);
-
-  // Auto-select first card if none selected (for swipe view mainly) - actually logic handles this via focalIndex
   const activeCard = selectedCard || (viewMode === 'swipe' ? filteredCards[focalIndex] : null);
 
-  const handleMenuAction = (action: 'create' | 'send' | 'auto-apply' | 'settings' | 'delete') => {
-    switch (action) {
-      case 'create':
-        handleCreate();
-        break;
-      case 'send':
-        if (activeCard) {
-          setShowSendSheet(true);
+  // Register FAB Actions
+  const fabActions = useMemo(() => {
+    if (!isArtist) return [];
+
+    const actions: FABMenuItem[] = [
+      {
+        id: "view-mode",
+        label: viewMode === 'grid' ? "Swipe View" : "Grid View",
+        icon: viewMode === 'grid' ? Percent : Gift,
+        onClick: () => setViewMode(prev => prev === 'grid' ? 'swipe' : 'grid'),
+        closeOnClick: true
+      },
+      {
+        id: "create-promo",
+        label: "New Promotion",
+        icon: Plus,
+        onClick: handleCreate,
+        highlight: true
+      }
+    ];
+
+    if (activeCard) {
+      actions.push(
+        {
+          id: "send-promo",
+          label: "Send Voucher",
+          icon: Send,
+          onClick: () => setShowSendSheet(true),
+        },
+        {
+          id: "edit-promo",
+          label: "Edit Design",
+          icon: Edit,
+          onClick: handleEdit,
+        },
+        {
+          id: "delete-promo",
+          label: "Delete",
+          icon: Trash2,
+          onClick: () => setShowDeleteDialog(true),
         }
-        else toast.error("Please select a promotion first");
-        break;
-      case 'auto-apply':
-        if (activeCard) setShowAutoApplySheet(true);
-        else toast.error("Please select a promotion first");
-        break;
-      case 'settings':
-        if (activeCard && isArtist) {
-          if (!selectedCardId) setSelectedCardId(activeCard.id);
-          handleEdit();
-        }
-        else toast.error("Select a voucher to edit settings");
-        break;
-      case 'delete':
-        if (activeCard && isArtist) {
-          if (!selectedCardId) setSelectedCardId(activeCard.id);
-          setShowDeleteDialog(true);
-        }
-        else toast.error("Select a voucher to delete");
-        break;
+      );
     }
-  };
+
+    return actions;
+  }, [isArtist, viewMode, activeCard, handleCreate, handleEdit]);
+
+  // If wizard is showing, we should register it as children instead of actions
+  // This fulfills "flows within the bounds of the fab panel" 
+  const [wizardStep, setWizardStep] = useState<string>('');
+
+  const fabRegistryId = "promotions";
+  const fabContent = showCreateWizard ? (
+    <PromotionWizardContent
+      onClose={closeCreateWizard}
+      onSuccess={refetch}
+      initialData={editingPromotion}
+      onStepChange={(s) => setWizardStep(s)}
+    />
+  ) : fabActions;
+
+  useRegisterFABActions(fabRegistryId, fabContent);
 
   return (
     <PageShell>
@@ -152,7 +182,7 @@ export default function Promotions() {
             ) : viewMode === 'swipe' ? (
               <div className="relative w-full h-full flex items-center justify-center overflow-visible">
                 <AnimatePresence>
-                  {filteredCards.map((card, index) => {
+                  {filteredCards.map((card: any, index: number) => {
                     const position = index - focalIndex;
                     const isSelected = selectedCardId === card.id;
                     const isFocal = focalIndex === index;
@@ -179,7 +209,6 @@ export default function Promotions() {
                           if (isFocal) {
                             const newId = selectedCardId === card.id ? null : card.id;
                             setSelectedCardId(newId);
-                            if (newId) setFabOpen(true);
                           }
                           else { setFocalIndex(index); setSelectedCardId(null); }
                         }}
@@ -202,11 +231,10 @@ export default function Promotions() {
               /* GRID VIEW */
               <PromotionGrid
                 cards={filteredCards}
-                onSelect={(card) => {
+                onSelect={(card: any) => {
                   setSelectedCardId(card.id);
-                  setFabOpen(true);
                   // Sync focal index for smooth transition back to swipe
-                  const idx = filteredCards.findIndex(c => c.id === card.id);
+                  const idx = filteredCards.findIndex((c: any) => c.id === card.id);
                   if (idx !== -1) setFocalIndex(idx);
                 }}
                 selectedCardId={selectedCardId}
@@ -215,16 +243,7 @@ export default function Promotions() {
           </div>
         </div>
 
-        {/* FAB Menu */}
-        {isArtist && (
-          <PromotionBurgerMenu
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            onAction={handleMenuAction}
-            isOpen={fabOpen}
-            onOpenChange={setFabOpen}
-          />
-        )}
+        {/* Dialogs and Sheets */}
 
         <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <DialogContent>

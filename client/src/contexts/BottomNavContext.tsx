@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode, useCa
 import { useAuth } from "@/_core/hooks/useAuth";
 import { ARTIST_NAV_ITEMS, CLIENT_NAV_ITEMS } from "@/_core/bottomNav/defaultNav";
 import { BottomNavButton } from "@/_core/bottomNav/types";
+import { FABMenuItem } from "@/ui/FABMenu";
 
 export type Scope = 'artist' | 'client';
 
@@ -20,6 +21,12 @@ interface BottomNavContextType {
     rowIndex: number;
     // Current Scope (for debug overlay)
     scope: Scope;
+    // Context-dependent FAB actions
+    fabActions: FABMenuItem[];
+    // Function to register FAB actions
+    registerFABActions: (id: string, actions: FABMenuItem[] | ReactNode) => () => void;
+    // Custom FAB content (for complex flows)
+    fabChildren: ReactNode | null;
 }
 
 const BottomNavContext = createContext<BottomNavContextType | undefined>(undefined);
@@ -35,19 +42,20 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
         client: {}
     });
 
+    const [fabRegistry, setFabRegistry] = useState<Record<string, FABMenuItem[] | ReactNode>>({});
+    const [activeFabId, setActiveFabId] = useState<string | null>(null);
+
     // activeId is global, but resolved against current scope.
     const [activeId, setActiveId] = useState<string | null>(null);
     const [isContextualVisible, setIsContextualVisible] = useState(false);
 
     // Derived contextual row based on current scope
-    // Fallback: If no specific row for this ID in this scope, we show nothing (strict) or default?
-    // User request: "If a route/row is missing in the current scope, fall back ONLY to that scope’s defaults".
-    // Since we don't have per-scope default rows defined in registry yet (other than main row 0), 
-    // and `contextualRow` effectively REPLACES the view or ADDS to it? 
-    // Actually, Row 1 is additive. If null, we just show Row 0. 
-    // So "fallback" here means "don't show a broken artist row for a client". 
-    // Our strict lookup `registry[scope][activeId]` ensures this.
     const contextualRow = activeId ? (registry[scope][activeId] || null) : null;
+
+    // Derived FAB actions
+    const fabContent = activeFabId ? fabRegistry[activeFabId] : null;
+    const fabActions = Array.isArray(fabContent) ? fabContent : [];
+    const fabChildren = !Array.isArray(fabContent) ? fabContent : null;
 
     // Derived nav items
     const navItems = scope === 'artist' ? ARTIST_NAV_ITEMS : CLIENT_NAV_ITEMS;
@@ -72,7 +80,6 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
                 };
             });
 
-            // Atomically check if we are removing the active row
             setActiveId((current) => {
                 if (current === id) {
                     setIsContextualVisible(false);
@@ -80,6 +87,20 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
                 }
                 return current;
             });
+        };
+    }, []);
+
+    const registerFABActions = useCallback((id: string, actions: FABMenuItem[] | ReactNode) => {
+        setFabRegistry(prev => ({ ...prev, [id]: actions }));
+        setActiveFabId(id);
+
+        return () => {
+            setFabRegistry(prev => {
+                const next = { ...prev };
+                delete next[id];
+                return next;
+            });
+            setActiveFabId(current => current === id ? null : current);
         };
     }, []);
 
@@ -100,6 +121,9 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
                 setContextualVisible,
                 rowIndex,
                 scope,
+                fabActions,
+                registerFABActions,
+                fabChildren
             }}
         >
             {children}
@@ -121,14 +145,23 @@ export function useRegisterBottomNavRow(id: string, content: ReactNode) {
     const scope: Scope = user?.role === 'artist' ? 'artist' : 'client';
 
     useEffect(() => {
-        // Logging for sanity check in dev
         if (process.env.NODE_ENV === 'development') {
             console.log(`[BottomNavRegistry] scope=${scope} route=${id} row=1 (contextual)`);
         }
-
-        // Register into the CURRENT scope at effect time.
-        // If scope changes, this effect re-runs (due to scope dependency)
         const unregister = registerRow(scope, id, content);
         return unregister;
     }, [id, content, registerRow, scope]);
+}
+
+/**
+ * useRegisterFABActions - Hooks into the Central Navigation FAB
+ * Use this to dynamically add actions to the global FAB menu from any page.
+ */
+export function useRegisterFABActions(id: string, actions: FABMenuItem[] | ReactNode) {
+    const { registerFABActions } = useBottomNav();
+
+    useEffect(() => {
+        const unregister = registerFABActions(id, actions);
+        return unregister;
+    }, [id, actions, registerFABActions]);
 }

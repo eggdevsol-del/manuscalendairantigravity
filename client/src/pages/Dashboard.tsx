@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useRegisterFABActions } from "@/contexts/BottomNavContext";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button, Dialog, DialogTitle, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
@@ -17,6 +18,8 @@ import { useTeaser } from "@/contexts/TeaserContext";
 import { InstallAppModal } from "@/components/modals/InstallAppModal";
 import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+import { type FABMenuItem } from "@/ui/FABMenu";
 
 // SSOT Components
 
@@ -340,29 +343,7 @@ export default function Dashboard() {
                                             />
                                         )}
 
-                                        {/* Settings button at bottom of business tasks */}
-                                        {activeCategory === 'business' && !businessLoading && (
-                                            <div className="pt-4 flex justify-center gap-3">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="text-muted-foreground hover:text-foreground"
-                                                    onClick={() => setShowSnapshotModal(true)}
-                                                >
-                                                    <BarChart3 className="w-4 h-4 mr-2" />
-                                                    Weekly Stats
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="text-muted-foreground hover:text-foreground"
-                                                    onClick={() => setShowSettingsSheet(true)}
-                                                >
-                                                    <Settings className="w-4 h-4 mr-2" />
-                                                    Settings
-                                                </Button>
-                                            </div>
-                                        )}
+                                        {/* Removed inline settings buttons - moved to Central FAB */}
                                     </div>
                                 </motion.div>
                             </AnimatePresence>
@@ -370,6 +351,14 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
+
+            {/* Register FAB Actions */}
+            <DashboardFABActions
+                activeCategory={activeCategory}
+                onShowSnapshot={() => setShowSnapshotModal(true)}
+                onShowSettings={() => setShowSettingsSheet(true)}
+                onShowChallenge={() => setShowChallengeSheet(true)}
+            />
 
 
             {/* --- TASK SHEET (FullScreenSheet) --- */}
