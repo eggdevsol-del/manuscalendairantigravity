@@ -469,23 +469,20 @@ export const appointmentsRouter = router({
 
             const appointmentId = metadata.appointmentId || metadata.id; // handle different structures
 
-            if (!appointmentId) {
-                throw new TRPCError({
-                    code: "PRECONDITION_FAILED",
-                    message: "No appointment associated with this proposal",
+            if (appointmentId) {
+                // Cancel the appointment
+                await db.updateAppointment(appointmentId, { status: 'cancelled' }, ctx.user.id);
+
+                // Log special action
+                await db.logAppointmentAction({
+                    appointmentId,
+                    action: 'proposal_revoked',
+                    performedBy: ctx.user.id,
+                    newValue: JSON.stringify({ messageId: input.messageId })
                 });
+            } else {
+                console.warn(`[deleteProposal] No appointmentId found for message ${input.messageId}, revoking without appointment update.`);
             }
-
-            // Cancel the appointment
-            await db.updateAppointment(appointmentId, { status: 'cancelled' }, ctx.user.id);
-
-            // Log special action
-            await db.logAppointmentAction({
-                appointmentId,
-                action: 'proposal_revoked',
-                performedBy: ctx.user.id,
-                newValue: JSON.stringify({ messageId: input.messageId })
-            });
 
             // Mark message as deleted/hidden
             metadata.isDeleted = true;

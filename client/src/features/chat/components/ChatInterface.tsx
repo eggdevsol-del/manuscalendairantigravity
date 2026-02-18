@@ -107,6 +107,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
 
     const [showBookingWizard, setShowBookingWizard] = useState(false);
     const [selectedMediaImage, setSelectedMediaImage] = useState<string | null>(null);
+    const [isProposalsExpanded, setIsProposalsExpanded] = useState(false);
 
     // Fetch client media (Conditionally enabled, but hook is always called)
     const clientId = conversation?.otherUser?.id?.toString();
@@ -139,14 +140,13 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                     onClose={() => {
                         setShowBookingWizard(false);
                         setSelectedProposal(null);
-                        setFABOpen(false);
+                        // By not calling setFABOpen(false), we revert to the items list
                     }}
                     selectedProposal={selectedProposal}
                     onAcceptProposal={(promo) => handleClientAcceptProposal(selectedProposal?.message, promo)}
-                    onRejectProposal={() => { setSelectedProposal(null); setFABOpen(false); }}
+                    onRejectProposal={() => { setSelectedProposal(null); }}
                     onCancelProposal={() => {
                         if (selectedProposal) handleCancelProposal(selectedProposal.message, selectedProposal.metadata);
-                        setFABOpen(false);
                         setSelectedProposal(null);
                     }}
                     isPendingProposalAction={bookProjectMutation.isPending}
@@ -219,6 +219,21 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
             setFABOpen(true);
         }
     }, [selectedProposal, setFABOpen]);
+
+    // Reset selection state when FAB is closed manually
+    useEffect(() => {
+        if (!isContextualVisible && !setFABOpen) return; // safety
+        // We only care about when the FAB is CLOSED
+    }, [isContextualVisible]);
+
+    // Better: listen for isFABOpen specifically if we want to reset state on close
+    const { isFABOpen } = useBottomNav();
+    useEffect(() => {
+        if (!isFABOpen) {
+            setSelectedProposal(null);
+            setShowBookingWizard(false);
+        }
+    }, [isFABOpen, setSelectedProposal]);
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -383,7 +398,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                 {/* Pinned Proposals — pending + accepted with future dates */}
                 {pinnedProposals.length > 0 && (
                     <div className="px-3 py-2 border-b border-white/5 bg-white/[0.01] space-y-1">
-                        {pinnedProposals.map(({ message: msg, metadata: meta }: any) => (
+                        {(isProposalsExpanded ? pinnedProposals : pinnedProposals.slice(0, 2)).map(({ message: msg, metadata: meta }: any) => (
                             <ProjectProposalMessage
                                 key={msg.id}
                                 metadata={meta}
@@ -396,6 +411,21 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                                 onCancel={() => handleCancelProposal(msg, meta)}
                             />
                         ))}
+
+                        {pinnedProposals.length > 2 && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full h-8 text-xs text-muted-foreground hover:text-primary transition-colors flex items-center justify-center gap-1.5"
+                                onClick={() => setIsProposalsExpanded(!isProposalsExpanded)}
+                            >
+                                {isProposalsExpanded ? (
+                                    <>Show less</>
+                                ) : (
+                                    <>View all ({pinnedProposals.length})</>
+                                )}
+                            </Button>
+                        )}
                     </div>
                 )}
             </div>
