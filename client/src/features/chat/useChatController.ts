@@ -347,7 +347,7 @@ export function useChatController(conversationId: number) {
         }
     }, [conversationId, user, markAsReadMutation.mutate, utils.consultations.list]);
 
-    return {
+    const value = useMemo(() => ({
         // Data
         user, authLoading, conversation, convLoading, messages, messagesLoading,
         quickActions, artistSettings, availableServices, consultationData,
@@ -374,5 +374,34 @@ export function useChatController(conversationId: number) {
 
         // Exposed Computed
         isArtist, otherUserId, otherUserName
-    };
+    }), [
+        // Data
+        user, authLoading, conversation, convLoading, messages, messagesLoading,
+        quickActions, artistSettings, availableServices, consultationData,
+
+        // State
+        state,
+
+        // Handlers
+        handleSendMessage,
+        handleImageUpload,
+        handleQuickAction,
+        handleClientConfirmDates,
+        handleClientAcceptProposal,
+        handleArtistBookProject,
+        handleViewProposal,
+        handleCancelProposal,
+
+        // Mutations
+        sendMessageMutation,
+        pinConsultationMutation,
+        bookProjectMutation,
+        updateMetadataMutation,
+        uploadImageMutation,
+
+        // Exposed Computed
+        isArtist, otherUserId, otherUserName
+    ]);
+
+    return value;
 }

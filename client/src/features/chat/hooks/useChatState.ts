@@ -81,7 +81,7 @@ export function useChatState() {
         return days;
     }, [currentMonth]);
 
-    return {
+    const value = useMemo(() => ({
         // State
         messageText, setMessageText,
         viewportRef,
@@ -105,5 +105,27 @@ export function useChatState() {
         nextMonth,
         prevMonth,
         calendarDays
-    };
+    }), [
+        messageText,
+        scrollIntent,
+        uploadingImage,
+        showClientInfo,
+        showBookingCalendar,
+        selectedDates,
+        currentMonth,
+        showProjectWizard,
+        projectStartDate,
+        selectedProposal,
+        showClientConfirmDialog,
+        clientConfirmMessageId,
+        clientConfirmDates,
+        clientConfirmMetadata,
+        scrollToBottom,
+        handleScroll,
+        nextMonth,
+        prevMonth,
+        calendarDays
+    ]);
+
+    return value;
 }

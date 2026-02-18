@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 export function useChatData(conversationId: number) {
     const { user, loading: authLoading } = useAuth();
@@ -49,7 +49,7 @@ export function useChatData(conversationId: number) {
 
     const isArtist = user?.role === "artist" || user?.role === "admin";
     const otherUserId = isArtist ? conversation?.clientId : conversation?.artistId;
-    const otherUserName = conversation?.otherUser?.name || "Unknown User";
+    const otherUserName = (conversation?.otherUser as any)?.name || "Unknown User";
 
     // Effects
     useEffect(() => {
@@ -65,7 +65,16 @@ export function useChatData(conversationId: number) {
         }
     }, [artistSettings]);
 
-    return {
+    const memoizedArtistSettings = useMemo(() => {
+        if (isArtist) return artistSettings;
+        return {
+            ...artistSettings,
+            businessAddress: artistPublicSettings?.businessAddress ?? artistSettings?.businessAddress,
+            businessName: artistPublicSettings?.businessName ?? artistSettings?.businessName,
+        };
+    }, [isArtist, artistSettings, artistPublicSettings]);
+
+    const value = useMemo(() => ({
         user,
         authLoading,
         conversation,
@@ -73,11 +82,7 @@ export function useChatData(conversationId: number) {
         messages,
         messagesLoading,
         quickActions,
-        artistSettings: isArtist ? artistSettings : {
-            ...artistSettings,
-            businessAddress: artistPublicSettings?.businessAddress ?? artistSettings?.businessAddress,
-            businessName: artistPublicSettings?.businessName ?? artistSettings?.businessName,
-        },
+        artistSettings: memoizedArtistSettings,
         consultationList,
         consultationData,
         paramConsultationId,
@@ -85,5 +90,23 @@ export function useChatData(conversationId: number) {
         isArtist,
         otherUserId,
         otherUserName
-    };
+    }), [
+        user,
+        authLoading,
+        conversation,
+        convLoading,
+        messages,
+        messagesLoading,
+        quickActions,
+        memoizedArtistSettings,
+        consultationList,
+        consultationData,
+        paramConsultationId,
+        availableServices,
+        isArtist,
+        otherUserId,
+        otherUserName
+    ]);
+
+    return value;
 }

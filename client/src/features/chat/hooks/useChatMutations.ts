@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
@@ -104,7 +105,7 @@ export function useChatMutations(
         }
     });
 
-    return {
+    const value = useMemo(() => ({
         utils,
         pinConsultationMutation,
         markAsReadMutation,
@@ -113,5 +114,16 @@ export function useChatMutations(
         bookProjectMutation,
         uploadImageMutation,
         deleteProposalMutation
-    };
+    }), [
+        utils,
+        pinConsultationMutation,
+        markAsReadMutation,
+        updateMetadataMutation,
+        sendMessageMutation,
+        bookProjectMutation,
+        uploadImageMutation,
+        deleteProposalMutation
+    ]);
+
+    return value;
 }
