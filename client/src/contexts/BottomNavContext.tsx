@@ -27,6 +27,9 @@ interface BottomNavContextType {
     registerFABActions: (id: string, actions: FABMenuItem[] | ReactNode) => () => void;
     // Custom FAB content (for complex flows)
     fabChildren: ReactNode | null;
+    // Programmatic FAB control
+    isFABOpen: boolean;
+    setFABOpen: (open: boolean) => void;
 }
 
 const BottomNavContext = createContext<BottomNavContextType | undefined>(undefined);
@@ -111,6 +114,8 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
 
     const rowIndex = isContextualVisible && contextualRow ? 1 : 0;
 
+    const [isFABOpen, setFABOpen] = useState(false);
+
     const value = useMemo(() => ({
         contextualRow,
         navItems,
@@ -121,7 +126,9 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
         scope,
         fabActions,
         registerFABActions,
-        fabChildren
+        fabChildren,
+        isFABOpen,
+        setFABOpen
     }), [
         contextualRow,
         navItems,
@@ -132,7 +139,8 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
         scope,
         fabActions,
         registerFABActions,
-        fabChildren
+        fabChildren,
+        isFABOpen
     ]);
 
     return (

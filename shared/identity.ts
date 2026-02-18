@@ -19,6 +19,7 @@ export type IdentityType = 'user' | 'lead';
 export interface Identity extends Person {
     id: string | number;
     type: IdentityType;
+    name: string; // Aggregate name for UI convenience
     clerkId?: string; // Only relevant for type 'user'
     clerkEmail?: string; // Primary email from Clerk
 }

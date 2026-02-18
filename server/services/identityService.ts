@@ -20,6 +20,7 @@ export async function resolveIdentity(id: string | number, type: 'user' | 'lead'
             return {
                 id: user.id,
                 type: 'user',
+                name: user.name ?? '',
                 firstName,
                 lastName,
                 email: user.email ?? undefined,
@@ -46,6 +47,7 @@ export async function resolveIdentity(id: string | number, type: 'user' | 'lead'
             return {
                 id: lead.id,
                 type: 'lead',
+                name: lead.clientName ?? `${firstName} ${lastName}`.trim(),
                 firstName,
                 lastName,
                 email: lead.clientEmail,

@@ -19,7 +19,7 @@ interface CentralNavFABProps {
 export function CentralNavFAB({ className }: CentralNavFABProps) {
     const [, setLocation] = useLocation();
     const { theme, toggleTheme } = useTheme();
-    const { fabActions, fabChildren } = useBottomNav();
+    const { fabActions, fabChildren, isFABOpen, setFABOpen } = useBottomNav();
 
     // Fetch artist settings for the booking link slug
     const { data: artistSettings } = trpc.artistSettings.get.useQuery(undefined, {
@@ -68,6 +68,8 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
             <FABMenu
                 toggleIcon={<Plus className="w-6 h-6" />}
                 items={!fabChildren ? allItems : undefined}
+                isOpen={isFABOpen}
+                onOpenChange={setFABOpen}
                 className="!static !bottom-auto !right-auto transition-none"
                 portalContainerClassName="bottom-[90px] left-1/2 -translate-x-1/2 items-center"
                 panelClassName={cn("!items-center", fabChildren ? "w-[330px]" : "w-[220px]")}

@@ -24,7 +24,7 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ conversationId, className, onBack }: ChatInterfaceProps) {
     const [, setLocation] = useLocation();
-    const { isContextualVisible } = useBottomNav();
+    const { isContextualVisible, setFABOpen } = useBottomNav();
 
     const {
         user,
@@ -106,7 +106,6 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
     }, [messages]);
 
     const [showBookingWizard, setShowBookingWizard] = useState(false);
-    const [proposalFabOpen, setProposalFabOpen] = useState(false);
     const [selectedMediaImage, setSelectedMediaImage] = useState<string | null>(null);
 
     // Fetch client media (Conditionally enabled, but hook is always called)
@@ -140,14 +139,14 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                     onClose={() => {
                         setShowBookingWizard(false);
                         setSelectedProposal(null);
-                        setProposalFabOpen(false);
+                        setFABOpen(false);
                     }}
                     selectedProposal={selectedProposal}
                     onAcceptProposal={(promo) => handleClientAcceptProposal(selectedProposal?.message, promo)}
-                    onRejectProposal={() => { setSelectedProposal(null); setProposalFabOpen(false); }}
+                    onRejectProposal={() => { setSelectedProposal(null); setFABOpen(false); }}
                     onCancelProposal={() => {
                         if (selectedProposal) handleCancelProposal(selectedProposal.message, selectedProposal.metadata);
-                        setProposalFabOpen(false);
+                        setFABOpen(false);
                         setSelectedProposal(null);
                     }}
                     isPendingProposalAction={bookProjectMutation.isPending}
@@ -217,9 +216,9 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
     // Sync proposal open state
     useEffect(() => {
         if (selectedProposal) {
-            setProposalFabOpen(true);
+            setFABOpen(true);
         }
-    }, [selectedProposal]);
+    }, [selectedProposal, setFABOpen]);
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -392,7 +391,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                                 variant="pinned"
                                 onPress={() => {
                                     handleViewProposal(msg, meta);
-                                    setProposalFabOpen(true);
+                                    setFABOpen(true);
                                 }}
                                 onCancel={() => handleCancelProposal(msg, meta)}
                             />
@@ -441,7 +440,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                                                     variant="inline"
                                                     onPress={() => {
                                                         handleViewProposal(message, metadata);
-                                                        setProposalFabOpen(true);
+                                                        setFABOpen(true);
                                                     }}
                                                     onCancel={() => handleCancelProposal(message, metadata)}
                                                 />
