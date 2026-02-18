@@ -4,26 +4,19 @@
  * Simple, clean light-mode consultation funnel.
  * Includes expanded contact fields and image upload capabilities.
  */
-import { useState, useEffect, useCallback } from "react";
+import { useFunnelController } from "./hooks/useFunnelController";
+import {
+  PROJECT_TYPES,
+  STYLE_OPTIONS,
+  BUDGET_RANGES,
+  TIMEFRAME_OPTIONS,
+  STEP_TITLES
+} from "./constants";
 import IOSInstallPrompt from "@/components/IOSInstallPrompt";
 import ImageUploadSheet, { UploadedImage } from "./components/ImageUploadSheet";
 import { Camera, Image as ImageIcon, ChevronRight } from "lucide-react";
 import { TeaserRegistrationForm } from "@/components/auth/TeaserRegistrationForm";
-import { trpc } from "@/lib/trpc";
 
-// Generate unique session ID
-const generateSessionId = () => {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-};
-
-// Types
 export interface FunnelStepData {
   intent?: {
     projectType: string;
@@ -74,363 +67,19 @@ interface FunnelWrapperProps {
   artistSlug: string;
 }
 
-// Simple project types without emojis
-const PROJECT_TYPES = [
-  { id: 'full-sleeve', label: 'Full Sleeve' },
-  { id: 'half-sleeve', label: 'Half Sleeve' },
-  { id: 'back-piece', label: 'Back Piece' },
-  { id: 'chest-piece', label: 'Chest Piece' },
-  { id: 'cover-up', label: 'Cover Up' },
-  { id: 'small-piece', label: 'Small Piece' },
-  { id: 'touch-up', label: 'Touch Up' },
-  { id: 'custom', label: 'Custom Project' },
-];
-
-// Simple style options
-const STYLE_OPTIONS = [
-  'Realism', 'Traditional', 'Neo-Traditional', 'Japanese',
-  'Blackwork', 'Dotwork', 'Watercolor', 'Geometric',
-  'Minimalist', 'Fine Line', 'Other'
-];
-
-// Budget ranges
-const BUDGET_RANGES = [
-  { label: 'Under $500', min: 0, max: 500 },
-  { label: '$500 - $1,000', min: 500, max: 1000 },
-  { label: '$1,000 - $2,500', min: 1000, max: 2500 },
-  { label: '$2,500 - $5,000', min: 2500, max: 5000 },
-  { label: '$5,000 - $10,000', min: 5000, max: 10000 },
-  { label: '$10,000+', min: 10000, max: null },
-];
-
-// Timeframe options
-const TIMEFRAME_OPTIONS = [
-  { id: 'asap', label: 'As soon as possible' },
-  { id: '1-3months', label: 'Within 1-3 months' },
-  { id: '3-6months', label: 'Within 3-6 months' },
-  { id: '6months+', label: '6+ months from now' },
-  { id: 'flexible', label: 'Flexible / No rush' },
-];
-
 export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
-  // State
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [artistProfile, setArtistProfile] = useState<ArtistProfile | null>(null);
-  const [sessionId, setSessionId] = useState<string>("");
-  const [currentStep, setCurrentStep] = useState<number>(0);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-
-  // Form data - Intent
-  const [projectType, setProjectType] = useState('');
-  const [projectDescription, setProjectDescription] = useState('');
-
-  // Form data - Contact (expanded)
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [birthdate, setBirthdate] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-
-  // Form data - Style
-  const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
-  const [referenceImages, setReferenceImages] = useState<UploadedImage[]>([]);
-  const [showReferenceUpload, setShowReferenceUpload] = useState(false);
-
-  // Form data - Body Placement
-  const [bodyPlacementImages, setBodyPlacementImages] = useState<UploadedImage[]>([]);
-  const [showBodyPlacementUpload, setShowBodyPlacementUpload] = useState(false);
-
-  // Form data - Budget & Availability
-  const [selectedBudget, setSelectedBudget] = useState<typeof BUDGET_RANGES[0] | null>(null);
-  const [timeframe, setTimeframe] = useState('');
-
-  // Total steps: Intent, Contact, Style+References, Body Placement, Budget, Availability
-  const totalSteps = 6;
-
-  // Initialize
-  useEffect(() => {
-    const initFunnel = async () => {
-      try {
-        setLoading(true);
-
-        // Generate session ID
-        let storedSessionId = sessionStorage.getItem(`funnel_session_${artistSlug}`);
-        if (!storedSessionId) {
-          storedSessionId = generateSessionId();
-          sessionStorage.setItem(`funnel_session_${artistSlug}`, storedSessionId);
-        }
-        setSessionId(storedSessionId);
-
-        // Fetch artist profile
-        console.log(`[Funnel] Fetching artist profile for slug: ${artistSlug}`);
-        const response = await fetch(`/api/public/artist/${artistSlug}`);
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error(`[Funnel] Error fetching artist:`, errorData);
-          if (response.status === 404) {
-            setError("This booking link is not available");
-          } else {
-            setError("Something went wrong. Please try again.");
-          }
-          return;
-        }
-
-        const data = await response.json();
-        console.log(`[Funnel] Artist profile loaded:`, data.displayName);
-        setArtistProfile(data);
-
-      } catch (err) {
-        console.error("[Funnel] Init error:", err);
-        setError("Failed to load. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initFunnel();
-  }, [artistSlug]);
-
-  // Upload images to server
-  const uploadImages = async (images: UploadedImage[]): Promise<string[]> => {
-    const uploadedUrls: string[] = [];
-
-    for (const image of images) {
-      if (image.uploadedUrl) {
-        uploadedUrls.push(image.uploadedUrl);
-        continue;
-      }
-
-      if (!image.file) continue;
-
-      try {
-        // Convert to base64
-        const reader = new FileReader();
-        const base64 = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(image.file!);
-        });
-
-        // Upload via API
-        const response = await fetch('/api/trpc/upload.uploadImage', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            json: {
-              fileData: base64,
-              fileName: image.file.name,
-              contentType: image.file.type,
-            }
-          }),
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          console.log('[Funnel] Upload response:', JSON.stringify(result));
-          if (result.result?.data?.json?.url) {
-            uploadedUrls.push(result.result.data.json.url);
-            console.log('[Funnel] Successfully uploaded:', result.result.data.json.url);
-          } else {
-            console.error('[Funnel] Upload succeeded but no URL in response:', result);
-          }
-        } else {
-          const errorText = await response.text();
-          console.error('[Funnel] Upload failed:', response.status, errorText);
-        }
-      } catch (err) {
-        console.error('[Funnel] Image upload error:', err);
-      }
-    }
-
-    return uploadedUrls;
-  };
-
-  // Handle form submission
-
-  // Helper for Base64 conversion
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
-  };
-
-  const uploadMutation = trpc.upload.uploadImage.useMutation();
-
-  const processImages = async (
-    images: UploadedImage[],
-    setImages: React.Dispatch<React.SetStateAction<UploadedImage[]>>
-  ): Promise<string[]> => {
-    const urls: string[] = [];
-    const updatedImages = [...images];
-
-    for (let i = 0; i < images.length; i++) {
-      const img = images[i];
-      if (img.uploadedUrl) {
-        urls.push(img.uploadedUrl);
-        continue;
-      }
-
-      if (img.file) {
-        // Update UI to show uploading
-        updatedImages[i] = { ...img, uploading: true };
-        setImages([...updatedImages]);
-
-        try {
-          const base64 = await fileToBase64(img.file);
-          const result = await uploadMutation.mutateAsync({
-            base64,
-            filename: img.file.name,
-            contentType: img.file.type,
-            folder: 'consultations'
-          });
-
-          if (result.success && result.url) {
-            urls.push(result.url);
-            updatedImages[i] = { ...img, uploadedUrl: result.url, uploading: false };
-          }
-        } catch (error) {
-          console.error("Upload failed", error);
-          updatedImages[i] = { ...img, uploading: false, error: "Upload failed" };
-        }
-        // Update UI after upload
-        setImages([...updatedImages]);
-      }
-    }
-    return urls;
-  };
-
-  const handleSubmit = async () => {
-    if (!artistProfile) {
-      console.error('[Funnel] No artist profile');
-      return;
-    }
-
-    console.log('[Funnel] Starting submission...');
-    setSubmitting(true);
-
-    try {
-      // Upload images first
-      const referenceUrls = await processImages(referenceImages, setReferenceImages);
-      const placementUrls = await processImages(bodyPlacementImages, setBodyPlacementImages);
-
-      const submitData = {
-        artistId: artistProfile.id,
-        sessionId,
-        intent: {
-          projectType,
-          projectDescription,
-        },
-        contact: {
-          firstName,
-          lastName,
-          name: `${firstName} ${lastName}`.trim(), // For backward compatibility
-          birthdate,
-          email,
-          phone: phone || undefined,
-        },
-        style: {
-          stylePreferences: selectedStyles,
-          referenceImages: referenceUrls,
-        },
-        bodyPlacement: {
-          placementImages: placementUrls,
-        },
-        budget: {
-          placement: projectType,
-          estimatedSize: '',
-          budgetMin: selectedBudget?.min || 0,
-          budgetMax: selectedBudget?.max || 0,
-          budgetLabel: selectedBudget?.label || '',
-        },
-      };
-
-      console.log('[Funnel] Submit data:', JSON.stringify(submitData, null, 2));
-
-      const response = await fetch('/api/public/funnel/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submitData),
-      });
-
-      console.log('[Funnel] Response status:', response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[Funnel] Submit error response:', errorText);
-        throw new Error(`Failed to submit: ${errorText}`);
-      }
-
-      const result = await response.json();
-      console.log('[Funnel] Submit success:', result);
-
-      setSubmitted(true);
-      sessionStorage.removeItem(`funnel_session_${artistSlug}`);
-
-      // Show install prompt after a short delay on success
-      setTimeout(() => {
-        setShowInstallPrompt(true);
-        console.log('[Funnel] Showing install prompt after successful submission');
-      }, 1500);
-
-    } catch (err) {
-      console.error("[Funnel] Submit error:", err);
-      alert("Failed to submit. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // Validation for each step
-  const canProceed = () => {
-    switch (currentStep) {
-      case 0: // Intent
-        return projectType && projectDescription.trim().length >= 10;
-      case 1: // Contact
-        return firstName.trim() && lastName.trim() && email.trim() && email.includes('@') && birthdate;
-      case 2: // Style + References
-        return selectedStyles.length > 0;
-      case 3: // Body Placement (optional, can skip)
-        return true;
-      case 4: // Budget
-        return selectedBudget !== null;
-      case 5: // Availability
-        return timeframe;
-      default:
-        return false;
-    }
-  };
-
-  // Next step
-  const handleNext = () => {
-    if (currentStep < totalSteps - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      handleSubmit();
-    }
-  };
-
-  // Previous step
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  // Toggle style selection
-  const toggleStyle = (style: string) => {
-    setSelectedStyles(prev =>
-      prev.includes(style)
-        ? prev.filter(s => s !== style)
-        : [...prev, style]
-    );
-  };
+  const {
+    loading, error, artistProfile, currentStep, totalSteps,
+    submitting, submitted, showInstallPrompt, setShowInstallPrompt,
+    projectType, setProjectType, projectDescription, setProjectDescription,
+    firstName, setFirstName, lastName, setLastName, birthdate, setBirthdate,
+    email, setEmail, phone, setPhone,
+    selectedStyles, toggleStyle,
+    referenceImages, setReferenceImages, showReferenceUpload, setShowReferenceUpload,
+    bodyPlacementImages, setBodyPlacementImages, showBodyPlacementUpload, setShowBodyPlacementUpload,
+    selectedBudget, setSelectedBudget, timeframe, setTimeframe,
+    handleNext, handleBack, canProceed
+  } = useFunnelController(artistSlug);
 
   // Loading state
   if (loading) {
@@ -475,15 +124,6 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
     );
   }
 
-  // Step titles
-  const stepTitles = [
-    "What are you looking for?",
-    "Your contact details",
-    "Style preferences",
-    "Show us the placement area",
-    "Your budget",
-    "When would you like to get tattooed?"
-  ];
 
   return (
     <div className="min-h-screen bg-white">
@@ -508,7 +148,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
       {/* Content */}
       <div className="pt-20 pb-32 px-6 max-w-lg mx-auto">
         <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-          {stepTitles[currentStep]}
+          {STEP_TITLES[currentStep]}
         </h2>
 
         {/* Step 0: Intent */}
@@ -828,8 +468,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         onImagesChange={setReferenceImages}
         images={referenceImages}
         title="Reference Images"
-        description="Upload tattoos, artwork, or any inspiration for your project"
-        maxImages={10}
+        description="Add tattoos or artwork for inspiration"
       />
 
       {/* Body Placement Upload Sheet */}
@@ -838,10 +477,17 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         onClose={() => setShowBodyPlacementUpload(false)}
         onImagesChange={setBodyPlacementImages}
         images={bodyPlacementImages}
-        title="Body Placement Photos"
-        description="Show the area where you'd like the tattoo placed"
-        maxImages={5}
+        title="Placement Photos"
+        description="Show us where the tattoo will go"
       />
+
+      {/* IOS Install Prompt */}
+      {showInstallPrompt && (
+        <IOSInstallPrompt
+          forceShow={showInstallPrompt}
+          onDismiss={() => setShowInstallPrompt(false)}
+        />
+      )}
     </div>
   );
 }

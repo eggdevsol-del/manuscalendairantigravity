@@ -6,3 +6,4 @@ export * from "./services/appointmentService";
 export * from "./services/policyService";
 export * from "./services/consultationService";
 export * from "./services/paymentMethodSettingsService";
+export * from "./services/identityService";

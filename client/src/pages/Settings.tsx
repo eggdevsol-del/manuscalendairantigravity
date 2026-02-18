@@ -27,7 +27,7 @@ import {
   RefreshCw,
   Scale,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation, useSearch } from "wouter";
 import { toast } from "sonner";
 import { forceUpdate } from "@/lib/pwa";
@@ -121,26 +121,30 @@ export default function Settings() {
     // }
   }, [user, loading, setLocation]);
 
-  useEffect(() => {
-    if (user) {
-      setProfileName(user.name || "");
-      setProfilePhone(user.phone || "");
-      setProfileBio(user.bio || "");
-      setProfileAvatar(user.avatar || "");
-    }
-  }, [user]);
+  const initializedProfileRef = useRef(false);
+  const initializedSettingsRef = useRef(false);
 
-  useEffect(() => {
-    if (artistSettings) {
-      setBusinessName(artistSettings.businessName || "");
-      setBusinessEmail(artistSettings.businessEmail || "");
-      setBusinessAddress(artistSettings.businessAddress || "");
-      setBsb(artistSettings.bsb || "");
-      setAccountNumber(artistSettings.accountNumber || "");
-      setDepositAmount(artistSettings.depositAmount?.toString() || "");
-      setAutoSendDepositInfo(!!artistSettings.autoSendDepositInfo);
-    }
-  }, [artistSettings]);
+  // Initialize Profile state from user once
+  if (user && !initializedProfileRef.current) {
+    setProfileName(user.name || "");
+    setProfilePhone(user.phone || "");
+    setProfileBio(user.bio || "");
+    setProfileAvatar(user.avatar || "");
+    initializedProfileRef.current = true;
+  }
+
+  // Initialize Business settings state once
+  if (artistSettings && !initializedSettingsRef.current) {
+    setBusinessName(artistSettings.businessName || "");
+    setBusinessEmail(artistSettings.businessEmail || "");
+    setBusinessAddress(artistSettings.businessAddress || "");
+    setBsb(artistSettings.bsb || "");
+    setAccountNumber(artistSettings.accountNumber || "");
+    setDepositAmount(artistSettings.depositAmount?.toString() || "");
+    setAutoSendDepositInfo(!!artistSettings.autoSendDepositInfo);
+    initializedSettingsRef.current = true;
+  }
+
 
   const handleLogout = async () => {
     await logout();

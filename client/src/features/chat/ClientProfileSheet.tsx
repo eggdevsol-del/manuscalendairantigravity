@@ -11,18 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getAssetUrl } from "@/lib/assets";
+import { Identity, getFullName } from "../../../../shared/identity";
 
 interface ClientProfileSheetProps {
     isOpen: boolean;
     onClose: () => void;
-    client: {
-        id?: string;
-        name?: string | null;
-        email?: string | null;
-        phone?: string | null;
-        birthday?: string | null;
-        avatar?: string | null;
-    } | null | undefined;
+    client: (Identity & { id: string }) | null | undefined;
 }
 
 export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileSheetProps) {
@@ -76,16 +70,16 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
                 <div className="flex items-center gap-4 mb-6 px-1">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center overflow-hidden ring-4 ring-background/50 shadow-xl">
                         {client.avatar ? (
-                            <img src={getAssetUrl(client.avatar)} alt={client.name || "Client"} className="w-full h-full object-cover" />
+                            <img src={getAssetUrl(client.avatar)} alt={getFullName(client)} className="w-full h-full object-cover" />
                         ) : (
                             <span className="text-2xl text-white font-bold">
-                                {(client.name || "?").charAt(0).toUpperCase()}
+                                {client.firstName ? client.firstName[0].toUpperCase() : "?"}
                             </span>
                         )}
                     </div>
                     <div>
                         <h2 className="text-xl font-bold flex items-center gap-2">
-                            {client.name || "Unknown Client"}
+                            {getFullName(client) || "Unknown Client"}
                             <BadgeCheck className="w-5 h-5 text-blue-400" />
                         </h2>
                         <p className="text-sm text-muted-foreground">Client since {new Date().getFullYear()}</p>

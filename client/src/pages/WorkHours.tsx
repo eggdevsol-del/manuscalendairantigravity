@@ -10,7 +10,7 @@ import {
 import { trpc } from "@/lib/trpc";
 import { ChevronLeft, Clock, Plus, Save, Trash2, Layers } from "lucide-react";
 import { LoadingState } from "@/components/ui/ssot";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 
@@ -100,8 +100,11 @@ export default function WorkHours() {
     }
   }, [user, loading, setLocation]);
 
-  useEffect(() => {
-    if (settings?.workSchedule) {
+  const initializedRef = useRef(false);
+
+  // Initialize schedule and services from settings once
+  if (settings && !initializedRef.current) {
+    if (settings.workSchedule) {
       try {
         const parsed = JSON.parse(settings.workSchedule);
         if (Array.isArray(parsed)) {
@@ -112,7 +115,7 @@ export default function WorkHours() {
       }
     }
 
-    if (settings?.services) {
+    if (settings.services) {
       try {
         const parsed = JSON.parse(settings.services);
         if (Array.isArray(parsed)) {
@@ -122,7 +125,9 @@ export default function WorkHours() {
         console.error("Failed to parse services");
       }
     }
-  }, [settings]);
+    initializedRef.current = true;
+  }
+
 
   // Project Builder Logic
   useEffect(() => {

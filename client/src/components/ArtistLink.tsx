@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Check, Copy, ExternalLink, Link2, Loader2, Share2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -46,13 +46,15 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
     },
   });
 
-  // Initialize state from settings
-  useEffect(() => {
-    if (settings) {
-      setSlug(settings.publicSlug || "");
-      setIsEnabled(Boolean(settings.funnelEnabled));
-    }
-  }, [settings]);
+  const initializedRef = useRef(false);
+
+  // Initialize state from settings once
+  if (settings && !initializedRef.current) {
+    setSlug(settings.publicSlug || "");
+    setIsEnabled(Boolean(settings.funnelEnabled));
+    initializedRef.current = true;
+  }
+
 
   // Generate the booking link
   const baseUrl = window.location.origin;

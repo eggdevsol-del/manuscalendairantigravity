@@ -19,7 +19,7 @@ export const conversationsRouter = router({
             convos.map(async (conv) => {
                 const otherUserId =
                     ctx.user.role === "artist" ? conv.clientId : conv.artistId;
-                const otherUser = await db.getUser(otherUserId);
+                const otherUser = await db.resolveIdentity(otherUserId, 'user');
                 const unreadCount = await db.getUnreadMessageCount(conv.id, ctx.user.id);
 
                 return {
@@ -79,7 +79,7 @@ export const conversationsRouter = router({
                 ctx.user.id === conversation.artistId
                     ? conversation.clientId
                     : conversation.artistId;
-            const otherUser = await db.getUser(otherUserId);
+            const otherUser = await db.resolveIdentity(otherUserId, 'user');
 
             return {
                 ...conversation,
