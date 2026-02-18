@@ -116,13 +116,19 @@ export function useChatMutations(
         deleteProposalMutation
     }), [
         utils,
-        pinConsultationMutation,
-        markAsReadMutation,
-        updateMetadataMutation,
-        sendMessageMutation,
-        bookProjectMutation,
-        uploadImageMutation,
-        deleteProposalMutation
+        pinConsultationMutation.isPending,
+        pinConsultationMutation.status,
+        markAsReadMutation.mutate,
+        updateMetadataMutation.mutate,
+        updateMetadataMutation.isPending,
+        sendMessageMutation.mutate,
+        sendMessageMutation.isPending,
+        bookProjectMutation.mutate,
+        bookProjectMutation.isPending,
+        uploadImageMutation.mutate,
+        uploadImageMutation.isPending,
+        deleteProposalMutation.mutate,
+        deleteProposalMutation.isPending
     ]);
 
     return value;

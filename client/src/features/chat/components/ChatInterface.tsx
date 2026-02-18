@@ -110,7 +110,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
     const [selectedMediaImage, setSelectedMediaImage] = useState<string | null>(null);
 
     // Fetch client media (Conditionally enabled, but hook is always called)
-    const clientId = conversation?.otherUser?.id;
+    const clientId = conversation?.otherUser?.id?.toString();
     const { data: mediaData } = trpc.conversations.getClientMedia.useQuery(
         { clientId: clientId || '' },
         {
@@ -174,8 +174,8 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
         }
         return items;
     }, [
-        authLoading, convLoading, messagesLoading, conversation,
-        showBookingWizard, selectedProposal, conversationId,
+        authLoading, convLoading, messagesLoading, conversation?.id,
+        showBookingWizard, selectedProposal?.message?.id, conversationId,
         availableServices, artistSettings, isArtist,
         showClientInfo, bookProjectMutation.isPending,
         handleClientAcceptProposal,
@@ -210,7 +210,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
         if (allActions.length === 0) return null;
 
         return <QuickActionsRow actions={allActions} />;
-    }, [user, conversation, quickActions, handleQuickAction]);
+    }, [user?.id, conversation?.id, quickActions, handleQuickAction]);
 
     useRegisterBottomNavRow("chat-actions", quickActionsRow);
 
@@ -585,7 +585,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
             <ClientProfileSheet
                 isOpen={showClientInfo}
                 onClose={() => setShowClientInfo(false)}
-                client={conversation?.otherUser}
+                client={conversation?.otherUser as any}
             />
 
 

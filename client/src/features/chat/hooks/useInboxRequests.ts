@@ -93,9 +93,11 @@ export function useInboxRequests() {
         });
     }, [leadsData, consultationsData]);
 
-    return {
+    const value = useMemo(() => ({
         requestItems,
         isLoading: leadsLoading || consultationsLoading,
         isArtist
-    };
+    }), [requestItems, leadsLoading, consultationsLoading, isArtist]);
+
+    return value;
 }

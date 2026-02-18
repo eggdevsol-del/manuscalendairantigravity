@@ -74,6 +74,11 @@ export function useChatData(conversationId: number) {
         };
     }, [isArtist, artistSettings, artistPublicSettings]);
 
+    // Use specific stable markers for data stability
+    const messagesKey = messages?.length ?? 0;
+    const conversationKey = conversation?.id ?? 0;
+    const quickActionsKey = quickActions?.length ?? 0;
+
     const value = useMemo(() => ({
         user,
         authLoading,
@@ -91,16 +96,15 @@ export function useChatData(conversationId: number) {
         otherUserId,
         otherUserName
     }), [
-        user,
+        user?.id,
         authLoading,
-        conversation,
+        conversationKey,
         convLoading,
-        messages,
+        messagesKey,
         messagesLoading,
-        quickActions,
+        quickActionsKey,
         memoizedArtistSettings,
-        consultationList,
-        consultationData,
+        consultationData?.id,
         paramConsultationId,
         availableServices,
         isArtist,

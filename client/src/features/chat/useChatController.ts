@@ -166,6 +166,7 @@ export function useChatController(conversationId: number) {
     }, [clientConfirmMessageId, clientConfirmMetadata, clientConfirmDates, conversationId, sendMessageMutation.mutate, setShowClientConfirmDialog, scrollToBottom, setScrollIntent]);
 
     const redeemPromotionMutation = trpc.promotions.redeemPromotion.useMutation();
+    const redeemMutationMutateAsync = redeemPromotionMutation.mutateAsync;
 
     const handleClientAcceptProposal = useCallback((message: any, appliedPromotion?: { id: number; discountAmount: number; finalAmount: number }) => {
         const metadata = selectedProposal?.metadata;
@@ -269,7 +270,7 @@ export function useChatController(conversationId: number) {
                 });
             }
         });
-    }, [conversationId, selectedProposal, bookProjectMutation.mutate, updateMetadataMutation.mutate, sendMessageMutation.mutate, redeemPromotionMutation, scrollToBottom, setScrollIntent, setSelectedProposal]);
+    }, [conversationId, selectedProposal?.message?.id, bookProjectMutation.mutate, updateMetadataMutation.mutate, sendMessageMutation.mutate, redeemMutationMutateAsync, scrollToBottom, setScrollIntent, setSelectedProposal]);
 
     const handleRevokeProposal = undefined; // Removed in favor of consolidated handleCancelProposal
 
@@ -376,8 +377,8 @@ export function useChatController(conversationId: number) {
         isArtist, otherUserId, otherUserName
     }), [
         // Data
-        user, authLoading, conversation, convLoading, messages, messagesLoading,
-        quickActions, artistSettings, availableServices, consultationData,
+        user?.id, authLoading, conversation?.id, convLoading, messages?.length, messagesLoading,
+        quickActions?.length, artistSettings, availableServices, consultationData?.id,
 
         // State
         state,
@@ -392,12 +393,15 @@ export function useChatController(conversationId: number) {
         handleViewProposal,
         handleCancelProposal,
 
-        // Mutations
-        sendMessageMutation,
-        pinConsultationMutation,
-        bookProjectMutation,
-        updateMetadataMutation,
-        uploadImageMutation,
+        // Mutation flags/functions
+        sendMessageMutation.mutate,
+        sendMessageMutation.isPending,
+        pinConsultationMutation.mutate,
+        bookProjectMutation.mutate,
+        bookProjectMutation.isPending,
+        updateMetadataMutation.mutate,
+        uploadImageMutation.mutate,
+        uploadImageMutation.isPending,
 
         // Exposed Computed
         isArtist, otherUserId, otherUserName
