@@ -7,7 +7,7 @@
  * @version 1.1.0
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useTeaser } from "@/contexts/TeaserContext";
 import { InstallAppModal } from "@/components/modals/InstallAppModal";
 import { Lock } from "lucide-react";
@@ -123,19 +123,31 @@ export default function Promotions() {
     return actions;
   }, [isArtist, viewMode, activeCard, handleCreate, handleEdit]);
 
-  // If wizard is showing, we should register it as children instead of actions
-  // This fulfills "flows within the bounds of the fab panel" 
   const [wizardStep, setWizardStep] = useState<string>('');
 
+  // If wizard is showing, we should register it as children instead of actions
+  // This fulfills "flows within the bounds of the fab panel" 
+  // Memoized step change callback for stable references
+  const handleStepChange = useCallback((s: string) => {
+    setWizardStep(s);
+  }, []);
+
   const fabRegistryId = "promotions";
-  const fabContent = showCreateWizard ? (
-    <PromotionWizardContent
-      onClose={closeCreateWizard}
-      onSuccess={refetch}
-      initialData={editingPromotion}
-      onStepChange={(s) => setWizardStep(s)}
-    />
-  ) : fabActions;
+
+  // Memoize fabContent to avoid infinite register-unregister loops
+  const fabContent = useMemo(() => {
+    if (showCreateWizard) {
+      return (
+        <PromotionWizardContent
+          onClose={closeCreateWizard}
+          onSuccess={refetch}
+          initialData={editingPromotion}
+          onStepChange={handleStepChange}
+        />
+      );
+    }
+    return fabActions;
+  }, [showCreateWizard, closeCreateWizard, refetch, editingPromotion, handleStepChange, fabActions]);
 
   useRegisterFABActions(fabRegistryId, fabContent);
 
