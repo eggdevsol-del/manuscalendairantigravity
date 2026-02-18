@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -34,21 +34,21 @@ export function usePromotionsController() {
         }
     });
 
-    const handleDelete = () => {
+    const handleDelete = useCallback(() => {
         if (selectedCardId) {
             deleteMutation.mutate({ templateId: selectedCardId });
         }
-    };
+    }, [selectedCardId, deleteMutation]);
 
-    const handleEdit = () => {
+    const handleEdit = useCallback(() => {
         const card = promotions.find(p => p.id === selectedCardId);
         if (card) {
             setEditingPromotion(card as PromotionCardData);
             setShowCreateWizard(true);
         }
-    };
+    }, [promotions, selectedCardId]);
 
-    const handleUseOnBooking = () => {
+    const handleUseOnBooking = useCallback(() => {
         const selectedCard = promotions.find(c => c.id === selectedCardId);
         if (!selectedCard) return;
         sessionStorage.setItem('pendingPromotion', JSON.stringify({
@@ -60,18 +60,18 @@ export function usePromotionsController() {
             code: selectedCard.code,
         }));
         toast.success('Promotion ready to use!');
-    };
+    }, [promotions, selectedCardId]);
 
-    const handleCreate = () => {
+    const handleCreate = useCallback(() => {
         setEditingPromotion(null);
         setShowCreateWizard(true);
-    };
+    }, []);
 
-    const closeCreateWizard = () => {
+    const closeCreateWizard = useCallback(() => {
         setShowCreateWizard(false);
         setEditingPromotion(null);
         refetch();
-    };
+    }, [refetch]);
 
     return {
         user,

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { ARTIST_NAV_ITEMS, CLIENT_NAV_ITEMS } from "@/_core/bottomNav/defaultNav";
 import { BottomNavButton } from "@/_core/bottomNav/types";
@@ -111,21 +111,32 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
 
     const rowIndex = isContextualVisible && contextualRow ? 1 : 0;
 
+    const value = useMemo(() => ({
+        contextualRow,
+        navItems,
+        isContextualVisible,
+        registerRow,
+        setContextualVisible,
+        rowIndex,
+        scope,
+        fabActions,
+        registerFABActions,
+        fabChildren
+    }), [
+        contextualRow,
+        navItems,
+        isContextualVisible,
+        registerRow,
+        setContextualVisible,
+        rowIndex,
+        scope,
+        fabActions,
+        registerFABActions,
+        fabChildren
+    ]);
+
     return (
-        <BottomNavContext.Provider
-            value={{
-                contextualRow,
-                navItems,
-                isContextualVisible,
-                registerRow,
-                setContextualVisible,
-                rowIndex,
-                scope,
-                fabActions,
-                registerFABActions,
-                fabChildren
-            }}
-        >
+        <BottomNavContext.Provider value={value}>
             {children}
         </BottomNavContext.Provider>
     );
