@@ -95,9 +95,6 @@ export function useCalendarAgendaController() {
         setIsScrollingProgrammatically(true);
         setActiveDate(date);
 
-        // Auto-open FAB on date selection (UX consistency)
-        setFABOpen(true);
-
         // Scroll to that date in the list
         const index = agendaDates.findIndex(d => isSameDay(d, date));
         if (index !== -1) {
