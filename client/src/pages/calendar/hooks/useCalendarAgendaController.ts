@@ -183,6 +183,15 @@ export function useCalendarAgendaController() {
         }
     }, [artistSettings]);
 
+    const artistServices = useMemo(() => {
+        if (!artistSettings?.services) return [];
+        try {
+            return JSON.parse(artistSettings.services);
+        } catch (e) {
+            return [];
+        }
+    }, [artistSettings]);
+
     const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
 
     const handleAppointmentTap = useCallback((apt: any) => {
@@ -209,6 +218,7 @@ export function useCalendarAgendaController() {
         isBreakdownOpen,
         toggleBreakdown,
         workSchedule,
+        artistServices,
         setActiveDate
     };
 }
