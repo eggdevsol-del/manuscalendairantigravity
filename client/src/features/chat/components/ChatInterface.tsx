@@ -162,13 +162,15 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                 label: 'Book Project',
                 icon: Calendar,
                 onClick: () => setShowBookingWizard(true),
-                highlight: true
+                highlight: true,
+                closeOnClick: false
             });
             items.push({
                 id: 'client-info',
                 label: showClientInfo ? 'Hide Client Info' : 'View Client Info',
                 icon: FileText,
                 onClick: () => setShowClientInfo(!showClientInfo),
+                closeOnClick: false
             });
         }
         return items;
