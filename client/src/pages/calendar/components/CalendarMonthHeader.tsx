@@ -19,7 +19,9 @@ export function CalendarMonthHeader({ activeDate, onToggleBreakdown, isBreakdown
                     variant="ghost"
                     size="sm"
                     className="text-xs font-semibold text-primary hover:bg-primary/10 h-8 px-3"
-                    onClick={() => onDateChange(new Date())}
+                    onClick={() => {
+                        onDateChange(new Date());
+                    }}
                 >
                     Today
                 </Button>
@@ -31,7 +33,9 @@ export function CalendarMonthHeader({ activeDate, onToggleBreakdown, isBreakdown
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-white/5"
-                    onClick={() => onDateChange(startOfMonth(subMonths(activeDate, 1)))}
+                    onClick={() => {
+                        onDateChange(startOfMonth(subMonths(activeDate, 1)));
+                    }}
                 >
                     <ChevronLeft className="w-4 h-4" />
                 </Button>
@@ -46,7 +50,9 @@ export function CalendarMonthHeader({ activeDate, onToggleBreakdown, isBreakdown
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-white/5"
-                    onClick={() => onDateChange(startOfMonth(addMonths(activeDate, 1)))}
+                    onClick={() => {
+                        onDateChange(startOfMonth(addMonths(activeDate, 1)));
+                    }}
                 >
                     <ChevronRight className="w-4 h-4" />
                 </Button>

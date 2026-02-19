@@ -64,9 +64,19 @@ export function parseTime(timeStr: string): { hour: number; minute: number } | n
  */
 export function parseWorkSchedule(scheduleJson: string | any): WorkDay[] {
     try {
+        if (!scheduleJson) {
+            console.warn("parseWorkSchedule received empty schedule");
+            return [];
+        }
+
         let schedule: any;
         if (typeof scheduleJson === 'string') {
-            schedule = JSON.parse(scheduleJson);
+            try {
+                schedule = JSON.parse(scheduleJson);
+            } catch (e) {
+                console.error("Failed to parse work schedule JSON string", e);
+                return [];
+            }
         } else {
             schedule = scheduleJson;
         }
@@ -75,14 +85,14 @@ export function parseWorkSchedule(scheduleJson: string | any): WorkDay[] {
             // Convert object { monday: {...} } to array [ { day: 'Monday', ... } ]
             return Object.entries(schedule).map(([key, value]: [string, any]) => ({
                 day: key.charAt(0).toUpperCase() + key.slice(1),
-                ...value
+                ...(typeof value === 'object' ? value : {})
             }));
         } else if (Array.isArray(schedule)) {
             return schedule;
         }
         return [];
     } catch (e) {
-        console.error("Failed to parse work schedule", e);
+        console.error("Unexpected error in parseWorkSchedule", e);
         return [];
     }
 }

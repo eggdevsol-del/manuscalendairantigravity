@@ -249,7 +249,6 @@ export async function getAppointmentsForUser(
                 FROM ${appointments} a2
                 WHERE a2.conversationId = ${appointments.conversationId}
             )`,
-            metadata: appointments.metadata,
         })
         .from(appointments)
         .leftJoin(users, eq(appointments.clientId, users.id))

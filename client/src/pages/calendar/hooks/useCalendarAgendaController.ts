@@ -219,6 +219,7 @@ export function useCalendarAgendaController() {
         toggleBreakdown,
         workSchedule,
         artistServices,
+        artistSettings,
         setActiveDate
     };
 }

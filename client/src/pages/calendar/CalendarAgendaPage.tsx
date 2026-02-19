@@ -46,7 +46,7 @@ export default function CalendarAgendaPage() {
                 <BookingWizardContent
                     conversationId={controller.selectedAppointment.conversationId}
                     artistServices={controller.artistServices}
-                    artistSettings={controller.workSchedule} // This might need mapping if types differ, but passing for now
+                    artistSettings={controller.artistSettings}
                     isArtist={controller.user?.role === 'artist'}
                     onBookingSuccess={() => { }}
                     onClose={() => controller.setSelectedAppointment(null)}
