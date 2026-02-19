@@ -15,6 +15,7 @@ import {
     Tag,
     MapPin,
     ChevronDown,
+    MessageCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -46,6 +47,8 @@ interface BookingWizardContentProps {
     onCancelProposal?: () => void;
     isPendingProposalAction?: boolean;
     artistId?: string;
+    showGoToChat?: boolean;
+    onGoToChat?: () => void;
 }
 
 /** Collapsible policy dropdown — fetches policy content from server */
@@ -110,6 +113,8 @@ export function BookingWizardContent({
     onCancelProposal,
     isPendingProposalAction,
     artistId,
+    showGoToChat,
+    onGoToChat
 }: BookingWizardContentProps) {
     const [step, setStep] = useState<BookingStep>('service');
     const [selectedService, setSelectedService] = useState<any>(null);
@@ -409,6 +414,20 @@ export function BookingWizardContent({
                         <motion.div variants={fab.animation.item} className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-red-500/10">
                             <AlertCircle className="w-3.5 h-3.5 text-red-500" />
                             <span className="text-[10px] font-bold text-red-500">Declined</span>
+                        </motion.div>
+                    )}
+
+                    {showGoToChat && (
+                        <motion.div variants={fab.animation.item} className="pt-1">
+                            <button
+                                onClick={onGoToChat}
+                                className={cn(card.base, card.bgAccent, card.interactive, "flex items-center gap-2 p-2 w-full rounded-[4px] border border-primary/20")}
+                            >
+                                <div className={cn(fab.itemButtonHighlight, "shrink-0 !w-7 !h-7")}>
+                                    <MessageCircle className="w-3.5 h-3.5" />
+                                </div>
+                                <span className="text-[10px] font-bold text-foreground">Go to Chat</span>
+                            </button>
                         </motion.div>
                     )}
                 </>

@@ -183,9 +183,11 @@ export function useCalendarAgendaController() {
         }
     }, [artistSettings]);
 
+    const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+
     const handleAppointmentTap = useCallback((apt: any) => {
+        setSelectedAppointment(apt);
         setFABOpen(true);
-        // We could also set a selected appointment state here if needed for deeper integration
     }, [setFABOpen]);
 
     return {
@@ -199,6 +201,8 @@ export function useCalendarAgendaController() {
         agendaDates,
         handleDateTap,
         handleAppointmentTap,
+        selectedAppointment,
+        setSelectedAppointment,
         // No handleScroll anymore, handled by hook
         refetch,
         weeklyIncome,
