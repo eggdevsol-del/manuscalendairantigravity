@@ -46,6 +46,7 @@ interface BookingWizardContentProps {
     onRejectProposal?: () => void;
     onCancelProposal?: () => void;
     isPendingProposalAction?: boolean;
+    isLoadingProposal?: boolean;
     artistId?: string;
     showGoToChat?: boolean;
     onGoToChat?: () => void;
@@ -114,6 +115,7 @@ export function BookingWizardContent({
     onRejectProposal,
     onCancelProposal,
     isPendingProposalAction,
+    isLoadingProposal,
     artistId,
     showGoToChat,
     onGoToChat,
@@ -307,8 +309,16 @@ export function BookingWizardContent({
 
     return (
         <div className="flex flex-col gap-2 w-full">
+            {/* ===== LOADING STATE ===== */}
+            {isLoadingProposal && (
+                <div className="flex flex-col items-center justify-center py-10 gap-3">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Loading Proposal</span>
+                </div>
+            )}
+
             {/* ===== PROPOSAL VIEW ===== */}
-            {showProposal && proposalMeta && (
+            {!isLoadingProposal && showProposal && proposalMeta && (
                 <>
                     {/* Header */}
                     <motion.div variants={fab.animation.item}>
@@ -499,7 +509,7 @@ export function BookingWizardContent({
             )}
 
             {/* ===== BOOKING WIZARD ===== */}
-            {!showProposal && (
+            {!isLoadingProposal && !showProposal && (
                 <>
                     {/* Header */}
                     <motion.div variants={fab.animation.item} className={fab.itemRow}>

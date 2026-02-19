@@ -39,9 +39,10 @@ export default function CalendarAgendaPage() {
                     onBookingSuccess={() => { controller.refetch(); }}
                     onClose={() => {
                         controller.setSelectedAppointment(null);
-                        // The FAB state is managed by NavActionButton/FABMenu, but we can clear our local selection
+                        setFABOpen(false);
                     }}
                     selectedProposal={controller.proposalData}
+                    isLoadingProposal={controller.isLoadingProposal}
                     showGoToChat={!!controller.selectedAppointment?.conversationId}
                     onGoToChat={() => setLocation(`/chat/${controller.selectedAppointment?.conversationId}`)}
                     artistId={controller.user?.id}
