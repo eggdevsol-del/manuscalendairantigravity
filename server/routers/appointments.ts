@@ -485,6 +485,7 @@ export const appointmentsRouter = router({
             }
 
             // Mark message as deleted/hidden
+            metadata.status = 'revoked';
             metadata.isDeleted = true;
             metadata.deletedAt = new Date().toISOString();
             await db.updateMessageMetadata(input.messageId, JSON.stringify(metadata));

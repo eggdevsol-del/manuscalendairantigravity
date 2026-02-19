@@ -1164,7 +1164,7 @@ function PreviewStep({
     <div className="space-y-6">
       {/* Large Preview */}
       <div className="flex justify-center py-8">
-        <PromotionCard data={previewData} size="lg" />
+        <PromotionCard data={previewData} size="md" />
       </div>
 
       {/* Summary */}

@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getAssetUrl } from "@/lib/assets";
 import { Identity, getFullName } from "../../../../shared/identity";
+import { HistoryCard } from "@/features/profile/components/ContentCards";
 
 interface ClientProfileSheetProps {
     isOpen: boolean;
@@ -36,6 +37,14 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
 
     // Fetch client promotions
     const { data: promotions, isLoading: promotionsLoading } = trpc.promotions.getClientPromotions.useQuery(
+        { clientId: client?.id || '' },
+        {
+            enabled: isOpen && !!client?.id,
+        }
+    );
+
+    // Fetch client history
+    const { data: history, isLoading: historyLoading } = trpc.clientProfile.getHistory.useQuery(
         { clientId: client?.id || '' },
         {
             enabled: isOpen && !!client?.id,
@@ -317,12 +326,14 @@ export function ClientProfileSheet({ isOpen, onClose, client }: ClientProfileShe
                         </TabsContent>
 
                         <TabsContent value="history">
-                            <div className="flex flex-col items-center justify-center py-12 text-center space-y-3 opacity-50">
-                                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                                    <User className="w-6 h-6" />
+                            {historyLoading ? (
+                                <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
+                                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                    <p className="text-sm text-muted-foreground">Loading history...</p>
                                 </div>
-                                <p className="text-sm font-medium">No booking history</p>
-                            </div>
+                            ) : (
+                                <HistoryCard history={history || []} />
+                            )}
                         </TabsContent>
                     </ScrollArea>
                 </Tabs>

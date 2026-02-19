@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useLocation } from "wouter";
 import { ARTIST_NAV_ITEMS, CLIENT_NAV_ITEMS } from "@/_core/bottomNav/defaultNav";
 import { BottomNavButton } from "@/_core/bottomNav/types";
 import { FABMenuItem } from "@/ui/FABMenu";
@@ -36,6 +37,8 @@ const BottomNavContext = createContext<BottomNavContextType | undefined>(undefin
 
 export function BottomNavProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
+    const [location] = useLocation();
+
     // Default to 'client' for safety if not authenticated or specified.
     const rawRole = user?.role;
     const scope: Scope = rawRole === 'artist' ? 'artist' : 'client';
@@ -115,6 +118,11 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
     const rowIndex = isContextualVisible && contextualRow ? 1 : 0;
 
     const [isFABOpen, setFABOpen] = useState(false);
+
+    // Auto-close FAB on route change
+    useEffect(() => {
+        setFABOpen(false);
+    }, [location]);
 
     const value = useMemo(() => ({
         contextualRow,

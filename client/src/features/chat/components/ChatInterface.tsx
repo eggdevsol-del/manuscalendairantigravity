@@ -89,6 +89,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
             try {
                 const meta = msg.metadata ? JSON.parse(msg.metadata) : null;
                 if (meta?.type !== 'project_proposal') return false;
+                if (meta.isDeleted || meta.status === 'canceled' || meta.status === 'revoked') return false;
                 if (meta.status === 'pending') return true;
                 if (meta.status === 'accepted') {
                     // Pin until all appointment dates have passed
@@ -459,7 +460,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                                         id={`message-${message.id}`}
                                         className={`flex ${isProjectProposal ? "justify-center w-full" : (isOwn ? "justify-end" : "justify-start")}`}
                                     >
-                                        {isProjectProposal && metadata?.status === 'canceled' ? (
+                                        {isProjectProposal && (metadata?.status === 'canceled' || metadata?.status === 'revoked' || metadata?.isDeleted) ? (
                                             null
                                         ) : isProjectProposal && metadata?.status === 'pending' ? (
                                             // Pending proposals are pinned to the header — skip inline
