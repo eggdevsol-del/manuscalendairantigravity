@@ -13,11 +13,12 @@ interface AgendaDayListProps {
     parentRef: React.RefObject<HTMLDivElement | null>;
     onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
     workSchedule?: any;
+    onAppointmentTap?: (apt: any) => void;
 }
 
 const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef, onScroll, workSchedule }: AgendaDayListProps) {
+export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef, onScroll, workSchedule, onAppointmentTap }: AgendaDayListProps) {
     return (
         <div
             ref={parentRef}
@@ -81,12 +82,13 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                                         return (
                                             <div
                                                 key={apt.id}
+                                                onClick={() => onAppointmentTap?.(apt)}
                                                 className={cn(
                                                     tokens.calendar.eventCard.base,
                                                     tokens.calendar.eventCard.bg,
                                                     tokens.calendar.eventCard.interactive,
                                                     tokens.calendar.eventCard.padding,
-                                                    "shadow-sm flex flex-col gap-1",
+                                                    "shadow-sm flex flex-col gap-1 cursor-pointer active:scale-[0.98] transition-transform",
                                                     style.className
                                                 )}
                                             >

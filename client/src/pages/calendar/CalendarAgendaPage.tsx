@@ -40,6 +40,7 @@ export default function CalendarAgendaPage() {
                     month={controller.activeDate}
                     eventsByDay={controller.eventsByDay}
                     workSchedule={controller.workSchedule}
+                    onDateTap={controller.handleDateTap}
                 />
             </div>
 
@@ -64,6 +65,7 @@ export default function CalendarAgendaPage() {
                     // Actually per user request "MY MONTH side by side", so toggle might be redundant on iPad
                     // but let's keep it functional or hide it via CSS in child if needed.
                     // For now we just layout.
+                    // For now we just layout.
                     />
                     <CalendarDateStrip7
                         stripDates={controller.stripDates}
@@ -80,6 +82,7 @@ export default function CalendarAgendaPage() {
                         eventsByDay={controller.eventsByDay}
                         parentRef={controller.parentRef}
                         workSchedule={controller.workSchedule}
+                        onAppointmentTap={controller.handleAppointmentTap}
                     />
                 </div>
 

@@ -7,9 +7,10 @@ interface MonthBreakdownProps {
     month: Date;
     eventsByDay?: Record<string, any[]>;
     workSchedule?: any;
+    onDateTap?: (date: Date) => void;
 }
 
-export function MonthBreakdown({ month, eventsByDay = {}, workSchedule }: MonthBreakdownProps) {
+export function MonthBreakdown({ month, eventsByDay = {}, workSchedule, onDateTap }: MonthBreakdownProps) {
     // Generate fixed 5 weeks (35 days)
     const start = startOfWeek(startOfMonth(month)); // Default to Sunday start
     // We want exactly 35 days
@@ -110,8 +111,9 @@ export function MonthBreakdown({ month, eventsByDay = {}, workSchedule }: MonthB
                                     return (
                                         <div
                                             key={day.toISOString()}
+                                            onClick={() => onDateTap?.(day)}
                                             className={cn(
-                                                "aspect-square flex items-center justify-center text-[10px] font-medium transition-all relative",
+                                                "aspect-square flex items-center justify-center text-[10px] font-medium transition-all relative cursor-pointer active:scale-95",
                                                 hasEvents ? bgClass : "bg-white/5",
                                                 !isCurrentMonth && "opacity-30", // Dim non-current month
                                                 hasEvents ? "rounded-[1px]" : "rounded-none",

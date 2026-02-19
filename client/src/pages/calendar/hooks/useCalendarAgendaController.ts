@@ -1,3 +1,4 @@
+import { useBottomNav } from "@/contexts/BottomNavContext";
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -87,11 +88,15 @@ export function useCalendarAgendaController() {
         }
     }, [agendaDates, virtualizer, anchorDate, isInitialScrollDone]);
 
-    // 5. Actions
+    const { setFABOpen } = useBottomNav();
+
     // 5. Actions
     const handleDateTap = useCallback((date: Date) => {
         setIsScrollingProgrammatically(true);
         setActiveDate(date);
+
+        // Auto-open FAB on date selection (UX consistency)
+        setFABOpen(true);
 
         // Scroll to that date in the list
         const index = agendaDates.findIndex(d => isSameDay(d, date));
@@ -178,6 +183,11 @@ export function useCalendarAgendaController() {
         }
     }, [artistSettings]);
 
+    const handleAppointmentTap = useCallback((apt: any) => {
+        setFABOpen(true);
+        // We could also set a selected appointment state here if needed for deeper integration
+    }, [setFABOpen]);
+
     return {
         user,
         activeDate,
@@ -188,6 +198,7 @@ export function useCalendarAgendaController() {
         virtualizer,
         agendaDates,
         handleDateTap,
+        handleAppointmentTap,
         // No handleScroll anymore, handled by hook
         refetch,
         weeklyIncome,
