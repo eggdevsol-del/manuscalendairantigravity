@@ -499,6 +499,45 @@ export const appointmentsRouter = router({
 
             return { success: true };
         }),
+
+    getProposalForAppointment: protectedProcedure
+        .input(z.number())
+        .query(async ({ input, ctx }) => {
+            const appointment = await db.getAppointment(input);
+            if (!appointment) throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+
+            // Find the proposal message in this conversation
+            // We search for messages of type 'appointment_request' in the same conversation
+            const messages = await db.getMessages(appointment.conversationId);
+
+            // Find the most recent proposal message that matches this appointment
+            // Usually there's one proposal per project, but we'll try to find the one containing this appointment's dates or related metadata
+            const proposal = messages
+                .filter((m: any) => m.messageType === 'appointment_request')
+                .find((m: any) => {
+                    try {
+                        const meta = m.metadata ? JSON.parse(m.metadata) : {};
+                        // Check if metadata contains this appointment date or ID
+                        // The structure varies, but we often store proposedDates as string array
+                        const apptStart = new Date(appointment.startTime).toISOString();
+                        const dates = meta.dates || meta.proposedDates || [];
+                        return dates.some((d: string) => new Date(d).toISOString() === apptStart);
+                    } catch (e) {
+                        return false;
+                    }
+                });
+
+            if (!proposal) return null;
+
+            try {
+                return {
+                    message: proposal,
+                    metadata: proposal.metadata ? JSON.parse(proposal.metadata) : null
+                };
+            } catch (e) {
+                return null;
+            }
+        }),
 });
 
 // Helper function to send deposit info

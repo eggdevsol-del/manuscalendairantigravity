@@ -231,4 +231,54 @@ export const conversationsRouter = router({
 
             return clients.filter(Boolean);
         }),
+
+    createClient: protectedProcedure
+        .input(z.object({
+            name: z.string(),
+            email: z.string().email().optional().nullable(),
+            phone: z.string().optional().nullable(),
+        }))
+        .mutation(async ({ input, ctx }) => {
+            if (ctx.user.role !== 'artist' && ctx.user.role !== 'admin') {
+                throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can create clients" });
+            }
+
+            const database = await getDb();
+            if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+            // Check if client exists by email (if provided)
+            let existingUser = null;
+            if (input.email) {
+                const results = await database.select().from(schema.users).where(eq(schema.users.email, input.email)).limit(1);
+                existingUser = results[0];
+            }
+
+            let clientId: string;
+
+            if (existingUser) {
+                clientId = existingUser.id;
+            } else {
+                // Create new user
+                clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                await db.createUser({
+                    id: clientId,
+                    name: input.name,
+                    email: input.email,
+                    phone: input.phone,
+                    role: 'client',
+                    hasCompletedOnboarding: 1 as any, // TinyInt fix?
+                });
+            }
+
+            // Create/Get conversation
+            let conversation = await db.getConversation(ctx.user.id, clientId);
+            if (!conversation) {
+                conversation = await db.createConversation({
+                    artistId: ctx.user.id,
+                    clientId: clientId,
+                });
+            }
+
+            return conversation;
+        }),
 });

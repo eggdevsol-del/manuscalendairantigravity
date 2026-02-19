@@ -26,7 +26,7 @@ import { Capacitor } from "@capacitor/core";
 import { tokens } from "@/ui/tokens";
 import { ApplyPromotionSheet } from "@/features/promotions";
 
-type BookingStep = 'service' | 'frequency' | 'review' | 'success';
+type BookingStep = 'client' | 'service' | 'frequency' | 'review' | 'success';
 
 interface ProposalData {
     metadata: any;
@@ -34,7 +34,7 @@ interface ProposalData {
 }
 
 interface BookingWizardContentProps {
-    conversationId: number;
+    conversationId?: number; // Optional now, as we might start without one
     artistServices: any[];
     artistSettings?: any;
     isArtist: boolean;
@@ -49,6 +49,8 @@ interface BookingWizardContentProps {
     artistId?: string;
     showGoToChat?: boolean;
     onGoToChat?: () => void;
+    /** For pre-populating dates from calendar */
+    initialDate?: Date;
 }
 
 /** Collapsible policy dropdown — fetches policy content from server */
@@ -101,7 +103,7 @@ function PolicyDropdown({ label, artistId, policyType, depositAmount, totalCost 
 }
 
 export function BookingWizardContent({
-    conversationId,
+    conversationId: initialConversationId,
     artistServices,
     artistSettings,
     isArtist,
@@ -114,24 +116,42 @@ export function BookingWizardContent({
     isPendingProposalAction,
     artistId,
     showGoToChat,
-    onGoToChat
+    onGoToChat,
+    initialDate
 }: BookingWizardContentProps) {
-    const [step, setStep] = useState<BookingStep>('service');
+    const [step, setStep] = useState<BookingStep>(initialConversationId ? 'service' : 'client');
+    const [conversationId, setConversationId] = useState<number | undefined>(initialConversationId);
     const [selectedService, setSelectedService] = useState<any>(null);
     const [showPromotionSheet, setShowPromotionSheet] = useState(false);
     const [appliedPromotion, setAppliedPromotion] = useState<{
         id: number; name: string; discountAmount: number; finalAmount: number;
     } | null>(null);
     const [frequency, setFrequency] = useState<"single" | "consecutive" | "weekly" | "biweekly" | "monthly">("consecutive");
-    const [startDate] = useState(new Date());
+    const [startDate] = useState(initialDate || new Date());
+
+    // -- Client Selection State --
+    const [clientSearch, setClientSearch] = useState("");
+    const [isAddingNewClient, setIsAddingNewClient] = useState(false);
+    const [newClientData, setNewClientData] = useState({ name: "", email: "", phone: "" });
+    const [isCreatingClient, setIsCreatingClient] = useState(false);
 
     // -- Queries & Mutations --
+    const { data: clients, isLoading: isLoadingClients } = trpc.conversations.getClients.useQuery(undefined, {
+        enabled: isArtist && step === 'client'
+    });
+
+    const filteredClients = clients?.filter(c =>
+        c?.name?.toLowerCase().includes(clientSearch.toLowerCase()) ||
+        c?.email?.toLowerCase().includes(clientSearch.toLowerCase())
+    ).slice(0, 5) || [];
+
+    const getOrCreateConversation = trpc.conversations.getOrCreate.useMutation();
     const {
         data: availability,
         isPending: isLoadingAvailability,
         error: availabilityError
     } = trpc.booking.checkAvailability.useQuery({
-        conversationId,
+        conversationId: conversationId || 0,
         serviceName: selectedService?.name || '',
         serviceDuration: selectedService?.duration || 60,
         sittings: frequency === 'single' ? 1 : (selectedService?.sittings || 1),
@@ -140,14 +160,16 @@ export function BookingWizardContent({
         startDate,
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }, {
-        enabled: step === 'review' && !!selectedService,
+        enabled: step === 'review' && !!selectedService && !!conversationId,
         retry: false,
     });
 
     const utils = trpc.useUtils();
     const sendMessageMutation = trpc.messages.send.useMutation({
         onSuccess: () => {
-            utils.messages.list.invalidate({ conversationId });
+            if (conversationId) {
+                utils.messages.list.invalidate({ conversationId });
+            }
             toast.success("Proposal Sent Successfully");
             onClose();
             onBookingSuccess();
@@ -157,9 +179,11 @@ export function BookingWizardContent({
         }
     });
 
+    const createClientMutation = trpc.conversations.createClient.useMutation();
+
     // -- Handlers --
     const handleConfirmBooking = () => {
-        if (!availability?.dates || !selectedService) return;
+        if (!availability?.dates || !selectedService || !conversationId) return;
 
         const datesList = availability.dates
             .map((date: string | Date) => format(new Date(date), 'EEEE, MMMM do yyyy, h:mm a'))
@@ -195,8 +219,48 @@ export function BookingWizardContent({
         });
     };
 
+    const handleClientSelect = async (client: any) => {
+        if (!artistId) return;
+        try {
+            const convo = await getOrCreateConversation.mutateAsync({
+                artistId,
+                clientId: client.id
+            });
+            if (convo) {
+                setConversationId(convo.id);
+                setStep('service');
+            }
+        } catch (e) {
+            toast.error("Failed to start conversation");
+        }
+    };
+
+    const handleCreateClientAndConvo = async () => {
+        if (!artistId || !newClientData.name) return;
+        setIsCreatingClient(true);
+        try {
+            const convo = await createClientMutation.mutateAsync({
+                name: newClientData.name,
+                email: newClientData.email,
+                phone: newClientData.phone
+            });
+            if (convo) {
+                setConversationId(convo.id);
+                setStep('service');
+                setIsAddingNewClient(false);
+            }
+        } catch (e: any) {
+            toast.error("Failed to create client: " + e.message);
+        } finally {
+            setIsCreatingClient(false);
+        }
+    };
+
     const goBack = () => {
-        if (step === 'frequency') setStep('service');
+        if (step === 'service') {
+            if (!initialConversationId) setStep('client');
+        }
+        else if (step === 'frequency') setStep('service');
         else if (step === 'review') setStep('frequency');
     };
 
@@ -215,6 +279,7 @@ export function BookingWizardContent({
     // -- Step Titles --
     const getStepTitle = () => {
         switch (step) {
+            case 'client': return "Select Client";
             case 'service': return "Select Service";
             case 'frequency': return "Frequency";
             case 'review': return "Review";
@@ -452,6 +517,123 @@ export function BookingWizardContent({
                     </motion.div>
 
                     {/* Step Content */}
+                    {step === 'client' && (
+                        <div className="flex flex-col gap-3 -my-2 w-full pt-1">
+                            {!isAddingNewClient ? (
+                                <>
+                                    {/* Search Input */}
+                                    <div className={cn(card.base, card.bg, "px-3 py-2 flex items-center gap-2 rounded-[4px]")}>
+                                        <Loader2 className={cn("w-3.5 h-3.5 animate-spin text-muted-foreground", !isLoadingClients && "hidden")} />
+                                        {!isLoadingClients && <CalendarSearch className="w-3.5 h-3.5 text-muted-foreground" />}
+                                        <input
+                                            type="text"
+                                            placeholder="Search existing clients..."
+                                            className="bg-transparent border-none outline-none text-[11px] placeholder:text-muted-foreground/50 w-full"
+                                            value={clientSearch}
+                                            onChange={(e) => setClientSearch(e.target.value)}
+                                        />
+                                    </div>
+
+                                    {/* Client List */}
+                                    <div className="flex flex-col gap-1.5 min-h-[140px]">
+                                        {filteredClients?.map(client => (
+                                            <motion.button
+                                                key={client?.id}
+                                                variants={fab.animation.item}
+                                                className={cn(card.base, card.bg, card.interactive, "p-2.5 flex items-center gap-2.5 w-full text-left")}
+                                                onClick={() => handleClientSelect(client)}
+                                            >
+                                                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                                                    {client?.name?.charAt(0) || '?'}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-[11px] font-semibold text-foreground truncate">{client?.name}</p>
+                                                    <p className="text-[9px] text-muted-foreground truncate">{client?.email || 'No email'}</p>
+                                                </div>
+                                            </motion.button>
+                                        ))}
+
+                                        {clientSearch && filteredClients?.length === 0 && !isLoadingClients && (
+                                            <div className="py-8 text-center">
+                                                <p className="text-[10px] text-muted-foreground">No clients found matching "{clientSearch}"</p>
+                                            </div>
+                                        )}
+
+                                        {!clientSearch && filteredClients.length === 0 && !isLoadingClients && (
+                                            <div className="py-8 text-center">
+                                                <p className="text-[10px] text-muted-foreground italic">Search for a client or add a new one</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Add New Button */}
+                                    <button
+                                        onClick={() => setIsAddingNewClient(true)}
+                                        className={cn(card.base, card.bgAccent, card.interactive, "p-2.5 flex items-center justify-center gap-2 w-full mt-1 border border-primary/20")}
+                                    >
+                                        <div className={cn(fab.itemButtonHighlight, "!w-6 !h-6")}>
+                                            <Send className="w-3 h-3" />
+                                        </div>
+                                        <span className="text-[10px] font-bold text-foreground">Add New Client</span>
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    {/* New Client Form */}
+                                    <div className="space-y-3">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Client Name</label>
+                                            <input
+                                                type="text"
+                                                className={cn(card.base, card.bg, "w-full px-3 py-2 text-[11px] outline-none border border-white/5 focus:border-primary/30 transition-colors")}
+                                                placeholder="e.g. John Smith"
+                                                value={newClientData.name}
+                                                onChange={(e) => setNewClientData({ ...newClientData, name: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Email Address</label>
+                                            <input
+                                                type="email"
+                                                className={cn(card.base, card.bg, "w-full px-3 py-2 text-[11px] outline-none border border-white/5 focus:border-primary/30 transition-colors")}
+                                                placeholder="j.smith@example.com"
+                                                value={newClientData.email}
+                                                onChange={(e) => setNewClientData({ ...newClientData, email: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Phone Number (Optional)</label>
+                                            <input
+                                                type="tel"
+                                                className={cn(card.base, card.bg, "w-full px-3 py-2 text-[11px] outline-none border border-white/5 focus:border-primary/30 transition-colors")}
+                                                placeholder="0412 345 678"
+                                                value={newClientData.phone}
+                                                onChange={(e) => setNewClientData({ ...newClientData, phone: e.target.value })}
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-2 pt-1">
+                                            <button
+                                                onClick={() => setIsAddingNewClient(false)}
+                                                className="py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider bg-white/5 text-muted-foreground hover:bg-white/10"
+                                            >
+                                                Back
+                                            </button>
+                                            <button
+                                                onClick={handleCreateClientAndConvo}
+                                                disabled={!newClientData.name || isCreatingClient}
+                                                className="py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground disabled:opacity-50 flex items-center justify-center gap-1.5"
+                                            >
+                                                {isCreatingClient ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                                                Continue
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )}
+
                     {step === 'service' && (
                         <div className="flex flex-col -my-2 w-full">
                             {artistServices.map(service => (

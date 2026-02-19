@@ -29,31 +29,23 @@ export default function CalendarAgendaPage() {
 
     // Register FAB Actions
     const fabActions = useMemo<any>(() => {
-        if (controller.selectedAppointment) {
-            // Check if it has proposal metadata
-            let proposal = null;
-            try {
-                const meta = controller.selectedAppointment.metadata ? JSON.parse(controller.selectedAppointment.metadata) : null;
-                if (meta?.type === 'project_proposal') {
-                    proposal = {
-                        message: controller.selectedAppointment,
-                        metadata: meta
-                    };
-                }
-            } catch (e) { }
-
+        if (controller.selectedAppointment || controller.isBookingStarted) {
             return (
                 <BookingWizardContent
-                    conversationId={controller.selectedAppointment.conversationId}
+                    conversationId={controller.selectedAppointment?.conversationId}
                     artistServices={controller.artistServices}
                     artistSettings={controller.artistSettings}
                     isArtist={controller.user?.role === 'artist'}
-                    onBookingSuccess={() => { }}
-                    onClose={() => controller.setSelectedAppointment(null)}
-                    selectedProposal={proposal}
-                    showGoToChat={!!controller.selectedAppointment.conversationId}
-                    onGoToChat={() => setLocation(`/chat/${controller.selectedAppointment.conversationId}`)}
+                    onBookingSuccess={() => { controller.refetch(); }}
+                    onClose={() => {
+                        controller.setSelectedAppointment(null);
+                        // The FAB state is managed by NavActionButton/FABMenu, but we can clear our local selection
+                    }}
+                    selectedProposal={controller.proposalData}
+                    showGoToChat={!!controller.selectedAppointment?.conversationId}
+                    onGoToChat={() => setLocation(`/chat/${controller.selectedAppointment?.conversationId}`)}
                     artistId={controller.user?.id}
+                    initialDate={controller.bookingInitialDate}
                 />
             );
         }
@@ -103,7 +95,7 @@ export default function CalendarAgendaPage() {
         }
 
         return items;
-    }, [controller.isBreakdownOpen, controller.toggleBreakdown, controller.selectedAppointment, controller.user?.role, controller.user?.id, setLocation]);
+    }, [controller.isBreakdownOpen, controller.toggleBreakdown, controller.selectedAppointment, controller.isBookingStarted, controller.proposalData, controller.bookingInitialDate, controller.user?.role, controller.user?.id, setLocation, controller.artistServices, controller.artistSettings, controller.refetch]);
 
     useRegisterFABActions("calendar", fabActions);
 
@@ -162,6 +154,7 @@ export default function CalendarAgendaPage() {
                         parentRef={controller.parentRef}
                         workSchedule={controller.workSchedule}
                         onAppointmentTap={controller.handleAppointmentTap}
+                        onDateTap={controller.startBooking}
                     />
                 </div>
 

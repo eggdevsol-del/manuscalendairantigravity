@@ -190,9 +190,24 @@ export function useCalendarAgendaController() {
     }, [artistSettings]);
 
     const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+    const [isBookingStarted, setIsBookingStarted] = useState(false);
+    const [bookingInitialDate, setBookingInitialDate] = useState<Date | undefined>(undefined);
+
+    const { data: proposalData, isPending: isLoadingProposal } = trpc.appointments.getProposalForAppointment.useQuery(
+        selectedAppointment?.id,
+        { enabled: !!selectedAppointment?.id }
+    );
 
     const handleAppointmentTap = useCallback((apt: any) => {
+        setIsBookingStarted(false);
         setSelectedAppointment(apt);
+        setFABOpen(true);
+    }, [setFABOpen]);
+
+    const startBooking = useCallback((date?: Date) => {
+        setSelectedAppointment(null);
+        setBookingInitialDate(date);
+        setIsBookingStarted(true);
         setFABOpen(true);
     }, [setFABOpen]);
 
@@ -207,8 +222,13 @@ export function useCalendarAgendaController() {
         agendaDates,
         handleDateTap,
         handleAppointmentTap,
+        startBooking,
+        isBookingStarted,
+        bookingInitialDate,
         selectedAppointment,
         setSelectedAppointment,
+        proposalData,
+        isLoadingProposal,
         // No handleScroll anymore, handled by hook
         refetch,
         weeklyIncome,

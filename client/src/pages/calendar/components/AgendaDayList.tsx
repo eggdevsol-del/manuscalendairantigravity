@@ -14,11 +14,12 @@ interface AgendaDayListProps {
     onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
     workSchedule?: any;
     onAppointmentTap?: (apt: any) => void;
+    onDateTap?: (date: Date) => void;
 }
 
 const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef, onScroll, workSchedule, onAppointmentTap }: AgendaDayListProps) {
+export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef, onScroll, workSchedule, onAppointmentTap, onDateTap }: AgendaDayListProps) {
     return (
         <div
             ref={parentRef}
@@ -63,7 +64,12 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                                     </h2>
                                     <p className="text-sm text-muted-foreground">{format(date, "d MMMM")}</p>
                                 </div>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-accent/20 hover:bg-accent/40 text-muted-foreground">
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8 rounded-full bg-accent/20 hover:bg-accent/40 text-muted-foreground"
+                                    onClick={() => onDateTap?.(date)}
+                                >
                                     <Plus className="w-4 h-4" />
                                 </Button>
                             </div>
@@ -104,8 +110,11 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                                     })
                                 ) : (
                                     !isDesign && (
-                                        <div className="py-4 text-center text-sm text-muted-foreground/30 italic">
-                                            Nothing planned
+                                        <div
+                                            className="py-6 text-center text-sm text-muted-foreground/30 italic cursor-pointer hover:bg-white/[0.02] rounded-md transition-colors"
+                                            onClick={() => onDateTap?.(date)}
+                                        >
+                                            Touch to add appointment
                                         </div>
                                     )
                                 )}
@@ -114,6 +123,6 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                     );
                 })}
             </div>
-        </div >
+        </div>
     );
 }
