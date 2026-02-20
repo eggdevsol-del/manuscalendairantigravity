@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useRegisterFABActions } from "@/contexts/BottomNavContext";
+import { useRegisterFABActions, useBottomNav } from "@/contexts/BottomNavContext";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button, Dialog, DialogTitle, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
@@ -27,7 +27,7 @@ import { DashboardFABActions } from "@/features/dashboard/DashboardActions";
 // --- Types ---
 
 // Extended task type that can hold either legacy or server task data
-interface ExtendedTask {
+export interface ExtendedTask {
     id: string;
     title: string;
     context?: string;
@@ -78,6 +78,7 @@ export default function Dashboard() {
     const [, setLocation] = useLocation();
     const [activeIndex, setActiveIndex] = useState(0);
     const selectedDate = new Date();
+    const { isFABOpen, setFABOpen } = useBottomNav();
 
     // Legacy Feature Hook (for Social and Personal)
     const { tasks: legacyTasks, actions: legacyActions, stats, config } = useDashboardTasks();
@@ -120,6 +121,13 @@ export default function Dashboard() {
             setShowSnapshotModal(true);
         }
     }, [showSnapshot]);
+
+    // Clear selected task when FAB closes
+    useEffect(() => {
+        if (!isFABOpen) {
+            setSelectedTask(null);
+        }
+    }, [isFABOpen]);
 
     // Derived State
     const activeCategory = TITLES[activeIndex].toLowerCase() as 'business' | 'social' | 'personal';
@@ -168,7 +176,7 @@ export default function Dashboard() {
             setTaskStartTime(startTime);
         }
 
-        setShowTaskSheet(true);
+        setFABOpen(true);
     };
 
     const executeAction = async (task: ExtendedTask) => {
@@ -214,7 +222,7 @@ export default function Dashboard() {
             // Legacy task completion
             legacyActions.markDone(task.id);
         }
-        setShowTaskSheet(false);
+        setFABOpen(false);
     };
 
     const handleSnooze = (task: ExtendedTask) => {
@@ -222,7 +230,7 @@ export default function Dashboard() {
             legacyActions.snooze(task.id);
         }
         // Note: Server tasks don't have snooze - they regenerate based on data
-        setShowTaskSheet(false);
+        setFABOpen(false);
     };
 
     const handleDismiss = (task: ExtendedTask) => {
@@ -230,7 +238,7 @@ export default function Dashboard() {
             legacyActions.dismiss(task.id);
         }
         // Note: Server tasks don't have dismiss - they regenerate based on data
-        setShowTaskSheet(false);
+        setFABOpen(false);
     };
 
     // Framer motion variants
@@ -359,117 +367,11 @@ export default function Dashboard() {
                 onShowSnapshot={() => setShowSnapshotModal(true)}
                 onShowSettings={() => setShowSettingsSheet(true)}
                 onShowChallenge={() => setShowChallengeSheet(true)}
+                selectedTask={selectedTask}
+                onExecuteAction={executeAction}
+                onMarkDone={handleMarkDone}
+                onSnooze={handleSnooze}
             />
-
-
-            {/* --- TASK SHEET (FullScreenSheet) --- */}
-            <FullScreenSheet
-                open={showTaskSheet}
-                onClose={() => setShowTaskSheet(false)}
-                title={selectedTask?.title || "Task"}
-                contextTitle={selectedTask?.title}
-                contextSubtitle={selectedTask?.context}
-            >
-                {selectedTask && (
-                    <div className="grid gap-3">
-
-
-                        {/* Primary Action */}
-                        {selectedTask.actionType !== 'none' && (
-                            selectedTask.actionType === 'email' && selectedTask._serverTask ? (
-                                <Button
-                                    variant="hero"
-                                    onClick={() => businessActions.openEmail(selectedTask._serverTask!)}
-                                >
-                                    <Mail className="mr-2 w-5 h-5" />
-                                    Send Email
-                                </Button>
-                            ) : (
-                                <Button
-                                    variant="hero"
-                                    onClick={() => executeAction(selectedTask)}
-                                >
-                                    {selectedTask.actionType === 'sms' && <MessageSquare className="mr-2 w-5 h-5" />}
-                                    {selectedTask.actionType === 'social' && <ExternalLink className="mr-2 w-5 h-5" />}
-                                    {(selectedTask.actionType === 'internal' || selectedTask.actionType === 'in_app') && <Play className="mr-2 w-5 h-5" />}
-                                    {selectedTask._serverTask?.actionType === 'sms' ? 'Send SMS' :
-                                        selectedTask._serverTask?.actionType === 'in_app' ? 'Open in App' :
-                                            'Execute Action'}
-                                </Button>
-                            )
-                        )}
-
-                        {/* Secondary SMS Action (if available and not primary) */}
-                        {selectedTask._serverTask?.smsNumber && selectedTask._serverTask.actionType !== 'sms' && (
-                            <Button
-                                variant="secondary"
-                                className="w-full"
-                                onClick={() => businessActions.openSms(selectedTask._serverTask!)}
-                            >
-                                <MessageSquare className="mr-2 w-5 h-5" />
-                                Send SMS
-                            </Button>
-                        )}
-
-                        {/* Secondary Email Action (if available and not primary) */}
-                        {selectedTask._serverTask?.emailRecipient && selectedTask._serverTask.actionType !== 'email' && (
-                            <Button
-                                variant="secondary"
-                                className="w-full"
-                                onClick={() => businessActions.openEmail(selectedTask._serverTask!)}
-                            >
-                                <Mail className="mr-2 w-5 h-5" />
-                                Send Email
-                            </Button>
-                        )}
-
-                        {/* Task Management Actions */}
-                        <Button
-                            variant="secondary"
-                            className="w-full"
-                            onClick={() => handleMarkDone(selectedTask)}
-                            disabled={completingTask === `${selectedTask._serverTask?.taskType}-${selectedTask._serverTask?.relatedEntityId || 'none'}`}
-                        >
-                            <Check className="mr-2 w-5 h-5 text-green-500" />
-                            Mark Completed
-                        </Button>
-
-                        {/* Only show snooze/dismiss for non-server tasks */}
-                        {!selectedTask._serverTask && (
-                            <div className="grid grid-cols-2 gap-3">
-                                <Button
-                                    variant="outline"
-                                    className="w-full"
-                                    onClick={() => handleSnooze(selectedTask)}
-                                >
-                                    <Clock className="mr-2 w-4 h-4" />
-                                    Snooze 24h
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="w-full text-muted-foreground"
-                                    onClick={() => handleDismiss(selectedTask)}
-                                >
-                                    <X className="mr-2 w-4 h-4" />
-                                    Dismiss
-                                </Button>
-                            </div>
-                        )}
-
-                        {/* Stop Challenge (Personal Only) */}
-                        {selectedTask.domain === 'personal' && stats.activeChallengeId && (
-                            <Button
-                                variant="ghost"
-                                className="w-full h-12 text-red-500 hover:text-red-400 hover:bg-red-500/10"
-                                onClick={() => { legacyActions.stopChallenge(); setShowTaskSheet(false); }}
-                            >
-                                <Trash2 className="mr-2 w-4 h-4" />
-                                Stop Challenge
-                            </Button>
-                        )}
-                    </div>
-                )}
-            </FullScreenSheet>
 
             {/* --- CHALLENGE SHEET (FullScreenSheet) --- */}
             <FullScreenSheet

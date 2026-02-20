@@ -490,29 +490,13 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0"
-                style={{
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    WebkitBackdropFilter: 'blur(4px)',
-                    backdropFilter: 'blur(4px)',
-                }}
-                onClick={step === 'done' ? onDismiss : undefined}
-            />
-            {/* Modal */}
-            <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="relative w-full max-w-[340px] rounded-3xl border border-white/10 bg-background/95 backdrop-blur-[20px] shadow-2xl p-6"
-            >
-                {renderStep()}
-            </motion.div>
-        </div>
+        <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            className="w-full flex flex-col pt-2 pb-4 px-1"
+        >
+            {renderStep()}
+        </motion.div>
     );
 }

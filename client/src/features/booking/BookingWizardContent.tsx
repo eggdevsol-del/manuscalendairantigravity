@@ -328,6 +328,31 @@ export function BookingWizardContent({
     const displayTotal = hasCurrentDiscount
         ? appliedPromotion.finalAmount / 100
         : hasStoredDiscount ? proposalMeta.finalAmount / 100 : proposalMeta?.totalCost;
+    // -- Render --
+    if (showCheckInModal && selectedAppointmentRaw) {
+        return (
+            <div className="flex flex-col w-full min-h-[50vh] pt-2 pb-6 px-1">
+                {/* Header */}
+                <motion.div variants={fab.animation.item} className={fab.itemRow}>
+                    <button onClick={() => setShowCheckInModal(null)} className={fab.itemButton}>
+                        <ArrowLeft className={fab.itemIconSize} />
+                    </button>
+                    <span className={fab.itemLabel + " uppercase tracking-widest font-bold flex-1"}>
+                        Checkout
+                    </span>
+                </motion.div>
+
+                <div className="flex-1 overflow-y-auto mt-4 px-2">
+                    <AppointmentCheckInModal
+                        isOpen={!!showCheckInModal}
+                        checkIn={{ appointment: selectedAppointmentRaw, phase: showCheckInModal }}
+                        onDismiss={() => setShowCheckInModal(null)}
+                        updateAppointment={updateAppointmentMutation}
+                    />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col gap-2 w-full">
@@ -831,16 +856,6 @@ export function BookingWizardContent({
                     onApply={(promo, discountAmount, finalAmount) => {
                         setAppliedPromotion({ id: promo.id, name: promo.name, discountAmount, finalAmount });
                     }}
-                />
-            )}
-
-            {/* Modal Layer for Check-In/Out */}
-            {showCheckInModal && selectedAppointmentRaw && (
-                <AppointmentCheckInModal
-                    isOpen={!!showCheckInModal}
-                    checkIn={{ appointment: selectedAppointmentRaw, phase: showCheckInModal }}
-                    onDismiss={() => setShowCheckInModal(null)}
-                    updateAppointment={updateAppointmentMutation}
                 />
             )}
         </div>
