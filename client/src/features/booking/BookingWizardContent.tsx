@@ -46,6 +46,7 @@ interface BookingWizardContentProps {
     /** Proposal to show in the FAB (overrides booking wizard) */
     selectedProposal?: ProposalData | null;
     selectedAppointmentRaw?: any;
+    clientNameOverride?: string;
     onAcceptProposal?: (appliedPromotion?: { id: number; discountAmount: number; finalAmount: number }) => void;
     onRejectProposal?: () => void;
     onCancelProposal?: () => void;
@@ -116,6 +117,7 @@ export function BookingWizardContent({
     onClose,
     selectedProposal,
     selectedAppointmentRaw,
+    clientNameOverride,
     onAcceptProposal,
     onRejectProposal,
     onCancelProposal,
@@ -370,7 +372,7 @@ export function BookingWizardContent({
                     {/* Header */}
                     <motion.div variants={fab.animation.item}>
                         <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-primary/70 mb-0.5">
-                            Project Proposal
+                            {clientNameOverride || "Project Proposal"}
                         </p>
                         <h3 className="text-sm font-bold text-foreground leading-tight">
                             {proposalMeta.serviceName}

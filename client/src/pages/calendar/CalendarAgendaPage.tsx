@@ -43,6 +43,7 @@ export default function CalendarAgendaPage() {
                     }}
                     selectedProposal={controller.proposalData}
                     selectedAppointmentRaw={controller.selectedAppointment}
+                    clientNameOverride={controller.selectedAppointment?.clientName}
                     isLoadingProposal={controller.isLoadingProposal}
                     showGoToChat={!!controller.selectedAppointment?.conversationId}
                     onGoToChat={() => setLocation(`/chat/${controller.selectedAppointment?.conversationId}`)}
