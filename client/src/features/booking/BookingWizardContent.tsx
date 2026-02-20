@@ -17,6 +17,9 @@ import {
     ChevronDown,
     MessageCircle,
 } from "lucide-react";
+import { formatLocalTime, getBusinessTimezone } from "../../../../shared/utils/timezone";
+import { AppointmentCheckInModal } from "@/components/modals/AppointmentCheckInModal";
+import type { CheckInPhase } from "@/features/appointments/useAppointmentCheckIn";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
@@ -138,6 +141,7 @@ export function BookingWizardContent({
     const [isAddingNewClient, setIsAddingNewClient] = useState(false);
     const [newClientData, setNewClientData] = useState({ name: "", email: "", phone: "" });
     const [isCreatingClient, setIsCreatingClient] = useState(false);
+    const [showCheckInModal, setShowCheckInModal] = useState<CheckInPhase | null>(null);
 
     // -- Queries & Mutations --
     const { data: clients, isLoading: isLoadingClients } = trpc.conversations.getClients.useQuery(undefined, {
@@ -194,11 +198,10 @@ export function BookingWizardContent({
                 utils.appointments.getByConversation.invalidate(conversationId);
                 utils.appointments.list.invalidate(); // Re-fetch calendar events
             }
-            toast.success("Client marked as arrived!");
             onBookingSuccess();
         },
         onError: (err) => {
-            toast.error("Failed to check-in client: " + err.message);
+            toast.error("Failed to update appointment: " + err.message);
         }
     });
 
@@ -516,16 +519,10 @@ export function BookingWizardContent({
                         <motion.div variants={fab.animation.item} className="pt-1 flex flex-col gap-2">
                             {!(selectedAppointmentRaw.clientArrived === 1 || selectedAppointmentRaw.clientArrived === true) ? (
                                 <button
-                                    onClick={() => {
-                                        updateAppointmentMutation.mutate({
-                                            id: selectedAppointmentRaw.id,
-                                            clientArrived: true
-                                        });
-                                    }}
-                                    disabled={updateAppointmentMutation.isPending}
+                                    onClick={() => setShowCheckInModal('arrival')}
                                     className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 flex items-center justify-center gap-2"
                                 >
-                                    {updateAppointmentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                                    <CheckCircle2 className="w-4 h-4" />
                                     Client Check-in
                                 </button>
                             ) : (
@@ -538,16 +535,10 @@ export function BookingWizardContent({
                                         <span className="text-[10px] font-bold uppercase tracking-widest">In Progress</span>
                                     </div>
                                     <button
-                                        onClick={() => {
-                                            updateAppointmentMutation.mutate({
-                                                id: selectedAppointmentRaw.id,
-                                                status: 'completed'
-                                            });
-                                        }}
-                                        disabled={updateAppointmentMutation.isPending}
+                                        onClick={() => setShowCheckInModal('completion')}
                                         className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 mt-1"
                                     >
-                                        {updateAppointmentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                                        <CheckCircle2 className="w-4 h-4" />
                                         Finish Project
                                     </button>
                                 </>
@@ -840,6 +831,16 @@ export function BookingWizardContent({
                     onApply={(promo, discountAmount, finalAmount) => {
                         setAppliedPromotion({ id: promo.id, name: promo.name, discountAmount, finalAmount });
                     }}
+                />
+            )}
+
+            {/* Modal Layer for Check-In/Out */}
+            {showCheckInModal && selectedAppointmentRaw && (
+                <AppointmentCheckInModal
+                    isOpen={!!showCheckInModal}
+                    checkIn={{ appointment: selectedAppointmentRaw, phase: showCheckInModal }}
+                    onDismiss={() => setShowCheckInModal(null)}
+                    updateAppointment={updateAppointmentMutation}
                 />
             )}
         </div>
