@@ -371,6 +371,12 @@ export default function Dashboard() {
                 onExecuteAction={executeAction}
                 onMarkDone={handleMarkDone}
                 onSnooze={handleSnooze}
+                onGoToChat={(task) => {
+                    const clientId = task._serverTask?.clientId;
+                    if (clientId) {
+                        setLocation(`/messages?client=${clientId}`);
+                    }
+                }}
             />
 
             {/* --- CHALLENGE SHEET (FullScreenSheet) --- */}

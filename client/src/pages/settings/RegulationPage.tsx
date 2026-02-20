@@ -95,22 +95,24 @@ export default function RegulationPage({ onBack }: { onBack: () => void }) {
                                 ) : (
                                     <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md">
                                         <div className="overflow-x-auto">
-                                            <table className="w-full text-left text-xs border-collapse">
+                                            <table className="w-full text-left text-xs border-collapse min-w-max">
                                                 <thead>
                                                     <tr className="bg-white/10 text-muted-foreground font-bold uppercase tracking-wider">
-                                                        <th className="p-3 border-b border-white/10">Date</th>
-                                                        <th className="p-3 border-b border-white/10">Client</th>
-                                                        <th className="p-3 border-b border-white/10">Amount</th>
-                                                        <th className="p-3 border-b border-white/10">Payment</th>
+                                                        <th className="p-3 border-b border-white/10 whitespace-nowrap">Date</th>
+                                                        <th className="p-3 border-b border-white/10 whitespace-nowrap">Client</th>
+                                                        <th className="p-3 border-b border-white/10 whitespace-nowrap">Artist License</th>
+                                                        <th className="p-3 border-b border-white/10 whitespace-nowrap">Amount</th>
+                                                        <th className="p-3 border-b border-white/10 whitespace-nowrap">Payment</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {logs.map((log) => (
                                                         <tr key={log.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                                            <td className="p-3 font-mono">{new Date(log.date).toLocaleDateString()}</td>
-                                                            <td className="p-3 font-medium">{log.clientName}</td>
-                                                            <td className="p-3 text-green-400 font-bold">${(log.amountPaid / 100).toFixed(2)}</td>
-                                                            <td className="p-3 text-muted-foreground">{log.paymentMethod}</td>
+                                                            <td className="p-3 font-mono whitespace-nowrap">{new Date(log.date).toLocaleDateString()}</td>
+                                                            <td className="p-3 font-medium whitespace-nowrap">{log.clientName}</td>
+                                                            <td className="p-3 text-muted-foreground whitespace-nowrap">{log.artistLicenceNumber}</td>
+                                                            <td className="p-3 text-green-400 font-bold whitespace-nowrap">${(log.amountPaid).toFixed(2)}</td>
+                                                            <td className="p-3 text-muted-foreground whitespace-nowrap">{log.paymentMethod}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>

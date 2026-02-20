@@ -70,6 +70,7 @@ export default function Settings() {
   const [businessAddress, setBusinessAddress] = useState("");
   const [bsb, setBsb] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
+  const [licenceNumber, setLicenceNumber] = useState("");
   const [depositAmount, setDepositAmount] = useState("");
   const [autoSendDepositInfo, setAutoSendDepositInfo] = useState(false);
 
@@ -140,6 +141,7 @@ export default function Settings() {
     setBusinessAddress(artistSettings.businessAddress || "");
     setBsb(artistSettings.bsb || "");
     setAccountNumber(artistSettings.accountNumber || "");
+    setLicenceNumber(artistSettings.licenceNumber || "");
     setDepositAmount(artistSettings.depositAmount?.toString() || "");
     setAutoSendDepositInfo(!!artistSettings.autoSendDepositInfo);
     initializedSettingsRef.current = true;
@@ -216,6 +218,7 @@ export default function Settings() {
         businessAddress,
         bsb,
         accountNumber,
+        licenceNumber,
         depositAmount: depositAmount ? parseInt(depositAmount) : undefined,
         autoSendDepositInfo: autoSendDepositInfo,
         workSchedule: artistSettings.workSchedule,
@@ -385,6 +388,20 @@ export default function Settings() {
                   />
                   <p className="text-xs text-muted-foreground">
                     This email will be used for sending notifications to clients
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="licenceNumber">Artist License Number <span className="text-muted-foreground font-normal">(Optional)</span></Label>
+                  <Input
+                    id="licenceNumber"
+                    value={licenceNumber}
+                    onChange={(e) => setLicenceNumber(e.target.value)}
+                    placeholder="E.g. 123456789"
+                    className="bg-white/5 border-white/10"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Required for generating health regulation logs (e.g. QLD Form 9)
                   </p>
                 </div>
 

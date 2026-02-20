@@ -31,6 +31,8 @@ export interface FABMenuItem {
     highlight?: boolean;
     /** Whether to close the menu when this item is clicked. Defaults to true. */
     closeOnClick?: boolean;
+    /** Extra Tailwind classes applied to the item text and icon container */
+    className?: string;
 }
 
 interface FABMenuProps {
@@ -121,12 +123,13 @@ export function FABMenu(props: FABMenuProps) {
                                             if (item.closeOnClick !== false) setIsOpen(false);
                                         }}
                                     >
-                                        <span className={cn(fab.itemLabel, "group-hover:text-foreground transition-colors")}>
+                                        <span className={cn(fab.itemLabel, item.className, "group-hover:text-foreground transition-colors")}>
                                             {item.label}
                                         </span>
                                         <div
                                             className={cn(
                                                 item.highlight ? fab.itemButtonHighlight : fab.itemButton,
+                                                item.className,
                                                 "group-hover:scale-110 group-active:scale-95 transition-all"
                                             )}
                                         >

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useRegisterFABActions } from "@/contexts/BottomNavContext";
-import { BarChart3, Settings, Plus, Send, Mail, MessageSquare, Check, ExternalLink, Play, Clock, Trash2 } from "lucide-react";
+import { BarChart3, Settings, Plus, Send, Mail, MessageSquare, Check, ExternalLink, Play, Clock, Trash2, Smartphone } from "lucide-react";
 import { type FABMenuItem } from "@/ui/FABMenu";
 import type { ExtendedTask } from "@/pages/Dashboard";
 
@@ -13,6 +13,7 @@ interface DashboardFABActionsProps {
     onExecuteAction?: (task: ExtendedTask) => void;
     onMarkDone?: (task: ExtendedTask) => void;
     onSnooze?: (task: ExtendedTask) => void;
+    onGoToChat?: (task: ExtendedTask) => void;
 }
 
 export function DashboardFABActions({
@@ -23,66 +24,96 @@ export function DashboardFABActions({
     selectedTask,
     onExecuteAction,
     onMarkDone,
-    onSnooze
+    onSnooze,
+    onGoToChat
 }: DashboardFABActionsProps) {
     const fabContent = useMemo<FABMenuItem[]>(() => {
         const items: FABMenuItem[] = [];
 
         // If a task is selected, show Task Actions instead of Global Dashboard actions
         if (selectedTask) {
-            // 1. Primary Action
-            if (selectedTask.actionType !== 'none') {
-                if (selectedTask.actionType === 'email' && selectedTask._serverTask) {
-                    items.push({
-                        id: 'task-action-primary',
-                        label: 'Send Email',
-                        icon: Mail,
-                        onClick: () => onExecuteAction?.(selectedTask),
-                        highlight: true
-                    });
-                } else {
-                    let IconItem = Play;
-                    if (selectedTask.actionType === 'sms') IconItem = MessageSquare;
-                    if (selectedTask.actionType === 'social') IconItem = ExternalLink;
+            if (selectedTask._serverTask) {
+                // FOUR FIXED ACTIONS FOR BUSINESS TASKS
 
-                    let label = 'Execute Action';
-                    if (selectedTask._serverTask?.actionType === 'sms') label = 'Send SMS';
-                    else if (selectedTask._serverTask?.actionType === 'in_app') label = 'Open in App';
-
-                    items.push({
-                        id: 'task-action-primary',
-                        label,
-                        icon: IconItem,
-                        onClick: () => onExecuteAction?.(selectedTask),
-                        highlight: true
-                    });
-                }
-            }
-
-            // 2. Secondary SMS Action (if available and not primary)
-            if (selectedTask._serverTask?.smsNumber && selectedTask._serverTask.actionType !== 'sms') {
+                // 1. Send Email
                 items.push({
-                    id: 'task-action-sms',
-                    label: 'Send SMS',
-                    icon: MessageSquare,
+                    id: 'task-action-email',
+                    label: 'Send Email',
+                    icon: Mail,
                     onClick: () => {
-                        // We can encode a custom payload or just rely on onExecute handling it. 
-                        // For simplicity we will rely on onExecute knowing if it's forced, 
-                        // but since we don't have businessActions here we'll just skip the deep secondary actions natively and keep the FAB lean.
+                        // Mutate action payload temporarily to map to email just in case
+                        const tempTask = { ...selectedTask, actionType: 'email' as const };
+                        onExecuteAction?.(tempTask);
                     }
                 });
-            }
 
-            // 3. Mark Completed Action
-            items.push({
-                id: 'task-mark-done',
-                label: 'Mark Completed',
-                icon: Check,
-                onClick: () => onMarkDone?.(selectedTask)
-            });
+                // 2. Send SMS
+                if (selectedTask._serverTask.smsNumber) {
+                    items.push({
+                        id: 'task-action-sms',
+                        label: 'Send SMS',
+                        icon: Smartphone,
+                        onClick: () => {
+                            const tempTask = { ...selectedTask, actionType: 'sms' as const };
+                            onExecuteAction?.(tempTask);
+                        }
+                    });
+                }
 
-            // 4. Snooze (legacy only)
-            if (!selectedTask._serverTask) {
+                // 3. Mark Completed (Green)
+                items.push({
+                    id: 'task-mark-done',
+                    label: 'Mark Completed',
+                    icon: Check,
+                    onClick: () => onMarkDone?.(selectedTask),
+                    className: "text-green-400"
+                });
+
+                // 4. Go to Messages
+                if (selectedTask._serverTask.clientId) {
+                    items.push({
+                        id: 'task-goto-chat',
+                        label: 'Go to Messages',
+                        icon: MessageSquare,
+                        onClick: () => onGoToChat?.(selectedTask)
+                    });
+                }
+            } else {
+                // LEGACY TASKS (Personal / Social)
+                // 1. Primary Action
+                if (selectedTask.actionType !== 'none') {
+                    if (selectedTask.actionType === 'email') {
+                        items.push({
+                            id: 'task-action-primary',
+                            label: 'Send Email',
+                            icon: Mail,
+                            onClick: () => onExecuteAction?.(selectedTask),
+                            highlight: true
+                        });
+                    } else {
+                        let IconItem = Play;
+                        if (selectedTask.actionType === 'sms') IconItem = MessageSquare;
+                        if (selectedTask.actionType === 'social') IconItem = ExternalLink;
+
+                        items.push({
+                            id: 'task-action-primary',
+                            label: 'Execute Action',
+                            icon: IconItem,
+                            onClick: () => onExecuteAction?.(selectedTask),
+                            highlight: true
+                        });
+                    }
+                }
+
+                // 2. Mark Completed Action
+                items.push({
+                    id: 'task-mark-done',
+                    label: 'Mark Completed',
+                    icon: Check,
+                    onClick: () => onMarkDone?.(selectedTask)
+                });
+
+                // 3. Snooze 
                 items.push({
                     id: 'task-snooze',
                     label: 'Snooze 24h',

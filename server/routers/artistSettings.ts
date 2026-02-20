@@ -20,6 +20,7 @@ export const artistSettingsRouter = router({
             services: JSON.stringify([]),
             publicSlug: null,
             funnelEnabled: false,
+            licenceNumber: null,
             createdAt: new Date(),
             updatedAt: new Date(),
         };
@@ -50,6 +51,7 @@ export const artistSettingsRouter = router({
                 services: z.string(),
                 publicSlug: z.string().optional(),
                 funnelEnabled: z.boolean().optional(),
+                licenceNumber: z.string().optional(),
             })
         )
         .mutation(async ({ ctx, input }) => {
