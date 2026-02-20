@@ -539,8 +539,18 @@ export function BookingWizardContent({
                         </motion.div>
                     )}
 
-                    {/* Artist actions — check-in & checkout */}
-                    {isArtist && proposalMeta.status === 'accepted' && selectedAppointmentRaw && (
+                    {/* Artist actions — completed state */}
+                    {isArtist && selectedAppointmentRaw?.status === 'completed' && (
+                        <motion.div variants={fab.animation.item} className="pt-1">
+                            <div className="flex items-center gap-2 px-3 py-2 bg-zinc-500/10 text-zinc-400 rounded-[4px] border border-zinc-500/20 justify-center">
+                                <CheckCircle2 className="w-4 h-4" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest">Project Complete</span>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* Artist actions — check-in & checkout flow */}
+                    {isArtist && proposalMeta.status === 'accepted' && selectedAppointmentRaw && selectedAppointmentRaw.status !== 'completed' && (
                         <motion.div variants={fab.animation.item} className="pt-1 flex flex-col gap-2">
                             {!(selectedAppointmentRaw.clientArrived === 1 || selectedAppointmentRaw.clientArrived === true) ? (
                                 <button
