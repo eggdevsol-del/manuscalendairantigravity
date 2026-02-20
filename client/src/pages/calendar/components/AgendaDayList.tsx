@@ -1,5 +1,5 @@
 import { format, isToday, getDay } from "date-fns";
-import { Plus } from "lucide-react";
+import { Plus, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { tokens } from "@/ui/tokens";
@@ -106,8 +106,13 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                                                     <span>{apt.clientName || ""}</span>
                                                 </div>
 
-                                                {/* In Progress Overlay */}
-                                                {(apt.clientArrived === 1 || apt.clientArrived === true) && (
+                                                {/* Status Overlay */}
+                                                {apt.status === 'completed' ? (
+                                                    <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-0.5 bg-zinc-500/20 text-zinc-400 rounded-full border border-zinc-500/50 z-20">
+                                                        <CheckCircle2 className="w-3 h-3" />
+                                                        <span className="text-[9px] font-bold uppercase tracking-widest">Completed</span>
+                                                    </div>
+                                                ) : ((apt.clientArrived === 1 || apt.clientArrived === true) && (
                                                     <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)] z-20">
                                                         <span className="relative flex h-1.5 w-1.5">
                                                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -115,7 +120,7 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                                                         </span>
                                                         <span className="text-[9px] font-bold uppercase tracking-widest text-shadow-sm">In Progress</span>
                                                     </div>
-                                                )}
+                                                ))}
                                             </div>
                                         )
                                     })
