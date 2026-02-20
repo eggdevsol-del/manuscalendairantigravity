@@ -118,19 +118,21 @@ export const clientProfileRouter = router({
                     });
                 }
 
-                // Add lifecycle events from logs
+                // Add lifecycle events from logs (Consolidate to most recent only)
                 if (appt.logs && appt.logs.length > 0) {
-                    appt.logs.forEach((log: any) => {
-                        historyItems.push({
-                            id: `log-${log.id}`,
-                            type: 'log',
-                            date: log.createdAt,
-                            action: log.action,
-                            title: getActionTitle(log.action),
-                            description: getActionDescription(log.action, appt),
-                            performedBy: log.performedBy,
-                            appointmentId: appt.id
-                        });
+                    // Sort logs by createdAt descending to get the most recent one
+                    const sortedLogs = [...appt.logs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                    const latestLog = sortedLogs[0];
+
+                    historyItems.push({
+                        id: `log-${latestLog.id}`,
+                        type: 'log',
+                        date: latestLog.createdAt,
+                        action: latestLog.action,
+                        title: getActionTitle(latestLog.action),
+                        description: getActionDescription(latestLog.action, appt),
+                        performedBy: latestLog.performedBy,
+                        appointmentId: appt.id
                     });
                 }
             });
