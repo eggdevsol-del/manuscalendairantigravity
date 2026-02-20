@@ -408,21 +408,23 @@ export function BookingWizardContent({
                     {proposalDates.length > 0 && (
                         <motion.div variants={fab.animation.item} className="space-y-1">
                             <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Schedule</p>
-                            {proposalDates.slice(0, 4).map((dateStr: string, i: number) => (
-                                <div key={i} className={cn(card.base, card.bg, "flex items-center gap-2 p-1.5 rounded-[4px]")}>
-                                    <span className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
-                                        {i + 1}
-                                    </span>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[10px] font-semibold text-foreground truncate">
-                                            {format(new Date(dateStr), "EEE, MMM d")}
-                                        </p>
-                                        <p className="text-[8px] text-muted-foreground">
-                                            {format(new Date(dateStr), "h:mm a")} · {proposalMeta.serviceDuration}m
-                                        </p>
+                            <div className="max-h-[160px] overflow-y-auto no-scrollbar space-y-1 pr-1">
+                                {proposalDates.map((dateStr: string, i: number) => (
+                                    <div key={i} className={cn(card.base, card.bg, "flex items-center gap-2 p-1.5 rounded-[4px]")}>
+                                        <span className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
+                                            {i + 1}
+                                        </span>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] font-semibold text-foreground truncate">
+                                                {format(new Date(dateStr), "EEE, MMM d")}
+                                            </p>
+                                            <p className="text-[8px] text-muted-foreground">
+                                                {format(new Date(dateStr), "h:mm a")} · {proposalMeta.serviceDuration}m
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </motion.div>
                     )}
 

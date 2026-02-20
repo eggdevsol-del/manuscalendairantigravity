@@ -125,19 +125,28 @@ export async function updateAppointment(
 
     // Determine action - rescheduled if time changed, else status change, etc.
     let action: any = 'completed'; // default
+    let shouldLogAction = true;
+
     if (updates.status) {
-        action = updates.status;
+        if (updates.status === oldAppt.status) {
+            // If status hasn't actually changed, it's just a duplicate save block (e.g. from UI spamming)
+            shouldLogAction = false;
+        } else {
+            action = updates.status;
+        }
     } else if (updates.startTime || updates.endTime) {
         action = 'rescheduled';
     }
 
-    await logAppointmentAction({
-        appointmentId: id,
-        action,
-        performedBy,
-        oldValue: JSON.stringify(oldAppt),
-        newValue: JSON.stringify(newAppt)
-    });
+    if (shouldLogAction) {
+        await logAppointmentAction({
+            appointmentId: id,
+            action,
+            performedBy,
+            oldValue: JSON.stringify(oldAppt),
+            newValue: JSON.stringify(newAppt)
+        });
+    }
 
     // Handle special outcome-based logic
     if (updates.status === 'completed') {

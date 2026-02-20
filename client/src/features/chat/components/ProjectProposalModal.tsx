@@ -92,7 +92,7 @@ export function ProjectProposalModal({
                 <span className={tokens.proposalModal.sectionLabel}>SCHEDULE BREAKDOWN</span>
                 <span className={cn("bg-primary/20 text-primary px-2 py-0.5", tokens.proposalModal.badgeText, tokens.proposalModal.badgeRadius)}>{dateList.length} Sessions</span>
             </div>
-            <div className="space-y-3">
+            <div className="max-h-[160px] overflow-y-auto no-scrollbar space-y-3 pr-1">
                 {dateList.map((dateStr, i) => (
                     <div key={i} className="flex items-center gap-4">
                         <div className={cn("flex items-center justify-center text-muted-foreground font-bold text-xs", tokens.proposalModal.sessionBadge)}>

@@ -35,8 +35,6 @@ export default function BottomNav() {
     const { navItems, contextualRow, isContextualVisible, setContextualVisible } = useBottomNav();
     const { isTeaserClient } = useTeaser();
 
-    const swipeStartY = useRef<number | null>(null);
-
     const isActive = useCallback((p?: string) => {
         if (!p) return false;
         if (p === "/" && location === "/") return true;
@@ -45,27 +43,6 @@ export default function BottomNav() {
     }, [location]);
 
     const hasContextualRow = contextualRow !== null;
-    const showSwipeIndicator = hasContextualRow && !isContextualVisible;
-    const showSwipeDownIndicator = isContextualVisible;
-
-    const handleIndicatorTouchStart = useCallback((e: React.TouchEvent) => {
-        swipeStartY.current = e.touches[0].clientY;
-    }, []);
-
-    const handleIndicatorTouchEnd = useCallback((e: React.TouchEvent) => {
-        if (swipeStartY.current === null) return;
-
-        const deltaY = swipeStartY.current - e.changedTouches[0].clientY;
-        swipeStartY.current = null;
-
-        if (deltaY > SWIPE_THRESHOLD && !isContextualVisible && hasContextualRow) {
-            setContextualVisible(true);
-        } else if (deltaY < -SWIPE_THRESHOLD && isContextualVisible) {
-            setContextualVisible(false);
-        } else if (deltaY > SWIPE_THRESHOLD && isContextualVisible) {
-            setContextualVisible(false);
-        }
-    }, [isContextualVisible, hasContextualRow, setContextualVisible]);
 
     const renderButton = (item: any) => {
         const active = isActive(item.path);
@@ -120,36 +97,6 @@ export default function BottomNav() {
 
     return (
         <nav className="fixed bottom-0 inset-x-0 z-[50] select-none">
-            {/* Swipe indicator - swipe up to show contextual row */}
-            {showSwipeIndicator && (
-                <div
-                    className="absolute -top-12 left-0 right-0 h-16 flex items-center justify-center cursor-pointer z-10"
-                    onClick={() => setContextualVisible(true)}
-                    onTouchStart={handleIndicatorTouchStart}
-                    onTouchEnd={handleIndicatorTouchEnd}
-                >
-                    <div className="flex flex-col items-center gap-0.5 opacity-60">
-                        <div className="w-8 h-1 rounded-full bg-gray-600 dark:bg-white/60" />
-                        <span className="text-[10px] text-gray-600 dark:text-white/60 font-medium">Swipe up</span>
-                    </div>
-                </div>
-            )}
-
-            {/* Swipe indicator - swipe down to close contextual row */}
-            {showSwipeDownIndicator && (
-                <div
-                    className="absolute -top-12 left-0 right-0 h-16 flex items-center justify-center cursor-pointer z-10"
-                    onClick={() => setContextualVisible(false)}
-                    onTouchStart={handleIndicatorTouchStart}
-                    onTouchEnd={handleIndicatorTouchEnd}
-                >
-                    <div className="flex flex-col items-center gap-0.5 opacity-60">
-                        <div className="w-8 h-1 rounded-full bg-gray-600 dark:bg-white/60" />
-                        <span className="text-[10px] text-gray-600 dark:text-white/60 font-medium">Swipe to close</span>
-                    </div>
-                </div>
-            )}
-
             {/* Main container - Animating Height instead of Transform */}
             <motion.div
                 className="bg-gray-100/90 dark:bg-slate-950/60 backdrop-blur-[32px] border-t border-gray-200 dark:border-white/10 overflow-hidden"
@@ -161,8 +108,6 @@ export default function BottomNav() {
                 style={{
                     paddingBottom: "env(safe-area-inset-bottom)"
                 }}
-                onTouchStart={handleIndicatorTouchStart}
-                onTouchEnd={handleIndicatorTouchEnd}
             >
                 {/* Row Container */}
                 <div className="flex flex-col">
