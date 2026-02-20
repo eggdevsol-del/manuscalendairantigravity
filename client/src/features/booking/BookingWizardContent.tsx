@@ -42,6 +42,7 @@ interface BookingWizardContentProps {
     onClose: () => void;
     /** Proposal to show in the FAB (overrides booking wizard) */
     selectedProposal?: ProposalData | null;
+    selectedAppointmentRaw?: any;
     onAcceptProposal?: (appliedPromotion?: { id: number; discountAmount: number; finalAmount: number }) => void;
     onRejectProposal?: () => void;
     onCancelProposal?: () => void;
@@ -111,6 +112,7 @@ export function BookingWizardContent({
     onBookingSuccess,
     onClose,
     selectedProposal,
+    selectedAppointmentRaw,
     onAcceptProposal,
     onRejectProposal,
     onCancelProposal,
@@ -182,6 +184,23 @@ export function BookingWizardContent({
     });
 
     const createClientMutation = trpc.conversations.createClient.useMutation();
+
+    const updateAppointmentMutation = trpc.appointments.update.useMutation({
+        onSuccess: () => {
+            if (conversationId) {
+                utils.messages.list.invalidate({ conversationId });
+            }
+            if (selectedAppointmentRaw?.id) {
+                utils.appointments.getByConversation.invalidate(conversationId);
+                utils.appointments.list.invalidate(); // Re-fetch calendar events
+            }
+            toast.success("Client marked as arrived!");
+            onBookingSuccess();
+        },
+        onError: (err) => {
+            toast.error("Failed to check-in client: " + err.message);
+        }
+    });
 
     // -- Handlers --
     const handleConfirmBooking = () => {
@@ -489,6 +508,35 @@ export function BookingWizardContent({
                         <motion.div variants={fab.animation.item} className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-red-500/10">
                             <AlertCircle className="w-3.5 h-3.5 text-red-500" />
                             <span className="text-[10px] font-bold text-red-500">Declined</span>
+                        </motion.div>
+                    )}
+
+                    {/* Artist actions — check-in */}
+                    {isArtist && proposalMeta.status === 'accepted' && selectedAppointmentRaw && (
+                        <motion.div variants={fab.animation.item} className="pt-1">
+                            {!(selectedAppointmentRaw.clientArrived === 1 || selectedAppointmentRaw.clientArrived === true) ? (
+                                <button
+                                    onClick={() => {
+                                        updateAppointmentMutation.mutate({
+                                            id: selectedAppointmentRaw.id,
+                                            clientArrived: true
+                                        });
+                                    }}
+                                    disabled={updateAppointmentMutation.isPending}
+                                    className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500 text-white hover:bg-emerald-600 flex items-center justify-center gap-2"
+                                >
+                                    {updateAppointmentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                                    Client Check-in
+                                </button>
+                            ) : (
+                                <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/10 text-emerald-500 rounded-[4px] border border-emerald-500/20">
+                                    <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                    </span>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">In Progress</span>
+                                </div>
+                            )}
                         </motion.div>
                     )}
 

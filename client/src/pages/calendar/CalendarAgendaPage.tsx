@@ -42,6 +42,7 @@ export default function CalendarAgendaPage() {
                         setFABOpen(false);
                     }}
                     selectedProposal={controller.proposalData}
+                    selectedAppointmentRaw={controller.selectedAppointment}
                     isLoadingProposal={controller.isLoadingProposal}
                     showGoToChat={!!controller.selectedAppointment?.conversationId}
                     onGoToChat={() => setLocation(`/chat/${controller.selectedAppointment?.conversationId}`)}
