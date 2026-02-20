@@ -29,7 +29,7 @@ export function ProfileHeader({ user, trustBadges, isEditMode, onEditAvatar }: P
                 )}
             </div>
 
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 mb-1">
+            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 mb-1">
                 {user.name}
             </h1>
 
@@ -46,8 +46,8 @@ export function ProfileHeader({ user, trustBadges, isEditMode, onEditAvatar }: P
                             variant="secondary"
                             className={`
                                 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 border
-                                ${badge.type === 'gold' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' : ''}
-                                ${badge.type === 'platinum' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : ''}
+                                ${badge.type === 'gold' ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 border-yellow-600/20 dark:border-yellow-500/20' : ''}
+                                ${badge.type === 'platinum' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-600/20 dark:border-purple-500/20' : ''}
                             `}
                         >
                             {badge.label}

@@ -180,10 +180,14 @@ export function ProfileSwipeCarousel({ tabs, defaultTab, onTabChange }: ProfileS
             >
                 {containerWidth > 0 && (
                     <>
-                        {/* 2) Dedicated Horizontal Gesture Capture Layer */}
+                        {/* Visual Track (with gestures attached directly) */}
                         <motion.div
-                            className="absolute inset-0 z-30"
-                            style={{ x: canDrag ? x : undefined }} // Overlay moves with x to maintain drag consistency
+                            className="flex h-full relative z-10"
+                            style={{
+                                x,
+                                width: trackWidthPx,
+                            }}
+                            animate={controls}
                             drag={canDrag ? "x" : false}
                             dragDirectionLock
                             dragConstraints={dragConstraints}
@@ -191,22 +195,16 @@ export function ProfileSwipeCarousel({ tabs, defaultTab, onTabChange }: ProfileS
                             dragMomentum={false}
                             onDragStart={handleDragStart}
                             onDragEnd={handleDragEnd}
-                        />
-
-                        {/* 3) Visual Track (Underneath) */}
-                        <motion.div
-                            className="flex h-full pointer-events-none relative z-10"
-                            style={{
-                                x,
-                                width: trackWidthPx,
-                            }}
-                            animate={controls}
                         >
                             {tabs.map((tab) => (
                                 <div
                                     key={tab.id}
-                                    className="h-full overflow-y-auto overflow-x-hidden no-scrollbar pb-24 shrink-0 grow-0 pointer-events-auto"
+                                    className="h-full overflow-y-auto overflow-x-hidden no-scrollbar pb-24 shrink-0 grow-0"
                                     style={{ flex: "0 0 auto", width: containerWidth }}
+                                    onPointerDown={(e) => {
+                                        // Prevents the drag gesture from immediately capturing vertical scrolls
+                                        // on touch devices if they start slightly horizontal
+                                    }}
                                 >
                                     <div className="px-4 h-full">{tab.content}</div>
                                 </div>
