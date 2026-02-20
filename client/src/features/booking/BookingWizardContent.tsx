@@ -511,9 +511,9 @@ export function BookingWizardContent({
                         </motion.div>
                     )}
 
-                    {/* Artist actions — check-in */}
+                    {/* Artist actions — check-in & checkout */}
                     {isArtist && proposalMeta.status === 'accepted' && selectedAppointmentRaw && (
-                        <motion.div variants={fab.animation.item} className="pt-1">
+                        <motion.div variants={fab.animation.item} className="pt-1 flex flex-col gap-2">
                             {!(selectedAppointmentRaw.clientArrived === 1 || selectedAppointmentRaw.clientArrived === true) ? (
                                 <button
                                     onClick={() => {
@@ -523,19 +523,34 @@ export function BookingWizardContent({
                                         });
                                     }}
                                     disabled={updateAppointmentMutation.isPending}
-                                    className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500 text-white hover:bg-emerald-600 flex items-center justify-center gap-2"
+                                    className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 flex items-center justify-center gap-2"
                                 >
                                     {updateAppointmentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                                     Client Check-in
                                 </button>
                             ) : (
-                                <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/10 text-emerald-500 rounded-[4px] border border-emerald-500/20">
-                                    <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                    </span>
-                                    <span className="text-[10px] font-bold uppercase tracking-widest">In Progress</span>
-                                </div>
+                                <>
+                                    <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/10 text-emerald-500 rounded-[4px] border border-emerald-500/20 justify-center">
+                                        <span className="relative flex h-2 w-2">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                        </span>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest">In Progress</span>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            updateAppointmentMutation.mutate({
+                                                id: selectedAppointmentRaw.id,
+                                                status: 'completed'
+                                            });
+                                        }}
+                                        disabled={updateAppointmentMutation.isPending}
+                                        className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 mt-1"
+                                    >
+                                        {updateAppointmentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                                        Finish Project
+                                    </button>
+                                </>
                             )}
                         </motion.div>
                     )}

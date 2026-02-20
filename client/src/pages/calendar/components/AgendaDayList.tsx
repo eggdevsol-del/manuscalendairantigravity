@@ -108,14 +108,12 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
 
                                                 {/* In Progress Overlay */}
                                                 {(apt.clientArrived === 1 || apt.clientArrived === true) && (
-                                                    <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] rounded-md flex items-center justify-center z-20 border border-emerald-500/30">
-                                                        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                                                            <span className="relative flex h-2 w-2">
-                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                                            </span>
-                                                            <span className="text-xs font-bold uppercase tracking-widest">In Progress</span>
-                                                        </div>
+                                                    <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)] z-20">
+                                                        <span className="relative flex h-1.5 w-1.5">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                                                        </span>
+                                                        <span className="text-[9px] font-bold uppercase tracking-widest text-shadow-sm">In Progress</span>
                                                     </div>
                                                 )}
                                             </div>

@@ -12,7 +12,7 @@ import { useMemo } from "react";
 import { type FABMenuItem } from "@/ui/FABMenu";
 import { BookingWizardContent } from "@/features/booking/BookingWizardContent";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useBottomNav } from "@/contexts/BottomNavContext";
 
 export default function CalendarAgendaPage() {
@@ -101,8 +101,49 @@ export default function CalendarAgendaPage() {
 
     useRegisterFABActions("calendar", fabActions);
 
+    // Gestures for toggling Month View
+    const touchStartX = useRef(0);
+    const touchStartY = useRef(0);
+    const touchEndX = useRef(0);
+    const touchEndY = useRef(0);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.targetTouches[0].clientX;
+        touchStartY.current = e.targetTouches[0].clientY;
+        touchEndX.current = e.targetTouches[0].clientX;
+        touchEndY.current = e.targetTouches[0].clientY;
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        touchEndX.current = e.targetTouches[0].clientX;
+        touchEndY.current = e.targetTouches[0].clientY;
+    };
+
+    const handleTouchEnd = () => {
+        const deltaY = touchEndY.current - touchStartY.current;
+        const deltaX = touchEndX.current - touchStartX.current;
+
+        // If it's a prominent vertical swipe and Month View is open
+        if (Math.abs(deltaY) > 50 && Math.abs(deltaY) > Math.abs(deltaX)) {
+            // Either Swipe Down or Swipe Up when Month View is open will close it
+            // Swipe Down often feels like "pulling the drawer closed" if the drawer opens downwards
+            if (controller.isBreakdownOpen) {
+                controller.toggleBreakdown();
+            } else if (deltaY > 50 && !controller.isBreakdownOpen) {
+                // Swipe down on the week view (when closed) could pull open the month view. 
+                // But only if we swipe on the header, otherwise we break list scrolling.
+                // We'll leave it out for now to avoid scrolling conflicts.
+            }
+        }
+    };
+
     return (
-        <div className="fixed inset-0 flex flex-col md:flex-row bg-transparent">
+        <div
+            className="fixed inset-0 flex flex-col md:flex-row bg-transparent"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+        >
             {/* 1. Underlying Breakdown Layer (visible when top layer slides down) */}
             {/* iPad: Relative, 50% width, always visible, z-0 */}
             <div className={cn(
