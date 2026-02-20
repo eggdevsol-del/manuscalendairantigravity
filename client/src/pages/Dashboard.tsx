@@ -183,10 +183,13 @@ export default function Dashboard() {
         const serverTask = task._serverTask;
 
         if (serverTask) {
+            // Use the explicit task.actionType override if present, otherwise fallback
+            const actionToExecute = task.actionType || serverTask.actionType;
+
             // Handle server-generated business tasks
-            switch (serverTask.actionType) {
+            switch (actionToExecute) {
                 case 'sms':
-                    if (serverTask.smsNumber && serverTask.smsBody) {
+                    if (serverTask.smsNumber) {
                         businessActions.openSms(serverTask);
                     }
                     break;
