@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Checkbox, Input, Label } from "@/components/ui";
+import { PageShell } from "@/components/ui/ssot";
+import { tokens } from "@/ui/tokens";
+import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, LogIn, Mail } from "lucide-react";
@@ -62,14 +65,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 px-4">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+    <PageShell className="justify-center items-center px-4">
+      <Card className={cn("w-full max-w-md shadow-2xl overflow-hidden", tokens.card.base, tokens.card.bg)}>
+        <CardHeader className="space-y-1 text-center bg-white/5 border-b border-white/5 pb-6">
+          <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]">
             <LogIn className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-3xl font-bold">Welcome Back</CardTitle>
-          <CardDescription className="text-base">
+          <CardTitle className="text-3xl font-bold tracking-tight text-foreground">Welcome Back</CardTitle>
+          <CardDescription className="text-base font-medium">
             Sign in to your account to continue
           </CardDescription>
         </CardHeader>
@@ -78,14 +81,14 @@ export default function Login() {
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                <Mail className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-14 bg-white/5 border-white/10 focus:border-primary/50 text-foreground"
                   disabled={isLoading}
                   required
                 />
@@ -101,19 +104,20 @@ export default function Login() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="h-14 bg-white/5 border-white/10 focus:border-primary/50 text-foreground pr-10"
                   disabled={isLoading}
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-4 text-muted-foreground hover:text-foreground outline-none"
                   disabled={isLoading}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
+                    <EyeOff className="h-6 w-6" />
                   ) : (
-                    <Eye className="h-5 w-5" />
+                    <Eye className="h-6 w-6" />
                   )}
                 </button>
               </div>
@@ -136,7 +140,7 @@ export default function Login() {
 
             <Button
               type="submit"
-              className="w-full h-12 text-lg font-semibold"
+              className={cn(tokens.button.hero, "mt-2")}
               disabled={isLoading}
             >
               {isLoading ? (
@@ -150,13 +154,13 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-8 space-y-4">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+                <span className="w-full border-t border-white/10" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
+              <div className="relative flex justify-center text-[10px] font-bold tracking-widest uppercase">
+                <span className="bg-background px-4 text-muted-foreground">
                   Don't have an account?
                 </span>
               </div>
@@ -164,8 +168,7 @@ export default function Login() {
 
             <Button
               type="button"
-              variant="outline"
-              className="w-full h-12"
+              className={cn(tokens.button.secondary, "w-full border border-white/5")}
               onClick={() => setLocation("/signup")}
               disabled={isLoading}
             >
@@ -174,8 +177,7 @@ export default function Login() {
 
             <Button
               type="button"
-              variant="ghost"
-              className="w-full"
+              className={cn(tokens.button.ghost, "w-full text-muted-foreground")}
               onClick={() => setLocation("/forgot-password")}
               disabled={isLoading}
             >
@@ -189,7 +191,7 @@ export default function Login() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageShell>
   );
 }
 
