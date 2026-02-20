@@ -372,10 +372,7 @@ export default function Dashboard() {
                 onMarkDone={handleMarkDone}
                 onSnooze={handleSnooze}
                 onGoToChat={(task) => {
-                    const clientId = task._serverTask?.clientId;
-                    if (clientId) {
-                        setLocation(`/messages?client=${clientId}`);
-                    }
+                    setLocation('/conversations');
                 }}
             />
 
