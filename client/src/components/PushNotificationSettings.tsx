@@ -5,12 +5,42 @@ import { requestNotificationPermission, isSubscribed, setExternalUserId, getSubs
 import { Bell, BellOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Capacitor } from '@capacitor/core';
+
+// Helper to convert VAPID key
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+// Safe conversion for TS downlevelIteration
+function arrayBufferToBase64(buffer: ArrayBuffer | null) {
+  if (!buffer) return '';
+  const binary = new Uint8Array(buffer);
+  let str = '';
+  for (let i = 0; i < binary.length; i++) {
+    str += String.fromCharCode(binary[i]);
+  }
+  return btoa(str);
+}
 
 export default function PushNotificationSettings() {
   const { user } = useAuth();
   const [isEnabled, setIsEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>("default");
+  const utils = trpc.useUtils();
+  const subscribeMutation = trpc.push.subscribe.useMutation();
 
   useEffect(() => {
     checkSubscriptionStatus();
@@ -18,8 +48,14 @@ export default function PushNotificationSettings() {
 
   const checkSubscriptionStatus = async () => {
     try {
+      let isNativePermissionGranted = false;
       if ('Notification' in window) {
         setPermission(Notification.permission);
+        if (Notification.permission === 'granted') {
+          isNativePermissionGranted = true;
+          // Optimistically set enabled to prevent UI flashing off while OneSignal initializes
+          setIsEnabled(true);
+        }
       }
 
       const subscribed = await isSubscribed();
@@ -29,7 +65,7 @@ export default function PushNotificationSettings() {
         setPermission("granted");
       }
 
-      setIsEnabled(subscribed);
+      setIsEnabled(isNativePermissionGranted || subscribed);
     } catch (error) {
       console.error('Failed to check subscription status:', error);
     }
@@ -64,7 +100,40 @@ export default function PushNotificationSettings() {
 
         // Get subscription ID for verification
         const subscriptionId = await getSubscriptionId();
-        console.log('[Notifications] Subscription ID:', subscriptionId);
+        console.log('[Notifications] OneSignal Subscription ID:', subscriptionId);
+
+        // --- VAPID Dual-Blast Fallback Registration for Web/PWA Users ---
+        if (!Capacitor.isNativePlatform() && 'serviceWorker' in navigator && 'PushManager' in window) {
+          try {
+            const keyData = await utils.push.getPublicKey.fetch();
+            if (keyData?.publicKey) {
+              const registration = await navigator.serviceWorker.ready;
+              const existingSub = await registration.pushManager.getSubscription();
+              if (existingSub) await existingSub.unsubscribe();
+
+              const sub = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(keyData.publicKey),
+              });
+
+              const p256dh = sub.getKey('p256dh');
+              const auth = sub.getKey('auth');
+              if (p256dh && auth) {
+                await subscribeMutation.mutateAsync({
+                  endpoint: sub.endpoint,
+                  keys: {
+                    p256dh: arrayBufferToBase64(p256dh),
+                    auth: arrayBufferToBase64(auth),
+                  },
+                  userAgent: navigator.userAgent,
+                });
+                console.log('[Notifications] VAPID Web Push synced for dual-blast backend');
+              }
+            }
+          } catch (vapidErr) {
+            console.error('[Notifications] VAPID dual-blast registration failed (OneSignal may still work):', vapidErr);
+          }
+        }
 
         setIsEnabled(true);
         toast.success("Push notifications enabled!");
