@@ -26,9 +26,14 @@ export function InlineFormSigning({ pendingForms, onSuccess, onClose, initialFor
 
     const { data: user } = trpc.auth.me.useQuery();
     const updateProfileMutation = trpc.auth.updateProfile.useMutation();
+    const utils = trpc.useContext();
 
     const signFormMutation = trpc.forms.signForm.useMutation({
         onSuccess: () => {
+            utils.clientProfile.getConsentForms.invalidate();
+            utils.clientProfile.getHistory.invalidate();
+            utils.forms.getPendingForms.invalidate();
+
             toast.success("Form signed successfully");
             onSuccess?.();
 
