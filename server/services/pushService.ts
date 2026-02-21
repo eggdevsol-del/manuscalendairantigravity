@@ -230,23 +230,31 @@ export async function sendTestPush(
     title?: string,
     body?: string
 ): Promise<{ success: boolean; results: PushResult[] }> {
-    // 1. Try legacy Web Push (VAPID)
-    const webPushResult = await sendPushNotification(userId, {
-        title: title || "Test Notification",
-        body: body || "This is a test web push from CalendAIr!",
-        url: "/",
-    });
-
-    // 2. Try the primary OneSignal system
+    // 1. Try the primary OneSignal system (Highly reliable on Android Chrome and Native)
     const oneSignalSuccess = await sendOneSignalPush({
         userIds: [userId],
         title: title || "Test Notification",
         message: body || "This is a test OneSignal push from CalendAIr!"
     });
 
+    // 2. Fall back to VAPID Web Push ONLY if OneSignal fails 
+    //    (e.g., iOS PWA silently drops cross-session external IDs)
+    if (!oneSignalSuccess) {
+        console.log(`[PushService] OneSignal delivery failed for ${userId}. Falling back to VAPID PushManager...`);
+        const webPushResult = await sendPushNotification(userId, {
+            title: title || "Test Notification",
+            body: body || "This is a test web push from CalendAIr!",
+            url: "/",
+        });
+        return {
+            success: webPushResult.success,
+            results: webPushResult.results
+        };
+    }
+
     return {
-        success: webPushResult.success || oneSignalSuccess,
-        results: webPushResult.results
+        success: true,
+        results: []
     };
 }
 
