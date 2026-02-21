@@ -2,6 +2,7 @@ import { format, startOfMonth, getDay, isSameMonth, startOfWeek, addDays } from 
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { getEventStyle } from "../utils/styles";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 interface MonthBreakdownProps {
     month: Date;
@@ -11,6 +12,9 @@ interface MonthBreakdownProps {
 }
 
 export function MonthBreakdown({ month, eventsByDay = {}, workSchedule, onDateTap }: MonthBreakdownProps) {
+    const { user } = useAuth();
+    const isClient = user?.role === 'client';
+
     // Generate fixed 5 weeks (35 days)
     const start = startOfWeek(startOfMonth(month)); // Default to Sunday start
     // We want exactly 35 days
@@ -55,6 +59,15 @@ export function MonthBreakdown({ month, eventsByDay = {}, workSchedule, onDateTa
             const deposit = Number(evt.depositAmount || 0);
             totalRemainingBalance += (price - deposit);
         });
+    });
+
+    // 3. Client Total Bookings (this month only)
+    let clientTotalBookingsThisMonth = 0;
+    Object.keys(eventsByDay).forEach(key => {
+        const date = new Date(key);
+        if (isSameMonth(date, month)) {
+            clientTotalBookingsThisMonth += eventsByDay[key].length;
+        }
     });
 
     const monthsInAdvance = 0;
@@ -133,29 +146,31 @@ export function MonthBreakdown({ month, eventsByDay = {}, workSchedule, onDateTa
                 </div>
 
                 {/* Bottom: Stats (Underneath, Evenly Spaced) */}
-                <div className="mt-2 px-6 grid grid-cols-3 gap-4 border-t border-white/5 pt-2">
-                    {/* Dates Free */}
+                <div className={cn("mt-2 px-6 grid gap-4 border-t border-white/5 pt-2", isClient ? "grid-cols-2" : "grid-cols-3")}>
+                    {/* Dates Free / Total Bookings */}
                     <div className="text-center">
-                        <div className="text-xl font-medium text-foreground">{freeDatesCount}</div>
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Dates Free</div>
+                        <div className="text-xl font-medium text-foreground">{isClient ? clientTotalBookingsThisMonth : freeDatesCount}</div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">{isClient ? "Total Bookings" : "Dates Free"}</div>
                         <div className="text-[9px] text-muted-foreground/60">(this month)</div>
                     </div>
 
-                    {/* Remaining Balance */}
+                    {/* Remaining Balance / Expected Revenue */}
                     <div className="text-center">
                         <div className="text-xl font-medium text-green-400">
                             {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(totalRemainingBalance)}
                         </div>
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Remaining Bal</div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">{isClient ? "Remaining Bal" : "Expected Revenue"}</div>
                         <div className="text-[9px] text-muted-foreground/60">(this month)</div>
                     </div>
 
-                    {/* Months in Advance */}
-                    <div className="text-center">
-                        <div className="text-xl font-medium text-blue-400">{monthsInAdvance}</div>
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Mths Adv</div>
-                        <div className="text-[9px] text-muted-foreground/60">(booked out)</div>
-                    </div>
+                    {/* Months in Advance (Artist Only) */}
+                    {!isClient && (
+                        <div className="text-center">
+                            <div className="text-xl font-medium text-blue-400">{monthsInAdvance}</div>
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Mths Adv</div>
+                            <div className="text-[9px] text-muted-foreground/60">(booked out)</div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

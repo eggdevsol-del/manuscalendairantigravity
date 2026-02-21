@@ -14,11 +14,14 @@ import { BookingWizardContent } from "@/features/booking/BookingWizardContent";
 import { useLocation } from "wouter";
 import { useEffect, useRef } from "react";
 import { useBottomNav } from "@/contexts/BottomNavContext";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function CalendarAgendaPage() {
     const controller = useCalendarAgendaController();
     const [, setLocation] = useLocation();
-    const { isFABOpen } = useBottomNav();
+    const { isFABOpen, setFABOpen } = useBottomNav();
+    const { user } = useAuth();
+    const isClient = user?.role === 'client';
 
     // Reset selection when FAB closes
     useEffect(() => {
@@ -194,12 +197,14 @@ export default function CalendarAgendaPage() {
                 {/* We need to be careful with z-indexing if bottom nav is outside this content. 
                    Typically BottomNav is in PageShell. This Page IS the content. 
                    If we transform this div, the income bar moves with it. Correct. */}
-                <div className="absolute bottom-16 left-0 right-0 h-10 bg-white/5 backdrop-blur-md border-t border-white/10 flex items-center justify-between px-4 z-40">
-                    <span className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">This week's income</span>
-                    <span className="text-sm font-bold text-foreground">
-                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(controller.weeklyIncome)}
-                    </span>
-                </div>
+                {!isClient && (
+                    <div className="absolute bottom-16 left-0 right-0 h-10 bg-white/5 backdrop-blur-md border-t border-white/10 flex items-center justify-between px-4 z-40">
+                        <span className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">This week's income</span>
+                        <span className="text-sm font-bold text-foreground">
+                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(controller.weeklyIncome)}
+                        </span>
+                    </div>
+                )}
 
             </div>
         </div>

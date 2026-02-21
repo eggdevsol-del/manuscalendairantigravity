@@ -22,7 +22,7 @@ export function InlineFormSigning({ pendingForms, onSuccess, onClose, initialFor
     const card = tokens.card;
     const [activeForm, setActiveForm] = useState<any>(initialForm || pendingForms[0]);
     const [isSigningPhysical, setIsSigningPhysical] = useState(false);
-    const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
+    const [checkedItems, setCheckedItems] = useState<Record<number, 'yes' | 'no'>>({});
 
     const { data: user } = trpc.auth.me.useQuery();
     const updateProfileMutation = trpc.auth.updateProfile.useMutation();
@@ -104,24 +104,34 @@ export function InlineFormSigning({ pendingForms, onSuccess, onClose, initialFor
                                             const itemNumber = parseInt(match[1]);
                                             const itemText = match[2];
                                             return (
-                                                <div key={index} className={cn(card.base, card.bg, "flex items-start gap-3 p-3 rounded-[4px] border border-white/5")}>
-                                                    <Checkbox
-                                                        id={`medical-item-${itemNumber}`}
-                                                        checked={!!checkedItems[itemNumber]}
-                                                        onCheckedChange={(checked) => {
-                                                            setCheckedItems(prev => ({
-                                                                ...prev,
-                                                                [itemNumber]: checked === true
-                                                            }));
-                                                        }}
-                                                        className="mt-0.5 border-orange-500/50 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
-                                                    />
-                                                    <label
-                                                        htmlFor={`medical-item-${itemNumber}`}
-                                                        className="flex-1 text-[10px] font-medium leading-normal cursor-pointer text-foreground/90"
-                                                    >
+                                                <div key={index} className={cn(card.base, card.bg, "flex flex-col gap-3 p-3 rounded-[4px] border border-white/5")}>
+                                                    <label className="text-[11px] font-medium leading-normal text-foreground/90">
                                                         {itemText}
                                                     </label>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => setCheckedItems(prev => ({ ...prev, [itemNumber]: 'yes' }))}
+                                                            className={cn(
+                                                                "flex-1 py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-widest border transition-all",
+                                                                checkedItems[itemNumber] === 'yes'
+                                                                    ? "bg-orange-500/20 text-orange-500 border-orange-500/50"
+                                                                    : "bg-transparent text-muted-foreground border-white/10 hover:border-white/20 hover:bg-white/5"
+                                                            )}
+                                                        >
+                                                            Yes
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setCheckedItems(prev => ({ ...prev, [itemNumber]: 'no' }))}
+                                                            className={cn(
+                                                                "flex-1 py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-widest border transition-all",
+                                                                checkedItems[itemNumber] === 'no'
+                                                                    ? "bg-emerald-500/20 text-emerald-500 border-emerald-500/50"
+                                                                    : "bg-transparent text-muted-foreground border-white/10 hover:border-white/20 hover:bg-white/5"
+                                                            )}
+                                                        >
+                                                            No
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             );
                                         }
@@ -140,7 +150,7 @@ export function InlineFormSigning({ pendingForms, onSuccess, onClose, initialFor
                             const isMedical = activeForm.formType === 'medical_release';
                             // Count how many numbered items exist in the string
                             const requiredChecksCount = isMedical ? (activeForm.content.match(/^\d+\.\s/gm) || []).length : 0;
-                            const currentChecksCount = Object.values(checkedItems).filter(Boolean).length;
+                            const currentChecksCount = Object.values(checkedItems).filter(v => v === 'yes' || v === 'no').length;
                             const proceedDisabled = isMedical && currentChecksCount < requiredChecksCount;
 
                             return (
