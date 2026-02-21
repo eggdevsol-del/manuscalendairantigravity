@@ -21,7 +21,14 @@ export default function PushNotificationSettings() {
       if ('Notification' in window) {
         setPermission(Notification.permission);
       }
+
       const subscribed = await isSubscribed();
+
+      // Safety fix: If OneSignal reports true, upgrade UI permission
+      if (subscribed && permission !== "granted") {
+        setPermission("granted");
+      }
+
       setIsEnabled(subscribed);
     } catch (error) {
       console.error('Failed to check subscription status:', error);
@@ -40,19 +47,19 @@ export default function PushNotificationSettings() {
     setIsLoading(true);
     try {
       const granted = await requestNotificationPermission();
-      
+
       if (granted) {
         setPermission("granted");
-        
+
         // Set external user ID for targeting
         if (user?.id) {
           await setExternalUserId(user.id);
         }
-        
+
         // Get subscription ID for verification
         const subscriptionId = await getSubscriptionId();
         console.log('[Notifications] Subscription ID:', subscriptionId);
-        
+
         setIsEnabled(true);
         toast.success("Push notifications enabled!");
       } else {
@@ -113,7 +120,7 @@ export default function PushNotificationSettings() {
           <div className="space-y-0.5">
             <div className="text-sm font-medium">Enable Notifications</div>
             <div className="text-sm text-muted-foreground">
-              {permission === "denied" 
+              {permission === "denied"
                 ? "Notifications are blocked. Please enable them in your browser settings."
                 : "Get notified about important updates"}
             </div>

@@ -52,16 +52,23 @@ export async function initializeOneSignal() {
 }
 
 async function initWebOneSignal() {
-  await OneSignal.init({
-    appId: ONESIGNAL_APP_ID,
-    allowLocalhostAsSecureOrigin: true,
-    serviceWorkerPath: '/sw.js',
-    welcomeNotification: {
-      title: "Thanks for subscribing!",
-      message: "You'll receive notifications about new messages and appointments.",
-    },
-  });
-  console.log('[OneSignal] Web SDK initialized');
+  try {
+    await Promise.race([
+      OneSignal.init({
+        appId: ONESIGNAL_APP_ID,
+        allowLocalhostAsSecureOrigin: true,
+        serviceWorkerPath: '/sw.js',
+        welcomeNotification: {
+          title: "Thanks for subscribing!",
+          message: "You'll receive notifications about new messages and appointments.",
+        },
+      }),
+      new Promise<void>((_, reject) => setTimeout(() => reject(new Error('Web SDK init timed out')), 5000))
+    ]);
+    console.log('[OneSignal] Web SDK initialized');
+  } catch (error) {
+    console.warn('[OneSignal] Web SDK initialization warning/timeout:', error);
+  }
 }
 
 export async function requestNotificationPermission(): Promise<boolean> {
@@ -80,7 +87,14 @@ export async function requestNotificationPermission(): Promise<boolean> {
         ]);
       }
     }
-    const permission = await OneSignal.Notifications.requestPermission();
+    // Web SDK fallback with timeout
+    const permission = await Promise.race([
+      OneSignal.Notifications.requestPermission(),
+      new Promise<boolean>((resolve) => setTimeout(() => {
+        console.warn('[OneSignal] Web requestPermission timed out');
+        resolve(false);
+      }, 4000))
+    ]);
     console.log('[OneSignal] Permission status:', permission);
     return permission;
   } catch (error) {
@@ -165,7 +179,14 @@ export async function isSubscribed(): Promise<boolean> {
         ]);
       }
     }
-    const permission = await OneSignal.Notifications.permission;
+    // Web SDK fallback with timeout
+    const permission = await Promise.race([
+      OneSignal.Notifications.permission,
+      new Promise<boolean>((resolve) => setTimeout(() => {
+        console.warn('[OneSignal] Web hasPermission timed out');
+        resolve(false);
+      }, 3000))
+    ]);
     return permission;
   } catch (error) {
     console.error('[OneSignal] Failed to check subscription status:', error);
