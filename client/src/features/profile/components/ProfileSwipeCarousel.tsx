@@ -147,7 +147,7 @@ export function ProfileSwipeCarousel({ tabs, defaultTab, onTabChange }: ProfileS
     }, [canDrag, trackWidthPx, containerWidth]);
 
     return (
-        <div className="flex flex-col h-full bg-background relative overflow-hidden">
+        <div className="flex flex-col h-full bg-transparent relative overflow-hidden">
             {process.env.NODE_ENV === 'development' && (
                 <div className="absolute top-0 right-0 z-50 bg-black/80 text-white text-[9px] p-1 pointer-events-none font-mono border-l border-b border-white/10">
                     W:{containerWidth} | IDX:{activeIndex} | DRG:{isDraggingRef.current ? 'Y' : 'N'} | SNP:{isSnappingRef.current ? 'Y' : 'N'}
@@ -155,7 +155,7 @@ export function ProfileSwipeCarousel({ tabs, defaultTab, onTabChange }: ProfileS
             )}
 
             {/* Header Tabs */}
-            <div className="flex items-center px-4 mb-2 shrink-0 overflow-x-auto no-scrollbar gap-6 z-10 relative bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex items-center px-4 mb-2 shrink-0 overflow-x-auto no-scrollbar gap-6 z-10 relative bg-transparent">
                 {tabs.map((tab, index) => (
                     <button
                         key={tab.id}

@@ -14,7 +14,7 @@ import { toast } from "sonner";
 
 export function HistoryCard({ history }: { history: any[] }) {
     return (
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-1 pb-24">
+        <div className="px-1">
             {history?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground opacity-50">
                     <Clock className="w-10 h-10 mb-4" />
@@ -58,7 +58,7 @@ export function HistoryCard({ history }: { history: any[] }) {
                         return (
                             <div key={item.id} className="relative mb-8 last:mb-0">
                                 <span className={cn(
-                                    "absolute -left-[30px] top-1.5 h-3 w-3 rounded-full ring-4 ring-background flex items-center justify-center bg-background border",
+                                    "absolute -left-[30px] top-1.5 h-3 w-3 rounded-full ring-4 ring-transparent flex items-center justify-center bg-transparent border",
                                     !isLog && !isForm ? "border-emerald-500" : isForm ? "border-orange-500" : "border-white/20"
                                 )}>
                                     <div className={cn("w-1.5 h-1.5 rounded-full", !isLog && !isForm ? "bg-emerald-500" : isForm ? "bg-orange-500" : "bg-muted-foreground")} />
@@ -113,7 +113,7 @@ export function HistoryCard({ history }: { history: any[] }) {
 
 export function UpcomingCard({ upcoming }: { upcoming: any[] }) {
     return (
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-1 pb-24">
+        <div className="px-1">
             {upcoming?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground opacity-50">
                     <Clock className="w-10 h-10 mb-4" />
@@ -127,7 +127,7 @@ export function UpcomingCard({ upcoming }: { upcoming: any[] }) {
                         const daysAway = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
                         return (
-                            <div key={item.id} className="relative p-4 rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
+                            <div key={item.id} className="relative p-4 rounded-2xl overflow-hidden mb-4">
                                 {daysAway <= 5 && (
                                     <div className="absolute top-0 right-0 px-3 py-1 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
                                         In {daysAway} days
@@ -164,7 +164,7 @@ export function UpcomingCard({ upcoming }: { upcoming: any[] }) {
 
 export function PhotosCard({ photos, isEditMode }: { photos: any[], isEditMode: boolean }) {
     return (
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-1 pb-24">
+        <div className="px-1">
             {photos?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground opacity-50">
                     <Grid className="w-10 h-10 mb-4" />
@@ -180,7 +180,7 @@ export function PhotosCard({ photos, isEditMode }: { photos: any[], isEditMode: 
                     )}
 
                     {photos?.map(photo => (
-                        <div key={photo.id} className="aspect-square relative overflow-hidden bg-muted rounded-md group">
+                        <div key={photo.id} className="aspect-square relative overflow-hidden rounded-md group">
                             <img src={photo.url} alt="User upload" className="w-full h-full object-cover" loading="lazy" />
                             {isEditMode && (
                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -220,7 +220,7 @@ export function FormsCard({ forms }: { forms: any[] }) {
     };
 
     return (
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-1 pb-24">
+        <div className="px-1">
             {forms?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground opacity-50">
                     <FileText className="w-10 h-10 mb-4" />
@@ -229,7 +229,7 @@ export function FormsCard({ forms }: { forms: any[] }) {
             ) : (
                 <div className="space-y-3">
                     {forms?.map((form) => (
-                        <div key={form.id} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
+                        <div key={form.id} className="flex items-center gap-4 p-4 rounded-xl">
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${form.status === 'signed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-orange-500/10 text-orange-500'
                                 }`}>
                                 {form.status === 'signed' ? <Check className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}

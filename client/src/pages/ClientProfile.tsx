@@ -108,7 +108,7 @@ export default function ClientProfile() {
     ], [upcoming, forms, history, photos, isEditMode]);
 
     return (
-        <div className="flex flex-col h-full bg-gradient-to-b from-background to-background/80 relative overflow-hidden">
+        <div className="flex flex-col h-full bg-transparent relative overflow-hidden">
             <InstallAppModal isOpen={showInstallModal} onClose={() => setShowInstallModal(false)} />
 
             {/* Teaser Mode Overlay */}
