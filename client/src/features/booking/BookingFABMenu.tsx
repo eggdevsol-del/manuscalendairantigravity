@@ -24,7 +24,6 @@ import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
 import { FABMenu } from "@/ui/FABMenu";
 import { tokens } from "@/ui/tokens";
-import { ApplyPromotionSheet } from "@/features/promotions";
 
 type BookingStep = 'service' | 'frequency' | 'review' | 'success';
 
@@ -126,7 +125,7 @@ export function BookingFABMenu({
     };
     const [step, setStep] = useState<BookingStep>('service');
     const [selectedService, setSelectedService] = useState<any>(null);
-    const [showPromotionSheet, setShowPromotionSheet] = useState(false);
+    const [showVoucherList, setShowVoucherList] = useState(false);
     const [appliedPromotion, setAppliedPromotion] = useState<{
         id: number; name: string; discountAmount: number; finalAmount: number;
     } | null>(null);
@@ -134,6 +133,11 @@ export function BookingFABMenu({
     const [startDate] = useState(new Date());
 
     // -- Queries & Mutations --
+    const { data: availablePromotions, isLoading: isLoadingPromotions } = trpc.promotions.getAvailableForBooking.useQuery(
+        { artistId: artistId || "" },
+        { enabled: isOpen && showVoucherList && !!artistId }
+    );
+
     const {
         data: availability,
         isPending: isLoadingAvailability,
@@ -217,6 +221,8 @@ export function BookingFABMenu({
                 setStep('service');
                 setSelectedService(null);
                 setFrequency("consecutive");
+                setShowVoucherList(false);
+                setAppliedPromotion(null);
             }, 300);
             return () => clearTimeout(timer);
         }
@@ -270,8 +276,70 @@ export function BookingFABMenu({
                 toggleIcon={<span className="text-xl font-black tracking-tight select-none">B</span>}
                 className={className}
             >
+                {/* Voucher List Inline View */}
+                {showVoucherList && (
+                    <div className="flex flex-col w-full h-full pt-2 pb-6 px-1">
+                        <motion.div variants={fab.animation.item} className={fab.itemRow}>
+                            <button onClick={() => setShowVoucherList(false)} className={fab.itemButton}>
+                                <ArrowLeft className={fab.itemIconSize} />
+                            </button>
+                            <span className={fab.itemLabel + " uppercase tracking-widest font-bold flex-1"}>
+                                Available Vouchers
+                            </span>
+                        </motion.div>
+
+                        <div className="flex flex-col flex-1 mt-4 px-1 gap-2 overflow-y-auto no-scrollbar">
+                            {isLoadingPromotions && (
+                                <div className="flex items-center justify-center py-8">
+                                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                                </div>
+                            )}
+                            {availablePromotions?.map((promo) => {
+                                const originalCents = (proposalMeta?.totalCost || 0) * 100;
+                                let discountAmount = 0;
+                                if (promo.valueType === 'fixed') discountAmount = promo.value;
+                                else if (promo.valueType === 'percentage') discountAmount = Math.floor(originalCents * (promo.value / 100));
+
+                                const finalAmount = Math.max(0, originalCents - discountAmount);
+
+                                return (
+                                    <motion.button
+                                        key={promo.id}
+                                        variants={fab.animation.item}
+                                        className={cn(card.base, card.bg, card.interactive, "p-3 flex flex-col gap-1 w-full text-left")}
+                                        onClick={() => {
+                                            setAppliedPromotion({
+                                                id: promo.id,
+                                                name: promo.name,
+                                                discountAmount,
+                                                finalAmount
+                                            });
+                                            setShowVoucherList(false);
+                                        }}
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">{promo.name}</span>
+                                            <span className="text-[10px] font-bold text-emerald-500">
+                                                {promo.valueType === 'fixed' ? `$${promo.value / 100}` : `${promo.value}% OFF`}
+                                            </span>
+                                        </div>
+                                        <p className="text-[9px] text-muted-foreground line-clamp-2">
+                                            Use this voucher on your next booking.
+                                        </p>
+                                    </motion.button>
+                                );
+                            })}
+                            {!isLoadingPromotions && availablePromotions?.length === 0 && (
+                                <p className="text-[10px] text-muted-foreground text-center py-8 font-bold uppercase tracking-widest opacity-50">
+                                    No vouchers available
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* ===== PROPOSAL VIEW ===== */}
-                {showProposal && proposalMeta && (
+                {showProposal && proposalMeta && !showVoucherList && (
                     <div className="flex flex-col gap-2 w-full">
                         {/* Header */}
                         <motion.div variants={fab.animation.item}>
@@ -339,7 +407,7 @@ export function BookingFABMenu({
                                 {!appliedPromotion && artistId && (
                                     <button
                                         className={cn(card.base, card.bg, card.interactive, "flex items-center gap-2 p-2 w-full rounded-[4px]")}
-                                        onClick={() => setShowPromotionSheet(true)}
+                                        onClick={() => setShowVoucherList(true)}
                                     >
                                         <div className={cn(fab.itemButton, "shrink-0 !w-7 !h-7")}>
                                             <Tag className="w-3 h-3" />
@@ -456,8 +524,8 @@ export function BookingFABMenu({
                     </div>
                 )}
 
-                {/* ===== BOOKING WIZARD (hidden when proposal is shown) ===== */}
-                {!showProposal && (
+                {/* ===== BOOKING WIZARD (hidden when proposal or voucher list is shown) ===== */}
+                {!showProposal && !showVoucherList && (
                     <>
                         {/* Panel Header — SSOT label style */}
                         <motion.div variants={fab.animation.item} className={fab.itemRow}>
@@ -634,18 +702,7 @@ export function BookingFABMenu({
                 )}
             </FABMenu>
 
-            {/* Proposal Promotion Sheet */}
-            {artistId && (
-                <ApplyPromotionSheet
-                    isOpen={showPromotionSheet}
-                    onClose={() => setShowPromotionSheet(false)}
-                    artistId={artistId}
-                    originalAmount={(proposalMeta?.totalCost || 0) * 100}
-                    onApply={(promo, discountAmount, finalAmount) => {
-                        setAppliedPromotion({ id: promo.id, name: promo.name, discountAmount, finalAmount });
-                    }}
-                />
-            )}
+            {/* Support Sheet Removal */}
         </>
     );
 }

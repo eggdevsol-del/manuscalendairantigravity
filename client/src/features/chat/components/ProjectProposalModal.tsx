@@ -8,7 +8,8 @@ import { tokens } from "@/ui/tokens";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogTitle } from "@/components/ui/dialog";
-import { ApplyPromotionSheet } from "@/features/promotions";
+import { trpc } from "@/lib/trpc";
+import { Loader2, ArrowLeft } from "lucide-react";
 
 interface ProposalMetadata {
     type: "project_proposal";
@@ -49,13 +50,18 @@ export function ProjectProposalModal({
     artistId,
     onRevoke,
 }: ProjectProposalModalProps) {
-    const [showPromotionSheet, setShowPromotionSheet] = useState(false);
+    const [showVoucherList, setShowVoucherList] = useState(false);
     const [appliedPromotion, setAppliedPromotion] = useState<{
         id: number;
         name: string;
         discountAmount: number;
         finalAmount: number;
     } | null>(null);
+
+    const { data: availablePromotions, isLoading: isLoadingPromotions } = trpc.promotions.getAvailableForBooking.useQuery(
+        { artistId: artistId || "" },
+        { enabled: isOpen && showVoucherList && !!artistId }
+    );
 
     if (!metadata) return null;
 
@@ -153,7 +159,7 @@ export function ProjectProposalModal({
                         <Button
                             variant="outline"
                             size="lg"
-                            onClick={() => setShowPromotionSheet(true)}
+                            onClick={() => setShowVoucherList(true)}
                             className={cn("w-full", tokens.proposalModal.buttonHeight, tokens.proposalModal.buttonRadius, tokens.proposalModal.voucherButton)}
                         >
                             <Tag className="w-4 h-4 mr-2" />
@@ -239,7 +245,12 @@ export function ProjectProposalModal({
     );
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <Dialog open={isOpen} onOpenChange={(open) => {
+            if (!open) {
+                setShowVoucherList(false);
+                onClose();
+            }
+        }}>
             <DialogPrimitive.Portal>
                 <DialogPrimitive.Overlay className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
                 <DialogPrimitive.Content
@@ -253,64 +264,119 @@ export function ProjectProposalModal({
                             </Button>
                         </div>
                         <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y pt-12 px-4">
-                            <div className="pb-32 max-w-lg mx-auto space-y-4">
-                                <div className="mb-6 px-2">
-                                    <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Review Proposal</p>
-                                    <DialogTitle className={cn("mb-6 pr-12 line-clamp-2", tokens.proposalModal.title)}>{serviceName}</DialogTitle>
-                                    <div className="w-full">
-                                        <div className="flex flex-wrap items-center justify-between gap-y-4 gap-x-2">
-                                            <div className="flex items-center gap-3">
-                                                {hasDiscount ? (
-                                                    <>
-                                                        <span className="text-lg line-through text-muted-foreground">${totalCost}</span>
-                                                        <span className="text-2xl font-bold text-green-500 tracking-tight">${displayTotal}</span>
-                                                    </>
-                                                ) : (
-                                                    <span className="text-2xl font-bold text-foreground tracking-tight">${totalCost}</span>
-                                                )}
-                                                <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground self-end mb-1.5">Total</span>
+                            {showVoucherList ? (
+                                <div className="pb-32 max-w-lg mx-auto space-y-4">
+                                    <div className="mb-6 px-2 flex items-center gap-3">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setShowVoucherList(false)}
+                                            className="text-muted-foreground hover:text-foreground"
+                                        >
+                                            <ArrowLeft className="w-5 h-5" />
+                                        </Button>
+                                        <div>
+                                            <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">Select Voucher</p>
+                                            <h2 className="text-xl font-bold text-foreground">Available Vouchers</h2>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3 px-2">
+                                        {isLoadingPromotions && (
+                                            <div className="flex items-center justify-center py-12">
+                                                <Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" />
                                             </div>
-                                            <div className="w-px h-8 bg-white/10 hidden sm:block" />
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-2xl font-bold text-foreground tracking-tight">
-                                                    {hours}<span className="text-lg font-normal text-muted-foreground/60 ml-0.5">h</span>
-                                                    {minutes > 0 && <span className="ml-1">{minutes}<span className="text-lg font-normal text-muted-foreground/60 ml-0.5">m</span></span>}
-                                                </span>
-                                                <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground self-end mb-1.5">Duration</span>
+                                        )}
+
+                                        {availablePromotions?.map((promo) => {
+                                            const originalCents = totalCost * 100;
+                                            let discountAmount = 0;
+                                            if (promo.valueType === 'fixed') discountAmount = promo.value;
+                                            else if (promo.valueType === 'percentage') discountAmount = Math.floor(originalCents * (promo.value / 100));
+
+                                            const finalAmount = Math.max(0, originalCents - discountAmount);
+
+                                            return (
+                                                <Card
+                                                    key={promo.id}
+                                                    onClick={() => {
+                                                        setAppliedPromotion({
+                                                            id: promo.id,
+                                                            name: promo.name,
+                                                            discountAmount,
+                                                            finalAmount
+                                                        });
+                                                        setShowVoucherList(false);
+                                                    }}
+                                                    className="bg-white/5 border-white/10 hover:bg-white/[0.08] transition-colors cursor-pointer group"
+                                                >
+                                                    <div className="p-4 flex flex-col gap-1">
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="font-bold text-foreground">{promo.name}</span>
+                                                            <span className="text-emerald-500 font-bold">
+                                                                {promo.valueType === 'fixed' ? `$${promo.value / 100}` : `${promo.value}% OFF`}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Redeem this voucher for your project.
+                                                        </p>
+                                                    </div>
+                                                </Card>
+                                            );
+                                        })}
+
+                                        {!isLoadingPromotions && availablePromotions?.length === 0 && (
+                                            <div className="text-center py-12 border border-dashed border-white/10 rounded-2xl">
+                                                <Tag className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
+                                                <p className="text-muted-foreground font-medium">No vouchers found</p>
+                                                <p className="text-[10px] text-muted-foreground/50 uppercase tracking-widest mt-1">Check back later</p>
                                             </div>
-                                            <div className="w-px h-8 bg-white/10 hidden sm:block" />
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-2xl font-bold text-foreground tracking-tight">{sittings}</span>
-                                                <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground self-end mb-1.5">Sittings</span>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="pb-32 max-w-lg mx-auto space-y-4">
+                                    <div className="mb-6 px-2">
+                                        <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Review Proposal</p>
+                                        <DialogTitle className={cn("mb-6 pr-12 line-clamp-2", tokens.proposalModal.title)}>{serviceName}</DialogTitle>
+                                        <div className="w-full">
+                                            <div className="flex flex-wrap items-center justify-between gap-y-4 gap-x-2">
+                                                <div className="flex items-center gap-3">
+                                                    {hasDiscount ? (
+                                                        <>
+                                                            <span className="text-lg line-through text-muted-foreground">${totalCost}</span>
+                                                            <span className="text-2xl font-bold text-green-500 tracking-tight">${displayTotal}</span>
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-2xl font-bold text-foreground tracking-tight">${totalCost}</span>
+                                                    )}
+                                                    <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground self-end mb-1.5">Total</span>
+                                                </div>
+                                                <div className="w-px h-8 bg-white/10 hidden sm:block" />
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-2xl font-bold text-foreground tracking-tight">
+                                                        {hours}<span className="text-lg font-normal text-muted-foreground/60 ml-0.5">h</span>
+                                                        {minutes > 0 && <span className="ml-1">{minutes}<span className="text-lg font-normal text-muted-foreground/60 ml-0.5">m</span></span>}
+                                                    </span>
+                                                    <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground self-end mb-1.5">Duration</span>
+                                                </div>
+                                                <div className="w-px h-8 bg-white/10 hidden sm:block" />
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-2xl font-bold text-foreground tracking-tight">{sittings}</span>
+                                                    <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground self-end mb-1.5">Sittings</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+                                    <ProposalDatesList />
+                                    <ProposalPolicies />
+                                    <ProposalActions />
                                 </div>
-                                <ProposalDatesList />
-                                <ProposalPolicies />
-                                <ProposalActions />
-                            </div>
+                            )}
                         </div>
                     </div>
                 </DialogPrimitive.Content>
             </DialogPrimitive.Portal>
-
-            {artistId && (
-                <ApplyPromotionSheet
-                    isOpen={showPromotionSheet}
-                    onClose={() => setShowPromotionSheet(false)}
-                    artistId={artistId}
-                    originalAmount={totalCost * 100}
-                    onApply={(promo, discountAmount, finalAmount) => {
-                        setAppliedPromotion({
-                            id: promo.id,
-                            name: promo.name,
-                            discountAmount,
-                            finalAmount,
-                        });
-                    }}
-                />
-            )}
         </Dialog>
     );
 }

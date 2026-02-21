@@ -28,8 +28,8 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
 import { tokens } from "@/ui/tokens";
-import { ApplyPromotionSheet } from "@/features/promotions";
-import { FormSigningDialog } from "@/components/modals/FormSigningDialog";
+import { SignaturePad } from "@/components/ui/SignaturePad";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type BookingStep = 'client' | 'service' | 'frequency' | 'review' | 'success';
 
@@ -158,20 +158,35 @@ export function BookingWizardContent({
     );
 
     const [activeForm, setActiveForm] = useState<any>(null);
+    const [isSigningPhysical, setIsSigningPhysical] = useState(false);
+    const { data: user } = trpc.auth.me.useQuery();
 
     const { data: availablePromotions, isLoading: isLoadingPromotions } = trpc.promotions.getAvailableForBooking.useQuery(
         { artistId: artistId || "" },
         { enabled: showVoucherList && !!artistId }
     );
 
+    const updateProfileMutation = trpc.auth.updateProfile.useMutation();
+
     const signFormMutation = trpc.forms.signForm.useMutation({
         onSuccess: () => {
             toast.success("Form signed successfully");
             refetchForms();
             setActiveForm(null);
+            setIsSigningPhysical(false);
         },
         onError: (err) => toast.error("Failed to sign form: " + err.message)
     });
+
+    const handleSign = async (signature: string) => {
+        if (!user?.savedSignature) {
+            await updateProfileMutation.mutateAsync({ savedSignature: signature } as any);
+        }
+        await signFormMutation.mutateAsync({
+            formId: activeForm.id,
+            signature
+        });
+    };
 
     const filteredClients = clients?.filter(c =>
         c?.name?.toLowerCase().includes(clientSearch.toLowerCase()) ||
@@ -390,7 +405,7 @@ export function BookingWizardContent({
             )}
 
             {/* ===== PROPOSAL VIEW ===== */}
-            {!isLoadingProposal && showProposal && proposalMeta && (
+            {!isLoadingProposal && showProposal && proposalMeta && !activeForm && !showVoucherList && (
                 <>
                     {/* Header */}
                     <motion.div variants={fab.animation.item}>
@@ -642,25 +657,159 @@ export function BookingWizardContent({
                 </>
             )}
 
-            {/* Forms Dialog */}
-            {activeForm && (
-                <FormSigningDialog
-                    isOpen={!!activeForm}
-                    onClose={() => setActiveForm(null)}
-                    onSign={async (signature) => {
-                        await signFormMutation.mutateAsync({
-                            formId: activeForm.id,
-                            signature
-                        });
-                    }}
-                    formTitle={activeForm.title}
-                    formContent={activeForm.content}
-                    isSigning={signFormMutation.isPending}
-                />
+            {/* Voucher List Inline View */}
+            {showVoucherList && (
+                <div className="flex flex-col w-full h-full pt-2 pb-6 px-1">
+                    <motion.div variants={fab.animation.item} className={fab.itemRow}>
+                        <button onClick={() => setShowVoucherList(false)} className={fab.itemButton}>
+                            <ArrowLeft className={fab.itemIconSize} />
+                        </button>
+                        <span className={fab.itemLabel + " uppercase tracking-widest font-bold flex-1"}>
+                            Available Vouchers
+                        </span>
+                    </motion.div>
+
+                    <div className="flex flex-col flex-1 mt-4 px-1 gap-2 overflow-y-auto no-scrollbar">
+                        {isLoadingPromotions && (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                            </div>
+                        )}
+                        {availablePromotions?.map((promo) => {
+                            const originalCents = (proposalMeta?.totalCost || 0) * 100;
+                            let discountAmount = 0;
+                            if (promo.valueType === 'fixed') discountAmount = promo.value;
+                            else if (promo.valueType === 'percentage') discountAmount = Math.floor(originalCents * (promo.value / 100));
+
+                            const finalAmount = Math.max(0, originalCents - discountAmount);
+
+                            return (
+                                <motion.button
+                                    key={promo.id}
+                                    variants={fab.animation.item}
+                                    className={cn(card.base, card.bg, card.interactive, "p-3 flex flex-col gap-1 w-full text-left")}
+                                    onClick={() => {
+                                        setAppliedPromotion({
+                                            id: promo.id,
+                                            name: promo.name,
+                                            discountAmount,
+                                            finalAmount
+                                        });
+                                        setShowVoucherList(false);
+                                    }}
+                                >
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">{promo.name}</span>
+                                        <span className="text-[10px] font-bold text-emerald-500">
+                                            {promo.valueType === 'fixed' ? `$${promo.value / 100}` : `${promo.value}% OFF`}
+                                        </span>
+                                    </div>
+                                    <p className="text-[9px] text-muted-foreground line-clamp-2">
+                                        Use this voucher on your next booking.
+                                    </p>
+                                </motion.button>
+                            );
+                        })}
+                        {!isLoadingPromotions && availablePromotions?.length === 0 && (
+                            <p className="text-[10px] text-muted-foreground text-center py-8 font-bold uppercase tracking-widest opacity-50">
+                                No vouchers available
+                            </p>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Forms Dialog Inline View */}
+            {!showVoucherList && activeForm && (
+                <div className="flex flex-col w-full h-full pt-2 pb-6 px-1">
+                    <motion.div variants={fab.animation.item} className={fab.itemRow}>
+                        <button
+                            onClick={() => {
+                                if (isSigningPhysical) setIsSigningPhysical(false);
+                                else setActiveForm(null);
+                            }}
+                            className={fab.itemButton}
+                        >
+                            <ArrowLeft className={fab.itemIconSize} />
+                        </button>
+                        <span className={fab.itemLabel + " uppercase tracking-widest font-bold flex-1 truncate pr-2"}>
+                            {activeForm.title}
+                        </span>
+                    </motion.div>
+
+                    <div className="flex flex-col flex-1 mt-4 px-1 gap-4">
+                        {!isSigningPhysical ? (
+                            <motion.div variants={fab.animation.item} className="flex flex-col flex-1 min-h-0">
+                                <ScrollArea className={cn(card.base, card.bg, "flex-1 overflow-auto rounded-[4px] p-4 border-white/5")}>
+                                    <div className="prose prose-invert prose-sm max-w-none text-muted-foreground leading-relaxed whitespace-pre-wrap text-[10px]">
+                                        {activeForm.content}
+                                    </div>
+                                </ScrollArea>
+                                <button
+                                    onClick={() => setIsSigningPhysical(true)}
+                                    className="w-full mt-3 py-3 rounded-[4px] text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+                                >
+                                    Proceed to Signature
+                                </button>
+                            </motion.div>
+                        ) : (
+                            <motion.div variants={fab.animation.item} className="flex flex-col flex-1 gap-4">
+                                <div className={cn(card.base, card.bg, "p-4 flex flex-col items-center justify-center gap-4 rounded-[4px]")}>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">
+                                        {user?.savedSignature ? "Use Saved Signature or Draw New" : "Physical Signature Required"}
+                                    </p>
+
+                                    {user?.savedSignature ? (
+                                        <div className="w-full space-y-3">
+                                            <div className="bg-white/5 rounded-[4px] border border-white/10 p-4 flex justify-center">
+                                                <img
+                                                    src={user.savedSignature}
+                                                    alt="Saved Signature"
+                                                    className="h-16 w-auto invert dark:invert-0 grayscale opacity-90"
+                                                />
+                                            </div>
+                                            <button
+                                                onClick={() => handleSign(user.savedSignature!)}
+                                                disabled={signFormMutation.isPending}
+                                                className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground flex items-center justify-center gap-2"
+                                            >
+                                                {signFormMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                                                Sign with Saved Signature
+                                            </button>
+
+                                            <div className="relative flex py-2 items-center">
+                                                <div className="flex-grow border-t border-white/10"></div>
+                                                <span className="flex-shrink-0 mx-4 text-muted-foreground text-[9px] uppercase tracking-widest font-bold">Or</span>
+                                                <div className="flex-grow border-t border-white/10"></div>
+                                            </div>
+
+                                            <SignaturePad
+                                                onSave={handleSign}
+                                                className="w-full rounded-[4px]"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <SignaturePad
+                                            onSave={handleSign}
+                                            className="w-full rounded-[4px]"
+                                        />
+                                    )}
+
+                                    {signFormMutation.isPending && !user?.savedSignature && (
+                                        <div className="flex items-center gap-2 text-primary text-[10px] font-bold uppercase tracking-widest animate-pulse">
+                                            <Loader2 className="w-3 h-3 animate-spin" />
+                                            Saving Signature...
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        )}
+                    </div>
+                </div>
             )}
 
             {/* ===== BOOKING WIZARD ===== */}
-            {!isLoadingProposal && !showProposal && (
+            {!isLoadingProposal && !showProposal && !activeForm && !showVoucherList && (
                 <>
                     {/* Header */}
                     <motion.div variants={fab.animation.item} className={fab.itemRow}>
@@ -916,19 +1065,6 @@ export function BookingWizardContent({
                         </div>
                     )}
                 </>
-            )}
-
-            {/* Support Sheet */}
-            {artistId && (
-                <ApplyPromotionSheet
-                    isOpen={showPromotionSheet}
-                    onClose={() => setShowPromotionSheet(false)}
-                    artistId={artistId}
-                    originalAmount={(proposalMeta?.totalCost || 0) * 100}
-                    onApply={(promo, discountAmount, finalAmount) => {
-                        setAppliedPromotion({ id: promo.id, name: promo.name, discountAmount, finalAmount });
-                    }}
-                />
             )}
         </div>
     );

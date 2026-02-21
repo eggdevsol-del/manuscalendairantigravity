@@ -309,6 +309,7 @@ export const users = mysqlTable("users", {
 	hasCompletedOnboarding: tinyint().default(0),
 	password: text(),
 	birthday: datetime({ mode: 'string' }),
+	savedSignature: longtext(),
 },
 	(table) => [
 	]);

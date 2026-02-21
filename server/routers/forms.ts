@@ -4,6 +4,7 @@ import * as db from "../db";
 import { consentForms, artistSettings, procedureLogs } from "../../drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
+import { format } from "date-fns";
 
 export const formsRouter = router({
     getTemplates: artistProcedure.query(async ({ ctx }) => {
@@ -34,7 +35,7 @@ export const formsRouter = router({
             await database.update(artistSettings)
                 .set({
                     ...input,
-                    updatedAt: new Date().toISOString(),
+                    updatedAt: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                 })
                 .where(eq(artistSettings.userId, ctx.user.id));
 
@@ -77,9 +78,9 @@ export const formsRouter = router({
             await database.update(consentForms)
                 .set({
                     signature: input.signature,
-                    signedAt: new Date().toISOString(),
+                    signedAt: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                     status: 'signed',
-                    updatedAt: new Date().toISOString(),
+                    updatedAt: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                 })
                 .where(eq(consentForms.id, input.formId));
 

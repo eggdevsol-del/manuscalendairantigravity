@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { format } from "date-fns";
 import {
     artistSettings,
     InsertArtistSettings,
@@ -45,10 +46,10 @@ export async function upsertArtistSettings(settings: InsertArtistSettings) {
     if (existing) {
         await db
             .update(artistSettings)
-            .set({ ...settings, updatedAt: new Date() })
+            .set({ ...settings, updatedAt: format(new Date(), 'yyyy-MM-dd HH:mm:ss') })
             .where(eq(artistSettings.userId, settings.userId));
     } else {
-        await db.insert(artistSettings).values(settings);
+        await db.insert(artistSettings).values({ ...settings, createdAt: format(new Date(), 'yyyy-MM-dd HH:mm:ss'), updatedAt: format(new Date(), 'yyyy-MM-dd HH:mm:ss') });
     }
 
     return getArtistSettings(settings.userId);
@@ -93,7 +94,7 @@ export async function updateQuickActionButton(
 
     await db
         .update(quickActionButtons)
-        .set({ ...updates, updatedAt: new Date() })
+        .set({ ...updates, updatedAt: format(new Date(), 'yyyy-MM-dd HH:mm:ss') })
         .where(eq(quickActionButtons.id, id));
 
     const updated = await db
@@ -153,7 +154,7 @@ export async function updateNotificationTemplate(
 
     await db
         .update(notificationTemplates)
-        .set({ ...updates, updatedAt: new Date() })
+        .set({ ...updates, updatedAt: format(new Date(), 'yyyy-MM-dd HH:mm:ss') })
         .where(eq(notificationTemplates.id, id));
 
     const updated = await db
