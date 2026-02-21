@@ -62,7 +62,9 @@ export function HistoryCard({ history }: { history: any[] }) {
                                 <div className="flex flex-col">
                                     <div className="flex items-center justify-between mb-0.5">
                                         <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                                            {format(new Date(item.date), 'MMM d, yyyy')}
+                                            {isLog && item.action === 'completed'
+                                                ? format(new Date(item.date), 'MMM d, yyyy • h:mm a')
+                                                : format(new Date(item.date), 'MMM d, yyyy')}
                                         </span>
                                         {isLog && (
                                             <span className="text-[10px] text-muted-foreground/60 italic">

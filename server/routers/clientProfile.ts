@@ -121,7 +121,7 @@ export const clientProfileRouter = router({
                 // Add lifecycle events from logs (Consolidate to most recent only)
                 if (appt.logs && appt.logs.length > 0) {
                     // Sort logs by createdAt descending to get the most recent one
-                    const sortedLogs = [...appt.logs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                    const sortedLogs = [...appt.logs].sort((a, b) => new Date(b.createdAt || new Date()).getTime() - new Date(a.createdAt || new Date()).getTime());
                     const latestLog = sortedLogs[0];
 
                     historyItems.push({
@@ -307,7 +307,10 @@ function getActionDescription(action: string, appt: any) {
         case 'created': return `Request sent for ${appt.serviceName}`;
         case 'rescheduled': return `Time updated to ${new Date(appt.startTime).toLocaleString()}`;
         case 'cancelled': return `Appointment for ${appt.serviceName} was cancelled`;
-        case 'completed': return `Service finalized and paid`;
+        case 'completed':
+            return appt.paymentMethod && appt.paymentMethod !== 'none'
+                ? `Service finalized and paid with ${appt.paymentMethod}`
+                : `Service finalized and paid`;
         case 'confirmed': return `Deposit confirmed for ${appt.serviceName}`;
         case 'proposal_revoked': return `The artist revoked the project proposal`;
         default: return `Action: ${action} on ${appt.serviceName}`;
