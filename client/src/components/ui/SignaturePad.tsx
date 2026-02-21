@@ -99,22 +99,22 @@ export function SignaturePad({ onSave, onCancel, className }: SignaturePadProps)
                 )}
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 w-full">
                 <Button
                     variant="outline"
                     onClick={clear}
-                    className="flex-1 border-white/10"
+                    className="shrink-0 aspect-square p-0 border-white/10 shrink-0"
+                    title="Clear Signature"
                 >
-                    <Eraser className="w-4 h-4 mr-2" />
-                    Clear
+                    <Eraser className="w-5 h-5 mx-auto" />
                 </Button>
                 <Button
                     disabled={!hasStarted}
                     onClick={handleSave}
-                    className="flex-1 shadow-lg shadow-primary/20"
+                    className="flex-1 shadow-lg shadow-primary/20 w-full min-w-0"
                 >
-                    <Check className="w-4 h-4 mr-2" />
-                    Save Signature
+                    <Check className="w-4 h-4 mr-2 shrink-0" />
+                    <span className="truncate">Save Signature</span>
                 </Button>
             </div>
             {onCancel && (
