@@ -57,13 +57,17 @@ async function processItem(db: any, item: typeof notificationOutbox.$inferSelect
 
             // For now, let's assume payload has { targetUserId, title, body, data }
             if (payload.targetUserId && payload.body) {
-                await sendPushNotification({
+                const success = await sendPushNotification({
                     userIds: [payload.targetUserId],
                     title: payload.title || 'New Message',
                     message: payload.body,
                     url: payload.url,
                     data: payload.data
                 });
+
+                if (!success) {
+                    throw new Error("OneSignal rejected the notification or found 0 matching devices.");
+                }
             }
         }
 

@@ -31,7 +31,10 @@ export async function sendPushNotification(options: PushNotificationOptions): Pr
   try {
     const payload = {
       app_id: ONESIGNAL_APP_ID,
-      include_external_user_ids: options.userIds,
+      target_channel: "push",
+      include_aliases: {
+        external_id: options.userIds
+      },
       headings: { en: options.title },
       contents: { en: options.message },
       ...(options.url && { url: options.url }),
@@ -54,7 +57,14 @@ export async function sendPushNotification(options: PushNotificationOptions): Pr
     }
 
     const result = await response.json();
-    console.log('[PushNotification] Notification sent successfully:', result);
+
+    // In OneSignal REST API, returning 200 OK with 0 recipients means the user ID was not found.
+    if (result.errors || result.recipients === 0) {
+      console.error('[PushNotification] Validation failed or 0 devices matched the User ID:', JSON.stringify(result));
+      return false;
+    }
+
+    console.log('[PushNotification] Notification queued successfully by OneSignal:', result);
     return true;
   } catch (error) {
     console.error('[PushNotification] Error sending notification:', error);

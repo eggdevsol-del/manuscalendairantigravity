@@ -718,22 +718,25 @@ export function BookingWizardContent({
                                     </div>
 
                                     <div className="flex flex-col gap-1.5 min-h-[140px]">
-                                        {filteredClients.map(client => (
-                                            <motion.button
-                                                key={client.id}
-                                                variants={fab.animation.item}
-                                                className={cn(card.base, card.bg, card.interactive, "p-2.5 flex items-center gap-2.5 w-full text-left")}
-                                                onClick={() => handleClientSelect(client)}
-                                            >
-                                                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                                                    {client.name?.charAt(0) || '?'}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-[11px] font-semibold text-foreground truncate">{client.name}</p>
-                                                    <p className="text-[9px] text-muted-foreground truncate">{client.email || 'No email'}</p>
-                                                </div>
-                                            </motion.button>
-                                        ))}
+                                        {filteredClients.map(client => {
+                                            if (!client) return null;
+                                            return (
+                                                <motion.button
+                                                    key={client.id}
+                                                    variants={fab.animation.item}
+                                                    className={cn(card.base, card.bg, card.interactive, "p-2.5 flex items-center gap-2.5 w-full text-left")}
+                                                    onClick={() => handleClientSelect(client)}
+                                                >
+                                                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                                                        {client.name?.charAt(0) || '?'}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-[11px] font-semibold text-foreground truncate">{client.name}</p>
+                                                        <p className="text-[9px] text-muted-foreground truncate">{client.email || 'No email'}</p>
+                                                    </div>
+                                                </motion.button>
+                                            );
+                                        })}
 
                                         {clientSearch && filteredClients.length === 0 && !isLoadingClients && (
                                             <div className="py-8 text-center">
