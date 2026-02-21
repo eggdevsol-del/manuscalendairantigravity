@@ -1,23 +1,17 @@
-import 'dotenv/config';
-import { ENV } from './server/_core/env';
+import "dotenv/config";
+import { sendPushNotification } from "./server/_core/pushNotification";
 
-async function testOneSignal() {
-    const APP_ID = ENV.oneSignalAppId;
-    const API_KEY = ENV.oneSignalApiKey;
-    const userId = "user_ce549c0b4b6f90aaafad0546a0928050"; // Artist
+async function main() {
+    const userId = "user_ce549c0b4b6f90aaafad0546a0928050"; // Found in DB JSON
+    console.log("Sending explicit test push to OneSignal only for User ID:", userId);
 
-    console.log(`Checking OneSignal for external_id: ${userId}`);
-    const url = `https://onesignal.com/api/v1/apps/${APP_ID}/users/by/external_id/${userId}`;
-
-    const res = await fetch(url, {
-        headers: {
-            'Authorization': `Basic ${API_KEY}`
-        }
+    const success = await sendPushNotification({
+        userIds: [userId],
+        title: "Test Script Push",
+        message: "Are you there OneSignal?",
     });
 
-    console.log(`Status: ${res.status}`);
-    const data = await res.json();
-    console.log(JSON.stringify(data, null, 2));
+    console.log("Result:", success ? "SUCCESS" : "FAILED (0 matching devices)");
 }
 
-testOneSignal().catch(console.error);
+main().catch(console.error);

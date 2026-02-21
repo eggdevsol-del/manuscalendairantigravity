@@ -2,12 +2,9 @@
 import { getDb } from "../services/core";
 import { notificationOutbox } from "../../drizzle/schema";
 import { eq, lt, and, or } from "drizzle-orm";
-// import { sendPushNotification } from "../_core/pushNotification"; // We will need to move this logic here or import it
-
-// Mock function for now if pushNotification is not easily importable or requires refactor
-// But requirements say: "No router calls OneSignal... A background worker processes outbox"
-// So we should import the OneSignal logic here.
-import { sendPushNotification } from "../_core/pushNotification";
+// Import the dual-blast backend services directly from the Notification Service architectures
+import { sendPushNotification as sendWebPush } from "../services/pushService";
+import { sendPushNotification as sendOneSignalPush } from "../_core/pushNotification";
 
 const BATCH_SIZE = 10;
 const POLL_INTERVAL = 5000;
@@ -57,16 +54,26 @@ async function processItem(db: any, item: typeof notificationOutbox.$inferSelect
 
             // For now, let's assume payload has { targetUserId, title, body, data }
             if (payload.targetUserId && payload.body) {
-                const success = await sendPushNotification({
+                // 1. Try VAPID fallback (Uses internal pushSubscriptions table)
+                const webPushResult = await sendWebPush(payload.targetUserId, {
+                    title: payload.title || 'New Notification',
+                    body: payload.body,
+                    url: payload.url,
+                    data: payload.data
+                });
+
+                // 2. Try the primary OneSignal system (Uses external_id aliasing)
+                const oneSignalSuccess = await sendOneSignalPush({
                     userIds: [payload.targetUserId],
-                    title: payload.title || 'New Message',
+                    title: payload.title || 'New Notification',
                     message: payload.body,
                     url: payload.url,
                     data: payload.data
                 });
 
-                if (!success) {
-                    throw new Error("OneSignal rejected the notification or found 0 matching devices.");
+                // In dual-blast architecture, if either system works, we consider the outbox item delivered
+                if (!webPushResult.success && !oneSignalSuccess) {
+                    throw new Error("Push Delivery failed on both OneSignal and VAPID. Target user has no registered devices.");
                 }
             }
         }

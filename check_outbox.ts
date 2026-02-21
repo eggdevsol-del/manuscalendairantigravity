@@ -1,25 +1,18 @@
-import 'dotenv/config';
-import { getDb } from './server/services/core';
-import { notificationOutbox } from './drizzle/schema';
-import { desc } from 'drizzle-orm';
+import "dotenv/config";
+import { getDb } from "./server/services/core";
+import { notificationOutbox } from "./drizzle/schema";
+import { desc } from "drizzle-orm";
 
-import * as fs from 'fs';
-
-async function checkOutbox() {
+async function main() {
+    console.log("Checking Outbox...");
     const db = await getDb();
     if (!db) {
-        console.error('Cannot connect to DB');
+        console.error("DB failed to load");
         process.exit(1);
     }
-
-    const entries = await db.select()
-        .from(notificationOutbox)
-        .orderBy(desc(notificationOutbox.createdAt))
-        .limit(10);
-
-    fs.writeFileSync('outbox.json', JSON.stringify(entries, null, 2));
-    console.log('Wrote to outbox.json');
+    const items = await db.select().from(notificationOutbox).orderBy(desc(notificationOutbox.createdAt)).limit(10);
+    console.log("Latest Outbox Items:", items);
     process.exit(0);
 }
 
-checkOutbox().catch(console.error);
+main().catch(console.error);
