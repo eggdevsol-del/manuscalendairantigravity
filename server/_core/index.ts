@@ -14,6 +14,7 @@ import { verifyAndFixDatabase } from "../verify-and-fix-db";
 import { storageGetData } from "../storage";
 import { startOutboxWorker } from "../workers/outboxProcessor";
 import { registerPublicFunnelRoutes } from "./publicFunnelRoutes";
+import "../services/notificationOrchestrator";
 
 
 function isPortAvailable(port: number): Promise<boolean> {
