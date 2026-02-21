@@ -54,7 +54,7 @@ async function processItem(db: any, item: typeof notificationOutbox.$inferSelect
 
             // For now, let's assume payload has { targetUserId, title, body, data }
             if (payload.targetUserId && payload.body) {
-                // 1. Try the primary OneSignal system (Uses external_id aliasing, high reliability on Android)
+                // 1. Fire OneSignal (Exclusively hits Capacitor Native Apps)
                 const oneSignalSuccess = await sendOneSignalPush({
                     userIds: [payload.targetUserId],
                     title: payload.title || 'New Notification',
@@ -63,22 +63,16 @@ async function processItem(db: any, item: typeof notificationOutbox.$inferSelect
                     data: payload.data
                 });
 
-                let webPushSuccess = false;
+                // 2. Fire VAPID PushManager (Exclusively hits Chrome/Safari PWAs)
+                const webPushResult = await sendWebPush(payload.targetUserId, {
+                    title: payload.title || 'New Notification',
+                    body: payload.body,
+                    url: payload.url,
+                    data: payload.data
+                });
 
-                // 2. Try VAPID fallback ONLY if OneSignal fails (e.g. iOS PWA blocking external_id sync)
-                if (!oneSignalSuccess) {
-                    console.log(`[OutboxWorker] OneSignal delivery failed for ${payload.targetUserId}. Falling back to VAPID PushManager...`);
-                    const webPushResult = await sendWebPush(payload.targetUserId, {
-                        title: payload.title || 'New Notification',
-                        body: payload.body,
-                        url: payload.url,
-                        data: payload.data
-                    });
-                    webPushSuccess = webPushResult.success;
-                }
-
-                // In sequential fallback architecture, if both systems fail, we consider the outbox item undelivered
-                if (!webPushSuccess && !oneSignalSuccess) {
+                // In Segregated Dual-Blast architecture, if both systems fail, the user has absolutely no devices
+                if (!webPushResult.success && !oneSignalSuccess) {
                     throw new Error("Push Delivery failed on both OneSignal and VAPID. Target user has no registered devices.");
                 }
             }

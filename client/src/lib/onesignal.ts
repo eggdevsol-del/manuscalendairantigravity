@@ -1,5 +1,6 @@
-import OneSignal from 'react-onesignal';
 import { Capacitor } from '@capacitor/core';
+// Removed react-onesignal intentionally to completely sever the PWA Web SDK
+// and forcefully fall back to the fully-customizable VAPID PushManager.
 
 const ONESIGNAL_APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID;
 
@@ -7,6 +8,7 @@ let isInitialized = false;
 
 // Access the native OneSignal plugin if on Capacitor
 const getNativeOneSignal = () => {
+  if (!Capacitor.isNativePlatform()) return null;
   const os = (window as any).OneSignal || (window as any).plugins?.OneSignal;
   if (os) return os;
   // Fallback for some Capacitor/Cordova environments
@@ -38,36 +40,15 @@ export async function initializeOneSignal() {
         NativeOneSignal.initialize(ONESIGNAL_APP_ID);
         console.log('[OneSignal] Native SDK initialized successfully');
       } else {
-        console.warn('[OneSignal] Native plugin not found after retries. Falling back to web.');
-        await initWebOneSignal();
+        console.warn('[OneSignal] Native plugin not found. PWA Web SDK intentionally bypassed.');
       }
     } else {
-      await initWebOneSignal();
+      console.log('[OneSignal] Bypassing OneSignal Web SDK in favor of tightly-controlled VAPID PushManager.');
     }
 
     isInitialized = true;
   } catch (error) {
     console.error('[OneSignal] Initialization failed:', error);
-  }
-}
-
-async function initWebOneSignal() {
-  try {
-    await Promise.race([
-      OneSignal.init({
-        appId: ONESIGNAL_APP_ID,
-        allowLocalhostAsSecureOrigin: true,
-        serviceWorkerPath: '/sw.js',
-        welcomeNotification: {
-          title: "Thanks for subscribing!",
-          message: "You'll receive notifications about new messages and appointments.",
-        },
-      }),
-      new Promise<void>((_, reject) => setTimeout(() => reject(new Error('Web SDK init timed out')), 5000))
-    ]);
-    console.log('[OneSignal] Web SDK initialized');
-  } catch (error) {
-    console.warn('[OneSignal] Web SDK initialization warning/timeout:', error);
   }
 }
 
@@ -87,37 +68,17 @@ export async function requestNotificationPermission(): Promise<boolean> {
         ]);
       }
     }
-    // Safari PWA "Transient Activation Bug" Bypass:
-    // We MUST call the raw browser API directly. If we rely ONLY on OneSignal's
-    // async wrapper, iOS Safari drops the 'click' context and silently ignores the prompt.
-    let nativeWebPerm = 'default';
+
+    // Core Web Push / PWA VAPID native prompt:
     if ('Notification' in window && !Capacitor.isNativePlatform()) {
-      try {
-        nativeWebPerm = await window.Notification.requestPermission();
-        console.log('[OneSignal] Native Browser Web Prompt result:', nativeWebPerm);
-        if (nativeWebPerm !== 'granted') {
-          return false;
-        }
-      } catch (err) {
-        console.warn('[OneSignal] Native web prompt failed, falling back to OS wrapper', err);
-      }
+      const nativeWebPerm = await window.Notification.requestPermission();
+      console.log('[PushManager] Native Browser Web Prompt result:', nativeWebPerm);
+      return nativeWebPerm === 'granted';
     }
 
-    // Now that the browser has explicitly granted permission during the user gesture,
-    // we can safely tell OneSignal to sync the token.
-    const permission = await Promise.race([
-      OneSignal.Notifications.requestPermission(),
-      new Promise<boolean>((resolve) => setTimeout(() => {
-        console.warn('[OneSignal] Web requestPermission sync timed out');
-        // If the browser already said yes, we can technically assume true, but
-        // OneSignal might have failed to register the worker.
-        resolve(nativeWebPerm === 'granted');
-      }, 4000))
-    ]);
-    console.log('[OneSignal] Final Permission status:', permission);
-    return permission || nativeWebPerm === 'granted';
+    return false;
   } catch (error) {
-    console.error('[OneSignal] Permission request failed:', error);
+    console.error('[OneSignal/PushManager] Permission request failed:', error);
     return false;
   }
 }
@@ -136,8 +97,8 @@ export async function getSubscriptionId(): Promise<string | null> {
         ]);
       }
     }
-    const subscription = await OneSignal.User.PushSubscription.id;
-    return subscription || null;
+    // Web SDK doesn't generate OneSignal IDs anymore
+    return null;
   } catch (error) {
     console.error('[OneSignal] Failed to get subscription ID:', error);
     return null;
@@ -157,8 +118,7 @@ export async function setExternalUserId(userId: string) {
         return;
       }
     }
-    await OneSignal.login(userId);
-    console.log('[OneSignal] Web external user ID set:', userId);
+    // VAPID Web Push handles external_userId intrinsically on backend db `pushSubscriptions` setup.
   } catch (error) {
     console.error('[OneSignal] Failed to set external user ID:', error);
   }
@@ -176,8 +136,7 @@ export async function removeExternalUserId() {
         return;
       }
     }
-    await OneSignal.logout();
-    console.log('[OneSignal] External user ID removed');
+    // VAPID Web Push is formally unbound via `trpc.auth.logout` hook intercept on the backend.
   } catch (error) {
     console.error('[OneSignal] Failed to remove external user ID:', error);
   }
@@ -188,7 +147,6 @@ export async function isSubscribed(): Promise<boolean> {
     if (Capacitor.isNativePlatform()) {
       const NativeOneSignal = getNativeOneSignal();
       if (NativeOneSignal) {
-        // Wrap in timeout to prevent app hanging if native bridge fails
         return await Promise.race([
           NativeOneSignal.Notifications.hasPermission(),
           new Promise<boolean>((resolve) => setTimeout(() => {
@@ -198,17 +156,17 @@ export async function isSubscribed(): Promise<boolean> {
         ]);
       }
     }
-    // Web SDK fallback with timeout
-    const permission = await Promise.race([
-      OneSignal.Notifications.permission,
-      new Promise<boolean>((resolve) => setTimeout(() => {
-        console.warn('[OneSignal] Web hasPermission timed out');
-        resolve(false);
-      }, 3000))
-    ]);
-    return permission;
+
+    // Core Web Push Check
+    if ('serviceWorker' in navigator && 'PushManager' in window && !Capacitor.isNativePlatform()) {
+      const registration = await navigator.serviceWorker.ready;
+      const sub = await registration.pushManager.getSubscription();
+      return !!sub;
+    }
+
+    return false;
   } catch (error) {
-    console.error('[OneSignal] Failed to check subscription status:', error);
+    console.error('[OneSignal/PushManager] Failed to check subscription status:', error);
     return false;
   }
 }
@@ -222,8 +180,6 @@ export async function addTag(key: string, value: string) {
         return;
       }
     }
-    await OneSignal.User.addTag(key, value);
-    console.log('[OneSignal] Tag added:', key, value);
   } catch (error) {
     console.error('[OneSignal] Failed to add tag:', error);
   }
@@ -238,15 +194,12 @@ export async function removeTag(key: string) {
         return;
       }
     }
-    await OneSignal.User.removeTag(key);
-    console.log('[OneSignal] Tag removed:', key);
   } catch (error) {
     console.error('[OneSignal] Failed to remove tag:', error);
   }
 }
 
-// Helper to check if OneSignal is available at all
 export function isOneSignalAvailable(): boolean {
-  return !!getNativeOneSignal() || !!OneSignal;
+  return Capacitor.isNativePlatform() && !!getNativeOneSignal();
 }
 
