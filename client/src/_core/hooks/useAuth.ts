@@ -43,6 +43,14 @@ export function useAuth(options?: UseAuthOptions) {
       // Also clear session storage just in case
       sessionStorage.removeItem("authToken");
       sessionStorage.removeItem("user");
+
+      // Detach hardware session from the backend OneSignal identity
+      try {
+        const { removeExternalUserId } = await import("@/lib/onesignal");
+        await removeExternalUserId();
+      } catch (err) {
+        console.error("[Auth] Failed to detach OneSignal ID on logout:", err);
+      }
     }
   }, [logoutMutation, utils]);
 

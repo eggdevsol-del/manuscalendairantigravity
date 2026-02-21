@@ -52,25 +52,37 @@ export async function subscribeToPush(
     }
 
     try {
-        // Check if subscription already exists
-        const existing = await db.query.pushSubscriptions.findFirst({
-            where: and(
-                eq(pushSubscriptions.userId, userId),
-                eq(pushSubscriptions.endpoint, subscriptionData.endpoint)
-            ),
+        // Find if this exact endpoint is already registered, regardless of the user
+        const existingEndpoint = await db.query.pushSubscriptions.findFirst({
+            where: eq(pushSubscriptions.endpoint, subscriptionData.endpoint)
         });
 
-        if (existing) {
-            // Update keys if changed
-            await db.update(pushSubscriptions)
-                .set({
-                    keys: JSON.stringify(subscriptionData.keys),
-                    userAgent: subscriptionData.userAgent,
-                })
-                .where(eq(pushSubscriptions.id, existing.id));
+        if (existingEndpoint) {
+            if (existingEndpoint.userId === userId) {
+                // Update keys if changed for the SAME user
+                await db.update(pushSubscriptions)
+                    .set({
+                        keys: JSON.stringify(subscriptionData.keys),
+                        userAgent: subscriptionData.userAgent,
+                    })
+                    .where(eq(pushSubscriptions.id, existingEndpoint.id));
 
-            console.log(`[PushService] Updated subscription for user ${userId}`);
-            return { success: true, subscriptionId: existing.id };
+                console.log(`[PushService] Updated subscription for user ${userId}`);
+                return { success: true, subscriptionId: existingEndpoint.id };
+            } else {
+                // The endpoint belongs to a DIFFERENT user (e.g., they logged out and logged in as someone else)
+                // We MUST reassign the hardware token to the new user so the old user stops receiving pushes
+                await db.update(pushSubscriptions)
+                    .set({
+                        userId: userId,
+                        keys: JSON.stringify(subscriptionData.keys),
+                        userAgent: subscriptionData.userAgent,
+                    })
+                    .where(eq(pushSubscriptions.id, existingEndpoint.id));
+
+                console.log(`[PushService] Reassigned subscription from user ${existingEndpoint.userId} to ${userId}`);
+                return { success: true, subscriptionId: existingEndpoint.id };
+            }
         } else {
             // Create new subscription
             const result = await db.insert(pushSubscriptions).values({
