@@ -54,11 +54,16 @@ function Router() {
     });
   }, []);
 
-  // Initialize OneSignal user
+  // Initialize OneSignal user & request push permissions
   React.useEffect(() => {
     if (user?.id) {
-      import("@/lib/onesignal").then(({ setExternalUserId }) => {
-        setExternalUserId(user.id);
+      import("@/lib/onesignal").then(({ setExternalUserId, requestNotificationPermission }) => {
+        setExternalUserId(user.id).then(() => {
+          // Explicitly prompt the user for permission now that they are logged in
+          requestNotificationPermission().catch(err => {
+            console.error('[OneSignal] Failed to request permission on login:', err);
+          });
+        });
       });
     }
   }, [user?.id]);

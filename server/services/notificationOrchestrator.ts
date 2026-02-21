@@ -12,7 +12,7 @@ export class NotificationOrchestrator {
         // Subscribe to domain events
         eventBus.subscribe('message.created', this.handleMessageCreated.bind(this));
         eventBus.subscribe('appointment.confirmed', this.handleAppointmentConfirmed.bind(this));
-        // Add more listeners as needed
+        eventBus.subscribe('consultation.created', this.handleConsultationCreated.bind(this));
     }
 
     private async handleMessageCreated(payload: any) {
@@ -25,6 +25,11 @@ export class NotificationOrchestrator {
 
     private async handleAppointmentConfirmed(payload: any) {
         await this.queueNotification('email_confirmation', payload);
+        await this.queueNotification('push_message', payload);
+    }
+
+    private async handleConsultationCreated(payload: any) {
+        await this.queueNotification('push_message', payload);
     }
 
     private async queueNotification(type: string, payload: any) {

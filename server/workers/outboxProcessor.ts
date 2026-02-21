@@ -28,14 +28,7 @@ async function processOutbox() {
             .where(
                 and(
                     or(eq(notificationOutbox.status, 'pending'), eq(notificationOutbox.status, 'failed')),
-                    lt(notificationOutbox.attemptCount, 3), // Max 3 attempts
-                    or(
-                        // Check if nextAttemptAt is null OR in the past
-                        // Drizzle might not have isNull, use raw sql or just logic
-                        // For simplicity, we just check pending status primarily, retry logic requires date checking
-                        // Let's assume pending ones are ready. For failed ones, we need retry delay.
-                        eq(notificationOutbox.status, 'pending')
-                    )
+                    lt(notificationOutbox.attemptCount, 3) // Max 3 attempts
                 )
             )
             .limit(BATCH_SIZE);

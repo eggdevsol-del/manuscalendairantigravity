@@ -1,6 +1,7 @@
 import { desc, eq, and, lt } from "drizzle-orm";
 import { consultations, InsertConsultation } from "../../drizzle/schema";
 import { getDb } from "./core";
+import { eventBus } from "../_core/eventBus";
 
 // ============================================================================
 // Consultation operations
@@ -17,7 +18,21 @@ export async function createConsultation(consultation: InsertConsultation) {
         .where(eq(consultations.id, Number(result[0].insertId)))
         .limit(1);
 
-    return inserted[0];
+    const newConsultation = inserted[0];
+
+    // Give orchestrator a chance to create a push notification
+    if (newConsultation) {
+        eventBus.publish('consultation.created', {
+            targetUserId: newConsultation.artistId,
+            title: "New Consultation Request",
+            body: `You have a new consultation request`,
+            data: { consultationId: newConsultation.id }
+        }).catch(err => {
+            console.error('[EventBus] Failed to publish consultation.created:', err);
+        });
+    }
+
+    return newConsultation;
 }
 
 export async function getConsultation(id: number) {
