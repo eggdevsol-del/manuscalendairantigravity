@@ -3,8 +3,8 @@ import { trpc } from "@/lib/trpc";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Check } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 import { SignaturePad } from "@/components/ui/SignaturePad";
 import { toast } from "sonner";
 import { useBottomNav } from "@/contexts/BottomNavContext";
@@ -23,6 +23,7 @@ export function InlineFormSigning({ pendingForms, onSuccess, onClose, initialFor
 
     const [activeForm, setActiveForm] = useState<any>(initialForm || pendingForms[0]);
     const [isSigningPhysical, setIsSigningPhysical] = useState(false);
+    const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
 
     const { data: user } = trpc.auth.me.useQuery();
     const updateProfileMutation = trpc.auth.updateProfile.useMutation();
@@ -45,6 +46,7 @@ export function InlineFormSigning({ pendingForms, onSuccess, onClose, initialFor
             if (nextForm) {
                 setActiveForm(nextForm);
                 setIsSigningPhysical(false);
+                setCheckedItems({});
             } else {
                 setActiveForm(null);
                 onClose?.();
@@ -74,7 +76,10 @@ export function InlineFormSigning({ pendingForms, onSuccess, onClose, initialFor
             <motion.div variants={fab.animation.item} className={fab.itemRow}>
                 <button
                     onClick={() => {
-                        if (isSigningPhysical) setIsSigningPhysical(false);
+                        if (isSigningPhysical) {
+                            setIsSigningPhysical(false);
+                            setCheckedItems({});
+                        }
                         else {
                             setActiveForm(null);
                             onClose?.();
@@ -93,16 +98,63 @@ export function InlineFormSigning({ pendingForms, onSuccess, onClose, initialFor
                 {!isSigningPhysical ? (
                     <motion.div variants={fab.animation.item} className="flex flex-col flex-1 min-h-0">
                         <ScrollArea className={cn(card.base, card.bg, "flex-1 overflow-auto rounded-[4px] p-4 border-white/5")}>
-                            <div className="prose prose-invert prose-sm max-w-none text-muted-foreground leading-relaxed whitespace-pre-wrap text-[10px]">
-                                {activeForm.content}
-                            </div>
+                            {activeForm.formType === 'medical_release' ? (
+                                <div className="space-y-4 text-[10px] text-muted-foreground leading-relaxed">
+                                    {activeForm.content.split('\n').map((line: string, index: number) => {
+                                        const match = line.match(/^(\d+)\.\s(.*)/);
+                                        if (match) {
+                                            const itemNumber = parseInt(match[1]);
+                                            const itemText = match[2];
+                                            return (
+                                                <div key={index} className={cn(card.base, card.bg, "flex items-start gap-3 p-3 rounded-[4px] border border-white/5")}>
+                                                    <Checkbox
+                                                        id={`medical-item-${itemNumber}`}
+                                                        checked={!!checkedItems[itemNumber]}
+                                                        onCheckedChange={(checked) => {
+                                                            setCheckedItems(prev => ({
+                                                                ...prev,
+                                                                [itemNumber]: checked === true
+                                                            }));
+                                                        }}
+                                                        className="mt-0.5 border-orange-500/50 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
+                                                    />
+                                                    <label
+                                                        htmlFor={`medical-item-${itemNumber}`}
+                                                        className="flex-1 text-[10px] font-medium leading-normal cursor-pointer text-foreground/90"
+                                                    >
+                                                        {itemText}
+                                                    </label>
+                                                </div>
+                                            );
+                                        }
+                                        // Standard text rendering for non-numbered medical lines
+                                        return <p key={index} className={line.startsWith('**') ? "font-bold text-foreground mb-2 text-xs" : ""}>{line.replace(/\*\*/g, '')}</p>;
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="prose prose-invert prose-sm max-w-none text-muted-foreground leading-relaxed whitespace-pre-wrap text-[10px]">
+                                    {activeForm.content}
+                                </div>
+                            )}
                         </ScrollArea>
-                        <button
-                            onClick={() => setIsSigningPhysical(true)}
-                            className="w-full mt-3 py-3 rounded-[4px] text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
-                        >
-                            Proceed to Signature
-                        </button>
+
+                        {(() => {
+                            const isMedical = activeForm.formType === 'medical_release';
+                            // Count how many numbered items exist in the string
+                            const requiredChecksCount = isMedical ? (activeForm.content.match(/^\d+\.\s/gm) || []).length : 0;
+                            const currentChecksCount = Object.values(checkedItems).filter(Boolean).length;
+                            const proceedDisabled = isMedical && currentChecksCount < requiredChecksCount;
+
+                            return (
+                                <button
+                                    onClick={() => setIsSigningPhysical(true)}
+                                    disabled={proceedDisabled}
+                                    className="w-full mt-3 py-3 rounded-[4px] text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+                                >
+                                    {proceedDisabled ? `Please Review (${currentChecksCount}/${requiredChecksCount})` : "Proceed to Signature"}
+                                </button>
+                            );
+                        })()}
                     </motion.div>
                 ) : (
                     <motion.div variants={fab.animation.item} className="flex flex-col flex-1 min-h-0 gap-4">

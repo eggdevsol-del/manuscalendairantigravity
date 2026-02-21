@@ -15,8 +15,7 @@ import { useTabletLandscape } from "@/hooks/useTabletLandscape";
 import { TeaserProvider } from "@/contexts/TeaserContext";
 import { useAppointmentCheckIn } from "@/features/appointments/useAppointmentCheckIn";
 import { AppointmentCheckInModal } from "@/components/modals/AppointmentCheckInModal";
-import { InlineFormSigning } from "@/features/booking/components/InlineFormSigning";
-import { FileSignature } from "lucide-react";
+
 import Home from "./pages/Home";
 import Chat from "./pages/Chat";
 import Calendar from "./pages/Calendar";
@@ -104,7 +103,7 @@ function Router() {
       </Switch>
       {shouldShowBottomNav && <BottomNav />}
       {isArtist && <AppointmentCheckInOverlay />}
-      {!isArtist && <PendingFormsOverlay />}
+
     </div>
   );
 }
@@ -150,58 +149,7 @@ function AppointmentCheckInOverlay() {
   return fabContent ? <AppointmentCheckInFABRegistrar content={fabContent} /> : null;
 }
 
-/**
- * Global overlay that shows pending forms for clients globally in the FAB.
- */
-function PendingFormsOverlay() {
-  const { user } = useAuth();
-  const { setFABOpen } = useBottomNav();
-  const isArtist = user?.role === 'artist';
 
-  const { data: pendingForms, refetch: refetchForms } = trpc.forms.getPendingForms.useQuery(
-    { appointmentId: undefined },
-    { enabled: !!user && !isArtist }
-  );
-
-  const [activeForm, setActiveForm] = React.useState<any>(null);
-
-  const fabContent = React.useMemo(() => {
-    if (!pendingForms || pendingForms.length === 0 || isArtist) return null;
-
-    if (activeForm) {
-      return (
-        <InlineFormSigning
-          pendingForms={pendingForms}
-          initialForm={activeForm}
-          onSuccess={refetchForms}
-          onClose={() => {
-            setActiveForm(null);
-            setFABOpen(false);
-          }}
-        />
-      );
-    }
-
-    return [
-      {
-        id: 'sign-global-forms',
-        label: 'Sign Required Forms',
-        icon: FileSignature,
-        onClick: () => setActiveForm(pendingForms[0]),
-        highlight: true,
-        className: "text-orange-500",
-        badgeCount: pendingForms.length
-      }
-    ];
-  }, [pendingForms, activeForm, isArtist, refetchForms, setFABOpen]);
-
-  return fabContent ? <PendingFormsFABRegistrar content={fabContent} /> : null;
-}
-
-function PendingFormsFABRegistrar({ content }: { content: any }) {
-  useRegisterFABActions("global-pending-forms", content);
-  return null;
-}
 
 function AppointmentCheckInFABRegistrar({ content }: { content: React.ReactNode }) {
   useRegisterFABActions("appointment-check-in", content);

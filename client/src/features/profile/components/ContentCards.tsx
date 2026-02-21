@@ -3,7 +3,8 @@ import { Bookmark, Clock, Grid, Image as ImageIcon, Check, AlertCircle, FileText
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { FormSigningDialog } from "@/components/modals/FormSigningDialog";
+import { useBottomNav, useRegisterFABActions } from "@/contexts/BottomNavContext";
+import { InlineFormSigning } from "@/features/booking/components/InlineFormSigning";
 import { useClientProfileController } from "../useClientProfileController";
 import { toast } from "sonner";
 
@@ -195,21 +196,27 @@ export function PhotosCard({ photos, isEditMode }: { photos: any[], isEditMode: 
 }
 
 export function FormsCard({ forms }: { forms: any[] }) {
-    const { signForm } = useClientProfileController();
+    const { setFABOpen } = useBottomNav();
     const [signingForm, setSigningForm] = useState<any>(null);
 
-    const handleSign = async (signature: string) => {
-        if (!signingForm) return;
-        try {
-            await signForm.mutateAsync({
-                formId: signingForm.id,
-                signature
-            });
-            toast.success("Form signed successfully");
-            setSigningForm(null);
-        } catch (err) {
-            toast.error("Failed to sign form");
-        }
+    useRegisterFABActions("client-forms", signingForm ? (
+        <InlineFormSigning
+            pendingForms={forms}
+            initialForm={signingForm}
+            onSuccess={() => {
+                setSigningForm(null);
+                setFABOpen(false);
+            }}
+            onClose={() => {
+                setSigningForm(null);
+                setFABOpen(false);
+            }}
+        />
+    ) : null);
+
+    const handleSignClick = (form: any) => {
+        setSigningForm(form);
+        setFABOpen(true);
     };
 
     return (
@@ -240,7 +247,7 @@ export function FormsCard({ forms }: { forms: any[] }) {
                                     size="sm"
                                     variant="outline"
                                     className="shrink-0 text-xs border-orange-500/20 text-orange-400 hover:text-orange-300 hover:bg-orange-500/10"
-                                    onClick={() => setSigningForm(form)}
+                                    onClick={() => handleSignClick(form)}
                                 >
                                     Sign Now
                                 </Button>
@@ -249,7 +256,7 @@ export function FormsCard({ forms }: { forms: any[] }) {
                                     size="sm"
                                     variant="ghost"
                                     className="shrink-0 text-xs hover:bg-white/5 opacity-60 hover:opacity-100"
-                                    onClick={() => setSigningForm(form)}
+                                    onClick={() => handleSignClick(form)}
                                 >
                                     View
                                 </Button>
@@ -259,18 +266,6 @@ export function FormsCard({ forms }: { forms: any[] }) {
                 </div>
             )}
 
-            {signingForm && (
-                <FormSigningDialog
-                    isOpen={!!signingForm}
-                    onClose={() => setSigningForm(null)}
-                    onSign={handleSign}
-                    formTitle={signingForm.title}
-                    formContent={signingForm.content}
-                    isSigning={signForm.isPending}
-                    signature={signingForm.signature}
-                    viewOnly={signingForm.status === 'signed'}
-                />
-            )}
         </div>
     );
 }
