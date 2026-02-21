@@ -116,7 +116,7 @@ export default function Signup() {
 
   return (
     <PageShell className="justify-center items-center px-4 py-8 overflow-y-auto mobile-scroll">
-      <Card className={cn("w-full max-w-md bg-transparent border-none shadow-none overflow-hidden shrink-0 mt-auto mb-auto")}>
+      <div className="w-full max-w-md shrink-0 mt-auto mb-auto">
         <CardHeader className="space-y-1 text-center pb-6 border-none">
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]">
             <UserPlus className="w-8 h-8 text-primary" />
@@ -309,7 +309,7 @@ export default function Signup() {
             By creating an account, you agree to our Terms of Service and Privacy Policy
           </p>
         </CardContent>
-      </Card>
+      </div>
     </PageShell>
   );
 }

@@ -66,7 +66,7 @@ export default function Login() {
 
   return (
     <PageShell className="justify-center items-center px-4">
-      <Card className={cn("w-full max-w-md overflow-hidden bg-transparent border-none shadow-none")}>
+      <div className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center pb-6 border-none">
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]">
             <LogIn className="w-8 h-8 text-primary" />
@@ -192,7 +192,7 @@ export default function Login() {
             <span className="text-xs text-muted-foreground font-medium">v{APP_VERSION}</span>
           </div>
         </CardContent>
-      </Card>
+      </div>
     </PageShell>
   );
 }
