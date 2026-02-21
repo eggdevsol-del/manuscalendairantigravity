@@ -69,7 +69,15 @@ export async function requestNotificationPermission(): Promise<boolean> {
     if (Capacitor.isNativePlatform()) {
       const NativeOneSignal = getNativeOneSignal();
       if (NativeOneSignal) {
-        return await NativeOneSignal.Notifications.requestPermission(true);
+        // Native methods occasionally hang on Android without returning a promise.
+        // We wrap it in a race to guarantee the UI unlocks.
+        return await Promise.race([
+          NativeOneSignal.Notifications.requestPermission(true),
+          new Promise<boolean>((resolve) => setTimeout(() => {
+            console.warn('[OneSignal] Native requestPermission timed out');
+            resolve(false);
+          }, 3500))
+        ]);
       }
     }
     const permission = await OneSignal.Notifications.requestPermission();
@@ -86,7 +94,13 @@ export async function getSubscriptionId(): Promise<string | null> {
     if (Capacitor.isNativePlatform()) {
       const NativeOneSignal = getNativeOneSignal();
       if (NativeOneSignal) {
-        return NativeOneSignal.User.pushSubscription.getPushSubscriptionId();
+        return await Promise.race([
+          NativeOneSignal.User.pushSubscription.getPushSubscriptionId(),
+          new Promise<string | null>((resolve) => setTimeout(() => {
+            console.warn('[OneSignal] Native getPushSubscriptionId timed out');
+            resolve(null);
+          }, 2000))
+        ]);
       }
     }
     const subscription = await OneSignal.User.PushSubscription.id;
@@ -102,7 +116,10 @@ export async function setExternalUserId(userId: string) {
     if (Capacitor.isNativePlatform()) {
       const NativeOneSignal = getNativeOneSignal();
       if (NativeOneSignal) {
-        NativeOneSignal.login(userId);
+        await Promise.race([
+          NativeOneSignal.login(userId),
+          new Promise<void>((resolve) => setTimeout(() => resolve(), 2000))
+        ]);
         console.log('[OneSignal] Native external user ID set:', userId);
         return;
       }
@@ -119,7 +136,10 @@ export async function removeExternalUserId() {
     if (Capacitor.isNativePlatform()) {
       const NativeOneSignal = getNativeOneSignal();
       if (NativeOneSignal) {
-        NativeOneSignal.logout();
+        await Promise.race([
+          NativeOneSignal.logout(),
+          new Promise<void>((resolve) => setTimeout(() => resolve(), 2000))
+        ]);
         return;
       }
     }
@@ -135,7 +155,14 @@ export async function isSubscribed(): Promise<boolean> {
     if (Capacitor.isNativePlatform()) {
       const NativeOneSignal = getNativeOneSignal();
       if (NativeOneSignal) {
-        return NativeOneSignal.Notifications.hasPermission();
+        // Wrap in timeout to prevent app hanging if native bridge fails
+        return await Promise.race([
+          NativeOneSignal.Notifications.hasPermission(),
+          new Promise<boolean>((resolve) => setTimeout(() => {
+            console.warn('[OneSignal] Native hasPermission timed out');
+            resolve(false);
+          }, 2000))
+        ]);
       }
     }
     const permission = await OneSignal.Notifications.permission;
