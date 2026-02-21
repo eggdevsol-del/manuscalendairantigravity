@@ -44,9 +44,15 @@ export default function PushNotificationSettings() {
   };
 
   const enableNotifications = async () => {
-    setIsLoading(true);
+    // Safari Security: DO NOT set loading state here.
+    // Calling setState yields the JS thread and drops the "Transient Activation" click context.
     try {
+      // Fire the native browser prompt instantly inside the raw click handler stack
       const granted = await requestNotificationPermission();
+
+      // Now that the browser has answered, we can safely show loading spinners 
+      // while we sync the player ID with the OneSignal backend cloud.
+      setIsLoading(true);
 
       if (granted) {
         setPermission("granted");

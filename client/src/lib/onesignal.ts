@@ -87,16 +87,35 @@ export async function requestNotificationPermission(): Promise<boolean> {
         ]);
       }
     }
-    // Web SDK fallback with timeout
+    // Safari PWA "Transient Activation Bug" Bypass:
+    // We MUST call the raw browser API directly. If we rely ONLY on OneSignal's
+    // async wrapper, iOS Safari drops the 'click' context and silently ignores the prompt.
+    let nativeWebPerm = 'default';
+    if ('Notification' in window && !Capacitor.isNativePlatform()) {
+      try {
+        nativeWebPerm = await window.Notification.requestPermission();
+        console.log('[OneSignal] Native Browser Web Prompt result:', nativeWebPerm);
+        if (nativeWebPerm !== 'granted') {
+          return false;
+        }
+      } catch (err) {
+        console.warn('[OneSignal] Native web prompt failed, falling back to OS wrapper', err);
+      }
+    }
+
+    // Now that the browser has explicitly granted permission during the user gesture,
+    // we can safely tell OneSignal to sync the token.
     const permission = await Promise.race([
       OneSignal.Notifications.requestPermission(),
       new Promise<boolean>((resolve) => setTimeout(() => {
-        console.warn('[OneSignal] Web requestPermission timed out');
-        resolve(false);
+        console.warn('[OneSignal] Web requestPermission sync timed out');
+        // If the browser already said yes, we can technically assume true, but
+        // OneSignal might have failed to register the worker.
+        resolve(nativeWebPerm === 'granted');
       }, 4000))
     ]);
-    console.log('[OneSignal] Permission status:', permission);
-    return permission;
+    console.log('[OneSignal] Final Permission status:', permission);
+    return permission || nativeWebPerm === 'granted';
   } catch (error) {
     console.error('[OneSignal] Permission request failed:', error);
     return false;
