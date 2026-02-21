@@ -49,11 +49,14 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
     });
 
     const [fabRegistry, setFabRegistry] = useState<Record<string, FABMenuItem[] | ReactNode>>({});
-    const [activeFabId, setActiveFabId] = useState<string | null>(null);
+    const [fabIdStack, setFabIdStack] = useState<string[]>([]);
 
     // activeId is global, but resolved against current scope.
-    const [activeId, setActiveId] = useState<string | null>(null);
+    const [rowIdStack, setRowIdStack] = useState<string[]>([]);
     const [isContextualVisible, setIsContextualVisible] = useState(false);
+
+    const activeId = rowIdStack.length > 0 ? rowIdStack[rowIdStack.length - 1] : null;
+    const activeFabId = fabIdStack.length > 0 ? fabIdStack[fabIdStack.length - 1] : null;
 
     // Derived contextual row based on current scope
     const contextualRow = activeId ? (registry[scope][activeId] || null) : null;
@@ -74,7 +77,10 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
                 [id]: content
             }
         }));
-        setActiveId(id);
+        setRowIdStack((prev) => {
+            const copy = prev.filter(x => x !== id);
+            return [...copy, id];
+        });
 
         return () => {
             setRegistry((prev) => {
@@ -86,19 +92,22 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
                 };
             });
 
-            setActiveId((current) => {
-                if (current === id) {
+            setRowIdStack((prev) => {
+                const copy = prev.filter(x => x !== id);
+                if (copy.length === 0) {
                     setIsContextualVisible(false);
-                    return null;
                 }
-                return current;
+                return copy;
             });
         };
     }, []);
 
     const registerFABActions = useCallback((id: string, actions: FABMenuItem[] | ReactNode) => {
         setFabRegistry(prev => ({ ...prev, [id]: actions }));
-        setActiveFabId(id);
+        setFabIdStack(prev => {
+            const copy = prev.filter(x => x !== id);
+            return [...copy, id];
+        });
 
         return () => {
             setFabRegistry(prev => {
@@ -106,7 +115,7 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
                 delete next[id];
                 return next;
             });
-            setActiveFabId(current => current === id ? null : current);
+            setFabIdStack(prev => prev.filter(x => x !== id));
         };
     }, []);
 

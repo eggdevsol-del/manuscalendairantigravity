@@ -143,9 +143,11 @@ function AppointmentCheckInOverlay() {
     );
   }, [activeCheckIn, dismissed, updateAppointment, setFABOpen]);
 
-  // Register the check-in modal flow into the Central FAB
-  useRegisterFABActions("appointment-check-in", fabContent);
+  return fabContent ? <AppointmentCheckInFABRegistrar content={fabContent} /> : null;
+}
 
+function AppointmentCheckInFABRegistrar({ content }: { content: React.ReactNode }) {
+  useRegisterFABActions("appointment-check-in", content);
   return null;
 }
 
