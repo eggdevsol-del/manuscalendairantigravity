@@ -20,20 +20,12 @@ interface InlineFormSigningProps {
 export function InlineFormSigning({ pendingForms, onSuccess, onClose, initialForm }: InlineFormSigningProps) {
     const fab = tokens.fab;
     const card = tokens.card;
-    const { setLargePanel } = useBottomNav();
-
     const [activeForm, setActiveForm] = useState<any>(initialForm || pendingForms[0]);
     const [isSigningPhysical, setIsSigningPhysical] = useState(false);
     const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
 
     const { data: user } = trpc.auth.me.useQuery();
     const updateProfileMutation = trpc.auth.updateProfile.useMutation();
-
-    // Side effect to manage FAB panel size
-    useEffect(() => {
-        setLargePanel(true);
-        return () => setLargePanel(false);
-    }, [setLargePanel]);
 
     const signFormMutation = trpc.forms.signForm.useMutation({
         onSuccess: () => {

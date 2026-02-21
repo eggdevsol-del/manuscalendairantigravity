@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import { Bookmark, Clock, Grid, Image as ImageIcon, Check, AlertCircle, FileText } from "lucide-react";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useBottomNav, useRegisterFABActions } from "@/contexts/BottomNavContext";
 import { InlineFormSigning } from "@/features/booking/components/InlineFormSigning";
 import { useClientProfileController } from "../useClientProfileController";
@@ -196,28 +196,31 @@ export function PhotosCard({ photos, isEditMode }: { photos: any[], isEditMode: 
 }
 
 export function FormsCard({ forms }: { forms: any[] }) {
-    const { setFABOpen } = useBottomNav();
+    const { setFABOpen, setLargePanel } = useBottomNav();
     const [signingForm, setSigningForm] = useState<any>(null);
 
-    useRegisterFABActions("client-forms", signingForm ? (
+    const handleClose = useCallback(() => {
+        setSigningForm(null);
+        setFABOpen(false);
+        setLargePanel(false);
+    }, [setFABOpen, setLargePanel]);
+
+    const fabContent = useMemo(() => signingForm ? (
         <InlineFormSigning
             pendingForms={forms}
             initialForm={signingForm}
-            onSuccess={() => {
-                setSigningForm(null);
-                setFABOpen(false);
-            }}
-            onClose={() => {
-                setSigningForm(null);
-                setFABOpen(false);
-            }}
+            onSuccess={handleClose}
+            onClose={handleClose}
         />
-    ) : null);
+    ) : null, [forms, signingForm, handleClose]);
 
-    const handleSignClick = (form: any) => {
+    useRegisterFABActions("client-forms", fabContent);
+
+    const handleSignClick = useCallback((form: any) => {
         setSigningForm(form);
         setFABOpen(true);
-    };
+        setLargePanel(true);
+    }, [setFABOpen, setLargePanel]);
 
     return (
         <div className="px-1">
