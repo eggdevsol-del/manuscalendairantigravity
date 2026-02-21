@@ -34,7 +34,8 @@ export class NotificationOrchestrator {
     }
 
     private async handleProposalAccepted(payload: any) {
-        const pushPayload = {
+        // Notify the client to fill out their consent forms
+        const clientPushPayload = {
             targetUserId: payload.clientId,
             title: "Booking Confirmed! 📝",
             body: "Your appointment is locked in. Please tap here to sign your required consent forms before you arrive.",
@@ -45,8 +46,23 @@ export class NotificationOrchestrator {
                 conversationId: payload.conversationId
             }
         };
+        await this.queueNotification('push_message', clientPushPayload);
 
-        await this.queueNotification('push_message', pushPayload);
+        // Notify the artist that the proposal was accepted
+        if (payload.artistId) {
+            const artistPushPayload = {
+                targetUserId: payload.artistId,
+                title: "Proposal Accepted! 🎉",
+                body: "A client just accepted your project proposal and confirmed their booking.",
+                url: `/chat/${payload.conversationId}`,
+                data: {
+                    type: "proposal_accepted_artist",
+                    appointmentId: payload.appointmentId,
+                    conversationId: payload.conversationId
+                }
+            };
+            await this.queueNotification('push_message', artistPushPayload);
+        }
     }
 
     private async queueNotification(type: string, payload: any) {

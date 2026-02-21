@@ -5,6 +5,7 @@ import { UIDebugProvider } from "@/_core/contexts/UIDebugContext";
 import { BottomNavProvider, useBottomNav, useRegisterFABActions } from "@/contexts/BottomNavContext";
 import InstallPrompt from "./components/InstallPrompt";
 import IOSInstallPrompt from "./components/IOSInstallPrompt";
+import { PushNotificationBanner } from "./components/PushNotificationBanner";
 import BottomNav from "@/components/BottomNav";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
@@ -188,6 +189,7 @@ function App() {
           <BottomNavProvider>
             <TooltipProvider>
               <Toaster />
+              <PushNotificationBanner />
               <InstallPrompt />
               <ConditionalIOSInstallPrompt />
               <ErrorBoundary>

@@ -446,6 +446,7 @@ export const appointmentsRouter = router({
                 // Publish proposal accepted event for push notification
                 eventBus.publish('proposal.accepted', {
                     clientId: conversation.clientId,
+                    artistId: conversation.artistId,
                     conversationId: input.conversationId,
                     appointmentId: appointmentIds[0],
                 }).catch(err => {
