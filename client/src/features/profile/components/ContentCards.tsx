@@ -23,10 +23,13 @@ export function HistoryCard({ history }: { history: any[] }) {
                 <div className="space-y-0 relative border-l border-white/10 ml-3 pl-6 py-2">
                     {history?.map((item) => {
                         const isLog = item.type === 'log';
+                        const isForm = item.type === 'form';
+                        const isAppt = item.type === 'appointment';
 
                         // Map actions to icons/colors
                         const getIcon = () => {
-                            if (!isLog) return <Check className="w-3 h-3 text-emerald-500" />;
+                            if (isForm) return <FileText className="w-3 h-3 text-orange-500" />;
+                            if (isAppt) return <Check className="w-3 h-3 text-emerald-500" />;
                             switch (item.action) {
                                 case 'created': return <Clock className="w-3 h-3 text-primary" />;
                                 case 'rescheduled': return <Clock className="w-3 h-3 text-orange-400" />;
@@ -39,7 +42,8 @@ export function HistoryCard({ history }: { history: any[] }) {
                         };
 
                         const getStatusColor = () => {
-                            if (!isLog) return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+                            if (isForm) return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
+                            if (isAppt) return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
                             switch (item.action) {
                                 case 'cancelled':
                                 case 'proposal_revoked': return 'bg-red-500/10 text-red-500 border-red-500/20';
@@ -54,9 +58,9 @@ export function HistoryCard({ history }: { history: any[] }) {
                             <div key={item.id} className="relative mb-8 last:mb-0">
                                 <span className={cn(
                                     "absolute -left-[30px] top-1.5 h-3 w-3 rounded-full ring-4 ring-background flex items-center justify-center bg-background border",
-                                    !isLog ? "border-emerald-500" : "border-white/20"
+                                    !isLog && !isForm ? "border-emerald-500" : isForm ? "border-orange-500" : "border-white/20"
                                 )}>
-                                    <div className={cn("w-1.5 h-1.5 rounded-full", !isLog ? "bg-emerald-500" : "bg-muted-foreground")} />
+                                    <div className={cn("w-1.5 h-1.5 rounded-full", !isLog && !isForm ? "bg-emerald-500" : isForm ? "bg-orange-500" : "bg-muted-foreground")} />
                                 </span>
 
                                 <div className="flex flex-col">
@@ -71,8 +75,13 @@ export function HistoryCard({ history }: { history: any[] }) {
                                                 Audited Action
                                             </span>
                                         )}
+                                        {isForm && (
+                                            <span className="text-[10px] text-orange-500/80 italic">
+                                                Legal Record
+                                            </span>
+                                        )}
                                     </div>
-                                    <h4 className={cn("text-sm font-semibold flex items-center gap-2", !isLog ? "text-foreground" : "text-foreground/80")}>
+                                    <h4 className={cn("text-sm font-semibold flex items-center gap-2", isAppt ? "text-foreground" : "text-foreground/80")}>
                                         {item.title}
                                         {getIcon()}
                                     </h4>
@@ -83,9 +92,9 @@ export function HistoryCard({ history }: { history: any[] }) {
                                             "inline-flex text-[9px] px-2 py-0.5 rounded-full border capitalize font-bold tracking-tight",
                                             getStatusColor()
                                         )}>
-                                            {isLog ? item.action.replace('_', ' ') : item.status}
+                                            {isLog && item.action ? item.action.replace('_', ' ') : item.status || 'Signed'}
                                         </span>
-                                        {!isLog && item.price > 0 && (
+                                        {isAppt && item.price > 0 && (
                                             <span className="text-[10px] text-muted-foreground font-medium">
                                                 ${item.price} Total
                                             </span>

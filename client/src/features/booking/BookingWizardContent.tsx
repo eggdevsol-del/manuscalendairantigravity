@@ -16,6 +16,7 @@ import {
     MapPin,
     ChevronDown,
     MessageCircle,
+    FileSignature,
 } from "lucide-react";
 import { formatLocalTime, getBusinessTimezone } from "../../../../shared/utils/timezone";
 import { AppointmentCheckInModal } from "@/components/modals/AppointmentCheckInModal";
@@ -28,6 +29,7 @@ import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
 import { tokens } from "@/ui/tokens";
 import { ApplyPromotionSheet } from "@/features/promotions";
+import { FormSigningDialog } from "@/components/modals/FormSigningDialog";
 
 type BookingStep = 'client' | 'service' | 'frequency' | 'review' | 'success';
 
@@ -148,6 +150,22 @@ export function BookingWizardContent({
     // -- Queries & Mutations --
     const { data: clients, isLoading: isLoadingClients } = trpc.conversations.getClients.useQuery(undefined, {
         enabled: isArtist && step === 'client'
+    });
+
+    const { data: pendingForms, refetch: refetchForms } = trpc.forms.getPendingForms.useQuery(
+        { appointmentId: selectedAppointmentRaw?.id || 0 },
+        { enabled: !isArtist && !!selectedAppointmentRaw?.id }
+    );
+
+    const [activeForm, setActiveForm] = useState<any>(null);
+
+    const signFormMutation = trpc.forms.signForm.useMutation({
+        onSuccess: () => {
+            toast.success("Form signed successfully");
+            refetchForms();
+            setActiveForm(null);
+        },
+        onError: (err) => toast.error("Failed to sign form: " + err.message)
     });
 
     const filteredClients = clients?.filter(c =>
@@ -598,7 +616,42 @@ export function BookingWizardContent({
                             </button>
                         </motion.div>
                     )}
+
+                    {/* Pending Forms Action */}
+                    {!isArtist && pendingForms && pendingForms.length > 0 && (
+                        <motion.div variants={fab.animation.item} className="pt-1">
+                            <button
+                                onClick={() => setActiveForm(pendingForms[0])}
+                                className={cn(card.base, "bg-orange-500/10 text-orange-500 hover:bg-orange-500/20", card.interactive, "flex items-center gap-2 p-2 w-full rounded-[4px] border border-orange-500/20")}
+                            >
+                                <div className={cn(fab.itemButton, "shrink-0 !w-7 !h-7 bg-orange-500/20 text-orange-500")}>
+                                    <FileSignature className="w-3.5 h-3.5" />
+                                </div>
+                                <div className="flex-1 flex justify-between items-center text-[10px] font-bold">
+                                    <span>Sign Required Forms</span>
+                                    <span className="w-4 h-4 bg-orange-500 text-white rounded-full flex items-center justify-center text-[8px]">{pendingForms.length}</span>
+                                </div>
+                            </button>
+                        </motion.div>
+                    )}
                 </>
+            )}
+
+            {/* Forms Dialog */}
+            {activeForm && (
+                <FormSigningDialog
+                    isOpen={!!activeForm}
+                    onClose={() => setActiveForm(null)}
+                    onSign={async (signature) => {
+                        await signFormMutation.mutateAsync({
+                            formId: activeForm.id,
+                            signature
+                        });
+                    }}
+                    formTitle={activeForm.title}
+                    formContent={activeForm.content}
+                    isSigning={signFormMutation.isPending}
+                />
             )}
 
             {/* ===== BOOKING WIZARD ===== */}

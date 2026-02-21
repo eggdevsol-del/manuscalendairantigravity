@@ -82,7 +82,7 @@ export const appointmentsRouter = router({
                 });
             }
 
-            return db.createAppointment({
+            const newAppt = await db.createAppointment({
                 conversationId: input.conversationId,
                 artistId: input.artistId,
                 clientId: input.clientId,
@@ -96,6 +96,12 @@ export const appointmentsRouter = router({
                 depositAmount: input.depositAmount,
                 status: "pending",
             });
+
+            if (newAppt?.id) {
+                await db.generateRequiredForms(newAppt.id);
+            }
+
+            return newAppt;
         }),
     update: protectedProcedure
         .input(
@@ -431,6 +437,7 @@ export const appointmentsRouter = router({
                 if (created) {
                     appointmentIds.push(created.id);
                     createdCount++;
+                    await db.generateRequiredForms(created.id);
                 }
             }
 

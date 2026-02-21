@@ -137,6 +137,26 @@ export const clientProfileRouter = router({
                 }
             });
 
+            const signedForms = await database.query.consentForms.findMany({
+                where: and(
+                    eq(consentForms.clientId, targetId),
+                    eq(consentForms.status, 'signed')
+                )
+            });
+
+            signedForms.forEach(form => {
+                if (form.signedAt) {
+                    historyItems.push({
+                        id: `form-${form.id}`,
+                        type: 'form',
+                        date: form.signedAt,
+                        title: 'Form Signed',
+                        description: `Signed ${form.title}`,
+                        appointmentId: form.appointmentId
+                    });
+                }
+            });
+
             return historyItems.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         }),
 

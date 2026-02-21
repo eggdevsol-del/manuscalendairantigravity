@@ -5,13 +5,33 @@ import { tokens } from "@/ui/tokens";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { FileText, HeartPulse, Scale, Save, ListIcon } from "lucide-react";
+import { FileText, HeartPulse, Save, ListIcon } from "lucide-react";
 
-type TabType = 'form9' | 'medical' | 'consent' | 'register';
+const DEFAULT_MEDICAL_TEMPLATE = `**MEDICAL RELEASE AND QUESTIONNAIRE**
+Please review and answer the following questions to ensure your safety during the tattoo procedure.
+
+1. Do you have any heart conditions, epilepsy, or diabetes?
+2. Are you currently taking any blood-thinning medication?
+3. Do you have any communicable diseases or infections?
+4. Are you pregnant or nursing?
+5. Do you have any allergies (e.g., to latex, specific metals, or soaps)?
+
+I confirm that the information provided is accurate and true to the best of my knowledge. I understand that withholding medical information may pose risks to my health and the tattoo process.`;
+
+const DEFAULT_CONSENT_TEMPLATE = `**TATTOO PROCEDURE CONSENT FORM**
+By signing this form, I acknowledge and agree to the following:
+
+1. I am over the age of 18 and consent to receiving a tattoo.
+2. I have been informed of the nature of the tattoo procedure, the anticipated results, and the potential risks, including but not limited to infection, scarring, allergic reactions, and variations in color or design.
+3. I understand that a tattoo is an irreversible modification to my body.
+4. I have received, read, and understand the aftercare instructions provided to me.
+5. I release the artist and the studio from any liability arising from the procedure or my failure to follow aftercare instructions.
+6. I grant the artist the right to photograph my tattoo and use the images for promotional purposes.`;
+
+type TabType = 'medical' | 'consent' | 'register';
 
 export default function RegulationPage({ onBack }: { onBack: () => void }) {
-    const [activeTab, setActiveTab] = useState<TabType>('form9');
-    const [form9, setForm9] = useState("");
+    const [activeTab, setActiveTab] = useState<TabType>('register');
     const [medical, setMedical] = useState("");
     const [consent, setConsent] = useState("");
 
@@ -27,15 +47,13 @@ export default function RegulationPage({ onBack }: { onBack: () => void }) {
 
     useEffect(() => {
         if (templates) {
-            setForm9(templates.form9Template || "");
-            setMedical(templates.medicalTemplate || "");
-            setConsent(templates.consentTemplate || "");
+            setMedical(templates.medicalTemplate || DEFAULT_MEDICAL_TEMPLATE);
+            setConsent(templates.consentTemplate || DEFAULT_CONSENT_TEMPLATE);
         }
     }, [templates]);
 
     const handleSave = () => {
         updateTemplates.mutate({
-            form9Template: form9,
             medicalTemplate: medical,
             consentTemplate: consent,
         });
@@ -44,10 +62,9 @@ export default function RegulationPage({ onBack }: { onBack: () => void }) {
     if (templatesLoading) return <LoadingState fullScreen message="Loading templates..." />;
 
     const tabs = [
-        { id: 'form9', label: 'Form 9', icon: Scale },
+        { id: 'register', label: 'Procedure Log', icon: ListIcon },
         { id: 'medical', label: 'Medical', icon: HeartPulse },
         { id: 'consent', label: 'Consent', icon: FileText },
-        { id: 'register', label: 'Register', icon: ListIcon },
     ] as const;
 
     return (
@@ -124,22 +141,6 @@ export default function RegulationPage({ onBack }: { onBack: () => void }) {
                         ) : (
                             <>
                                 <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-6 space-y-4")}>
-                                    {activeTab === 'form9' && (
-                                        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                            <div className="space-y-2">
-                                                <Label className="text-lg font-bold">QLD Form 9 Template</Label>
-                                                <p className="text-xs text-muted-foreground mb-4">This content will be snapshots into the Procedure Log for Queensland Health requirements.</p>
-                                                <Textarea
-                                                    value={form9}
-                                                    onChange={(e) => setForm9(e.target.value)}
-                                                    placeholder="Enter standard Form 9 legal text..."
-                                                    rows={12}
-                                                    className="bg-white/5 border-white/10 font-mono text-xs leading-relaxed"
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-
                                     {activeTab === 'medical' && (
                                         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                                             <div className="space-y-2">

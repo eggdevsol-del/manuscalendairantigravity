@@ -457,7 +457,7 @@ export async function generateRequiredForms(appointmentId: number) {
         artistId: appt.artistId,
         formType: 'procedure_consent' as const,
         title: 'Tattoo Procedure Consent',
-        content: settings.consentTemplate || "I consent to the tattoo procedure...",
+        content: settings.consentTemplate || "**TATTOO PROCEDURE CONSENT FORM**\nBy signing this form, I acknowledge and agree to the following:\n\n1. I am over the age of 18 and consent to receiving a tattoo.\n2. I have been informed of the nature of the tattoo procedure, the anticipated results, and the potential risks, including but not limited to infection, scarring, allergic reactions, and variations in color or design.\n3. I understand that a tattoo is an irreversible modification to my body.\n4. I have received, read, and understand the aftercare instructions provided to me.\n5. I release the artist and the studio from any liability arising from the procedure or my failure to follow aftercare instructions.\n6. I grant the artist the right to photograph my tattoo and use the images for promotional purposes.",
         status: 'pending' as const
     });
 
@@ -468,18 +468,7 @@ export async function generateRequiredForms(appointmentId: number) {
         artistId: appt.artistId,
         formType: 'medical_release' as const,
         title: 'Medical History & Release',
-        content: settings.medicalTemplate || "I confirm I have no medical conditions...",
-        status: 'pending' as const
-    });
-
-    // QLD REGULATION: Form 9
-    forms.push({
-        appointmentId,
-        clientId: appt.clientId,
-        artistId: appt.artistId,
-        formType: 'form_9' as const,
-        title: 'Form 9 - Tattoo Procedure Log',
-        content: settings.form9Template || "Standard Form 9 legal content...",
+        content: settings.medicalTemplate || "**MEDICAL RELEASE AND QUESTIONNAIRE**\nPlease review and answer the following questions to ensure your safety during the tattoo procedure.\n\n1. Do you have any heart conditions, epilepsy, or diabetes?\n2. Are you currently taking any blood-thinning medication?\n3. Do you have any communicable diseases or infections?\n4. Are you pregnant or nursing?\n5. Do you have any allergies (e.g., to latex, specific metals, or soaps)?\n\nI confirm that the information provided is accurate and true to the best of my knowledge. I understand that withholding medical information may pose risks to my health and the tattoo process.",
         status: 'pending' as const
     });
 
