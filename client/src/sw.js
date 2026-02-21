@@ -275,7 +275,20 @@ self.addEventListener('notificationclick', (event) => {
 
     // 3. Absolute last resort: PWA is completely closed, Cold Boot it
     if (clients.openWindow) {
-      return clients.openWindow(urlToOpen);
+      // iOS PWA Sandbox Failsafe:
+      // If we attempt to openWindow() to a deep link like '/profile?tab=forms', iOS Safari
+      // aggressively rejects the URL from the PWA sandbox and opens an unauthenticated normal tab.
+      // By forcing openWindow to exclusively target the root origin with a ?deeplink= parameter,
+      // iOS trusts the URL, boots the Sandbox securely, and the React App handles the router pivot.
+      try {
+        const targetUrl = new URL(urlToOpen);
+        const safeDeepLink = targetUrl.pathname + targetUrl.search + targetUrl.hash;
+        const coldBootUrl = new URL(`/?deeplink=${encodeURIComponent(safeDeepLink)}`, self.location.origin).href;
+        return clients.openWindow(coldBootUrl);
+      } catch (e) {
+        // Fallback for malformed URLs
+        return clients.openWindow(urlToOpen);
+      }
     }
   });
 

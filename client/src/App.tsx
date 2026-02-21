@@ -42,10 +42,24 @@ import { DepositSheet } from "./pages/funnel/DepositSheet";
 import LeadDetail from "./pages/LeadDetail";
 
 function Router() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { user } = useAuth();
   const isTabletLandscape = useTabletLandscape();
   const isArtist = user?.role === 'artist';
+
+  // iOS Cold-Boot Deeplink Failsafe
+  // When an iOS PWA is fully asleep and tapped via Push Notification, 
+  // Apple breaks the sandbox if opened on a deep route instead of root '/'.
+  // The service worker passes ?deeplink= in the URL instead.
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const deeplink = params.get('deeplink');
+    if (deeplink) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      // Wait a tiny fraction of a second for React layout to mount before navigating
+      setTimeout(() => setLocation(deeplink), 50);
+    }
+  }, [setLocation]);
 
   // Initialize OneSignal
   React.useEffect(() => {

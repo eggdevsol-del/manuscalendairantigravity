@@ -3,6 +3,7 @@
   "short_name": "Calendair",
   "description": "Beautiful appointments made simple",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#020511",
   "theme_color": "#020511",
