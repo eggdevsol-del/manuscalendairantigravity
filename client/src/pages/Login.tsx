@@ -66,8 +66,8 @@ export default function Login() {
 
   return (
     <PageShell className="justify-center items-center px-4">
-      <Card className={cn("w-full max-w-md shadow-2xl overflow-hidden", tokens.card.base, tokens.card.bg)}>
-        <CardHeader className="space-y-1 text-center bg-white/5 border-b border-white/5 pb-6">
+      <Card className={cn("w-full max-w-md overflow-hidden bg-transparent border-none shadow-none")}>
+        <CardHeader className="space-y-1 text-center pb-6 border-none">
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]">
             <LogIn className="w-8 h-8 text-primary" />
           </div>
