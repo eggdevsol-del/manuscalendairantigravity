@@ -201,7 +201,9 @@ export async function sendPushNotification(
                 },
             });
 
-            await webpush.sendNotification(pushConfig, notificationPayload);
+            await webpush.sendNotification(pushConfig, notificationPayload, {
+                urgency: 'high'
+            });
             results.push({ id: sub.id, status: 'sent' });
             console.log(`[PushService] Sent notification to user ${userId}, subscription ${sub.id}`);
         } catch (error: any) {
