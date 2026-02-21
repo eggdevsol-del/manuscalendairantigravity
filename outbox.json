@@ -1,0 +1,112 @@
+[
+  {
+    "id": 12,
+    "eventType": "push_message",
+    "payloadJson": "{\"targetUserId\":\"client_1771217292184_gpkiqtpi5\",\"title\":\"Booking Confirmed! 📝\",\"body\":\"Your appointment is locked in. Please tap here to sign your required consent forms before you arrive.\",\"url\":\"/profile?tab=forms\",\"data\":{\"type\":\"proposal_accepted\",\"appointmentId\":237,\"conversationId\":27}}",
+    "status": "failed",
+    "attemptCount": 3,
+    "lastError": "OneSignal rejected the notification or found 0 matching devices.",
+    "nextAttemptAt": null,
+    "createdAt": "2026-02-21 10:51:00",
+    "updatedAt": "2026-02-21 10:51:11"
+  },
+  {
+    "id": 13,
+    "eventType": "push_message",
+    "payloadJson": "{\"targetUserId\":\"user_ce549c0b4b6f90aaafad0546a0928050\",\"title\":\"Proposal Accepted! 🎉\",\"body\":\"A client just accepted your project proposal and confirmed their booking.\",\"url\":\"/chat/27\",\"data\":{\"type\":\"proposal_accepted_artist\",\"appointmentId\":237,\"conversationId\":27}}",
+    "status": "failed",
+    "attemptCount": 3,
+    "lastError": "OneSignal rejected the notification or found 0 matching devices.",
+    "nextAttemptAt": null,
+    "createdAt": "2026-02-21 10:51:00",
+    "updatedAt": "2026-02-21 10:51:11"
+  },
+  {
+    "id": 14,
+    "eventType": "push_message",
+    "payloadJson": "{\"targetUserId\":\"user_ce549c0b4b6f90aaafad0546a0928050\",\"title\":\"tim kim\",\"body\":\"I accept the project proposal for 2 hour sitting.\",\"data\":{\"conversationId\":27}}",
+    "status": "failed",
+    "attemptCount": 3,
+    "lastError": "OneSignal rejected the notification or found 0 matching devices.",
+    "nextAttemptAt": null,
+    "createdAt": "2026-02-21 10:51:00",
+    "updatedAt": "2026-02-21 10:51:16"
+  },
+  {
+    "id": 9,
+    "eventType": "push_message",
+    "payloadJson": "{\"targetUserId\":\"client_1771217292184_gpkiqtpi5\",\"title\":\"Booking Confirmed! 📝\",\"body\":\"Your appointment is locked in. Please tap here to sign your required consent forms before you arrive.\",\"url\":\"/profile?tab=forms\",\"data\":{\"type\":\"proposal_accepted\",\"appointmentId\":236,\"conversationId\":27}}",
+    "status": "failed",
+    "attemptCount": 3,
+    "lastError": "OneSignal rejected the notification or found 0 matching devices.",
+    "nextAttemptAt": null,
+    "createdAt": "2026-02-21 10:44:44",
+    "updatedAt": "2026-02-21 10:44:56"
+  },
+  {
+    "id": 10,
+    "eventType": "push_message",
+    "payloadJson": "{\"targetUserId\":\"user_ce549c0b4b6f90aaafad0546a0928050\",\"title\":\"Proposal Accepted! 🎉\",\"body\":\"A client just accepted your project proposal and confirmed their booking.\",\"url\":\"/chat/27\",\"data\":{\"type\":\"proposal_accepted_artist\",\"appointmentId\":236,\"conversationId\":27}}",
+    "status": "failed",
+    "attemptCount": 3,
+    "lastError": "OneSignal rejected the notification or found 0 matching devices.",
+    "nextAttemptAt": null,
+    "createdAt": "2026-02-21 10:44:44",
+    "updatedAt": "2026-02-21 10:44:56"
+  },
+  {
+    "id": 11,
+    "eventType": "push_message",
+    "payloadJson": "{\"targetUserId\":\"user_ce549c0b4b6f90aaafad0546a0928050\",\"title\":\"tim kim\",\"body\":\"I accept the project proposal for Half day sitting .\",\"data\":{\"conversationId\":27}}",
+    "status": "failed",
+    "attemptCount": 3,
+    "lastError": "OneSignal rejected the notification or found 0 matching devices.",
+    "nextAttemptAt": null,
+    "createdAt": "2026-02-21 10:44:44",
+    "updatedAt": "2026-02-21 10:44:56"
+  },
+  {
+    "id": 6,
+    "eventType": "push_message",
+    "payloadJson": "{\"targetUserId\":\"client_1771217292184_gpkiqtpi5\",\"title\":\"Booking Confirmed! 📝\",\"body\":\"Your appointment is locked in. Please tap here to sign your required consent forms before you arrive.\",\"url\":\"/profile?tab=forms\",\"data\":{\"type\":\"proposal_accepted\",\"appointmentId\":235,\"conversationId\":27}}",
+    "status": "failed",
+    "attemptCount": 3,
+    "lastError": "OneSignal rejected the notification or found 0 matching devices.",
+    "nextAttemptAt": null,
+    "createdAt": "2026-02-21 09:29:40",
+    "updatedAt": "2026-02-21 09:29:53"
+  },
+  {
+    "id": 7,
+    "eventType": "push_message",
+    "payloadJson": "{\"targetUserId\":\"user_ce549c0b4b6f90aaafad0546a0928050\",\"title\":\"Proposal Accepted! 🎉\",\"body\":\"A client just accepted your project proposal and confirmed their booking.\",\"url\":\"/chat/27\",\"data\":{\"type\":\"proposal_accepted_artist\",\"appointmentId\":235,\"conversationId\":27}}",
+    "status": "failed",
+    "attemptCount": 3,
+    "lastError": "OneSignal rejected the notification or found 0 matching devices.",
+    "nextAttemptAt": null,
+    "createdAt": "2026-02-21 09:29:40",
+    "updatedAt": "2026-02-21 09:29:53"
+  },
+  {
+    "id": 8,
+    "eventType": "push_message",
+    "payloadJson": "{\"targetUserId\":\"user_ce549c0b4b6f90aaafad0546a0928050\",\"title\":\"tim kim\",\"body\":\"I accept the project proposal for Full day sitting .\",\"data\":{\"conversationId\":27}}",
+    "status": "failed",
+    "attemptCount": 3,
+    "lastError": "OneSignal rejected the notification or found 0 matching devices.",
+    "nextAttemptAt": null,
+    "createdAt": "2026-02-21 09:29:40",
+    "updatedAt": "2026-02-21 09:29:53"
+  },
+  {
+    "id": 3,
+    "eventType": "push_message",
+    "payloadJson": "{\"targetUserId\":\"client_1771217292184_gpkiqtpi5\",\"title\":\"Booking Confirmed! 📝\",\"body\":\"Your appointment is locked in. Please tap here to sign your required consent forms before you arrive.\",\"url\":\"/profile?tab=forms\",\"data\":{\"type\":\"proposal_accepted\",\"appointmentId\":234,\"conversationId\":27}}",
+    "status": "sent",
+    "attemptCount": 0,
+    "lastError": null,
+    "nextAttemptAt": null,
+    "createdAt": "2026-02-21 09:12:23",
+    "updatedAt": "2026-02-21 09:12:26"
+  }
+]
