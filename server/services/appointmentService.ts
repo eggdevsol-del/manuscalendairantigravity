@@ -211,11 +211,11 @@ export async function getAppointmentsForUser(
     ];
 
     if (startDate) {
-        conditions.push(gte(appointments.startTime, startDate.toISOString()));
+        conditions.push(gte(appointments.startTime, startDate.toISOString().slice(0, 19).replace('T', ' ')));
     }
 
     if (endDate) {
-        conditions.push(lte(appointments.startTime, endDate.toISOString()));
+        conditions.push(lte(appointments.startTime, endDate.toISOString().slice(0, 19).replace('T', ' ')));
     }
 
     // Join with users table to get client/artist names

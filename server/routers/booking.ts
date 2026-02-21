@@ -61,11 +61,13 @@ export const bookingRouter = router({
                     searchStart
                 );
 
-                const existingAppointments = rawAppointments.map(a => ({
-                    ...a,
-                    startTime: new Date(a.startTime),
-                    endTime: new Date(a.endTime)
-                }));
+                const existingAppointments = rawAppointments
+                    .filter(a => a.status !== 'cancelled' && a.status !== 'rejected')
+                    .map(a => ({
+                        ...a,
+                        startTime: new Date(a.startTime),
+                        endTime: new Date(a.endTime)
+                    }));
 
                 console.log("[BookingRouter] Existing appointments count:", existingAppointments.length);
 

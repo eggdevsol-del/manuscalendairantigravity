@@ -133,7 +133,7 @@ export function BookingWizardContent({
     const [step, setStep] = useState<BookingStep>(initialConversationId ? 'service' : 'client');
     const [conversationId, setConversationId] = useState<number | undefined>(initialConversationId);
     const [selectedService, setSelectedService] = useState<any>(null);
-    const [showPromotionSheet, setShowPromotionSheet] = useState(false);
+    const [showVoucherList, setShowVoucherList] = useState(false);
     const [appliedPromotion, setAppliedPromotion] = useState<{
         id: number; name: string; discountAmount: number; finalAmount: number;
     } | null>(null);
@@ -158,6 +158,11 @@ export function BookingWizardContent({
     );
 
     const [activeForm, setActiveForm] = useState<any>(null);
+
+    const { data: availablePromotions, isLoading: isLoadingPromotions } = trpc.promotions.getAvailableForBooking.useQuery(
+        { artistId: artistId || "" },
+        { enabled: showVoucherList && !!artistId }
+    );
 
     const signFormMutation = trpc.forms.signForm.useMutation({
         onSuccess: () => {
@@ -454,7 +459,7 @@ export function BookingWizardContent({
                             {!appliedPromotion && artistId && (
                                 <button
                                     className={cn(card.base, card.bg, card.interactive, "flex items-center gap-2 p-2 w-full rounded-[4px]")}
-                                    onClick={() => setShowPromotionSheet(true)}
+                                    onClick={() => setShowVoucherList(true)}
                                 >
                                     <div className={cn(fab.itemButton, "shrink-0 !w-7 !h-7")}>
                                         <Tag className="w-3 h-3" />
