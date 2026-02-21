@@ -88,7 +88,8 @@ export default function Login() {
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-14 bg-white/5 border-white/10 focus:border-primary/50 text-foreground"
+                  variant="hero"
+                  className="pl-10"
                   disabled={isLoading}
                   required
                 />
@@ -104,7 +105,8 @@ export default function Login() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-14 bg-white/5 border-white/10 focus:border-primary/50 text-foreground pr-10"
+                  variant="hero"
+                  className="pr-10"
                   disabled={isLoading}
                   required
                 />

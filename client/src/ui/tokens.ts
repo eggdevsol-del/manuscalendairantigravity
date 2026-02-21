@@ -99,6 +99,13 @@ export const tokens = {
         }
     },
 
+    // 5b. Inputs (Text Fields)
+    input: {
+        base: "flex w-full min-w-0 border bg-transparent px-4 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground",
+        default: "h-12 rounded-xl",
+        hero: "h-14 rounded-2xl px-5 text-base border-white/10 bg-white/5 focus-visible:border-primary/50 text-foreground",
+    },
+
     // 6. Typography
     header: {
         pageTitle: "text-2xl font-bold text-foreground",

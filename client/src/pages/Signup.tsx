@@ -138,7 +138,8 @@ export default function Signup() {
                   placeholder="John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="pl-10 h-14 bg-white/5 border-white/10 focus:border-primary/50 text-foreground"
+                  variant="hero"
+                  className="pl-10"
                   disabled={isLoading}
                   required
                 />
@@ -155,7 +156,8 @@ export default function Signup() {
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-14 bg-white/5 border-white/10 focus:border-primary/50 text-foreground"
+                  variant="hero"
+                  className="pl-10"
                   disabled={isLoading}
                   required
                 />
@@ -171,7 +173,8 @@ export default function Signup() {
                   placeholder="At least 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-14 bg-white/5 border-white/10 focus:border-primary/50 text-foreground pr-10"
+                  variant="hero"
+                  className="pr-10"
                   disabled={isLoading}
                   required
                   minLength={8}
@@ -200,7 +203,8 @@ export default function Signup() {
                   placeholder="Re-enter your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="h-14 bg-white/5 border-white/10 focus:border-primary/50 text-foreground pr-10"
+                  variant="hero"
+                  className="pr-10"
                   disabled={isLoading}
                   required
                 />
