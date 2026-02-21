@@ -61,6 +61,7 @@ async function processItem(db: any, item: typeof notificationOutbox.$inferSelect
                     userIds: [payload.targetUserId],
                     title: payload.title || 'New Message',
                     message: payload.body,
+                    url: payload.url,
                     data: payload.data
                 });
             }

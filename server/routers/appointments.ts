@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { artistProcedure, protectedProcedure, router } from "../_core/trpc";
+import { eventBus } from "../_core/eventBus";
 import * as db from "../db";
 import { localToUTC, getBusinessTimezone } from "../../shared/utils/timezone";
 
@@ -439,6 +440,17 @@ export const appointmentsRouter = router({
                     createdCount++;
                     await db.generateRequiredForms(created.id);
                 }
+            }
+
+            if (createdCount > 0) {
+                // Publish proposal accepted event for push notification
+                eventBus.publish('proposal.accepted', {
+                    clientId: conversation.clientId,
+                    conversationId: input.conversationId,
+                    appointmentId: appointmentIds[0],
+                }).catch(err => {
+                    console.error('[EventBus] Failed to publish proposal.accepted:', err);
+                });
             }
 
             // Auto-send deposit info if enabled

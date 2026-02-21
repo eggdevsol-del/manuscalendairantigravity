@@ -13,6 +13,7 @@ export class NotificationOrchestrator {
         eventBus.subscribe('message.created', this.handleMessageCreated.bind(this));
         eventBus.subscribe('appointment.confirmed', this.handleAppointmentConfirmed.bind(this));
         eventBus.subscribe('consultation.created', this.handleConsultationCreated.bind(this));
+        eventBus.subscribe('proposal.accepted', this.handleProposalAccepted.bind(this));
     }
 
     private async handleMessageCreated(payload: any) {
@@ -30,6 +31,22 @@ export class NotificationOrchestrator {
 
     private async handleConsultationCreated(payload: any) {
         await this.queueNotification('push_message', payload);
+    }
+
+    private async handleProposalAccepted(payload: any) {
+        const pushPayload = {
+            targetUserId: payload.clientId,
+            title: "Booking Confirmed! 📝",
+            body: "Your appointment is locked in. Please tap here to sign your required consent forms before you arrive.",
+            url: "/profile?tab=forms",
+            data: {
+                type: "proposal_accepted",
+                appointmentId: payload.appointmentId,
+                conversationId: payload.conversationId
+            }
+        };
+
+        await this.queueNotification('push_message', pushPayload);
     }
 
     private async queueNotification(type: string, payload: any) {
