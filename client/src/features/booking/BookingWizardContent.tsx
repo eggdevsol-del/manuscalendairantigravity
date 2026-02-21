@@ -28,8 +28,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
 import { tokens } from "@/ui/tokens";
-import { SignaturePad } from "@/components/ui/SignaturePad";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { InlineFormSigning } from "./components/InlineFormSigning";
 
 type BookingStep = 'client' | 'service' | 'frequency' | 'review' | 'success';
 
@@ -39,13 +38,12 @@ interface ProposalData {
 }
 
 interface BookingWizardContentProps {
-    conversationId?: number; // Optional now, as we might start without one
+    conversationId?: number;
     artistServices: any[];
     artistSettings?: any;
     isArtist: boolean;
     onBookingSuccess: () => void;
     onClose: () => void;
-    /** Proposal to show in the FAB (overrides booking wizard) */
     selectedProposal?: ProposalData | null;
     selectedAppointmentRaw?: any;
     clientNameOverride?: string;
@@ -57,11 +55,9 @@ interface BookingWizardContentProps {
     artistId?: string;
     showGoToChat?: boolean;
     onGoToChat?: () => void;
-    /** For pre-populating dates from calendar */
     initialDate?: Date;
 }
 
-/** Collapsible policy dropdown — fetches policy content from server */
 function PolicyDropdown({ label, artistId, policyType, depositAmount, totalCost }: {
     label: string;
     artistId: string;
@@ -140,14 +136,12 @@ export function BookingWizardContent({
     const [frequency, setFrequency] = useState<"single" | "consecutive" | "weekly" | "biweekly" | "monthly">("consecutive");
     const [startDate] = useState(initialDate || new Date());
 
-    // -- Client Selection State --
     const [clientSearch, setClientSearch] = useState("");
     const [isAddingNewClient, setIsAddingNewClient] = useState(false);
     const [newClientData, setNewClientData] = useState({ name: "", email: "", phone: "" });
     const [isCreatingClient, setIsCreatingClient] = useState(false);
     const [showCheckInModal, setShowCheckInModal] = useState<CheckInPhase | null>(null);
 
-    // -- Queries & Mutations --
     const { data: clients, isLoading: isLoadingClients } = trpc.conversations.getClients.useQuery(undefined, {
         enabled: isArtist && step === 'client'
     });
@@ -158,40 +152,16 @@ export function BookingWizardContent({
     );
 
     const [activeForm, setActiveForm] = useState<any>(null);
-    const [isSigningPhysical, setIsSigningPhysical] = useState(false);
-    const { data: user } = trpc.auth.me.useQuery();
 
     const { data: availablePromotions, isLoading: isLoadingPromotions } = trpc.promotions.getAvailableForBooking.useQuery(
         { artistId: artistId || "" },
         { enabled: showVoucherList && !!artistId }
     );
 
-    const updateProfileMutation = trpc.auth.updateProfile.useMutation();
-
-    const signFormMutation = trpc.forms.signForm.useMutation({
-        onSuccess: () => {
-            toast.success("Form signed successfully");
-            refetchForms();
-            setActiveForm(null);
-            setIsSigningPhysical(false);
-        },
-        onError: (err) => toast.error("Failed to sign form: " + err.message)
-    });
-
-    const handleSign = async (signature: string) => {
-        if (!user?.savedSignature) {
-            await updateProfileMutation.mutateAsync({ savedSignature: signature } as any);
-        }
-        await signFormMutation.mutateAsync({
-            formId: activeForm.id,
-            signature
-        });
-    };
-
-    const filteredClients = clients?.filter(c =>
+    const filteredClients = (clients || []).filter(c =>
         c?.name?.toLowerCase().includes(clientSearch.toLowerCase()) ||
         c?.email?.toLowerCase().includes(clientSearch.toLowerCase())
-    ).slice(0, 5) || [];
+    ).slice(0, 5);
 
     const getOrCreateConversation = trpc.conversations.getOrCreate.useMutation();
     const {
@@ -236,7 +206,7 @@ export function BookingWizardContent({
             }
             if (selectedAppointmentRaw?.id) {
                 utils.appointments.getByConversation.invalidate(conversationId);
-                utils.appointments.list.invalidate(); // Re-fetch calendar events
+                utils.appointments.list.invalidate();
             }
             onBookingSuccess();
         },
@@ -245,7 +215,6 @@ export function BookingWizardContent({
         }
     });
 
-    // -- Handlers --
     const handleConfirmBooking = () => {
         if (!availability?.dates || !selectedService || !conversationId) return;
 
@@ -323,15 +292,16 @@ export function BookingWizardContent({
     const goBack = () => {
         if (step === 'service') {
             if (!initialConversationId) setStep('client');
+        } else if (step === 'frequency') {
+            setStep('service');
+        } else if (step === 'review') {
+            setStep('frequency');
         }
-        else if (step === 'frequency') setStep('service');
-        else if (step === 'review') setStep('frequency');
     };
 
     const fab = tokens.fab;
     const card = tokens.card;
 
-    // Frequency options with icons
     const freqOptions = [
         { id: 'single', label: 'Single', Icon: Repeat1 },
         { id: 'consecutive', label: 'Consecutive', Icon: CalendarDays },
@@ -340,7 +310,6 @@ export function BookingWizardContent({
         { id: 'monthly', label: 'Monthly', Icon: CalendarSearch },
     ] as const;
 
-    // -- Step Titles --
     const getStepTitle = () => {
         switch (step) {
             case 'client': return "Select Client";
@@ -351,11 +320,9 @@ export function BookingWizardContent({
         }
     };
 
-    // Whether to show the proposal view
     const showProposal = !!selectedProposal?.metadata;
     const proposalMeta = selectedProposal?.metadata;
 
-    // Proposal display values
     const proposalDates = proposalMeta ? (
         Array.isArray(proposalMeta.dates) ? proposalMeta.dates
             : Array.isArray(proposalMeta.proposedDates) ? proposalMeta.proposedDates : []
@@ -367,17 +334,16 @@ export function BookingWizardContent({
     const hasDiscount = hasCurrentDiscount || hasStoredDiscount;
     const displayTotal = hasCurrentDiscount
         ? appliedPromotion.finalAmount / 100
-        : hasStoredDiscount ? proposalMeta.finalAmount / 100 : proposalMeta?.totalCost;
-    // -- Render --
+        : (hasStoredDiscount ? (proposalMeta.finalAmount / 100) : (proposalMeta?.totalCost || 0));
+
     if (showCheckInModal && selectedAppointmentRaw) {
         return (
             <div className="flex flex-col w-full min-h-[50vh] pt-2 pb-6 px-1">
-                {/* Header */}
                 <motion.div variants={fab.animation.item} className={fab.itemRow}>
                     <button onClick={() => setShowCheckInModal(null)} className={fab.itemButton}>
                         <ArrowLeft className={fab.itemIconSize} />
                     </button>
-                    <span className={fab.itemLabel + " uppercase tracking-widest font-bold flex-1"}>
+                    <span className={cn(fab.itemLabel, "uppercase tracking-widest font-bold flex-1")}>
                         Checkout
                     </span>
                 </motion.div>
@@ -396,7 +362,6 @@ export function BookingWizardContent({
 
     return (
         <div className="flex flex-col gap-2 w-full">
-            {/* ===== LOADING STATE ===== */}
             {isLoadingProposal && (
                 <div className="flex flex-col items-center justify-center py-10 gap-3">
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -404,10 +369,8 @@ export function BookingWizardContent({
                 </div>
             )}
 
-            {/* ===== PROPOSAL VIEW ===== */}
             {!isLoadingProposal && showProposal && proposalMeta && !activeForm && !showVoucherList && (
                 <>
-                    {/* Header */}
                     <motion.div variants={fab.animation.item}>
                         <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-primary/70 mb-0.5">
                             {clientNameOverride || "Project Proposal"}
@@ -417,7 +380,6 @@ export function BookingWizardContent({
                         </h3>
                     </motion.div>
 
-                    {/* Stats */}
                     <motion.div
                         variants={fab.animation.item}
                         className={cn(card.base, "grid grid-cols-3 gap-px rounded-[4px] overflow-hidden bg-white/[0.03]")}
@@ -434,17 +396,15 @@ export function BookingWizardContent({
                         ))}
                     </motion.div>
 
-                    {/* Discount badge */}
                     {hasDiscount && (
                         <motion.div variants={fab.animation.item} className="flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-emerald-500/10">
                             <Tag className="w-3 h-3 text-emerald-500" />
                             <span className="text-[9px] font-medium text-emerald-500">
-                                {hasCurrentDiscount ? appliedPromotion.name : proposalMeta.promotionName || 'Promotion'} applied
+                                {hasCurrentDiscount ? appliedPromotion.name : (proposalMeta.promotionName || 'Promotion')} applied
                             </span>
                         </motion.div>
                     )}
 
-                    {/* Dates */}
                     {proposalDates.length > 0 && (
                         <motion.div variants={fab.animation.item} className="space-y-1">
                             <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Schedule</p>
@@ -468,7 +428,6 @@ export function BookingWizardContent({
                         </motion.div>
                     )}
 
-                    {/* Client actions — pending */}
                     {!isArtist && proposalMeta.status === 'pending' && (
                         <motion.div variants={fab.animation.item} className="space-y-2 pt-1">
                             {!appliedPromotion && artistId && (
@@ -527,7 +486,6 @@ export function BookingWizardContent({
                         </motion.div>
                     )}
 
-                    {/* Artist actions — pending */}
                     {isArtist && proposalMeta.status === 'pending' && (
                         <motion.div variants={fab.animation.item} className="space-y-2 pt-1">
                             <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] bg-orange-500/10">
@@ -546,7 +504,6 @@ export function BookingWizardContent({
                         </motion.div>
                     )}
 
-                    {/* Status — accepted/rejected */}
                     {proposalMeta.status === 'accepted' && (
                         <motion.div variants={fab.animation.item} className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-emerald-500/10">
                             <Check className="w-3.5 h-3.5 text-emerald-500" />
@@ -581,7 +538,6 @@ export function BookingWizardContent({
                         </motion.div>
                     )}
 
-                    {/* Artist actions — completed state */}
                     {isArtist && selectedAppointmentRaw?.status === 'completed' && (
                         <motion.div variants={fab.animation.item} className="pt-1">
                             <div className="flex items-center gap-2 px-3 py-2 bg-zinc-500/10 text-zinc-400 rounded-[4px] border border-zinc-500/20 justify-center">
@@ -591,7 +547,6 @@ export function BookingWizardContent({
                         </motion.div>
                     )}
 
-                    {/* Artist actions — check-in & checkout flow */}
                     {isArtist && proposalMeta.status === 'accepted' && selectedAppointmentRaw && selectedAppointmentRaw.status !== 'completed' && (
                         <motion.div variants={fab.animation.item} className="pt-1 flex flex-col gap-2">
                             {!(selectedAppointmentRaw.clientArrived === 1 || selectedAppointmentRaw.clientArrived === true) ? (
@@ -637,7 +592,6 @@ export function BookingWizardContent({
                         </motion.div>
                     )}
 
-                    {/* Pending Forms Action */}
                     {!isArtist && pendingForms && pendingForms.length > 0 && (
                         <motion.div variants={fab.animation.item} className="pt-1">
                             <button
@@ -657,14 +611,13 @@ export function BookingWizardContent({
                 </>
             )}
 
-            {/* Voucher List Inline View */}
             {showVoucherList && (
                 <div className="flex flex-col w-full h-full pt-2 pb-6 px-1">
                     <motion.div variants={fab.animation.item} className={fab.itemRow}>
                         <button onClick={() => setShowVoucherList(false)} className={fab.itemButton}>
                             <ArrowLeft className={fab.itemIconSize} />
                         </button>
-                        <span className={fab.itemLabel + " uppercase tracking-widest font-bold flex-1"}>
+                        <span className={cn(fab.itemLabel, "uppercase tracking-widest font-bold flex-1")}>
                             Available Vouchers
                         </span>
                     </motion.div>
@@ -719,106 +672,28 @@ export function BookingWizardContent({
                 </div>
             )}
 
-            {/* Forms Dialog Inline View */}
             {!showVoucherList && activeForm && (
-                <div className="flex flex-col w-full h-full pt-2 pb-6 px-1">
-                    <motion.div variants={fab.animation.item} className={fab.itemRow}>
-                        <button
-                            onClick={() => {
-                                if (isSigningPhysical) setIsSigningPhysical(false);
-                                else setActiveForm(null);
-                            }}
-                            className={fab.itemButton}
-                        >
-                            <ArrowLeft className={fab.itemIconSize} />
-                        </button>
-                        <span className={fab.itemLabel + " uppercase tracking-widest font-bold flex-1 truncate pr-2"}>
-                            {activeForm.title}
-                        </span>
-                    </motion.div>
-
-                    <div className="flex flex-col flex-1 mt-4 px-1 gap-4">
-                        {!isSigningPhysical ? (
-                            <motion.div variants={fab.animation.item} className="flex flex-col flex-1 min-h-0">
-                                <ScrollArea className={cn(card.base, card.bg, "flex-1 overflow-auto rounded-[4px] p-4 border-white/5")}>
-                                    <div className="prose prose-invert prose-sm max-w-none text-muted-foreground leading-relaxed whitespace-pre-wrap text-[10px]">
-                                        {activeForm.content}
-                                    </div>
-                                </ScrollArea>
-                                <button
-                                    onClick={() => setIsSigningPhysical(true)}
-                                    className="w-full mt-3 py-3 rounded-[4px] text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
-                                >
-                                    Proceed to Signature
-                                </button>
-                            </motion.div>
-                        ) : (
-                            <motion.div variants={fab.animation.item} className="flex flex-col flex-1 gap-4">
-                                <div className={cn(card.base, card.bg, "p-4 flex flex-col items-center justify-center gap-4 rounded-[4px]")}>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">
-                                        {user?.savedSignature ? "Use Saved Signature or Draw New" : "Physical Signature Required"}
-                                    </p>
-
-                                    {user?.savedSignature ? (
-                                        <div className="w-full space-y-3">
-                                            <div className="bg-white/5 rounded-[4px] border border-white/10 p-4 flex justify-center">
-                                                <img
-                                                    src={user.savedSignature}
-                                                    alt="Saved Signature"
-                                                    className="h-16 w-auto invert dark:invert-0 grayscale opacity-90"
-                                                />
-                                            </div>
-                                            <button
-                                                onClick={() => handleSign(user.savedSignature!)}
-                                                disabled={signFormMutation.isPending}
-                                                className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground flex items-center justify-center gap-2"
-                                            >
-                                                {signFormMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                                                Sign with Saved Signature
-                                            </button>
-
-                                            <div className="relative flex py-2 items-center">
-                                                <div className="flex-grow border-t border-white/10"></div>
-                                                <span className="flex-shrink-0 mx-4 text-muted-foreground text-[9px] uppercase tracking-widest font-bold">Or</span>
-                                                <div className="flex-grow border-t border-white/10"></div>
-                                            </div>
-
-                                            <SignaturePad
-                                                onSave={handleSign}
-                                                className="w-full rounded-[4px]"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <SignaturePad
-                                            onSave={handleSign}
-                                            className="w-full rounded-[4px]"
-                                        />
-                                    )}
-
-                                    {signFormMutation.isPending && !user?.savedSignature && (
-                                        <div className="flex items-center gap-2 text-primary text-[10px] font-bold uppercase tracking-widest animate-pulse">
-                                            <Loader2 className="w-3 h-3 animate-spin" />
-                                            Saving Signature...
-                                        </div>
-                                    )}
-                                </div>
-                            </motion.div>
-                        )}
-                    </div>
-                </div>
+                <InlineFormSigning
+                    pendingForms={pendingForms || []}
+                    initialForm={activeForm}
+                    onSuccess={() => {
+                        refetchForms();
+                    }}
+                    onClose={() => {
+                        setActiveForm(null);
+                    }}
+                />
             )}
 
-            {/* ===== BOOKING WIZARD ===== */}
             {!isLoadingProposal && !showProposal && !activeForm && !showVoucherList && (
-                <>
-                    {/* Header */}
+                <div className="flex flex-col gap-2 w-full">
                     <motion.div variants={fab.animation.item} className={fab.itemRow}>
                         {step !== 'service' && step !== 'success' && (
                             <button onClick={goBack} className={fab.itemButton}>
                                 <ArrowLeft className={fab.itemIconSize} />
                             </button>
                         )}
-                        <span className={fab.itemLabel + " uppercase tracking-widest font-bold flex-1"}>
+                        <span className={cn(fab.itemLabel, "uppercase tracking-widest font-bold flex-1")}>
                             {getStepTitle()}
                         </span>
                         {selectedService && step !== 'service' && (
@@ -826,12 +701,10 @@ export function BookingWizardContent({
                         )}
                     </motion.div>
 
-                    {/* Step Content */}
                     {step === 'client' && (
                         <div className="flex flex-col gap-3 -my-2 w-full pt-1">
                             {!isAddingNewClient ? (
                                 <>
-                                    {/* Search Input */}
                                     <div className={cn(card.base, card.bg, "px-3 py-2 flex items-center gap-2 rounded-[4px]")}>
                                         <Loader2 className={cn("w-3.5 h-3.5 animate-spin text-muted-foreground", !isLoadingClients && "hidden")} />
                                         {!isLoadingClients && <CalendarSearch className="w-3.5 h-3.5 text-muted-foreground" />}
@@ -844,26 +717,25 @@ export function BookingWizardContent({
                                         />
                                     </div>
 
-                                    {/* Client List */}
                                     <div className="flex flex-col gap-1.5 min-h-[140px]">
-                                        {filteredClients?.map(client => (
+                                        {filteredClients.map(client => (
                                             <motion.button
-                                                key={client?.id}
+                                                key={client.id}
                                                 variants={fab.animation.item}
                                                 className={cn(card.base, card.bg, card.interactive, "p-2.5 flex items-center gap-2.5 w-full text-left")}
                                                 onClick={() => handleClientSelect(client)}
                                             >
                                                 <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                                                    {client?.name?.charAt(0) || '?'}
+                                                    {client.name?.charAt(0) || '?'}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-[11px] font-semibold text-foreground truncate">{client?.name}</p>
-                                                    <p className="text-[9px] text-muted-foreground truncate">{client?.email || 'No email'}</p>
+                                                    <p className="text-[11px] font-semibold text-foreground truncate">{client.name}</p>
+                                                    <p className="text-[9px] text-muted-foreground truncate">{client.email || 'No email'}</p>
                                                 </div>
                                             </motion.button>
                                         ))}
 
-                                        {clientSearch && filteredClients?.length === 0 && !isLoadingClients && (
+                                        {clientSearch && filteredClients.length === 0 && !isLoadingClients && (
                                             <div className="py-8 text-center">
                                                 <p className="text-[10px] text-muted-foreground">No clients found matching "{clientSearch}"</p>
                                             </div>
@@ -876,7 +748,6 @@ export function BookingWizardContent({
                                         )}
                                     </div>
 
-                                    {/* Add New Button */}
                                     <button
                                         onClick={() => setIsAddingNewClient(true)}
                                         className={cn(card.base, card.bgAccent, card.interactive, "p-2.5 flex items-center justify-center gap-2 w-full mt-1 border border-primary/20")}
@@ -888,183 +759,187 @@ export function BookingWizardContent({
                                     </button>
                                 </>
                             ) : (
-                                <>
-                                    {/* New Client Form */}
-                                    <div className="space-y-3">
-                                        <div className="space-y-1.5">
-                                            <label className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Client Name</label>
+                                <div className="space-y-3">
+                                    <div className="space-y-2">
+                                        <div className={cn(card.base, card.bg, "px-3 py-2 rounded-[4px]")}>
+                                            <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Full Name</p>
                                             <input
                                                 type="text"
-                                                className={cn(card.base, card.bg, "w-full px-3 py-2 text-[11px] outline-none border border-white/5 focus:border-primary/30 transition-colors")}
-                                                placeholder="e.g. John Smith"
+                                                className="bg-transparent border-none outline-none text-[11px] w-full"
                                                 value={newClientData.name}
                                                 onChange={(e) => setNewClientData({ ...newClientData, name: e.target.value })}
                                             />
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Email Address</label>
+                                        <div className={cn(card.base, card.bg, "px-3 py-2 rounded-[4px]")}>
+                                            <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Email Address</p>
                                             <input
                                                 type="email"
-                                                className={cn(card.base, card.bg, "w-full px-3 py-2 text-[11px] outline-none border border-white/5 focus:border-primary/30 transition-colors")}
-                                                placeholder="j.smith@example.com"
+                                                className="bg-transparent border-none outline-none text-[11px] w-full"
                                                 value={newClientData.email}
                                                 onChange={(e) => setNewClientData({ ...newClientData, email: e.target.value })}
                                             />
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Phone Number (Optional)</label>
+                                        <div className={cn(card.base, card.bg, "px-3 py-2 rounded-[4px]")}>
+                                            <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Phone Number</p>
                                             <input
                                                 type="tel"
-                                                className={cn(card.base, card.bg, "w-full px-3 py-2 text-[11px] outline-none border border-white/5 focus:border-primary/30 transition-colors")}
-                                                placeholder="0412 345 678"
+                                                className="bg-transparent border-none outline-none text-[11px] w-full"
                                                 value={newClientData.phone}
                                                 onChange={(e) => setNewClientData({ ...newClientData, phone: e.target.value })}
                                             />
                                         </div>
-
-                                        <div className="grid grid-cols-2 gap-2 pt-1">
-                                            <button
-                                                onClick={() => setIsAddingNewClient(false)}
-                                                className="py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider bg-white/5 text-muted-foreground hover:bg-white/10"
-                                            >
-                                                Back
-                                            </button>
-                                            <button
-                                                onClick={handleCreateClientAndConvo}
-                                                disabled={!newClientData.name || isCreatingClient}
-                                                className="py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground disabled:opacity-50 flex items-center justify-center gap-1.5"
-                                            >
-                                                {isCreatingClient ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                                                Continue
-                                            </button>
-                                        </div>
                                     </div>
-                                </>
+
+                                    <button
+                                        onClick={handleCreateClientAndConvo}
+                                        disabled={isCreatingClient || !newClientData.name}
+                                        className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                                    >
+                                        {isCreatingClient ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Create Client & Start"}
+                                    </button>
+                                    <button
+                                        onClick={() => setIsAddingNewClient(false)}
+                                        className="w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
                             )}
                         </div>
                     )}
 
                     {step === 'service' && (
-                        <div className="flex flex-col -my-2 w-full">
-                            {artistServices.map(service => (
-                                <motion.div
-                                    key={service.id || service.name}
+                        <div className="flex flex-col gap-1.5 pt-1">
+                            {artistServices.map((service) => (
+                                <motion.button
+                                    key={service.id}
                                     variants={fab.animation.item}
-                                    className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center gap-2 w-full")}
+                                    className={cn(card.base, card.bg, card.interactive, "p-3 flex items-center justify-between gap-3 w-full text-left")}
                                     onClick={() => {
                                         setSelectedService(service);
-                                        setTimeout(() => setStep('frequency'), 150);
+                                        setStep('frequency');
                                     }}
                                 >
-                                    <div className="flex-1 min-w-0 text-left">
-                                        <p className="text-xs font-semibold text-foreground truncate">{service.name}</p>
-                                        <p className="text-[9px] text-muted-foreground font-mono flex items-center gap-1">
-                                            <Clock className="w-2.5 h-2.5 shrink-0" />
-                                            {service.duration}m · ${service.price} · {service.sittings || 1}s
-                                        </p>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[11px] font-bold text-foreground uppercase tracking-wider truncate">{service.name}</p>
+                                        <p className="text-[9px] text-muted-foreground">{service.duration} mins · ${service.price}</p>
                                     </div>
-                                </motion.div>
+                                    <div className={cn(fab.itemButton, "shrink-0")}>
+                                        <Clock className="w-3.5 h-3.5" />
+                                    </div>
+                                </motion.button>
                             ))}
-                            {artistServices.length === 0 && (
-                                <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 w-full")}>
-                                    <span className={fab.itemLabel}>No services configured.</span>
-                                </motion.div>
-                            )}
                         </div>
                     )}
 
                     {step === 'frequency' && (
-                        <div className="flex flex-col -my-2 w-full">
-                            {freqOptions.map(({ id, label, Icon }) => {
-                                const isSelected = frequency === id;
-                                return (
-                                    <motion.div
-                                        key={id}
-                                        variants={fab.animation.item}
-                                        className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center gap-2 w-full")}
-                                        onClick={() => setFrequency(id as any)}
-                                    >
-                                        <div className={cn(isSelected ? fab.itemButtonHighlight : fab.itemButton, "shrink-0")}>
-                                            <Icon className={fab.itemIconSize} />
-                                        </div>
-                                        <span className="text-xs font-semibold text-foreground flex-1">{label}</span>
-                                        {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
-                                    </motion.div>
-                                );
-                            })}
-                            <motion.div
-                                variants={fab.animation.item}
-                                className={cn(card.base, card.bgAccent, card.interactive, "p-2 flex items-center gap-2 w-full mt-1")}
-                                onClick={() => setStep('review')}
-                            >
-                                <div className={cn(fab.itemButtonHighlight, "shrink-0")}>
-                                    <CalendarSearch className={fab.itemIconSize} />
-                                </div>
-                                <span className="text-xs font-bold text-foreground flex-1">Find Dates</span>
-                            </motion.div>
+                        <div className="flex flex-col gap-2 pt-1">
+                            {freqOptions.map(({ id, label, Icon }) => (
+                                <motion.button
+                                    key={id}
+                                    variants={fab.animation.item}
+                                    className={cn(
+                                        card.base, card.bg, card.interactive,
+                                        "p-3 flex items-center gap-3 w-full text-left",
+                                        frequency === id && "border-primary/50 bg-primary/5"
+                                    )}
+                                    onClick={() => {
+                                        setFrequency(id);
+                                        setStep('review');
+                                    }}
+                                >
+                                    <div className={cn(fab.itemButton, frequency === id && "bg-primary text-primary-foreground")}>
+                                        <Icon className="w-3.5 h-3.5" />
+                                    </div>
+                                    <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">{label}</span>
+                                </motion.button>
+                            ))}
                         </div>
                     )}
 
                     {step === 'review' && (
-                        <div className="flex flex-col -my-2 w-full">
-                            {isLoadingAvailability && (
-                                <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-3 flex items-center justify-center gap-2 w-full")}>
-                                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                                    <span className={cn(fab.itemLabel, "animate-pulse")}>Scanning...</span>
-                                </motion.div>
-                            )}
-                            {availabilityError && (
-                                <motion.div variants={fab.animation.item} className={cn(card.base, "bg-destructive/10 p-2 w-full")}>
-                                    <span className={fab.itemLabel + " text-destructive"}>
-                                        <AlertCircle className="w-3 h-3 inline mr-1" />
-                                        {availabilityError.message}
-                                    </span>
-                                </motion.div>
-                            )}
-                            {availability && (
-                                <>
-                                    <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 flex items-center justify-between w-full")}>
-                                        <span className={fab.itemLabel}>Cost</span>
-                                        <span className="text-xs font-bold text-foreground">${availability.totalCost}</span>
-                                    </motion.div>
-                                    {availability.dates.map((date: string | Date, i: number) => (
-                                        <motion.div key={i} variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 flex items-center justify-between w-full")}>
-                                            <span className={fab.itemLabel}>{format(new Date(date), "EEE, MMM do")}</span>
-                                            <span className="text-[10px] font-bold text-primary">{format(new Date(date), "h:mm a")}</span>
-                                        </motion.div>
-                                    ))}
-                                    <motion.div
-                                        variants={fab.animation.item}
-                                        className={cn(card.base, card.bgAccent, card.interactive, "p-2 flex items-center gap-2 w-full mt-1")}
-                                        onClick={handleConfirmBooking}
-                                    >
-                                        <div className={cn(fab.itemButtonHighlight, "shrink-0")}>
-                                            {sendMessageMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                        <div className="flex flex-col gap-4 pt-1">
+                            <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-4 space-y-3 rounded-[4px]")}>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Project</p>
+                                        <p className="text-xs font-bold text-foreground">{selectedService.name}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Rate</p>
+                                        <p className="text-xs font-bold text-primary">${selectedService.price}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between items-center py-2 border-y border-white/5">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center">
+                                            <Repeat className="w-3 h-3 text-muted-foreground" />
                                         </div>
-                                        <span className="text-xs font-bold text-foreground flex-1">Send Proposal</span>
-                                    </motion.div>
-                                </>
-                            )}
+                                        <span className="text-[10px] font-semibold text-foreground uppercase tracking-wider">{frequency}</span>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-muted-foreground">
+                                        {frequency === 'single' ? '1 sitting' : `${selectedService.sittings || 1} sittings`}
+                                    </span>
+                                </div>
+
+                                {isLoadingAvailability ? (
+                                    <div className="flex items-center gap-2 text-primary">
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                        <span className="text-[9px] font-bold uppercase tracking-widest">Checking Availability...</span>
+                                    </div>
+                                ) : availabilityError ? (
+                                    <div className="p-2 rounded-[4px] bg-red-500/10 border border-red-500/20 text-red-500 flex items-center gap-2">
+                                        <AlertCircle className="w-3 h-3" />
+                                        <span className="text-[9px] font-bold uppercase tracking-wider">No availability found</span>
+                                    </div>
+                                ) : (availability?.dates && (
+                                    <div className="space-y-2">
+                                        <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Proposed Schedule</p>
+                                        <div className="max-h-[120px] overflow-y-auto no-scrollbar space-y-1 pr-1">
+                                            {availability.dates.map((dateValue: string | Date, i: number) => (
+                                                <div key={i} className="flex items-center justify-between text-[10px] font-medium text-foreground py-0.5">
+                                                    <span>{format(new Date(dateValue), "EEE, MMM do")}</span>
+                                                    <span className="text-muted-foreground">{format(new Date(dateValue), "h:mm a")}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </motion.div>
+
+                            <button
+                                onClick={handleConfirmBooking}
+                                disabled={sendMessageMutation.isPending || !availability?.dates}
+                                className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+                            >
+                                {sendMessageMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Send Proposal"}
+                            </button>
                         </div>
                     )}
 
                     {step === 'success' && (
-                        <div className="flex flex-col -my-2 w-full">
-                            <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-4 flex flex-col items-center gap-2 w-full")}>
-                                <div className={fab.itemButtonHighlight}><CheckCircle2 className="w-4 h-4" /></div>
-                                <span className="text-xs font-bold text-foreground">Proposal Sent!</span>
-                            </motion.div>
-                            <motion.div
-                                variants={fab.animation.item}
-                                className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center gap-2 w-full")}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="flex flex-col items-center justify-center py-10 gap-4"
+                        >
+                            <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                            </div>
+                            <div className="text-center">
+                                <h3 className="text-sm font-bold text-foreground uppercase tracking-widest mb-1">Proposal Sent!</h3>
+                                <p className="text-[10px] text-muted-foreground">The client has been notified to review and confirm.</p>
+                            </div>
+                            <button
                                 onClick={onClose}
+                                className="mt-2 w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider bg-white/5 text-foreground hover:bg-white/10"
                             >
-                                <div className={fab.itemButton}><CheckCircle2 className="w-4 h-4" /></div>
-                                <span className="text-xs font-semibold text-foreground flex-1">Close</span>
-                            </motion.div>
-                        </div>
+                                Dismiss
+                            </button>
+                        </motion.div>
                     )}
-                </>
+                </div>
             )}
         </div>
     );

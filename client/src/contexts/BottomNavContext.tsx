@@ -31,6 +31,9 @@ interface BottomNavContextType {
     // Programmatic FAB control
     isFABOpen: boolean;
     setFABOpen: (open: boolean) => void;
+    // Larger FAB panel (e.g. for forms)
+    isLargePanel: boolean;
+    setLargePanel: (large: boolean) => void;
 }
 
 const BottomNavContext = createContext<BottomNavContextType | undefined>(undefined);
@@ -131,7 +134,10 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
     // Auto-close FAB on route change
     useEffect(() => {
         setFABOpen(false);
+        setLargePanel(false);
     }, [location]);
+
+    const [isLargePanel, setLargePanel] = useState(false);
 
     const value = useMemo(() => ({
         contextualRow,
@@ -145,7 +151,9 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
         registerFABActions,
         fabChildren,
         isFABOpen,
-        setFABOpen
+        setFABOpen,
+        isLargePanel,
+        setLargePanel
     }), [
         contextualRow,
         navItems,
@@ -157,7 +165,8 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
         fabActions,
         registerFABActions,
         fabChildren,
-        isFABOpen
+        isFABOpen,
+        isLargePanel
     ]);
 
     return (
