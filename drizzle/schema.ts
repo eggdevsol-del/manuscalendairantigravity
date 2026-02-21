@@ -52,6 +52,7 @@ export const artistSettings = mysqlTable("artistSettings", {
 	id: int().primaryKey().autoincrement(),
 	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	businessName: text(),
+	displayName: varchar({ length: 255 }),
 	businessAddress: text(),
 	businessEmail: varchar({ length: 320 }),
 	bsb: varchar({ length: 10 }),

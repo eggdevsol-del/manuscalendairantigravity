@@ -10,6 +10,7 @@ export const artistSettingsRouter = router({
             id: 0,
             userId: ctx.user.id,
             businessName: null,
+            displayName: null,
             businessAddress: null,
             businessEmail: null,
             bsb: null,
@@ -33,6 +34,7 @@ export const artistSettingsRouter = router({
             if (!settings) return null;
             return {
                 businessName: settings.businessName,
+                displayName: settings.displayName,
                 businessAddress: settings.businessAddress,
                 depositAmount: settings.depositAmount,
             };
@@ -41,6 +43,7 @@ export const artistSettingsRouter = router({
         .input(
             z.object({
                 businessName: z.string().optional(),
+                displayName: z.string().optional(),
                 businessAddress: z.string().optional(),
                 businessEmail: z.string().optional(),
                 bsb: z.string().optional(),

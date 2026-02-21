@@ -69,6 +69,7 @@ export default function Settings() {
 
   // Business settings state
   const [businessName, setBusinessName] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [businessEmail, setBusinessEmail] = useState("");
   const [businessAddress, setBusinessAddress] = useState("");
   const [bsb, setBsb] = useState("");
@@ -143,6 +144,7 @@ export default function Settings() {
   // Initialize Business settings state once
   if (artistSettings && !initializedSettingsRef.current) {
     setBusinessName(artistSettings.businessName || "");
+    setDisplayName(artistSettings.displayName || "");
     setBusinessEmail(artistSettings.businessEmail || "");
     setBusinessAddress(artistSettings.businessAddress || "");
     setBsb(artistSettings.bsb || "");
@@ -223,6 +225,7 @@ export default function Settings() {
     if (artistSettings) {
       upsertArtistSettingsMutation.mutate({
         businessName,
+        displayName,
         businessEmail,
         businessAddress,
         bsb,
@@ -417,6 +420,20 @@ export default function Settings() {
                     placeholder="Your business name"
                     className="bg-white/5 border-white/10"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="displayName">Display Name</Label>
+                  <Input
+                    id="displayName"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="Alias shown to clients"
+                    className="bg-white/5 border-white/10"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This is the name clients will see in messages.
+                  </p>
                 </div>
 
                 <div className="space-y-2">

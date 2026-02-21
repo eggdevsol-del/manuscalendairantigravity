@@ -20,6 +20,14 @@ export const conversationsRouter = router({
                 const otherUserId =
                     ctx.user.role === "artist" ? conv.clientId : conv.artistId;
                 const otherUser = await db.resolveIdentity(otherUserId, 'user');
+
+                if (ctx.user.role === "client" && otherUser) {
+                    const settings = await db.getArtistSettings(otherUserId);
+                    if (settings?.displayName) {
+                        otherUser.name = settings.displayName;
+                    }
+                }
+
                 const unreadCount = await db.getUnreadMessageCount(conv.id, ctx.user.id);
 
                 return {
@@ -80,6 +88,13 @@ export const conversationsRouter = router({
                     ? conversation.clientId
                     : conversation.artistId;
             const otherUser = await db.resolveIdentity(otherUserId, 'user');
+
+            if (ctx.user.id === conversation.clientId && otherUser) {
+                const settings = await db.getArtistSettings(otherUserId);
+                if (settings?.displayName) {
+                    otherUser.name = settings.displayName;
+                }
+            }
 
             return {
                 ...conversation,
