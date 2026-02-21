@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useUIDebug } from "@/_core/contexts/UIDebugContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { WebPushSettings } from "@/components/WebPushSettings";
+import PushNotificationSettings from "@/components/PushNotificationSettings";
 import { getAssetUrl } from "@/lib/assets";
 
 import WorkHoursAndServices from "./WorkHoursAndServices";
@@ -834,9 +834,7 @@ export default function Settings() {
             {/* Notification Preferences (All Roles) */}
             <div className="space-y-3 pt-2">
               <h3 className="px-1 text-xs font-bold text-muted-foreground uppercase tracking-wider">Notification Preferences</h3>
-              <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-4")}>
-                <WebPushSettings hideTestButton />
-              </Card>
+              <PushNotificationSettings />
             </div>
 
             {/* 3. System Section */}
