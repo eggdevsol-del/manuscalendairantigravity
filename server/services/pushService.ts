@@ -2,6 +2,7 @@ import { eq, and } from "drizzle-orm";
 import webpush from "web-push";
 import { pushSubscriptions } from "../../drizzle/schema";
 import { getDb } from "./core";
+import { sendPushNotification as sendOneSignalPush } from "../_core/pushNotification";
 
 /**
  * Push Service - SSOT for Push Notification Operations
@@ -215,11 +216,24 @@ export async function sendTestPush(
     title?: string,
     body?: string
 ): Promise<{ success: boolean; results: PushResult[] }> {
-    return sendPushNotification(userId, {
+    // 1. Try legacy Web Push (VAPID)
+    const webPushResult = await sendPushNotification(userId, {
         title: title || "Test Notification",
         body: body || "This is a test web push from CalendAIr!",
         url: "/",
     });
+
+    // 2. Try the primary OneSignal system
+    const oneSignalSuccess = await sendOneSignalPush({
+        userIds: [userId],
+        title: title || "Test Notification",
+        message: body || "This is a test OneSignal push from CalendAIr!"
+    });
+
+    return {
+        success: webPushResult.success || oneSignalSuccess,
+        results: webPushResult.results
+    };
 }
 
 /**
