@@ -244,16 +244,36 @@ self.addEventListener('notificationclick', (event) => {
     type: 'window',
     includeUncontrolled: true
   }).then((windowClients) => {
-    // Check if there is already a window/tab open with the target URL
+    let clientToUse = null;
+
+    // 1. First, check if there is already a window/tab open at the exact target URL
     for (let i = 0; i < windowClients.length; i++) {
       const client = windowClients[i];
-      // Check if client url matches (ignoring query params if needed, or exact match)
-      // Using includes or startsWith might be safer for SPA routes
-      if (client.url === urlToOpen || client.url.startsWith(urlToOpen)) {
+      if (client.url === urlToOpen) {
         return client.focus();
       }
     }
-    // If not, open a new window
+
+    // 2. Second, radically broaden the search to ANY open window belonging to this PWA
+    for (let i = 0; i < windowClients.length; i++) {
+      const client = windowClients[i];
+      if (client.url && client.url.startsWith(self.location.origin)) {
+        clientToUse = client;
+        break;
+      }
+    }
+
+    if (clientToUse) {
+      // Focus the existing PWA instance, then force its internal router to navigate
+      // This prevents iOS Safari from breaking out into a new unauthenticated Safari tab!
+      return clientToUse.focus().then((client) => {
+        if ('navigate' in client && client.url !== urlToOpen) {
+          return client.navigate(urlToOpen);
+        }
+      });
+    }
+
+    // 3. Absolute last resort: PWA is completely closed, Cold Boot it
     if (clients.openWindow) {
       return clients.openWindow(urlToOpen);
     }
