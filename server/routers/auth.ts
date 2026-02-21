@@ -23,6 +23,9 @@ export const authRouter = router({
                 avatar: z.string().optional(),
                 bio: z.string().optional(),
                 savedSignature: z.string().optional(),
+                address: z.string().optional(),
+                city: z.string().optional(),
+                birthday: z.string().optional(),
             })
         )
         .mutation(async ({ ctx, input }) => {

@@ -62,6 +62,9 @@ export default function Settings() {
   const [profilePhone, setProfilePhone] = useState("");
   const [profileBio, setProfileBio] = useState("");
   const [profileAvatar, setProfileAvatar] = useState("");
+  const [profileBirthday, setProfileBirthday] = useState("");
+  const [profileAddress, setProfileAddress] = useState("");
+  const [profileCity, setProfileCity] = useState("");
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // Business settings state
@@ -131,6 +134,9 @@ export default function Settings() {
     setProfilePhone(user.phone || "");
     setProfileBio(user.bio || "");
     setProfileAvatar(user.avatar || "");
+    setProfileBirthday(user.birthday || "");
+    setProfileAddress(user.address || "");
+    setProfileCity(user.city || "");
     initializedProfileRef.current = true;
   }
 
@@ -159,6 +165,9 @@ export default function Settings() {
       phone: profilePhone,
       bio: profileBio,
       avatar: profileAvatar,
+      birthday: profileBirthday,
+      address: profileAddress,
+      city: profileCity,
     });
   };
 
@@ -317,6 +326,40 @@ export default function Settings() {
                     value={profilePhone}
                     onChange={(e) => setProfilePhone(e.target.value)}
                     placeholder="Your phone number"
+                    className="bg-white/5 border-white/10"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="birthday">Birthdate</Label>
+                  <Input
+                    id="birthday"
+                    type="date"
+                    value={profileBirthday}
+                    onChange={(e) => setProfileBirthday(e.target.value)}
+                    className="bg-white/5 border-white/10 [color-scheme:dark]"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address">Address</Label>
+                  <Textarea
+                    id="address"
+                    value={profileAddress}
+                    onChange={(e) => setProfileAddress(e.target.value)}
+                    placeholder="E.g. 123 Main St"
+                    rows={2}
+                    className="bg-white/5 border-white/10"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    value={profileCity}
+                    onChange={(e) => setProfileCity(e.target.value)}
+                    placeholder="E.g. Melbourne"
                     className="bg-white/5 border-white/10"
                   />
                 </div>

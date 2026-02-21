@@ -63,11 +63,13 @@ export function ProfileHeader({ user, trustBadges, isEditMode, onEditAvatar }: P
                 </p>
             )}
 
-            {/* Location (Mock/Future) */}
-            <div className="flex items-center gap-1 mt-3 text-xs text-muted-foreground/60">
-                <MapPin className="w-3 h-3" />
-                <span>Melbourne, AU</span>
-            </div>
+            {/* Location */}
+            {user.city && (
+                <div className="flex items-center gap-1 mt-3 text-xs text-muted-foreground/60">
+                    <MapPin className="w-3 h-3" />
+                    <span>{user.city}</span>
+                </div>
+            )}
         </div>
     );
 }
