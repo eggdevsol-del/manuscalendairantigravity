@@ -299,6 +299,8 @@ export const studiosRouter = router({
                 )
             });
 
+            let newMemberId: number;
+
             if (existingMember) {
                 if (existingMember.status === 'active') {
                     throw new TRPCError({ code: "CONFLICT", message: "User is already an active member of this studio." });
@@ -307,20 +309,19 @@ export const studiosRouter = router({
                 } else {
                     // They declined or were inactive, re-invite them
                     await db.update(studioMembers).set({ status: 'pending_invite', role: input.role }).where(eq(studioMembers.id, existingMember.id));
-                    return { success: true };
+                    newMemberId = existingMember.id;
                 }
+            } else {
+                // 4. Create pending invite
+                // Using a unique constraint on studioId + userId, so insert is safe
+                const [memberInsertResult] = await db.insert(studioMembers).values({
+                    studioId: input.studioId,
+                    userId: invitedUser.id,
+                    role: input.role,
+                    status: 'pending_invite'
+                });
+                newMemberId = memberInsertResult.insertId;
             }
-
-            // 4. Create pending invite
-            // Using a unique constraint on studioId + userId, so insert is safe
-            const [memberInsertResult] = await db.insert(studioMembers).values({
-                studioId: input.studioId,
-                userId: invitedUser.id,
-                role: input.role,
-                status: 'pending_invite'
-            });
-
-            const newMemberId = memberInsertResult.insertId;
 
             // 5. Fetch Studio Details for the Message
             const studio = await db.query.studios.findFirst({
