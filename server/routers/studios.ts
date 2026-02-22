@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { studios, studioMembers, users, conversations, messages } from "drizzle/schema";
 import { getDb } from "../services/core";
 
@@ -362,9 +362,9 @@ export const studiosRouter = router({
                         })
                     });
 
-                    // Update conversation timestamp
+                    // Update conversation timestamp formats cleanly for MySQL Date types
                     await db.update(conversations)
-                        .set({ lastMessageAt: new Date().toISOString() })
+                        .set({ lastMessageAt: sql`now()` })
                         .where(eq(conversations.id, conversation.id));
                 }
             }
