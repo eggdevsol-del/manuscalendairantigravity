@@ -4,6 +4,7 @@ import { artistProcedure, protectedProcedure, router } from "../_core/trpc";
 import { eventBus } from "../_core/eventBus";
 import * as db from "../db";
 import { localToUTC, getBusinessTimezone } from "../../shared/utils/timezone";
+import { notificationOutbox } from "../../drizzle/schema";
 
 export const appointmentsRouter = router({
     list: protectedProcedure
@@ -454,15 +455,24 @@ export const appointmentsRouter = router({
             }
 
             if (createdCount > 0) {
-                // Publish proposal accepted event for push notification
-                eventBus.publish('proposal.accepted', {
-                    clientId: conversation.clientId,
-                    artistId: conversation.artistId,
-                    conversationId: input.conversationId,
-                    appointmentId: appointmentIds[0],
-                }).catch(err => {
-                    console.error('[EventBus] Failed to publish proposal.accepted:', err);
-                });
+                // Publish proposal accepted event for push notification via outbox
+                const dbInst = await db.getDb();
+                if (dbInst) {
+                    try {
+                        await dbInst.insert(notificationOutbox).values({
+                            eventType: 'proposal.accepted',
+                            payloadJson: JSON.stringify({
+                                clientId: conversation.clientId,
+                                artistId: conversation.artistId,
+                                conversationId: input.conversationId,
+                                appointmentId: appointmentIds[0],
+                            }),
+                            status: 'pending'
+                        });
+                    } catch (err) {
+                        console.error('[Outbox] Failed to insert proposal.accepted event:', err);
+                    }
+                }
             }
 
             // Auto-send deposit info if enabled

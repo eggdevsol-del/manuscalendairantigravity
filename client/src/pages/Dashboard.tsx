@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useRegisterFABActions, useBottomNav } from "@/contexts/BottomNavContext";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
@@ -111,6 +111,14 @@ export default function Dashboard() {
     const [showSnapshotModal, setShowSnapshotModal] = useState(false);
     const [taskStartTime, setTaskStartTime] = useState<string | null>(null);
 
+    // Local state for dashboard settings to prevent render loop
+    const [localSettings, setLocalSettings] = useState(dashboardSettings);
+
+    // Sync local settings when external settings load or change
+    useEffect(() => {
+        setLocalSettings(dashboardSettings);
+    }, [dashboardSettings]);
+
     // Track if snapshot was already shown in this session
     const snapshotShownThisSession = useRef(false);
 
@@ -167,7 +175,7 @@ export default function Dashboard() {
     const currentTasks = getCurrentTasks();
 
     // Handlers
-    const handleTaskClick = (task: ExtendedTask) => {
+    const handleTaskClick = useCallback((task: ExtendedTask) => {
         setSelectedTask(task);
 
         // Start tracking time for business tasks
@@ -177,9 +185,9 @@ export default function Dashboard() {
         }
 
         setFABOpen(true);
-    };
+    }, [businessActions, setFABOpen]);
 
-    const executeAction = async (task: ExtendedTask) => {
+    const executeAction = useCallback(async (task: ExtendedTask) => {
         const serverTask = task._serverTask;
 
         if (serverTask) {
@@ -215,9 +223,9 @@ export default function Dashboard() {
             if (actionType === 'social' && actionPayload) return window.open(actionPayload, '_blank');
             if (actionPayload) console.log("Internal Nav:", actionPayload);
         }
-    };
+    }, [businessActions, legacyActions, setLocation]);
 
-    const handleMarkDone = async (task: ExtendedTask) => {
+    const handleMarkDone = useCallback(async (task: ExtendedTask) => {
         if (task._serverTask) {
             // Complete server task with tracking
             await businessActions.completeTask(task._serverTask, 'manual');
@@ -226,23 +234,28 @@ export default function Dashboard() {
             legacyActions.markDone(task.id);
         }
         setFABOpen(false);
-    };
+    }, [businessActions, legacyActions, setFABOpen]);
 
-    const handleSnooze = (task: ExtendedTask) => {
+    const handleSnooze = useCallback((task: ExtendedTask) => {
         if (!task._serverTask) {
             legacyActions.snooze(task.id);
         }
         // Note: Server tasks don't have snooze - they regenerate based on data
         setFABOpen(false);
-    };
+    }, [legacyActions, setFABOpen]);
 
-    const handleDismiss = (task: ExtendedTask) => {
+    const handleDismiss = useCallback((task: ExtendedTask) => {
         if (!task._serverTask) {
             legacyActions.dismiss(task.id);
         }
         // Note: Server tasks don't have dismiss - they regenerate based on data
         setFABOpen(false);
-    };
+    }, [legacyActions, setFABOpen]);
+
+    const handleShowSnapshot = useCallback(() => setShowSnapshotModal(true), []);
+    const handleShowSettings = useCallback(() => setShowSettingsSheet(true), []);
+    const handleShowChallenge = useCallback(() => setShowChallengeSheet(true), []);
+    const handleGoToChat = useCallback(() => setLocation('/conversations'), [setLocation]);
 
     // Framer motion variants
     const variants = {
@@ -367,16 +380,14 @@ export default function Dashboard() {
             {/* Register FAB Actions */}
             <DashboardFABActions
                 activeCategory={activeCategory}
-                onShowSnapshot={() => setShowSnapshotModal(true)}
-                onShowSettings={() => setShowSettingsSheet(true)}
-                onShowChallenge={() => setShowChallengeSheet(true)}
+                onShowSnapshot={handleShowSnapshot}
+                onShowSettings={handleShowSettings}
+                onShowChallenge={handleShowChallenge}
                 selectedTask={selectedTask}
                 onExecuteAction={executeAction}
                 onMarkDone={handleMarkDone}
                 onSnooze={handleSnooze}
-                onGoToChat={(task) => {
-                    setLocation('/conversations');
-                }}
+                onGoToChat={handleGoToChat}
             />
 
             {/* --- CHALLENGE SHEET (FullScreenSheet) --- */}
@@ -430,8 +441,14 @@ export default function Dashboard() {
                             <span className="text-sm font-medium">{dashboardSettings.maxVisibleTasks}</span>
                         </div>
                         <Slider
-                            value={[dashboardSettings.maxVisibleTasks]}
-                            onValueChange={([value]) => updateSettings({ maxVisibleTasks: value })}
+                            value={[localSettings.maxVisibleTasks]}
+                            onValueChange={([value]) => {
+                                setLocalSettings(prev => ({ ...prev, maxVisibleTasks: value }));
+                            }}
+                            onPointerUp={() => {
+                                // Only update server when the user finishes dragging
+                                updateSettings({ maxVisibleTasks: localSettings.maxVisibleTasks });
+                            }}
                             min={4}
                             max={15}
                             step={1}
@@ -449,8 +466,14 @@ export default function Dashboard() {
                             <span className="text-sm font-medium">{dashboardSettings.goalAdvancedBookingMonths} months</span>
                         </div>
                         <Slider
-                            value={[dashboardSettings.goalAdvancedBookingMonths]}
-                            onValueChange={([value]) => updateSettings({ goalAdvancedBookingMonths: value })}
+                            value={[localSettings.goalAdvancedBookingMonths]}
+                            onValueChange={([value]) => {
+                                setLocalSettings(prev => ({ ...prev, goalAdvancedBookingMonths: value }));
+                            }}
+                            onPointerUp={() => {
+                                // Only update server when the user finishes dragging
+                                updateSettings({ goalAdvancedBookingMonths: localSettings.goalAdvancedBookingMonths });
+                            }}
                             min={1}
                             max={12}
                             step={1}
@@ -465,8 +488,11 @@ export default function Dashboard() {
                     <div className="space-y-2">
                         <Label>Preferred Email Client</Label>
                         <Select
-                            value={dashboardSettings.preferredEmailClient}
-                            onValueChange={(val: 'default' | 'gmail' | 'outlook' | 'apple_mail') => updateSettings({ preferredEmailClient: val })}
+                            value={localSettings.preferredEmailClient}
+                            onValueChange={(val: 'default' | 'gmail' | 'outlook' | 'apple_mail') => {
+                                setLocalSettings(prev => ({ ...prev, preferredEmailClient: val }));
+                                updateSettings({ preferredEmailClient: val });
+                            }}
                         >
                             <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl">
                                 <SelectValue />
@@ -497,8 +523,11 @@ export default function Dashboard() {
                             </p>
                         </div>
                         <Switch
-                            checked={dashboardSettings.showWeeklySnapshot}
-                            onCheckedChange={(checked) => updateSettings({ showWeeklySnapshot: checked })}
+                            checked={localSettings.showWeeklySnapshot}
+                            onCheckedChange={(checked) => {
+                                setLocalSettings(prev => ({ ...prev, showWeeklySnapshot: checked }));
+                                updateSettings({ showWeeklySnapshot: checked });
+                            }}
                         />
                     </div>
 

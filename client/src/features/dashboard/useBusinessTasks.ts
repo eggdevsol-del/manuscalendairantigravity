@@ -5,7 +5,7 @@
  * Handles task completion tracking with time-to-completion metrics.
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { trpc } from '@/lib/trpc';
 
 export interface BusinessTask {
@@ -272,7 +272,7 @@ export function useBusinessTasks() {
       businessEmail: settings?.businessEmail || null,
       businessName: settings?.businessName || null
     },
-    actions: {
+    actions: useMemo(() => ({
       startTask,
       completeTask,
       openSms,
@@ -280,7 +280,7 @@ export function useBusinessTasks() {
       getTaskEmailUrl,
       navigateToTask,
       refetch
-    },
+    }), [startTask, completeTask, openSms, openEmail, getTaskEmailUrl, navigateToTask, refetch]),
     completingTask
   };
 }

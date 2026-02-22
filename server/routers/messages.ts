@@ -3,6 +3,7 @@ import { z } from "zod";
 import { eventBus } from "../_core/eventBus";
 import { protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { notificationOutbox } from "../../drizzle/schema";
 
 export const messagesRouter = router({
     list: protectedProcedure
@@ -95,14 +96,7 @@ export const messagesRouter = router({
                     ? "Sent an image"
                     : input.content;
 
-                eventBus.publish('message.created', {
-                    targetUserId: recipientId,
-                    title: ctx.user.name || "Someone",
-                    body: messagePreview,
-                    data: { conversationId: input.conversationId }
-                }).catch(err => {
-                    console.error('[EventBus] Failed to publish message.created:', err);
-                });
+                // Event creation handled below via DB Outbox
 
                 // Auto-update consultation status if artist replies
                 if (ctx.user.id === conversation.artistId) {
@@ -119,7 +113,7 @@ export const messagesRouter = router({
                         // Get all consultations for this artist to match against client
                         const allConsults = await db.getConsultationsForUser(ctx.user.id, "artist");
                         const pendingForClient = allConsults.filter(
-                            c => c.clientId === conversation.clientId && c.status === "pending"
+                            (c: any) => c.clientId === conversation.clientId && c.status === "pending"
                         );
 
                         for (const consult of pendingForClient) {
@@ -132,6 +126,26 @@ export const messagesRouter = router({
                         console.error("Failed to auto-update consultation status:", err);
                     }
                 }
+
+                // Use the database instance to insert the notification outbox event directly
+                const dbInst = await db.getDb();
+                if (dbInst) {
+                    try {
+                        await dbInst.insert(db.notificationOutbox || require('../../drizzle/schema').notificationOutbox).values({
+                            eventType: 'message.created',
+                            payloadJson: JSON.stringify({
+                                targetUserId: recipientId,
+                                title: ctx.user.name || "Someone",
+                                body: messagePreview,
+                                data: { conversationId: input.conversationId }
+                            }),
+                            status: 'pending',
+                        });
+                    } catch (err) {
+                        console.error('[Outbox] Failed to insert message.created event:', err);
+                    }
+                }
+
             }
 
             // Send appointment confirmation notification
@@ -139,14 +153,24 @@ export const messagesRouter = router({
                 const dates = input.content.match(/(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), (\w+ \d+, \d{4})/g);
                 const firstDate = dates && dates.length > 0 ? dates[0] : "soon";
 
-                eventBus.publish('appointment.confirmed', {
-                    targetUserId: recipientId,
-                    title: ctx.user.name || "A client",
-                    body: `Appointment confirmed for ${firstDate}`, // Assuming body logic needed here or generic?
-                    data: { conversationId: input.conversationId }
-                }).catch(err => {
-                    console.error('[EventBus] Failed to publish appointment.confirmed:', err);
-                });
+                // Insert into outbox instead of eventBus.publish
+                const dbInst = await db.getDb();
+                if (dbInst) {
+                    try {
+                        await dbInst.insert(db.notificationOutbox || require('../../drizzle/schema').notificationOutbox).values({
+                            eventType: 'appointment.confirmed',
+                            payloadJson: JSON.stringify({
+                                targetUserId: recipientId,
+                                title: ctx.user.name || "A client",
+                                body: `Appointment confirmed for ${firstDate}`, // Assuming body logic needed here or generic?
+                                data: { conversationId: input.conversationId }
+                            }),
+                            status: 'pending',
+                        });
+                    } catch (err) {
+                        console.error('[Outbox] Failed to insert appointment.confirmed event:', err);
+                    }
+                }
             }
 
             return message;

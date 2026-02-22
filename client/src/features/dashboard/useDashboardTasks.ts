@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { DashboardTask, ChallengeTemplate, TaskDomain, DashboardConfig } from './types';
 import { DashboardEventLogger } from './DashboardEventLogger';
 import { DashboardTaskRegister, CHALLENGE_TEMPLATES } from './DashboardTaskRegister';
@@ -169,16 +169,16 @@ export function useDashboardTasks() {
 
 
     // Comms wrappers
-    const handleComms = {
+    const handleComms = useMemo(() => ({
         email: (payload: string) => CommsHandler.openPrefilledEmail(payload), // payload as 'to'
         sms: (payload: string) => CommsHandler.openPrefilledSms(payload, undefined, config.comms.platform)
-    };
+    }), [config.comms.platform]);
 
     // Update comms pref
-    const setCommsPlatform = (platform: 'ios' | 'android' | 'desktop') => {
+    const setCommsPlatform = useCallback((platform: 'ios' | 'android' | 'desktop') => {
         DashboardConfigRegister.updateConfig({ comms: { ...config.comms, platform } });
         setConfig(prev => ({ ...prev, comms: { ...prev.comms, platform } }));
-    };
+    }, [config.comms]);
 
 
     // Filter & Limitation Logic (Capacity Scaling)
@@ -207,7 +207,7 @@ export function useDashboardTasks() {
             socialStreak: state.socialStreak,
             activeChallengeId: state.activeChallengeId
         },
-        actions: {
+        actions: useMemo(() => ({
             markDone,
             snooze,
             dismiss,
@@ -215,7 +215,7 @@ export function useDashboardTasks() {
             stopChallenge,
             handleComms,
             setCommsPlatform
-        },
+        }), [markDone, snooze, dismiss, startChallenge, stopChallenge, handleComms, setCommsPlatform]),
         config
     };
 }
