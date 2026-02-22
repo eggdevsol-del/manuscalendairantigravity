@@ -1,5 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { Capacitor } from "@capacitor/core";
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
@@ -91,3 +92,10 @@ if (import.meta.env.PROD) {
 initializeOneSignal().catch(err => {
   console.error('[OneSignal] Failed to initialize:', err);
 });
+
+// Configure Status Bar for Native/PWA
+if (Capacitor.isNativePlatform()) {
+  StatusBar.setStyle({ style: Style.Dark }).catch(() => {
+    // Silently fail on web environments that don't support the Native API
+  });
+}

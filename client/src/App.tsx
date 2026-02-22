@@ -151,7 +151,7 @@ function AppointmentCheckInOverlay() {
     if (!activeCheckIn || dismissed === activeCheckIn.appointment.id) return null;
 
     return (
-      <div className="w-full flex-1">
+      <div className="w-full flex-1 bg-card border border-border/50 rounded-3xl p-4 shadow-2xl backdrop-blur-xl">
         <AppointmentCheckInModal
           isOpen={!!activeCheckIn}
           checkIn={activeCheckIn}
