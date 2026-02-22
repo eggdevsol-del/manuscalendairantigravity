@@ -25,7 +25,6 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ conversationId, className, onBack }: ChatInterfaceProps) {
     const [, setLocation] = useLocation();
-    const bookProjectMutation = trpc.appointments.createFromConsultation.useMutation();
     const respondToInviteMutation = trpc.studios.respondToInvite.useMutation();
     const { isContextualVisible, setFABOpen } = useBottomNav();
 
