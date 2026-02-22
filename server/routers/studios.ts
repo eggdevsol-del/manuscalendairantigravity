@@ -332,15 +332,15 @@ export const studiosRouter = router({
                 // 6. Find or Create a Conversation between the Owner and the Artist
                 let conversation = await db.query.conversations.findFirst({
                     where: and(
-                        eq(conversations.artistId, ctx.user.id), // Owner acting as 'artist' in this context
-                        eq(conversations.clientId, invitedUser.id) // Invited artist acting as 'client' in this context
+                        eq(conversations.artistId, invitedUser.id), // Invited artist receiving message
+                        eq(conversations.clientId, ctx.user.id) // Studio Owner sending as 'client' in this context
                     )
                 });
 
                 if (!conversation) {
                     const [convResult] = await db.insert(conversations).values({
-                        artistId: ctx.user.id,
-                        clientId: invitedUser.id,
+                        artistId: invitedUser.id,
+                        clientId: ctx.user.id,
                     });
                     conversation = await db.query.conversations.findFirst({
                         where: eq(conversations.id, convResult.insertId)
