@@ -36,10 +36,14 @@ export default function StudioDashboard() {
         { enabled: !!currentStudio?.id }
     );
 
-    const inviteMutation = trpc.invitations.generateInvite.useMutation({
+    const inviteMutation = trpc.studios.inviteArtist.useMutation({
         onSuccess: () => {
             setInviteEmail("");
-            // Could add a toast here
+            refetchTeam();
+            toast.success("Invitation sent successfully!");
+        },
+        onError: (err) => {
+            toast.error(err.message);
         }
     });
 
@@ -81,7 +85,7 @@ export default function StudioDashboard() {
         if (!inviteEmail) return;
         inviteMutation.mutate({
             studioId: currentStudio.id,
-            email: inviteEmail,
+            artistEmail: inviteEmail,
             role: inviteRole
         });
     };
@@ -94,6 +98,9 @@ export default function StudioDashboard() {
             });
         }
     };
+
+    const activeMembers = teamMembers?.filter(m => m.status === 'active') || [];
+    const pendingMembers = teamMembers?.filter(m => m.status === 'pending_invite') || [];
 
     return (
         <PageShell>
@@ -183,52 +190,89 @@ export default function StudioDashboard() {
                                             {inviteMutation.isPending ? "Sending..." : "Send Invite"}
                                         </Button>
                                     </div>
-                                    {inviteMutation.isSuccess && (
-                                        <p className="text-xs text-green-400 mt-1 flex items-center gap-1">
-                                            <Check className="w-3 h-3" /> Invite link generated successfully!
-                                        </p>
-                                    )}
                                 </form>
                             </Card>
 
                             {/* Team List */}
-                            <div>
-                                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 pl-1">
-                                    Active Members ({teamMembers?.length || 0})
-                                </h3>
-                                <div className="space-y-3">
-                                    {teamMembers?.map((member: any) => (
-                                        <div key={member.id} className="p-4 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden flex items-center justify-center">
-                                                    {member.user.avatar ? (
-                                                        <img src={member.user.avatar} alt={member.user.name || "Member"} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <User className="w-5 h-5 text-muted-foreground" />
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-foreground">{member.user.name}</p>
-                                                    <div className="flex items-center gap-2 mt-0.5">
-                                                        <span className="text-xs text-muted-foreground">{member.user.email}</span>
-                                                        {member.role === 'owner' && <span className="px-1.5 py-0.5 rounded-sm bg-amber-500/20 text-amber-500 text-[10px] font-bold uppercase">Owner</span>}
-                                                        {member.role === 'manager' && <span className="px-1.5 py-0.5 rounded-sm bg-blue-500/20 text-blue-500 text-[10px] font-bold uppercase">Manager</span>}
+                            <div className="space-y-6">
+                                {/* Active Members */}
+                                <div>
+                                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 pl-1">
+                                        Active Members ({activeMembers.length})
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {activeMembers.map((member: any) => (
+                                            <div key={member.id} className="p-4 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden flex items-center justify-center">
+                                                        {member.user.avatar ? (
+                                                            <img src={member.user.avatar} alt={member.user.name || "Member"} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <User className="w-5 h-5 text-muted-foreground" />
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-medium text-foreground">{member.user.name}</p>
+                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                            <span className="text-xs text-muted-foreground">{member.user.email}</span>
+                                                            {member.role === 'owner' && <span className="px-1.5 py-0.5 rounded-sm bg-amber-500/20 text-amber-500 text-[10px] font-bold uppercase">Owner</span>}
+                                                            {member.role === 'manager' && <span className="px-1.5 py-0.5 rounded-sm bg-blue-500/20 text-blue-500 text-[10px] font-bold uppercase">Manager</span>}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            {/* Only allow removing if not self, and logged in user is owner/manager */}
-                                            {member.user.id !== user?.id && currentStudio.role === 'owner' && (
-                                                <button
-                                                    onClick={() => handleRemoveMember(member.user.id)}
-                                                    className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
+                                                {/* Only allow removing if not self, and logged in user is owner/manager */}
+                                                {member.user.id !== user?.id && currentStudio.role === 'owner' && (
+                                                    <button
+                                                        onClick={() => handleRemoveMember(member.user.id)}
+                                                        className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                        {activeMembers.length === 0 && (
+                                            <p className="text-sm text-muted-foreground italic px-2">No active members found.</p>
+                                        )}
+                                    </div>
                                 </div>
+
+                                {/* Pending Invites */}
+                                {pendingMembers.length > 0 && (
+                                    <div>
+                                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 pl-1">
+                                            Pending Invites ({pendingMembers.length})
+                                        </h3>
+                                        <div className="space-y-3">
+                                            {pendingMembers.map((member: any) => (
+                                                <div key={member.id} className="p-4 rounded-xl bg-white/5 border border-white/5 border-dashed flex items-center justify-between opacity-70">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-white/5 border-2 border-dashed border-white/20 flex items-center justify-center">
+                                                            <Mail className="w-4 h-4 text-muted-foreground" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-foreground">{member.user.name || member.user.email}</p>
+                                                            <div className="flex items-center gap-2 mt-0.5">
+                                                                <span className="text-xs text-muted-foreground">Pending • Invited as {member.role}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {currentStudio.role === 'owner' && (
+                                                        <button
+                                                            onClick={() => handleRemoveMember(member.user.id)}
+                                                            className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                                                            title="Cancel Invite"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     )}

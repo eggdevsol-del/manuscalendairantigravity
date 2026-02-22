@@ -12,8 +12,6 @@ import { tokens } from "@/ui/tokens";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X, Check, Clock, ExternalLink, MessageSquare, Mail, Play, Plus, Trash2, Smartphone, Monitor, ChevronRight, Settings, BarChart3 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
 import { useTeaser } from "@/contexts/TeaserContext";
 import { InstallAppModal } from "@/components/modals/InstallAppModal";
 import { Lock } from "lucide-react";
@@ -33,7 +31,7 @@ export interface ExtendedTask {
     context?: string;
     priority: 'high' | 'medium' | 'low';
     status: 'pending' | 'completed' | 'dismissed' | 'snoozed';
-    actionType: 'sms' | 'email' | 'social' | 'internal' | 'in_app' | 'link' | 'none';
+    actionType: 'sms' | 'email' | 'social' | 'internal' | 'in_app' | 'link' | 'external' | 'none';
     actionPayload?: string;
     domain: 'business' | 'social' | 'personal';
     _serverTask?: ServerBusinessTask;
@@ -95,9 +93,6 @@ export default function Dashboard() {
     // Weekly Snapshot Hook
     const { shouldShow: showSnapshot, snapshot, dismiss: dismissSnapshot } = useWeeklySnapshot();
 
-    // Dashboard Settings Hook
-    const { settings: dashboardSettings, updateSettings, isUpdating } = useDashboardSettings();
-
     // Teaser Mode
     const { isTeaserClient } = useTeaser();
     const [showInstallModal, setShowInstallModal] = useState(false);
@@ -107,17 +102,8 @@ export default function Dashboard() {
     const [selectedTask, setSelectedTask] = useState<ExtendedTask | null>(null);
     const [showTaskSheet, setShowTaskSheet] = useState(false);
     const [showChallengeSheet, setShowChallengeSheet] = useState(false);
-    const [showSettingsSheet, setShowSettingsSheet] = useState(false);
     const [showSnapshotModal, setShowSnapshotModal] = useState(false);
     const [taskStartTime, setTaskStartTime] = useState<string | null>(null);
-
-    // Local state for dashboard settings to prevent render loop
-    const [localSettings, setLocalSettings] = useState(dashboardSettings);
-
-    // Sync local settings when external settings load or change
-    useEffect(() => {
-        setLocalSettings(dashboardSettings);
-    }, [dashboardSettings]);
 
     // Track if snapshot was already shown in this session
     const snapshotShownThisSession = useRef(false);
@@ -253,7 +239,6 @@ export default function Dashboard() {
     }, [legacyActions, setFABOpen]);
 
     const handleShowSnapshot = useCallback(() => setShowSnapshotModal(true), []);
-    const handleShowSettings = useCallback(() => setShowSettingsSheet(true), []);
     const handleShowChallenge = useCallback(() => setShowChallengeSheet(true), []);
     const handleGoToChat = useCallback(() => setLocation('/conversations'), [setLocation]);
 
@@ -381,7 +366,6 @@ export default function Dashboard() {
             <DashboardFABActions
                 activeCategory={activeCategory}
                 onShowSnapshot={handleShowSnapshot}
-                onShowSettings={handleShowSettings}
                 onShowChallenge={handleShowChallenge}
                 selectedTask={selectedTask}
                 onExecuteAction={executeAction}
@@ -422,135 +406,6 @@ export default function Dashboard() {
                             </div>
                         </Card>
                     ))}
-                </div>
-            </FullScreenSheet>
-
-            {/* --- SETTINGS SHEET (FullScreenSheet) --- */}
-            <FullScreenSheet
-                open={showSettingsSheet}
-                onClose={() => setShowSettingsSheet(false)}
-                title="Dashboard Settings"
-                contextTitle="Configure Dashboard"
-                contextSubtitle="Customize your revenue protection dashboard."
-            >
-                <div className="space-y-6">
-                    {/* Max Visible Tasks */}
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <Label>Daily Task Limit</Label>
-                            <span className="text-sm font-medium">{dashboardSettings.maxVisibleTasks}</span>
-                        </div>
-                        <Slider
-                            value={[localSettings.maxVisibleTasks]}
-                            onValueChange={([value]) => {
-                                setLocalSettings(prev => ({ ...prev, maxVisibleTasks: value }));
-                            }}
-                            onPointerUp={() => {
-                                // Only update server when the user finishes dragging
-                                updateSettings({ maxVisibleTasks: localSettings.maxVisibleTasks });
-                            }}
-                            min={4}
-                            max={15}
-                            step={1}
-                            className="w-full"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            Number of tasks shown per day (4-15)
-                        </p>
-                    </div>
-
-                    {/* Goal Advanced Booking */}
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <Label>Booking Goal</Label>
-                            <span className="text-sm font-medium">{dashboardSettings.goalAdvancedBookingMonths} months</span>
-                        </div>
-                        <Slider
-                            value={[localSettings.goalAdvancedBookingMonths]}
-                            onValueChange={([value]) => {
-                                setLocalSettings(prev => ({ ...prev, goalAdvancedBookingMonths: value }));
-                            }}
-                            onPointerUp={() => {
-                                // Only update server when the user finishes dragging
-                                updateSettings({ goalAdvancedBookingMonths: localSettings.goalAdvancedBookingMonths });
-                            }}
-                            min={1}
-                            max={12}
-                            step={1}
-                            className="w-full"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            How far in advance you want to be booked
-                        </p>
-                    </div>
-
-                    {/* Email Client */}
-                    <div className="space-y-2">
-                        <Label>Preferred Email Client</Label>
-                        <Select
-                            value={localSettings.preferredEmailClient}
-                            onValueChange={(val: 'default' | 'gmail' | 'outlook' | 'apple_mail') => {
-                                setLocalSettings(prev => ({ ...prev, preferredEmailClient: val }));
-                                updateSettings({ preferredEmailClient: val });
-                            }}
-                        >
-                            <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="default">
-                                    <div className="flex items-center gap-2"><Mail className="w-4 h-4" /> Default (mailto:)</div>
-                                </SelectItem>
-                                <SelectItem value="gmail">
-                                    <div className="flex items-center gap-2"><Mail className="w-4 h-4" /> Gmail</div>
-                                </SelectItem>
-                                <SelectItem value="outlook">
-                                    <div className="flex items-center gap-2"><Mail className="w-4 h-4" /> Outlook</div>
-                                </SelectItem>
-                                <SelectItem value="apple_mail">
-                                    <div className="flex items-center gap-2"><Mail className="w-4 h-4" /> Apple Mail</div>
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    {/* Weekly Snapshot Toggle */}
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <Label>Weekly Snapshot</Label>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                Show performance summary every Monday
-                            </p>
-                        </div>
-                        <Switch
-                            checked={localSettings.showWeeklySnapshot}
-                            onCheckedChange={(checked) => {
-                                setLocalSettings(prev => ({ ...prev, showWeeklySnapshot: checked }));
-                                updateSettings({ showWeeklySnapshot: checked });
-                            }}
-                        />
-                    </div>
-
-                    {/* Device Platform (Legacy) */}
-                    <div className="space-y-2">
-                        <Label>Device Platform (For SMS)</Label>
-                        <Select value={config.comms.platform} onValueChange={(val: 'ios' | 'android' | 'desktop') => legacyActions.setCommsPlatform(val)}>
-                            <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="ios">
-                                    <div className="flex items-center gap-2"><Smartphone className="w-4 h-4" /> iOS (iPhone)</div>
-                                </SelectItem>
-                                <SelectItem value="android">
-                                    <div className="flex items-center gap-2"><Smartphone className="w-4 h-4" /> Android</div>
-                                </SelectItem>
-                                <SelectItem value="desktop">
-                                    <div className="flex items-center gap-2"><Monitor className="w-4 h-4" /> Desktop / Web</div>
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
                 </div>
             </FullScreenSheet>
 

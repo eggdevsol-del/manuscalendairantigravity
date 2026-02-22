@@ -7,6 +7,7 @@ import { getAssetUrl } from "@/lib/assets";
 import WorkHoursAndServices from "./WorkHoursAndServices";
 import ArtistLink from "@/components/ArtistLink";
 import RegulationPage from "./settings/RegulationPage";
+import ArtistInvitations from "../features/studio/ArtistInvitations";
 import { Button, Card, Input, Label, Switch, Textarea } from "@/components/ui";
 import { LoadingState, PageShell, PageHeader } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
@@ -36,7 +37,7 @@ import { APP_VERSION } from "@/lib/version";
 import { getGoogleMapsEmbedUrl } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 
-type SettingsSection = "main" | "profile" | "work-hours" | "quick-actions" | "notifications" | "business" | "booking-link" | "regulation";
+type SettingsSection = "main" | "profile" | "work-hours" | "quick-actions" | "notifications" | "business" | "booking-link" | "regulation" | "invitations";
 
 export default function Settings() {
   const { user, loading, logout } = useAuth();
@@ -118,6 +119,10 @@ export default function Settings() {
   } = trpc.artistSettings.get.useQuery(undefined, {
     enabled: !!user && (user.role === "artist" || user.role === "admin"),
     retry: 3,
+  });
+
+  const { data: pendingInvites } = trpc.studios.getPendingInvites.useQuery(undefined, {
+    enabled: !!user && (user.role === "artist" || user.role === "admin"),
   });
 
   // Redirect to login if not authenticated
@@ -265,6 +270,10 @@ export default function Settings() {
 
   if (activeSection === "regulation" && isArtist) {
     return <RegulationPage onBack={() => navigateToSection("main")} />;
+  }
+
+  if (activeSection === "invitations" && isArtist) {
+    return <ArtistInvitations onBack={() => navigateToSection("main")} />;
   }
 
   if (activeSection === "profile") {
@@ -754,6 +763,26 @@ export default function Settings() {
                         </div>
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
+
+                      {/* Pending Invitations */}
+                      {pendingInvites && pendingInvites.length > 0 && (
+                        <div
+                          className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99] bg-primary/10"
+                          onClick={() => navigateToSection("invitations")}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-primary/20 text-primary relative">
+                              <Bell className="w-5 h-5" />
+                              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-background animate-pulse" />
+                            </div>
+                            <div className="text-left">
+                              <p className="font-semibold text-foreground">Studio Invitations</p>
+                              <p className="text-xs text-primary/80">You have {pendingInvites.length} pending invite{pendingInvites.length !== 1 ? 's' : ''}</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      )}
 
                       {/* Studio Headquarters */}
                       <div

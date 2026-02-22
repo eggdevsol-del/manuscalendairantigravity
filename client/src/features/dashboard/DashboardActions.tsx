@@ -1,13 +1,12 @@
 import { useMemo } from "react";
 import { useRegisterFABActions } from "@/contexts/BottomNavContext";
-import { BarChart3, Settings, Plus, Send, Mail, MessageSquare, Check, ExternalLink, Play, Clock, Trash2, Smartphone } from "lucide-react";
+import { BarChart3, Plus, Send, Mail, MessageSquare, Check, ExternalLink, Play, Clock, Trash2, Smartphone } from "lucide-react";
 import { type FABMenuItem } from "@/ui/FABMenu";
 import type { ExtendedTask } from "@/pages/Dashboard";
 
 interface DashboardFABActionsProps {
     activeCategory: 'business' | 'social' | 'personal';
     onShowSnapshot: () => void;
-    onShowSettings: () => void;
     onShowChallenge: () => void;
     selectedTask?: ExtendedTask | null;
     onExecuteAction?: (task: ExtendedTask) => void;
@@ -19,7 +18,6 @@ interface DashboardFABActionsProps {
 export function DashboardFABActions({
     activeCategory,
     onShowSnapshot,
-    onShowSettings,
     onShowChallenge,
     selectedTask,
     onExecuteAction,
@@ -147,16 +145,8 @@ export function DashboardFABActions({
             });
         }
 
-        // Settings always available for dashboard
-        items.push({
-            id: 'dashboard-settings',
-            label: 'Dashboard Settings',
-            icon: Settings,
-            onClick: onShowSettings
-        });
-
         return items;
-    }, [activeCategory, onShowSnapshot, onShowSettings, onShowChallenge, selectedTask, onExecuteAction, onMarkDone, onSnooze]);
+    }, [activeCategory, onShowSnapshot, onShowChallenge, selectedTask, onExecuteAction, onMarkDone, onSnooze]);
 
     useRegisterFABActions("dashboard", fabContent);
 

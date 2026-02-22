@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { eq, and } from "drizzle-orm";
 import { studios, studioMembers, users } from "drizzle/schema";
@@ -214,6 +214,173 @@ export const studiosRouter = router({
                     eq(studioMembers.studioId, input.studioId),
                     eq(studioMembers.userId, input.userId)
                 ));
+
+            return { success: true };
+        }),
+
+    // Get public studio profile by slug, including active artists
+    getStudioProfile: publicProcedure
+        .input(z.object({
+            slug: z.string()
+        }))
+        .query(async ({ input }) => {
+            const db = await getDb();
+            if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+
+            const studio = await db.query.studios.findFirst({
+                where: eq(studios.publicSlug, input.slug)
+            });
+
+            if (!studio) {
+                throw new TRPCError({ code: "NOT_FOUND", message: "Studio not found" });
+            }
+
+            // Get active artists in the studio
+            const members = await db
+                .select({
+                    id: users.id,
+                    name: users.name,
+                    avatar: users.avatar,
+                    bio: users.bio
+                })
+                .from(studioMembers)
+                .innerJoin(users, eq(users.id, studioMembers.userId))
+                .where(and(
+                    eq(studioMembers.studioId, studio.id),
+                    eq(studioMembers.status, 'active'),
+                    // Assuming we only want to list people taking bookings
+                    // For now, list everyone active
+                ));
+
+            return {
+                studio,
+                artists: members
+            };
+        }),
+
+    // Invite an artist to the studio
+    inviteArtist: protectedProcedure
+        .input(z.object({
+            studioId: z.string(),
+            artistEmail: z.string().email(),
+            role: z.enum(['owner', 'manager', 'artist', 'apprentice'])
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const db = await getDb();
+            if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+
+            // 1. Verify access (must be owner or manager)
+            const requester = await db.query.studioMembers.findFirst({
+                where: and(
+                    eq(studioMembers.studioId, input.studioId),
+                    eq(studioMembers.userId, ctx.user.id),
+                    eq(studioMembers.status, 'active')
+                )
+            });
+
+            if (!requester || (requester.role !== 'owner' && requester.role !== 'manager')) {
+                throw new TRPCError({ code: "FORBIDDEN", message: "Only owners or managers can invite artists." });
+            }
+
+            // 2. Find the user by email
+            const invitedUser = await db.query.users.findFirst({
+                where: eq(users.email, input.artistEmail)
+            });
+
+            if (!invitedUser) {
+                throw new TRPCError({ code: "NOT_FOUND", message: "User with this email not found." });
+            }
+
+            // 3. Check if they are already in the studio
+            const existingMember = await db.query.studioMembers.findFirst({
+                where: and(
+                    eq(studioMembers.studioId, input.studioId),
+                    eq(studioMembers.userId, invitedUser.id)
+                )
+            });
+
+            if (existingMember) {
+                if (existingMember.status === 'active') {
+                    throw new TRPCError({ code: "CONFLICT", message: "User is already an active member of this studio." });
+                } else if (existingMember.status === 'pending_invite') {
+                    throw new TRPCError({ code: "CONFLICT", message: "User already has a pending invite." });
+                } else {
+                    // They declined or were inactive, re-invite them
+                    await db.update(studioMembers).set({ status: 'pending_invite', role: input.role }).where(eq(studioMembers.id, existingMember.id));
+                    return { success: true };
+                }
+            }
+
+            // 4. Create pending invite
+            // Using a unique constraint on studioId + userId, so insert is safe
+            await db.insert(studioMembers).values({
+                studioId: input.studioId,
+                userId: invitedUser.id,
+                role: input.role,
+                status: 'pending_invite'
+            });
+
+            return { success: true };
+        }),
+
+    // Get pending invites for the logged-in user
+    getPendingInvites: protectedProcedure
+        .query(async ({ ctx }) => {
+            const db = await getDb();
+            if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+
+            const invites = await db
+                .select({
+                    id: studioMembers.id,
+                    role: studioMembers.role,
+                    createdAt: studioMembers.createdAt,
+                    studio: {
+                        id: studios.id,
+                        name: studios.name,
+                        logoUrl: studios.logoUrl
+                    }
+                })
+                .from(studioMembers)
+                .innerJoin(studios, eq(studios.id, studioMembers.studioId))
+                .where(and(
+                    eq(studioMembers.userId, ctx.user.id),
+                    eq(studioMembers.status, 'pending_invite')
+                ));
+
+            return invites;
+        }),
+
+    // Respond to an invite
+    respondToInvite: protectedProcedure
+        .input(z.object({
+            inviteId: z.number(),
+            response: z.enum(['accept', 'decline'])
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const db = await getDb();
+            if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+
+            const invite = await db.query.studioMembers.findFirst({
+                where: and(
+                    eq(studioMembers.id, input.inviteId),
+                    eq(studioMembers.userId, ctx.user.id),
+                    eq(studioMembers.status, 'pending_invite')
+                )
+            });
+
+            if (!invite) {
+                throw new TRPCError({ code: "NOT_FOUND", message: "Invite not found or already processed." });
+            }
+
+            if (input.response === 'accept') {
+                await db.update(studioMembers)
+                    .set({ status: 'active' })
+                    .where(eq(studioMembers.id, input.inviteId));
+            } else {
+                await db.update(studioMembers)
+                    .set({ status: 'declined' })
+                    .where(eq(studioMembers.id, input.inviteId));
+            }
 
             return { success: true };
         }),

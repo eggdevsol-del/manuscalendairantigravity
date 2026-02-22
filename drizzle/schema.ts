@@ -328,16 +328,22 @@ export const studios = mysqlTable("studios", {
 	stripeSubscriptionId: varchar({ length: 255 }),
 	subscriptionStatus: mysqlEnum(['active', 'past_due', 'canceled', 'trialing']).default('active'),
 	subscriptionTier: mysqlEnum(['solo', 'studio']).default('solo'),
+	publicSlug: varchar({ length: 50 }),
+	funnelEnabled: tinyint().default(0),
+	logoUrl: text(),
+	description: text(),
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
-});
+}, (table) => [
+	unique("studios_publicSlug_unique").on(table.publicSlug),
+]);
 
 export const studioMembers = mysqlTable("studio_members", {
 	id: int().primaryKey().autoincrement(),
 	studioId: varchar({ length: 64 }).notNull().references(() => studios.id, { onDelete: "cascade" }),
 	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	role: mysqlEnum(['owner', 'manager', 'artist', 'apprentice']).default('artist').notNull(),
-	status: mysqlEnum(['active', 'inactive', 'pending_invite']).default('active').notNull(),
+	status: mysqlEnum(['active', 'inactive', 'pending_invite', 'declined']).default('active').notNull(),
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 }, (table) => [

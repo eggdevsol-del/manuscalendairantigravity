@@ -351,13 +351,15 @@ export function useDashboardSettings() {
     await updateMutation.mutateAsync(updates);
   }, [updateMutation]);
 
+  const defaultSettings = useMemo(() => ({
+    maxVisibleTasks: 10,
+    goalAdvancedBookingMonths: 3,
+    preferredEmailClient: 'default' as const,
+    showWeeklySnapshot: true
+  }), []);
+
   return {
-    settings: settings || {
-      maxVisibleTasks: 10,
-      goalAdvancedBookingMonths: 3,
-      preferredEmailClient: 'default' as const,
-      showWeeklySnapshot: true
-    },
+    settings: settings || defaultSettings,
     updateSettings,
     isUpdating: updateMutation.isPending
   };
