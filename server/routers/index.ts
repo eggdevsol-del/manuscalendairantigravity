@@ -22,6 +22,9 @@ import { promotionsRouter } from "./promotions";
 import { pushRouter } from "./push";
 import { paymentMethodSettingsRouter } from "./paymentMethodSettings";
 import { formsRouter } from "./forms";
+import { studiosRouter } from "./studios";
+import { invitationsRouter } from "./invitations";
+import { billingRouter } from "./billing";
 
 export const appRouter = router({
     appointments: appointmentsRouter,
@@ -46,6 +49,9 @@ export const appRouter = router({
     push: pushRouter,
     paymentMethodSettings: paymentMethodSettingsRouter,
     forms: formsRouter,
+    studios: studiosRouter,
+    invitations: invitationsRouter,
+    billing: billingRouter,
 });
 
 export type AppRouter = typeof appRouter;

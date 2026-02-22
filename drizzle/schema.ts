@@ -3,6 +3,7 @@ import { sql, type InferSelectModel, type InferInsertModel, relations } from "dr
 
 export const appointments = mysqlTable("appointments", {
 	id: int().primaryKey().autoincrement(),
+	studioId: varchar({ length: 64 }), // Added later via relations, avoiding circular ref if studios is defined below
 	conversationId: int().notNull().references(() => conversations.id, { onDelete: "cascade" }),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -131,6 +132,7 @@ export const consultations = mysqlTable("consultations", {
 
 export const conversations = mysqlTable("conversations", {
 	id: int().primaryKey().autoincrement(),
+	studioId: varchar({ length: 64 }), // Added for multi-tenant support
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	leadId: int(),
@@ -318,6 +320,32 @@ export const users = mysqlTable("users", {
 	]);
 
 export type User = InferSelectModel<typeof users>;
+
+export const studios = mysqlTable("studios", {
+	id: varchar({ length: 64 }).primaryKey(),
+	name: varchar({ length: 255 }).notNull(),
+	ownerId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	stripeSubscriptionId: varchar({ length: 255 }),
+	subscriptionStatus: mysqlEnum(['active', 'past_due', 'canceled', 'trialing']).default('active'),
+	subscriptionTier: mysqlEnum(['solo', 'studio']).default('solo'),
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+});
+
+export const studioMembers = mysqlTable("studio_members", {
+	id: int().primaryKey().autoincrement(),
+	studioId: varchar({ length: 64 }).notNull().references(() => studios.id, { onDelete: "cascade" }),
+	userId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+	role: mysqlEnum(['owner', 'manager', 'artist', 'apprentice']).default('artist').notNull(),
+	status: mysqlEnum(['active', 'inactive', 'pending_invite']).default('active').notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+}, (table) => [
+	unique("studio_user_unique").on(table.studioId, table.userId),
+]);
+
+export type Studio = InferSelectModel<typeof studios>;
+export type StudioMember = InferSelectModel<typeof studioMembers>;
 
 export const voucherTemplates = mysqlTable("voucher_templates", {
 	id: int().primaryKey().autoincrement(),

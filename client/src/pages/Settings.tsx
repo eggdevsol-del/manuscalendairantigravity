@@ -23,6 +23,7 @@ import {
   Moon,
   Sun,
   User,
+  Users,
   Zap,
   RefreshCw,
   Scale,
@@ -749,6 +750,40 @@ export default function Settings() {
                           <div className="text-left">
                             <p className="font-semibold text-foreground">Business Info</p>
                             <p className="text-xs text-muted-foreground">Set address & payments</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+
+                      {/* Studio Headquarters */}
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setLocation("/studio")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400">
+                            <Users className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">Studio Headquarters</p>
+                            <p className="text-xs text-muted-foreground">Manage your team</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+
+                      {/* Subscription & Billing */}
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setLocation("/subscriptions")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400">
+                            <Zap className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">Subscription & Billing</p>
+                            <p className="text-xs text-muted-foreground">Manage your plan</p>
                           </div>
                         </div>
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />

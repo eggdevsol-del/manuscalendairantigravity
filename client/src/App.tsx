@@ -32,6 +32,8 @@ import NotificationsManagement from "./pages/NotificationsManagement";
 import WorkHours from "./pages/WorkHours";
 import QuickActionsManagement from "./pages/QuickActionsManagement";
 import CompleteProfile from "./pages/CompleteProfile";
+import Subscriptions from "./pages/Subscriptions";
+import StudioDashboard from "./features/studio/StudioDashboard";
 import Clients from "./pages/Clients";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -114,6 +116,8 @@ function Router() {
         <Route path="/policy-management" component={PolicyManagement} />
         <Route path="/notifications-management" component={NotificationsManagement} />
         <Route path="/work-hours" component={WorkHours} />
+        <Route path="/subscriptions" component={Subscriptions} />
+        <Route path="/studio" component={StudioDashboard} />
         <Route path="/quick-actions" component={QuickActionsManagement} />
         <Route path="/clients" component={Clients} />
         <Route path="/profile" component={ClientProfile} />

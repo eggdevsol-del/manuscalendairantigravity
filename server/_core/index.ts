@@ -14,6 +14,7 @@ import { verifyAndFixDatabase } from "../verify-and-fix-db";
 import { storageGetData } from "../storage";
 import { startOutboxWorker } from "../workers/outboxProcessor";
 import { registerPublicFunnelRoutes } from "./publicFunnelRoutes";
+import { handleStripeWebhook } from "../services/stripe";
 import "../services/notificationOrchestrator";
 
 
@@ -83,6 +84,9 @@ async function startServer() {
 
   // Handle preflight for all routes
   app.options('*', cors());
+
+  // MUST BE BEFORE express.json() to capture raw payload for signature verification
+  app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), handleStripeWebhook);
 
   // 2. Configure body parsers
   app.use(express.json({ limit: "50mb" }));

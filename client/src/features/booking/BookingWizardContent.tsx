@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
     Clock,
     Loader2,
@@ -30,7 +30,7 @@ import { Capacitor } from "@capacitor/core";
 import { tokens } from "@/ui/tokens";
 import { InlineFormSigning } from "./components/InlineFormSigning";
 
-type BookingStep = 'client' | 'service' | 'frequency' | 'review' | 'success';
+type BookingStep = 'artist' | 'client' | 'service' | 'frequency' | 'review' | 'success';
 
 interface ProposalData {
     metadata: any;
@@ -126,7 +126,43 @@ export function BookingWizardContent({
     onGoToChat,
     initialDate
 }: BookingWizardContentProps) {
-    const [step, setStep] = useState<BookingStep>(initialConversationId ? 'service' : 'client');
+    const { data: currentUser } = trpc.auth.me.useQuery();
+
+    // 1. Get current studio for the user
+    const { data: currentStudio } = trpc.studios.getCurrentStudio.useQuery(undefined, {
+        enabled: isArtist && !!currentUser
+    });
+
+    // 2. If they have a studio, fetch the roster
+    const { data: studioMembers, isLoading: isLoadingStudioMembers } = trpc.studios.getStudioMembers.useQuery(
+        { studioId: currentStudio?.id || "" },
+        { enabled: !!currentStudio?.id }
+    );
+
+    const isStudioManager = useMemo(() => {
+        if (!currentUser || !studioMembers) return false;
+        const myMembership = (studioMembers as any[]).find((m: any) => m.userId === currentUser.id && m.status === 'active');
+        return myMembership && (myMembership.role === 'owner' || myMembership.role === 'manager');
+    }, [currentUser, studioMembers]);
+
+    // Active target artist for the booking. Defaults to self, changes if manager selects someone else.
+    const [targetArtistId, setTargetArtistId] = useState<string | undefined>(artistId);
+
+    // Default step logic: If Manager, force Artist selection first. Otherwise Client (or Service if convo exists).
+    const [step, setStep] = useState<BookingStep>(() => {
+        if (initialConversationId) return 'service';
+        return 'artist'; // We will useEffect to skip this if not a manager
+    });
+
+    // Automatically skip 'artist' step if not a manager
+    useEffect(() => {
+        if (step === 'artist' && !isLoadingStudioMembers) {
+            if (!isStudioManager) {
+                setStep(initialConversationId ? 'service' : 'client');
+            }
+        }
+    }, [step, isLoadingStudioMembers, isStudioManager, initialConversationId]);
+
     const [conversationId, setConversationId] = useState<number | undefined>(initialConversationId);
     const [selectedService, setSelectedService] = useState<any>(null);
     const [showVoucherList, setShowVoucherList] = useState(false);
@@ -141,6 +177,27 @@ export function BookingWizardContent({
     const [newClientData, setNewClientData] = useState({ name: "", email: "", phone: "" });
     const [isCreatingClient, setIsCreatingClient] = useState(false);
     const [showCheckInModal, setShowCheckInModal] = useState<CheckInPhase | null>(null);
+
+    // Fetch dynamic services based on the TARGET artist, not necessarily the logged-in user
+    // The parent component passes artistServices based on the URL context, but in the FAB we need dynamic
+    const { data: dynamicArtistSettings } = trpc.artistSettings.getPublicByArtistId.useQuery(
+        { artistId: targetArtistId || "" },
+        { enabled: !!targetArtistId }
+    );
+
+    const effectiveSettings = dynamicArtistSettings || artistSettings;
+
+    // Services are stored as a JSON string on the settings object
+    const effectiveServices = useMemo(() => {
+        if (dynamicArtistSettings?.services) {
+            try {
+                return JSON.parse(dynamicArtistSettings.services);
+            } catch (e) {
+                return [];
+            }
+        }
+        return artistServices;
+    }, [dynamicArtistSettings, artistServices]);
 
     const { data: clients, isLoading: isLoadingClients } = trpc.conversations.getClients.useQuery(undefined, {
         enabled: isArtist && step === 'client'
@@ -253,10 +310,10 @@ export function BookingWizardContent({
     };
 
     const handleClientSelect = async (client: any) => {
-        if (!artistId) return;
+        if (!targetArtistId) return;
         try {
             const convo = await getOrCreateConversation.mutateAsync({
-                artistId,
+                artistId: targetArtistId,
                 clientId: client.id
             });
             if (convo) {
@@ -269,7 +326,7 @@ export function BookingWizardContent({
     };
 
     const handleCreateClientAndConvo = async () => {
-        if (!artistId || !newClientData.name) return;
+        if (!targetArtistId || !newClientData.name) return;
         setIsCreatingClient(true);
         try {
             const convo = await createClientMutation.mutateAsync({
@@ -278,7 +335,14 @@ export function BookingWizardContent({
                 phone: newClientData.phone
             });
             if (convo) {
-                setConversationId(convo.id);
+                // Now pair this newly created client with the TARGET artist via a conversation
+                const newConvoPairing = await getOrCreateConversation.mutateAsync({
+                    artistId: targetArtistId,
+                    clientId: convo.clientId // createClient returns the conversation, we need the client ID
+                });
+
+                if (newConvoPairing) setConversationId(newConvoPairing.id);
+
                 setStep('service');
                 setIsAddingNewClient(false);
             }
@@ -312,6 +376,7 @@ export function BookingWizardContent({
 
     const getStepTitle = () => {
         switch (step) {
+            case 'artist': return "Select Artist";
             case 'client': return "Select Client";
             case 'service': return "Select Service";
             case 'frequency': return "Frequency";
@@ -696,10 +761,44 @@ export function BookingWizardContent({
                         <span className={cn(fab.itemLabel, "uppercase tracking-widest font-bold flex-1")}>
                             {getStepTitle()}
                         </span>
-                        {selectedService && step !== 'service' && (
+                        {selectedService && step !== 'service' && step !== 'artist' && step !== 'client' && (
                             <span className={fab.itemLabel}>{selectedService.name}</span>
                         )}
                     </motion.div>
+
+                    {step === 'artist' && isStudioManager && studioMembers && (
+                        <div className="flex flex-col gap-1.5 pt-1">
+                            <p className="text-[10px] text-muted-foreground mb-2 px-1">Book on behalf of a studio member:</p>
+                            {(studioMembers as any[]).map((member) => (
+                                <motion.button
+                                    key={member.user?.id}
+                                    variants={fab.animation.item}
+                                    className={cn(card.base, card.bg, card.interactive, "p-3 flex items-center justify-between gap-3 w-full text-left")}
+                                    onClick={() => {
+                                        setTargetArtistId(member.user?.id);
+                                        setStep('client');
+                                    }}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex flex-col items-center justify-center overflow-hidden">
+                                            {member.user?.avatar ? (
+                                                <img src={member.user.avatar} alt={member.user.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <span className="text-[10px] font-bold text-primary">{member.user?.name?.charAt(0) || '?'}</span>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[11px] font-bold text-foreground uppercase tracking-wider truncate">
+                                                {member.user?.name}
+                                                {member.user?.id === currentUser?.id && " (You)"}
+                                            </p>
+                                            <p className="text-[9px] text-muted-foreground capitalize">{member.role}</p>
+                                        </div>
+                                    </div>
+                                </motion.button>
+                            ))}
+                        </div>
+                    )}
 
                     {step === 'client' && (
                         <div className="flex flex-col gap-3 -my-2 w-full pt-1">
@@ -813,7 +912,10 @@ export function BookingWizardContent({
 
                     {step === 'service' && (
                         <div className="flex flex-col gap-1.5 pt-1">
-                            {artistServices.map((service) => (
+                            {(!effectiveServices || effectiveServices.length === 0) && (
+                                <p className="text-[10px] text-muted-foreground p-4 text-center">No services found for this artist.</p>
+                            )}
+                            {effectiveServices?.map((service: any) => (
                                 <motion.button
                                     key={service.id}
                                     variants={fab.animation.item}

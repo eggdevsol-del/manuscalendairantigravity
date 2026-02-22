@@ -83,7 +83,18 @@ export const appointmentsRouter = router({
                 });
             }
 
+            // Retrieve artist's studio context to link this appointment to the overarching studio calendar
+            const dbRef = await db.getDb();
+            let studioId: string | undefined = undefined;
+            if (dbRef) {
+                const member = await dbRef.query.studioMembers.findFirst({
+                    where: (sm, { eq, and }) => and(eq(sm.userId, input.artistId), eq(sm.status, 'active'))
+                });
+                if (member) studioId = member.studioId;
+            }
+
             const newAppt = await db.createAppointment({
+                studioId: studioId || null,
                 conversationId: input.conversationId,
                 artistId: input.artistId,
                 clientId: input.clientId,

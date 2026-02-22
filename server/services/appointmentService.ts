@@ -1,5 +1,5 @@
-import { and, desc, eq, gte, lte, gt, lt, ne, sql } from "drizzle-orm";
-import { appointments, InsertAppointment, users, appointmentLogs, InsertAppointmentLog, procedureLogs, artistSettings, consentForms, messages } from "../../drizzle/schema";
+import { and, desc, eq, gte, lte, gt, lt, ne, sql, or } from "drizzle-orm";
+import { appointments, InsertAppointment, users, appointmentLogs, InsertAppointmentLog, procedureLogs, artistSettings, consentForms, messages, studioMembers } from "../../drizzle/schema";
 import { getDb } from "./core";
 
 // Helper to ensure dates are ISO formatted (UTC) for the client
@@ -204,11 +204,28 @@ export async function getAppointmentsForUser(
     const db = await getDb();
     if (!db) return [];
 
-    const conditions = [
-        role === "artist"
-            ? eq(appointments.artistId, userId)
-            : eq(appointments.clientId, userId),
-    ];
+    let conditions: any[] = [];
+
+    if (role === "artist") {
+        const member = await db.query.studioMembers.findFirst({
+            where: and(eq(studioMembers.userId, userId), eq(studioMembers.status, 'active'))
+        });
+
+        if (member && (member.role === 'owner' || member.role === 'manager')) {
+            // Can see all appointments for this studio, OR their own appointments (historical)
+            conditions.push(
+                or(
+                    eq(appointments.studioId, member.studioId),
+                    eq(appointments.artistId, userId)
+                )
+            );
+        } else {
+            // Standard artist or apprentice: only their own
+            conditions.push(eq(appointments.artistId, userId));
+        }
+    } else {
+        conditions.push(eq(appointments.clientId, userId));
+    }
 
     if (startDate) {
         conditions.push(gte(appointments.startTime, startDate.toISOString().slice(0, 19).replace('T', ' ')));

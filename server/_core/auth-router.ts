@@ -15,6 +15,9 @@ import {
   getUserById,
   updateUserPassword,
 } from "../db";
+import { getDb } from "../services/core";
+import { eq, and } from "drizzle-orm";
+import { studioMembers } from "../../drizzle/schema";
 import { randomBytes } from "crypto";
 
 /**
@@ -70,12 +73,12 @@ export const authRouter = router({
       }
 
       // Generate JWT token
-      const token = generateToken({ id: user.id, email: user.email });
+      const token = generateToken({ id: user.id, email: user.email as string });
 
       return {
         user: {
           id: user.id,
-          email: user.email,
+          email: user.email as string,
           name: user.name,
           role: user.role,
           hasCompletedOnboarding: user.hasCompletedOnboarding,
@@ -127,12 +130,12 @@ export const authRouter = router({
       await updateUserLastSignedIn(user.id);
 
       // Generate JWT token
-      const token = generateToken({ id: user.id, email: user.email });
+      const token = generateToken({ id: user.id, email: user.email || "" });
 
       return {
         user: {
           id: user.id,
-          email: user.email,
+          email: user.email || "",
           name: user.name,
           role: user.role,
           hasCompletedOnboarding: user.hasCompletedOnboarding,
@@ -201,7 +204,7 @@ export const authRouter = router({
       }
 
       // Get user by email
-      const user = await db.getUserByEmail(payload.email);
+      const user = await getUserByEmail(payload.email);
       if (!user) {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -213,7 +216,7 @@ export const authRouter = router({
       await updateUserLastSignedIn(user.id);
 
       // Generate JWT token
-      const authToken = generateToken({ id: user.id, email: user.email });
+      const authToken = generateToken({ id: user.id, email: user.email || "" });
 
       return {
         user: {
@@ -239,12 +242,31 @@ export const authRouter = router({
       });
     }
 
+    const db = await getDb();
+    let studioId = null;
+    let studioRole = null;
+
+    if (db) {
+      const member = await db.query.studioMembers.findFirst({
+        where: and(
+          eq(studioMembers.userId, user.id),
+          eq(studioMembers.status, 'active')
+        )
+      });
+      if (member) {
+        studioId = member.studioId;
+        studioRole = member.role;
+      }
+    }
+
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
       hasCompletedOnboarding: user.hasCompletedOnboarding,
+      studioId,
+      studioRole
     };
   }),
 
@@ -315,14 +337,14 @@ export const authRouter = router({
     .mutation(async ({ input }) => {
       const { email } = input;
       const user = await getUserByEmail(email);
-      
+
       if (!user) {
         return { exists: false, isFunnelClient: false, name: null };
       }
-      
+
       // Check if this is a funnel client (has no password set)
       const isFunnelClient = !user.password;
-      
+
       return {
         exists: true,
         isFunnelClient,
@@ -362,12 +384,12 @@ export const authRouter = router({
       await updateUserLastSignedIn(user.id);
 
       // Generate JWT token
-      const token = generateToken({ id: user.id, email: user.email });
+      const token = generateToken({ id: user.id, email: user.email || "" });
 
       return {
         user: {
           id: user.id,
-          email: user.email,
+          email: user.email || "",
           name: user.name,
           role: user.role,
           hasCompletedOnboarding: user.hasCompletedOnboarding,
@@ -436,7 +458,7 @@ export const authRouter = router({
       }
 
       // Get user by email
-      const user = await db.getUserByEmail(payload.email);
+      const user = await getUserByEmail(payload.email);
       if (!user) {
         throw new TRPCError({
           code: "NOT_FOUND",
