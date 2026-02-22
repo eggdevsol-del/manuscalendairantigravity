@@ -2,7 +2,7 @@ import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { eq, and } from "drizzle-orm";
-import { studios, studioMembers, users } from "drizzle/schema";
+import { studios, studioMembers, users, conversations, messages } from "drizzle/schema";
 import { getDb } from "../services/core";
 
 export const studiosRouter = router({
@@ -313,12 +313,60 @@ export const studiosRouter = router({
 
             // 4. Create pending invite
             // Using a unique constraint on studioId + userId, so insert is safe
-            await db.insert(studioMembers).values({
+            const [memberInsertResult] = await db.insert(studioMembers).values({
                 studioId: input.studioId,
                 userId: invitedUser.id,
                 role: input.role,
                 status: 'pending_invite'
             });
+
+            const newMemberId = memberInsertResult.insertId;
+
+            // 5. Fetch Studio Details for the Message
+            const studio = await db.query.studios.findFirst({
+                where: eq(studios.id, input.studioId)
+            });
+
+            if (studio) {
+                // 6. Find or Create a Conversation between the Owner and the Artist
+                let conversation = await db.query.conversations.findFirst({
+                    where: and(
+                        eq(conversations.artistId, ctx.user.id), // Owner acting as 'artist' in this context
+                        eq(conversations.clientId, invitedUser.id) // Invited artist acting as 'client' in this context
+                    )
+                });
+
+                if (!conversation) {
+                    const [convResult] = await db.insert(conversations).values({
+                        artistId: ctx.user.id,
+                        clientId: invitedUser.id,
+                    });
+                    conversation = await db.query.conversations.findFirst({
+                        where: eq(conversations.id, convResult.insertId)
+                    });
+                }
+
+                if (conversation) {
+                    // 7. Insert the 'studio_invite' message
+                    await db.insert(messages).values({
+                        conversationId: conversation.id,
+                        senderId: ctx.user.id,
+                        content: `I've invited you to join ${studio.name} as a resident artist!`,
+                        messageType: 'studio_invite',
+                        metadata: JSON.stringify({
+                            studioId: studio.id,
+                            studioName: studio.name,
+                            inviteId: newMemberId, // Store the pending invite ID so we can respond to it easily
+                            status: 'pending'      // 'pending', 'accepted', 'declined'
+                        })
+                    });
+
+                    // Update conversation timestamp
+                    await db.update(conversations)
+                        .set({ lastMessageAt: new Date().toISOString() })
+                        .where(eq(conversations.id, conversation.id));
+                }
+            }
 
             return { success: true };
         }),
@@ -380,6 +428,28 @@ export const studiosRouter = router({
                 await db.update(studioMembers)
                     .set({ status: 'declined' })
                     .where(eq(studioMembers.id, input.inviteId));
+            }
+
+            // Also find the message and update its metadata so the UI reflects the decision
+            // Doing a robust search for any message containing this inviteId in metadata
+            const allMessages = await db.query.messages.findMany({
+                where: eq(messages.messageType, 'studio_invite')
+            });
+
+            for (const msg of allMessages) {
+                if (msg.metadata) {
+                    try {
+                        const meta = JSON.parse(msg.metadata);
+                        if (meta.inviteId === input.inviteId) {
+                            meta.status = input.response === 'accept' ? 'accepted' : 'declined';
+                            await db.update(messages)
+                                .set({ metadata: JSON.stringify(meta) })
+                                .where(eq(messages.id, msg.id));
+                        }
+                    } catch (e) {
+                        // Ignore parse errors from invalid metadata
+                    }
+                }
             }
 
             return { success: true };

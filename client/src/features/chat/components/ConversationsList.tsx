@@ -176,6 +176,7 @@ export function ConversationsList({ className, onSelect, activeId }: Conversatio
                                         })}
                                         unreadCount={conv.unreadCount}
                                         isActive={activeId === conv.id}
+                                        isStudioInvite={(conv as any).lastMessage?.messageType === 'studio_invite'}
                                         onClick={() => {
                                             setLocation(`/chat/${conv.id}`);
                                             onSelect?.();

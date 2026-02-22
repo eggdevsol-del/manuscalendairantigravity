@@ -159,7 +159,7 @@ export const messages = mysqlTable("messages", {
 	conversationId: int().notNull().references(() => conversations.id, { onDelete: "cascade" }),
 	senderId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 	content: text().notNull(),
-	messageType: mysqlEnum(['text', 'system', 'appointment_request', 'appointment_confirmed', 'image', 'video']).default('text').notNull(),
+	messageType: mysqlEnum(['text', 'system', 'appointment_request', 'appointment_confirmed', 'image', 'video', 'studio_invite']).default('text').notNull(),
 	metadata: text(),
 	createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
 	readBy: text(),

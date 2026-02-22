@@ -5,7 +5,8 @@ import { BottomSheet } from "@/components/ui/ssot";
 import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
 // ProposalSheet removed - not needed
 import { ProjectProposalMessage } from "@/components/chat/ProjectProposalMessage";
-import { ArrowLeft, Send, Zap, MessageCircle, ImagePlus, Pin, PinOff, FileText, ImageIcon, Calendar } from "lucide-react";
+import { StudioInviteMessage, StudioInviteMetadata } from "@/components/chat/StudioInviteMessage";
+import { ArrowLeft, Send, Zap, MessageCircle, ImagePlus, Pin, PinOff, FileText, ImageIcon, Calendar, Check, X as XIcon } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { useRegisterBottomNavRow, useBottomNav, useRegisterFABActions } from "@/contexts/BottomNavContext";
 import { QuickActionsRow, ChatAction } from "@/features/chat/components/QuickActionsRow";
@@ -110,6 +111,9 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
     const [selectedMediaImage, setSelectedMediaImage] = useState<string | null>(null);
     const [isProposalsExpanded, setIsProposalsExpanded] = useState(false);
 
+    // Add state for selected studio invite
+    const [selectedInvite, setSelectedInvite] = useState<{ message: any, metadata: StudioInviteMetadata } | null>(null);
+
     // Fetch client media (Conditionally enabled, but hook is always called)
     const clientId = conversation?.otherUser?.id?.toString();
     const { data: mediaData } = trpc.conversations.getClientMedia.useQuery(
@@ -156,6 +160,48 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
             );
         }
 
+        if (selectedInvite) {
+            return [
+                {
+                    id: 'accept',
+                    label: 'Accept Invitation',
+                    icon: Check,
+                    onClick: async () => {
+                        try {
+                            await trpc.studios.respondToInvite.useMutation().mutateAsync({
+                                inviteId: selectedInvite.metadata.inviteId,
+                                response: 'accept'
+                            });
+                            toast.success(`You are now a resident artist at ${selectedInvite.metadata.studioName}!`);
+                            setSelectedInvite(null);
+                        } catch (e) {
+                            toast.error('Failed to accept invitation.');
+                        }
+                    },
+                    highlight: true,
+                    closeOnClick: true
+                },
+                {
+                    id: 'decline',
+                    label: 'Decline',
+                    icon: XIcon,
+                    onClick: async () => {
+                        try {
+                            await trpc.studios.respondToInvite.useMutation().mutateAsync({
+                                inviteId: selectedInvite.metadata.inviteId,
+                                response: 'decline'
+                            });
+                            toast.success('Studio invitation declined.');
+                            setSelectedInvite(null);
+                        } catch (e) {
+                            toast.error('Failed to decline invitation.');
+                        }
+                    },
+                    closeOnClick: true
+                }
+            ];
+        }
+
         const items = [];
         if (isArtist) {
             items.push({
@@ -178,7 +224,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
     }, [
         authLoading, convLoading, messagesLoading, conversation?.id,
         showBookingWizard, selectedProposal?.message?.id, conversationId,
-        availableServices, artistSettings, isArtist,
+        availableServices, artistSettings, isArtist, selectedInvite?.message?.id,
         showClientInfo, bookProjectMutation.isPending,
         handleClientAcceptProposal,
         handleCancelProposal,
@@ -218,10 +264,10 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
 
     // Sync proposal open state
     useEffect(() => {
-        if (selectedProposal) {
+        if (selectedProposal || selectedInvite) {
             setFABOpen(true);
         }
-    }, [selectedProposal, setFABOpen]);
+    }, [selectedProposal, selectedInvite, setFABOpen]);
 
     // Reset selection state when FAB is closed manually
     useEffect(() => {
@@ -235,6 +281,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
         if (!isFABOpen) {
             setSelectedProposal(null);
             setShowBookingWizard(false);
+            setSelectedInvite(null);
         }
     }, [isFABOpen, setSelectedProposal]);
 
@@ -453,6 +500,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
 
                                 const isProjectProposal = metadata?.type === "project_proposal";
                                 const isClientConfirmation = metadata?.type === "project_client_confirmation";
+                                const isStudioInvite = message.messageType === "studio_invite";
 
                                 return (
                                     <div
@@ -460,7 +508,20 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                                         id={`message-${message.id}`}
                                         className={`flex ${isProjectProposal ? "justify-center w-full" : (isOwn ? "justify-end" : "justify-start")}`}
                                     >
-                                        {isProjectProposal && (metadata?.status === 'canceled' || metadata?.status === 'revoked' || metadata?.isDeleted) ? (
+                                        {isStudioInvite ? (
+                                            <div className="w-full flex justify-center">
+                                                <StudioInviteMessage
+                                                    metadata={metadata}
+                                                    isArtist={isArtist}
+                                                    onPress={() => {
+                                                        if (metadata?.status === 'pending') {
+                                                            setSelectedInvite({ message, metadata });
+                                                            setFABOpen(true);
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
+                                        ) : isProjectProposal && (metadata?.status === 'canceled' || metadata?.status === 'revoked' || metadata?.isDeleted) ? (
                                             null
                                         ) : isProjectProposal && metadata?.status === 'pending' ? (
                                             // Pending proposals are pinned to the header — skip inline

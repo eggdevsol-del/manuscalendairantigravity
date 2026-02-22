@@ -36,6 +36,8 @@ export interface ConversationCardProps {
     isNew?: boolean;
     /** Whether this card is currently selected (for split view) */
     isActive?: boolean;
+    /** Whether this conversation is a studio invite */
+    isStudioInvite?: boolean;
 }
 
 export function ConversationCard({
@@ -47,7 +49,8 @@ export function ConversationCard({
     className,
     subject,
     isNew,
-    isActive
+    isActive,
+    isStudioInvite
 }: ConversationCardProps) {
     return (
         <Card
@@ -57,16 +60,27 @@ export function ConversationCard({
                 tokens.card.bg,
                 tokens.card.interactive,
                 tokens.spacing.cardPadding,
+                tokens.spacing.cardPadding,
                 isActive && "bg-primary/10 border-primary/50",
+                isStudioInvite && "bg-indigo-500/10 border border-indigo-500/30",
                 className
             )}
         >
-            {isNew && (
+            {isNew && !isStudioInvite && (
                 <>
                     {/* New Indicator: Left Edge Line (Emerald) */}
                     <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-emerald-500" />
                     {/* New Indicator: Soft Gradient Swath */}
                     <div className="absolute left-0 top-0 bottom-0 w-[20%] bg-gradient-to-r from-emerald-500/20 to-transparent pointer-events-none" />
+                </>
+            )}
+
+            {isStudioInvite && (
+                <>
+                    {/* Studio Invite Indicator: Left Edge Line (Indigo) */}
+                    <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-indigo-500" />
+                    {/* Studio Invite Indicator: Soft Gradient Swath */}
+                    <div className="absolute left-0 top-0 bottom-0 w-[20%] bg-gradient-to-r from-indigo-500/20 to-transparent pointer-events-none" />
                 </>
             )}
 
@@ -109,7 +123,12 @@ export function ConversationCard({
 
                 {/* Right side: Unread badge / New badge + Chevron */}
                 <div className="flex items-center gap-2 flex-shrink-0">
-                    {isNew && (
+                    {isStudioInvite && (
+                        <div className="bg-indigo-500/20 text-indigo-400 border border-indigo-500/50 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(99,102,241,0.2)]">
+                            Invite
+                        </div>
+                    )}
+                    {isNew && !isStudioInvite && (
                         <div className="bg-emerald-500/20 text-emerald-500 border border-emerald-500/50 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(16,185,129,0.2)]">
                             New
                         </div>

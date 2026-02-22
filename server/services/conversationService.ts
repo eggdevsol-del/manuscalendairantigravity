@@ -61,11 +61,30 @@ export async function getConversationsForUser(userId: string, role: string) {
             ? eq(conversations.artistId, userId)
             : eq(conversations.clientId, userId);
 
-    return db
+    const convs = await db
         .select()
         .from(conversations)
         .where(condition)
         .orderBy(desc(conversations.lastMessageAt));
+
+    // Also get the latest message for each conversation
+    const enrichedConvs = await Promise.all(
+        convs.map(async (conv) => {
+            const lastMessageResult = await db
+                .select()
+                .from(messages)
+                .where(eq(messages.conversationId, conv.id))
+                .orderBy(desc(messages.createdAt))
+                .limit(1);
+
+            return {
+                ...conv,
+                lastMessage: lastMessageResult.length > 0 ? lastMessageResult[0] : null
+            };
+        })
+    );
+
+    return enrichedConvs;
 }
 
 export async function updateConversationTimestamp(conversationId: number) {
