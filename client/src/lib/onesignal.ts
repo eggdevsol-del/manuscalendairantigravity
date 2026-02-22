@@ -1,6 +1,7 @@
+import OneSignal from 'react-onesignal';
 import { Capacitor } from '@capacitor/core';
-// Removed react-onesignal intentionally to completely sever the PWA Web SDK
-// and forcefully fall back to the fully-customizable VAPID PushManager.
+// Re-added react-onesignal ONLY for SMS/Email campaign targeting.
+// Web Push functionality is deliberately bypassed to allow custom VAPID SW to render Android UI.
 
 const ONESIGNAL_APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID;
 
@@ -40,15 +41,36 @@ export async function initializeOneSignal() {
         NativeOneSignal.initialize(ONESIGNAL_APP_ID);
         console.log('[OneSignal] Native SDK initialized successfully');
       } else {
-        console.warn('[OneSignal] Native plugin not found. PWA Web SDK intentionally bypassed.');
+        console.warn('[OneSignal] Native plugin not found. Falling back to CRM Web SDK.');
+        await initWebOneSignal();
       }
     } else {
-      console.log('[OneSignal] Bypassing OneSignal Web SDK in favor of tightly-controlled VAPID PushManager.');
+      console.log('[OneSignal] Initializing Web SDK for SMS/Email CRM ONLY. Push is handled by VAPID.');
+      await initWebOneSignal();
     }
 
     isInitialized = true;
   } catch (error) {
     console.error('[OneSignal] Initialization failed:', error);
+  }
+}
+
+async function initWebOneSignal() {
+  try {
+    await Promise.race([
+      OneSignal.init({
+        appId: ONESIGNAL_APP_ID,
+        allowLocalhostAsSecureOrigin: true,
+        // CRITICAL DECOUPLING: Do NOT supply `serviceWorkerPath`.
+        // If we configure OneSignal for Web Push, its proprietary SW swallows the push events
+        // and suppresses Android vibrate matrices. By omitting this, OneSignal tracks CRM
+        // for SMS and Email, but completely ignores Push.
+      }),
+      new Promise<void>((_, reject) => setTimeout(() => reject(new Error('Web SDK init timed out')), 5000))
+    ]);
+    console.log('[OneSignal] CRM Web SDK initialized successfully.');
+  } catch (error) {
+    console.warn('[OneSignal] Web SDK initialization warning/timeout:', error);
   }
 }
 
@@ -118,7 +140,10 @@ export async function setExternalUserId(userId: string) {
         return;
       }
     }
-    // VAPID Web Push handles external_userId intrinsically on backend db `pushSubscriptions` setup.
+
+    // Web: Sync External ID to OneSignal for SMS/Email campaign targeting
+    await OneSignal.login(userId);
+    console.log('[OneSignal] CRM Web external user ID set:', userId);
   } catch (error) {
     console.error('[OneSignal] Failed to set external user ID:', error);
   }
@@ -136,7 +161,10 @@ export async function removeExternalUserId() {
         return;
       }
     }
-    // VAPID Web Push is formally unbound via `trpc.auth.logout` hook intercept on the backend.
+
+    // Web: Unbind External ID from OneSignal session
+    await OneSignal.logout();
+    console.log('[OneSignal] CRM Web external user ID removed');
   } catch (error) {
     console.error('[OneSignal] Failed to remove external user ID:', error);
   }
@@ -200,6 +228,6 @@ export async function removeTag(key: string) {
 }
 
 export function isOneSignalAvailable(): boolean {
-  return Capacitor.isNativePlatform() && !!getNativeOneSignal();
+  return !!getNativeOneSignal() || !!OneSignal;
 }
 

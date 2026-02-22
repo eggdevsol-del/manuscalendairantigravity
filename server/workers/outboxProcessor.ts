@@ -2,9 +2,7 @@
 import { getDb } from "../services/core";
 import { notificationOutbox } from "../../drizzle/schema";
 import { eq, lt, and, or } from "drizzle-orm";
-// Import the dual-blast backend services directly from the Notification Service architectures
 import { sendPushNotification as sendWebPush } from "../services/pushService";
-import { sendPushNotification as sendOneSignalPush } from "../_core/pushNotification";
 
 const BATCH_SIZE = 10;
 const POLL_INTERVAL = 5000;
@@ -54,16 +52,7 @@ async function processItem(db: any, item: typeof notificationOutbox.$inferSelect
 
             // For now, let's assume payload has { targetUserId, title, body, data }
             if (payload.targetUserId && payload.body) {
-                // 1. Fire OneSignal (Exclusively hits Capacitor Native Apps)
-                const oneSignalSuccess = await sendOneSignalPush({
-                    userIds: [payload.targetUserId],
-                    title: payload.title || 'New Notification',
-                    message: payload.body,
-                    url: payload.url,
-                    data: payload.data
-                });
-
-                // 2. Fire VAPID PushManager (Exclusively hits Chrome/Safari PWAs)
+                // Fire VAPID PushManager (Exclusively hits Chrome/Safari PWAs)
                 const webPushResult = await sendWebPush(payload.targetUserId, {
                     title: payload.title || 'New Notification',
                     body: payload.body,
@@ -71,9 +60,8 @@ async function processItem(db: any, item: typeof notificationOutbox.$inferSelect
                     data: payload.data
                 });
 
-                // In Segregated Dual-Blast architecture, if both systems fail, the user has absolutely no devices
-                if (!webPushResult.success && !oneSignalSuccess) {
-                    throw new Error("Push Delivery failed on both OneSignal and VAPID. Target user has no registered devices.");
+                if (!webPushResult.success) {
+                    throw new Error("Push Delivery failed on VAPID. Target user has no registered devices.");
                 }
             }
         }
