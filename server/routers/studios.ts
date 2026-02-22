@@ -38,6 +38,44 @@ export const studiosRouter = router({
             return results[0];
         }),
 
+    // TESTING ONLY: Bypass Stripe and jump directly to evaluating a tier
+    testUpgradeStudio: protectedProcedure
+        .input(z.object({ tier: z.enum(['solo', 'studio']) }))
+        .mutation(async ({ ctx, input }) => {
+            const db = await getDb();
+            if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+            const membership = await db.query.studioMembers.findFirst({
+                where: and(eq(studioMembers.userId, ctx.user.id), eq(studioMembers.role, 'owner'))
+            });
+
+            if (!membership) {
+                // Instantly create and upgrade studio
+                const studioId = crypto.randomUUID();
+                await db.insert(studios).values({
+                    id: studioId,
+                    name: "My Studio",
+                    ownerId: ctx.user.id,
+                    subscriptionTier: input.tier,
+                    subscriptionStatus: 'active'
+                });
+                await db.insert(studioMembers).values({
+                    studioId,
+                    userId: ctx.user.id,
+                    role: 'owner',
+                    status: 'active'
+                });
+                return { success: true };
+            }
+
+            // Update existing studio
+            await db.update(studios)
+                .set({ subscriptionTier: input.tier, subscriptionStatus: 'active' })
+                .where(eq(studios.id, membership.studioId));
+
+            return { success: true };
+        }),
+
     // Upgrade a Solo artist to a Studio owner
     createStudio: protectedProcedure
         .input(z.object({

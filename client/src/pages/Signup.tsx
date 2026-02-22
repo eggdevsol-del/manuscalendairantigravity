@@ -14,7 +14,7 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<"artist" | "client">("artist");
+  const [role, setRole] = useState<"artist" | "studio">("artist");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -103,12 +103,13 @@ export default function Signup() {
             setIsLoading(false);
           } else {
             // New user, proceed with registration
-            registerMutation.mutate({ name, email, password, role });
+            // Mapping studio to artist for now until studio onboarding logic is implemented
+            registerMutation.mutate({ name, email, password, role: "artist" });
           }
         },
         onError: () => {
           // If check fails, try to register anyway
-          registerMutation.mutate({ name, email, password, role });
+          registerMutation.mutate({ name, email, password, role: "artist" });
         },
       }
     );
@@ -241,26 +242,26 @@ export default function Signup() {
                     <div className="text-2xl mb-1">🎨</div>
                     <div className="font-semibold text-foreground">Artist</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      Manage bookings
+                      Independent booking
                     </div>
                   </div>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setRole("client")}
+                  onClick={() => setRole("studio")}
                   className={cn(
                     "p-4 rounded-xl border-2 transition-all outline-none",
-                    role === "client"
+                    role === "studio"
                       ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(var(--primary-rgb),0.15)]"
                       : "border-white/10 bg-white/5 hover:bg-white/10"
                   )}
                   disabled={isLoading}
                 >
                   <div className="text-center">
-                    <div className="text-2xl mb-1">👤</div>
-                    <div className="font-semibold text-foreground">Client</div>
+                    <div className="text-2xl mb-1">🏢</div>
+                    <div className="font-semibold text-foreground">Studio</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      Book appointments
+                      Manage a team
                     </div>
                   </div>
                 </button>

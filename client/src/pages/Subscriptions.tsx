@@ -92,33 +92,24 @@ export default function Subscriptions() {
         }
     });
 
-    const handleAction = (planId: string) => {
-        if (planId === "solo") {
-            // Already fallback to solo or manage portal if they have a studio
-            if (currentStudio?.id) {
-                createPortal.mutate({ studioId: currentStudio.id });
-            }
-        } else if (planId === "studio") {
-            if (currentTier === "studio") {
-                // Manage existing studio
-                if (currentStudio?.id) {
-                    createPortal.mutate({ studioId: currentStudio.id });
-                }
-            } else {
-                // Need to upgrade!
-                if (currentStudio?.id) {
-                    // Has a studio object, but not active sub
-                    createCheckout.mutate({ studioId: currentStudio.id });
-                } else {
-                    // First time upgrade -> Make Studio -> Then Checkout
-                    const businessName = user?.name ? `${user.name}'s Studio` : 'My Studio';
-                    createStudio.mutate({ name: businessName });
-                }
-            }
+    // STRIPE BYPASS FOR TESTING
+    const utils = trpc.useUtils();
+    const testUpgradeStudio = trpc.studios.testUpgradeStudio.useMutation({
+        onSuccess: () => {
+            toast.success("Testing Bypass: Subscription Plan Activated!");
+            utils.studios.getCurrentStudio.invalidate();
+        },
+        onError: (err) => {
+            toast.error(err.message || "Failed to bypass upgrade");
         }
+    });
+
+    const handleAction = (planId: "solo" | "studio") => {
+        // BYPASS STRIPE FOR TESTING
+        testUpgradeStudio.mutate({ tier: planId });
     };
 
-    const isPending = createCheckout.isPending || createPortal.isPending || createStudio.isPending;
+    const isPending = createCheckout.isPending || createPortal.isPending || createStudio.isPending || testUpgradeStudio.isPending;
 
     return (
         <PageShell>
