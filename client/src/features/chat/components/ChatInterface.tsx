@@ -25,6 +25,8 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ conversationId, className, onBack }: ChatInterfaceProps) {
     const [, setLocation] = useLocation();
+    const bookProjectMutation = trpc.appointments.createFromConsultation.useMutation();
+    const respondToInviteMutation = trpc.studios.respondToInvite.useMutation();
     const { isContextualVisible, setFABOpen } = useBottomNav();
 
     const {
@@ -168,7 +170,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                     icon: Check,
                     onClick: async () => {
                         try {
-                            await trpc.studios.respondToInvite.useMutation().mutateAsync({
+                            await respondToInviteMutation.mutateAsync({
                                 inviteId: selectedInvite.metadata.inviteId,
                                 response: 'accept'
                             });
@@ -187,7 +189,7 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                     icon: XIcon,
                     onClick: async () => {
                         try {
-                            await trpc.studios.respondToInvite.useMutation().mutateAsync({
+                            await respondToInviteMutation.mutateAsync({
                                 inviteId: selectedInvite.metadata.inviteId,
                                 response: 'decline'
                             });
@@ -513,8 +515,9 @@ export function ChatInterface({ conversationId, className, onBack }: ChatInterfa
                                                 <StudioInviteMessage
                                                     metadata={metadata}
                                                     isArtist={isArtist}
+                                                    isOwn={isOwn}
                                                     onPress={() => {
-                                                        if (metadata?.status === 'pending') {
+                                                        if (metadata?.status === 'pending' && !isOwn) {
                                                             setSelectedInvite({ message, metadata });
                                                             setFABOpen(true);
                                                         }

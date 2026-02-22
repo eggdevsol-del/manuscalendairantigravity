@@ -1,7 +1,151 @@
 === RECENT SYSTEM LOGS ===
-[2026-02-16 12:45:51] [info] [investigation] Completed investigation of proposal 283. Found appointment 220 exists but message remains pending because bookProject mutation doesn't update message metadata.
+[2026-02-22 07:54:41] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (79ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":79,"ok":true}
 -----------------------------------
-[2026-02-16 12:41:41] [info] [audit] Targeted audit for 3PM/4PM issue
+[2026-02-22 07:54:37] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (84ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":84,"ok":true}
 -----------------------------------
-[2026-02-16 12:41:01] [info] [audit] Running proposal audit to investigate status issue
+[2026-02-22 07:15:30] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (77ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":77,"ok":true}
+-----------------------------------
+[2026-02-22 07:14:23] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (87ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":87,"ok":true}
+-----------------------------------
+[2026-02-22 04:28:40] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (78ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":78,"ok":true}
+-----------------------------------
+[2026-02-22 04:28:36] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (84ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":84,"ok":true}
+-----------------------------------
+[2026-02-22 04:14:57] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (101ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":101,"ok":true}
+-----------------------------------
+[2026-02-22 04:00:31] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (144ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":144,"ok":true}
+-----------------------------------
+[2026-02-22 04:00:29] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (125ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":125,"ok":true}
+-----------------------------------
+[2026-02-22 03:08:02] [info] [trpc:mutation] [TRPC] mutation auth.register - SUCCESS (129ms)
+Metadata: {"path":"auth.register","type":"mutation","durationMs":129,"ok":true}
+-----------------------------------
+[2026-02-22 03:08:01] [info] [trpc:mutation] [TRPC] mutation auth.checkEmailExists - SUCCESS (4ms)
+Metadata: {"path":"auth.checkEmailExists","type":"mutation","durationMs":4,"ok":true}
+-----------------------------------
+[2026-02-22 03:07:25] [info] [trpc:mutation] [TRPC] mutation auth.logout - SUCCESS (2ms)
+Metadata: {"path":"auth.logout","type":"mutation","durationMs":2,"ok":true}
+-----------------------------------
+[2026-02-22 02:12:50] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (120ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":120,"ok":true}
+-----------------------------------
+[2026-02-22 01:52:36] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (73ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":73,"ok":true}
+-----------------------------------
+[2026-02-22 01:52:32] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (82ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":82,"ok":true}
+-----------------------------------
+[2026-02-22 00:56:18] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (107ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":107,"ok":true}
+-----------------------------------
+[2026-02-22 00:47:45] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (90ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":90,"ok":true}
+-----------------------------------
+[2026-02-22 00:13:23] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (125ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":125,"ok":true}
+-----------------------------------
+[2026-02-21 14:01:31] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (73ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":73,"ok":true}
+-----------------------------------
+[2026-02-21 13:50:06] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (75ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":75,"ok":true}
+-----------------------------------
+[2026-02-21 13:49:58] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (82ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":82,"ok":true}
+-----------------------------------
+[2026-02-21 13:44:28] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (86ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":86,"ok":true}
+-----------------------------------
+[2026-02-21 13:44:16] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (96ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":96,"ok":true}
+-----------------------------------
+[2026-02-21 13:39:04] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (116ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":116,"ok":true}
+-----------------------------------
+[2026-02-21 13:38:59] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (115ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":115,"ok":true}
+-----------------------------------
+[2026-02-21 13:36:17] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (147ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":147,"ok":true}
+-----------------------------------
+[2026-02-21 13:21:51] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (78ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":78,"ok":true}
+-----------------------------------
+[2026-02-21 13:21:47] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (79ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":79,"ok":true}
+-----------------------------------
+[2026-02-21 13:21:24] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (83ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":83,"ok":true}
+-----------------------------------
+[2026-02-21 13:21:18] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (92ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":92,"ok":true}
+-----------------------------------
+[2026-02-21 13:15:43] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (81ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":81,"ok":true}
+-----------------------------------
+[2026-02-21 13:13:50] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (74ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":74,"ok":true}
+-----------------------------------
+[2026-02-21 13:13:45] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (76ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":76,"ok":true}
+-----------------------------------
+[2026-02-21 13:13:35] [info] [trpc:mutation] [TRPC] mutation auth.logout - SUCCESS (0ms)
+Metadata: {"path":"auth.logout","type":"mutation","durationMs":0,"ok":true}
+-----------------------------------
+[2026-02-21 13:13:22] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (77ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":77,"ok":true}
+-----------------------------------
+[2026-02-21 13:12:54] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (88ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":88,"ok":true}
+-----------------------------------
+[2026-02-21 13:12:42] [info] [trpc:mutation] [TRPC] mutation auth.logout - SUCCESS (1ms)
+Metadata: {"path":"auth.logout","type":"mutation","durationMs":1,"ok":true}
+-----------------------------------
+[2026-02-21 13:04:12] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (120ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":120,"ok":true}
+-----------------------------------
+[2026-02-21 13:04:05] [info] [trpc:mutation] [TRPC] mutation auth.logout - SUCCESS (0ms)
+Metadata: {"path":"auth.logout","type":"mutation","durationMs":0,"ok":true}
+-----------------------------------
+[2026-02-21 13:03:54] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (121ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":121,"ok":true}
+-----------------------------------
+[2026-02-21 13:03:50] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (108ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":108,"ok":true}
+-----------------------------------
+[2026-02-21 13:03:44] [info] [trpc:mutation] [TRPC] mutation auth.logout - SUCCESS (1ms)
+Metadata: {"path":"auth.logout","type":"mutation","durationMs":1,"ok":true}
+-----------------------------------
+[2026-02-21 13:00:58] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (131ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":131,"ok":true}
+-----------------------------------
+[2026-02-21 13:00:52] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (112ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":112,"ok":true}
+-----------------------------------
+[2026-02-21 12:57:24] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (166ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":166,"ok":true}
+-----------------------------------
+[2026-02-21 12:23:15] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (88ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":88,"ok":true}
+-----------------------------------
+[2026-02-21 12:15:45] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (153ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":153,"ok":true}
+-----------------------------------
+[2026-02-21 11:38:06] [info] [trpc:mutation] [TRPC] mutation auth.logout - SUCCESS (4ms)
+Metadata: {"path":"auth.logout","type":"mutation","durationMs":4,"ok":true}
+-----------------------------------
+[2026-02-21 10:50:04] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (74ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":74,"ok":true}
+-----------------------------------
+[2026-02-21 10:49:56] [info] [trpc:mutation] [TRPC] mutation auth.login - SUCCESS (86ms)
+Metadata: {"path":"auth.login","type":"mutation","durationMs":86,"ok":true}
 -----------------------------------

@@ -19,6 +19,7 @@ export interface StudioInviteMetadata {
 interface StudioInviteMessageProps {
     metadata: StudioInviteMetadata;
     isArtist: boolean;
+    isOwn: boolean;
     /** Open the invite details / FAB menu */
     onPress?: () => void;
 }
@@ -41,6 +42,7 @@ function getStatusLabel(status: string) {
 export function StudioInviteMessage({
     metadata,
     isArtist,
+    isOwn,
     onPress,
 }: StudioInviteMessageProps) {
     const { studioName, status } = metadata;
@@ -77,7 +79,9 @@ export function StudioInviteMessage({
                 </div>
 
                 <div className="text-xs text-muted-foreground/80 leading-relaxed">
-                    You've been invited to join {studioName} as a resident artist.
+                    {isOwn
+                        ? `You invited them to join ${studioName} as a resident artist.`
+                        : `You've been invited to join ${studioName} as a resident artist.`}
                 </div>
 
                 {/* Footer */}
@@ -95,7 +99,7 @@ export function StudioInviteMessage({
 
                     <div className="flex items-center gap-2">
                         {/* View details (Only when pending, or if we want to see it anytime) */}
-                        {isPending && isArtist && (
+                        {isPending && isArtist && !isOwn && (
                             <div className="text-indigo-400 text-[10px] font-bold flex items-center gap-0.5 group-hover:text-indigo-300 transition-colors">
                                 Respond <ArrowRight className="w-3 h-3" />
                             </div>

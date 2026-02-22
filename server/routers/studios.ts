@@ -409,6 +409,8 @@ export const studiosRouter = router({
             const db = await getDb();
             if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
 
+            console.log(`[respondToInvite] Invoked with inviteId ${input.inviteId} by userId ${ctx.user.id}`);
+
             const invite = await db.query.studioMembers.findFirst({
                 where: and(
                     eq(studioMembers.id, input.inviteId),
