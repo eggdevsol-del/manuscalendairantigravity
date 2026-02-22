@@ -124,7 +124,7 @@ export default function Subscriptions() {
         <PageShell>
             <PageHeader title="Subscriptions" onBack={() => setLocation("/settings")} />
 
-            <div className={cn(tokens.contentContainer.base, "pb-24 pt-6")}>
+            <div className={cn(tokens.contentContainer.base, "pb-24 pt-6 overflow-y-auto h-full")}>
 
                 {/* Hero / Header */}
                 <div className="text-center mb-8 px-4">
