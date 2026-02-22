@@ -120,6 +120,13 @@
       "when": 1771723031168,
       "tag": "0016_smiling_fantastic_four",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1771748489609,
+      "tag": "0017_slim_arclight",
+      "breakpoints": true
     }
   ]
 }
