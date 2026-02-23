@@ -123,19 +123,21 @@ export async function updateAppointment(
 
     const newAppt = await getAppointment(id);
 
-    // Determine action - rescheduled if time changed, else status change, etc.
     let action: any = 'completed'; // default
-    let shouldLogAction = true;
+    let shouldLogAction = false;
 
-    if (updates.status) {
-        if (updates.status === oldAppt.status) {
-            // If status hasn't actually changed, it's just a duplicate save block (e.g. from UI spamming)
-            shouldLogAction = false;
-        } else {
+    if (updates.status && updates.status !== oldAppt.status) {
+        const validActions = ['created', 'rescheduled', 'cancelled', 'completed', 'proposal_revoked', 'no-show'];
+        if (validActions.includes(updates.status)) {
             action = updates.status;
+            shouldLogAction = true;
         }
-    } else if (updates.startTime || updates.endTime) {
+    }
+
+    // Only log rescheduled if we aren't already logging a status change
+    if (!shouldLogAction && (updates.startTime || updates.endTime)) {
         action = 'rescheduled';
+        shouldLogAction = true;
     }
 
     if (shouldLogAction) {
