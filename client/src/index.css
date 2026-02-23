@@ -178,7 +178,7 @@
   }
 
   .animate-breath {
-    animation: gradient-breath 12s ease-in-out infinite;
+    animation: gradient-breath 30s ease-in-out infinite;
   }
 
   html {
