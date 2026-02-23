@@ -55,6 +55,74 @@ const PAYMENT_METHODS = [
     { id: 'cash' as const, label: 'Cash', icon: DollarSign },
 ] as const;
 
+const StepContainer = ({ children, stepKey }: { children: React.ReactNode; stepKey: string }) => (
+    <AnimatePresence mode="wait">
+        <motion.div
+            key={stepKey}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="flex flex-col items-center gap-4 text-center w-full"
+        >
+            {children}
+        </motion.div>
+    </AnimatePresence>
+);
+
+const ActionButton = ({ onClick, variant, children, disabled, isPending }: {
+    onClick: () => void;
+    variant: 'primary' | 'secondary' | 'danger';
+    children: React.ReactNode;
+    disabled?: boolean;
+    isPending?: boolean;
+}) => {
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled || isPending}
+            className={cn(
+                "w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-2",
+                variant === 'primary' && "bg-primary text-primary-foreground hover:bg-primary/90",
+                variant === 'secondary' && "bg-white/5 text-foreground/80 hover:bg-white/10",
+                variant === 'danger' && "bg-red-500/10 text-red-500 hover:bg-red-500/20",
+                (disabled || isPending) && "opacity-50 pointer-events-none"
+            )}
+        >
+            {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+            {children}
+        </button>
+    );
+};
+
+const MethodGrid = ({
+    enabledMethods,
+    selectedMethod,
+    onSelect
+}: {
+    enabledMethods: readonly { id: string, label: string, icon: any }[],
+    selectedMethod: string | null,
+    onSelect: (id: string) => void
+}) => (
+    <div className="grid grid-cols-2 gap-2 w-full">
+        {enabledMethods.map(m => (
+            <button
+                key={m.id}
+                onClick={() => onSelect(m.id)}
+                className={cn(
+                    "flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all",
+                    selectedMethod === m.id
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-white/10 bg-white/5 text-foreground/70 hover:bg-white/10"
+                )}
+            >
+                <m.icon className="w-5 h-5" />
+                <span className="text-xs font-semibold">{m.label}</span>
+            </button>
+        ))}
+    </div>
+);
+
 export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment, isOpen }: Props) {
     const { appointment, phase } = checkIn;
     const [step, setStep] = useState<Step>(() => phase === 'arrival' ? 'arrival' : 'completion');
@@ -72,6 +140,8 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
     const [useCustomAmount, setUseCustomAmount] = useState(false);
     const [customAmount, setCustomAmount] = useState('');
     const [retryCount, setRetryCount] = useState(0);
+
+    const isPending = updateAppointment.isLoading || updateAppointment.status === 'loading';
 
     // Fetch artist's enabled payment methods
     const { data: paymentSettings } = trpc.paymentMethodSettings.get.useQuery(undefined, {
@@ -197,75 +267,13 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
         setStep('done');
     };
 
-    // ── Render helpers ──────────────────────────────────
-
-    const StepContainer = ({ children }: { children: React.ReactNode }) => (
-        <AnimatePresence mode="wait">
-            <motion.div
-                key={step}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col items-center gap-4 text-center"
-            >
-                {children}
-            </motion.div>
-        </AnimatePresence>
-    );
-
-    const ActionButton = ({ onClick, variant, children, disabled }: {
-        onClick: () => void;
-        variant: 'primary' | 'secondary' | 'danger';
-        children: React.ReactNode;
-        disabled?: boolean;
-    }) => {
-        const isPending = updateAppointment.isLoading || updateAppointment.status === 'loading';
-        return (
-            <button
-                onClick={onClick}
-                disabled={disabled || isPending}
-                className={cn(
-                    "w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-2",
-                    variant === 'primary' && "bg-primary text-primary-foreground hover:bg-primary/90",
-                    variant === 'secondary' && "bg-white/5 text-foreground/80 hover:bg-white/10",
-                    variant === 'danger' && "bg-red-500/10 text-red-500 hover:bg-red-500/20",
-                    (disabled || isPending) && "opacity-50 pointer-events-none"
-                )}
-            >
-                {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                {children}
-            </button>
-        );
-    };
-
-    const MethodGrid = ({ onSelect }: { onSelect: (id: string) => void }) => (
-        <div className="grid grid-cols-2 gap-2 w-full">
-            {enabledMethods.map(m => (
-                <button
-                    key={m.id}
-                    onClick={() => { setSelectedMethod(m.id); onSelect(m.id); }}
-                    className={cn(
-                        "flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all",
-                        selectedMethod === m.id
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-white/10 bg-white/5 text-foreground/70 hover:bg-white/10"
-                    )}
-                >
-                    <m.icon className="w-5 h-5" />
-                    <span className="text-xs font-semibold">{m.label}</span>
-                </button>
-            ))}
-        </div>
-    );
-
     // ── Render step content ──────────────────────────────────
 
     const renderStep = () => {
         switch (step) {
             case 'arrival':
                 return (
-                    <StepContainer>
+                    <StepContainer stepKey={step}>
                         <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
                             <CalendarClock className="w-7 h-7 text-primary" />
                         </div>
@@ -284,7 +292,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
 
             case 'arrival_no':
                 return (
-                    <StepContainer>
+                    <StepContainer stepKey={step}>
                         <div className="w-14 h-14 rounded-full bg-orange-500/10 flex items-center justify-center">
                             <Clock className="w-7 h-7 text-orange-500" />
                         </div>
@@ -298,7 +306,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
 
             case 'arrival_fail':
                 return (
-                    <StepContainer>
+                    <StepContainer stepKey={step}>
                         <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
                             <XCircle className="w-7 h-7 text-red-500" />
                         </div>
@@ -313,7 +321,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
 
             case 'no_show_confirm':
                 return (
-                    <StepContainer>
+                    <StepContainer stepKey={step}>
                         <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
                             <XCircle className="w-7 h-7 text-red-500" />
                         </div>
@@ -330,7 +338,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
 
             case 'completion':
                 return (
-                    <StepContainer>
+                    <StepContainer stepKey={step}>
                         <div className="w-14 h-14 rounded-full bg-emerald-500/10 flex items-center justify-center">
                             <CheckCircle2 className="w-7 h-7 text-emerald-500" />
                         </div>
@@ -347,7 +355,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
 
             case 'payment_check':
                 return (
-                    <StepContainer>
+                    <StepContainer stepKey={step}>
                         <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
                             <DollarSign className="w-7 h-7 text-primary" />
                         </div>
@@ -361,9 +369,9 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
 
             case 'payment_method':
                 return (
-                    <StepContainer>
+                    <StepContainer stepKey={step}>
                         <h3 className="text-lg font-bold text-foreground">Payment method</h3>
-                        <MethodGrid onSelect={() => { }} />
+                        <MethodGrid enabledMethods={enabledMethods} selectedMethod={selectedMethod} onSelect={(id) => setSelectedMethod(id)} />
                         <ActionButton
                             onClick={handlePaymentMethodDone}
                             variant="primary"
@@ -376,7 +384,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
 
             case 'send_payment':
                 return (
-                    <StepContainer>
+                    <StepContainer stepKey={step}>
                         <h3 className="text-lg font-bold text-foreground">Send payment details?</h3>
                         <div className="w-full space-y-2">
                             <ActionButton onClick={handleSendPaymentYes} variant="primary">Yes</ActionButton>
@@ -387,7 +395,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
 
             case 'send_method':
                 return (
-                    <StepContainer>
+                    <StepContainer stepKey={step}>
                         <h3 className="text-lg font-bold text-foreground">Specify Payment Link</h3>
                         <div className="w-full space-y-4">
                             <div className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
@@ -413,7 +421,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
                                 </p>
                             )}
 
-                            <MethodGrid onSelect={() => { }} />
+                            <MethodGrid enabledMethods={enabledMethods} selectedMethod={selectedMethod} onSelect={(id) => setSelectedMethod(id)} />
                             <ActionButton
                                 onClick={handleSendMethodDone}
                                 variant="primary"
@@ -427,7 +435,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
 
             case 'payment_link_sent':
                 return (
-                    <StepContainer>
+                    <StepContainer stepKey={step}>
                         <div className="w-14 h-14 rounded-full bg-emerald-500/10 flex items-center justify-center">
                             <CheckCircle2 className="w-7 h-7 text-emerald-500" />
                         </div>
@@ -439,7 +447,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
 
             case 'manual_end':
                 return (
-                    <StepContainer>
+                    <StepContainer stepKey={step}>
                         <h3 className="text-lg font-bold text-foreground">Session details</h3>
                         <div className="w-full space-y-3">
                             <div>
@@ -463,7 +471,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
                             </div>
                             <div>
                                 <label className="block text-xs text-muted-foreground mb-1 text-left">Payment method</label>
-                                <MethodGrid onSelect={() => { }} />
+                                <MethodGrid enabledMethods={enabledMethods} selectedMethod={selectedMethod} onSelect={(id) => setSelectedMethod(id)} />
                             </div>
                             <ActionButton onClick={handleManualEndDone} variant="primary">
                                 Complete Session
@@ -474,7 +482,7 @@ export function AppointmentCheckInModal({ checkIn, onDismiss, updateAppointment,
 
             case 'done':
                 return (
-                    <StepContainer>
+                    <StepContainer stepKey={step}>
                         <div className="w-14 h-14 rounded-full bg-emerald-500/10 flex items-center justify-center">
                             <CheckCircle2 className="w-7 h-7 text-emerald-500" />
                         </div>
