@@ -268,7 +268,7 @@ export default function Dashboard() {
                 style={{ background: "var(--bg-gradient-alt)" }}
             />
             {/* 2. Independent Backdrop Blur Layer */}
-            <div className="fixed inset-0 pointer-events-none -z-10 backdrop-blur-[20px]" />
+            <div className="fixed inset-0 pointer-events-none -z-10 backdrop-blur-[50px]" />
 
             {/* 1. Page Header - Left aligned, no icons */}
             <PageHeader title="Dashboard" />
