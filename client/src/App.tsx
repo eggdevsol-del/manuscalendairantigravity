@@ -15,6 +15,7 @@ import { useTabletLandscape } from "@/hooks/useTabletLandscape";
 import { TeaserProvider } from "@/contexts/TeaserContext";
 import { useAppointmentCheckIn } from "@/features/appointments/useAppointmentCheckIn";
 import { AppointmentCheckInModal } from "@/components/modals/AppointmentCheckInModal";
+import { SplashScreen } from "@/components/SplashScreen";
 
 import Home from "./pages/Home";
 import Chat from "./pages/Chat";
@@ -91,6 +92,7 @@ function Router() {
 
   return (
     <div className={`min-h-screen ${shouldShowBottomNav ? "pb-16" : ""}`}>
+      <SplashScreen />
       <Switch>
         <Route path="/" component={Login} />
         <Route path="/login" component={Login} />
