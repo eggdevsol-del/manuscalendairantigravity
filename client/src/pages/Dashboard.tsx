@@ -264,7 +264,7 @@ export default function Dashboard() {
         <PageShell>
             {/* Breathing Animation Background Layer (Dashboard Only) */}
             <div
-                className="fixed inset-0 pointer-events-none -z-10 animate-breath"
+                className="fixed inset-0 pointer-events-none -z-10 animate-breath blur-[12px] scale-105"
                 style={{ background: "var(--bg-gradient-alt)" }}
             />
 
