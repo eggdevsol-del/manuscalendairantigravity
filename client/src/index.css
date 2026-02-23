@@ -99,6 +99,10 @@
   --bg-gradient: radial-gradient(circle at 100% 0%, oklch(0.95 0.05 260) 0%, transparent 40%),
     radial-gradient(circle at 0% 100%, oklch(0.92 0.05 280) 0%, transparent 40%),
     var(--background);
+  /* Secondary gradient for breathing animation */
+  --bg-gradient-alt: radial-gradient(circle at 100% 100%, oklch(0.90 0.08 260) 0%, transparent 60%),
+    radial-gradient(circle at 0% 0%, oklch(0.93 0.04 280) 0%, transparent 60%),
+    var(--background);
 }
 
 .dark {
@@ -151,11 +155,30 @@
   --bg-gradient: radial-gradient(circle at 100% 0%, #172c68 0%, transparent 40%),
     radial-gradient(circle at 0% 100%, #111c3f 0%, transparent 40%),
     #0b1120;
+  --bg-gradient-alt: radial-gradient(circle at 0% 100%, #1b3580 0%, transparent 60%),
+    radial-gradient(circle at 100% 0%, #0f1c45 0%, transparent 60%),
+    #0b1120;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+
+  @keyframes gradient-breath {
+
+    0%,
+    100% {
+      opacity: 0;
+    }
+
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .animate-breath {
+    animation: gradient-breath 12s ease-in-out infinite;
   }
 
   html {
