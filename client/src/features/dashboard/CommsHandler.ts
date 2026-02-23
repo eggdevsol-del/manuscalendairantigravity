@@ -7,7 +7,13 @@ export const CommsHandler = {
         if (body) params.append('body', body);
 
         const url = `mailto:${to}?${params.toString()}`;
-        window.location.href = url;
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_top';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     },
 
     openPrefilledSms: (phone: string, body?: string, platform: 'ios' | 'android' | 'desktop' = 'ios') => {
@@ -23,7 +29,12 @@ export const CommsHandler = {
             return false; // Signal that we failed to open native and need fallback UI
         }
 
-        window.location.href = url;
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_top';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
         return true;
     }
 };

@@ -803,7 +803,7 @@ export const artistPublicProfile = mysqlTable("artist_public_profile", {
 	id: int().primaryKey().autoincrement(),
 	artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
 
-	// Public link slug (e.g., "pmason" for calendair.app/start/pmason)
+	// Public link slug (e.g., "pmason" for toi.app/start/pmason)
 	slug: varchar({ length: 50 }).notNull().unique(),
 
 	// Profile display settings

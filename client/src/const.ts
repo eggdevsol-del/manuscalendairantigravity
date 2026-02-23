@@ -5,7 +5,7 @@ export const API_BASE_URL = Capacitor.isNativePlatform()
   ? "https://artist-booking-app-production.up.railway.app"
   : ""; // Relative for web
 
-export const APP_TITLE = import.meta.env.VITE_APP_TITLE || "Calendair";
+export const APP_TITLE = import.meta.env.VITE_APP_TITLE || "TOI";
 
 export const APP_LOGO =
   import.meta.env.VITE_APP_LOGO ||

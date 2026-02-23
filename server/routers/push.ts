@@ -7,7 +7,7 @@ import * as pushService from "../services/pushService";
 // Initialize VAPID
 const publicVapidKey = process.env.VAPID_PUBLIC_KEY;
 const privateVapidKey = process.env.VAPID_PRIVATE_KEY;
-const vapidSubject = process.env.VAPID_SUBJECT || 'mailto:admin@calendair.com';
+const vapidSubject = process.env.VAPID_SUBJECT || 'mailto:admin@toi.app';
 
 if (publicVapidKey && privateVapidKey) {
     webpush.setVapidDetails(

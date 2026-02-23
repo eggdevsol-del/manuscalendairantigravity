@@ -61,7 +61,7 @@ export function InstallAppModal({ isOpen, onClose }: InstallAppModalProps) {
                 <div className="space-y-2">
                     <h3 className="text-xl font-bold">Unlock {tokens.header.contextTitle ? "Features" : "Features"}</h3>
                     <p className="text-muted-foreground max-w-[260px] mx-auto">
-                        Install CalendAIr to access your dashboard, promotions, and manage your appointments.
+                        Install TOI to access your dashboard, promotions, and manage your appointments.
                     </p>
                 </div>
 

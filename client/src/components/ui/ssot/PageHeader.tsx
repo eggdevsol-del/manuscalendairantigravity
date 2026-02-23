@@ -40,7 +40,7 @@ export function PageHeader({ title, subtitle, className, onBack }: PageHeaderPro
     const artistBranding = typeof window !== 'undefined' ? localStorage.getItem("calendair_artist_branding") : null;
 
     // If branding exists, we override the display logic
-    // Format: [Artist Name] by CalendAIr
+    // Format: [Artist Name] by TOI
     const displayTitle = artistBranding ? (
         <span className="flex flex-col">
             <span>{artistBranding}</span>
@@ -77,17 +77,17 @@ export function PageHeader({ title, subtitle, className, onBack }: PageHeaderPro
                 </span>
             )}
             {/* If branding is active, we might suppress the subtitle or display the original title as subtitle? 
-                The requirement says "Artist name = primary", "by CalendAIr = ~50% size".
+                The requirement says "Artist name = primary", "by TOI = ~50% size".
                 It doesn't explicitly say we lose the Page Title (like "Dashboard").
                 But usually branding replaces the App Name. 
                 Let's assume we keep the Page Title as a subtitle if needed?
-                "On all client-facing pages... [Artist Name] by CalendAIr"
+                "On all client-facing pages... [Artist Name] by TOI"
                 Actually, this implies the Header *Brand* changes. 
                 But PageHeader usually displays the Page Name (e.g. "Promotions").
                 Replacing "Promotions" with "P Mason Tattoo" might be confusing navigationally.
                 
                 However, for Teaser App, the context is the Artist.
-                Let's stick to the requirement: "Header Branding... Format: [Artist Name] by CalendAIr".
+                Let's stick to the requirement: "Header Branding... Format: [Artist Name] by TOI".
             */}
         </header>
     );

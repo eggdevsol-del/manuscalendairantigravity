@@ -234,14 +234,14 @@ export async function sendTestPush(
     const oneSignalSuccess = await sendOneSignalPush({
         userIds: [userId],
         title: title || "Test Notification",
-        message: body || "This is a test OneSignal push from CalendAIr!"
+        message: body || "This is a test OneSignal push from TOI!"
     });
 
     // 2. Fire VAPID Web Push (Hits Chrome/Safari PWAs to trigger Heads-up banners)
     console.log(`[PushService] Firing VAPID Test Push to ${userId}...`);
     const webPushResult = await sendPushNotification(userId, {
         title: title || "Test Notification",
-        body: body || "This is a test web push from CalendAIr!",
+        body: body || "This is a test web push from TOI!",
         url: "/",
     });
 

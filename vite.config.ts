@@ -20,8 +20,8 @@ const plugins = [
     registerType: 'autoUpdate',
     includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
     manifest: {
-      name: 'Calendair',
-      short_name: 'Calendair',
+      name: 'TOI',
+      short_name: 'TOI',
       description: 'Beautiful appointments made simple',
       theme_color: '#000000',
       background_color: '#000000',

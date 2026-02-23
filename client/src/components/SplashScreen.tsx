@@ -21,7 +21,7 @@ export function SplashScreen() {
                     className="fixed inset-0 z-[100] bg-black flex items-center justify-center overflow-hidden"
                 >
                     <video
-                        src="/splash.webm"
+                        src="/splash.mp4"
                         autoPlay
                         muted
                         playsInline

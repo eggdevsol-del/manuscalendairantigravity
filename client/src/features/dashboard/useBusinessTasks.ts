@@ -132,7 +132,13 @@ export function useBusinessTasks() {
       }
     }
 
-    window.location.href = smsUrl;
+    // Dynamic anchor tag for PWA/Safari compatibility
+    const a = document.createElement('a');
+    a.href = smsUrl;
+    a.target = '_top';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }, [startTask]);
 
   // Professional Email Templates mapping
@@ -228,10 +234,13 @@ export function useBusinessTasks() {
 
     const emailUrl = getTaskEmailUrl(task);
 
-    console.log('Opening email URL:', emailUrl);
-
-    // Standard mailto handling
-    window.location.href = emailUrl;
+    // Dynamic anchor tag for PWA/Safari compatibility
+    const a = document.createElement('a');
+    a.href = emailUrl;
+    a.target = '_top';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }, [startTask, getTaskEmailUrl]);
 
   // Navigate to in-app location

@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.manus.calendair',
-  appName: 'calendair android',
+  appName: 'toi android',
   webDir: 'dist/public',
   plugins: {
     StatusBar: {
