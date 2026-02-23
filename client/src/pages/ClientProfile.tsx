@@ -49,7 +49,7 @@ export default function ClientProfile() {
         const url = prompt("Enter new avatar URL:");
         if (url) updateAvatar.mutate({ avatarUrl: url });
     };
-    useRegisterBottomNavRow("client-profile", (
+    const clientProfileActions = useMemo(() => (
         <>
             {[
                 {
@@ -82,7 +82,9 @@ export default function ClientProfile() {
                 />
             ))}
         </>
-    ));
+    ), [isEditMode, handleProfilePicUpload]);
+
+    useRegisterBottomNavRow("client-profile", clientProfileActions);
 
     const tabs = useMemo(() => [
         {
