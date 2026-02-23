@@ -262,11 +262,13 @@ export default function Dashboard() {
 
     return (
         <PageShell>
-            {/* Breathing Animation Background Layer (Dashboard Only) */}
+            {/* 1. Breathing Animation Background Layer (Dashboard Only) */}
             <div
-                className="fixed inset-0 pointer-events-none -z-10 animate-breath blur-[12px] scale-105"
+                className="fixed inset-0 pointer-events-none -z-[11] animate-breath"
                 style={{ background: "var(--bg-gradient-alt)" }}
             />
+            {/* 2. Independent Backdrop Blur Layer */}
+            <div className="fixed inset-0 pointer-events-none -z-10 backdrop-blur-[20px]" />
 
             {/* 1. Page Header - Left aligned, no icons */}
             <PageHeader title="Dashboard" />

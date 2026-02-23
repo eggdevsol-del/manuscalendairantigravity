@@ -196,9 +196,6 @@
     z-index: -1;
     background: var(--bg-gradient);
     pointer-events: none;
-    filter: blur(12px);
-    transform: scale(1.05);
-    /* Prevent blurred edges from leaking white */
   }
 
   body {
