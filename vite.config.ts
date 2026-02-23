@@ -20,20 +20,26 @@ const plugins = [
     registerType: 'autoUpdate',
     includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
     manifest: {
-      name: 'Artist Booking App',
-      short_name: 'Booking',
-      description: 'Professional Artist Booking & Management',
-      theme_color: '#ffffff',
+      name: 'Calendair',
+      short_name: 'Calendair',
+      description: 'Beautiful appointments made simple',
+      theme_color: '#000000',
+      background_color: '#000000',
+      display: 'standalone',
+      start_url: '/',
+      scope: '/',
       icons: [
         {
-          src: 'icon-192.png',
+          src: '/icon-192.png',
           sizes: '192x192',
-          type: 'image/png'
+          type: 'image/png',
+          purpose: 'any maskable'
         },
         {
-          src: 'icon-512.png',
+          src: '/icon-512.png',
           sizes: '512x512',
-          type: 'image/png'
+          type: 'image/png',
+          purpose: 'any maskable'
         }
       ]
     },
