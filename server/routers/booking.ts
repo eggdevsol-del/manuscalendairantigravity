@@ -53,7 +53,11 @@ export const bookingRouter = router({
 
                 // 3. Fetch Existing Appointments
                 // Use getAppointmentsForUser which supports fromDate
+                // CAUTION: It evaluates based on startTime >= searchStart.
+                // We MUST search from start of day to ensure we catch currently overlapping
+                // "in progress" appointments that started before the exact current time!
                 const searchStart = new Date(input.startDate);
+                searchStart.setHours(0, 0, 0, 0);
 
                 const rawAppointments = await db.getAppointmentsForUser(
                     conversation.artistId,

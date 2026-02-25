@@ -11,6 +11,7 @@
  */
 
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
     Drawer,
     DrawerContent,
@@ -78,20 +79,15 @@ const ActionButton = ({ onClick, variant, children, disabled, isPending }: {
     isPending?: boolean;
 }) => {
     return (
-        <button
+        <Button
             onClick={onClick}
             disabled={disabled || isPending}
-            className={cn(
-                "w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-2",
-                variant === 'primary' && "bg-primary text-primary-foreground hover:bg-primary/90",
-                variant === 'secondary' && "bg-white/5 text-foreground/80 hover:bg-white/10",
-                variant === 'danger' && "bg-red-500/10 text-red-500 hover:bg-red-500/20",
-                (disabled || isPending) && "opacity-50 pointer-events-none"
-            )}
+            variant={variant === 'primary' ? 'default' : variant === 'danger' ? 'destructive' : 'secondary'}
+            className="w-full h-12 text-sm font-bold uppercase tracking-wider relative"
         >
-            {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+            {isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
             {children}
-        </button>
+        </Button>
     );
 };
 
