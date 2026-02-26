@@ -43,6 +43,7 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
     const [location] = useLocation();
 
     // Default to 'client' for safety if not authenticated or specified.
+    const rawRole = user?.role;
     const scope: Scope = rawRole === 'artist' || rawRole === 'admin' ? 'artist' : rawRole === 'studio' ? 'studio' : 'client';
 
     const [registry, setRegistry] = useState<Record<Scope, Record<string, ReactNode>>>({
