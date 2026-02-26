@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte, gt, lt, ne, sql, or } from "drizzle-orm";
+import { and, desc, eq, gte, lte, gt, lt, ne, sql, or, inArray } from "drizzle-orm";
 import {
   appointments,
   InsertAppointment,
@@ -244,13 +244,27 @@ export async function getAppointmentsForUser(
     });
 
     if (member && (member.role === "owner" || member.role === "manager")) {
-      // Can see all appointments for this studio, OR their own appointments (historical)
-      conditions.push(
-        or(
-          eq(appointments.studioId, member.studioId),
-          eq(appointments.artistId, userId)
+      // Find all active members for this studio
+      const studioArtists = await db.query.studioMembers.findMany({
+        where: and(
+          eq(studioMembers.studioId, member.studioId),
+          eq(studioMembers.status, "active")
         )
-      );
+      });
+      const validArtistIds = studioArtists.map(a => a.userId);
+
+      if (validArtistIds.length > 0) {
+        // Can see all appointments for this studio, OR their own appointments (historical),
+        // or any appointment belonging to any active artist in the studio (catches legacy/standalone appts)
+        conditions.push(
+          or(
+            eq(appointments.studioId, member.studioId),
+            inArray(appointments.artistId, validArtistIds)
+          )
+        );
+      } else {
+        conditions.push(eq(appointments.artistId, userId));
+      }
     } else {
       // Standard artist or apprentice: only their own
       conditions.push(eq(appointments.artistId, userId));

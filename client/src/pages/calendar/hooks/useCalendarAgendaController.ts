@@ -70,7 +70,15 @@ export function useCalendarAgendaController() {
       // Fallback for solo/client
       return user ? [{ userId: user.id, user, role: user.role }] : [];
     }
-    return teamMembers.filter(m => m.status === "active");
+    const filtered = teamMembers.filter(m => m.status === "active");
+    // Deduplicate by userId in case the DB has multiple rows for the same user
+    const uniqueMap = new Map();
+    filtered.forEach(m => {
+      if (!uniqueMap.has(m.userId)) {
+        uniqueMap.set(m.userId, m);
+      }
+    });
+    return Array.from(uniqueMap.values());
   }, [teamMembers, user]);
 
   const refetch = useCallback(() => {
