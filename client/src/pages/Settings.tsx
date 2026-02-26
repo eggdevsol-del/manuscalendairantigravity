@@ -35,6 +35,7 @@ import { forceUpdate } from "@/lib/pwa";
 import { APP_VERSION } from "@/lib/version";
 import { getGoogleMapsEmbedUrl } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
+import { motion, AnimatePresence } from "framer-motion";
 
 type SettingsSection = "main" | "profile" | "work-hours" | "quick-actions" | "notifications" | "business" | "booking-link" | "regulation";
 
