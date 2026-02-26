@@ -32,8 +32,12 @@ export default function Signup() {
 
       toast.success("Account created successfully!");
 
-      // Redirect to calendar
-      setLocation("/calendar");
+      // Redirect based on role
+      if (data.user.role === "studio") {
+        setLocation("/studio");
+      } else {
+        setLocation("/calendar");
+      }
 
       setIsLoading(false);
     },

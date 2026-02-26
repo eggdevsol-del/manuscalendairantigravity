@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useRegisterFABActions, useBottomNav } from "@/contexts/BottomNavContext";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button, Dialog, DialogTitle, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
@@ -73,10 +74,18 @@ function LoadingState() {
 const TITLES = ["Business", "Social", "Personal"];
 
 export default function Dashboard() {
+    const { user } = useAuth();
     const [, setLocation] = useLocation();
     const [activeIndex, setActiveIndex] = useState(0);
     const selectedDate = new Date();
     const { isFABOpen, setFABOpen } = useBottomNav();
+
+    // Redirect Studio users
+    useEffect(() => {
+        if (user?.role === 'studio') {
+            setLocation('/studio');
+        }
+    }, [user, setLocation]);
 
     // Legacy Feature Hook (for Social and Personal)
     const { tasks: legacyTasks, actions: legacyActions, stats, config } = useDashboardTasks();
