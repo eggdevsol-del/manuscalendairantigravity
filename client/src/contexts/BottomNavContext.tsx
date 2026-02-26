@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
-import { ARTIST_NAV_ITEMS, CLIENT_NAV_ITEMS } from "@/_core/bottomNav/defaultNav";
+import { ARTIST_NAV_ITEMS, CLIENT_NAV_ITEMS, STUDIO_NAV_ITEMS } from "@/_core/bottomNav/defaultNav";
 import { BottomNavButton } from "@/_core/bottomNav/types";
 import { FABMenuItem } from "@/ui/FABMenu";
 
-export type Scope = 'artist' | 'client';
+export type Scope = 'artist' | 'client' | 'studio';
 
 interface BottomNavContextType {
     // The content of the contextual row (Row 1)
@@ -43,12 +43,12 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
     const [location] = useLocation();
 
     // Default to 'client' for safety if not authenticated or specified.
-    const rawRole = user?.role;
-    const scope: Scope = rawRole === 'artist' ? 'artist' : 'client';
+    const scope: Scope = rawRole === 'artist' || rawRole === 'admin' ? 'artist' : rawRole === 'studio' ? 'studio' : 'client';
 
     const [registry, setRegistry] = useState<Record<Scope, Record<string, ReactNode>>>({
         artist: {},
-        client: {}
+        client: {},
+        studio: {}
     });
 
     const [fabRegistry, setFabRegistry] = useState<Record<string, FABMenuItem[] | ReactNode>>({});
@@ -70,7 +70,7 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
     const fabChildren = !Array.isArray(fabContent) ? fabContent : null;
 
     // Derived nav items
-    const navItems = scope === 'artist' ? ARTIST_NAV_ITEMS : CLIENT_NAV_ITEMS;
+    const navItems = scope === 'artist' ? ARTIST_NAV_ITEMS : scope === 'studio' ? STUDIO_NAV_ITEMS : CLIENT_NAV_ITEMS;
 
     const registerRow = useCallback((targetScope: Scope, id: string, content: ReactNode) => {
         setRegistry((prev) => ({
@@ -187,7 +187,8 @@ export function useBottomNav() {
 export function useRegisterBottomNavRow(id: string, content: ReactNode) {
     const { registerRow } = useBottomNav();
     const { user } = useAuth();
-    const scope: Scope = user?.role === 'artist' ? 'artist' : 'client';
+    const rawRole = user?.role;
+    const scope: Scope = rawRole === 'artist' || rawRole === 'admin' ? 'artist' : rawRole === 'studio' ? 'studio' : 'client';
 
     useEffect(() => {
         if (process.env.NODE_ENV === 'development') {
