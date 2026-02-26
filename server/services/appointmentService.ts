@@ -235,7 +235,7 @@ export async function getAppointmentsForUser(
 
   let conditions: any[] = [];
 
-  if (role === "artist") {
+  if (role === "artist" || role === "studio" || role === "admin") {
     const member = await db.query.studioMembers.findFirst({
       where: and(
         eq(studioMembers.userId, userId),
