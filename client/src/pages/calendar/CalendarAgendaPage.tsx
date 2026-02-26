@@ -147,6 +147,7 @@ export default function CalendarAgendaPage() {
                     eventsByDay={controller.eventsByDay}
                     workSchedule={controller.workSchedule}
                     onDateTap={controller.handleDateTap}
+                    activeArtists={controller.activeArtists}
                 />
             </div>
 
@@ -190,6 +191,7 @@ export default function CalendarAgendaPage() {
                         workSchedule={controller.workSchedule}
                         onAppointmentTap={controller.handleAppointmentTap}
                         onDateTap={controller.startBooking}
+                        activeArtists={controller.activeArtists}
                     />
                 </div>
 

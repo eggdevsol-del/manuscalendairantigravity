@@ -9,9 +9,10 @@ interface MonthBreakdownProps {
     eventsByDay?: Record<string, any[]>;
     workSchedule?: any;
     onDateTap?: (date: Date) => void;
+    activeArtists?: any[];
 }
 
-export function MonthBreakdown({ month, eventsByDay = {}, workSchedule, onDateTap }: MonthBreakdownProps) {
+export function MonthBreakdown({ month, eventsByDay = {}, workSchedule, onDateTap, activeArtists = [] }: MonthBreakdownProps) {
     const { user } = useAuth();
     const isClient = user?.role === 'client';
 
@@ -114,29 +115,48 @@ export function MonthBreakdown({ month, eventsByDay = {}, workSchedule, onDateTa
                                     const config = workSchedule?.[dayKeys[dayOfWeekIndex]];
                                     const isDesign = config?.enabled && config?.type === 'design';
 
-                                    // Get service color if event exists
-                                    let bgClass = "bg-white/5";
-                                    if (hasEvents) {
-                                        const style = getEventStyle(dayEvents[0]);
-                                        bgClass = style.className; // Contains bg-x and text-x
-                                    }
+                                    // Prepare base classes
+                                    let contentClass = "flex items-center justify-center text-[10px] font-medium transition-all relative cursor-pointer active:scale-95 w-full h-full";
+                                    // Default background if no events
+                                    if (!hasEvents) contentClass += " bg-white/5";
+
+                                    // Create the split background layers based on activeArtists
+                                    const backgrounds = hasEvents ? activeArtists.map((artist) => {
+                                        const artistEvents = dayEvents.filter(apt => apt.artistId === artist.userId);
+                                        if (artistEvents.length > 0) {
+                                            const style = getEventStyle(artistEvents[0]);
+                                            return style.className;
+                                        }
+                                        return null;
+                                    }) : [];
+                                    const validBackgrounds = backgrounds.filter(Boolean);
 
                                     return (
                                         <div
                                             key={day.toISOString()}
                                             onClick={() => onDateTap?.(day)}
                                             className={cn(
-                                                "aspect-square flex items-center justify-center text-[10px] font-medium transition-all relative cursor-pointer active:scale-95",
-                                                hasEvents ? bgClass : "bg-white/5",
+                                                "aspect-square relative flex items-center justify-center", // Container
                                                 !isCurrentMonth && "opacity-30", // Dim non-current month
-                                                hasEvents ? "rounded-[1px]" : "rounded-none",
+                                                hasEvents ? "rounded-[1px] overflow-hidden" : "rounded-none",
                                                 !isCurrentMonth && !hasEvents && "text-muted-foreground/20",
                                                 isCurrentMonth && !hasEvents && "text-muted-foreground/30"
                                             )}
                                         >
-                                            <span>
-                                                {isDesign ? "D" : format(day, "d")}
-                                            </span>
+                                            {/* Split Background visual layer */}
+                                            {validBackgrounds.length > 0 && (
+                                                <div className="absolute inset-0 flex flex-row">
+                                                    {validBackgrounds.map((bgClass, idx) => (
+                                                        <div key={idx} className={cn("flex-1 h-full", bgClass)} />
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {/* Text Content */}
+                                            <div className={cn(contentClass, "bg-transparent z-10")}>
+                                                <span className={validBackgrounds.length > 0 ? "mix-blend-overlay text-white drop-shadow-md font-bold" : ""}>
+                                                    {isDesign ? "D" : format(day, "d")}
+                                                </span>
+                                            </div>
                                         </div>
                                     );
                                 })}

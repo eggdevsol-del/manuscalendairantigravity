@@ -29,10 +29,32 @@ export function useCalendarAgendaController() {
     const gridStart = useMemo(() => subDays(anchorDate, BUFFER_DAYS), [anchorDate]);
     const gridEnd = useMemo(() => addDays(anchorDate, BUFFER_DAYS), [anchorDate]);
 
-    const { data: appointments, isLoading, refetch } = trpc.appointments.list.useQuery(
+    const { data: appointments, isLoading, refetch: refetchAppointments } = trpc.appointments.list.useQuery(
         { startDate: gridStart, endDate: gridEnd },
         { enabled: !!user, placeholderData: (prev) => prev }
     );
+
+    // Fetch Studio and Artists for the Studio view
+    const { data: currentStudio } = trpc.studios.getCurrentStudio.useQuery(undefined, {
+        enabled: !!user && user.role === 'artist'
+    });
+
+    const { data: teamMembers } = trpc.studios.getStudioMembers.useQuery(
+        { studioId: currentStudio?.id! },
+        { enabled: !!currentStudio?.id }
+    );
+
+    const activeArtists = useMemo(() => {
+        if (!teamMembers || teamMembers.length === 0) {
+            // Fallback for solo/client
+            return user ? [{ userId: user.id, user, role: user.role }] : [];
+        }
+        return teamMembers.filter(m => m.status === 'active');
+    }, [teamMembers, user]);
+
+    const refetch = useCallback(() => {
+        refetchAppointments();
+    }, [refetchAppointments]);
 
     // 3. Derived State
     const stripDates = useMemo(() => {
@@ -237,6 +259,7 @@ export function useCalendarAgendaController() {
         workSchedule,
         artistServices,
         artistSettings,
-        setActiveDate
+        setActiveDate,
+        activeArtists
     };
 }

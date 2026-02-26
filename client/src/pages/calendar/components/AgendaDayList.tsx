@@ -15,11 +15,12 @@ interface AgendaDayListProps {
     workSchedule?: any;
     onAppointmentTap?: (apt: any) => void;
     onDateTap?: (date: Date) => void;
+    activeArtists?: any[];
 }
 
 const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef, onScroll, workSchedule, onAppointmentTap, onDateTap }: AgendaDayListProps) {
+export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef, onScroll, workSchedule, onAppointmentTap, onDateTap, activeArtists = [] }: AgendaDayListProps) {
     return (
         <div
             ref={parentRef}
@@ -74,7 +75,7 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                                 </Button>
                             </div>
 
-                            {/* Events List */}
+                            {/* Events List (Split by Artist) */}
                             <div className="flex flex-col gap-2">
                                 {isDesign && (
                                     <div className="py-2 px-3 bg-purple-500/10 border border-purple-500/20 rounded-md">
@@ -82,49 +83,73 @@ export function AgendaDayList({ virtualizer, agendaDates, eventsByDay, parentRef
                                     </div>
                                 )}
 
-                                {dayEvents.length > 0 ? (
-                                    dayEvents.map((apt: any) => {
-                                        const style = getEventStyle(apt);
-                                        return (
-                                            <div
-                                                key={apt.id}
-                                                onClick={() => onAppointmentTap?.(apt)}
-                                                className={cn(
-                                                    tokens.calendar.eventCard.base,
-                                                    tokens.calendar.eventCard.bg,
-                                                    tokens.calendar.eventCard.interactive,
-                                                    tokens.calendar.eventCard.padding,
-                                                    "shadow-sm flex flex-col gap-1 cursor-pointer active:scale-[0.98] transition-transform",
-                                                    style.className
-                                                )}
-                                            >
+                                {activeArtists.length > 0 ? (
+                                    <div className="flex gap-2 w-full">
+                                        {activeArtists.map((artist: any) => {
+                                            const artistEvents = dayEvents.filter((apt: any) => apt.artistId === artist.userId);
+                                            return (
+                                                <div key={artist.userId} className="flex-1 flex flex-col gap-2 min-w-0">
+                                                    {activeArtists.length > 1 && (
+                                                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate pb-1 border-b border-white/5 mb-1">
+                                                            {artist.user?.name || "Artist"}
+                                                        </div>
+                                                    )}
+                                                    {artistEvents.length > 0 ? (
+                                                        artistEvents.map((apt: any) => {
+                                                            const style = getEventStyle(apt);
+                                                            return (
+                                                                <div
+                                                                    key={apt.id}
+                                                                    onClick={() => onAppointmentTap?.(apt)}
+                                                                    className={cn(
+                                                                        tokens.calendar.eventCard.base,
+                                                                        tokens.calendar.eventCard.bg,
+                                                                        tokens.calendar.eventCard.interactive,
+                                                                        tokens.calendar.eventCard.padding,
+                                                                        "shadow-sm flex flex-col gap-1 cursor-pointer active:scale-[0.98] transition-transform",
+                                                                        style.className
+                                                                    )}
+                                                                >
 
+                                                                    <div className="font-bold text-sm z-10 relative truncate">{apt.title}</div>
+                                                                    <div className="text-xs opacity-70 flex justify-between z-10 relative">
+                                                                        <span className="truncate">{formatLocalTime(apt.startTime, getBusinessTimezone(), 'h:mm a')}</span>
+                                                                        <span className="truncate ml-1 text-right">{apt.clientName || ""}</span>
+                                                                    </div>
 
-                                                <div className="font-bold text-sm z-10 relative">{apt.title}</div>
-                                                <div className="text-xs opacity-70 flex justify-between z-10 relative">
-                                                    <span>{formatLocalTime(apt.startTime, getBusinessTimezone(), 'h:mm a')} - {formatLocalTime(apt.endTime, getBusinessTimezone(), 'h:mm a')}</span>
-                                                    <span>{apt.clientName || ""}</span>
+                                                                    {/* Status Overlay */}
+                                                                    {apt.status === 'completed' ? (
+                                                                        <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-0.5 bg-zinc-500/20 text-zinc-400 rounded-full border border-zinc-500/50 z-20">
+                                                                            <CheckCircle2 className="w-3 h-3" />
+                                                                        </div>
+                                                                    ) : ((apt.clientArrived === 1 || apt.clientArrived === true) && (
+                                                                        <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)] z-20">
+                                                                            <span className="relative flex h-1.5 w-1.5">
+                                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                                                                            </span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            )
+                                                        })
+                                                    ) : (
+                                                        !isDesign && (
+                                                            <div
+                                                                className="py-6 text-center text-xs text-muted-foreground/30 italic cursor-pointer hover:bg-white/[0.02] rounded-md transition-colors border border-dashed border-white/5 h-full flex flex-col justify-center"
+                                                                onClick={() => onDateTap?.(date)}
+                                                            >
+                                                                <span className="mb-1"><Plus className="w-4 h-4 mx-auto opacity-50" /></span>
+                                                                Add
+                                                            </div>
+                                                        )
+                                                    )}
                                                 </div>
-
-                                                {/* Status Overlay */}
-                                                {apt.status === 'completed' ? (
-                                                    <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-0.5 bg-zinc-500/20 text-zinc-400 rounded-full border border-zinc-500/50 z-20">
-                                                        <CheckCircle2 className="w-3 h-3" />
-                                                        <span className="text-[9px] font-bold uppercase tracking-widest">Completed</span>
-                                                    </div>
-                                                ) : ((apt.clientArrived === 1 || apt.clientArrived === true) && (
-                                                    <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)] z-20">
-                                                        <span className="relative flex h-1.5 w-1.5">
-                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                                                        </span>
-                                                        <span className="text-[9px] font-bold uppercase tracking-widest text-shadow-sm">In Progress</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )
-                                    })
+                                            );
+                                        })}
+                                    </div>
                                 ) : (
+                                    /* Fallback if no artists loaded yet or someone removed all artists */
                                     !isDesign && (
                                         <div
                                             className="py-6 text-center text-sm text-muted-foreground/30 italic cursor-pointer hover:bg-white/[0.02] rounded-md transition-colors"
