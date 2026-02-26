@@ -3,47 +3,52 @@
  * -------------------------------
  * SegmentedHeader is the canonical tab header component.
  * Use this for consistent tab styling across all pages.
- * 
+ *
  * Features:
  * - Non-selected tabs have 4% blur effect
  * - Active tab has full opacity and slight scale
  * - Smooth transitions between states
- * 
+ *
  * DO NOT create custom tab styles in page components.
  */
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 
 interface SegmentedHeaderProps {
-    options: string[];
-    activeIndex: number;
-    onChange: (index: number) => void;
-    className?: string;
+  options: string[];
+  activeIndex: number;
+  onChange: (index: number) => void;
+  className?: string;
 }
 
-export function SegmentedHeader({ options, activeIndex, onChange, className }: SegmentedHeaderProps) {
-    return (
-        <div className={cn(tokens.tabs.container, className)}>
-            {options.map((title, index) => {
-                const isActive = index === activeIndex;
-                return (
-                    <button
-                        key={title}
-                        onClick={() => onChange(index)}
-                        className={cn(
-                            tokens.tabs.button,
-                            isActive ? tokens.tabs.active : tokens.tabs.inactive
-                        )}
-                        style={{
-                            // Active tab: no blur, non-active: 4% blur (approx 0.4px)
-                            filter: isActive ? "none" : "blur(0.4px)",
-                            textShadow: isActive ? "0 0 20px rgba(255,255,255,0.3)" : "none"
-                        }}
-                    >
-                        {title}
-                    </button>
-                );
-            })}
-        </div>
-    );
+export function SegmentedHeader({
+  options,
+  activeIndex,
+  onChange,
+  className,
+}: SegmentedHeaderProps) {
+  return (
+    <div className={cn(tokens.tabs.container, className)}>
+      {options.map((title, index) => {
+        const isActive = index === activeIndex;
+        return (
+          <button
+            key={title}
+            onClick={() => onChange(index)}
+            className={cn(
+              tokens.tabs.button,
+              isActive ? tokens.tabs.active : tokens.tabs.inactive
+            )}
+            style={{
+              // Active tab: no blur, non-active: 4% blur (approx 0.4px)
+              filter: isActive ? "none" : "blur(0.4px)",
+              textShadow: isActive ? "0 0 20px rgba(255,255,255,0.3)" : "none",
+            }}
+          >
+            {title}
+          </button>
+        );
+      })}
+    </div>
+  );
 }

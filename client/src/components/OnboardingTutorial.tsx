@@ -110,9 +110,7 @@ export default function OnboardingTutorial({
             <div
               key={index}
               className={`h-2 rounded-full transition-all duration-300 ${
-                index === currentScreen
-                  ? "w-8 bg-primary"
-                  : "w-2 bg-muted"
+                index === currentScreen ? "w-8 bg-primary" : "w-2 bg-muted"
               }`}
             />
           ))}
@@ -124,12 +122,9 @@ export default function OnboardingTutorial({
           className="w-full h-14 text-lg font-semibold"
           onClick={handleNext}
         >
-          {currentScreen < tutorialScreens.length - 1
-            ? "Next"
-            : "Get Started"}
+          {currentScreen < tutorialScreens.length - 1 ? "Next" : "Get Started"}
         </Button>
       </div>
     </div>
   );
 }
-

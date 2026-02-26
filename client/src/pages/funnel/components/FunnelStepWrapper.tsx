@@ -37,20 +37,12 @@ export default function FunnelStepWrapper({
     <div className="px-6 pb-32">
       {/* Step header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-foreground">
-          {title}
-        </h2>
-        {subtitle && (
-          <p className="text-muted-foreground mt-1">
-            {subtitle}
-          </p>
-        )}
+        <h2 className="text-2xl font-bold text-foreground">{title}</h2>
+        {subtitle && <p className="text-muted-foreground mt-1">{subtitle}</p>}
       </div>
 
       {/* Step content */}
-      <div className="space-y-4">
-        {children}
-      </div>
+      <div className="space-y-4">{children}</div>
 
       {/* Navigation buttons - fixed at bottom */}
       <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent">
@@ -71,7 +63,7 @@ export default function FunnelStepWrapper({
             size="lg"
             onClick={onNext}
             disabled={nextDisabled || submitting}
-            className={`${isFirstStep ? 'w-full' : 'flex-1'}`}
+            className={`${isFirstStep ? "w-full" : "flex-1"}`}
           >
             {submitting ? (
               <>
@@ -80,7 +72,7 @@ export default function FunnelStepWrapper({
               </>
             ) : (
               <>
-                {nextLabel || (isLastStep ? 'Submit Request' : 'Continue')}
+                {nextLabel || (isLastStep ? "Submit Request" : "Continue")}
                 {!isLastStep && <ChevronRight className="w-4 h-4 ml-1" />}
               </>
             )}

@@ -1,5 +1,14 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+} from "@/components/ui";
 import { trpc } from "@/lib/trpc";
 import { Sparkles } from "lucide-react";
 import { LoadingState } from "@/components/ui/ssot";
@@ -83,7 +92,7 @@ export default function CompleteProfile() {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) =>
+                  onChange={e =>
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Enter your full name"
@@ -111,7 +120,7 @@ export default function CompleteProfile() {
                   id="phone"
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) =>
+                  onChange={e =>
                     setFormData({ ...formData, phone: e.target.value })
                   }
                   placeholder="+1 (555) 123-4567"
@@ -125,7 +134,7 @@ export default function CompleteProfile() {
                   id="birthday"
                   type="date"
                   value={formData.birthday}
-                  onChange={(e) =>
+                  onChange={e =>
                     setFormData({ ...formData, birthday: e.target.value })
                   }
                 />
@@ -151,4 +160,3 @@ export default function CompleteProfile() {
     </div>
   );
 }
-

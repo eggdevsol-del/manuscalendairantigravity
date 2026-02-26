@@ -1,10 +1,35 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Switch, Textarea } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Switch,
+  Textarea,
+} from "@/components/ui";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
-import { LoadingState, PageShell, PageHeader, GlassSheet } from "@/components/ui/ssot";
+import {
+  LoadingState,
+  PageShell,
+  PageHeader,
+  GlassSheet,
+} from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { trpc } from "@/lib/trpc";
-import { ChevronRight, Plus, Trash2, Pencil, Check, X, Layers, Clock } from "lucide-react";
+import {
+  ChevronRight,
+  Plus,
+  Trash2,
+  Pencil,
+  Check,
+  X,
+  Layers,
+  Clock,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -24,7 +49,7 @@ interface DaySchedule {
   enabled: boolean;
   start: string;
   end: string;
-  type?: 'work' | 'design' | 'personal';
+  type?: "work" | "design" | "personal";
 }
 
 interface WorkSchedule {
@@ -56,14 +81,24 @@ const defaultSchedule: WorkSchedule = {
   sunday: { enabled: false, start: "09:00", end: "17:00", type: "work" },
 };
 
-export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesProps) {
+export default function WorkHoursAndServices({
+  onBack,
+}: WorkHoursAndServicesProps) {
   const { user } = useAuth();
-  const [workSchedule, setWorkSchedule] = useState<WorkSchedule>(defaultSchedule);
+  const [workSchedule, setWorkSchedule] =
+    useState<WorkSchedule>(defaultSchedule);
   const [services, setServices] = useState<Service[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newService, setNewService] = useState<Service>({ name: "", duration: 60, price: 0, description: "", sittings: 1, color: "#3b82f6" });
+  const [newService, setNewService] = useState<Service>({
+    name: "",
+    duration: 60,
+    price: 0,
+    description: "",
+    sittings: 1,
+    color: "#3b82f6",
+  });
 
   // Project Service Builder State
   const [showProjectBuilder, setShowProjectBuilder] = useState(false);
@@ -85,7 +120,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
     onSuccess: () => {
       toast.success("Settings saved successfully");
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Failed to save settings: " + error.message);
     },
   });
@@ -95,7 +130,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
       if (artistSettings.workSchedule) {
         try {
           const parsedSchedule = JSON.parse(artistSettings.workSchedule);
-          if (parsedSchedule && typeof parsedSchedule === 'object') {
+          if (parsedSchedule && typeof parsedSchedule === "object") {
             setWorkSchedule({ ...defaultSchedule, ...parsedSchedule });
           }
         } catch (e) {
@@ -128,7 +163,7 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
           ...prev,
           duration: baseService.duration,
           price: baseService.price * projectSittings,
-          sittings: projectSittings
+          sittings: projectSittings,
         }));
       }
     }
@@ -137,21 +172,28 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
   const handleDayToggle = (day: keyof WorkSchedule) => {
     setWorkSchedule(prev => ({
       ...prev,
-      [day]: { ...prev[day], enabled: !prev[day].enabled }
+      [day]: { ...prev[day], enabled: !prev[day].enabled },
     }));
   };
 
-  const handleTimeChange = (day: keyof WorkSchedule, field: 'start' | 'end', value: string) => {
+  const handleTimeChange = (
+    day: keyof WorkSchedule,
+    field: "start" | "end",
+    value: string
+  ) => {
     setWorkSchedule(prev => ({
       ...prev,
-      [day]: { ...prev[day], [field]: value }
+      [day]: { ...prev[day], [field]: value },
     }));
   };
 
-  const handleTypeChange = (day: keyof WorkSchedule, value: 'work' | 'design' | 'personal') => {
+  const handleTypeChange = (
+    day: keyof WorkSchedule,
+    value: "work" | "design" | "personal"
+  ) => {
     setWorkSchedule(prev => ({
       ...prev,
-      [day]: { ...prev[day], type: value }
+      [day]: { ...prev[day], type: value },
     }));
   };
 
@@ -166,7 +208,14 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
       return;
     }
     setServices(prev => [...prev, newService]);
-    setNewService({ name: "", duration: 60, price: 0, description: "", sittings: 1, color: "#3b82f6" });
+    setNewService({
+      name: "",
+      duration: 60,
+      price: 0,
+      description: "",
+      sittings: 1,
+      color: "#3b82f6",
+    });
     setShowAddForm(false);
     toast.success("Service added successfully");
   };
@@ -197,7 +246,14 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
   };
 
   const handleCancelAdd = () => {
-    setNewService({ name: "", duration: 60, price: 0, description: "", sittings: 1, color: "#3b82f6" });
+    setNewService({
+      name: "",
+      duration: 60,
+      price: 0,
+      description: "",
+      sittings: 1,
+      color: "#3b82f6",
+    });
     setShowAddForm(false);
   };
 
@@ -212,9 +268,9 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
       toast.error("Please enter a service name");
       return;
     }
-    setServices(prev => prev.map((service, i) =>
-      i === editingIndex ? editingService : service
-    ));
+    setServices(prev =>
+      prev.map((service, i) => (i === editingIndex ? editingService : service))
+    );
     setEditingIndex(null);
     setEditingService(null);
     toast.success("Service updated successfully");
@@ -261,28 +317,54 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
 
       {/* 2. Top Context Area */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
-        <p className="text-4xl font-light text-foreground/90 tracking-tight">Schedule</p>
-        <p className="text-muted-foreground text-lg font-medium mt-1">Manage availability & offerings</p>
+        <p className="text-4xl font-light text-foreground/90 tracking-tight">
+          Schedule
+        </p>
+        <p className="text-muted-foreground text-lg font-medium mt-1">
+          Manage availability & offerings
+        </p>
       </div>
 
       {/* 3. Sheet Container */}
       <div className={tokens.contentContainer.base}>
         <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
           <div className="pb-32 max-w-lg mx-auto space-y-1">
-
             {/* Work Schedule Card */}
-            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 overflow-hidden")}>
+            <Card
+              className={cn(
+                tokens.card.base,
+                tokens.card.bg,
+                "border-0 overflow-hidden"
+              )}
+            >
               <div className="p-4 border-b border-white/5">
-                <h3 className="font-semibold text-foreground">Start / Finish Times</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Set enabled days and hours</p>
+                <h3 className="font-semibold text-foreground">
+                  Start / Finish Times
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Set enabled days and hours
+                </p>
               </div>
               <div className="p-4 space-y-1">
                 {days.map(({ key, label }) => {
-                  const daySchedule = workSchedule[key] || { enabled: false, start: "09:00", end: "17:00" };
+                  const daySchedule = workSchedule[key] || {
+                    enabled: false,
+                    start: "09:00",
+                    end: "17:00",
+                  };
                   return (
                     <div key={key} className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label className={cn("text-base", daySchedule.enabled ? "text-foreground" : "text-muted-foreground")}>{label}</Label>
+                        <Label
+                          className={cn(
+                            "text-base",
+                            daySchedule.enabled
+                              ? "text-foreground"
+                              : "text-muted-foreground"
+                          )}
+                        >
+                          {label}
+                        </Label>
                         <Switch
                           checked={daySchedule.enabled}
                           onCheckedChange={() => handleDayToggle(key)}
@@ -294,7 +376,9 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
                           {/* Type Selector */}
                           <Select
                             value={daySchedule.type || "work"}
-                            onValueChange={(val: any) => handleTypeChange(key, val)}
+                            onValueChange={(val: any) =>
+                              handleTypeChange(key, val)
+                            }
                           >
                             <SelectTrigger className="h-8 bg-white/5 border-white/10 text-xs w-full mb-1">
                               <SelectValue placeholder="Select type" />
@@ -311,23 +395,28 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
                               <Input
                                 type="time"
                                 value={daySchedule.start}
-                                onChange={(e) => handleTimeChange(key, 'start', e.target.value)}
+                                onChange={e =>
+                                  handleTimeChange(key, "start", e.target.value)
+                                }
                                 className="bg-white/5 border-white/10"
                               />
                             </div>
-                            <span className="flex items-center text-muted-foreground text-xs">TO</span>
+                            <span className="flex items-center text-muted-foreground text-xs">
+                              TO
+                            </span>
                             <div className="flex-1">
                               <Input
                                 type="time"
                                 value={daySchedule.end}
-                                onChange={(e) => handleTimeChange(key, 'end', e.target.value)}
+                                onChange={e =>
+                                  handleTimeChange(key, "end", e.target.value)
+                                }
                                 className="bg-white/5 border-white/10"
                               />
                             </div>
                           </div>
                         </div>
-                      )
-                      }
+                      )}
                     </div>
                   );
                 })}
@@ -335,11 +424,21 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
             </Card>
 
             {/* Services Card */}
-            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 overflow-hidden")}>
+            <Card
+              className={cn(
+                tokens.card.base,
+                tokens.card.bg,
+                "border-0 overflow-hidden"
+              )}
+            >
               <div className="p-4 border-b border-white/5 flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-foreground">Service Menu</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Manage list and pricing</p>
+                  <h3 className="font-semibold text-foreground">
+                    Service Menu
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Manage list and pricing
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -352,7 +451,11 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
                     Project
                   </Button>
                   {!showAddForm && (
-                    <Button size="sm" onClick={handleShowAddForm} className="h-8 shadow-lg shadow-primary/20">
+                    <Button
+                      size="sm"
+                      onClick={handleShowAddForm}
+                      className="h-8 shadow-lg shadow-primary/20"
+                    >
                       <Plus className="w-3.5 h-3.5 mr-1" />
                       New
                     </Button>
@@ -362,7 +465,10 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
 
               <div className="p-4 space-y-1">
                 {services.map((service, index) => (
-                  <div key={index} className="p-4 border border-white/10 rounded-[4px] bg-white/5">
+                  <div
+                    key={index}
+                    className="p-4 border border-white/10 rounded-[4px] bg-white/5"
+                  >
                     {editingIndex === index && editingService ? (
                       // Edit Mode
                       <div className="space-y-3">
@@ -370,7 +476,12 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
                           <Label>Service Name</Label>
                           <Input
                             value={editingService.name}
-                            onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
+                            onChange={e =>
+                              setEditingService({
+                                ...editingService,
+                                name: e.target.value,
+                              })
+                            }
                             className="bg-white/5 border-white/10"
                           />
                         </div>
@@ -381,7 +492,12 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
                             <Input
                               type="number"
                               value={editingService.duration}
-                              onChange={(e) => setEditingService({ ...editingService, duration: parseInt(e.target.value) || 0 })}
+                              onChange={e =>
+                                setEditingService({
+                                  ...editingService,
+                                  duration: parseInt(e.target.value) || 0,
+                                })
+                              }
                               className="bg-white/5 border-white/10"
                             />
                           </div>
@@ -390,7 +506,12 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
                             <Input
                               type="number"
                               value={editingService.price}
-                              onChange={(e) => setEditingService({ ...editingService, price: parseInt(e.target.value) || 0 })}
+                              onChange={e =>
+                                setEditingService({
+                                  ...editingService,
+                                  price: parseInt(e.target.value) || 0,
+                                })
+                              }
                               className="bg-white/5 border-white/10"
                             />
                           </div>
@@ -402,13 +523,23 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
                             <Input
                               type="color"
                               value={editingService.color || "#3b82f6"}
-                              onChange={(e) => setEditingService({ ...editingService, color: e.target.value })}
+                              onChange={e =>
+                                setEditingService({
+                                  ...editingService,
+                                  color: e.target.value,
+                                })
+                              }
                               className="w-12 h-10 p-1 bg-white/5 border-white/10 cursor-pointer"
                             />
                             <Input
                               type="text"
                               value={editingService.color || "#3b82f6"}
-                              onChange={(e) => setEditingService({ ...editingService, color: e.target.value })}
+                              onChange={e =>
+                                setEditingService({
+                                  ...editingService,
+                                  color: e.target.value,
+                                })
+                              }
                               className="flex-1 bg-white/5 border-white/10"
                               placeholder="#3b82f6"
                             />
@@ -418,25 +549,49 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
                         {/* ... (Other fields can be similarly styled) ... */}
 
                         <div className="flex gap-2 pt-2">
-                          <Button size="sm" onClick={handleSaveEdit}>Save</Button>
-                          <Button size="sm" variant="ghost" onClick={handleCancelEdit}>Cancel</Button>
+                          <Button size="sm" onClick={handleSaveEdit}>
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={handleCancelEdit}
+                          >
+                            Cancel
+                          </Button>
                         </div>
                       </div>
                     ) : (
                       // View Mode
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h3 className="font-semibold text-base text-foreground">{service.name}</h3>
+                          <h3 className="font-semibold text-base text-foreground">
+                            {service.name}
+                          </h3>
                           <div className="flex gap-3 mt-1 text-xs text-muted-foreground font-mono">
-                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {service.duration}m</span>
-                            <span className="text-primary font-bold">${service.price}</span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" /> {service.duration}m
+                            </span>
+                            <span className="text-primary font-bold">
+                              ${service.price}
+                            </span>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-primary" onClick={() => handleEditService(index)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 hover:text-primary"
+                            onClick={() => handleEditService(index)}
+                          >
                             <Pencil className="w-3.5 h-3.5" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive" onClick={() => handleRemoveService(index)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 hover:text-destructive"
+                            onClick={() => handleRemoveService(index)}
+                          >
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>
                         </div>
@@ -447,24 +602,68 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
 
                 {showAddForm && (
                   <div className="p-4 border border-dashed border-white/20 rounded-[4px] space-y-3 bg-white/5">
-                    <h3 className="font-semibold text-sm">New Service Details</h3>
-                    <Input placeholder="Name" value={newService.name} onChange={e => setNewService({ ...newService, name: e.target.value })} className="bg-white/5 border-white/10" />
+                    <h3 className="font-semibold text-sm">
+                      New Service Details
+                    </h3>
+                    <Input
+                      placeholder="Name"
+                      value={newService.name}
+                      onChange={e =>
+                        setNewService({ ...newService, name: e.target.value })
+                      }
+                      className="bg-white/5 border-white/10"
+                    />
                     <div className="flex gap-2">
-                      <Input type="number" placeholder="Duration" value={newService.duration} onChange={e => setNewService({ ...newService, duration: parseInt(e.target.value) })} className="bg-white/5 border-white/10" />
-                      <Input type="number" placeholder="Price" value={newService.price} onChange={e => setNewService({ ...newService, price: parseInt(e.target.value) })} className="bg-white/5 border-white/10" />
+                      <Input
+                        type="number"
+                        placeholder="Duration"
+                        value={newService.duration}
+                        onChange={e =>
+                          setNewService({
+                            ...newService,
+                            duration: parseInt(e.target.value),
+                          })
+                        }
+                        className="bg-white/5 border-white/10"
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Price"
+                        value={newService.price}
+                        onChange={e =>
+                          setNewService({
+                            ...newService,
+                            price: parseInt(e.target.value),
+                          })
+                        }
+                        className="bg-white/5 border-white/10"
+                      />
                       <div className="w-16">
                         <Input
                           type="color"
                           title="Service Color"
                           value={newService.color || "#3b82f6"}
-                          onChange={(e) => setNewService({ ...newService, color: e.target.value })}
+                          onChange={e =>
+                            setNewService({
+                              ...newService,
+                              color: e.target.value,
+                            })
+                          }
                           className="h-10 p-1 bg-white/5 border-white/10 w-full cursor-pointer"
                         />
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={handleAddService}>Add</Button>
-                      <Button size="sm" variant="ghost" onClick={handleCancelAdd}>Cancel</Button>
+                      <Button size="sm" onClick={handleAddService}>
+                        Add
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleCancelAdd}
+                      >
+                        Cancel
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -478,26 +677,32 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
             >
               {upsertMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
-
           </div>
         </div>
-      </div >
+      </div>
 
       {/* Project Builder Modal - keeping as is, wrapped in ModalShell it should work fine */}
-      < ModalShell
+      <ModalShell
         isOpen={showProjectBuilder}
-        onClose={() => setShowProjectBuilder(false)
-        }
+        onClose={() => setShowProjectBuilder(false)}
         title="Add Project Service"
         description="Create a multi-sitting project package based on an existing service."
         className="max-w-md"
         overlayName="Project Service Builder"
         overlayId="work_hours.project_builder"
         footer={
-          < div className="flex w-full gap-2" >
-            <Button variant="outline" className="flex-1 bg-transparent border-white/10 hover:bg-white/5" onClick={() => setShowProjectBuilder(false)}>Cancel</Button>
-            <Button className="flex-1" onClick={handleAddProjectService}>Add Project Service</Button>
-          </div >
+          <div className="flex w-full gap-2">
+            <Button
+              variant="outline"
+              className="flex-1 bg-transparent border-white/10 hover:bg-white/5"
+              onClick={() => setShowProjectBuilder(false)}
+            >
+              Cancel
+            </Button>
+            <Button className="flex-1" onClick={handleAddProjectService}>
+              Add Project Service
+            </Button>
+          </div>
         }
       >
         <div className="space-y-4 py-2">
@@ -505,30 +710,62 @@ export default function WorkHoursAndServices({ onBack }: WorkHoursAndServicesPro
           {/* I'll simplify the modal content for brevity in this rewrite, assuming ModalShell handles the look */}
           <div className="space-y-3">
             <Label>Project Name</Label>
-            <Input value={newProjectService.name} onChange={e => setNewProjectService({ ...newProjectService, name: e.target.value })} className="bg-white/5 border-white/10" />
+            <Input
+              value={newProjectService.name}
+              onChange={e =>
+                setNewProjectService({
+                  ...newProjectService,
+                  name: e.target.value,
+                })
+              }
+              className="bg-white/5 border-white/10"
+            />
 
             <Label>Base Service</Label>
-            <Select value={projectBaseServiceId} onValueChange={setProjectBaseServiceId}>
-              <SelectTrigger className="bg-white/5 border-white/10"><SelectValue placeholder="Select..." /></SelectTrigger>
+            <Select
+              value={projectBaseServiceId}
+              onValueChange={setProjectBaseServiceId}
+            >
+              <SelectTrigger className="bg-white/5 border-white/10">
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
               <SelectContent>
-                {services.map((s, i) => <SelectItem key={i} value={i.toString()}>{s.name} (${s.price})</SelectItem>)}
+                {services.map((s, i) => (
+                  <SelectItem key={i} value={i.toString()}>
+                    {s.name} (${s.price})
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Sittings</Label>
-                <Input type="number" value={projectSittings} onChange={e => setProjectSittings(parseInt(e.target.value))} className="bg-white/5 border-white/10" />
+                <Input
+                  type="number"
+                  value={projectSittings}
+                  onChange={e => setProjectSittings(parseInt(e.target.value))}
+                  className="bg-white/5 border-white/10"
+                />
               </div>
               <div>
                 <Label>Total Price</Label>
-                <Input type="number" value={newProjectService.price} onChange={e => setNewProjectService({ ...newProjectService, price: parseFloat(e.target.value) })} className="bg-white/5 border-white/10" />
+                <Input
+                  type="number"
+                  value={newProjectService.price}
+                  onChange={e =>
+                    setNewProjectService({
+                      ...newProjectService,
+                      price: parseFloat(e.target.value),
+                    })
+                  }
+                  className="bg-white/5 border-white/10"
+                />
               </div>
             </div>
           </div>
         </div>
-      </ModalShell >
-
-    </PageShell >
+      </ModalShell>
+    </PageShell>
   );
 }

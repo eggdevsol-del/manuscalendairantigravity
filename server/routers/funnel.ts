@@ -1,6 +1,6 @@
 /**
  * Funnel Router
- * 
+ *
  * Handles public funnel endpoints and lead management.
  * Some endpoints are public (no auth required), others require authentication.
  */
@@ -14,12 +14,12 @@ import {
   deriveTagLabels,
   calculatePriorityScore,
   getPriorityTier,
-  estimateLeadValue
+  estimateLeadValue,
 } from "../services/tagDerivationEngine";
 
 // Helper to format date for MySQL
 function formatDateForMySQL(date: Date): string {
-  return date.toISOString().slice(0, 19).replace('T', ' ');
+  return date.toISOString().slice(0, 19).replace("T", " ");
 }
 
 export const funnelRouter = router({
@@ -57,11 +57,13 @@ export const funnelRouter = router({
    * PUBLIC - no auth required (uses token)
    */
   confirmDeposit: publicProcedure
-    .input(z.object({
-      token: z.string(),
-      paymentMethod: z.enum(['stripe', 'paypal', 'bank', 'cash']),
-      proofUrl: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        token: z.string(),
+        paymentMethod: z.enum(["stripe", "paypal", "bank", "cash"]),
+        proofUrl: z.string().optional(),
+      })
+    )
     .mutation(async ({ input }) => {
       // In production, this would update the proposal/booking status
       return { success: true };
@@ -97,13 +99,19 @@ export const funnelRouter = router({
 
       return {
         id: artist.id,
-        displayName: artist.name || 'Artist',
+        displayName: artist.name || "Artist",
         profileImage: artist.avatar || null,
         slug: settings.publicSlug,
         funnelWelcomeMessage: settings.funnelWelcomeMessage,
-        styleOptions: settings.styleOptions ? JSON.parse(settings.styleOptions) : [],
-        placementOptions: settings.placementOptions ? JSON.parse(settings.placementOptions) : [],
-        budgetRanges: settings.budgetRanges ? JSON.parse(settings.budgetRanges) : [],
+        styleOptions: settings.styleOptions
+          ? JSON.parse(settings.styleOptions)
+          : [],
+        placementOptions: settings.placementOptions
+          ? JSON.parse(settings.placementOptions)
+          : [],
+        budgetRanges: settings.budgetRanges
+          ? JSON.parse(settings.budgetRanges)
+          : [],
       };
     }),
 
@@ -112,53 +120,68 @@ export const funnelRouter = router({
    * PUBLIC - no auth required
    */
   submitFunnel: publicProcedure
-    .input(z.object({
-      artistSlug: z.string(),
-      sessionId: z.string(),
-      stepData: z.object({
-        intent: z.object({
-          projectType: z.string().optional(),
-          projectDescription: z.string().optional(),
-        }).optional(),
-        contact: z.object({
-          name: z.string(),
-          email: z.string().email(),
-          phone: z.string().optional(),
-        }).optional(),
-        style: z.object({
-          stylePreferences: z.array(z.string()).optional(),
-          referenceImages: z.array(z.string()).optional(),
-        }).optional(),
-        budget: z.object({
-          placement: z.string().optional(),
-          estimatedSize: z.string().optional(),
-          budgetMin: z.number().optional(),
-          budgetMax: z.number().nullable().optional(),
-          budgetLabel: z.string().optional(),
-        }).optional(),
-        availability: z.object({
-          preferredTimeframe: z.string().optional(),
-          preferredMonths: z.array(z.string()).optional(),
-          urgency: z.enum(['flexible', 'moderate', 'urgent']).optional(),
-        }).optional(),
-      }),
-      currentStep: z.number(),
-      isComplete: z.boolean(),
-    }))
+    .input(
+      z.object({
+        artistSlug: z.string(),
+        sessionId: z.string(),
+        stepData: z.object({
+          intent: z
+            .object({
+              projectType: z.string().optional(),
+              projectDescription: z.string().optional(),
+            })
+            .optional(),
+          contact: z
+            .object({
+              name: z.string(),
+              email: z.string().email(),
+              phone: z.string().optional(),
+            })
+            .optional(),
+          style: z
+            .object({
+              stylePreferences: z.array(z.string()).optional(),
+              referenceImages: z.array(z.string()).optional(),
+            })
+            .optional(),
+          budget: z
+            .object({
+              placement: z.string().optional(),
+              estimatedSize: z.string().optional(),
+              budgetMin: z.number().optional(),
+              budgetMax: z.number().nullable().optional(),
+              budgetLabel: z.string().optional(),
+            })
+            .optional(),
+          availability: z
+            .object({
+              preferredTimeframe: z.string().optional(),
+              preferredMonths: z.array(z.string()).optional(),
+              urgency: z.enum(["flexible", "moderate", "urgent"]).optional(),
+            })
+            .optional(),
+        }),
+        currentStep: z.number(),
+        isComplete: z.boolean(),
+      })
+    )
     .mutation(async ({ input }) => {
       const db = await getDb();
-      if (!db) throw new Error('Database connection failed');
+      if (!db) throw new Error("Database connection failed");
 
       const now = new Date();
       const nowFormatted = formatDateForMySQL(now);
 
       // Get artist by slug
       const settings = await db.query.artistSettings.findFirst({
-        where: eq(schema.artistSettings.publicSlug, input.artistSlug.toLowerCase()),
+        where: eq(
+          schema.artistSettings.publicSlug,
+          input.artistSlug.toLowerCase()
+        ),
       });
 
       if (!settings) {
-        throw new Error('Artist not found');
+        throw new Error("Artist not found");
       }
 
       const artistId = settings.userId;
@@ -189,13 +212,17 @@ export const funnelRouter = router({
 
       // Calculate derived values
       const derivedTags = deriveTagLabels(flatData);
-      const priorityScore = calculatePriorityScore({ ...flatData, createdAt: now });
+      const priorityScore = calculatePriorityScore({
+        ...flatData,
+        createdAt: now,
+      });
       const priorityTier = getPriorityTier(priorityScore);
       const estimatedValue = estimateLeadValue(flatData);
 
       if (existingSubmission) {
         // Update existing submission
-        await db.update(schema.funnelSessions)
+        await db
+          .update(schema.funnelSessions)
           .set({
             stepData: JSON.stringify(input.stepData),
             currentStep: String(input.currentStep),
@@ -233,21 +260,28 @@ export const funnelRouter = router({
 
         if (existingLead) {
           // Update existing lead
-          await db.update(schema.leads)
+          await db
+            .update(schema.leads)
             .set({
               name: flatData.name,
               phone: flatData.phone || null,
               projectType: flatData.projectType || null,
               projectDescription: flatData.projectDescription || null,
-              stylePreferences: flatData.stylePreferences ? JSON.stringify(flatData.stylePreferences) : null,
-              referenceImages: flatData.referenceImages ? JSON.stringify(flatData.referenceImages) : null,
+              stylePreferences: flatData.stylePreferences
+                ? JSON.stringify(flatData.stylePreferences)
+                : null,
+              referenceImages: flatData.referenceImages
+                ? JSON.stringify(flatData.referenceImages)
+                : null,
               placement: flatData.placement || null,
               estimatedSize: flatData.estimatedSize || null,
               budgetMin: flatData.budgetMin || null,
               budgetMax: flatData.budgetMax || null,
               preferredTimeframe: flatData.preferredTimeframe || null,
-              preferredMonths: flatData.preferredMonths ? JSON.stringify(flatData.preferredMonths) : null,
-              urgency: flatData.urgency || 'flexible',
+              preferredMonths: flatData.preferredMonths
+                ? JSON.stringify(flatData.preferredMonths)
+                : null,
+              urgency: flatData.urgency || "flexible",
               derivedTags: JSON.stringify(derivedTags),
               priorityScore,
               priorityTier,
@@ -262,23 +296,29 @@ export const funnelRouter = router({
           // Create new lead
           const [newLead] = await db.insert(schema.leads).values({
             artistId,
-            source: 'funnel',
+            source: "funnel",
             sourceUrl: `/start/${input.artistSlug}`,
-            status: 'new',
+            status: "new",
             name: flatData.name,
             email: flatData.email.toLowerCase(),
             phone: flatData.phone || null,
             projectType: flatData.projectType || null,
             projectDescription: flatData.projectDescription || null,
-            stylePreferences: flatData.stylePreferences ? JSON.stringify(flatData.stylePreferences) : null,
-            referenceImages: flatData.referenceImages ? JSON.stringify(flatData.referenceImages) : null,
+            stylePreferences: flatData.stylePreferences
+              ? JSON.stringify(flatData.stylePreferences)
+              : null,
+            referenceImages: flatData.referenceImages
+              ? JSON.stringify(flatData.referenceImages)
+              : null,
             placement: flatData.placement || null,
             estimatedSize: flatData.estimatedSize || null,
             budgetMin: flatData.budgetMin || null,
             budgetMax: flatData.budgetMax || null,
             preferredTimeframe: flatData.preferredTimeframe || null,
-            preferredMonths: flatData.preferredMonths ? JSON.stringify(flatData.preferredMonths) : null,
-            urgency: flatData.urgency || 'flexible',
+            preferredMonths: flatData.preferredMonths
+              ? JSON.stringify(flatData.preferredMonths)
+              : null,
+            urgency: flatData.urgency || "flexible",
             derivedTags: JSON.stringify(derivedTags),
             priorityScore,
             priorityTier,
@@ -295,9 +335,9 @@ export const funnelRouter = router({
             artistId,
             clientId: null, // Will be linked when client account is created
             leadId,
-            subject: flatData.projectType || 'New Consultation',
-            description: flatData.projectDescription || '',
-            status: 'pending',
+            subject: flatData.projectType || "New Consultation",
+            description: flatData.projectDescription || "",
+            status: "pending",
             createdAt: nowFormatted,
             updatedAt: nowFormatted,
           });
@@ -316,23 +356,23 @@ export const funnelRouter = router({
           // Create initial message with funnel summary
           const summaryMessage = `New consultation request via booking link:
 
-**Project:** ${flatData.projectType || 'Not specified'}
-**Description:** ${flatData.projectDescription || 'Not provided'}
-**Placement:** ${flatData.placement || 'Not specified'}
-**Size:** ${flatData.estimatedSize || 'Not specified'}
-**Budget:** ${flatData.budgetLabel || 'Not specified'}
-**Timeframe:** ${flatData.preferredTimeframe || 'Flexible'}
-**Urgency:** ${flatData.urgency || 'Flexible'}
+**Project:** ${flatData.projectType || "Not specified"}
+**Description:** ${flatData.projectDescription || "Not provided"}
+**Placement:** ${flatData.placement || "Not specified"}
+**Size:** ${flatData.estimatedSize || "Not specified"}
+**Budget:** ${flatData.budgetLabel || "Not specified"}
+**Timeframe:** ${flatData.preferredTimeframe || "Flexible"}
+**Urgency:** ${flatData.urgency || "Flexible"}
 
 **Contact:**
 - Name: ${flatData.name}
 - Email: ${flatData.email}
-- Phone: ${flatData.phone || 'Not provided'}`;
+- Phone: ${flatData.phone || "Not provided"}`;
 
           await db.insert(schema.messages).values({
             conversationId: conversation.insertId,
             senderId: artistId, // Use artistId as a workaround if field is not null
-            messageType: 'system',
+            messageType: "system",
             content: summaryMessage,
             createdAt: nowFormatted,
           });
@@ -353,11 +393,23 @@ export const funnelRouter = router({
    * PROTECTED - requires authentication
    */
   getLeads: protectedProcedure
-    .input(z.object({
-      status: z.enum(['new', 'contacted', 'qualified', 'proposal_sent', 'converted', 'lost', 'archived']).optional(),
-      limit: z.number().min(1).max(100).default(50),
-      offset: z.number().min(0).default(0),
-    }))
+    .input(
+      z.object({
+        status: z
+          .enum([
+            "new",
+            "contacted",
+            "qualified",
+            "proposal_sent",
+            "converted",
+            "lost",
+            "archived",
+          ])
+          .optional(),
+        limit: z.number().min(1).max(100).default(50),
+        offset: z.number().min(0).default(0),
+      })
+    )
     .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) return { leads: [], total: 0 };
@@ -366,7 +418,10 @@ export const funnelRouter = router({
 
       let query = db.query.leads.findMany({
         where: input.status
-          ? and(eq(schema.leads.artistId, user.id), eq(schema.leads.status, input.status))
+          ? and(
+              eq(schema.leads.artistId, user.id),
+              eq(schema.leads.status, input.status)
+            )
           : eq(schema.leads.artistId, user.id),
         orderBy: [desc(schema.leads.createdAt)],
         limit: input.limit,
@@ -381,11 +436,21 @@ export const funnelRouter = router({
         const leadObj = lead as any;
         return {
           ...leadObj,
-          derivedTags: lead.derivedTags ? JSON.parse(lead.derivedTags as string) : [],
-          stylePreferences: lead.stylePreferences ? JSON.parse(lead.stylePreferences as string) : [],
-          referenceImages: lead.referenceImages ? JSON.parse(lead.referenceImages as string) : [],
-          preferredMonths: lead.preferredMonths ? JSON.parse(lead.preferredMonths as string) : [],
-          bodyPlacementImages: lead.bodyPlacementImages ? JSON.parse(lead.bodyPlacementImages as string) : [],
+          derivedTags: lead.derivedTags
+            ? JSON.parse(lead.derivedTags as string)
+            : [],
+          stylePreferences: lead.stylePreferences
+            ? JSON.parse(lead.stylePreferences as string)
+            : [],
+          referenceImages: lead.referenceImages
+            ? JSON.parse(lead.referenceImages as string)
+            : [],
+          preferredMonths: lead.preferredMonths
+            ? JSON.parse(lead.preferredMonths as string)
+            : [],
+          bodyPlacementImages: lead.bodyPlacementImages
+            ? JSON.parse(lead.bodyPlacementImages as string)
+            : [],
         };
       });
 
@@ -400,13 +465,23 @@ export const funnelRouter = router({
    * PROTECTED - requires authentication
    */
   updateLeadStatus: protectedProcedure
-    .input(z.object({
-      leadId: z.number(),
-      status: z.enum(['new', 'contacted', 'qualified', 'proposal_sent', 'converted', 'lost', 'archived']),
-    }))
+    .input(
+      z.object({
+        leadId: z.number(),
+        status: z.enum([
+          "new",
+          "contacted",
+          "qualified",
+          "proposal_sent",
+          "converted",
+          "lost",
+          "archived",
+        ]),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
-      if (!db) throw new Error('Database connection failed');
+      if (!db) throw new Error("Database connection failed");
 
       const { user } = ctx;
       const now = formatDateForMySQL(new Date());
@@ -420,15 +495,19 @@ export const funnelRouter = router({
       });
 
       if (!lead) {
-        throw new Error('Lead not found');
+        throw new Error("Lead not found");
       }
 
       // Update status
-      await db.update(schema.leads)
+      await db
+        .update(schema.leads)
         .set({
           status: input.status,
-          contactedAt: input.status === 'contacted' && !lead.contactedAt ? now : lead.contactedAt,
-          convertedAt: input.status === 'converted' ? now : lead.convertedAt,
+          contactedAt:
+            input.status === "contacted" && !lead.contactedAt
+              ? now
+              : lead.contactedAt,
+          convertedAt: input.status === "converted" ? now : lead.convertedAt,
           updatedAt: now,
         })
         .where(eq(schema.leads.id, input.leadId));
@@ -441,21 +520,27 @@ export const funnelRouter = router({
    * PROTECTED - requires authentication
    */
   updateFunnelSettings: protectedProcedure
-    .input(z.object({
-      publicSlug: z.string().min(3).max(50).optional(),
-      funnelEnabled: z.boolean().optional(),
-      funnelWelcomeMessage: z.string().max(500).optional(),
-      styleOptions: z.array(z.string()).optional(),
-      placementOptions: z.array(z.string()).optional(),
-      budgetRanges: z.array(z.object({
-        label: z.string(),
-        min: z.number(),
-        max: z.number().nullable(),
-      })).optional(),
-    }))
+    .input(
+      z.object({
+        publicSlug: z.string().min(3).max(50).optional(),
+        funnelEnabled: z.boolean().optional(),
+        funnelWelcomeMessage: z.string().max(500).optional(),
+        styleOptions: z.array(z.string()).optional(),
+        placementOptions: z.array(z.string()).optional(),
+        budgetRanges: z
+          .array(
+            z.object({
+              label: z.string(),
+              min: z.number(),
+              max: z.number().nullable(),
+            })
+          )
+          .optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
-      if (!db) throw new Error('Database connection failed');
+      if (!db) throw new Error("Database connection failed");
 
       const { user } = ctx;
       const now = formatDateForMySQL(new Date());
@@ -464,13 +549,13 @@ export const funnelRouter = router({
       if (input.publicSlug) {
         const existing = await db.query.artistSettings.findFirst({
           where: and(
-            eq(schema.artistSettings.publicSlug, input.publicSlug.toLowerCase()),
+            eq(schema.artistSettings.publicSlug, input.publicSlug.toLowerCase())
             // Exclude current user
           ),
         });
 
         if (existing && existing.userId !== user.id) {
-          throw new Error('This URL is already taken');
+          throw new Error("This URL is already taken");
         }
       }
 
@@ -503,7 +588,8 @@ export const funnelRouter = router({
       }
 
       if (settings) {
-        await db.update(schema.artistSettings)
+        await db
+          .update(schema.artistSettings)
           .set(updateData)
           .where(eq(schema.artistSettings.userId, user.id));
       } else {
@@ -530,35 +616,40 @@ export const funnelRouter = router({
    * Get artist funnel settings
    * PROTECTED - requires authentication
    */
-  getFunnelSettings: protectedProcedure
-    .query(async ({ ctx }) => {
-      const db = await getDb();
-      if (!db) return null;
+  getFunnelSettings: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) return null;
 
-      const { user } = ctx;
+    const { user } = ctx;
 
-      const settings = await db.query.artistSettings.findFirst({
-        where: eq(schema.artistSettings.userId, user.id),
-      });
+    const settings = await db.query.artistSettings.findFirst({
+      where: eq(schema.artistSettings.userId, user.id),
+    });
 
-      if (!settings) {
-        return {
-          publicSlug: null,
-          funnelEnabled: false,
-          funnelWelcomeMessage: null,
-          styleOptions: [],
-          placementOptions: [],
-          budgetRanges: [],
-        };
-      }
-
+    if (!settings) {
       return {
-        publicSlug: settings.publicSlug,
-        funnelEnabled: settings.funnelEnabled,
-        funnelWelcomeMessage: settings.funnelWelcomeMessage,
-        styleOptions: settings.styleOptions ? JSON.parse(settings.styleOptions) : [],
-        placementOptions: settings.placementOptions ? JSON.parse(settings.placementOptions) : [],
-        budgetRanges: settings.budgetRanges ? JSON.parse(settings.budgetRanges) : [],
+        publicSlug: null,
+        funnelEnabled: false,
+        funnelWelcomeMessage: null,
+        styleOptions: [],
+        placementOptions: [],
+        budgetRanges: [],
       };
-    }),
+    }
+
+    return {
+      publicSlug: settings.publicSlug,
+      funnelEnabled: settings.funnelEnabled,
+      funnelWelcomeMessage: settings.funnelWelcomeMessage,
+      styleOptions: settings.styleOptions
+        ? JSON.parse(settings.styleOptions)
+        : [],
+      placementOptions: settings.placementOptions
+        ? JSON.parse(settings.placementOptions)
+        : [],
+      budgetRanges: settings.budgetRanges
+        ? JSON.parse(settings.budgetRanges)
+        : [],
+    };
+  }),
 });

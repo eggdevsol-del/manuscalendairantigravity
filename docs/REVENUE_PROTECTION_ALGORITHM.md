@@ -1,4 +1,5 @@
 # Revenue Protection Algorithm v2.0
+
 ## Business Dashboard Priority System for Tattoo Artists
 
 ---
@@ -11,13 +12,13 @@ The algorithm's job is to **surface the highest-risk revenue items first**, ensu
 
 ### Why This Matters
 
-| Statistic | Source |
-|-----------|--------|
-| 5% retention increase = 25-95% profit increase | Bain & Company / Harvard Business Review |
-| 65% of revenue comes from repeat customers | BIA Advisory Services |
-| Repeat customers spend 67% more than new customers | Business.com |
-| Acquiring new customers costs 5-25x more than retaining | Bain & Company |
-| First responders win 35-78% of sales | Vendasta, Ricochet360 |
+| Statistic                                               | Source                                   |
+| ------------------------------------------------------- | ---------------------------------------- |
+| 5% retention increase = 25-95% profit increase          | Bain & Company / Harvard Business Review |
+| 65% of revenue comes from repeat customers              | BIA Advisory Services                    |
+| Repeat customers spend 67% more than new customers      | Business.com                             |
+| Acquiring new customers costs 5-25x more than retaining | Bain & Company                           |
+| First responders win 35-78% of sales                    | Vendasta, Ricochet360                    |
 
 ---
 
@@ -49,15 +50,19 @@ Each stage has potential revenue leakage. The algorithm monitors all stages.
 ## Task Tiers: Revenue Protection Hierarchy
 
 ### TIER 1: MONEY ON THE TABLE (Immediate Revenue at Risk)
+
 Tasks that represent **direct, immediate revenue loss** if not addressed.
 
 ### TIER 2: PIPELINE PROTECTION (Future Revenue at Risk)
+
 Tasks that represent **leads going cold** or **deals stalling**.
 
 ### TIER 3: RELATIONSHIP MAINTENANCE (Lifetime Value)
+
 Tasks that **strengthen client relationships** and drive **repeat business**.
 
 ### TIER 4: OPERATIONAL HYGIENE (Efficiency & Social Proof)
+
 Tasks that **support the business** but aren't directly revenue-critical.
 
 ---
@@ -68,13 +73,13 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Trigger:** `consultation.status = 'pending' AND consultation.viewed = 0`
 
-| Age of Consultation | Priority | Score | Rationale |
-|---------------------|----------|-------|-----------|
-| < 1 hour | 🔴 CRITICAL | 950 | First responders win 35-78% of sales |
-| 1-4 hours | 🔴 HIGH | 850 | Still warm, high conversion potential |
-| 4-24 hours | 🟠 MEDIUM | 650 | Cooling but recoverable |
-| 24-48 hours | 🟡 LOW | 450 | Getting cold |
-| > 48 hours | 🟡 DECAYING | 300 - (hours × 2) min 100 | Decay formula |
+| Age of Consultation | Priority    | Score                     | Rationale                             |
+| ------------------- | ----------- | ------------------------- | ------------------------------------- |
+| < 1 hour            | 🔴 CRITICAL | 950                       | First responders win 35-78% of sales  |
+| 1-4 hours           | 🔴 HIGH     | 850                       | Still warm, high conversion potential |
+| 4-24 hours          | 🟠 MEDIUM   | 650                       | Cooling but recoverable               |
+| 24-48 hours         | 🟡 LOW      | 450                       | Getting cold                          |
+| > 48 hours          | 🟡 DECAYING | 300 - (hours × 2) min 100 | Decay formula                         |
 
 **Task Title:** "New consultation request"
 **Context:** "{clientName}: {subject}"
@@ -88,12 +93,12 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Trigger:** `consultation.status = 'pending' AND consultation.viewed = 1 AND hoursSinceViewed > 2`
 
-| Hours Since Viewed | Priority | Score |
-|--------------------|----------|-------|
-| 2-6 hours | 🟠 MEDIUM | 700 |
-| 6-12 hours | 🟠 MEDIUM | 600 |
-| 12-24 hours | 🟡 LOW | 500 |
-| > 24 hours | 🟡 LOW | 400 |
+| Hours Since Viewed | Priority  | Score |
+| ------------------ | --------- | ----- |
+| 2-6 hours          | 🟠 MEDIUM | 700   |
+| 6-12 hours         | 🟠 MEDIUM | 600   |
+| 12-24 hours        | 🟡 LOW    | 500   |
+| > 24 hours         | 🟡 LOW    | 400   |
 
 **Task Title:** "Respond to {clientName}"
 **Context:** "Viewed {X} hours ago - awaiting your response"
@@ -105,13 +110,13 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Trigger:** `appointment.status = 'confirmed' AND appointment.depositPaid = 0 AND appointment.depositAmount > 0`
 
-| Time Until Appointment | Priority | Score | Rationale |
-|------------------------|----------|-------|-----------|
-| < 24 hours | 🔴 CRITICAL | 1000 | No-show risk is highest |
-| 24-48 hours | 🔴 HIGH | 900 | Inside cancellation policy window |
-| 48-72 hours | 🟠 MEDIUM | 750 | At cancellation policy boundary |
-| 72 hours - 1 week | 🟡 LOW | 550 | Outside policy, still needs collection |
-| > 1 week | 🟡 LOW | 400 | Time to collect |
+| Time Until Appointment | Priority    | Score | Rationale                              |
+| ---------------------- | ----------- | ----- | -------------------------------------- |
+| < 24 hours             | 🔴 CRITICAL | 1000  | No-show risk is highest                |
+| 24-48 hours            | 🔴 HIGH     | 900   | Inside cancellation policy window      |
+| 48-72 hours            | 🟠 MEDIUM   | 750   | At cancellation policy boundary        |
+| 72 hours - 1 week      | 🟡 LOW      | 550   | Outside policy, still needs collection |
+| > 1 week               | 🟡 LOW      | 400   | Time to collect                        |
 
 **Task Title:** "Collect ${depositAmount} deposit"
 **Context:** "{clientName} - {appointmentTitle} on {date}"
@@ -127,11 +132,11 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Trigger:** `appointment.status = 'confirmed' AND appointment.confirmationSent = 0 AND hoursUntilAppointment < 48`
 
-| Time Until Appointment | Priority | Score | Rationale |
-|------------------------|----------|-------|-----------|
-| < 12 hours | 🔴 CRITICAL | 980 | Last chance to confirm |
-| 12-24 hours | 🔴 HIGH | 880 | Day-before confirmation |
-| 24-48 hours | 🟠 MEDIUM | 680 | Standard confirmation window |
+| Time Until Appointment | Priority    | Score | Rationale                    |
+| ---------------------- | ----------- | ----- | ---------------------------- |
+| < 12 hours             | 🔴 CRITICAL | 980   | Last chance to confirm       |
+| 12-24 hours            | 🔴 HIGH     | 880   | Day-before confirmation      |
+| 24-48 hours            | 🟠 MEDIUM   | 680   | Standard confirmation window |
 
 **Task Title:** "Confirm tomorrow's appointment"
 **Context:** "{clientName} - {time}"
@@ -145,11 +150,11 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Trigger:** `appointment.status = 'pending' AND hoursUntilAppointment < 72`
 
-| Time Until Appointment | Priority | Score |
-|------------------------|----------|-------|
-| < 24 hours | 🔴 CRITICAL | 920 |
-| 24-48 hours | 🟠 MEDIUM | 720 |
-| 48-72 hours | 🟡 LOW | 520 |
+| Time Until Appointment | Priority    | Score |
+| ---------------------- | ----------- | ----- |
+| < 24 hours             | 🔴 CRITICAL | 920   |
+| 24-48 hours            | 🟠 MEDIUM   | 720   |
+| 48-72 hours            | 🟡 LOW      | 520   |
 
 **Task Title:** "Awaiting client confirmation"
 **Context:** "{clientName} - {date} appointment pending"
@@ -163,13 +168,13 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Trigger:** `consultation.status = 'responded' AND daysSinceUpdate > 1`
 
-| Days Since Response | Priority | Score | Rationale |
-|---------------------|----------|-------|-----------|
-| 1-2 days | 🟠 MEDIUM | 650 | Daily follow-up cadence |
-| 2-3 days | 🟠 MEDIUM | 550 | Still warm |
-| 3-5 days | 🟡 LOW | 450 | Cooling |
-| 5-7 days | 🟡 LOW | 350 | Cold but recoverable |
-| > 7 days | ⚪ VERY LOW | 250 | Likely window shopper |
+| Days Since Response | Priority    | Score | Rationale               |
+| ------------------- | ----------- | ----- | ----------------------- |
+| 1-2 days            | 🟠 MEDIUM   | 650   | Daily follow-up cadence |
+| 2-3 days            | 🟠 MEDIUM   | 550   | Still warm              |
+| 3-5 days            | 🟡 LOW      | 450   | Cooling                 |
+| 5-7 days            | 🟡 LOW      | 350   | Cold but recoverable    |
+| > 7 days            | ⚪ VERY LOW | 250   | Likely window shopper   |
 
 **Task Title:** "Follow up: {clientName}"
 **Context:** "Responded {X} days ago - not yet scheduled"
@@ -183,13 +188,13 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Trigger:** `lastMessage.senderId = artistId AND daysSinceLastMessage >= 2`
 
-| Days Since Artist's Last Message | Priority | Score |
-|----------------------------------|----------|-------|
-| 2 days | 🟠 MEDIUM | 600 |
-| 3 days | 🟠 MEDIUM | 500 |
-| 4-5 days | 🟡 LOW | 400 |
-| 6-7 days | 🟡 LOW | 300 |
-| > 7 days | ⚪ ARCHIVE | 200 (or remove) |
+| Days Since Artist's Last Message | Priority   | Score           |
+| -------------------------------- | ---------- | --------------- |
+| 2 days                           | 🟠 MEDIUM  | 600             |
+| 3 days                           | 🟠 MEDIUM  | 500             |
+| 4-5 days                         | 🟡 LOW     | 400             |
+| 6-7 days                         | 🟡 LOW     | 300             |
+| > 7 days                         | ⚪ ARCHIVE | 200 (or remove) |
 
 **Task Title:** "Follow up with {clientName}"
 **Context:** "No response in {X} days"
@@ -203,10 +208,10 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Trigger:** `consultation.status IN ('pending', 'responded') AND daysSinceCreated BETWEEN 45 AND 60`
 
-| Days Since Created | Priority | Score |
-|--------------------|----------|-------|
-| 45-50 days | 🟡 LOW | 280 |
-| 50-60 days | ⚪ VERY LOW | 200 |
+| Days Since Created | Priority    | Score |
+| ------------------ | ----------- | ----- |
+| 45-50 days         | 🟡 LOW      | 280   |
+| 50-60 days         | ⚪ VERY LOW | 200   |
 
 **Task Title:** "Last chance: {clientName}"
 **Context:** "Lead from {X} days ago - offer discount?"
@@ -225,8 +230,8 @@ Tasks that **support the business** but aren't directly revenue-critical.
 **Trigger:** `appointment.status = 'completed' AND daysSinceAppointment = 0`
 
 | Priority | Score |
-|----------|-------|
-| 🟡 LOW | 400 |
+| -------- | ----- |
+| 🟡 LOW   | 400   |
 
 **Task Title:** "Thank {clientName}"
 **Context:** "Session completed today - send thank you"
@@ -238,10 +243,10 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Trigger:** `appointment.status = 'completed' AND daysSinceAppointment BETWEEN 1 AND 14 AND dailyAftercareSent = false`
 
-| Day | Priority | Score |
-|-----|----------|-------|
-| Days 1-7 | 🟡 LOW | 380 |
-| Days 8-14 | ⚪ VERY LOW | 300 |
+| Day       | Priority    | Score |
+| --------- | ----------- | ----- |
+| Days 1-7  | 🟡 LOW      | 380   |
+| Days 8-14 | ⚪ VERY LOW | 300   |
 
 **Task Title:** "Aftercare: {clientName}"
 **Context:** "Day {X} - send daily check-in"
@@ -257,11 +262,11 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Healing Timeline:** Peeling at 3-4 days, settles around 7 days, fully healed within 7-14 day range. Request at 14 days from last appointment for that project.
 
-| Days Since Appointment | Priority | Score |
-|------------------------|----------|-------|
-| 14-18 days | 🟡 LOW | 350 |
-| 18-25 days | 🟡 LOW | 300 |
-| 25-30 days | ⚪ VERY LOW | 250 |
+| Days Since Appointment | Priority    | Score |
+| ---------------------- | ----------- | ----- |
+| 14-18 days             | 🟡 LOW      | 350   |
+| 18-25 days             | 🟡 LOW      | 300   |
+| 25-30 days             | ⚪ VERY LOW | 250   |
 
 **Task Title:** "Request healed photo"
 **Context:** "{clientName}'s {tattooDescription} should be healed"
@@ -275,11 +280,11 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Trigger:** `hasMultipleSessions = true AND daysSinceLastSession >= 30 AND projectStatus = 'in_progress'`
 
-| Days Since Last Session | Priority | Score |
-|-------------------------|----------|-------|
-| 30-45 days | 🟡 LOW | 380 |
-| 45-60 days | 🟡 LOW | 320 |
-| > 60 days | ⚪ VERY LOW | 260 |
+| Days Since Last Session | Priority    | Score |
+| ----------------------- | ----------- | ----- |
+| 30-45 days              | 🟡 LOW      | 380   |
+| 45-60 days              | 🟡 LOW      | 320   |
+| > 60 days               | ⚪ VERY LOW | 260   |
 
 **Task Title:** "Check in: {clientName}'s project"
 **Context:** "{projectName} - {X} days since last session"
@@ -293,17 +298,18 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Trigger:** `user.birthday IS NOT NULL AND daysUntilBirthday BETWEEN 0 AND 7`
 
-| Days Until Birthday | Priority | Score |
-|---------------------|----------|-------|
-| 0 (Today) | 🟡 LOW | 400 |
-| 1-3 days | 🟡 LOW | 350 |
-| 4-7 days | ⚪ VERY LOW | 280 |
+| Days Until Birthday | Priority    | Score |
+| ------------------- | ----------- | ----- |
+| 0 (Today)           | 🟡 LOW      | 400   |
+| 1-3 days            | 🟡 LOW      | 350   |
+| 4-7 days            | ⚪ VERY LOW | 280   |
 
 **Task Title:** "Birthday: {clientName}"
 **Context:** "{date} - Send wishes or voucher?"
 **Action:** Send birthday message / issue voucher
 
 **Research Support:**
+
 - Birthday emails have 3x higher open rates than mass promotions (Experian)
 - 481% higher order rate for birthday promotions (PostcardMania)
 - 77% of consumers say personalized birthday content impacts brand loyalty (Experian)
@@ -317,21 +323,23 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Trigger:** `appointment.status = 'completed' AND isAnniversaryOfAppointment = true`
 
-| Anniversary Type | Priority | Score |
-|------------------|----------|-------|
-| 1 year anniversary | 🟡 LOW | 420 |
-| 2+ year anniversary | ⚪ VERY LOW | 320 |
+| Anniversary Type    | Priority    | Score |
+| ------------------- | ----------- | ----- |
+| 1 year anniversary  | 🟡 LOW      | 420   |
+| 2+ year anniversary | ⚪ VERY LOW | 320   |
 
 **Task Title:** "Tattoo anniversary: {clientName}"
 **Context:** "{X} year(s) since {tattooDescription}"
 **Action:** Send anniversary message / offer voucher
 
 **Research Support:**
+
 - Anniversary mailings have **0.63% transaction rate** - HIGHEST of all personalized outreach (CheetahMail)
 - Birthday mailings: 0.49% transaction rate
 - Anniversary outreach outperforms birthday outreach by 28%
 
 **Revenue Logic:** This is statistically the most effective type of personalized outreach. The emotional trigger ("One year ago today, you got your memorial piece for your grandmother") is powerful. Opportunity to:
+
 - Strengthen rapport
 - Offer vouchers/discounts
 - Trigger rebooking
@@ -343,11 +351,11 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Trigger:** `daysSinceLastAppointment >= 90 AND totalAppointments >= 1`
 
-| Days Since Last Appointment | Priority | Score |
-|-----------------------------|----------|-------|
-| 90-120 days | ⚪ VERY LOW | 280 |
-| 120-180 days | ⚪ VERY LOW | 240 |
-| > 180 days | ⚪ VERY LOW | 200 |
+| Days Since Last Appointment | Priority    | Score |
+| --------------------------- | ----------- | ----- |
+| 90-120 days                 | ⚪ VERY LOW | 280   |
+| 120-180 days                | ⚪ VERY LOW | 240   |
+| > 180 days                  | ⚪ VERY LOW | 200   |
 
 **Task Title:** "Rebook {clientName}?"
 **Context:** "Last visit: {X} months ago"
@@ -361,9 +369,9 @@ Tasks that **support the business** but aren't directly revenue-critical.
 
 **Trigger:** `appointment.status = 'completed' AND daysSinceAppointment BETWEEN 21 AND 30 AND reviewNotRequested`
 
-| Priority | Score |
-|----------|-------|
-| ⚪ VERY LOW | 250 |
+| Priority    | Score |
+| ----------- | ----- |
+| ⚪ VERY LOW | 250   |
 
 **Task Title:** "Ask {clientName} for review"
 **Context:** "Tattoo healed - good time for review"
@@ -387,19 +395,22 @@ Where:
 
 ```typescript
 function getTimeMultiplier(hoursUntilDeadline: number): number {
-  if (hoursUntilDeadline < 0) return 0.5;      // Overdue (damage done)
-  if (hoursUntilDeadline < 6) return 2.0;      // Critical window
-  if (hoursUntilDeadline < 24) return 1.5;     // Same day
-  if (hoursUntilDeadline < 48) return 1.2;     // Tomorrow
-  if (hoursUntilDeadline < 72) return 1.0;     // Within 3 days
-  return 0.8;                                   // Future
+  if (hoursUntilDeadline < 0) return 0.5; // Overdue (damage done)
+  if (hoursUntilDeadline < 6) return 2.0; // Critical window
+  if (hoursUntilDeadline < 24) return 1.5; // Same day
+  if (hoursUntilDeadline < 48) return 1.2; // Tomorrow
+  if (hoursUntilDeadline < 72) return 1.0; // Within 3 days
+  return 0.8; // Future
 }
 ```
 
 ### Value Multiplier
 
 ```typescript
-function getValueMultiplier(appointmentPrice: number, avgPrice: number): number {
+function getValueMultiplier(
+  appointmentPrice: number,
+  avgPrice: number
+): number {
   if (!appointmentPrice || !avgPrice) return 1.0;
   const ratio = appointmentPrice / avgPrice;
   return Math.max(0.5, Math.min(2.0, ratio));
@@ -411,6 +422,7 @@ function getValueMultiplier(appointmentPrice: number, avgPrice: number): number 
 ### Relationship Multiplier (Client Value Signals)
 
 Client value signals (each adds 0.05 to multiplier, capped at 1.3):
+
 - Quick message responses
 - Repeat bookings (count)
 - Referrals made
@@ -427,8 +439,8 @@ function getRelationshipMultiplier(client: Client): number {
   if (client.hasLeftReview) signals++;
   if (client.avgDepositPaymentDays < 3) signals++;
   if (client.cancellationRate === 0) signals++;
-  
-  return Math.min(1.3, 1.0 + (signals * 0.05));
+
+  return Math.min(1.3, 1.0 + signals * 0.05);
 }
 ```
 
@@ -440,11 +452,11 @@ function getRelationshipMultiplier(client: Client): number {
 
 ### Maximum Visible Tasks
 
-| Setting | Default | Notes |
-|---------|---------|-------|
+| Setting            | Default  | Notes                          |
+| ------------------ | -------- | ------------------------------ |
 | Default task limit | 10 items | User requested increase from 6 |
-| Minimum | 4 items | For overwhelmed artists |
-| Maximum | 15 items | For high-volume artists |
+| Minimum            | 4 items  | For overwhelmed artists        |
+| Maximum            | 15 items | For high-volume artists        |
 
 **Capacity Scaling:** Include a button under the last task to "Set daily tasks amount" so artist can adjust.
 
@@ -456,16 +468,17 @@ function getRelationshipMultiplier(client: Client): number {
 
 ### Priority Color Mapping
 
-| Score Range | Priority | Color | Left Edge |
-|-------------|----------|-------|-----------|
-| ≥ 800 | 🔴 CRITICAL | Red | 3px red line + 20% red gradient |
-| 500-799 | 🟠 HIGH | Orange | 3px orange line + 20% orange gradient |
-| 300-499 | 🟡 MEDIUM | Amber | 3px amber line + 20% amber gradient |
-| < 300 | 🟢 LOW | Green | 3px green line + 20% green gradient |
+| Score Range | Priority    | Color  | Left Edge                             |
+| ----------- | ----------- | ------ | ------------------------------------- |
+| ≥ 800       | 🔴 CRITICAL | Red    | 3px red line + 20% red gradient       |
+| 500-799     | 🟠 HIGH     | Orange | 3px orange line + 20% orange gradient |
+| 300-499     | 🟡 MEDIUM   | Amber  | 3px amber line + 20% amber gradient   |
+| < 300       | 🟢 LOW      | Green  | 3px green line + 20% green gradient   |
 
 ### Cold Lead Visibility
 
 Cold lead tasks (> 45 days) should only appear if:
+
 - Artist has no Tier 1 tasks
 - Artist has < 3 Tier 2 tasks
 - Artist is "up to date" on priority tasks
@@ -491,15 +504,17 @@ Cold lead tasks (> 45 days) should only appear if:
 Allow artist to set their booking goal (e.g., "I want to be booked 3-6 months in advance").
 
 The algorithm can then:
+
 - Increase urgency on lead conversion when booking window is short
 - Decrease urgency when fully booked
 - Surface "you're under-booked" warnings
 
 **Implementation:** Add to onboarding or settings:
+
 ```
 How far in advance do you want to be booked?
 [ ] 1-2 months
-[ ] 2-4 months  
+[ ] 2-4 months
 [ ] 3-6 months (recommended)
 [ ] 6-12 months
 ```
@@ -514,16 +529,16 @@ Algorithm should factor in this policy deadline for confirmation task urgency.
 
 ## Data Sources (Schema Mapping)
 
-| Task Type | Primary Table | Key Fields |
-|-----------|---------------|------------|
-| New Consultation | `consultations` | status, viewed, createdAt |
-| Deposit Collection | `appointments` | depositPaid, depositAmount, startTime |
-| Appointment Confirmation | `appointments` | confirmationSent, startTime |
-| Stale Conversation | `conversations`, `messages` | lastMessageAt, senderId |
-| Aftercare | `appointments` | status, startTime, followUpSent |
-| Birthday | `users` | birthday |
-| Tattoo Anniversary | `appointments` | status, startTime (completed) |
-| Rebooking | `appointments` | MAX(endTime) per client |
+| Task Type                | Primary Table               | Key Fields                            |
+| ------------------------ | --------------------------- | ------------------------------------- |
+| New Consultation         | `consultations`             | status, viewed, createdAt             |
+| Deposit Collection       | `appointments`              | depositPaid, depositAmount, startTime |
+| Appointment Confirmation | `appointments`              | confirmationSent, startTime           |
+| Stale Conversation       | `conversations`, `messages` | lastMessageAt, senderId               |
+| Aftercare                | `appointments`              | status, startTime, followUpSent       |
+| Birthday                 | `users`                     | birthday                              |
+| Tattoo Anniversary       | `appointments`              | status, startTime (completed)         |
+| Rebooking                | `appointments`              | MAX(endTime) per client               |
 
 ---
 
@@ -534,7 +549,9 @@ Algorithm should factor in this policy deadline for confirmation task urgency.
 ```typescript
 // server/services/businessTaskGenerator.ts
 
-export async function generateBusinessTasks(artistId: string): Promise<BusinessTask[]> {
+export async function generateBusinessTasks(
+  artistId: string
+): Promise<BusinessTask[]> {
   const [
     pendingConsultations,
     upcomingAppointments,
@@ -545,12 +562,12 @@ export async function generateBusinessTasks(artistId: string): Promise<BusinessT
   ] = await Promise.all([
     getPendingConsultations(artistId),
     getUpcomingAppointments(artistId, 14), // Next 14 days
-    getStaleConversations(artistId, 2),    // No response in 2+ days
+    getStaleConversations(artistId, 2), // No response in 2+ days
     getCompletedAppointments(artistId, 30), // Last 30 days
     getUpcomingBirthdays(artistId, 7),
     getTattooAnniversaries(artistId, 7),
   ]);
-  
+
   const tasks: BusinessTask[] = [
     ...generateConsultationTasks(pendingConsultations),
     ...generateDepositTasks(upcomingAppointments),
@@ -561,7 +578,7 @@ export async function generateBusinessTasks(artistId: string): Promise<BusinessT
     ...generateBirthdayTasks(clientBirthdays),
     ...generateAnniversaryTasks(tattooAnniversaries),
   ];
-  
+
   return tasks
     .map(task => ({ ...task, score: calculateFinalScore(task) }))
     .sort((a, b) => b.score - a.score)
@@ -573,20 +590,20 @@ export async function generateBusinessTasks(artistId: string): Promise<BusinessT
 
 Tasks regenerate when these mutations occur:
 
-| Event | Trigger |
-|-------|---------|
-| New consultation | `consultations.create` |
-| Consultation status change | `consultations.update` |
-| Message sent/received | `messages.create` |
+| Event                       | Trigger                      |
+| --------------------------- | ---------------------------- |
+| New consultation            | `consultations.create`       |
+| Consultation status change  | `consultations.update`       |
+| Message sent/received       | `messages.create`            |
 | Appointment created/updated | `appointments.create/update` |
-| Deposit marked paid | `appointments.update` |
-| Appointment completed | `appointments.update` |
+| Deposit marked paid         | `appointments.update`        |
+| Appointment completed       | `appointments.update`        |
 
 ### Cache Invalidation
 
 ```typescript
 // After any relevant mutation
-await queryClient.invalidateQueries(['dashboard', 'businessTasks']);
+await queryClient.invalidateQueries(["dashboard", "businessTasks"]);
 ```
 
 ---

@@ -29,18 +29,21 @@ SELECT id, name, email, role FROM users;
 ### Test Users
 
 **Artist Account:**
+
 - ID: `test_artist_001`
 - Name: P Mason Tattoo Artist
 - Email: piripimason@gmail.com
 - Role: artist
 
 **Client Account:**
+
 - ID: `test_client_001`
 - Name: Test Client
 - Email: testclient@example.com
 - Role: client
 
 **Demo Client (from demo data):**
+
 - ID: `demo-client-1760861544872`
 - Name: Sarah Johnson
 - Email: sarah.demo@example.com
@@ -51,18 +54,22 @@ SELECT id, name, email, role FROM users;
 Since OAuth requires IP whitelisting, use this session token for testing:
 
 **Artist Session Token:**
+
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ0ZXN0X2FydGlzdF8wMDEiLCJpYXQiOjE3Mjk2MzI3NTN9.IpVLTqRbmxGCgGqhOr_HH2BKQQ-c6cBbqIqWZkZRtWo
 ```
 
 **Client Session Token:**
+
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ0ZXN0X2NsaWVudF8wMDEiLCJpYXQiOjE3Mjk2MzI3NTN9.3z_Qs4Rl8K5vN2pT6xW9jY1mC7bH3sF4gD8eA5nL2oP
 ```
 
 To set the session cookie in the browser console:
+
 ```javascript
-document.cookie = "artist_booking_session=YOUR_TOKEN_HERE; path=/; max-age=31536000";
+document.cookie =
+  "artist_booking_session=YOUR_TOKEN_HERE; path=/; max-age=31536000";
 ```
 
 ## Project Structure
@@ -90,6 +97,7 @@ artist-booking-app/
 ## Technology Stack
 
 ### Frontend
+
 - **React 19** - UI framework
 - **Vite** - Build tool
 - **TailwindCSS** - Styling
@@ -99,6 +107,7 @@ artist-booking-app/
 - **tRPC Client** - Type-safe API calls
 
 ### Backend
+
 - **Express** - Web server
 - **tRPC** - Type-safe API
 - **Drizzle ORM** - Database ORM
@@ -124,6 +133,7 @@ The app uses the following main tables:
 ## Key Features
 
 ### Implemented
+
 - ✅ User authentication (JWT-based)
 - ✅ Artist and client roles
 - ✅ Chat/messaging system
@@ -134,6 +144,7 @@ The app uses the following main tables:
 - ✅ Mobile-first responsive design
 
 ### Partially Implemented
+
 - ⚠️ OAuth integration (requires IP whitelisting)
 - ⚠️ Social media integration (Instagram/Facebook)
 - ⚠️ Email/SMS notifications
@@ -163,6 +174,7 @@ The app uses the following main tables:
 ### Testing
 
 The app includes a demo data loader accessible from Settings:
+
 - Creates test client "Sarah Johnson"
 - Creates sample conversation with messages
 - Creates sample appointment
@@ -181,6 +193,7 @@ OAUTH_BASE_URL=https://vidabiz.butterfly-effect.dev
 ## Common Tasks
 
 ### Reset Database
+
 ```bash
 mysql -u root -e "DROP DATABASE artist_booking; CREATE DATABASE artist_booking;"
 cd /home/ubuntu/artist-booking-app
@@ -188,14 +201,17 @@ pnpm db:push
 ```
 
 ### View Server Logs
+
 The development server outputs logs to the console where `pnpm dev` is running.
 
 ### Access Database
+
 ```bash
 mysql -u root artist_booking
 ```
 
 ### Build for Production
+
 ```bash
 pnpm build
 ```
@@ -203,18 +219,21 @@ pnpm build
 ## Troubleshooting
 
 ### Port 3000 Already in Use
+
 ```bash
 # Find and kill the process
 lsof -ti:3000 | xargs kill -9
 ```
 
 ### Database Connection Issues
+
 ```bash
 # Restart MySQL
 sudo service mysql restart
 ```
 
 ### Clear Node Modules
+
 ```bash
 rm -rf node_modules
 pnpm install
@@ -245,4 +264,3 @@ Based on the project requirements, consider implementing:
 
 **Last Updated:** October 19, 2025  
 **Status:** Ready for Development
-

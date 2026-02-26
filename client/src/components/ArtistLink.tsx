@@ -1,9 +1,22 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Check, Copy, ExternalLink, Link2, Loader2, Share2 } from "lucide-react";
+import {
+  Check,
+  Copy,
+  ExternalLink,
+  Link2,
+  Loader2,
+  Share2,
+} from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
@@ -25,15 +38,18 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
   const debouncedSlug = useDebounce(slug, 500);
 
   // Fetch current funnel settings
-  const { data: settings, isLoading } = trpc.funnel.getFunnelSettings.useQuery();
+  const { data: settings, isLoading } =
+    trpc.funnel.getFunnelSettings.useQuery();
 
   // Check slug availability
-  const { data: slugCheck, isLoading: checkingSlug } = trpc.funnel.checkSlugAvailability.useQuery(
-    { slug: debouncedSlug },
-    {
-      enabled: debouncedSlug.length >= 3 && debouncedSlug !== settings?.publicSlug,
-    }
-  );
+  const { data: slugCheck, isLoading: checkingSlug } =
+    trpc.funnel.checkSlugAvailability.useQuery(
+      { slug: debouncedSlug },
+      {
+        enabled:
+          debouncedSlug.length >= 3 && debouncedSlug !== settings?.publicSlug,
+      }
+    );
 
   // Update settings mutation
   const updateSettings = trpc.funnel.updateFunnelSettings.useMutation({
@@ -41,7 +57,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
       toast.success("Booking link updated!");
       setIsEditing(false);
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Failed to update settings");
     },
   });
@@ -54,7 +70,6 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
     setIsEnabled(Boolean(settings.funnelEnabled));
     initializedRef.current = true;
   }
-
 
   // Generate the booking link
   const baseUrl = window.location.origin;
@@ -109,8 +124,12 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
     }
   };
 
-  const slugIsValid = slug.length >= 3 && (slugCheck?.available || slug === settings?.publicSlug);
-  const slugIsTaken = slug.length >= 3 && slug !== settings?.publicSlug && slugCheck?.available === false;
+  const slugIsValid =
+    slug.length >= 3 && (slugCheck?.available || slug === settings?.publicSlug);
+  const slugIsTaken =
+    slug.length >= 3 &&
+    slug !== settings?.publicSlug &&
+    slugCheck?.available === false;
   const hasChanges = slug !== (settings?.publicSlug || "");
 
   if (isLoading) {
@@ -148,7 +167,9 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
       <CardContent className="space-y-4">
         {/* Slug Input */}
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">Your custom URL</Label>
+          <Label className="text-xs text-muted-foreground">
+            Your custom URL
+          </Label>
           <div className="flex items-center gap-2">
             <div className="flex-1 flex items-center bg-muted/50 rounded-lg overflow-hidden">
               <span className="px-3 py-2 text-sm text-muted-foreground bg-muted/30 border-r border-border/50 whitespace-nowrap">
@@ -156,8 +177,10 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
               </span>
               <Input
                 value={slug}
-                onChange={(e) => {
-                  setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
+                onChange={e => {
+                  setSlug(
+                    e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")
+                  );
                   setIsEditing(true);
                 }}
                 placeholder="your-name"
@@ -184,7 +207,9 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
               </p>
             )}
             {slug.length > 0 && slug.length < 3 && (
-              <p className="text-xs text-amber-400">URL must be at least 3 characters</p>
+              <p className="text-xs text-amber-400">
+                URL must be at least 3 characters
+              </p>
             )}
           </div>
         </div>

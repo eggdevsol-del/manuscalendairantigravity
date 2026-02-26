@@ -1,9 +1,13 @@
-import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
-import { clientsClaim, setCacheNameDetails } from 'workbox-core';
-import { registerRoute } from 'workbox-routing';
-import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
-import { ExpirationPlugin } from 'workbox-expiration';
-import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+import { cleanupOutdatedCaches, precacheAndRoute } from "workbox-precaching";
+import { clientsClaim, setCacheNameDetails } from "workbox-core";
+import { registerRoute } from "workbox-routing";
+import {
+  CacheFirst,
+  NetworkFirst,
+  StaleWhileRevalidate,
+} from "workbox-strategies";
+import { ExpirationPlugin } from "workbox-expiration";
+import { CacheableResponsePlugin } from "workbox-cacheable-response";
 
 // CRITICAL: Skip waiting immediately to activate new service worker
 self.skipWaiting();
@@ -11,52 +15,59 @@ clientsClaim();
 
 // Integrate OneSignal v16 SDK
 try {
-  self.importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
+  self.importScripts(
+    "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js"
+  );
 } catch (e) {
-  console.error('[SW] OneSignal importScripts failed:', e);
+  console.error("[SW] OneSignal importScripts failed:", e);
 }
 
 // Get app version from Vite define
-const APP_VERSION = self.__APP_VERSION__ || '0.0.0';
+const APP_VERSION = self.__APP_VERSION__ || "0.0.0";
 console.log(`[SW] Service Worker v${APP_VERSION} initializing...`);
 
 // Configuration to enforce versioning in cache names
 setCacheNameDetails({
-  prefix: 'artist-booking',
+  prefix: "artist-booking",
   suffix: `v${APP_VERSION}`,
-  precache: 'precache',
-  runtime: 'runtime'
+  precache: "precache",
+  runtime: "runtime",
 });
 
 // Cleanup caches from older versions - this is critical for updates
 cleanupOutdatedCaches();
 
 // Also manually clean up old caches on activation
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", event => {
   console.log(`[SW] Activating Service Worker v${APP_VERSION}`);
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((cacheName) => {
-            // Delete any cache that doesn't match current version
-            return !cacheName.includes(`v${APP_VERSION}`);
-          })
-          .map((cacheName) => {
-            console.log(`[SW] Deleting old cache: ${cacheName}`);
-            return caches.delete(cacheName);
-          })
-      );
-    }).then(() => {
-      console.log(`[SW] Service Worker v${APP_VERSION} now active and controlling all clients`);
-      // Take control of all clients immediately
-      return self.clients.claim();
-    })
+    caches
+      .keys()
+      .then(cacheNames => {
+        return Promise.all(
+          cacheNames
+            .filter(cacheName => {
+              // Delete any cache that doesn't match current version
+              return !cacheName.includes(`v${APP_VERSION}`);
+            })
+            .map(cacheName => {
+              console.log(`[SW] Deleting old cache: ${cacheName}`);
+              return caches.delete(cacheName);
+            })
+        );
+      })
+      .then(() => {
+        console.log(
+          `[SW] Service Worker v${APP_VERSION} now active and controlling all clients`
+        );
+        // Take control of all clients immediately
+        return self.clients.claim();
+      })
   );
 });
 
 // Log when service worker is installed
-self.addEventListener('install', (event) => {
+self.addEventListener("install", event => {
   console.log(`[SW] Installing Service Worker v${APP_VERSION}`);
   // Force the waiting service worker to become the active service worker
   self.skipWaiting();
@@ -69,7 +80,9 @@ precacheAndRoute(self.__WB_MANIFEST);
 
 // 1. Google Fonts (Cache First)
 registerRoute(
-  ({ url }) => url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com',
+  ({ url }) =>
+    url.origin === "https://fonts.googleapis.com" ||
+    url.origin === "https://fonts.gstatic.com",
   new CacheFirst({
     cacheName: `google-fonts-v${APP_VERSION}`,
     plugins: [
@@ -86,7 +99,7 @@ registerRoute(
 
 // 2. Artist Uploaded Files (StaleWhileRevalidate) -> Instant load from cache, refresh in background
 registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/files/'),
+  ({ url }) => url.pathname.startsWith("/api/files/"),
   new StaleWhileRevalidate({
     cacheName: `voucher-images-v${APP_VERSION}`,
     plugins: [
@@ -103,7 +116,7 @@ registerRoute(
 
 // 3. General Images (Cache First)
 registerRoute(
-  ({ request }) => request.destination === 'image',
+  ({ request }) => request.destination === "image",
   new CacheFirst({
     cacheName: `images-v${APP_VERSION}`,
     plugins: [
@@ -117,7 +130,7 @@ registerRoute(
 
 // 3. API Requests (Network First) - always try network first
 registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/'),
+  ({ url }) => url.pathname.startsWith("/api/"),
   new NetworkFirst({
     cacheName: `api-v${APP_VERSION}`,
     networkTimeoutSeconds: 10,
@@ -135,7 +148,7 @@ registerRoute(
 
 // 4. Navigation requests (Network First) - ensures fresh HTML
 registerRoute(
-  ({ request }) => request.mode === 'navigate',
+  ({ request }) => request.mode === "navigate",
   new NetworkFirst({
     cacheName: `pages-v${APP_VERSION}`,
     networkTimeoutSeconds: 5,
@@ -148,32 +161,35 @@ registerRoute(
 );
 
 // -- Message Handler for Manual Updates --
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('[SW] Received SKIP_WAITING message, activating immediately');
+self.addEventListener("message", event => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    console.log("[SW] Received SKIP_WAITING message, activating immediately");
     self.skipWaiting();
   }
 
-  if (event.data && event.data.type === 'GET_VERSION') {
+  if (event.data && event.data.type === "GET_VERSION") {
     event.ports[0].postMessage({ version: APP_VERSION });
   }
 
-  if (event.data && event.data.type === 'CLEAR_CACHES') {
-    console.log('[SW] Clearing all caches...');
+  if (event.data && event.data.type === "CLEAR_CACHES") {
+    console.log("[SW] Clearing all caches...");
     event.waitUntil(
-      caches.keys().then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            console.log(`[SW] Deleting cache: ${cacheName}`);
-            return caches.delete(cacheName);
-          })
-        );
-      }).then(() => {
-        console.log('[SW] All caches cleared');
-        if (event.ports[0]) {
-          event.ports[0].postMessage({ success: true });
-        }
-      })
+      caches
+        .keys()
+        .then(cacheNames => {
+          return Promise.all(
+            cacheNames.map(cacheName => {
+              console.log(`[SW] Deleting cache: ${cacheName}`);
+              return caches.delete(cacheName);
+            })
+          );
+        })
+        .then(() => {
+          console.log("[SW] All caches cleared");
+          if (event.ports[0]) {
+            event.ports[0].postMessage({ success: true });
+          }
+        })
     );
   }
 });
@@ -181,116 +197,127 @@ self.addEventListener('message', (event) => {
 // -- Push Notification Handlers --
 
 // -- Push Notification Handlers --
-self.addEventListener('push', (event) => {
-  console.log('[SW] Push received', event);
+self.addEventListener("push", event => {
+  console.log("[SW] Push received", event);
 
   if (!event.data) {
-    console.log('[SW] Push error: No data');
+    console.log("[SW] Push error: No data");
     return;
   }
 
   try {
     const data = event.data.json();
-    console.log('[SW] Push data:', JSON.stringify(data, null, 2));
+    console.log("[SW] Push data:", JSON.stringify(data, null, 2));
 
     // If this is a OneSignal notification, it has a 'custom' property
     // The OneSignal SDK (which we imported above) will handle this automatically.
     // We skip our custom handler to avoid duplicate notifications.
     if (data && (data.custom || data.userId || data.app_id)) {
-      console.log('[SW] OneSignal payload detected, letting SDK handle it');
+      console.log("[SW] OneSignal payload detected, letting SDK handle it");
       return;
     }
 
-    const title = data.title || 'New Notification';
+    const title = data.title || "New Notification";
     const options = {
-      body: data.body || 'You have a new notification',
-      icon: data.icon || '/icon-192.png',
-      badge: data.badge || '/icon-192.png',
-      data: { url: data.data?.url || data.url || '/' },
+      body: data.body || "You have a new notification",
+      icon: data.icon || "/icon-192.png",
+      badge: data.badge || "/icon-192.png",
+      data: { url: data.data?.url || data.url || "/" },
       requireInteraction: true,
       vibrate: [200, 100, 200], // Triggers heads-up notification on Android
-      tag: 'calendair-notification', // Groups notifications by tag
+      tag: "calendair-notification", // Groups notifications by tag
       renotify: true, // Shows notification even if tag already exists
-      actions: [
-        { action: 'open', title: 'Open' }
-      ]
+      actions: [{ action: "open", title: "Open" }],
     };
 
-    console.log('[SW] Showing notification:', title, options);
+    console.log("[SW] Showing notification:", title, options);
 
     event.waitUntil(
-      self.registration.showNotification(title, options)
-        .catch(err => console.error('[SW] Show notification failed:', err))
+      self.registration
+        .showNotification(title, options)
+        .catch(err => console.error("[SW] Show notification failed:", err))
     );
   } catch (err) {
-    console.error('[SW] Push processing failed or non-JSON payload:', err);
+    console.error("[SW] Push processing failed or non-JSON payload:", err);
   }
 });
 
-self.addEventListener('notificationclick', (event) => {
-  console.log('[SW] Notification clicked', event);
+self.addEventListener("notificationclick", event => {
+  console.log("[SW] Notification clicked", event);
 
   // If this is a OneSignal notification, let the SDK handle it
-  if (event.notification.data && (event.notification.data.custom || event.notification.data.userId)) {
-    console.log('[SW] OneSignal click detected, letting SDK handle it');
+  if (
+    event.notification.data &&
+    (event.notification.data.custom || event.notification.data.userId)
+  ) {
+    console.log("[SW] OneSignal click detected, letting SDK handle it");
     return;
   }
 
   event.notification.close();
 
-  const urlToOpen = new URL(event.notification.data?.url || '/', self.location.origin).href;
+  const urlToOpen = new URL(
+    event.notification.data?.url || "/",
+    self.location.origin
+  ).href;
 
-  const promiseChain = clients.matchAll({
-    type: 'window',
-    includeUncontrolled: true
-  }).then((windowClients) => {
-    let clientToUse = null;
+  const promiseChain = clients
+    .matchAll({
+      type: "window",
+      includeUncontrolled: true,
+    })
+    .then(windowClients => {
+      let clientToUse = null;
 
-    // 1. First, check if there is already a window/tab open at the exact target URL
-    for (let i = 0; i < windowClients.length; i++) {
-      const client = windowClients[i];
-      if (client.url === urlToOpen) {
-        return client.focus();
-      }
-    }
-
-    // 2. Second, radically broaden the search to ANY open window belonging to this PWA
-    for (let i = 0; i < windowClients.length; i++) {
-      const client = windowClients[i];
-      if (client.url && client.url.startsWith(self.location.origin)) {
-        clientToUse = client;
-        break;
-      }
-    }
-
-    if (clientToUse) {
-      // Focus the existing PWA instance, then force its internal router to navigate
-      // This prevents iOS Safari from breaking out into a new unauthenticated Safari tab!
-      return clientToUse.focus().then((client) => {
-        if ('navigate' in client && client.url !== urlToOpen) {
-          return client.navigate(urlToOpen);
+      // 1. First, check if there is already a window/tab open at the exact target URL
+      for (let i = 0; i < windowClients.length; i++) {
+        const client = windowClients[i];
+        if (client.url === urlToOpen) {
+          return client.focus();
         }
-      });
-    }
-
-    // 3. Absolute last resort: PWA is completely closed, Cold Boot it
-    if (clients.openWindow) {
-      // iOS PWA Sandbox Failsafe:
-      // If we attempt to openWindow() to a deep link like '/profile?tab=forms', iOS Safari
-      // aggressively rejects the URL from the PWA sandbox and opens an unauthenticated normal tab.
-      // By forcing openWindow to exclusively target the root origin with a ?deeplink= parameter,
-      // iOS trusts the URL, boots the Sandbox securely, and the React App handles the router pivot.
-      try {
-        const targetUrl = new URL(urlToOpen);
-        const safeDeepLink = targetUrl.pathname + targetUrl.search + targetUrl.hash;
-        const coldBootUrl = new URL(`/?deeplink=${encodeURIComponent(safeDeepLink)}`, self.location.origin).href;
-        return clients.openWindow(coldBootUrl);
-      } catch (e) {
-        // Fallback for malformed URLs
-        return clients.openWindow(urlToOpen);
       }
-    }
-  });
+
+      // 2. Second, radically broaden the search to ANY open window belonging to this PWA
+      for (let i = 0; i < windowClients.length; i++) {
+        const client = windowClients[i];
+        if (client.url && client.url.startsWith(self.location.origin)) {
+          clientToUse = client;
+          break;
+        }
+      }
+
+      if (clientToUse) {
+        // Focus the existing PWA instance, then force its internal router to navigate
+        // This prevents iOS Safari from breaking out into a new unauthenticated Safari tab!
+        return clientToUse.focus().then(client => {
+          if ("navigate" in client && client.url !== urlToOpen) {
+            return client.navigate(urlToOpen);
+          }
+        });
+      }
+
+      // 3. Absolute last resort: PWA is completely closed, Cold Boot it
+      if (clients.openWindow) {
+        // iOS PWA Sandbox Failsafe:
+        // If we attempt to openWindow() to a deep link like '/profile?tab=forms', iOS Safari
+        // aggressively rejects the URL from the PWA sandbox and opens an unauthenticated normal tab.
+        // By forcing openWindow to exclusively target the root origin with a ?deeplink= parameter,
+        // iOS trusts the URL, boots the Sandbox securely, and the React App handles the router pivot.
+        try {
+          const targetUrl = new URL(urlToOpen);
+          const safeDeepLink =
+            targetUrl.pathname + targetUrl.search + targetUrl.hash;
+          const coldBootUrl = new URL(
+            `/?deeplink=${encodeURIComponent(safeDeepLink)}`,
+            self.location.origin
+          ).href;
+          return clients.openWindow(coldBootUrl);
+        } catch (e) {
+          // Fallback for malformed URLs
+          return clients.openWindow(urlToOpen);
+        }
+      }
+    });
 
   event.waitUntil(promiseChain);
 });

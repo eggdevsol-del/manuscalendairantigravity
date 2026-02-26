@@ -5,98 +5,103 @@ import { toast } from "sonner";
 import { PromotionCardData } from "@/features/promotions";
 
 export function usePromotionsController() {
-    const { user } = useAuth();
-    const isArtist = user?.role === 'artist';
+  const { user } = useAuth();
+  const isArtist = user?.role === "artist";
 
-    const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
-    const [focalIndex, setFocalIndex] = useState(0);
-    const [showCreateWizard, setShowCreateWizard] = useState(false);
-    const [showSendSheet, setShowSendSheet] = useState(false);
-    const [showAutoApplySheet, setShowAutoApplySheet] = useState(false);
-    const [editingPromotion, setEditingPromotion] = useState<PromotionCardData | null>(null);
-    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+  const [focalIndex, setFocalIndex] = useState(0);
+  const [showCreateWizard, setShowCreateWizard] = useState(false);
+  const [showSendSheet, setShowSendSheet] = useState(false);
+  const [showAutoApplySheet, setShowAutoApplySheet] = useState(false);
+  const [editingPromotion, setEditingPromotion] =
+    useState<PromotionCardData | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-    // Fetch all promotions
-    const { data: promotions = [], isLoading, refetch } = trpc.promotions.getPromotions.useQuery(
-        {},
-        { enabled: !!user }
+  // Fetch all promotions
+  const {
+    data: promotions = [],
+    isLoading,
+    refetch,
+  } = trpc.promotions.getPromotions.useQuery({}, { enabled: !!user });
+
+  const deleteMutation = trpc.promotions.deleteTemplate.useMutation({
+    onSuccess: () => {
+      toast.success("Promotion deleted");
+      setSelectedCardId(null);
+      setShowDeleteDialog(false);
+      refetch();
+    },
+    onError: error => {
+      toast.error(error.message || "Failed to delete promotion");
+    },
+  });
+
+  const handleDelete = useCallback(() => {
+    if (selectedCardId) {
+      deleteMutation.mutate({ templateId: selectedCardId });
+    }
+  }, [selectedCardId, deleteMutation]);
+
+  const handleEdit = useCallback(() => {
+    const card = promotions.find(p => p.id === selectedCardId);
+    if (card) {
+      setEditingPromotion(card as PromotionCardData);
+      setShowCreateWizard(true);
+    }
+  }, [promotions, selectedCardId]);
+
+  const handleUseOnBooking = useCallback(() => {
+    const selectedCard = promotions.find(c => c.id === selectedCardId);
+    if (!selectedCard) return;
+    sessionStorage.setItem(
+      "pendingPromotion",
+      JSON.stringify({
+        id: selectedCard.id,
+        type: selectedCard.type,
+        name: selectedCard.name,
+        value: selectedCard.value,
+        valueType: selectedCard.valueType,
+        code: selectedCard.code,
+      })
     );
+    toast.success("Promotion ready to use!");
+  }, [promotions, selectedCardId]);
 
-    const deleteMutation = trpc.promotions.deleteTemplate.useMutation({
-        onSuccess: () => {
-            toast.success('Promotion deleted');
-            setSelectedCardId(null);
-            setShowDeleteDialog(false);
-            refetch();
-        },
-        onError: (error) => {
-            toast.error(error.message || 'Failed to delete promotion');
-        }
-    });
+  const handleCreate = useCallback(() => {
+    setEditingPromotion(null);
+    setShowCreateWizard(true);
+  }, []);
 
-    const handleDelete = useCallback(() => {
-        if (selectedCardId) {
-            deleteMutation.mutate({ templateId: selectedCardId });
-        }
-    }, [selectedCardId, deleteMutation]);
+  const closeCreateWizard = useCallback(() => {
+    setShowCreateWizard(false);
+    setEditingPromotion(null);
+    refetch();
+  }, [refetch]);
 
-    const handleEdit = useCallback(() => {
-        const card = promotions.find(p => p.id === selectedCardId);
-        if (card) {
-            setEditingPromotion(card as PromotionCardData);
-            setShowCreateWizard(true);
-        }
-    }, [promotions, selectedCardId]);
-
-    const handleUseOnBooking = useCallback(() => {
-        const selectedCard = promotions.find(c => c.id === selectedCardId);
-        if (!selectedCard) return;
-        sessionStorage.setItem('pendingPromotion', JSON.stringify({
-            id: selectedCard.id,
-            type: selectedCard.type,
-            name: selectedCard.name,
-            value: selectedCard.value,
-            valueType: selectedCard.valueType,
-            code: selectedCard.code,
-        }));
-        toast.success('Promotion ready to use!');
-    }, [promotions, selectedCardId]);
-
-    const handleCreate = useCallback(() => {
-        setEditingPromotion(null);
-        setShowCreateWizard(true);
-    }, []);
-
-    const closeCreateWizard = useCallback(() => {
-        setShowCreateWizard(false);
-        setEditingPromotion(null);
-        refetch();
-    }, [refetch]);
-
-    return {
-        user,
-        isArtist,
-        promotions,
-        isLoading,
-        selectedCardId,
-        setSelectedCardId,
-        focalIndex,
-        setFocalIndex,
-        showCreateWizard,
-        setShowCreateWizard,
-        showSendSheet,
-        setShowSendSheet,
-        showAutoApplySheet,
-        setShowAutoApplySheet,
-        editingPromotion,
-        showDeleteDialog,
-        setShowDeleteDialog,
-        deleteMutation,
-        handleDelete,
-        handleEdit,
-        handleUseOnBooking,
-        handleCreate,
-        closeCreateWizard,
-        refetch
-    };
+  return {
+    user,
+    isArtist,
+    promotions,
+    isLoading,
+    selectedCardId,
+    setSelectedCardId,
+    focalIndex,
+    setFocalIndex,
+    showCreateWizard,
+    setShowCreateWizard,
+    showSendSheet,
+    setShowSendSheet,
+    showAutoApplySheet,
+    setShowAutoApplySheet,
+    editingPromotion,
+    showDeleteDialog,
+    setShowDeleteDialog,
+    deleteMutation,
+    handleDelete,
+    handleEdit,
+    handleUseOnBooking,
+    handleCreate,
+    closeCreateWizard,
+    refetch,
+  };
 }

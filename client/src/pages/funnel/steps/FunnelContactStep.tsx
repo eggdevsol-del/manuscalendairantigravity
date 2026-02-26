@@ -29,12 +29,12 @@ export default function FunnelContactStep({
   isLastStep,
   submitting,
 }: FunnelContactStepProps) {
-  const [name, setName] = useState(stepData.contact?.name || '');
-  const [email, setEmail] = useState(stepData.contact?.email || '');
-  const [phone, setPhone] = useState(stepData.contact?.phone || '');
+  const [name, setName] = useState(stepData.contact?.name || "");
+  const [email, setEmail] = useState(stepData.contact?.email || "");
+  const [phone, setPhone] = useState(stepData.contact?.phone || "");
 
   const handleNext = () => {
-    onNext('contact', {
+    onNext("contact", {
       name: name.trim(),
       email: email.trim().toLowerCase(),
       phone: phone.trim() || undefined,
@@ -71,7 +71,7 @@ export default function FunnelContactStep({
             <Input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={e => setName(e.target.value)}
               placeholder="Enter your full name"
               className="pl-10"
             />
@@ -88,7 +88,7 @@ export default function FunnelContactStep({
             <Input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               placeholder="your@email.com"
               className="pl-10"
             />
@@ -103,14 +103,15 @@ export default function FunnelContactStep({
         {/* Phone (optional) */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Phone number <span className="text-muted-foreground">(optional)</span>
+            Phone number{" "}
+            <span className="text-muted-foreground">(optional)</span>
           </label>
           <div className="relative">
             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
               type="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={e => setPhone(e.target.value)}
               placeholder="+1 (555) 123-4567"
               className="pl-10"
             />
@@ -129,8 +130,9 @@ export default function FunnelContactStep({
         className="mt-6 p-4 rounded-xl bg-muted/50"
       >
         <p className="text-xs text-muted-foreground">
-          🔒 Your information is secure and will only be used to communicate about your tattoo request. 
-          We never share your details with third parties.
+          🔒 Your information is secure and will only be used to communicate
+          about your tattoo request. We never share your details with third
+          parties.
         </p>
       </motion.div>
     </FunnelStepWrapper>

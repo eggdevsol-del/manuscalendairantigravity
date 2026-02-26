@@ -1,12 +1,23 @@
 /**
  * Weekly Snapshot Modal
- * 
+ *
  * Displays weekly analytics to the artist with performance metrics
  * and comparison to benchmarks.
  */
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, TrendingUp, Clock, CheckCircle2, Zap, Award, Target, ArrowUp, ArrowDown, Minus } from "lucide-react";
+import {
+  X,
+  TrendingUp,
+  Clock,
+  CheckCircle2,
+  Zap,
+  Award,
+  Target,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { tokens } from "@/ui/tokens";
 
@@ -28,7 +39,7 @@ interface WeeklySnapshotData {
     benchmarkLabel: string;
   };
   efficiencyScore: number;
-  rating: 'elite' | 'excellent' | 'good' | 'average' | 'needs_improvement';
+  rating: "elite" | "excellent" | "good" | "average" | "needs_improvement";
   insights: string[];
 }
 
@@ -49,31 +60,46 @@ function formatTime(seconds: number): string {
 
 function getRatingColor(rating: string): string {
   switch (rating) {
-    case 'elite': return 'text-yellow-400';
-    case 'excellent': return 'text-green-400';
-    case 'good': return 'text-blue-400';
-    case 'average': return 'text-orange-400';
-    default: return 'text-red-400';
+    case "elite":
+      return "text-yellow-400";
+    case "excellent":
+      return "text-green-400";
+    case "good":
+      return "text-blue-400";
+    case "average":
+      return "text-orange-400";
+    default:
+      return "text-red-400";
   }
 }
 
 function getRatingLabel(rating: string): string {
   switch (rating) {
-    case 'elite': return 'Elite';
-    case 'excellent': return 'Excellent';
-    case 'good': return 'Good';
-    case 'average': return 'Average';
-    default: return 'Needs Improvement';
+    case "elite":
+      return "Elite";
+    case "excellent":
+      return "Excellent";
+    case "good":
+      return "Good";
+    case "average":
+      return "Average";
+    default:
+      return "Needs Improvement";
   }
 }
 
 function getRatingIcon(rating: string) {
   switch (rating) {
-    case 'elite': return <Award className="w-6 h-6" />;
-    case 'excellent': return <Zap className="w-6 h-6" />;
-    case 'good': return <TrendingUp className="w-6 h-6" />;
-    case 'average': return <Target className="w-6 h-6" />;
-    default: return <Target className="w-6 h-6" />;
+    case "elite":
+      return <Award className="w-6 h-6" />;
+    case "excellent":
+      return <Zap className="w-6 h-6" />;
+    case "good":
+      return <TrendingUp className="w-6 h-6" />;
+    case "average":
+      return <Target className="w-6 h-6" />;
+    default:
+      return <Target className="w-6 h-6" />;
   }
 }
 
@@ -86,10 +112,17 @@ function ComparisonIndicator({ value }: { value: number }) {
   return <Minus className="w-4 h-4 text-muted-foreground" />;
 }
 
-export function WeeklySnapshotModal({ open, onClose, data, isLoading }: WeeklySnapshotModalProps) {
+export function WeeklySnapshotModal({
+  open,
+  onClose,
+  data,
+  isLoading,
+}: WeeklySnapshotModalProps) {
   if (!open) return null;
 
-  const weekRange = data ? `${new Date(data.weekStart).toLocaleDateString('en-AU', { month: 'short', day: 'numeric' })} - ${new Date(data.weekEnd).toLocaleDateString('en-AU', { month: 'short', day: 'numeric' })}` : '';
+  const weekRange = data
+    ? `${new Date(data.weekStart).toLocaleDateString("en-AU", { month: "short", day: "numeric" })} - ${new Date(data.weekEnd).toLocaleDateString("en-AU", { month: "short", day: "numeric" })}`
+    : "";
 
   return (
     <AnimatePresence>
@@ -139,9 +172,13 @@ export function WeeklySnapshotModal({ open, onClose, data, isLoading }: WeeklySn
                   <>
                     {/* Efficiency Score */}
                     <div className="text-center py-4">
-                      <div className={`inline-flex items-center gap-2 ${getRatingColor(data.rating)}`}>
+                      <div
+                        className={`inline-flex items-center gap-2 ${getRatingColor(data.rating)}`}
+                      >
                         {getRatingIcon(data.rating)}
-                        <span className="text-lg font-bold">{getRatingLabel(data.rating)}</span>
+                        <span className="text-lg font-bold">
+                          {getRatingLabel(data.rating)}
+                        </span>
                       </div>
                       <div className="mt-4 relative">
                         <div className="w-32 h-32 mx-auto relative">
@@ -168,10 +205,14 @@ export function WeeklySnapshotModal({ open, onClose, data, isLoading }: WeeklySn
                             />
                           </svg>
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-3xl font-bold">{data.efficiencyScore}</span>
+                            <span className="text-3xl font-bold">
+                              {data.efficiencyScore}
+                            </span>
                           </div>
                         </div>
-                        <p className="text-sm text-muted-foreground mt-2">Efficiency Score</p>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Efficiency Score
+                        </p>
                       </div>
                     </div>
 
@@ -182,7 +223,9 @@ export function WeeklySnapshotModal({ open, onClose, data, isLoading }: WeeklySn
                           <CheckCircle2 className="w-4 h-4" />
                           <span className="text-xs">Tasks Completed</span>
                         </div>
-                        <p className="text-2xl font-bold">{data.metrics.totalTasksCompleted}</p>
+                        <p className="text-2xl font-bold">
+                          {data.metrics.totalTasksCompleted}
+                        </p>
                       </div>
 
                       <div className="bg-white/5 rounded-2xl p-4">
@@ -190,7 +233,9 @@ export function WeeklySnapshotModal({ open, onClose, data, isLoading }: WeeklySn
                           <Zap className="w-4 h-4 text-red-400" />
                           <span className="text-xs">Critical Tasks</span>
                         </div>
-                        <p className="text-2xl font-bold">{data.metrics.tier1TasksCompleted}</p>
+                        <p className="text-2xl font-bold">
+                          {data.metrics.tier1TasksCompleted}
+                        </p>
                       </div>
 
                       <div className="bg-white/5 rounded-2xl p-4">
@@ -200,51 +245,67 @@ export function WeeklySnapshotModal({ open, onClose, data, isLoading }: WeeklySn
                         </div>
                         <p className="text-2xl font-bold">
                           {data.metrics.avgConsultationResponseSeconds > 0
-                            ? formatTime(data.metrics.avgConsultationResponseSeconds)
-                            : '—'}
+                            ? formatTime(
+                                data.metrics.avgConsultationResponseSeconds
+                              )
+                            : "—"}
                         </p>
                       </div>
 
                       <div className="bg-white/5 rounded-2xl p-4">
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                          <ComparisonIndicator value={data.comparison.responseTimeVsBenchmark} />
+                          <ComparisonIndicator
+                            value={data.comparison.responseTimeVsBenchmark}
+                          />
                           <span className="text-xs">vs Benchmark</span>
                         </div>
-                        <p className="text-lg font-bold">{data.comparison.benchmarkLabel}</p>
+                        <p className="text-lg font-bold">
+                          {data.comparison.benchmarkLabel}
+                        </p>
                       </div>
                     </div>
 
                     {/* Task Breakdown */}
                     <div className="bg-white/5 rounded-2xl p-4">
-                      <h3 className="text-sm font-medium text-muted-foreground mb-3">Task Breakdown</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                        Task Breakdown
+                      </h3>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-red-500"></div>
                             <span className="text-sm">Tier 1 (Critical)</span>
                           </div>
-                          <span className="font-medium">{data.metrics.tier1TasksCompleted}</span>
+                          <span className="font-medium">
+                            {data.metrics.tier1TasksCompleted}
+                          </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-orange-500"></div>
                             <span className="text-sm">Tier 2 (High)</span>
                           </div>
-                          <span className="font-medium">{data.metrics.tier2TasksCompleted}</span>
+                          <span className="font-medium">
+                            {data.metrics.tier2TasksCompleted}
+                          </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
                             <span className="text-sm">Tier 3 (Medium)</span>
                           </div>
-                          <span className="font-medium">{data.metrics.tier3TasksCompleted}</span>
+                          <span className="font-medium">
+                            {data.metrics.tier3TasksCompleted}
+                          </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-green-500"></div>
                             <span className="text-sm">Tier 4 (Low)</span>
                           </div>
-                          <span className="font-medium">{data.metrics.tier4TasksCompleted}</span>
+                          <span className="font-medium">
+                            {data.metrics.tier4TasksCompleted}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -252,7 +313,9 @@ export function WeeklySnapshotModal({ open, onClose, data, isLoading }: WeeklySn
                     {/* Insights */}
                     {data.insights.length > 0 && (
                       <div className="space-y-2">
-                        <h3 className="text-sm font-medium text-muted-foreground">Insights</h3>
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                          Insights
+                        </h3>
                         {data.insights.map((insight, index) => (
                           <div
                             key={index}
@@ -273,11 +336,7 @@ export function WeeklySnapshotModal({ open, onClose, data, isLoading }: WeeklySn
 
               {/* Footer */}
               <div className="shrink-0 px-6 py-4 border-t border-white/5">
-                <Button
-                  variant="default"
-                  onClick={onClose}
-                  className="w-full"
-                >
+                <Button variant="default" onClick={onClose} className="w-full">
                   Got it
                 </Button>
               </div>

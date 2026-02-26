@@ -3,7 +3,7 @@
  * -------------------------------
  * PageHeader is the canonical page header component.
  * Use this for consistent header styling across all pages.
- * 
+ *
  * Features:
  * - Left-aligned title
  * - Optional subtitle (e.g., version number)
@@ -11,7 +11,7 @@
  * - Consistent title size and placement
  * - Safe area inset handling
  * - Optional back button
- * 
+ *
  * DO NOT create custom header styles in page components.
  * DO NOT add icons or buttons to the header area.
  */
@@ -21,62 +21,69 @@ import { ChevronLeft } from "lucide-react";
 import { Button } from "../button";
 
 interface PageHeaderProps {
-    /** Page title - rendered with consistent SSOT styling */
-    title: string;
-    /** Optional subtitle - displayed next to title (e.g., version number) */
-    subtitle?: string;
-    /** Additional classes for the header container */
-    className?: string;
-    /** Optional back action - renders a back button */
-    onBack?: () => void;
+  /** Page title - rendered with consistent SSOT styling */
+  title: string;
+  /** Optional subtitle - displayed next to title (e.g., version number) */
+  subtitle?: string;
+  /** Additional classes for the header container */
+  className?: string;
+  /** Optional back action - renders a back button */
+  onBack?: () => void;
 }
 
 /**
  * PageHeader - SSOT header component with left-aligned title
  */
-export function PageHeader({ title, subtitle, className, onBack }: PageHeaderProps) {
-    // Check for Artist Branding (Teaser Mode or Client View)
-    // We check localStorage directly to avoid prop drilling, as this is a global branding requirement
-    const artistBranding = typeof window !== 'undefined' ? localStorage.getItem("calendair_artist_branding") : null;
+export function PageHeader({
+  title,
+  subtitle,
+  className,
+  onBack,
+}: PageHeaderProps) {
+  // Check for Artist Branding (Teaser Mode or Client View)
+  // We check localStorage directly to avoid prop drilling, as this is a global branding requirement
+  const artistBranding =
+    typeof window !== "undefined"
+      ? localStorage.getItem("calendair_artist_branding")
+      : null;
 
-    // If branding exists, we override the display logic
-    // Format: [Artist Name] by TOI
-    const displayTitle = artistBranding ? (
-        <span className="flex flex-col">
-            <span>{artistBranding}</span>
-            <span className="text-[10px] uppercase font-bold tracking-widest opacity-50">by CalendAIr</span>
-        </span>
-    ) : title;
+  // If branding exists, we override the display logic
+  // Format: [Artist Name] by TOI
+  const displayTitle = artistBranding ? (
+    <span className="flex flex-col">
+      <span>{artistBranding}</span>
+      <span className="text-[10px] uppercase font-bold tracking-widest opacity-50">
+        by CalendAIr
+      </span>
+    </span>
+  ) : (
+    title
+  );
 
-    return (
-        <header
-            className={cn(
-                tokens.shell.header,
-                className
-            )}
-            style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
-        >
-            <div className="flex items-center gap-2">
-                {onBack && (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={onBack}
-                        className="-ml-2 h-8 w-8 text-foreground/70 hover:text-foreground"
-                    >
-                        <ChevronLeft className="w-6 h-6" />
-                    </Button>
-                )}
-                <h1 className={tokens.header.pageTitle}>
-                    {artistBranding ? displayTitle : title}
-                </h1>
-            </div>
-            {subtitle && !artistBranding && (
-                <span className={tokens.header.pageSubtitle}>
-                    {subtitle}
-                </span>
-            )}
-            {/* If branding is active, we might suppress the subtitle or display the original title as subtitle? 
+  return (
+    <header
+      className={cn(tokens.shell.header, className)}
+      style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
+    >
+      <div className="flex items-center gap-2">
+        {onBack && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="-ml-2 h-8 w-8 text-foreground/70 hover:text-foreground"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </Button>
+        )}
+        <h1 className={tokens.header.pageTitle}>
+          {artistBranding ? displayTitle : title}
+        </h1>
+      </div>
+      {subtitle && !artistBranding && (
+        <span className={tokens.header.pageSubtitle}>{subtitle}</span>
+      )}
+      {/* If branding is active, we might suppress the subtitle or display the original title as subtitle? 
                 The requirement says "Artist name = primary", "by TOI = ~50% size".
                 It doesn't explicitly say we lose the Page Title (like "Dashboard").
                 But usually branding replaces the App Name. 
@@ -89,6 +96,6 @@ export function PageHeader({ title, subtitle, className, onBack }: PageHeaderPro
                 However, for Teaser App, the context is the Artist.
                 Let's stick to the requirement: "Header Branding... Format: [Artist Name] by TOI".
             */}
-        </header>
-    );
+    </header>
+  );
 }

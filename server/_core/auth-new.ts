@@ -3,7 +3,8 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { getUserById } from "../db";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_SECRET =
+  process.env.JWT_SECRET || "your-secret-key-change-in-production";
 const JWT_EXPIRES_IN = "7d"; // Token expires in 7 days
 
 export interface AuthUser {
@@ -189,4 +190,3 @@ export function verifyMagicLinkToken(token: string): { email: string } | null {
     return null;
   }
 }
-

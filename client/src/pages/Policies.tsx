@@ -1,5 +1,12 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui";
 import { trpc } from "@/lib/trpc";
 import { ChevronLeft, FileText, Shield } from "lucide-react";
 import { LoadingState } from "@/components/ui/ssot";
@@ -10,7 +17,11 @@ import { cn } from "@/lib/utils";
 
 type PolicyType = "deposit" | "design" | "reschedule" | "cancellation";
 
-const policyTypes: { type: PolicyType; label: string; icon: typeof FileText }[] = [
+const policyTypes: {
+  type: PolicyType;
+  label: string;
+  icon: typeof FileText;
+}[] = [
   { type: "deposit", label: "Deposit Policy", icon: Shield },
   { type: "design", label: "Design Policy", icon: FileText },
   { type: "reschedule", label: "Reschedule Policy", icon: FileText },
@@ -66,7 +77,7 @@ export default function Policies() {
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <h1 className="text-2xl font-bold text-foreground">
-              {policyTypes.find((p) => p.type === selectedType)?.label}
+              {policyTypes.find(p => p.type === selectedType)?.label}
             </h1>
           </div>
         </header>
@@ -77,7 +88,13 @@ export default function Policies() {
               <LoadingState message="Loading policy..." />
             </div>
           ) : !policy || !policy.enabled ? (
-            <Card className={cn(tokens.card.base, tokens.card.bg, "p-8 text-center")}>
+            <Card
+              className={cn(
+                tokens.card.base,
+                tokens.card.bg,
+                "p-8 text-center"
+              )}
+            >
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                 <FileText className="w-8 h-8 text-muted-foreground" />
               </div>
@@ -93,7 +110,8 @@ export default function Policies() {
               <CardHeader>
                 <CardTitle>{policy.title}</CardTitle>
                 <CardDescription>
-                  Last updated: {new Date(policy.updatedAt!).toLocaleDateString()}
+                  Last updated:{" "}
+                  {new Date(policy.updatedAt!).toLocaleDateString()}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -129,7 +147,9 @@ export default function Policies() {
 
       <main className="flex-1 px-4 py-4 mobile-scroll overflow-y-auto">
         {!artistId ? (
-          <Card className={cn(tokens.card.base, tokens.card.bg, "p-8 text-center")}>
+          <Card
+            className={cn(tokens.card.base, tokens.card.bg, "p-8 text-center")}
+          >
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
               <Shield className="w-8 h-8 text-muted-foreground" />
             </div>
@@ -137,7 +157,8 @@ export default function Policies() {
               Select an Artist
             </h3>
             <p className="text-muted-foreground text-sm">
-              Policies are specific to each artist. Start a conversation to view their policies.
+              Policies are specific to each artist. Start a conversation to view
+              their policies.
             </p>
           </Card>
         ) : (
@@ -145,7 +166,12 @@ export default function Policies() {
             {policyTypes.map(({ type, label, icon: Icon }) => (
               <Card
                 key={type}
-                className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0")}
+                className={cn(
+                  tokens.card.base,
+                  tokens.card.bg,
+                  tokens.card.interactive,
+                  "border-0"
+                )}
                 onClick={() => setSelectedType(type)}
               >
                 <CardHeader className="pb-3">
@@ -167,4 +193,3 @@ export default function Policies() {
     </div>
   );
 }
-

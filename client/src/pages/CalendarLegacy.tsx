@@ -1,18 +1,44 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
-import { trpc } from "@/lib/trpc";
 import {
-  Plus, ChevronLeft, ChevronRight, Calculator
-} from "lucide-react";
-import { LoadingState, PageShell, PageHeader, SegmentedHeader } from "@/components/ui/ssot";
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui";
+import { trpc } from "@/lib/trpc";
+import { Plus, ChevronLeft, ChevronRight, Calculator } from "lucide-react";
+import {
+  LoadingState,
+  PageShell,
+  PageHeader,
+  SegmentedHeader,
+} from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { useConversations } from "@/hooks/useConversations";
 
-import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from "react";
+import {
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+  useLayoutEffect,
+} from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatLocalTime, getBusinessTimezone } from "../../../shared/utils/timezone";
+import {
+  formatLocalTime,
+  getBusinessTimezone,
+} from "../../../shared/utils/timezone";
 
 type ViewMode = "day" | "week" | "month";
 
@@ -33,9 +59,11 @@ const getBufferDays = (centerDate: Date) => {
 };
 
 const isSameDay = (d1: Date, d2: Date) => {
-  return d1.getDate() === d2.getDate() &&
+  return (
+    d1.getDate() === d2.getDate() &&
     d1.getMonth() === d2.getMonth() &&
-    d1.getFullYear() === d2.getFullYear();
+    d1.getFullYear() === d2.getFullYear()
+  );
 };
 
 const isToday = (date: Date) => isSameDay(date, new Date());
@@ -48,14 +76,14 @@ const getEventStyle = (appointment: any) => {
     tokens.calendar.event.purple,
     tokens.calendar.event.green,
     tokens.calendar.event.pink,
-    tokens.calendar.event.blue
+    tokens.calendar.event.blue,
   ];
-  const palette = palettes[hash % palettes.length] || tokens.calendar.event.default;
+  const palette =
+    palettes[hash % palettes.length] || tokens.calendar.event.default;
   return {
     className: cn(palette.bg, palette.text, "border-l-4", palette.border),
   };
 };
-
 
 export default function Calendar() {
   const { user, loading } = useAuth();
@@ -69,11 +97,12 @@ export default function Calendar() {
   const [anchorDate, setAnchorDate] = useState<Date>(new Date());
 
   const [showAppointmentDialog, setShowAppointmentDialog] = useState(false);
-  const [showAppointmentDetailDialog, setShowAppointmentDetailDialog] = useState(false);
+  const [showAppointmentDetailDialog, setShowAppointmentDetailDialog] =
+    useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
 
   // New State for Gold Standard Flow
-  const [step, setStep] = useState<'service' | 'details'>('service');
+  const [step, setStep] = useState<"service" | "details">("service");
   const [selectedService, setSelectedService] = useState<any>(null);
 
   const { data: artistSettings } = trpc.artistSettings.get.useQuery(undefined, {
@@ -113,19 +142,27 @@ export default function Calendar() {
     return d;
   }, [anchorDate]);
 
-  const { data: appointments, isLoading, refetch } = trpc.appointments.list.useQuery(
+  const {
+    data: appointments,
+    isLoading,
+    refetch,
+  } = trpc.appointments.list.useQuery(
     { startDate: gridStart, endDate: gridEnd },
-    { enabled: !!user, placeholderData: (prev) => prev }
+    { enabled: !!user, placeholderData: prev => prev }
   );
 
   const { data: conversations } = useConversations();
-  const clients = conversations?.map((conv: any) => ({
-    id: conv.clientId,
-    name: conv.clientName,
-    email: conv.otherUser?.email,
-  })).filter((client: any, index: number, self: any[]) =>
-    index === self.findIndex((c: any) => c.id === client.id)
-  ) || [];
+  const clients =
+    conversations
+      ?.map((conv: any) => ({
+        id: conv.clientId,
+        name: conv.clientName,
+        email: conv.otherUser?.email,
+      }))
+      .filter(
+        (client: any, index: number, self: any[]) =>
+          index === self.findIndex((c: any) => c.id === client.id)
+      ) || [];
 
   const createAppointmentMutation = trpc.appointments.create.useMutation({
     onSuccess: () => {
@@ -134,7 +171,8 @@ export default function Calendar() {
       resetForm();
       refetch();
     },
-    onError: (error: any) => toast.error("Failed to create appointment: " + error.message),
+    onError: (error: any) =>
+      toast.error("Failed to create appointment: " + error.message),
   });
 
   const updateAppointmentMutation = trpc.appointments.update.useMutation({
@@ -144,7 +182,8 @@ export default function Calendar() {
       setSelectedAppointment(null);
       refetch();
     },
-    onError: (error: any) => toast.error("Failed to update appointment: " + error.message),
+    onError: (error: any) =>
+      toast.error("Failed to update appointment: " + error.message),
   });
 
   const deleteAppointmentMutation = trpc.appointments.delete.useMutation({
@@ -154,7 +193,8 @@ export default function Calendar() {
       setSelectedAppointment(null);
       refetch();
     },
-    onError: (error: any) => toast.error("Failed to delete appointment: " + error.message),
+    onError: (error: any) =>
+      toast.error("Failed to delete appointment: " + error.message),
   });
 
   useEffect(() => {
@@ -173,7 +213,12 @@ export default function Calendar() {
   };
 
   const handleCreateAppointment = () => {
-    if (!appointmentForm.clientId || !appointmentForm.title || !appointmentForm.startTime || !appointmentForm.endTime) {
+    if (
+      !appointmentForm.clientId ||
+      !appointmentForm.title ||
+      !appointmentForm.startTime ||
+      !appointmentForm.endTime
+    ) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -189,14 +234,16 @@ export default function Calendar() {
     });
   };
 
-  const getAppointmentsForDate = useCallback((date: Date) => {
-    if (!appointments) return [];
-    return appointments.filter(apt => {
-      const d = new Date(apt.startTime);
-      return isSameDay(d, date);
-    });
-  }, [appointments]);
-
+  const getAppointmentsForDate = useCallback(
+    (date: Date) => {
+      if (!appointments) return [];
+      return appointments.filter(apt => {
+        const d = new Date(apt.startTime);
+        return isSameDay(d, date);
+      });
+    },
+    [appointments]
+  );
 
   // --- Sub-Components ---
 
@@ -219,7 +266,10 @@ export default function Calendar() {
           const child = container.children[index] as HTMLElement;
           if (child) {
             // Instant jump (start of loop or data refresh)
-            const newScrollLeft = child.offsetLeft + child.offsetWidth / 2 - container.clientWidth / 2;
+            const newScrollLeft =
+              child.offsetLeft +
+              child.offsetWidth / 2 -
+              container.clientWidth / 2;
             container.scrollLeft = newScrollLeft;
           }
         }
@@ -233,7 +283,12 @@ export default function Calendar() {
         if (index !== -1) {
           const el = scrollRef.current.children[index] as HTMLElement;
           // Standard scrollIntoView
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          if (el)
+            el.scrollIntoView({
+              behavior: "smooth",
+              block: "nearest",
+              inline: "center",
+            });
         }
       }
     }, [selectedDate]); // Removed dates dependency to avoid double-scroll logic
@@ -271,9 +326,9 @@ export default function Calendar() {
         if (index >= 0 && index < dates.length) {
           const newDate = dates[index];
           if (!isSameDay(newDate, selectedDate)) {
-            // We only update selectedDate here. 
+            // We only update selectedDate here.
             // We DO NOT update anchorDate immediately to avoid "fighting".
-            // We let the user stop scrolling first? 
+            // We let the user stop scrolling first?
             // actually, we need updates for UI even while scrolling.
             setSelectedDate(newDate);
           }
@@ -288,8 +343,11 @@ export default function Calendar() {
         const idx = dates.findIndex(d => isSameDay(d, selectedDate));
         if (idx !== -1) {
           const current = dates[idx];
-          const diffDays = Math.abs((current.getTime() - anchorDate.getTime()) / (1000 * 60 * 60 * 24));
-          if (diffDays > BUFFER_DAYS - 20) { // Threshold before end
+          const diffDays = Math.abs(
+            (current.getTime() - anchorDate.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          if (diffDays > BUFFER_DAYS - 20) {
+            // Threshold before end
             setAnchorDate(current);
           }
         }
@@ -299,40 +357,51 @@ export default function Calendar() {
     return (
       <div className="relative w-full h-24 mb-4 group select-none">
         {/* Stationary Highlight Box */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[70px] h-[86px] 
+        <div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[70px] h-[86px] 
                             border-2 border-blue-500 bg-blue-500/10 rounded-2xl z-20 pointer-events-none 
-                            shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300" />
+                            shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300"
+        />
 
         <div
           ref={scrollRef}
           className="flex items-center gap-4 overflow-x-auto hide-scrollbar px-[calc(50%-35px)] py-2 h-full"
           onScroll={handleScroll}
-        // No snap classes!
+          // No snap classes!
         >
-          {dates.map((date) => {
+          {dates.map(date => {
             const isActive = isSameDay(date, selectedDate);
             const hasApps = getAppointmentsForDate(date).length > 0;
             return (
               <div
                 key={date.toISOString()}
                 onClick={() => {
-                  // If clicked, it's a manual selection. 
+                  // If clicked, it's a manual selection.
                   setSelectedDate(date);
                 }}
                 className={cn(
                   "shrink-0 flex flex-col items-center justify-center w-[60px] h-[80px] rounded-xl cursor-pointer transition-all duration-300 z-10",
-                  isActive ? "scale-110 opacity-100 font-bold" : "opacity-50 hover:opacity-80 scale-90"
+                  isActive
+                    ? "scale-110 opacity-100 font-bold"
+                    : "opacity-50 hover:opacity-80 scale-90"
                 )}
               >
-                <span className="text-xs uppercase tracking-wider mb-1">{date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                <span className="text-xs uppercase tracking-wider mb-1">
+                  {date.toLocaleDateString("en-US", { weekday: "short" })}
+                </span>
                 <span className="text-2xl">{date.getDate()}</span>
-                <div className={cn("w-1.5 h-1.5 rounded-full mt-1", hasApps ? "bg-primary" : "bg-transparent")} />
+                <div
+                  className={cn(
+                    "w-1.5 h-1.5 rounded-full mt-1",
+                    hasApps ? "bg-primary" : "bg-transparent"
+                  )}
+                />
               </div>
-            )
+            );
           })}
         </div>
       </div>
-    )
+    );
   };
 
   // 2. Vertical Week View (Unified Scroll with Anchor) - Enhanced
@@ -354,7 +423,10 @@ export default function Calendar() {
           if (child) {
             // Instant jump to maintain relative position
             // Center the element
-            const newScrollTop = child.offsetTop + child.offsetHeight / 2 - container.clientHeight / 2;
+            const newScrollTop =
+              child.offsetTop +
+              child.offsetHeight / 2 -
+              container.clientHeight / 2;
             container.scrollTop = newScrollTop;
           }
         }
@@ -403,7 +475,9 @@ export default function Calendar() {
         const idx = dates.findIndex(d => isSameDay(d, selectedDate));
         if (idx !== -1) {
           const current = dates[idx];
-          const diffDays = Math.abs((current.getTime() - anchorDate.getTime()) / (1000 * 60 * 60 * 24));
+          const diffDays = Math.abs(
+            (current.getTime() - anchorDate.getTime()) / (1000 * 60 * 60 * 24)
+          );
           if (diffDays > BUFFER_DAYS - 20) {
             setAnchorDate(current);
           }
@@ -417,7 +491,7 @@ export default function Calendar() {
         const index = dates.findIndex(d => isSameDay(d, selectedDate));
         if (index !== -1) {
           const el = scrollRef.current.children[index] as HTMLElement;
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       }
     }, [selectedDate]);
@@ -426,18 +500,20 @@ export default function Calendar() {
       <div className="h-full relative overflow-hidden">
         {/* Stationary Highlight Overlay - MATCHING DAY VIEW STYLE */}
         {/* Positioned to align with the left date column (w-20 + px-4 = ~left 56px center) */}
-        <div className="absolute top-1/2 left-[56px] -translate-x-1/2 -translate-y-1/2 
+        <div
+          className="absolute top-1/2 left-[56px] -translate-x-1/2 -translate-y-1/2 
                            w-[70px] h-[86px] 
                            border-2 border-blue-500 bg-blue-500/10 rounded-2xl z-0 pointer-events-none 
-                           shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300" />
+                           shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300"
+        />
 
         <div
           className="h-full overflow-y-auto hide-scrollbar py-[calc(50vh-56px)]"
           ref={scrollRef}
           onScroll={handleScroll}
-        // No snap classes
+          // No snap classes
         >
-          {dates.map((date) => {
+          {dates.map(date => {
             const isActive = isSameDay(date, selectedDate);
             const apps = getAppointmentsForDate(date);
             const hasApps = apps.length > 0;
@@ -449,45 +525,75 @@ export default function Calendar() {
                 className="flex items-center h-28 px-4 gap-6 group relative z-10"
               >
                 {/* Left: Date - REUSED STYLE FROM DAY STRIP */}
-                <div className={cn(
-                  "shrink-0 flex flex-col items-center justify-center w-[84px] h-[86px] rounded-xl transition-all duration-300",
-                  isActive ? "scale-110 opacity-100 font-bold" : "opacity-40 hover:opacity-80 scale-90"
-                )}>
-                  <span className="text-xs uppercase tracking-wider mb-1">{date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                <div
+                  className={cn(
+                    "shrink-0 flex flex-col items-center justify-center w-[84px] h-[86px] rounded-xl transition-all duration-300",
+                    isActive
+                      ? "scale-110 opacity-100 font-bold"
+                      : "opacity-40 hover:opacity-80 scale-90"
+                  )}
+                >
+                  <span className="text-xs uppercase tracking-wider mb-1">
+                    {date.toLocaleDateString("en-US", { weekday: "short" })}
+                  </span>
                   <span className="text-2xl">{date.getDate()}</span>
-                  <div className={cn("w-1.5 h-1.5 rounded-full mt-1", hasApps ? "bg-primary" : "bg-transparent")} />
+                  <div
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full mt-1",
+                      hasApps ? "bg-primary" : "bg-transparent"
+                    )}
+                  />
                 </div>
 
                 {/* Right: Cards */}
-                <div className={cn(
-                  "flex-1 flex gap-3 overflow-x-auto hide-scrollbar items-center pr-4 transition-all duration-300",
-                  isActive ? "opacity-100" : "opacity-40 grayscale-[0.5]"
-                )}>
+                <div
+                  className={cn(
+                    "flex-1 flex gap-3 overflow-x-auto hide-scrollbar items-center pr-4 transition-all duration-300",
+                    isActive ? "opacity-100" : "opacity-40 grayscale-[0.5]"
+                  )}
+                >
                   {apps.length > 0 ? (
                     apps.map(apt => {
                       const s = getEventStyle(apt);
                       return (
                         <div
                           key={apt.id}
-                          onClick={(e) => { e.stopPropagation(); setSelectedAppointment(apt); setShowAppointmentDetailDialog(true); }}
-                          className={cn("min-w-[180px] h-20 p-3 rounded-xl bg-card border shadow-sm cursor-pointer hover:scale-105 transition-transform", s.className)}
+                          onClick={e => {
+                            e.stopPropagation();
+                            setSelectedAppointment(apt);
+                            setShowAppointmentDetailDialog(true);
+                          }}
+                          className={cn(
+                            "min-w-[180px] h-20 p-3 rounded-xl bg-card border shadow-sm cursor-pointer hover:scale-105 transition-transform",
+                            s.className
+                          )}
                         >
-                          <div className="font-bold text-sm line-clamp-1">{apt.title}</div>
-                          <div className="text-xs opacity-70 mt-1">{formatLocalTime(apt.startTime, getBusinessTimezone(), 'h:mm a')}</div>
+                          <div className="font-bold text-sm line-clamp-1">
+                            {apt.title}
+                          </div>
+                          <div className="text-xs opacity-70 mt-1">
+                            {formatLocalTime(
+                              apt.startTime,
+                              getBusinessTimezone(),
+                              "h:mm a"
+                            )}
+                          </div>
                         </div>
-                      )
+                      );
                     })
                   ) : (
-                    <div className="text-sm font-medium text-muted-foreground/30 italic">Free</div>
+                    <div className="text-sm font-medium text-muted-foreground/30 italic">
+                      Free
+                    </div>
                   )}
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       </div>
     );
-  }
+  };
 
   // 3. Month View (Slot Based)
   const SlotMonthView = () => {
@@ -505,7 +611,9 @@ export default function Calendar() {
     return (
       <div className="h-full flex flex-col pt-2 pb-20 px-4 overflow-y-auto">
         <div className="grid grid-cols-7 mb-2 text-center text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-50">
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d}>{d}</div>)}
+          {["S", "M", "T", "W", "T", "F", "S"].map(d => (
+            <div key={d}>{d}</div>
+          ))}
         </div>
 
         <div className="grid grid-cols-7 gap-1 auto-rows-[minmax(100px,1fr)]">
@@ -525,10 +633,14 @@ export default function Calendar() {
                   isTdy && "bg-accent/20"
                 )}
               >
-                <span className={cn(
-                  "text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full self-end mb-1",
-                  isTdy ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-                )}>
+                <span
+                  className={cn(
+                    "text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full self-end mb-1",
+                    isTdy
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground"
+                  )}
+                >
                   {date.getDate()}
                 </span>
 
@@ -536,19 +648,30 @@ export default function Calendar() {
                   {apps.slice(0, 3).map(apt => {
                     const s = getEventStyle(apt);
                     return (
-                      <div key={apt.id} className={cn("text-[8px] px-1 py-0.5 rounded-sm truncate font-medium", s.className, "border-l-2")}>
+                      <div
+                        key={apt.id}
+                        className={cn(
+                          "text-[8px] px-1 py-0.5 rounded-sm truncate font-medium",
+                          s.className,
+                          "border-l-2"
+                        )}
+                      >
                         {apt.title}
                       </div>
-                    )
+                    );
                   })}
-                  {apps.length > 3 && <div className="text-[8px] text-center opacity-50">+{apps.length - 3} more</div>}
+                  {apps.length > 3 && (
+                    <div className="text-[8px] text-center opacity-50">
+                      +{apps.length - 3} more
+                    </div>
+                  )}
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       </div>
-    )
+    );
   };
 
   // 4. Day View Timeline (Standard Vertical)
@@ -556,7 +679,8 @@ export default function Calendar() {
     const todayApps = getAppointmentsForDate(selectedDate);
     const tz = getBusinessTimezone();
     const now = new Date(new Date().toLocaleString("en-US", { timeZone: tz }));
-    const currentTimePos = ((now.getHours() * 60 + now.getMinutes()) / 1440) * 100;
+    const currentTimePos =
+      ((now.getHours() * 60 + now.getMinutes()) / 1440) * 100;
 
     const containerRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
@@ -564,17 +688,31 @@ export default function Calendar() {
     }, []);
 
     return (
-      <div className="flex-1 overflow-y-auto relative bg-background/5" ref={containerRef}>
+      <div
+        className="flex-1 overflow-y-auto relative bg-background/5"
+        ref={containerRef}
+      >
         <div className="relative min-h-[1440px] px-4 py-4">
           {isToday(selectedDate) && (
-            <div className="absolute left-0 right-0 border-t-2 border-red-500 z-20 pointer-events-none" style={{ top: `${currentTimePos}%` }} />
+            <div
+              className="absolute left-0 right-0 border-t-2 border-red-500 z-20 pointer-events-none"
+              style={{ top: `${currentTimePos}%` }}
+            />
           )}
           {Array.from({ length: 24 }, (_, hour) => {
-            const hourAppointments = todayApps.filter(apt => new Date(apt.startTime).getHours() === hour);
+            const hourAppointments = todayApps.filter(
+              apt => new Date(apt.startTime).getHours() === hour
+            );
             return (
               <div key={hour} className="flex h-[120px] group relative">
                 <div className="w-14 text-xs text-muted-foreground/50 text-right pr-4 pt-0">
-                  {hour === 0 ? "12 AM" : hour < 12 ? `${hour} AM` : hour === 12 ? "12 PM" : `${hour - 12} PM`}
+                  {hour === 0
+                    ? "12 AM"
+                    : hour < 12
+                      ? `${hour} AM`
+                      : hour === 12
+                        ? "12 PM"
+                        : `${hour - 12} PM`}
                 </div>
                 <div className="flex-1 border-t border-dashed border-border/20 h-full relative">
                   {hourAppointments.map((apt, idx) => {
@@ -586,29 +724,38 @@ export default function Calendar() {
                     return (
                       <div
                         key={apt.id}
-                        onClick={() => { setSelectedAppointment(apt); setShowAppointmentDetailDialog(true); }}
-                        className={cn("absolute inset-x-0 rounded-xl p-3 cursor-pointer hover:brightness-95 shadow-sm flex flex-col justify-center", s.className)}
+                        onClick={() => {
+                          setSelectedAppointment(apt);
+                          setShowAppointmentDetailDialog(true);
+                        }}
+                        className={cn(
+                          "absolute inset-x-0 rounded-xl p-3 cursor-pointer hover:brightness-95 shadow-sm flex flex-col justify-center",
+                          s.className
+                        )}
                         style={{
                           top: `${(startMin / 60) * 100}%`,
-                          height: Math.max(50, (duration / 60) * 120 - 4) + 'px',
-                          zIndex: 10 + idx
+                          height:
+                            Math.max(50, (duration / 60) * 120 - 4) + "px",
+                          zIndex: 10 + idx,
                         }}
                       >
-                        <span className="font-bold text-xs truncate">{apt.title}</span>
+                        <span className="font-bold text-xs truncate">
+                          {apt.title}
+                        </span>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       </div>
-    )
-  }
+    );
+  };
 
-
-  if (loading || (isLoading && !appointments)) return <LoadingState message="Loading calendar..." fullScreen />;
+  if (loading || (isLoading && !appointments))
+    return <LoadingState message="Loading calendar..." fullScreen />;
 
   const isArtist = user?.role === "artist" || user?.role === "admin";
 
@@ -622,38 +769,42 @@ export default function Calendar() {
           {selectedDate.toLocaleDateString("en-US", { weekday: "long" })}
         </p>
         <p className="text-muted-foreground text-lg font-medium mt-1">
-          {selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+          {selectedDate.toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+          })}
         </p>
       </div>
 
-      <div className={cn(tokens.contentContainer.base, "relative flex flex-col overflow-hidden")}>
+      <div
+        className={cn(
+          tokens.contentContainer.base,
+          "relative flex flex-col overflow-hidden"
+        )}
+      >
         {/* Toggles */}
         <div className="px-6 py-4 shrink-0">
           <SegmentedHeader
             options={["Day", "Week", "Month"]}
-            activeIndex={viewMode === 'day' ? 0 : viewMode === 'week' ? 1 : 2}
-            onChange={(i) => setViewMode(i === 0 ? 'day' : i === 1 ? 'week' : 'month' as any)}
+            activeIndex={viewMode === "day" ? 0 : viewMode === "week" ? 1 : 2}
+            onChange={i =>
+              setViewMode(i === 0 ? "day" : i === 1 ? "week" : ("month" as any))
+            }
           />
         </div>
 
         <div className="flex-1 flex flex-col overflow-hidden relative">
-
           {/* View Rendering */}
-          {viewMode === 'day' && (
+          {viewMode === "day" && (
             <>
               <ScrollableHorizontalDateStrip />
               <DayViewTimeline />
             </>
           )}
 
-          {viewMode === 'week' && (
-            <UnifiedVerticalWeekView />
-          )}
+          {viewMode === "week" && <UnifiedVerticalWeekView />}
 
-          {viewMode === 'month' && (
-            <SlotMonthView />
-          )}
-
+          {viewMode === "month" && <SlotMonthView />}
         </div>
       </div>
 
@@ -664,8 +815,12 @@ export default function Calendar() {
             size="icon"
             className="w-14 h-14 rounded-full bg-black text-white shadow-2xl hover:bg-black/90 hover:scale-105 transition-all"
             onClick={() => {
-              setAppointmentForm(prev => ({ ...prev, startTime: `${selectedDate.toISOString().split('T')[0]}T09:00`, endTime: `${selectedDate.toISOString().split('T')[0]}T10:00` }));
-              setStep('service');
+              setAppointmentForm(prev => ({
+                ...prev,
+                startTime: `${selectedDate.toISOString().split("T")[0]}T09:00`,
+                endTime: `${selectedDate.toISOString().split("T")[0]}T10:00`,
+              }));
+              setStep("service");
               setShowAppointmentDialog(true);
             }}
           >
@@ -675,38 +830,67 @@ export default function Calendar() {
       )}
 
       {/* Dialogs reused from before... */}
-      <Dialog open={showAppointmentDialog} onOpenChange={(open) => {
-        setShowAppointmentDialog(open);
-        if (!open) setTimeout(resetForm, 300);
-      }}>
+      <Dialog
+        open={showAppointmentDialog}
+        onOpenChange={open => {
+          setShowAppointmentDialog(open);
+          if (!open) setTimeout(resetForm, 300);
+        }}
+      >
         <DialogContent className="md:max-w-md">
           <DialogHeader>
-            <DialogTitle>{step === 'service' ? 'Select Service' : 'Details'}</DialogTitle>
+            <DialogTitle>
+              {step === "service" ? "Select Service" : "Details"}
+            </DialogTitle>
           </DialogHeader>
-          {availableServices.length > 0 && step === 'service' ? (
+          {availableServices.length > 0 && step === "service" ? (
             <div className="grid gap-2">
               {availableServices.map((s: any) => (
-                <div key={s.name} onClick={() => {
-                  setSelectedService(s);
-                  setStep('details');
-                  setAppointmentForm(prev => ({ ...prev, title: s.name }));
-                }} className="p-4 border rounded-xl cursor-pointer hover:bg-accent">
+                <div
+                  key={s.name}
+                  onClick={() => {
+                    setSelectedService(s);
+                    setStep("details");
+                    setAppointmentForm(prev => ({ ...prev, title: s.name }));
+                  }}
+                  className="p-4 border rounded-xl cursor-pointer hover:bg-accent"
+                >
                   <div className="font-bold">{s.name}</div>
-                  <div className="text-sm text-muted-foreground">{s.duration} mins</div>
+                  <div className="text-sm text-muted-foreground">
+                    {s.duration} mins
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
             <div className="space-y-4">
               <Label>Client</Label>
-              <Select onValueChange={(v) => setAppointmentForm(p => ({ ...p, clientId: v }))}>
-                <SelectTrigger><SelectValue placeholder="Select Client" /></SelectTrigger>
+              <Select
+                onValueChange={v =>
+                  setAppointmentForm(p => ({ ...p, clientId: v }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Client" />
+                </SelectTrigger>
                 <SelectContent>
-                  {clients.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  {clients.map((c: any) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              <Input placeholder="Title" value={appointmentForm.title} onChange={e => setAppointmentForm(p => ({ ...p, title: e.target.value }))} />
-              <Button onClick={handleCreateAppointment} className="w-full">Create</Button>
+              <Input
+                placeholder="Title"
+                value={appointmentForm.title}
+                onChange={e =>
+                  setAppointmentForm(p => ({ ...p, title: e.target.value }))
+                }
+              />
+              <Button onClick={handleCreateAppointment} className="w-full">
+                Create
+              </Button>
             </div>
           )}
         </DialogContent>

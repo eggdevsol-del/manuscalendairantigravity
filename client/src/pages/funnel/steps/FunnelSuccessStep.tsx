@@ -62,7 +62,7 @@ export default function FunnelSuccessStep({
         <h2 className="text-sm font-medium text-muted-foreground mb-4 text-center">
           WHAT HAPPENS NEXT
         </h2>
-        
+
         <div className="space-y-4">
           <div className="flex gap-4 items-start p-4 rounded-xl bg-card border border-border">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -71,7 +71,8 @@ export default function FunnelSuccessStep({
             <div>
               <h3 className="font-medium text-foreground">Review & Response</h3>
               <p className="text-sm text-muted-foreground">
-                {artistProfile.displayName} will review your request and reach out to discuss your idea
+                {artistProfile.displayName} will review your request and reach
+                out to discuss your idea
               </p>
             </div>
           </div>
@@ -81,7 +82,9 @@ export default function FunnelSuccessStep({
               <Clock className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-medium text-foreground">Typical Response Time</h3>
+              <h3 className="font-medium text-foreground">
+                Typical Response Time
+              </h3>
               <p className="text-sm text-muted-foreground">
                 Most artists respond within 24-48 hours
               </p>
@@ -111,7 +114,7 @@ export default function FunnelSuccessStep({
           className="mt-8 text-center"
         >
           <p className="text-xs text-muted-foreground">
-            Reference: #{leadId.toString().padStart(6, '0')}
+            Reference: #{leadId.toString().padStart(6, "0")}
           </p>
         </motion.div>
       )}

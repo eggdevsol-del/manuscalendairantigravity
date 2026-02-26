@@ -1,6 +1,6 @@
 /**
  * Funnel Wrapper Component
- * 
+ *
  * Simple, clean light-mode consultation funnel.
  * Includes expanded contact fields and image upload capabilities.
  */
@@ -10,7 +10,7 @@ import {
   STYLE_OPTIONS,
   BUDGET_RANGES,
   TIMEFRAME_OPTIONS,
-  STEP_TITLES
+  STEP_TITLES,
 } from "./constants";
 import IOSInstallPrompt from "@/components/IOSInstallPrompt";
 import ImageUploadSheet, { UploadedImage } from "./components/ImageUploadSheet";
@@ -46,7 +46,7 @@ export interface FunnelStepData {
   availability?: {
     preferredTimeframe: string;
     preferredMonths: string[];
-    urgency: 'flexible' | 'moderate' | 'urgent';
+    urgency: "flexible" | "moderate" | "urgent";
   };
 }
 
@@ -69,16 +69,46 @@ interface FunnelWrapperProps {
 
 export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
   const {
-    loading, error, artistProfile, currentStep, totalSteps,
-    submitting, submitted, showInstallPrompt, setShowInstallPrompt,
-    projectType, setProjectType, projectDescription, setProjectDescription,
-    firstName, setFirstName, lastName, setLastName, birthdate, setBirthdate,
-    email, setEmail, phone, setPhone,
-    selectedStyles, toggleStyle,
-    referenceImages, setReferenceImages, showReferenceUpload, setShowReferenceUpload,
-    bodyPlacementImages, setBodyPlacementImages, showBodyPlacementUpload, setShowBodyPlacementUpload,
-    selectedBudget, setSelectedBudget, timeframe, setTimeframe,
-    handleNext, handleBack, canProceed
+    loading,
+    error,
+    artistProfile,
+    currentStep,
+    totalSteps,
+    submitting,
+    submitted,
+    showInstallPrompt,
+    setShowInstallPrompt,
+    projectType,
+    setProjectType,
+    projectDescription,
+    setProjectDescription,
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    birthdate,
+    setBirthdate,
+    email,
+    setEmail,
+    phone,
+    setPhone,
+    selectedStyles,
+    toggleStyle,
+    referenceImages,
+    setReferenceImages,
+    showReferenceUpload,
+    setShowReferenceUpload,
+    bodyPlacementImages,
+    setBodyPlacementImages,
+    showBodyPlacementUpload,
+    setShowBodyPlacementUpload,
+    selectedBudget,
+    setSelectedBudget,
+    timeframe,
+    setTimeframe,
+    handleNext,
+    handleBack,
+    canProceed,
   } = useFunnelController(artistSlug);
 
   // Loading state
@@ -124,7 +154,6 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
     );
   }
 
-
   return (
     <div className="min-h-screen bg-white">
       {/* Progress bar */}
@@ -159,16 +188,19 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 Project type
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {PROJECT_TYPES.map((type) => (
+                {PROJECT_TYPES.map(type => (
                   <button
                     key={type.id}
                     onClick={() => setProjectType(type.id)}
-                    className={`p-3 text-left rounded-lg border transition-colors ${projectType === type.id
-                      ? 'border-gray-900 bg-gray-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                    className={`p-3 text-left rounded-lg border transition-colors ${
+                      projectType === type.id
+                        ? "border-gray-900 bg-gray-50"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
                   >
-                    <span className="text-sm font-medium text-gray-900">{type.label}</span>
+                    <span className="text-sm font-medium text-gray-900">
+                      {type.label}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -180,7 +212,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               </label>
               <textarea
                 value={projectDescription}
-                onChange={(e) => setProjectDescription(e.target.value)}
+                onChange={e => setProjectDescription(e.target.value)}
                 placeholder="Tell us about your vision..."
                 rows={4}
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none text-gray-900 bg-white placeholder-gray-400"
@@ -188,8 +220,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               <p className="text-xs text-gray-500 mt-1">
                 {projectDescription.length < 10
                   ? `At least ${10 - projectDescription.length} more characters`
-                  : 'Great!'
-                }
+                  : "Great!"}
               </p>
             </div>
           </div>
@@ -206,7 +237,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 <input
                   type="text"
                   value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  onChange={e => setFirstName(e.target.value)}
                   placeholder="First name"
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 bg-white placeholder-gray-400"
                 />
@@ -218,7 +249,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 <input
                   type="text"
                   value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  onChange={e => setLastName(e.target.value)}
                   placeholder="Last name"
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 bg-white placeholder-gray-400"
                 />
@@ -232,8 +263,8 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               <input
                 type="date"
                 value={birthdate}
-                onChange={(e) => setBirthdate(e.target.value)}
-                max={new Date().toISOString().split('T')[0]}
+                onChange={e => setBirthdate(e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 bg-white"
               />
               <p className="text-xs text-gray-500 mt-1">
@@ -248,7 +279,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={e => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 bg-white placeholder-gray-400"
               />
@@ -261,7 +292,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               <input
                 type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={e => setPhone(e.target.value)}
                 placeholder="Your phone number"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 bg-white placeholder-gray-400"
               />
@@ -277,14 +308,15 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 Select all styles you're interested in
               </p>
               <div className="flex flex-wrap gap-2">
-                {STYLE_OPTIONS.map((style) => (
+                {STYLE_OPTIONS.map(style => (
                   <button
                     key={style}
                     onClick={() => toggleStyle(style)}
-                    className={`px-4 py-2 rounded-full border transition-colors ${selectedStyles.includes(style)
-                      ? 'border-gray-900 bg-gray-900 text-white'
-                      : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                      }`}
+                    className={`px-4 py-2 rounded-full border transition-colors ${
+                      selectedStyles.includes(style)
+                        ? "border-gray-900 bg-gray-900 text-white"
+                        : "border-gray-200 text-gray-700 hover:border-gray-300"
+                    }`}
                   >
                     {style}
                   </button>
@@ -309,9 +341,8 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   <div className="text-left">
                     <p className="text-sm font-medium text-gray-900">
                       {referenceImages.length > 0
-                        ? `${referenceImages.length} image${referenceImages.length > 1 ? 's' : ''} added`
-                        : 'Add reference images'
-                      }
+                        ? `${referenceImages.length} image${referenceImages.length > 1 ? "s" : ""} added`
+                        : "Add reference images"}
                     </p>
                     <p className="text-xs text-gray-500">
                       Tattoos, artwork, or inspiration
@@ -324,14 +355,23 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               {/* Preview thumbnails */}
               {referenceImages.length > 0 && (
                 <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
-                  {referenceImages.slice(0, 4).map((img) => (
-                    <div key={img.id} className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                      <img src={img.preview} alt="" className="w-full h-full object-cover" />
+                  {referenceImages.slice(0, 4).map(img => (
+                    <div
+                      key={img.id}
+                      className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0"
+                    >
+                      <img
+                        src={img.preview}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   ))}
                   {referenceImages.length > 4 && (
                     <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm font-medium text-gray-600">+{referenceImages.length - 4}</span>
+                      <span className="text-sm font-medium text-gray-600">
+                        +{referenceImages.length - 4}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -344,7 +384,8 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         {currentStep === 3 && (
           <div className="space-y-6">
             <p className="text-sm text-gray-600">
-              Upload photos of the body area where you'd like the tattoo. This helps the artist understand the placement and size better.
+              Upload photos of the body area where you'd like the tattoo. This
+              helps the artist understand the placement and size better.
             </p>
 
             <button
@@ -358,9 +399,8 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               <div className="text-center">
                 <p className="text-sm font-medium text-gray-900">
                   {bodyPlacementImages.length > 0
-                    ? `${bodyPlacementImages.length} photo${bodyPlacementImages.length > 1 ? 's' : ''} added`
-                    : 'Add body placement photos'
-                  }
+                    ? `${bodyPlacementImages.length} photo${bodyPlacementImages.length > 1 ? "s" : ""} added`
+                    : "Add body placement photos"}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
                   Take or upload photos of the area
@@ -371,9 +411,16 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
             {/* Preview thumbnails */}
             {bodyPlacementImages.length > 0 && (
               <div className="grid grid-cols-3 gap-3">
-                {bodyPlacementImages.map((img) => (
-                  <div key={img.id} className="aspect-square rounded-lg overflow-hidden">
-                    <img src={img.preview} alt="" className="w-full h-full object-cover" />
+                {bodyPlacementImages.map(img => (
+                  <div
+                    key={img.id}
+                    className="aspect-square rounded-lg overflow-hidden"
+                  >
+                    <img
+                      src={img.preview}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 ))}
               </div>
@@ -392,16 +439,19 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               What's your budget for this project?
             </p>
             <div className="space-y-2">
-              {BUDGET_RANGES.map((budget) => (
+              {BUDGET_RANGES.map(budget => (
                 <button
                   key={budget.label}
                   onClick={() => setSelectedBudget(budget)}
-                  className={`w-full p-4 text-left rounded-lg border transition-colors ${selectedBudget?.label === budget.label
-                    ? 'border-gray-900 bg-gray-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                  className={`w-full p-4 text-left rounded-lg border transition-colors ${
+                    selectedBudget?.label === budget.label
+                      ? "border-gray-900 bg-gray-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
                 >
-                  <span className="font-medium text-gray-900">{budget.label}</span>
+                  <span className="font-medium text-gray-900">
+                    {budget.label}
+                  </span>
                 </button>
               ))}
             </div>
@@ -415,16 +465,19 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               When are you hoping to get started?
             </p>
             <div className="space-y-2">
-              {TIMEFRAME_OPTIONS.map((option) => (
+              {TIMEFRAME_OPTIONS.map(option => (
                 <button
                   key={option.id}
                   onClick={() => setTimeframe(option.id)}
-                  className={`w-full p-4 text-left rounded-lg border transition-colors ${timeframe === option.id
-                    ? 'border-gray-900 bg-gray-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                  className={`w-full p-4 text-left rounded-lg border transition-colors ${
+                    timeframe === option.id
+                      ? "border-gray-900 bg-gray-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
                 >
-                  <span className="font-medium text-gray-900">{option.label}</span>
+                  <span className="font-medium text-gray-900">
+                    {option.label}
+                  </span>
                 </button>
               ))}
             </div>
@@ -447,16 +500,15 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
           <button
             onClick={handleNext}
             disabled={!canProceed() || submitting}
-            className={`${currentStep === 0 ? 'w-full' : 'flex-1'} py-3 px-6 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`${currentStep === 0 ? "w-full" : "flex-1"} py-3 px-6 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {submitting
-              ? 'Submitting...'
+              ? "Submitting..."
               : currentStep === totalSteps - 1
-                ? 'Submit Request'
+                ? "Submit Request"
                 : currentStep === 3 && bodyPlacementImages.length === 0
-                  ? 'Skip for now'
-                  : 'Continue'
-            }
+                  ? "Skip for now"
+                  : "Continue"}
           </button>
         </div>
       </div>

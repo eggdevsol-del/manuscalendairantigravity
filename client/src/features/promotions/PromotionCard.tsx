@@ -1,9 +1,9 @@
 /**
  * PromotionCard - SSOT Virtual EFTPOS Card Component
- * 
+ *
  * Renders a promotion (voucher/discount/credit) as a virtual EFTPOS-style card.
  * Supports customizable templates, colors, gradients, branding, and artist name.
- * 
+ *
  * @version 1.1.0
  */
 
@@ -26,7 +26,7 @@ export interface PromotionCardData {
   type: PromotionType;
   name: string;
   description?: string;
-  valueType: 'fixed' | 'percentage';
+  valueType: "fixed" | "percentage";
   value: number; // Original value
   remainingValue?: number; // For partially used
   templateDesign: string;
@@ -42,7 +42,7 @@ export interface PromotionCardData {
   backgroundPositionY?: number;
   artistName?: string; // Artist name to display
   code?: string;
-  status?: 'active' | 'partially_used' | 'fully_used' | 'expired' | 'revoked';
+  status?: "active" | "partially_used" | "fully_used" | "expired" | "revoked";
   expiresAt?: string | null;
   // Auto-apply fields
   isAutoApply?: boolean;
@@ -50,7 +50,7 @@ export interface PromotionCardData {
   autoApplyEndDate?: string | null;
   // New Logic Fields
   validityDuration?: number | null;
-  autoApplyTrigger?: 'none' | 'new_client' | 'birthday';
+  autoApplyTrigger?: "none" | "new_client" | "birthday";
   // Computed fields handling
   originalValue?: number;
 }
@@ -61,7 +61,7 @@ interface PromotionCardProps {
   blurred?: boolean;
   onClick?: () => void;
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
 }
 
 const TypeIcon = {
@@ -76,20 +76,24 @@ export function PromotionCard({
   blurred = false,
   onClick,
   className,
-  size = 'md',
+  size = "md",
 }: PromotionCardProps) {
-  const template = getTemplateById(data.templateDesign) || getTemplateById('classic')!;
+  const template =
+    getTemplateById(data.templateDesign) || getTemplateById("classic")!;
   const typeDefaults = getTypeDefaults(data.type);
   const Icon = TypeIcon[data.type];
 
   if (data.backgroundImageUrl) {
-    console.log(`[PromotionCard] Rendering with background: ${data.backgroundImageUrl}`, {
-      id: data.id,
-      name: data.name,
-      scale: data.backgroundScale,
-      x: data.backgroundPositionX,
-      y: data.backgroundPositionY
-    });
+    console.log(
+      `[PromotionCard] Rendering with background: ${data.backgroundImageUrl}`,
+      {
+        id: data.id,
+        name: data.name,
+        scale: data.backgroundScale,
+        x: data.backgroundPositionX,
+        y: data.backgroundPositionY,
+      }
+    );
   }
 
   // Build base background style (Colors/Gradients only)
@@ -103,41 +107,48 @@ export function PromotionCard({
   const getProcessedImageUrl = (url: string) => {
     if (!url) return null;
     const resolvedUrl = getAssetUrl(url);
-    const separator = resolvedUrl.includes('?') ? '&' : '?';
+    const separator = resolvedUrl.includes("?") ? "&" : "?";
     // Use stable app version for cache busting instead of Date.now()
     // This allows PWA caching to work across sessions until a new version is deployed.
-    const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
-    const cacheBuster = resolvedUrl.startsWith('/api/') ? `${separator}v=${version}` : '';
+    const version =
+      typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "1.0.0";
+    const cacheBuster = resolvedUrl.startsWith("/api/")
+      ? `${separator}v=${version}`
+      : "";
     return `url("${resolvedUrl}${cacheBuster}")`;
   };
 
-  const bgImageUrl = getProcessedImageUrl(data.backgroundImageUrl || '');
+  const bgImageUrl = getProcessedImageUrl(data.backgroundImageUrl || "");
 
   // Independent background properties to avoid shorthand resets
   // Layering order: Image (Layer 1), then Gradient/Color (Layer 2)
   const backgroundImage = bgImageUrl
-    ? (baseBackground.startsWith('linear-gradient')
+    ? baseBackground.startsWith("linear-gradient")
       ? `${bgImageUrl}, ${baseBackground}`
-      : bgImageUrl)
-    : (baseBackground.startsWith('linear-gradient') ? baseBackground : 'none');
+      : bgImageUrl
+    : baseBackground.startsWith("linear-gradient")
+      ? baseBackground
+      : "none";
 
-  const backgroundColor = !baseBackground.startsWith('linear-gradient') ? baseBackground : 'transparent';
+  const backgroundColor = !baseBackground.startsWith("linear-gradient")
+    ? baseBackground
+    : "transparent";
 
   const cardStyle: React.CSSProperties = {
     backgroundImage,
     backgroundColor,
     backgroundSize: bgImageUrl
-      ? `${(data.backgroundScale || 1) * 100}% auto${baseBackground.startsWith('linear-gradient') ? ', auto' : ''}`
-      : 'auto',
+      ? `${(data.backgroundScale || 1) * 100}% auto${baseBackground.startsWith("linear-gradient") ? ", auto" : ""}`
+      : "auto",
     backgroundPosition: bgImageUrl
-      ? `${data.backgroundPositionX ?? 50}% ${data.backgroundPositionY ?? 50}%${baseBackground.startsWith('linear-gradient') ? ', center' : ''}`
-      : 'center',
-    backgroundRepeat: 'no-repeat',
+      ? `${data.backgroundPositionX ?? 50}% ${data.backgroundPositionY ?? 50}%${baseBackground.startsWith("linear-gradient") ? ", center" : ""}`
+      : "center",
+    backgroundRepeat: "no-repeat",
     aspectRatio: template.aspectRatio,
   };
 
   // Determine text color
-  let textColor: 'white' | 'black' = 'white';
+  let textColor: "white" | "black" = "white";
   if (data.customColor) {
     textColor = getContrastTextColor(data.customColor);
   } else if (data.gradientFrom || data.primaryColor) {
@@ -146,9 +157,9 @@ export function PromotionCard({
 
   // Size classes
   const sizeClasses = {
-    sm: 'w-48 text-xs',
-    md: 'w-72 text-sm',
-    lg: 'w-96 text-base',
+    sm: "w-48 text-xs",
+    md: "w-72 text-sm",
+    lg: "w-96 text-base",
   };
 
   // Format display value
@@ -159,7 +170,8 @@ export function PromotionCard({
   );
 
   // Check if partially used
-  const isPartiallyUsed = data.remainingValue !== undefined && data.remainingValue < data.value;
+  const isPartiallyUsed =
+    data.remainingValue !== undefined && data.remainingValue < data.value;
 
   return (
     <motion.div
@@ -167,7 +179,8 @@ export function PromotionCard({
         "relative cursor-pointer transition-all duration-300 rounded-2xl overflow-hidden shadow-xl",
         sizeClasses[size],
         blurred && "opacity-40 blur-[2px] scale-95",
-        selected && "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105 z-10",
+        selected &&
+          "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105 z-10",
         className
       )}
       style={cardStyle}
@@ -178,7 +191,6 @@ export function PromotionCard({
     >
       {/* Card Body Overlay - Handling highlights and glass effects */}
       <div className="absolute inset-0 pointer-events-none">
-
         {/* Hologram effect for premium template */}
         {template.hasHologram && (
           <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gradient-to-br from-white/40 via-transparent to-white/20 animate-pulse z-10" />
@@ -209,23 +221,25 @@ export function PromotionCard({
             alt="Logo"
             className={cn(
               "absolute w-12 h-12 object-contain bg-white/90 rounded-lg p-1",
-              template.logoPosition === 'top-left' && "top-4 left-4",
-              template.logoPosition === 'top-right' && "top-4 right-4",
-              template.logoPosition === 'bottom-left' && "bottom-4 left-4",
-              template.logoPosition === 'bottom-right' && "bottom-4 right-4",
-              template.logoPosition === 'center' && "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+              template.logoPosition === "top-left" && "top-4 left-4",
+              template.logoPosition === "top-right" && "top-4 right-4",
+              template.logoPosition === "bottom-left" && "bottom-4 left-4",
+              template.logoPosition === "bottom-right" && "bottom-4 right-4",
+              template.logoPosition === "center" &&
+                "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
             )}
           />
         ) : (
           <div
             className={cn(
               "absolute flex items-center gap-2",
-              template.logoPosition === 'top-left' && "top-4 left-4",
-              template.logoPosition === 'top-right' && "top-4 right-4",
-              template.logoPosition === 'bottom-left' && "bottom-4 left-4",
-              template.logoPosition === 'bottom-right' && "bottom-4 right-4",
-              template.logoPosition === 'center' && "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-              textColor === 'white' ? 'text-white' : 'text-black'
+              template.logoPosition === "top-left" && "top-4 left-4",
+              template.logoPosition === "top-right" && "top-4 right-4",
+              template.logoPosition === "bottom-left" && "bottom-4 left-4",
+              template.logoPosition === "bottom-right" && "bottom-4 right-4",
+              template.logoPosition === "center" &&
+                "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+              textColor === "white" ? "text-white" : "text-black"
             )}
           >
             <Icon className="w-5 h-5" />
@@ -240,7 +254,7 @@ export function PromotionCard({
           className={cn(
             "absolute left-6 right-6",
             template.hasChip ? "top-16" : "top-6",
-            textColor === 'white' ? 'text-white' : 'text-black'
+            textColor === "white" ? "text-white" : "text-black"
           )}
         >
           <h3 className="font-bold text-lg truncate">
@@ -257,10 +271,11 @@ export function PromotionCard({
         <div
           className={cn(
             "absolute",
-            template.valuePosition === 'center' && "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-            template.valuePosition === 'bottom-left' && "bottom-4 left-6",
-            template.valuePosition === 'bottom-right' && "bottom-4 right-6",
-            textColor === 'white' ? 'text-white' : 'text-black'
+            template.valuePosition === "center" &&
+              "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+            template.valuePosition === "bottom-left" && "bottom-4 left-6",
+            template.valuePosition === "bottom-right" && "bottom-4 right-6",
+            textColor === "white" ? "text-white" : "text-black"
           )}
         >
           <div className="font-bold text-2xl tracking-tight">
@@ -278,7 +293,7 @@ export function PromotionCard({
           <div
             className={cn(
               "absolute bottom-3 right-4 text-xs font-medium opacity-80",
-              textColor === 'white' ? 'text-white' : 'text-black'
+              textColor === "white" ? "text-white" : "text-black"
             )}
           >
             {data.artistName}
@@ -290,7 +305,7 @@ export function PromotionCard({
           <div
             className={cn(
               "absolute bottom-4 left-1/2 -translate-x-1/2 font-mono text-xs tracking-widest opacity-60",
-              textColor === 'white' ? 'text-white' : 'text-black'
+              textColor === "white" ? "text-white" : "text-black"
             )}
           >
             {data.code}
@@ -302,7 +317,7 @@ export function PromotionCard({
           <div
             className={cn(
               "absolute bottom-3 left-4 font-mono text-xs tracking-widest opacity-60",
-              textColor === 'white' ? 'text-white' : 'text-black'
+              textColor === "white" ? "text-white" : "text-black"
             )}
           >
             {data.code}
@@ -317,31 +332,32 @@ export function PromotionCard({
             </div>
           )}
 
-          {data.status && data.status !== 'active' && (
+          {data.status && data.status !== "active" && (
             <div
               className={cn(
                 "px-2 py-0.5 rounded-full text-xs font-medium",
-                data.status === 'partially_used' && "bg-yellow-500/80 text-yellow-900",
-                data.status === 'fully_used' && "bg-gray-500/80 text-white",
-                data.status === 'expired' && "bg-red-500/80 text-white",
-                data.status === 'revoked' && "bg-red-700/80 text-white"
+                data.status === "partially_used" &&
+                  "bg-yellow-500/80 text-yellow-900",
+                data.status === "fully_used" && "bg-gray-500/80 text-white",
+                data.status === "expired" && "bg-red-500/80 text-white",
+                data.status === "revoked" && "bg-red-700/80 text-white"
               )}
             >
-              {data.status === 'partially_used' && 'Partially Used'}
-              {data.status === 'fully_used' && 'Used'}
-              {data.status === 'expired' && 'Expired'}
-              {data.status === 'revoked' && 'Revoked'}
+              {data.status === "partially_used" && "Partially Used"}
+              {data.status === "fully_used" && "Used"}
+              {data.status === "expired" && "Expired"}
+              {data.status === "revoked" && "Revoked"}
             </div>
           )}
         </div>
 
         {/* Expiry date - show above artist name if present */}
-        {data.expiresAt && data.status === 'active' && (
+        {data.expiresAt && data.status === "active" && (
           <div
             className={cn(
               "absolute text-xs opacity-60",
               data.artistName ? "bottom-8 right-4" : "bottom-4 right-6",
-              textColor === 'white' ? 'text-white' : 'text-black'
+              textColor === "white" ? "text-white" : "text-black"
             )}
           >
             Expires: {new Date(data.expiresAt).toLocaleDateString()}

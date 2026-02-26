@@ -1,9 +1,9 @@
 /**
  * Tag Derivation Engine
- * 
+ *
  * Automatically generates tags from lead/funnel data.
  * Tags are DERIVED, not stored separately - they are computed from the lead's data.
- * 
+ *
  * This follows the SSOT principle: tags appear everywhere but are computed from
  * a single source (the lead record).
  */
@@ -19,13 +19,13 @@ interface LeadData {
   budgetLabel?: string;
   preferredTimeframe?: string;
   preferredMonths?: string[];
-  urgency?: 'flexible' | 'moderate' | 'urgent';
+  urgency?: "flexible" | "moderate" | "urgent";
   createdAt?: Date | string;
 }
 
 interface DerivedTag {
   label: string;
-  category: 'project' | 'style' | 'budget' | 'timeline' | 'priority' | 'size';
+  category: "project" | "style" | "budget" | "timeline" | "priority" | "size";
   color?: string;
 }
 
@@ -39,49 +39,49 @@ export function deriveTagsFromLead(data: LeadData): DerivedTag[] {
   // Project type tag
   if (data.projectType) {
     const projectLabels: Record<string, string> = {
-      'full-sleeve': 'Full Sleeve',
-      'half-sleeve': 'Half Sleeve',
-      'back-piece': 'Back Piece',
-      'chest-piece': 'Chest Piece',
-      'cover-up': 'Cover Up',
-      'small-piece': 'Small Piece',
-      'touch-up': 'Touch Up',
-      'custom': 'Custom Project',
+      "full-sleeve": "Full Sleeve",
+      "half-sleeve": "Half Sleeve",
+      "back-piece": "Back Piece",
+      "chest-piece": "Chest Piece",
+      "cover-up": "Cover Up",
+      "small-piece": "Small Piece",
+      "touch-up": "Touch Up",
+      custom: "Custom Project",
     };
     tags.push({
       label: projectLabels[data.projectType] || data.projectType,
-      category: 'project',
+      category: "project",
     });
   }
 
   // Style tags
   if (data.stylePreferences && data.stylePreferences.length > 0) {
     const styleLabels: Record<string, string> = {
-      'realism': 'Realism',
-      'traditional': 'Traditional',
-      'neo-traditional': 'Neo-Traditional',
-      'japanese': 'Japanese',
-      'blackwork': 'Blackwork',
-      'dotwork': 'Dotwork',
-      'watercolor': 'Watercolor',
-      'geometric': 'Geometric',
-      'minimalist': 'Minimalist',
-      'other': 'Other Style',
+      realism: "Realism",
+      traditional: "Traditional",
+      "neo-traditional": "Neo-Traditional",
+      japanese: "Japanese",
+      blackwork: "Blackwork",
+      dotwork: "Dotwork",
+      watercolor: "Watercolor",
+      geometric: "Geometric",
+      minimalist: "Minimalist",
+      other: "Other Style",
     };
-    
+
     // Only add first 2 styles as tags to avoid clutter
     data.stylePreferences.slice(0, 2).forEach(style => {
       tags.push({
         label: styleLabels[style] || style,
-        category: 'style',
+        category: "style",
       });
     });
-    
+
     // If more than 2 styles, add a "+N more" indicator
     if (data.stylePreferences.length > 2) {
       tags.push({
         label: `+${data.stylePreferences.length - 2} styles`,
-        category: 'style',
+        category: "style",
       });
     }
   }
@@ -89,14 +89,14 @@ export function deriveTagsFromLead(data: LeadData): DerivedTag[] {
   // Size tag
   if (data.estimatedSize) {
     const sizeLabels: Record<string, string> = {
-      'small': 'Small (2-4")',
-      'medium': 'Medium (4-6")',
-      'large': 'Large (6-10")',
-      'extra-large': 'XL (10"+)',
+      small: 'Small (2-4")',
+      medium: 'Medium (4-6")',
+      large: 'Large (6-10")',
+      "extra-large": 'XL (10"+)',
     };
     tags.push({
       label: sizeLabels[data.estimatedSize] || data.estimatedSize,
-      category: 'size',
+      category: "size",
     });
   }
 
@@ -104,29 +104,34 @@ export function deriveTagsFromLead(data: LeadData): DerivedTag[] {
   if (data.budgetLabel) {
     tags.push({
       label: `Est ${data.budgetLabel}`,
-      category: 'budget',
+      category: "budget",
     });
   } else if (data.budgetMin !== undefined || data.budgetMax !== undefined) {
-    const min = data.budgetMin ? `$${(data.budgetMin / 100).toLocaleString()}` : '';
-    const max = data.budgetMax ? `$${(data.budgetMax / 100).toLocaleString()}` : '+';
+    const min = data.budgetMin
+      ? `$${(data.budgetMin / 100).toLocaleString()}`
+      : "";
+    const max = data.budgetMax
+      ? `$${(data.budgetMax / 100).toLocaleString()}`
+      : "+";
     tags.push({
       label: `Est ${min}-${max}`,
-      category: 'budget',
+      category: "budget",
     });
   }
 
   // Timeline tag
   if (data.preferredTimeframe) {
     const timeframeLabels: Record<string, string> = {
-      'asap': 'ASAP',
-      '1-3-months': '1-3 Months',
-      '3-6-months': '3-6 Months',
-      '6-12-months': '6-12 Months',
-      'flexible': 'Flexible Timeline',
+      asap: "ASAP",
+      "1-3-months": "1-3 Months",
+      "3-6-months": "3-6 Months",
+      "6-12-months": "6-12 Months",
+      flexible: "Flexible Timeline",
     };
     tags.push({
-      label: timeframeLabels[data.preferredTimeframe] || data.preferredTimeframe,
-      category: 'timeline',
+      label:
+        timeframeLabels[data.preferredTimeframe] || data.preferredTimeframe,
+      category: "timeline",
     });
   }
 
@@ -134,11 +139,11 @@ export function deriveTagsFromLead(data: LeadData): DerivedTag[] {
   if (data.preferredMonths && data.preferredMonths.length > 0) {
     // Extract year from first preferred month (format: YYYY-MM)
     const firstMonth = data.preferredMonths[0];
-    const year = firstMonth.split('-')[0];
+    const year = firstMonth.split("-")[0];
     if (year) {
       tags.push({
         label: `${year} Target`,
-        category: 'timeline',
+        category: "timeline",
       });
     }
   }
@@ -146,15 +151,15 @@ export function deriveTagsFromLead(data: LeadData): DerivedTag[] {
   // Priority tag based on urgency
   if (data.urgency) {
     const priorityLabels: Record<string, { label: string; color: string }> = {
-      'urgent': { label: 'High Priority', color: 'red' },
-      'moderate': { label: 'Medium Priority', color: 'orange' },
-      'flexible': { label: 'Flexible', color: 'green' },
+      urgent: { label: "High Priority", color: "red" },
+      moderate: { label: "Medium Priority", color: "orange" },
+      flexible: { label: "Flexible", color: "green" },
     };
     const priority = priorityLabels[data.urgency];
     if (priority) {
       tags.push({
         label: priority.label,
-        category: 'priority',
+        category: "priority",
         color: priority.color,
       });
     }
@@ -174,7 +179,7 @@ export function deriveTagLabels(data: LeadData): string[] {
 /**
  * Calculate priority score based on lead data
  * Higher score = higher priority
- * 
+ *
  * Scoring factors:
  * - Urgency: urgent=300, moderate=200, flexible=100
  * - Budget: higher budget = higher score (max +200)
@@ -187,11 +192,11 @@ export function calculatePriorityScore(data: LeadData): number {
 
   // Urgency factor (0-300)
   const urgencyScores: Record<string, number> = {
-    'urgent': 300,
-    'moderate': 200,
-    'flexible': 100,
+    urgent: 300,
+    moderate: 200,
+    flexible: 100,
   };
-  score += urgencyScores[data.urgency || 'flexible'] || 100;
+  score += urgencyScores[data.urgency || "flexible"] || 100;
 
   // Budget factor (0-200)
   if (data.budgetMin !== undefined) {
@@ -206,19 +211,21 @@ export function calculatePriorityScore(data: LeadData): number {
 
   // Timeframe factor (0-150)
   const timeframeScores: Record<string, number> = {
-    'asap': 150,
-    '1-3-months': 120,
-    '3-6-months': 80,
-    '6-12-months': 40,
-    'flexible': 20,
+    asap: 150,
+    "1-3-months": 120,
+    "3-6-months": 80,
+    "6-12-months": 40,
+    flexible: 20,
   };
-  score += timeframeScores[data.preferredTimeframe || 'flexible'] || 20;
+  score += timeframeScores[data.preferredTimeframe || "flexible"] || 20;
 
   // Completeness factor (0-100)
   let completeness = 0;
   if (data.projectType) completeness += 15;
-  if (data.projectDescription && data.projectDescription.length > 20) completeness += 20;
-  if (data.stylePreferences && data.stylePreferences.length > 0) completeness += 15;
+  if (data.projectDescription && data.projectDescription.length > 20)
+    completeness += 20;
+  if (data.stylePreferences && data.stylePreferences.length > 0)
+    completeness += 15;
   if (data.placement) completeness += 15;
   if (data.estimatedSize) completeness += 10;
   if (data.budgetMin !== undefined) completeness += 15;
@@ -229,8 +236,9 @@ export function calculatePriorityScore(data: LeadData): number {
   if (data.createdAt) {
     const created = new Date(data.createdAt);
     const now = new Date();
-    const hoursSinceCreation = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
-    
+    const hoursSinceCreation =
+      (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+
     if (hoursSinceCreation < 1) score += 50;
     else if (hoursSinceCreation < 4) score += 40;
     else if (hoursSinceCreation < 24) score += 30;
@@ -245,11 +253,13 @@ export function calculatePriorityScore(data: LeadData): number {
 /**
  * Determine priority tier based on score
  */
-export function getPriorityTier(score: number): 'tier1' | 'tier2' | 'tier3' | 'tier4' {
-  if (score >= 600) return 'tier1'; // Critical - money on the table
-  if (score >= 400) return 'tier2'; // High - pipeline protection
-  if (score >= 200) return 'tier3'; // Medium - relationship maintenance
-  return 'tier4'; // Low - operational
+export function getPriorityTier(
+  score: number
+): "tier1" | "tier2" | "tier3" | "tier4" {
+  if (score >= 600) return "tier1"; // Critical - money on the table
+  if (score >= 400) return "tier2"; // High - pipeline protection
+  if (score >= 200) return "tier3"; // Medium - relationship maintenance
+  return "tier4"; // Low - operational
 }
 
 /**
@@ -268,18 +278,18 @@ export function estimateLeadValue(data: LeadData): number {
     // Only max specified
     return data.budgetMax * 0.75; // Assume 75% of max
   }
-  
+
   // Default estimate based on project type
   const defaultEstimates: Record<string, number> = {
-    'full-sleeve': 500000, // $5,000
-    'half-sleeve': 250000, // $2,500
-    'back-piece': 400000,  // $4,000
-    'chest-piece': 300000, // $3,000
-    'cover-up': 150000,    // $1,500
-    'small-piece': 30000,  // $300
-    'touch-up': 15000,     // $150
-    'custom': 200000,      // $2,000
+    "full-sleeve": 500000, // $5,000
+    "half-sleeve": 250000, // $2,500
+    "back-piece": 400000, // $4,000
+    "chest-piece": 300000, // $3,000
+    "cover-up": 150000, // $1,500
+    "small-piece": 30000, // $300
+    "touch-up": 15000, // $150
+    custom: 200000, // $2,000
   };
-  
-  return defaultEstimates[data.projectType || 'custom'] || 200000;
+
+  return defaultEstimates[data.projectType || "custom"] || 200000;
 }

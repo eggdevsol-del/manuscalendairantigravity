@@ -1,10 +1,10 @@
 /**
  * CreatePromotionWizard - SSOT Compliant
- * 
+ *
  * Multi-step wizard for creating gift vouchers, discount cards, and credits.
  * Allows full customization of templates, colors, gradients, branding,
  * custom background images with live resize, and logo upload.
- * 
+ *
  * @version 1.1.0
  */
 
@@ -18,7 +18,21 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gift, Percent, CreditCard, Check, ChevronRight, Upload, X, Image as ImageIcon, Palette, ZoomIn, Move, Clock, Zap } from "lucide-react";
+import {
+  Gift,
+  Percent,
+  CreditCard,
+  Check,
+  ChevronRight,
+  Upload,
+  X,
+  Image as ImageIcon,
+  Palette,
+  ZoomIn,
+  Move,
+  Clock,
+  Zap,
+} from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { PromotionCard, PromotionCardData } from "./PromotionCard";
@@ -33,7 +47,7 @@ import {
 import { InteractiveCardPreview } from "./InteractiveCardPreview";
 import { useAuth } from "@/_core/hooks/useAuth";
 
-type WizardStep = 'type' | 'value' | 'rules' | 'design' | 'preview';
+type WizardStep = "type" | "value" | "rules" | "design" | "preview";
 
 interface CreatePromotionWizardProps {
   onClose: () => void;
@@ -41,62 +55,95 @@ interface CreatePromotionWizardProps {
   initialData?: PromotionCardData | null; // For editing
 }
 
-export function CreatePromotionWizard({ onClose, onSuccess, initialData }: CreatePromotionWizardProps) {
+export function CreatePromotionWizard({
+  onClose,
+  onSuccess,
+  initialData,
+}: CreatePromotionWizardProps) {
   const { user } = useAuth();
-  const [step, setStep] = useState<WizardStep>('type');
+  const [step, setStep] = useState<WizardStep>("type");
 
   // Reset step when opening
   useEffect(() => {
-    setStep('type');
+    setStep("type");
   }, []);
 
   // Form state - Initialize with initialData if present
-  const [type, setType] = useState<PromotionType>(initialData?.type || 'voucher');
-  const [name, setName] = useState(initialData?.name || '');
-  const [description, setDescription] = useState(initialData?.description || '');
-  const [valueType, setValueType] = useState<'fixed' | 'percentage'>(
-    initialData?.valueType || 'fixed'
+  const [type, setType] = useState<PromotionType>(
+    initialData?.type || "voucher"
+  );
+  const [name, setName] = useState(initialData?.name || "");
+  const [description, setDescription] = useState(
+    initialData?.description || ""
+  );
+  const [valueType, setValueType] = useState<"fixed" | "percentage">(
+    initialData?.valueType || "fixed"
   );
 
   // Convert cents to dollars for input if fixed
   const initialValue = initialData
-    ? (initialData.valueType === 'fixed' ? (initialData.value / 100).toString() : initialData.value.toString())
-    : '';
+    ? initialData.valueType === "fixed"
+      ? (initialData.value / 100).toString()
+      : initialData.value.toString()
+    : "";
   const [value, setValue] = useState(initialValue);
 
-  const [templateDesign, setTemplateDesign] = useState(initialData?.templateDesign || 'classic');
+  const [templateDesign, setTemplateDesign] = useState(
+    initialData?.templateDesign || "classic"
+  );
 
   // Rules State
   const [validityDuration, setValidityDuration] = useState<string>(
-    initialData?.validityDuration ? initialData.validityDuration.toString() : ''
+    initialData?.validityDuration ? initialData.validityDuration.toString() : ""
   );
-  const [noExpiry, setNoExpiry] = useState<boolean>(!initialData?.validityDuration);
-  const [autoApplyTrigger, setAutoApplyTrigger] = useState<'none' | 'new_client' | 'birthday'>(
-    initialData?.autoApplyTrigger || 'none'
+  const [noExpiry, setNoExpiry] = useState<boolean>(
+    !initialData?.validityDuration
   );
+  const [autoApplyTrigger, setAutoApplyTrigger] = useState<
+    "none" | "new_client" | "birthday"
+  >(initialData?.autoApplyTrigger || "none");
 
   // Determine color mode from initial data
   const getInitialColorMode = () => {
-    if (!initialData) return 'gradient';
-    if (initialData.gradientFrom) return 'gradient';
-    if (initialData.primaryColor === 'custom' || initialData.customColor) return 'custom';
-    if (initialData.primaryColor) return 'solid';
-    return 'gradient';
+    if (!initialData) return "gradient";
+    if (initialData.gradientFrom) return "gradient";
+    if (initialData.primaryColor === "custom" || initialData.customColor)
+      return "custom";
+    if (initialData.primaryColor) return "solid";
+    return "gradient";
   };
 
-  const [colorMode, setColorMode] = useState<'solid' | 'gradient' | 'custom'>(getInitialColorMode());
+  const [colorMode, setColorMode] = useState<"solid" | "gradient" | "custom">(
+    getInitialColorMode()
+  );
 
   const [primaryColor, setPrimaryColor] = useState<string | null>(
-    initialData?.primaryColor && initialData.primaryColor !== 'custom' ? initialData.primaryColor : null
+    initialData?.primaryColor && initialData.primaryColor !== "custom"
+      ? initialData.primaryColor
+      : null
   );
-  const [gradientId, setGradientId] = useState<string>(initialData?.gradientFrom || 'gold_shimmer');
-  const [customColor, setCustomColor] = useState(initialData?.customColor || '#667eea');
-  const [customText, setCustomText] = useState(initialData?.customText || '');
-  const [logoUrl, setLogoUrl] = useState<string | null>(initialData?.logoUrl || null);
-  const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(initialData?.backgroundImageUrl || null);
-  const [backgroundScale, setBackgroundScale] = useState(initialData?.backgroundScale || 1);
-  const [backgroundPositionX, setBackgroundPositionX] = useState(initialData?.backgroundPositionX ?? 50);
-  const [backgroundPositionY, setBackgroundPositionY] = useState(initialData?.backgroundPositionY ?? 50);
+  const [gradientId, setGradientId] = useState<string>(
+    initialData?.gradientFrom || "gold_shimmer"
+  );
+  const [customColor, setCustomColor] = useState(
+    initialData?.customColor || "#667eea"
+  );
+  const [customText, setCustomText] = useState(initialData?.customText || "");
+  const [logoUrl, setLogoUrl] = useState<string | null>(
+    initialData?.logoUrl || null
+  );
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(
+    initialData?.backgroundImageUrl || null
+  );
+  const [backgroundScale, setBackgroundScale] = useState(
+    initialData?.backgroundScale || 1
+  );
+  const [backgroundPositionX, setBackgroundPositionX] = useState(
+    initialData?.backgroundPositionX ?? 50
+  );
+  const [backgroundPositionY, setBackgroundPositionY] = useState(
+    initialData?.backgroundPositionY ?? 50
+  );
 
   // Upload states
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -108,33 +155,33 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
   const utils = trpc.useUtils();
 
   // Get artist name for display on card
-  const artistName = user?.name || 'Artist';
+  const artistName = user?.name || "Artist";
 
   // Create mutation
   const createMutation = trpc.promotions.createTemplate.useMutation({
     onSuccess: () => {
-      toast.success('Promotion created successfully!');
+      toast.success("Promotion created successfully!");
       utils.promotions.getPromotions.invalidate();
       onSuccess?.();
       onClose();
     },
-    onError: (error) => {
-      console.error('[CreatePromotionWizard] Create error:', error);
-      toast.error(error.message || 'Failed to create promotion');
+    onError: error => {
+      console.error("[CreatePromotionWizard] Create error:", error);
+      toast.error(error.message || "Failed to create promotion");
     },
   });
 
   // Update mutation
   const updateMutation = trpc.promotions.updateTemplate.useMutation({
     onSuccess: () => {
-      toast.success('Promotion updated!');
+      toast.success("Promotion updated!");
       utils.promotions.getPromotions.invalidate();
       onSuccess?.();
       onClose();
     },
-    onError: (error) => {
-      console.error('[CreatePromotionWizard] Update error:', error);
-      toast.error(error.message || 'Failed to update promotion');
+    onError: error => {
+      console.error("[CreatePromotionWizard] Update error:", error);
+      toast.error(error.message || "Failed to update promotion");
     },
   });
 
@@ -146,13 +193,13 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be less than 5MB');
+      toast.error("Image must be less than 5MB");
       return;
     }
 
@@ -164,35 +211,39 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
         const result = await uploadMutation.mutateAsync({
           base64,
           filename: file.name,
-          folder: 'promotion-logos',
+          folder: "promotion-logos",
         });
         setLogoUrl(result.url);
-        toast.success('Logo uploaded!');
+        toast.success("Logo uploaded!");
       };
       reader.readAsDataURL(file);
     } catch (error) {
-      console.error('[CreatePromotionWizard] Logo upload error:', error);
-      toast.error('Failed to upload logo');
+      console.error("[CreatePromotionWizard] Logo upload error:", error);
+      toast.error("Failed to upload logo");
     } finally {
       setUploadingLogo(false);
     }
   };
 
   // Local preview state for immediate feedback
-  const [localBackgroundPreview, setLocalBackgroundPreview] = useState<string | null>(null);
+  const [localBackgroundPreview, setLocalBackgroundPreview] = useState<
+    string | null
+  >(null);
 
   // Handle background upload
-  const handleBackgroundUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBackgroundUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('Image must be less than 10MB');
+      toast.error("Image must be less than 10MB");
       return;
     }
 
@@ -207,15 +258,15 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
         const result = await uploadMutation.mutateAsync({
           base64,
           filename: file.name,
-          folder: 'promotion-backgrounds',
+          folder: "promotion-backgrounds",
         });
         setBackgroundImageUrl(result.url);
-        toast.success('Background uploaded!');
+        toast.success("Background uploaded!");
       };
       reader.readAsDataURL(file);
     } catch (error) {
-      console.error('[CreatePromotionWizard] Background upload error:', error);
-      toast.error('Failed to upload background');
+      console.error("[CreatePromotionWizard] Background upload error:", error);
+      toast.error("Failed to upload background");
       setLocalBackgroundPreview(null); // Clear preview on error
     } finally {
       setUploadingBackground(false);
@@ -224,7 +275,7 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
 
   // Step navigation
   const goNext = () => {
-    const steps: WizardStep[] = ['type', 'value', 'rules', 'design', 'preview'];
+    const steps: WizardStep[] = ["type", "value", "rules", "design", "preview"];
     const currentIndex = steps.indexOf(step);
     if (currentIndex < steps.length - 1) {
       setStep(steps[currentIndex + 1]);
@@ -232,7 +283,7 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
   };
 
   const goBack = () => {
-    const steps: WizardStep[] = ['type', 'value', 'rules', 'design', 'preview'];
+    const steps: WizardStep[] = ["type", "value", "rules", "design", "preview"];
     const currentIndex = steps.indexOf(step);
     if (currentIndex > 0) {
       setStep(steps[currentIndex - 1]);
@@ -242,11 +293,16 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
   // Get step title
   const getStepTitle = () => {
     switch (step) {
-      case 'type': return 'Choose Type';
-      case 'value': return 'Set Value';
-      case 'rules': return 'Set Rules';
-      case 'design': return 'Customize Design';
-      case 'preview': return 'Preview & Create';
+      case "type":
+        return "Choose Type";
+      case "value":
+        return "Set Value";
+      case "rules":
+        return "Set Rules";
+      case "design":
+        return "Customize Design";
+      case "preview":
+        return "Preview & Create";
     }
   };
 
@@ -257,20 +313,28 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
     name: name || getTypeDefaults(type).labelSingular,
     description,
     valueType,
-    value: valueType === 'fixed' ? (parseFloat(value) || 0) * 100 : parseInt(value) || 0,
+    value:
+      valueType === "fixed"
+        ? (parseFloat(value) || 0) * 100
+        : parseInt(value) || 0,
     templateDesign,
-    primaryColor: colorMode === 'solid' ? primaryColor : (colorMode === 'custom' ? 'custom' : null),
-    gradientFrom: colorMode === 'gradient' ? gradientId : null,
+    primaryColor:
+      colorMode === "solid"
+        ? primaryColor
+        : colorMode === "custom"
+          ? "custom"
+          : null,
+    gradientFrom: colorMode === "gradient" ? gradientId : null,
     customText: customText || null,
-    customColor: colorMode === 'custom' ? customColor : undefined,
+    customColor: colorMode === "custom" ? customColor : undefined,
     logoUrl,
     backgroundImageUrl: localBackgroundPreview || backgroundImageUrl,
     backgroundScale,
     backgroundPositionX,
     backgroundPositionY,
     artistName,
-    status: 'active',
-    validityDuration: noExpiry ? null : (parseInt(validityDuration) || null),
+    status: "active",
+    validityDuration: noExpiry ? null : parseInt(validityDuration) || null,
     autoApplyTrigger,
   };
 
@@ -281,10 +345,18 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
       name: name || getTypeDefaults(type).labelSingular,
       description: description || null,
       valueType,
-      value: valueType === 'fixed' ? Math.round((parseFloat(value) || 0) * 100) : parseInt(value) || 0,
+      value:
+        valueType === "fixed"
+          ? Math.round((parseFloat(value) || 0) * 100)
+          : parseInt(value) || 0,
       templateDesign,
-      primaryColor: colorMode === 'solid' ? primaryColor : (colorMode === 'custom' ? customColor : null),
-      gradientFrom: colorMode === 'gradient' ? gradientId : null,
+      primaryColor:
+        colorMode === "solid"
+          ? primaryColor
+          : colorMode === "custom"
+            ? customColor
+            : null,
+      gradientFrom: colorMode === "gradient" ? gradientId : null,
       gradientTo: null,
       customText: customText || null,
       logoUrl,
@@ -292,14 +364,14 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
       backgroundScale,
       backgroundPositionX,
       backgroundPositionY,
-      validityDuration: noExpiry ? null : (parseInt(validityDuration) || null),
+      validityDuration: noExpiry ? null : parseInt(validityDuration) || null,
       autoApplyTrigger,
     };
 
     if (initialData) {
       updateMutation.mutate({
         id: initialData.id,
-        ...payload
+        ...payload,
       });
     } else {
       createMutation.mutate(payload);
@@ -312,11 +384,16 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
     if (uploadingLogo || uploadingBackground) return false;
 
     switch (step) {
-      case 'type': return true;
-      case 'value': return value && parseFloat(value) > 0;
-      case 'rules': return true;
-      case 'design': return true;
-      case 'preview': return true;
+      case "type":
+        return true;
+      case "value":
+        return value && parseFloat(value) > 0;
+      case "rules":
+        return true;
+      case "design":
+        return true;
+      case "preview":
+        return true;
     }
   };
 
@@ -325,10 +402,10 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
       open={true}
       onClose={onClose}
       title={getStepTitle()}
-      onBack={step !== 'type' ? goBack : undefined}
+      onBack={step !== "type" ? goBack : undefined}
       contextContent={
         <div className="flex items-center gap-2">
-          {['type', 'value', 'rules', 'design', 'preview'].map((s, i) => (
+          {["type", "value", "rules", "design", "preview"].map((s, i) => (
             <div
               key={s}
               className={cn(
@@ -350,15 +427,12 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
           className="space-y-6"
         >
           {/* Step: Type Selection */}
-          {step === 'type' && (
-            <TypeSelectionStep
-              selected={type}
-              onSelect={setType}
-            />
+          {step === "type" && (
+            <TypeSelectionStep selected={type} onSelect={setType} />
           )}
 
           {/* Step: Value Configuration */}
-          {step === 'value' && (
+          {step === "value" && (
             <ValueConfigStep
               type={type}
               name={name}
@@ -373,7 +447,7 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
           )}
 
           {/* Step: Rules Configuration */}
-          {step === 'rules' && (
+          {step === "rules" && (
             <RulesConfigStep
               validityDuration={validityDuration}
               setValidityDuration={setValidityDuration}
@@ -385,7 +459,7 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
           )}
 
           {/* Step: Design Customization */}
-          {step === 'design' && (
+          {step === "design" && (
             <DesignCustomizationStep
               type={type}
               templateDesign={templateDesign}
@@ -421,7 +495,7 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
           )}
 
           {/* Step: Preview & Create */}
-          {step === 'preview' && (
+          {step === "preview" && (
             <PreviewStep
               previewData={previewData}
               isCreating={createMutation.isPending}
@@ -432,24 +506,28 @@ export function CreatePromotionWizard({ onClose, onSuccess, initialData }: Creat
 
       {/* Footer */}
       <div className="p-4 border-t border-white/10 flex justify-between items-center bg-card/50 backdrop-blur-xl">
-        <Button variant="ghost" onClick={step === 'type' ? onClose : goBack}>
-          {step === 'type' ? 'Cancel' : 'Back'}
+        <Button variant="ghost" onClick={step === "type" ? onClose : goBack}>
+          {step === "type" ? "Cancel" : "Back"}
         </Button>
 
-        {step === 'preview' ? (
+        {step === "preview" ? (
           <Button
             className="w-32 font-bold"
             onClick={handleSave}
-            disabled={!canProceed() || createMutation.isPending || updateMutation.isPending}
+            disabled={
+              !canProceed() ||
+              createMutation.isPending ||
+              updateMutation.isPending
+            }
           >
-            {(createMutation.isPending || updateMutation.isPending) ? 'Saving...' : (initialData ? 'Save Changes' : 'Create')}
+            {createMutation.isPending || updateMutation.isPending
+              ? "Saving..."
+              : initialData
+                ? "Save Changes"
+                : "Create"}
           </Button>
         ) : (
-          <Button
-            className="w-32"
-            onClick={goNext}
-            disabled={!canProceed()}
-          >
+          <Button className="w-32" onClick={goNext} disabled={!canProceed()}>
             Continue
           </Button>
         )}
@@ -471,8 +549,8 @@ function RulesConfigStep({
   setValidityDuration: (v: string) => void;
   noExpiry: boolean;
   setNoExpiry: (v: boolean) => void;
-  autoApplyTrigger: 'none' | 'new_client' | 'birthday';
-  setAutoApplyTrigger: (v: 'none' | 'new_client' | 'birthday') => void;
+  autoApplyTrigger: "none" | "new_client" | "birthday";
+  setAutoApplyTrigger: (v: "none" | "new_client" | "birthday") => void;
 }) {
   return (
     <div className="space-y-8">
@@ -485,13 +563,15 @@ function RulesConfigStep({
 
         <div className="space-y-4 bg-white/5 p-4 rounded-xl border border-white/10">
           <div className="flex items-center justify-between">
-            <Label htmlFor="no-expiry" className="cursor-pointer">No Expiry Date</Label>
+            <Label htmlFor="no-expiry" className="cursor-pointer">
+              No Expiry Date
+            </Label>
             <Switch
               id="no-expiry"
               checked={noExpiry}
-              onCheckedChange={(checked) => {
+              onCheckedChange={checked => {
                 setNoExpiry(checked);
-                if (checked) setValidityDuration('');
+                if (checked) setValidityDuration("");
               }}
             />
           </div>
@@ -503,7 +583,7 @@ function RulesConfigStep({
                 <Input
                   type="number"
                   value={validityDuration}
-                  onChange={(e) => setValidityDuration(e.target.value)}
+                  onChange={e => setValidityDuration(e.target.value)}
                   placeholder="e.g. 30"
                   className="rounded-xl pl-4"
                 />
@@ -530,42 +610,49 @@ function RulesConfigStep({
           <Label>Auto-Issue Trigger</Label>
           <div className="grid grid-cols-1 gap-2">
             <button
-              onClick={() => setAutoApplyTrigger('none')}
+              onClick={() => setAutoApplyTrigger("none")}
               className={cn(
                 "p-4 rounded-xl border text-left transition-all",
-                autoApplyTrigger === 'none'
+                autoApplyTrigger === "none"
                   ? "bg-primary/10 border-primary/50"
                   : "bg-white/5 border-white/10 hover:bg-white/10"
               )}
             >
               <div className="font-semibold">Manual Issue Only</div>
-              <div className="text-xs text-muted-foreground">You manually send this to specific clients</div>
+              <div className="text-xs text-muted-foreground">
+                You manually send this to specific clients
+              </div>
             </button>
 
             <button
-              onClick={() => setAutoApplyTrigger('new_client')}
+              onClick={() => setAutoApplyTrigger("new_client")}
               className={cn(
                 "p-4 rounded-xl border text-left transition-all",
-                autoApplyTrigger === 'new_client'
+                autoApplyTrigger === "new_client"
                   ? "bg-primary/10 border-primary/50"
                   : "bg-white/5 border-white/10 hover:bg-white/10"
               )}
             >
               <div className="font-semibold">New Clients</div>
-              <div className="text-xs text-muted-foreground">Automatically verified when a new client books their first appointment</div>
+              <div className="text-xs text-muted-foreground">
+                Automatically verified when a new client books their first
+                appointment
+              </div>
             </button>
 
             <button
-              onClick={() => setAutoApplyTrigger('birthday')}
+              onClick={() => setAutoApplyTrigger("birthday")}
               className={cn(
                 "p-4 rounded-xl border text-left transition-all",
-                autoApplyTrigger === 'birthday'
+                autoApplyTrigger === "birthday"
                   ? "bg-primary/10 border-primary/50"
                   : "bg-white/5 border-white/10 hover:bg-white/10"
               )}
             >
               <div className="font-semibold">Birthday</div>
-              <div className="text-xs text-muted-foreground">Sent automatically on client's birthday (requires DOB)</div>
+              <div className="text-xs text-muted-foreground">
+                Sent automatically on client's birthday (requires DOB)
+              </div>
             </button>
           </div>
         </div>
@@ -582,24 +669,29 @@ function TypeSelectionStep({
   selected: PromotionType;
   onSelect: (type: PromotionType) => void;
 }) {
-  const types: { id: PromotionType; icon: any; title: string; description: string }[] = [
+  const types: {
+    id: PromotionType;
+    icon: any;
+    title: string;
+    description: string;
+  }[] = [
     {
-      id: 'voucher',
+      id: "voucher",
       icon: Gift,
-      title: 'Gift Voucher',
-      description: 'A fixed dollar amount that can be redeemed on any booking',
+      title: "Gift Voucher",
+      description: "A fixed dollar amount that can be redeemed on any booking",
     },
     {
-      id: 'discount',
+      id: "discount",
       icon: Percent,
-      title: 'Discount Card',
-      description: 'A percentage off the total booking price',
+      title: "Discount Card",
+      description: "A percentage off the total booking price",
     },
     {
-      id: 'credit',
+      id: "credit",
       icon: CreditCard,
-      title: 'Store Credit',
-      description: 'Credit balance that can be used across multiple bookings',
+      title: "Store Credit",
+      description: "Credit balance that can be used across multiple bookings",
     },
   ];
 
@@ -641,8 +733,8 @@ function ValueConfigStep({
   setName: (v: string) => void;
   description: string;
   setDescription: (v: string) => void;
-  valueType: 'fixed' | 'percentage';
-  setValueType: (v: 'fixed' | 'percentage') => void;
+  valueType: "fixed" | "percentage";
+  setValueType: (v: "fixed" | "percentage") => void;
   value: string;
   setValue: (v: string) => void;
 }) {
@@ -655,7 +747,7 @@ function ValueConfigStep({
         <Label>Name</Label>
         <Input
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={e => setName(e.target.value)}
           placeholder={defaults.labelSingular}
           className="h-12 rounded-xl"
         />
@@ -666,7 +758,7 @@ function ValueConfigStep({
         <Label>Description (optional)</Label>
         <Textarea
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={e => setDescription(e.target.value)}
           placeholder="Add a description..."
           className="rounded-xl resize-none"
           rows={2}
@@ -674,15 +766,15 @@ function ValueConfigStep({
       </div>
 
       {/* Value Type (only for discount) */}
-      {type === 'discount' && (
+      {type === "discount" && (
         <div className="space-y-2">
           <Label>Discount Type</Label>
           <div className="flex gap-2">
             <button
-              onClick={() => setValueType('percentage')}
+              onClick={() => setValueType("percentage")}
               className={cn(
                 "flex-1 py-3 rounded-xl border transition-all",
-                valueType === 'percentage'
+                valueType === "percentage"
                   ? "bg-primary/10 border-primary/50 text-primary"
                   : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10"
               )}
@@ -690,10 +782,10 @@ function ValueConfigStep({
               Percentage (%)
             </button>
             <button
-              onClick={() => setValueType('fixed')}
+              onClick={() => setValueType("fixed")}
               className={cn(
                 "flex-1 py-3 rounded-xl border transition-all",
-                valueType === 'fixed'
+                valueType === "fixed"
                   ? "bg-primary/10 border-primary/50 text-primary"
                   : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10"
               )}
@@ -707,23 +799,23 @@ function ValueConfigStep({
       {/* Value */}
       <div className="space-y-2">
         <Label>
-          {valueType === 'percentage' ? 'Discount Percentage' : 'Value'}
+          {valueType === "percentage" ? "Discount Percentage" : "Value"}
         </Label>
         <div className="relative">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-            {valueType === 'percentage' ? '' : '$'}
+            {valueType === "percentage" ? "" : "$"}
           </span>
           <Input
             type="number"
             value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder={valueType === 'percentage' ? '10' : '50'}
+            onChange={e => setValue(e.target.value)}
+            placeholder={valueType === "percentage" ? "10" : "50"}
             className={cn(
               "h-14 rounded-xl text-2xl font-bold text-center",
-              valueType === 'fixed' && "pl-8"
+              valueType === "fixed" && "pl-8"
             )}
           />
-          {valueType === 'percentage' && (
+          {valueType === "percentage" && (
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-xl">
               %
             </span>
@@ -770,8 +862,8 @@ function DesignCustomizationStep({
   type: PromotionType;
   templateDesign: string;
   setTemplateDesign: (v: string) => void;
-  colorMode: 'solid' | 'gradient' | 'custom';
-  setColorMode: (v: 'solid' | 'gradient' | 'custom') => void;
+  colorMode: "solid" | "gradient" | "custom";
+  setColorMode: (v: "solid" | "gradient" | "custom") => void;
   primaryColor: string | null;
   setPrimaryColor: (v: string | null) => void;
   gradientId: string;
@@ -798,7 +890,9 @@ function DesignCustomizationStep({
   backgroundInputRef: React.RefObject<HTMLInputElement | null>;
   previewData: PromotionCardData;
 }) {
-  const availableTemplates = CARD_TEMPLATES.filter(t => t.forTypes.includes(type));
+  const availableTemplates = CARD_TEMPLATES.filter(t =>
+    t.forTypes.includes(type)
+  );
 
   return (
     <div className="space-y-6">
@@ -816,7 +910,8 @@ function DesignCustomizationStep({
         {/* Helper text */}
         {backgroundImageUrl && (
           <p className="text-xs text-muted-foreground flex items-center gap-1">
-            <Move className="w-3 h-3" /> Drag to move • <ZoomIn className="w-3 h-3" /> Scroll to zoom
+            <Move className="w-3 h-3" /> Drag to move •{" "}
+            <ZoomIn className="w-3 h-3" /> Scroll to zoom
           </p>
         )}
       </div>
@@ -847,10 +942,10 @@ function DesignCustomizationStep({
         <Label>Color Style</Label>
         <div className="flex gap-2">
           <button
-            onClick={() => setColorMode('gradient')}
+            onClick={() => setColorMode("gradient")}
             className={cn(
               "flex-1 py-3 rounded-xl border transition-all text-sm",
-              colorMode === 'gradient'
+              colorMode === "gradient"
                 ? "bg-primary/10 border-primary/50 text-primary"
                 : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10"
             )}
@@ -858,10 +953,10 @@ function DesignCustomizationStep({
             Gradient
           </button>
           <button
-            onClick={() => setColorMode('solid')}
+            onClick={() => setColorMode("solid")}
             className={cn(
               "flex-1 py-3 rounded-xl border transition-all text-sm",
-              colorMode === 'solid'
+              colorMode === "solid"
                 ? "bg-primary/10 border-primary/50 text-primary"
                 : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10"
             )}
@@ -869,10 +964,10 @@ function DesignCustomizationStep({
             Solid
           </button>
           <button
-            onClick={() => setColorMode('custom')}
+            onClick={() => setColorMode("custom")}
             className={cn(
               "flex-1 py-3 rounded-xl border transition-all text-sm flex items-center justify-center gap-1",
-              colorMode === 'custom'
+              colorMode === "custom"
                 ? "bg-primary/10 border-primary/50 text-primary"
                 : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10"
             )}
@@ -886,21 +981,25 @@ function DesignCustomizationStep({
       {/* Color/Gradient Selection */}
       <div className="space-y-2">
         <Label>
-          {colorMode === 'gradient' ? 'Choose Gradient' : colorMode === 'custom' ? 'Pick Custom Color' : 'Choose Color'}
+          {colorMode === "gradient"
+            ? "Choose Gradient"
+            : colorMode === "custom"
+              ? "Pick Custom Color"
+              : "Choose Color"}
         </Label>
 
-        {colorMode === 'custom' ? (
+        {colorMode === "custom" ? (
           <div className="flex items-center gap-4">
             <input
               type="color"
               value={customColor}
-              onChange={(e) => setCustomColor(e.target.value)}
+              onChange={e => setCustomColor(e.target.value)}
               className="w-16 h-16 rounded-xl cursor-pointer border-2 border-white/20"
             />
             <div className="flex-1">
               <Input
                 value={customColor}
-                onChange={(e) => setCustomColor(e.target.value)}
+                onChange={e => setCustomColor(e.target.value)}
                 placeholder="#667eea"
                 className="h-12 rounded-xl font-mono"
               />
@@ -911,35 +1010,37 @@ function DesignCustomizationStep({
           </div>
         ) : (
           <div className="grid grid-cols-5 gap-2">
-            {colorMode === 'gradient' ? (
-              GRADIENTS.map(g => (
-                <button
-                  key={g.id}
-                  onClick={() => setGradientId(g.id)}
-                  className={cn(
-                    "aspect-square rounded-xl border-2 transition-all",
-                    gradientId === g.id ? "border-primary scale-110" : "border-transparent"
-                  )}
-                  style={{
-                    background: `linear-gradient(${g.direction}, ${g.from}, ${g.to})`,
-                  }}
-                  title={g.name}
-                />
-              ))
-            ) : (
-              SOLID_COLORS.filter(c => c.id !== 'custom').map(c => (
-                <button
-                  key={c.id}
-                  onClick={() => setPrimaryColor(c.id)}
-                  className={cn(
-                    "aspect-square rounded-xl border-2 transition-all",
-                    primaryColor === c.id ? "border-primary scale-110" : "border-transparent"
-                  )}
-                  style={{ background: c.value }}
-                  title={c.name}
-                />
-              ))
-            )}
+            {colorMode === "gradient"
+              ? GRADIENTS.map(g => (
+                  <button
+                    key={g.id}
+                    onClick={() => setGradientId(g.id)}
+                    className={cn(
+                      "aspect-square rounded-xl border-2 transition-all",
+                      gradientId === g.id
+                        ? "border-primary scale-110"
+                        : "border-transparent"
+                    )}
+                    style={{
+                      background: `linear-gradient(${g.direction}, ${g.from}, ${g.to})`,
+                    }}
+                    title={g.name}
+                  />
+                ))
+              : SOLID_COLORS.filter(c => c.id !== "custom").map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => setPrimaryColor(c.id)}
+                    className={cn(
+                      "aspect-square rounded-xl border-2 transition-all",
+                      primaryColor === c.id
+                        ? "border-primary scale-110"
+                        : "border-transparent"
+                    )}
+                    style={{ background: c.value }}
+                    title={c.name}
+                  />
+                ))}
           </div>
         )}
       </div>
@@ -959,8 +1060,14 @@ function DesignCustomizationStep({
         />
         {logoUrl ? (
           <div className="flex items-center gap-3 p-3 bg-black/5 dark:bg-white/5 rounded-xl">
-            <img src={logoUrl} alt="Logo" className="w-12 h-12 object-contain rounded-lg bg-white" />
-            <span className="flex-1 text-sm text-muted-foreground truncate">Logo uploaded</span>
+            <img
+              src={logoUrl}
+              alt="Logo"
+              className="w-12 h-12 object-contain rounded-lg bg-white"
+            />
+            <span className="flex-1 text-sm text-muted-foreground truncate">
+              Logo uploaded
+            </span>
             <Button
               variant="ghost"
               size="sm"
@@ -977,7 +1084,7 @@ function DesignCustomizationStep({
             onClick={() => logoInputRef.current?.click()}
             disabled={uploadingLogo}
           >
-            {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
+            {uploadingLogo ? "Uploading..." : "Upload Logo"}
           </Button>
         )}
       </div>
@@ -1006,7 +1113,7 @@ function DesignCustomizationStep({
         {backgroundImageUrl && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             className="p-4 bg-black/5 dark:bg-white/5 rounded-xl space-y-4 mb-4 border border-white/10"
           >
             <div className="space-y-3">
@@ -1014,7 +1121,9 @@ function DesignCustomizationStep({
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <ZoomIn className="w-3 h-3" /> Zoom
                 </Label>
-                <span className="text-xs font-mono">{Math.round(backgroundScale * 100)}%</span>
+                <span className="text-xs font-mono">
+                  {Math.round(backgroundScale * 100)}%
+                </span>
               </div>
               <Slider
                 value={[backgroundScale]}
@@ -1029,7 +1138,9 @@ function DesignCustomizationStep({
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Move className="w-3 h-3" /> Position X
                 </Label>
-                <span className="text-xs font-mono">{backgroundPositionX}%</span>
+                <span className="text-xs font-mono">
+                  {backgroundPositionX}%
+                </span>
               </div>
               <Slider
                 value={[backgroundPositionX]}
@@ -1044,7 +1155,9 @@ function DesignCustomizationStep({
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Move className="w-3 h-3 rotate-90" /> Position Y
                 </Label>
-                <span className="text-xs font-mono">{backgroundPositionY}%</span>
+                <span className="text-xs font-mono">
+                  {backgroundPositionY}%
+                </span>
               </div>
               <Slider
                 value={[backgroundPositionY]}
@@ -1068,8 +1181,14 @@ function DesignCustomizationStep({
         {backgroundImageUrl ? (
           <div className="space-y-4">
             <div className="flex items-center gap-3 p-3 bg-black/5 dark:bg-white/5 rounded-xl">
-              <img src={backgroundImageUrl} alt="Background" className="w-16 h-10 object-cover rounded-lg" />
-              <span className="flex-1 text-sm text-muted-foreground truncate">Background uploaded</span>
+              <img
+                src={backgroundImageUrl}
+                alt="Background"
+                className="w-16 h-10 object-cover rounded-lg"
+              />
+              <span className="flex-1 text-sm text-muted-foreground truncate">
+                Background uploaded
+              </span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -1113,7 +1232,9 @@ function DesignCustomizationStep({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm">Position Y: {backgroundPositionY}%</Label>
+                <Label className="text-sm">
+                  Position Y: {backgroundPositionY}%
+                </Label>
                 <Slider
                   value={[backgroundPositionY]}
                   onValueChange={([v]) => setBackgroundPositionY(v)}
@@ -1132,7 +1253,7 @@ function DesignCustomizationStep({
             onClick={() => backgroundInputRef.current?.click()}
             disabled={uploadingBackground}
           >
-            {uploadingBackground ? 'Uploading...' : 'Upload Background Image'}
+            {uploadingBackground ? "Uploading..." : "Upload Background Image"}
           </Button>
         )}
       </div>
@@ -1142,7 +1263,7 @@ function DesignCustomizationStep({
         <Label>Custom Text (optional)</Label>
         <Input
           value={customText}
-          onChange={(e) => setCustomText(e.target.value)}
+          onChange={e => setCustomText(e.target.value)}
           placeholder="e.g., Holiday Special"
           className="h-12 rounded-xl"
           maxLength={30}
@@ -1182,10 +1303,9 @@ function PreviewStep({
           <div className="flex justify-between">
             <span className="text-muted-foreground">Value</span>
             <span className="font-medium">
-              {previewData.valueType === 'percentage'
+              {previewData.valueType === "percentage"
                 ? `${previewData.value}%`
-                : `$${(previewData.value / 100).toFixed(2)}`
-              }
+                : `$${(previewData.value / 100).toFixed(2)}`}
             </span>
           </div>
           {previewData.artistName && (
@@ -1198,7 +1318,8 @@ function PreviewStep({
       </div>
 
       <p className="text-center text-sm text-muted-foreground">
-        This will create a template you can send to clients or auto-apply to new bookings.
+        This will create a template you can send to clients or auto-apply to new
+        bookings.
       </p>
     </div>
   );

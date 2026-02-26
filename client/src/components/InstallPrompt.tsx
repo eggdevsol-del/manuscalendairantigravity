@@ -1,11 +1,20 @@
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui";
 import { isPWA, setupInstallPrompt } from "@/lib/pwa";
 import { Download, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function InstallPrompt() {
   const [showPrompt, setShowPrompt] = useState(false);
-  const [installHandler, setInstallHandler] = useState<ReturnType<typeof setupInstallPrompt> | null>(null);
+  const [installHandler, setInstallHandler] = useState<ReturnType<
+    typeof setupInstallPrompt
+  > | null>(null);
 
   useEffect(() => {
     // Don't show if already installed as PWA
@@ -14,7 +23,7 @@ export default function InstallPrompt() {
     }
 
     // Check if user has dismissed the prompt before
-    const dismissed = localStorage.getItem('pwa-install-dismissed');
+    const dismissed = localStorage.getItem("pwa-install-dismissed");
     if (dismissed) {
       return;
     }
@@ -43,7 +52,7 @@ export default function InstallPrompt() {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem('pwa-install-dismissed', 'true');
+    localStorage.setItem("pwa-install-dismissed", "true");
   };
 
   if (!showPrompt) {
@@ -85,4 +94,3 @@ export default function InstallPrompt() {
     </div>
   );
 }
-

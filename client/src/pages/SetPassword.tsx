@@ -3,7 +3,13 @@ import { useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, KeyRound, CheckCircle2 } from "lucide-react";
@@ -14,7 +20,7 @@ export default function SetPassword() {
   const params = new URLSearchParams(searchString);
   const email = params.get("email") || "";
   const name = params.get("name") || "";
-  
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +36,7 @@ export default function SetPassword() {
   }, [email, setLocation]);
 
   const setPasswordMutation = trpc.auth.setPasswordForFunnelClient.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Store JWT token in localStorage
       localStorage.setItem("authToken", data.token);
 
@@ -44,7 +50,7 @@ export default function SetPassword() {
 
       setIsLoading(false);
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Failed to set password. Please try again.");
       setIsLoading(false);
     },
@@ -79,10 +85,15 @@ export default function SetPassword() {
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
             <KeyRound className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-3xl font-bold">Complete Your Account</CardTitle>
+          <CardTitle className="text-3xl font-bold">
+            Complete Your Account
+          </CardTitle>
           <CardDescription className="text-base">
             {name ? (
-              <>Welcome back, <span className="font-semibold text-foreground">{name}</span>!</>
+              <>
+                Welcome back,{" "}
+                <span className="font-semibold text-foreground">{name}</span>!
+              </>
             ) : (
               "Set a password to access your account"
             )}
@@ -94,9 +105,12 @@ export default function SetPassword() {
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
               <div className="text-sm">
-                <p className="font-medium text-foreground">Your consultation was submitted!</p>
+                <p className="font-medium text-foreground">
+                  Your consultation was submitted!
+                </p>
                 <p className="text-muted-foreground mt-1">
-                  Create a password to access your account, track your bookings, and message your artist.
+                  Create a password to access your account, track your bookings,
+                  and message your artist.
                 </p>
               </div>
             </div>
@@ -119,7 +133,7 @@ export default function SetPassword() {
                   type={showPassword ? "text" : "password"}
                   placeholder="At least 8 characters"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   disabled={isLoading}
                   required
                   minLength={8}
@@ -148,7 +162,7 @@ export default function SetPassword() {
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Re-enter your password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={e => setConfirmPassword(e.target.value)}
                   disabled={isLoading}
                   required
                 />
@@ -184,7 +198,8 @@ export default function SetPassword() {
           </form>
 
           <p className="mt-6 text-xs text-center text-muted-foreground">
-            By completing setup, you agree to our Terms of Service and Privacy Policy
+            By completing setup, you agree to our Terms of Service and Privacy
+            Policy
           </p>
         </CardContent>
       </Card>

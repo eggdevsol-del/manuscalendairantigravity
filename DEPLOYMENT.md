@@ -5,6 +5,7 @@
 This application is configured for deployment to Render.com with the following setup:
 
 ### Prerequisites
+
 - GitHub account
 - Render account (free tier available)
 
@@ -36,6 +37,7 @@ git push -u origin main
 #### 3. Environment Variables
 
 The following environment variables are automatically configured via `render.yaml`:
+
 - `NODE_ENV` - Set to "production"
 - `DATABASE_URL` - Auto-configured from database
 - `JWT_SECRET` - Auto-generated secure value
@@ -92,16 +94,19 @@ pnpm drizzle-kit migrate
 ### Troubleshooting
 
 **Build fails:**
+
 - Check build logs in Render dashboard
 - Ensure all dependencies are in `package.json`
 - Verify Node version compatibility
 
 **Database connection fails:**
+
 - Verify `DATABASE_URL` environment variable
 - Check database is running
 - Review connection string format
 
 **App crashes on startup:**
+
 - Check start command is correct
 - Review application logs
 - Verify all environment variables are set
@@ -109,6 +114,7 @@ pnpm drizzle-kit migrate
 ### Free Tier Limitations
 
 Render free tier includes:
+
 - 750 hours/month of runtime
 - App spins down after 15 minutes of inactivity
 - First request after spin-down may take 30-60 seconds
@@ -120,6 +126,7 @@ For production use with no downtime, consider upgrading to a paid plan.
 ### Custom Domain
 
 To use a custom domain:
+
 1. Upgrade to a paid plan
 2. Add custom domain in Render dashboard
 3. Configure DNS settings with your domain provider
@@ -127,4 +134,3 @@ To use a custom domain:
 ---
 
 **Note:** This app is currently configured for Render, but can be adapted for other platforms like Railway, Fly.io, or Heroku with minor configuration changes.
-

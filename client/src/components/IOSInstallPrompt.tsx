@@ -1,5 +1,21 @@
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
-import { Share, X, Plus, Smartphone, MessageCircle, Gift, Calendar, Bell } from "lucide-react";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui";
+import {
+  Share,
+  X,
+  Plus,
+  Smartphone,
+  MessageCircle,
+  Gift,
+  Calendar,
+  Bell,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface IOSInstallPromptProps {
@@ -8,12 +24,15 @@ interface IOSInstallPromptProps {
   onDismiss?: () => void;
 }
 
-export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSInstallPromptProps) {
+export default function IOSInstallPrompt({
+  forceShow = false,
+  onDismiss,
+}: IOSInstallPromptProps) {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    console.log('[IOSInstallPrompt] Initializing, forceShow:', forceShow);
+    console.log("[IOSInstallPrompt] Initializing, forceShow:", forceShow);
 
     // Check if device is iOS
     const userAgent = window.navigator.userAgent.toLowerCase();
@@ -22,33 +41,34 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
 
     // If forceShow is true, show immediately
     if (forceShow) {
-      console.log('[IOSInstallPrompt] Force showing prompt');
+      console.log("[IOSInstallPrompt] Force showing prompt");
       setShowPrompt(true);
       return;
     }
 
     // Check if already installed as PWA
-    const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator as any).standalone;
+    const isInStandaloneMode =
+      "standalone" in window.navigator && (window.navigator as any).standalone;
     if (isInStandaloneMode) {
-      console.log('[IOSInstallPrompt] Already in standalone mode, not showing');
+      console.log("[IOSInstallPrompt] Already in standalone mode, not showing");
       return;
     }
 
     // Don't auto-show on funnel pages - only show when forceShow is true
-    const isFunnelPage = window.location.pathname.startsWith('/start/');
+    const isFunnelPage = window.location.pathname.startsWith("/start/");
     if (isFunnelPage) {
-      console.log('[IOSInstallPrompt] On funnel page, not auto-showing');
+      console.log("[IOSInstallPrompt] On funnel page, not auto-showing");
       return;
     }
 
     // Check if user has dismissed the prompt before
-    const dismissed = localStorage.getItem('ios-install-dismissed');
+    const dismissed = localStorage.getItem("ios-install-dismissed");
     const dismissedTime = dismissed ? parseInt(dismissed) : 0;
-    const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
 
     // Show again after 24 hours
     if (dismissedTime > oneDayAgo) {
-      console.log('[IOSInstallPrompt] Dismissed recently, not showing');
+      console.log("[IOSInstallPrompt] Dismissed recently, not showing");
       return;
     }
 
@@ -56,7 +76,7 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
     if (isIOSDevice && !isInStandaloneMode) {
       // Show prompt after a short delay
       const timer = setTimeout(() => {
-        console.log('[IOSInstallPrompt] Showing prompt after delay');
+        console.log("[IOSInstallPrompt] Showing prompt after delay");
         setShowPrompt(true);
       }, 3000); // Show after 3 seconds
 
@@ -65,10 +85,10 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
   }, [forceShow]);
 
   const handleDismiss = () => {
-    console.log('[IOSInstallPrompt] Dismissing prompt');
+    console.log("[IOSInstallPrompt] Dismissing prompt");
     setShowPrompt(false);
     if (!forceShow) {
-      localStorage.setItem('ios-install-dismissed', Date.now().toString());
+      localStorage.setItem("ios-install-dismissed", Date.now().toString());
     }
     onDismiss?.();
   };
@@ -88,8 +108,9 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
         <div
           className="w-full max-w-sm max-h-[70vh] overflow-y-auto rounded-2xl p-6"
           style={{
-            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            background:
+              "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
           }}
         >
           <div className="relative">
@@ -106,7 +127,9 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
               <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
                 <Smartphone className="h-8 w-8 text-white" />
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">Stay Connected</h2>
+              <h2 className="text-xl font-bold text-white mb-2">
+                Stay Connected
+              </h2>
               <p className="text-sm text-white/70">
                 Get the app for the best experience
               </p>
@@ -118,8 +141,12 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
                   <MessageCircle className="w-5 h-5 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">Instant Messaging</p>
-                  <p className="text-xs text-white/60">Chat directly with your artist</p>
+                  <p className="text-sm font-medium text-white">
+                    Instant Messaging
+                  </p>
+                  <p className="text-xs text-white/60">
+                    Chat directly with your artist
+                  </p>
                 </div>
               </div>
 
@@ -128,8 +155,12 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
                   <Gift className="w-5 h-5 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">Exclusive Vouchers</p>
-                  <p className="text-xs text-white/60">Receive promotions & discounts</p>
+                  <p className="text-sm font-medium text-white">
+                    Exclusive Vouchers
+                  </p>
+                  <p className="text-xs text-white/60">
+                    Receive promotions & discounts
+                  </p>
                 </div>
               </div>
 
@@ -138,8 +169,12 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
                   <Calendar className="w-5 h-5 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">Track Appointments</p>
-                  <p className="text-xs text-white/60">Manage your bookings easily</p>
+                  <p className="text-sm font-medium text-white">
+                    Track Appointments
+                  </p>
+                  <p className="text-xs text-white/60">
+                    Manage your bookings easily
+                  </p>
                 </div>
               </div>
 
@@ -148,7 +183,9 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
                   <Bell className="w-5 h-5 text-orange-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">Push Notifications</p>
+                  <p className="text-sm font-medium text-white">
+                    Push Notifications
+                  </p>
                   <p className="text-xs text-white/60">Never miss an update</p>
                 </div>
               </div>
@@ -164,7 +201,7 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
               </Button>
               <Button
                 className="flex-1 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white"
-                onClick={() => window.location.href = '/signup'}
+                onClick={() => (window.location.href = "/signup")}
               >
                 Create Account
               </Button>
@@ -185,8 +222,9 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
       <div
         className="w-full max-w-sm max-h-[70vh] overflow-y-auto rounded-2xl p-6"
         style={{
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+          background:
+            "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)",
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
         }}
       >
         <div className="relative">
@@ -203,7 +241,9 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
               <Smartphone className="h-8 w-8 text-white" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Install the App</h2>
+            <h2 className="text-xl font-bold text-white mb-2">
+              Install the App
+            </h2>
             <p className="text-sm text-white/70">
               Add to your home screen for the best experience
             </p>
@@ -216,10 +256,14 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
                 <span className="text-purple-400 font-bold text-sm">1</span>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-white">Tap the Share button</p>
+                <p className="text-sm font-medium text-white">
+                  Tap the Share button
+                </p>
                 <div className="flex items-center gap-2 mt-1">
                   <Share className="w-4 h-4 text-purple-400" />
-                  <p className="text-xs text-white/60">At the bottom of Safari</p>
+                  <p className="text-xs text-white/60">
+                    At the bottom of Safari
+                  </p>
                 </div>
               </div>
             </div>
@@ -229,10 +273,14 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
                 <span className="text-purple-400 font-bold text-sm">2</span>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-white">Select "Add to Home Screen"</p>
+                <p className="text-sm font-medium text-white">
+                  Select "Add to Home Screen"
+                </p>
                 <div className="flex items-center gap-2 mt-1">
                   <Plus className="w-4 h-4 text-purple-400" />
-                  <p className="text-xs text-white/60">Scroll down in the share menu</p>
+                  <p className="text-xs text-white/60">
+                    Scroll down in the share menu
+                  </p>
                 </div>
               </div>
             </div>
@@ -242,15 +290,21 @@ export default function IOSInstallPrompt({ forceShow = false, onDismiss }: IOSIn
                 <span className="text-purple-400 font-bold text-sm">3</span>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-white">Tap "Add" to confirm</p>
-                <p className="text-xs text-white/60 mt-1">Required for Push Notifications</p>
+                <p className="text-sm font-medium text-white">
+                  Tap "Add" to confirm
+                </p>
+                <p className="text-xs text-white/60 mt-1">
+                  Required for Push Notifications
+                </p>
               </div>
             </div>
           </div>
 
           {/* Benefits */}
           <div className="space-y-2 mb-6">
-            <p className="text-xs font-medium text-white/60 uppercase tracking-wider">Benefits</p>
+            <p className="text-xs font-medium text-white/60 uppercase tracking-wider">
+              Benefits
+            </p>
             <div className="grid grid-cols-2 gap-2">
               <div className="flex items-center gap-2 text-xs text-white/80">
                 <MessageCircle className="w-3 h-3 text-purple-400" />

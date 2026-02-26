@@ -1,5 +1,21 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Switch,
+  Textarea,
+} from "@/components/ui";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
 import { LoadingState, PageShell } from "@/components/ui/ssot";
 import { trpc } from "@/lib/trpc";
@@ -11,7 +27,14 @@ import { cn } from "@/lib/utils";
 import { WebPushSettings } from "@/components/WebPushSettings";
 import { useWebPush } from "@/hooks/useWebPush";
 
-type TemplateType = "confirmation" | "reminder" | "follow_up" | "promotional" | "birthday" | "aftercare" | "preparation";
+type TemplateType =
+  | "confirmation"
+  | "reminder"
+  | "follow_up"
+  | "promotional"
+  | "birthday"
+  | "aftercare"
+  | "preparation";
 
 export default function NotificationsManagement() {
   const { user, loading } = useAuth();
@@ -143,7 +166,10 @@ export default function NotificationsManagement() {
   };
 
   // Client selection state for push test
-  const [pushDialog, setPushDialog] = useState<{ isOpen: boolean; template: any | null }>({
+  const [pushDialog, setPushDialog] = useState<{
+    isOpen: boolean;
+    template: any | null;
+  }>({
     isOpen: false,
     template: null,
   });
@@ -249,7 +275,7 @@ export default function NotificationsManagement() {
                         </CardTitle>
                         <Switch
                           checked={template.enabled}
-                          onCheckedChange={(checked) => {
+                          onCheckedChange={checked => {
                             updateMutation.mutate({
                               id: template.id,
                               enabled: checked,
@@ -258,7 +284,11 @@ export default function NotificationsManagement() {
                         />
                       </div>
                       <CardDescription className="text-xs">
-                        {templateTypeLabels[template.templateType as TemplateType]}
+                        {
+                          templateTypeLabels[
+                            template.templateType as TemplateType
+                          ]
+                        }
                         {template.timing && (
                           <span className="ml-2">({template.timing})</span>
                         )}
@@ -370,7 +400,7 @@ export default function NotificationsManagement() {
             <Input
               id="title"
               value={formData.title}
-              onChange={(e) =>
+              onChange={e =>
                 setFormData({ ...formData, title: e.target.value })
               }
               placeholder="Your Appointment is Confirmed"
@@ -382,7 +412,7 @@ export default function NotificationsManagement() {
             <Textarea
               id="content"
               value={formData.content}
-              onChange={(e) =>
+              onChange={e =>
                 setFormData({ ...formData, content: e.target.value })
               }
               placeholder="Hi {clientName}, your appointment on {date} at {time} is confirmed..."
@@ -396,28 +426,28 @@ export default function NotificationsManagement() {
           {(formData.templateType === "reminder" ||
             formData.templateType === "follow_up" ||
             formData.templateType === "preparation") && (
-              <div className="space-y-2">
-                <Label htmlFor="timing">Send Timing</Label>
-                <Input
-                  id="timing"
-                  value={formData.timing}
-                  onChange={(e) =>
-                    setFormData({ ...formData, timing: e.target.value })
-                  }
-                  placeholder="1 hour before / 24 hours after"
-                />
-                <p className="text-xs text-muted-foreground">
-                  E.g., "1 hour before", "24 hours after", "2 days before"
-                </p>
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="timing">Send Timing</Label>
+              <Input
+                id="timing"
+                value={formData.timing}
+                onChange={e =>
+                  setFormData({ ...formData, timing: e.target.value })
+                }
+                placeholder="1 hour before / 24 hours after"
+              />
+              <p className="text-xs text-muted-foreground">
+                E.g., "1 hour before", "24 hours after", "2 days before"
+              </p>
+            </div>
+          )}
 
           <div className="flex items-center justify-between">
             <Label htmlFor="enabled">Enabled</Label>
             <Switch
               id="enabled"
               checked={formData.enabled}
-              onCheckedChange={(checked) =>
+              onCheckedChange={checked =>
                 setFormData({ ...formData, enabled: checked })
               }
             />
@@ -443,12 +473,16 @@ export default function NotificationsManagement() {
           >
             <div className="flex flex-col items-start gap-1">
               <span className="font-medium">Myself (Artist)</span>
-              <span className="text-xs text-muted-foreground">Test on this device</span>
+              <span className="text-xs text-muted-foreground">
+                Test on this device
+              </span>
             </div>
           </Button>
 
           <div className="h-px bg-border my-2" />
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">My Clients</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            My Clients
+          </p>
 
           {!clients?.length ? (
             <p className="text-sm text-muted-foreground">No clients found.</p>
@@ -465,7 +499,9 @@ export default function NotificationsManagement() {
                     <div className="flex items-center justify-between">
                       <div className="font-medium">{client.name}</div>
                     </div>
-                    <div className="text-xs text-muted-foreground">{client.email}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {client.email}
+                    </div>
                   </div>
                 </Button>
               ))}
@@ -476,4 +512,3 @@ export default function NotificationsManagement() {
     </PageShell>
   );
 }
-

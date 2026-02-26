@@ -3,6 +3,7 @@
 This document provides a line-level map for "teaching a dummy" how the application is built.
 
 ## 1. Dashboard Domain (`Dashboard.tsx`)
+
 - **Main Layout:** [Dashboard.tsx:L128-642](file:///c:/Users/Piripi/manuscalendairversion/client/src/pages/Dashboard.tsx#L128-642)
   - `PageShell` [SSOT]: [L129](file:///c:/Users/Piripi/manuscalendairversion/client/src/pages/Dashboard.tsx#L129)
   - `PageHeader` [SSOT]: [L131](file:///c:/Users/Piripi/manuscalendairversion/client/src/pages/Dashboard.tsx#L131)
@@ -15,6 +16,7 @@ This document provides a line-level map for "teaching a dummy" how the applicati
   - `completeTask.mutate` (TRPC Mutation): [useBusinessTasks.ts:L142-168](file:///c:/Users/Piripi/manuscalendairversion/client/src/features/dashboard/useBusinessTasks.ts#L142-168)
 
 ## 2. Messaging Domain (`Chat.tsx` & `Conversations.tsx`)
+
 - **Chat Page Layout:** [Chat.tsx:L178-537](file:///c:/Users/Piripi/manuscalendairversion/client/src/pages/Chat.tsx#L178-537)
   - `PageShell` [SSOT]: [L179](file:///c:/Users/Piripi/manuscalendairversion/client/src/pages/Chat.tsx#L179)
   - `StickyHeader`: [L182-224](file:///c:/Users/Piripi/manuscalendairversion/client/src/pages/Chat.tsx#L182-224)
@@ -25,6 +27,7 @@ This document provides a line-level map for "teaching a dummy" how the applicati
   - `trpc.messages.list.useQuery`: [useChatController.ts:L129-136](file:///c:/Users/Piripi/manuscalendairversion/client/src/features/chat/useChatController.ts#L129-136)
 
 ## 3. Scheduling Domain (`Calendar.tsx`)
+
 - **Calendar Layout:** [Calendar.tsx:L487-1218](file:///c:/Users/Piripi/manuscalendairversion/client/src/pages/Calendar.tsx#L487-1218)
   - `CalendarGrid` (Month View): [L651-721](file:///c:/Users/Piripi/manuscalendairversion/client/src/pages/Calendar.tsx#L651-721)
   - `DayTimeline` (24h slots): [L724-840](file:///c:/Users/Piripi/manuscalendairversion/client/src/pages/Calendar.tsx#L724-840)
@@ -35,6 +38,7 @@ This document provides a line-level map for "teaching a dummy" how the applicati
   - `handleDateClick()` (Interaction): [L210-223](file:///c:/Users/Piripi/manuscalendairversion/client/src/pages/Calendar.tsx#L210-223)
 
 ## 4. Public Flow Domain (`FunnelWrapper.tsx`)
+
 - **Funnel Layout:** [FunnelWrapper.tsx:L489-848](file:///c:/Users/Piripi/manuscalendairversion/client/src/pages/funnel/FunnelWrapper.tsx#L489-848)
   - `ProgressBar`: [L491-497](file:///c:/Users/Piripi/manuscalendairversion/client/src/pages/funnel/FunnelWrapper.tsx#L491-497)
   - `TeaserRegistrationForm`: [L469](file:///c:/Users/Piripi/manuscalendairversion/client/src/pages/funnel/FunnelWrapper.tsx#L469)
@@ -44,5 +48,6 @@ This document provides a line-level map for "teaching a dummy" how the applicati
   - `trpc.upload.uploadImage`: [L264](file:///c:/Users/Piripi/manuscalendairversion/client/src/pages/funnel/FunnelWrapper.tsx#L264)
 
 ## 5. Global SSOT Component Library
+
 - **Directory:** [client/src/components/ui/ssot/](file:///c:/Users/Piripi/manuscalendairversion/client/src/components/ui/ssot/)
 - **Index:** [index.ts](file:///c:/Users/Piripi/manuscalendairversion/client/src/components/ui/ssot/index.ts)

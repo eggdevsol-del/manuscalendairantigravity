@@ -17,7 +17,6 @@ import { registerPublicFunnelRoutes } from "./publicFunnelRoutes";
 import { handleStripeWebhook } from "../services/stripe";
 import "../services/notificationOrchestrator";
 
-
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
     const server = net.createServer();
@@ -42,7 +41,7 @@ async function startServer() {
   try {
     await verifyAndFixDatabase();
   } catch (error) {
-    console.error('[Server] Database initialization failed:', error);
+    console.error("[Server] Database initialization failed:", error);
     // Continue anyway - the app might work in read-only mode or with existing tables
   }
 
@@ -50,43 +49,52 @@ async function startServer() {
   try {
     startOutboxWorker();
   } catch (e) {
-    console.error('[Server] Failed to start outbox worker:', e);
+    console.error("[Server] Failed to start outbox worker:", e);
   }
 
   const app = express();
   const server = createServer(app);
 
   // 1. Move CORS to the very top to handle preflight requests first
-  app.use(cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps often have no origin header)
-      if (!origin) return callback(null, true);
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps often have no origin header)
+        if (!origin) return callback(null, true);
 
-      const allowedOrigins = [
-        "http://localhost",
-        "https://localhost",
-        "capacitor://localhost",
-        "http://artist-booking-app-production.up.railway.app",
-        "https://artist-booking-app-production.up.railway.app"
-      ];
+        const allowedOrigins = [
+          "http://localhost",
+          "https://localhost",
+          "capacitor://localhost",
+          "http://artist-booking-app-production.up.railway.app",
+          "https://artist-booking-app-production.up.railway.app",
+        ];
 
-      // Allow exact matches or any localhost port
-      if (allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
-        callback(null, true);
-      } else {
-        // Log unauthorized origins for debugging in server logs
-        console.log(`[CORS] Blocked origin: ${origin}`);
-        callback(null, false);
-      }
-    },
-    credentials: true,
-  }));
+        // Allow exact matches or any localhost port
+        if (
+          allowedOrigins.includes(origin) ||
+          origin.startsWith("http://localhost:")
+        ) {
+          callback(null, true);
+        } else {
+          // Log unauthorized origins for debugging in server logs
+          console.log(`[CORS] Blocked origin: ${origin}`);
+          callback(null, false);
+        }
+      },
+      credentials: true,
+    })
+  );
 
   // Handle preflight for all routes
-  app.options('*', cors());
+  app.options("*", cors());
 
   // MUST BE BEFORE express.json() to capture raw payload for signature verification
-  app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), handleStripeWebhook);
+  app.post(
+    "/api/webhooks/stripe",
+    express.raw({ type: "application/json" }),
+    handleStripeWebhook
+  );
 
   // 2. Configure body parsers
   app.use(express.json({ limit: "50mb" }));
@@ -98,7 +106,7 @@ async function startServer() {
   const uploadDir = path.join(process.cwd(), "server", "uploads");
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
-    console.log('[Server] Created uploads directory at:', uploadDir);
+    console.log("[Server] Created uploads directory at:", uploadDir);
   }
 
   // Serve static uploads
@@ -109,14 +117,16 @@ async function startServer() {
 
   // Version endpoint for cache-busting (returns current server version)
   // This is used by the client to detect version mismatches and force updates
-  const packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf-8'));
-  app.get('/api/version', (_req, res) => {
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
+  const packageJson = JSON.parse(
+    fs.readFileSync(path.join(process.cwd(), "package.json"), "utf-8")
+  );
+  app.get("/api/version", (_req, res) => {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
     res.json({
       version: packageJson.version,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   });
 
@@ -133,7 +143,9 @@ async function startServer() {
         return res.status(404).json({ error: "File not found" });
       }
 
-      console.log(`[File Serving] Serving file: ${key} (${file.mimeType}, ${file.data.length} bytes)`);
+      console.log(
+        `[File Serving] Serving file: ${key} (${file.mimeType}, ${file.data.length} bytes)`
+      );
       res.setHeader("Content-Type", file.mimeType);
       res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
       res.send(file.data);

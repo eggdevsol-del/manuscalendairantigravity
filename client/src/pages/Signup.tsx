@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+} from "@/components/ui";
 import { PageShell } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
@@ -23,7 +32,7 @@ export default function Signup() {
   const checkEmailMutation = trpc.auth.checkEmailExists.useMutation();
 
   const registerMutation = trpc.auth.register.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Store JWT token in localStorage
       localStorage.setItem("authToken", data.token);
 
@@ -41,21 +50,30 @@ export default function Signup() {
 
       setIsLoading(false);
     },
-    onError: (error) => {
+    onError: error => {
       // Check if this is an "email exists" error
-      if (error.data?.code === "CONFLICT" || error.message.includes("already exists")) {
+      if (
+        error.data?.code === "CONFLICT" ||
+        error.message.includes("already exists")
+      ) {
         // Check if it's a funnel client
         checkEmailMutation.mutate(
           { email },
           {
-            onSuccess: (result) => {
+            onSuccess: result => {
               if (result.exists && result.isFunnelClient) {
                 // Redirect to set password page
-                toast.info("You've already submitted a consultation! Let's set up your password.");
-                setLocation(`/set-password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(result.name || name)}`);
+                toast.info(
+                  "You've already submitted a consultation! Let's set up your password."
+                );
+                setLocation(
+                  `/set-password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(result.name || name)}`
+                );
               } else if (result.exists) {
                 // User has a password, suggest login
-                toast.error("An account with this email already exists. Please sign in instead.");
+                toast.error(
+                  "An account with this email already exists. Please sign in instead."
+                );
               }
               setIsLoading(false);
             },
@@ -96,24 +114,42 @@ export default function Signup() {
     checkEmailMutation.mutate(
       { email },
       {
-        onSuccess: (result) => {
+        onSuccess: result => {
           if (result.exists && result.isFunnelClient) {
             // Redirect to set password page
-            toast.info("You've already submitted a consultation! Let's set up your password.");
-            setLocation(`/set-password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(result.name || name)}`);
+            toast.info(
+              "You've already submitted a consultation! Let's set up your password."
+            );
+            setLocation(
+              `/set-password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(result.name || name)}`
+            );
             setIsLoading(false);
           } else if (result.exists) {
             // User has a password, suggest login
-            toast.error("An account with this email already exists. Please sign in instead.");
+            toast.error(
+              "An account with this email already exists. Please sign in instead."
+            );
             setIsLoading(false);
           } else {
             // New user, proceed with registration
-            registerMutation.mutate({ name, email, password, role, ...(role === 'studio' ? { studioName } : {}) });
+            registerMutation.mutate({
+              name,
+              email,
+              password,
+              role,
+              ...(role === "studio" ? { studioName } : {}),
+            });
           }
         },
         onError: () => {
           // If check fails, try to register anyway
-          registerMutation.mutate({ name, email, password, role, ...(role === 'studio' ? { studioName } : {}) });
+          registerMutation.mutate({
+            name,
+            email,
+            password,
+            role,
+            ...(role === "studio" ? { studioName } : {}),
+          });
         },
       }
     );
@@ -126,7 +162,9 @@ export default function Signup() {
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]">
             <UserPlus className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-3xl font-bold tracking-tight text-foreground">Create Account</CardTitle>
+          <CardTitle className="text-3xl font-bold tracking-tight text-foreground">
+            Create Account
+          </CardTitle>
           <CardDescription className="text-base font-medium">
             Join us to book appointments and connect with artists
           </CardDescription>
@@ -142,7 +180,7 @@ export default function Signup() {
                   type="text"
                   placeholder="John Doe"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={e => setName(e.target.value)}
                   variant="hero"
                   className="pl-10"
                   disabled={isLoading}
@@ -160,7 +198,7 @@ export default function Signup() {
                   type="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   variant="hero"
                   className="pl-10"
                   disabled={isLoading}
@@ -177,7 +215,7 @@ export default function Signup() {
                   type={showPassword ? "text" : "password"}
                   placeholder="At least 8 characters"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   variant="hero"
                   className="pr-10"
                   disabled={isLoading}
@@ -207,7 +245,7 @@ export default function Signup() {
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Re-enter your password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={e => setConfirmPassword(e.target.value)}
                   variant="hero"
                   className="pr-10"
                   disabled={isLoading}
@@ -274,15 +312,22 @@ export default function Signup() {
 
             {role === "studio" && (
               <div className="space-y-2 animate-in fade-in slide-in-from-top-4 duration-300">
-                <Label htmlFor="studioName">Studio Name <span className="text-muted-foreground font-normal">(Optional)</span></Label>
+                <Label htmlFor="studioName">
+                  Studio Name{" "}
+                  <span className="text-muted-foreground font-normal">
+                    (Optional)
+                  </span>
+                </Label>
                 <div className="relative">
-                  <div className="absolute left-3 top-4 h-5 w-5 text-muted-foreground flex items-center justify-center">🏢</div>
+                  <div className="absolute left-3 top-4 h-5 w-5 text-muted-foreground flex items-center justify-center">
+                    🏢
+                  </div>
                   <Input
                     id="studioName"
                     type="text"
                     placeholder="e.g. Inked Collective"
                     value={studioName}
-                    onChange={(e) => setStudioName(e.target.value)}
+                    onChange={e => setStudioName(e.target.value)}
                     variant="hero"
                     className="pl-10"
                     disabled={isLoading}
@@ -321,7 +366,10 @@ export default function Signup() {
 
             <Button
               type="button"
-              className={cn(tokens.button.secondary, "w-full border border-white/5")}
+              className={cn(
+                tokens.button.secondary,
+                "w-full border border-white/5"
+              )}
               onClick={() => setLocation("/login")}
               disabled={isLoading}
             >
@@ -330,7 +378,8 @@ export default function Signup() {
           </div>
 
           <p className="mt-4 text-xs text-center text-muted-foreground">
-            By creating an account, you agree to our Terms of Service and Privacy Policy
+            By creating an account, you agree to our Terms of Service and
+            Privacy Policy
           </p>
         </CardContent>
       </div>

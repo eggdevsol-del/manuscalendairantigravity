@@ -3,15 +3,15 @@
  * -------------------------------
  * BottomSheet is the canonical full-screen bottom sheet component.
  * Use this for dialogs that slide up from the bottom and cover the full screen.
- * 
+ *
  * This is different from ModalShell which is a centered modal dialog.
  * BottomSheet is used for:
  * - Full-screen detail views (e.g., appointment details in Calendar)
  * - Full-screen forms (e.g., client profile in Chat)
  * - Action sheets with complex content
- * 
+ *
  * DO NOT use DialogPrimitive directly in page components.
- * 
+ *
  * @version 1.0.126
  */
 import { tokens } from "@/ui/tokens";
@@ -36,7 +36,7 @@ interface BottomSheetProps {
   title?: string;
   /** Additional className for the content container */
   className?: string;
-  /** 
+  /**
    * Overlay variant:
    * - "default": Semi-transparent black overlay (bg-black/30)
    * - "dark": Darker overlay for more focus (bg-black/60)
@@ -52,7 +52,7 @@ export function BottomSheet({
   children,
   title = "Sheet",
   className,
-  overlayVariant = "default"
+  overlayVariant = "default",
 }: BottomSheetProps) {
   // Support both prop naming conventions
   const isSheetOpen = open ?? isOpen ?? false;
@@ -132,7 +132,7 @@ export function ActionSheet({
   children,
   title = "Action Sheet",
   className,
-  maxHeight = "85vh"
+  maxHeight = "85vh",
 }: ActionSheetProps) {
   // Support both prop naming conventions
   const isSheetOpen = open ?? isOpen ?? false;
@@ -147,9 +147,7 @@ export function ActionSheet({
   return (
     <Dialog open={isSheetOpen} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay
-          className={tokens.sheetSecondary.overlay}
-        />
+        <DialogPrimitive.Overlay className={tokens.sheetSecondary.overlay} />
         <DialogPrimitive.Content
           style={{ maxHeight }}
           className={cn(

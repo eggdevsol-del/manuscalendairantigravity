@@ -1,7 +1,27 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+} from "@/components/ui";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
-import { LoadingState, PageShell, GlassSheet, PageHeader } from "@/components/ui/ssot";
+import {
+  LoadingState,
+  PageShell,
+  GlassSheet,
+  PageHeader,
+} from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { trpc } from "@/lib/trpc";
 import { Calendar, ChevronRight, Clock, Plus } from "lucide-react";
@@ -24,7 +44,11 @@ export default function Consultations() {
   // Get list of artists for selection
   const { data: artists = [] } = trpc.auth.listArtists.useQuery();
 
-  const { data: consultations, isLoading, refetch } = trpc.consultations.list.useQuery(undefined, {
+  const {
+    data: consultations,
+    isLoading,
+    refetch,
+  } = trpc.consultations.list.useQuery(undefined, {
     enabled: !!user,
   });
 
@@ -96,7 +120,9 @@ export default function Consultations() {
 
       {/* 2. Top Context Area (Stats/Info) */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
-        <p className="text-4xl font-light text-foreground/90 tracking-tight">Requests</p>
+        <p className="text-4xl font-light text-foreground/90 tracking-tight">
+          Requests
+        </p>
         <p className="text-muted-foreground text-lg font-medium mt-1">
           Manage your bookings
         </p>
@@ -104,7 +130,6 @@ export default function Consultations() {
 
       {/* 3. Content Container (was GlassSheet) */}
       <div className={tokens.contentContainer.base}>
-
         {/* Sheet Header: Filter/Sort could go here */}
         <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5">
           <h2 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">
@@ -118,13 +143,20 @@ export default function Consultations() {
             {isLoading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading consultations...</p>
+                <p className="text-muted-foreground">
+                  Loading consultations...
+                </p>
               </div>
             ) : consultations && consultations.length > 0 ? (
-              consultations.map((consultation) => (
+              consultations.map(consultation => (
                 <Card
                   key={consultation.id}
-                  className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0")}
+                  className={cn(
+                    tokens.card.base,
+                    tokens.card.bg,
+                    tokens.card.interactive,
+                    "border-0"
+                  )}
                   onClick={() => {
                     if (consultation.conversationId) {
                       setLocation(`/chat/${consultation.conversationId}`);
@@ -138,12 +170,22 @@ export default function Consultations() {
                   <div className="p-5 relative z-10">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{consultation.subject}</h3>
+                        <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                          {consultation.subject}
+                        </h3>
                         <p className="text-sm text-muted-foreground mt-0.5">
-                          with {consultation.artist?.name || consultation.artist?.email || "Artist"}
+                          with{" "}
+                          {consultation.artist?.name ||
+                            consultation.artist?.email ||
+                            "Artist"}
                         </p>
                       </div>
-                      <div className={cn("w-3 h-3 rounded-full mt-1.5", getStatusColor(consultation.status))} />
+                      <div
+                        className={cn(
+                          "w-3 h-3 rounded-full mt-1.5",
+                          getStatusColor(consultation.status)
+                        )}
+                      />
                     </div>
 
                     <p className="text-sm text-white/60 line-clamp-2 leading-relaxed mb-4">
@@ -154,12 +196,22 @@ export default function Consultations() {
                       {consultation.preferredDate && (
                         <div className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-md">
                           <Calendar className="w-3.5 h-3.5" />
-                          <span>{new Date(consultation.preferredDate).toLocaleDateString()}</span>
+                          <span>
+                            {new Date(
+                              consultation.preferredDate
+                            ).toLocaleDateString()}
+                          </span>
                         </div>
                       )}
                       <div className="flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>{consultation.createdAt ? new Date(consultation.createdAt).toLocaleDateString() : 'N/A'}</span>
+                        <span>
+                          {consultation.createdAt
+                            ? new Date(
+                                consultation.createdAt
+                              ).toLocaleDateString()
+                            : "N/A"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -170,11 +222,18 @@ export default function Consultations() {
                 <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
                   <Calendar className="w-8 h-8 text-muted-foreground opacity-50" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">No Consultations Yet</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  No Consultations Yet
+                </h3>
                 <p className="text-muted-foreground mb-6 max-w-xs mx-auto text-sm">
-                  Request a consultation with an artist to start planning your next tattoo.
+                  Request a consultation with an artist to start planning your
+                  next tattoo.
                 </p>
-                <Button onClick={() => setShowNewDialog(true)} size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20">
+                <Button
+                  onClick={() => setShowNewDialog(true)}
+                  size="lg"
+                  className="rounded-full px-8 shadow-lg shadow-primary/20"
+                >
                   Start Request
                 </Button>
               </div>
@@ -205,7 +264,9 @@ export default function Consultations() {
               onClick={handleSubmit}
               disabled={createConsultationMutation.isPending}
             >
-              {createConsultationMutation.isPending ? "Submitting..." : "Submit Request"}
+              {createConsultationMutation.isPending
+                ? "Submitting..."
+                : "Submit Request"}
             </Button>
           </div>
         }
@@ -213,15 +274,19 @@ export default function Consultations() {
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="artist">Select Artist *</Label>
-            <Select value={selectedArtistId} onValueChange={setSelectedArtistId}>
+            <Select
+              value={selectedArtistId}
+              onValueChange={setSelectedArtistId}
+            >
               <SelectTrigger className="bg-white/5 border-white/10 h-11">
                 <SelectValue placeholder="Choose an artist" />
               </SelectTrigger>
               <SelectContent>
-                {artists.map((artist) => (
+                {artists.map(artist => (
                   <SelectItem key={artist.id} value={artist.id}>
                     {artist.name || artist.email}
-                    {artist.instagramUsername && ` (@${artist.instagramUsername})`}
+                    {artist.instagramUsername &&
+                      ` (@${artist.instagramUsername})`}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -233,7 +298,7 @@ export default function Consultations() {
             <Input
               id="subject"
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
+              onChange={e => setSubject(e.target.value)}
               placeholder="e.g., Custom tattoo design"
               className="bg-white/5 border-white/10 h-11"
             />
@@ -244,7 +309,7 @@ export default function Consultations() {
             <Textarea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               placeholder="Describe what you'd like to discuss..."
               rows={5}
               className="bg-white/5 border-white/10 min-h-[120px]"
@@ -257,7 +322,7 @@ export default function Consultations() {
               id="preferred-date"
               type="date"
               value={preferredDate}
-              onChange={(e) => setPreferredDate(e.target.value)}
+              onChange={e => setPreferredDate(e.target.value)}
               className="bg-white/5 border-white/10 h-11"
             />
           </div>

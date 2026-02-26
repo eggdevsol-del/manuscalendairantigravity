@@ -1,11 +1,18 @@
 /**
  * Image Upload Sheet Component
- * 
+ *
  * Reusable bottom sheet for uploading images in the funnel.
  * Used for both reference images and body placement photos.
  */
 import { useState, useRef, useCallback } from "react";
-import { X, Upload, Camera, Image as ImageIcon, Trash2, Plus } from "lucide-react";
+import {
+  X,
+  Upload,
+  Camera,
+  Image as ImageIcon,
+  Trash2,
+  Plus,
+} from "lucide-react";
 
 interface ImageUploadSheetProps {
   isOpen: boolean;
@@ -39,23 +46,27 @@ export default function ImageUploadSheet({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  const generateId = () => `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const generateId = () =>
+    `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-  const handleFiles = useCallback((files: FileList | null) => {
-    if (!files) return;
+  const handleFiles = useCallback(
+    (files: FileList | null) => {
+      if (!files) return;
 
-    const remainingSlots = maxImages - images.length;
-    const filesToProcess = Array.from(files).slice(0, remainingSlots);
+      const remainingSlots = maxImages - images.length;
+      const filesToProcess = Array.from(files).slice(0, remainingSlots);
 
-    const newImages: UploadedImage[] = filesToProcess.map((file) => ({
-      id: generateId(),
-      file,
-      preview: URL.createObjectURL(file),
-      uploading: false,
-    }));
+      const newImages: UploadedImage[] = filesToProcess.map(file => ({
+        id: generateId(),
+        file,
+        preview: URL.createObjectURL(file),
+        uploading: false,
+      }));
 
-    onImagesChange([...images, ...newImages]);
-  }, [images, maxImages, onImagesChange]);
+      onImagesChange([...images, ...newImages]);
+    },
+    [images, maxImages, onImagesChange]
+  );
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -67,26 +78,35 @@ export default function ImageUploadSheet({
     }
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    handleFiles(e.dataTransfer.files);
-  }, [handleFiles]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDragActive(false);
+      handleFiles(e.dataTransfer.files);
+    },
+    [handleFiles]
+  );
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFiles(e.target.files);
-    // Reset input so same file can be selected again
-    e.target.value = "";
-  }, [handleFiles]);
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleFiles(e.target.files);
+      // Reset input so same file can be selected again
+      e.target.value = "";
+    },
+    [handleFiles]
+  );
 
-  const removeImage = useCallback((id: string) => {
-    const imageToRemove = images.find(img => img.id === id);
-    if (imageToRemove?.preview && !imageToRemove.uploadedUrl) {
-      URL.revokeObjectURL(imageToRemove.preview);
-    }
-    onImagesChange(images.filter(img => img.id !== id));
-  }, [images, onImagesChange]);
+  const removeImage = useCallback(
+    (id: string) => {
+      const imageToRemove = images.find(img => img.id === id);
+      if (imageToRemove?.preview && !imageToRemove.uploadedUrl) {
+        URL.revokeObjectURL(imageToRemove.preview);
+      }
+      onImagesChange(images.filter(img => img.id !== id));
+    },
+    [images, onImagesChange]
+  );
 
   const openFileSelector = () => {
     fileInputRef.current?.click();
@@ -101,15 +121,15 @@ export default function ImageUploadSheet({
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-      
+
       {/* Sheet */}
-      <div 
+      <div
         className="relative w-full max-w-lg bg-white rounded-t-3xl max-h-[85vh] overflow-hidden animate-slide-up"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-2">
@@ -140,9 +160,9 @@ export default function ImageUploadSheet({
               onDragOver={handleDrag}
               onDrop={handleDrop}
               className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors mb-6 ${
-                dragActive 
-                  ? 'border-gray-900 bg-gray-50' 
-                  : 'border-gray-300 hover:border-gray-400'
+                dragActive
+                  ? "border-gray-900 bg-gray-50"
+                  : "border-gray-300 hover:border-gray-400"
               }`}
             >
               <div className="flex flex-col items-center">
@@ -153,7 +173,7 @@ export default function ImageUploadSheet({
                 <p className="text-xs text-gray-500 mb-4">
                   or use the buttons below
                 </p>
-                
+
                 <div className="flex gap-3">
                   <button
                     type="button"
@@ -212,9 +232,9 @@ export default function ImageUploadSheet({
                   </button>
                 )}
               </div>
-              
+
               <div className="grid grid-cols-3 gap-3">
-                {images.map((image) => (
+                {images.map(image => (
                   <div
                     key={image.id}
                     className="relative aspect-square rounded-lg overflow-hidden bg-gray-100"
@@ -224,21 +244,23 @@ export default function ImageUploadSheet({
                       alt="Upload preview"
                       className="w-full h-full object-cover"
                     />
-                    
+
                     {/* Loading overlay */}
                     {image.uploading && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                         <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       </div>
                     )}
-                    
+
                     {/* Error overlay */}
                     {image.error && (
                       <div className="absolute inset-0 bg-red-500/80 flex items-center justify-center p-2">
-                        <p className="text-xs text-white text-center">{image.error}</p>
+                        <p className="text-xs text-white text-center">
+                          {image.error}
+                        </p>
                       </div>
                     )}
-                    
+
                     {/* Delete button */}
                     <button
                       type="button"
@@ -268,7 +290,7 @@ export default function ImageUploadSheet({
             onClick={onClose}
             className="w-full py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
           >
-            Done ({images.length} {images.length === 1 ? 'image' : 'images'})
+            Done ({images.length} {images.length === 1 ? "image" : "images"})
           </button>
         </div>
       </div>

@@ -6,7 +6,13 @@ import { useInboxRequests } from "@/features/chat/hooks/useInboxRequests";
 import { useConversations } from "@/hooks/useConversations";
 import { ConversationsList } from "@/features/chat/components/ConversationsList";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+} from "@/components/ui/empty";
 import { MessageCircle, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tokens } from "@/ui/tokens";
@@ -31,10 +37,13 @@ export default function Conversations() {
   // const utils = trpc.useUtils(); // For invalidating queries (v11)
 
   // Consolidate inbox requests (Leads + Consultations) via SSOT Hook
-  const { requestItems, isLoading: requestsLoading, isArtist } = useInboxRequests();
+  const {
+    requestItems,
+    isLoading: requestsLoading,
+    isArtist,
+  } = useInboxRequests();
 
   // Handle Mark As Read logic moved to ConversationsList
-
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -45,7 +54,8 @@ export default function Conversations() {
 
   // Combined loading state: Auth loading OR Query loading (initial fetch) OR Requests loading
   // FIX: Include requestsLoading to prevent race condition on Android
-  const isPageLoading = loading || (isLoading && !conversations) || requestsLoading;
+  const isPageLoading =
+    loading || (isLoading && !conversations) || requestsLoading;
 
   if (isPageLoading) {
     return <LoadingState message="Loading messages..." fullScreen />;
@@ -87,4 +97,3 @@ export default function Conversations() {
     </PageShell>
   );
 }
-

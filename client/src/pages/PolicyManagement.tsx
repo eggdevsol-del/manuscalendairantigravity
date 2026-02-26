@@ -1,5 +1,16 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Switch, Textarea } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Switch,
+  Textarea,
+} from "@/components/ui";
 import { trpc } from "@/lib/trpc";
 import { ChevronLeft, FileText, Save } from "lucide-react";
 import { LoadingState } from "@/components/ui/ssot";
@@ -12,19 +23,23 @@ type PolicyType = "deposit" | "design" | "reschedule" | "cancellation";
 const policyDefaults = {
   deposit: {
     title: "Deposit Policy",
-    content: "A non-refundable deposit of 50% is required to secure your appointment. The deposit will be applied to your final balance.",
+    content:
+      "A non-refundable deposit of 50% is required to secure your appointment. The deposit will be applied to your final balance.",
   },
   design: {
     title: "Design Policy",
-    content: "Custom designs are created specifically for you. Minor revisions are included. Additional design changes may incur extra fees.",
+    content:
+      "Custom designs are created specifically for you. Minor revisions are included. Additional design changes may incur extra fees.",
   },
   reschedule: {
     title: "Reschedule Policy",
-    content: "Appointments can be rescheduled with at least 48 hours notice. Last-minute reschedules may result in deposit forfeiture.",
+    content:
+      "Appointments can be rescheduled with at least 48 hours notice. Last-minute reschedules may result in deposit forfeiture.",
   },
   cancellation: {
     title: "Cancellation Policy",
-    content: "Cancellations must be made at least 48 hours in advance for a full refund. Cancellations within 48 hours will forfeit the deposit.",
+    content:
+      "Cancellations must be made at least 48 hours in advance for a full refund. Cancellations within 48 hours will forfeit the deposit.",
   },
 };
 
@@ -48,7 +63,7 @@ export default function PolicyManagement() {
       refetch();
       setSelectedType(null);
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Failed to save policy: " + error.message);
     },
   });
@@ -64,7 +79,7 @@ export default function PolicyManagement() {
 
   useEffect(() => {
     if (selectedType && policies) {
-      const existingPolicy = policies.find((p) => p.policyType === selectedType);
+      const existingPolicy = policies.find(p => p.policyType === selectedType);
       if (existingPolicy) {
         setTitle(existingPolicy.title);
         setContent(existingPolicy.content);
@@ -132,7 +147,7 @@ export default function PolicyManagement() {
                 <Input
                   id="title"
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  onChange={e => setTitle(e.target.value)}
                   placeholder="Enter policy title"
                 />
               </div>
@@ -142,7 +157,7 @@ export default function PolicyManagement() {
                 <Textarea
                   id="content"
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  onChange={e => setContent(e.target.value)}
                   placeholder="Enter policy details..."
                   rows={10}
                   className="font-mono text-sm"
@@ -185,7 +200,12 @@ export default function PolicyManagement() {
   }
 
   // Policy list view
-  const policyTypesList: PolicyType[] = ["deposit", "design", "reschedule", "cancellation"];
+  const policyTypesList: PolicyType[] = [
+    "deposit",
+    "design",
+    "reschedule",
+    "cancellation",
+  ];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -199,14 +219,16 @@ export default function PolicyManagement() {
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-2xl font-bold text-foreground">Manage Policies</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            Manage Policies
+          </h1>
         </div>
       </header>
 
       <main className="flex-1 px-4 py-4 mobile-scroll overflow-y-auto">
         <div className="space-y-3">
-          {policyTypesList.map((type) => {
-            const policy = policies?.find((p) => p.policyType === type);
+          {policyTypesList.map(type => {
+            const policy = policies?.find(p => p.policyType === type);
             const defaults = policyDefaults[type];
 
             return (
@@ -248,8 +270,9 @@ export default function PolicyManagement() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Policies help set clear expectations with your clients. They will be able to view
-              these policies from their app before booking appointments.
+              Policies help set clear expectations with your clients. They will
+              be able to view these policies from their app before booking
+              appointments.
             </p>
           </CardContent>
         </Card>
@@ -257,4 +280,3 @@ export default function PolicyManagement() {
     </div>
   );
 }
-

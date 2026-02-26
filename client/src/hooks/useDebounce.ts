@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 /**
  * useDebounce hook
- * 
+ *
  * Debounces a value by the specified delay.
  * Useful for search inputs, slug validation, etc.
  */

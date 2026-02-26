@@ -1,14 +1,14 @@
 /**
  * BottomNav - System-level navigation controller
- * 
+ *
  * Handles 2D navigation:
  * - Horizontal (X): Fixed 4-item layout (Dashboard, Calendar, Messages, More)
  * - Vertical (Y): Row swap between main nav and contextual actions via swipe up/down
- * 
+ *
  * CRITICAL ARCHITECTURE NOTES:
  * - Row 0 (main nav) uses a fixed grid/flex layout (NO SCROLL)
  * - Row 1 (contextual actions) uses a SIMPLE FLEX container with NO scroll
- * 
+ *
  * @version 1.0.308
  */
 
@@ -27,134 +27,153 @@ import { CentralNavFAB } from "./nav/CentralNavFAB";
 // Constants
 const SWIPE_THRESHOLD = 30;
 const ROW_HEIGHT = 77;
-const PRIMARY_NAV_IDS = ['dashboard', 'calendar', 'messages'];
+const PRIMARY_NAV_IDS = ["dashboard", "calendar", "messages"];
 
 export default function BottomNav() {
-    const [location] = useLocation();
-    const totalUnreadCount = useTotalUnreadCount();
-    const { navItems, contextualRow, isContextualVisible, setContextualVisible } = useBottomNav();
-    const { isTeaserClient } = useTeaser();
+  const [location] = useLocation();
+  const totalUnreadCount = useTotalUnreadCount();
+  const { navItems, contextualRow, isContextualVisible, setContextualVisible } =
+    useBottomNav();
+  const { isTeaserClient } = useTeaser();
 
-    const isActive = useCallback((p?: string) => {
-        if (!p) return false;
-        if (p === "/" && location === "/") return true;
-        if (p !== "/" && location.startsWith(p)) return true;
-        return false;
-    }, [location]);
+  const isActive = useCallback(
+    (p?: string) => {
+      if (!p) return false;
+      if (p === "/" && location === "/") return true;
+      if (p !== "/" && location.startsWith(p)) return true;
+      return false;
+    },
+    [location]
+  );
 
-    const hasContextualRow = contextualRow !== null;
+  const hasContextualRow = contextualRow !== null;
 
-    const renderButton = (item: any) => {
-        const active = isActive(item.path);
-        const unreadCount = item.id === "messages" ? totalUnreadCount : (item.badgeCount || 0);
-
-        return (
-            <Button
-                key={item.id} // moved key here
-                variant="ghost"
-                className={cn(
-                    "flex flex-col items-center justify-center gap-1.5 h-full min-w-[64px] flex-1 rounded-none hover:bg-gray-200/50 dark:hover:bg-white/5 transition-all relative shrink-0", // flex-1 for equal width, min-w-[64px] for safety
-                    active ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-white/40"
-                )}
-                onClick={item.action}
-            >
-                <div className="relative p-1">
-                    <item.icon
-                        className={cn(
-                            "w-6 h-6 transition-all duration-300",
-                            active
-                                ? "text-gray-900 dark:text-white scale-110 drop-shadow-[0_0_8px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-                                : "text-gray-500 dark:text-white/40 group-hover:text-gray-700 dark:group-hover:text-white/70"
-                        )}
-                        strokeWidth={active ? 2.5 : 2}
-                    />
-
-                    {/* Lock Badge for Teaser Clients (Profile) */}
-                    {isTeaserClient && item.id === 'profile' && (
-                        <div className="absolute -top-1 -right-1 bg-background/80 backdrop-blur-sm rounded-full p-0.5 shadow-sm border border-white/10">
-                            <Lock className="w-3 h-3 text-muted-foreground" />
-                        </div>
-                    )}
-
-                    {unreadCount > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-background">
-                            {unreadCount > 9 ? "9+" : unreadCount}
-                        </span>
-                    )}
-                </div>
-                <span className={cn(
-                    "text-[11px] font-medium tracking-wide transition-all duration-300",
-                    active ? "text-gray-900 dark:text-white opacity-100" : "text-gray-500 dark:text-white/40 opacity-70"
-                )}>
-                    {item.label}
-                </span>
-                {active && (
-                    <div className="absolute bottom-2 w-1 h-1 rounded-full bg-gray-900 dark:bg-white shadow-[0_0_8px_rgba(0,0,0,0.3)] dark:shadow-[0_0_8px_white]" />
-                )}
-            </Button>
-        );
-    };
+  const renderButton = (item: any) => {
+    const active = isActive(item.path);
+    const unreadCount =
+      item.id === "messages" ? totalUnreadCount : item.badgeCount || 0;
 
     return (
-        <nav className="fixed bottom-0 inset-x-0 z-[50] select-none">
-            {/* Main container - Animating Height instead of Transform */}
-            <motion.div
-                className="bg-gray-100/90 dark:bg-slate-950/60 backdrop-blur-[32px] border-t border-gray-200 dark:border-white/10 overflow-hidden"
-                initial={false}
-                animate={{
-                    height: isContextualVisible ? ROW_HEIGHT * 2 : ROW_HEIGHT
-                }}
-                transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                style={{
-                    paddingBottom: "env(safe-area-inset-bottom)"
-                }}
-            >
-                {/* Row Container */}
-                <div className="flex flex-col">
-                    {/* Row 0: Main Navigation - Reverted to SCROLLABLE */}
-                    <div
-                        className="w-full flex items-center overflow-x-auto no-scrollbar mask-gradient-x" // Restore scrolling
-                        style={{ height: ROW_HEIGHT }}
-                    >
-                        {/* Render items split by Central FAB */}
-                        {(() => {
-                            const mid = Math.ceil(navItems.length / 2);
-                            const leftItems = navItems.slice(0, mid);
-                            const rightItems = navItems.slice(mid);
+      <Button
+        key={item.id} // moved key here
+        variant="ghost"
+        className={cn(
+          "flex flex-col items-center justify-center gap-1.5 h-full min-w-[64px] flex-1 rounded-none hover:bg-gray-200/50 dark:hover:bg-white/5 transition-all relative shrink-0", // flex-1 for equal width, min-w-[64px] for safety
+          active
+            ? "text-gray-900 dark:text-white"
+            : "text-gray-500 dark:text-white/40"
+        )}
+        onClick={item.action}
+      >
+        <div className="relative p-1">
+          <item.icon
+            className={cn(
+              "w-6 h-6 transition-all duration-300",
+              active
+                ? "text-gray-900 dark:text-white scale-110 drop-shadow-[0_0_8px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                : "text-gray-500 dark:text-white/40 group-hover:text-gray-700 dark:group-hover:text-white/70"
+            )}
+            strokeWidth={active ? 2.5 : 2}
+          />
 
-                            return (
-                                <>
-                                    {leftItems.map((item) => (
-                                        <Link key={item.id} href={item.path || '#'} className="contents">
-                                            {renderButton(item)}
-                                        </Link>
-                                    ))}
+          {/* Lock Badge for Teaser Clients (Profile) */}
+          {isTeaserClient && item.id === "profile" && (
+            <div className="absolute -top-1 -right-1 bg-background/80 backdrop-blur-sm rounded-full p-0.5 shadow-sm border border-white/10">
+              <Lock className="w-3 h-3 text-muted-foreground" />
+            </div>
+          )}
 
-                                    <CentralNavFAB />
-
-                                    {rightItems.map((item) => (
-                                        <Link key={item.id} href={item.path || '#'} className="contents">
-                                            {renderButton(item)}
-                                        </Link>
-                                    ))}
-                                </>
-                            );
-                        })()}
-                    </div>
-
-                    {/* 
-                     * Row 1: Contextual Actions
-                     */}
-                    <div
-                        className="w-full flex items-center justify-start px-2 shrink-0 border-t border-gray-200 dark:border-white/5"
-                        style={{
-                            height: ROW_HEIGHT,
-                        }}
-                    >
-                        {contextualRow}
-                    </div>
-                </div>
-            </motion.div>
-        </nav>
+          {unreadCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-background">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </div>
+        <span
+          className={cn(
+            "text-[11px] font-medium tracking-wide transition-all duration-300",
+            active
+              ? "text-gray-900 dark:text-white opacity-100"
+              : "text-gray-500 dark:text-white/40 opacity-70"
+          )}
+        >
+          {item.label}
+        </span>
+        {active && (
+          <div className="absolute bottom-2 w-1 h-1 rounded-full bg-gray-900 dark:bg-white shadow-[0_0_8px_rgba(0,0,0,0.3)] dark:shadow-[0_0_8px_white]" />
+        )}
+      </Button>
     );
+  };
+
+  return (
+    <nav className="fixed bottom-0 inset-x-0 z-[50] select-none">
+      {/* Main container - Animating Height instead of Transform */}
+      <motion.div
+        className="bg-gray-100/90 dark:bg-slate-950/60 backdrop-blur-[32px] border-t border-gray-200 dark:border-white/10 overflow-hidden"
+        initial={false}
+        animate={{
+          height: isContextualVisible ? ROW_HEIGHT * 2 : ROW_HEIGHT,
+        }}
+        transition={{ type: "spring", stiffness: 400, damping: 35 }}
+        style={{
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
+      >
+        {/* Row Container */}
+        <div className="flex flex-col">
+          {/* Row 0: Main Navigation - Reverted to SCROLLABLE */}
+          <div
+            className="w-full flex items-center overflow-x-auto no-scrollbar mask-gradient-x" // Restore scrolling
+            style={{ height: ROW_HEIGHT }}
+          >
+            {/* Render items split by Central FAB */}
+            {(() => {
+              const mid = Math.ceil(navItems.length / 2);
+              const leftItems = navItems.slice(0, mid);
+              const rightItems = navItems.slice(mid);
+
+              return (
+                <>
+                  {leftItems.map(item => (
+                    <Link
+                      key={item.id}
+                      href={item.path || "#"}
+                      className="contents"
+                    >
+                      {renderButton(item)}
+                    </Link>
+                  ))}
+
+                  <CentralNavFAB />
+
+                  {rightItems.map(item => (
+                    <Link
+                      key={item.id}
+                      href={item.path || "#"}
+                      className="contents"
+                    >
+                      {renderButton(item)}
+                    </Link>
+                  ))}
+                </>
+              );
+            })()}
+          </div>
+
+          {/*
+           * Row 1: Contextual Actions
+           */}
+          <div
+            className="w-full flex items-center justify-start px-2 shrink-0 border-t border-gray-200 dark:border-white/5"
+            style={{
+              height: ROW_HEIGHT,
+            }}
+          >
+            {contextualRow}
+          </div>
+        </div>
+      </motion.div>
+    </nav>
+  );
 }

@@ -20,34 +20,34 @@ interface FunnelBudgetStepProps {
 }
 
 const DEFAULT_PLACEMENTS = [
-  { id: 'full-sleeve', label: 'Full Sleeve' },
-  { id: 'half-sleeve', label: 'Half Sleeve' },
-  { id: 'forearm', label: 'Forearm' },
-  { id: 'upper-arm', label: 'Upper Arm' },
-  { id: 'back-piece', label: 'Back' },
-  { id: 'chest', label: 'Chest' },
-  { id: 'ribs', label: 'Ribs' },
-  { id: 'thigh', label: 'Thigh' },
-  { id: 'calf', label: 'Calf' },
-  { id: 'hand', label: 'Hand' },
-  { id: 'neck', label: 'Neck' },
-  { id: 'other', label: 'Other' },
+  { id: "full-sleeve", label: "Full Sleeve" },
+  { id: "half-sleeve", label: "Half Sleeve" },
+  { id: "forearm", label: "Forearm" },
+  { id: "upper-arm", label: "Upper Arm" },
+  { id: "back-piece", label: "Back" },
+  { id: "chest", label: "Chest" },
+  { id: "ribs", label: "Ribs" },
+  { id: "thigh", label: "Thigh" },
+  { id: "calf", label: "Calf" },
+  { id: "hand", label: "Hand" },
+  { id: "neck", label: "Neck" },
+  { id: "other", label: "Other" },
 ];
 
 const SIZE_OPTIONS = [
-  { id: 'small', label: 'Small', description: '2-4 inches' },
-  { id: 'medium', label: 'Medium', description: '4-6 inches' },
-  { id: 'large', label: 'Large', description: '6-10 inches' },
-  { id: 'extra-large', label: 'Extra Large', description: '10+ inches' },
+  { id: "small", label: "Small", description: "2-4 inches" },
+  { id: "medium", label: "Medium", description: "4-6 inches" },
+  { id: "large", label: "Large", description: "6-10 inches" },
+  { id: "extra-large", label: "Extra Large", description: "10+ inches" },
 ];
 
 const DEFAULT_BUDGET_RANGES = [
-  { label: 'Under $500', min: 0, max: 500 },
-  { label: '$500 - $1,000', min: 500, max: 1000 },
-  { label: '$1,000 - $2,500', min: 1000, max: 2500 },
-  { label: '$2,500 - $5,000', min: 2500, max: 5000 },
-  { label: '$5,000 - $10,000', min: 5000, max: 10000 },
-  { label: '$10,000+', min: 10000, max: null },
+  { label: "Under $500", min: 0, max: 500 },
+  { label: "$500 - $1,000", min: 500, max: 1000 },
+  { label: "$1,000 - $2,500", min: 1000, max: 2500 },
+  { label: "$2,500 - $5,000", min: 2500, max: 5000 },
+  { label: "$5,000 - $10,000", min: 5000, max: 10000 },
+  { label: "$10,000+", min: 10000, max: null },
 ];
 
 export default function FunnelBudgetStep({
@@ -59,35 +59,41 @@ export default function FunnelBudgetStep({
   isLastStep,
   submitting,
 }: FunnelBudgetStepProps) {
-  const [placement, setPlacement] = useState(stepData.budget?.placement || '');
-  const [estimatedSize, setEstimatedSize] = useState(stepData.budget?.estimatedSize || '');
+  const [placement, setPlacement] = useState(stepData.budget?.placement || "");
+  const [estimatedSize, setEstimatedSize] = useState(
+    stepData.budget?.estimatedSize || ""
+  );
   const [selectedBudget, setSelectedBudget] = useState<{
     label: string;
     min: number;
     max: number | null;
   } | null>(
-    stepData.budget ? {
-      label: stepData.budget.budgetLabel,
-      min: stepData.budget.budgetMin,
-      max: stepData.budget.budgetMax,
-    } : null
+    stepData.budget
+      ? {
+          label: stepData.budget.budgetLabel,
+          min: stepData.budget.budgetMin,
+          max: stepData.budget.budgetMax,
+        }
+      : null
   );
 
   // Use artist's custom options if available
-  const placements = artistProfile.placementOptions?.length > 0
-    ? artistProfile.placementOptions.map(id => 
-        DEFAULT_PLACEMENTS.find(p => p.id === id) || { id, label: id }
-      )
-    : DEFAULT_PLACEMENTS;
+  const placements =
+    artistProfile.placementOptions?.length > 0
+      ? artistProfile.placementOptions.map(
+          id => DEFAULT_PLACEMENTS.find(p => p.id === id) || { id, label: id }
+        )
+      : DEFAULT_PLACEMENTS;
 
-  const budgetRanges = artistProfile.budgetRanges?.length > 0
-    ? artistProfile.budgetRanges
-    : DEFAULT_BUDGET_RANGES;
+  const budgetRanges =
+    artistProfile.budgetRanges?.length > 0
+      ? artistProfile.budgetRanges
+      : DEFAULT_BUDGET_RANGES;
 
   const handleNext = () => {
     if (!selectedBudget) return;
-    
-    onNext('budget', {
+
+    onNext("budget", {
       placement,
       estimatedSize,
       budgetMin: selectedBudget.min,
@@ -124,9 +130,10 @@ export default function FunnelBudgetStep({
               onClick={() => setPlacement(p.id)}
               className={`
                 relative p-2 rounded-xl border-2 text-center transition-all text-sm
-                ${placement === p.id
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border bg-card hover:border-primary/50'
+                ${
+                  placement === p.id
+                    ? "border-primary bg-primary/10"
+                    : "border-border bg-card hover:border-primary/50"
                 }
               `}
             >
@@ -160,14 +167,19 @@ export default function FunnelBudgetStep({
               onClick={() => setEstimatedSize(size.id)}
               className={`
                 relative p-3 rounded-xl border-2 text-left transition-all
-                ${estimatedSize === size.id
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border bg-card hover:border-primary/50'
+                ${
+                  estimatedSize === size.id
+                    ? "border-primary bg-primary/10"
+                    : "border-border bg-card hover:border-primary/50"
                 }
               `}
             >
-              <span className="font-medium text-foreground block">{size.label}</span>
-              <span className="text-xs text-muted-foreground">{size.description}</span>
+              <span className="font-medium text-foreground block">
+                {size.label}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {size.description}
+              </span>
               {estimatedSize === size.id && (
                 <motion.div
                   initial={{ scale: 0 }}
@@ -198,9 +210,10 @@ export default function FunnelBudgetStep({
               onClick={() => setSelectedBudget(range)}
               className={`
                 relative w-full p-3 rounded-xl border-2 text-left transition-all
-                ${selectedBudget?.label === range.label
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border bg-card hover:border-primary/50'
+                ${
+                  selectedBudget?.label === range.label
+                    ? "border-primary bg-primary/10"
+                    : "border-border bg-card hover:border-primary/50"
                 }
               `}
             >
@@ -218,7 +231,8 @@ export default function FunnelBudgetStep({
           ))}
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          This helps us provide an accurate quote. Final pricing may vary based on design complexity.
+          This helps us provide an accurate quote. Final pricing may vary based
+          on design complexity.
         </p>
       </div>
     </FunnelStepWrapper>

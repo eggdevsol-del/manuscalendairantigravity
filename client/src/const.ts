@@ -8,8 +8,7 @@ export const API_BASE_URL = Capacitor.isNativePlatform()
 export const APP_TITLE = import.meta.env.VITE_APP_TITLE || "TOI";
 
 export const APP_LOGO =
-  import.meta.env.VITE_APP_LOGO ||
-  `/veil-logo.png?v=${Date.now()}`;
+  import.meta.env.VITE_APP_LOGO || `/veil-logo.png?v=${Date.now()}`;
 
 // Generate login URL at runtime so redirect URI reflects the current origin.
 export const getLoginUrl = () => {

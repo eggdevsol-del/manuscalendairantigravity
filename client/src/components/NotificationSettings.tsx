@@ -1,9 +1,16 @@
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
-import { 
-  requestNotificationPermission, 
-  isSubscribed, 
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui";
+import {
+  requestNotificationPermission,
+  isSubscribed,
   setExternalUserId,
-  getSubscriptionId 
+  getSubscriptionId,
 } from "@/lib/onesignal";
 import { Bell, BellOff } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -26,7 +33,7 @@ export function NotificationSettings({ userId }: NotificationSettingsProps) {
       const status = await isSubscribed();
       setSubscribed(status);
     } catch (error) {
-      console.error('Failed to check subscription status:', error);
+      console.error("Failed to check subscription status:", error);
     } finally {
       setLoading(false);
     }
@@ -36,22 +43,24 @@ export function NotificationSettings({ userId }: NotificationSettingsProps) {
     setLoading(true);
     try {
       const granted = await requestNotificationPermission();
-      
+
       if (granted) {
         // Set external user ID for targeting
         await setExternalUserId(userId);
-        
+
         // Get subscription ID for verification
         const subscriptionId = await getSubscriptionId();
-        console.log('[Notifications] Subscription ID:', subscriptionId);
-        
+        console.log("[Notifications] Subscription ID:", subscriptionId);
+
         setSubscribed(true);
         toast.success("Push notifications enabled!");
       } else {
-        toast.error("Notification permission denied. Please enable in browser settings.");
+        toast.error(
+          "Notification permission denied. Please enable in browser settings."
+        );
       }
     } catch (error) {
-      console.error('Failed to enable notifications:', error);
+      console.error("Failed to enable notifications:", error);
       toast.error("Failed to enable notifications");
     } finally {
       setLoading(false);
@@ -87,10 +96,12 @@ export function NotificationSettings({ userId }: NotificationSettingsProps) {
             )}
             <div>
               <p className="font-medium">
-                {subscribed ? "Notifications Enabled" : "Notifications Disabled"}
+                {subscribed
+                  ? "Notifications Enabled"
+                  : "Notifications Disabled"}
               </p>
               <p className="text-sm text-muted-foreground">
-                {subscribed 
+                {subscribed
                   ? "You'll receive push notifications for important updates"
                   : "Enable to receive real-time notifications"}
               </p>
@@ -117,11 +128,11 @@ export function NotificationSettings({ userId }: NotificationSettingsProps) {
 
         {!subscribed && (
           <p className="text-xs text-muted-foreground">
-            Note: Push notifications require browser permission. You can manage this in your browser settings.
+            Note: Push notifications require browser permission. You can manage
+            this in your browser settings.
           </p>
         )}
       </CardContent>
     </Card>
   );
 }
-

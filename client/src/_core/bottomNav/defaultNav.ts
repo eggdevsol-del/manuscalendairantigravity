@@ -1,25 +1,55 @@
-import { Calendar, LayoutDashboard, MessageCircle, Settings, Gift, Compass, User, Users } from "lucide-react";
+import {
+  Calendar,
+  LayoutDashboard,
+  MessageCircle,
+  Settings,
+  Gift,
+  Compass,
+  User,
+  Users,
+} from "lucide-react";
 import { BottomNavButton } from "./types";
 
 export const ARTIST_NAV_ITEMS: BottomNavButton[] = [
-    { id: "dashboard", path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "messages", path: "/conversations", label: "Messages", icon: MessageCircle, badgeCount: 0 }, // Badge logic handles count dynamically
-    { id: "calendar", path: "/calendar", label: "Calendar", icon: Calendar },
-    { id: "promotions", path: "/promotions", label: "Promotions", icon: Gift },
+  {
+    id: "dashboard",
+    path: "/dashboard",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    id: "messages",
+    path: "/conversations",
+    label: "Messages",
+    icon: MessageCircle,
+    badgeCount: 0,
+  }, // Badge logic handles count dynamically
+  { id: "calendar", path: "/calendar", label: "Calendar", icon: Calendar },
+  { id: "promotions", path: "/promotions", label: "Promotions", icon: Gift },
 ];
 
 export const CLIENT_NAV_ITEMS: BottomNavButton[] = [
-    { id: "profile", path: "/profile", label: "Profile", icon: User },
-    { id: "messages", path: "/conversations", label: "Messages", icon: MessageCircle },
-    { id: "calendar", path: "/calendar", label: "Calendar", icon: Calendar },
-    { id: "promotions", path: "/promotions", label: "Promotions", icon: Gift },
+  { id: "profile", path: "/profile", label: "Profile", icon: User },
+  {
+    id: "messages",
+    path: "/conversations",
+    label: "Messages",
+    icon: MessageCircle,
+  },
+  { id: "calendar", path: "/calendar", label: "Calendar", icon: Calendar },
+  { id: "promotions", path: "/promotions", label: "Promotions", icon: Gift },
 ];
 
 export const STUDIO_NAV_ITEMS: BottomNavButton[] = [
-    { id: "studio", path: "/studio", label: "Studio", icon: Users },
-    { id: "messages", path: "/conversations", label: "Messages", icon: MessageCircle },
-    { id: "calendar", path: "/calendar", label: "Calendar", icon: Calendar },
-    { id: "promotions", path: "/promotions", label: "Promotions", icon: Gift },
+  { id: "studio", path: "/studio", label: "Studio", icon: Users },
+  {
+    id: "messages",
+    path: "/conversations",
+    label: "Messages",
+    icon: MessageCircle,
+  },
+  { id: "calendar", path: "/calendar", label: "Calendar", icon: Calendar },
+  { id: "promotions", path: "/promotions", label: "Promotions", icon: Gift },
 ];
 
 // Default to artist for backward compatibility or initial load

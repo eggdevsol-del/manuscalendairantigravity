@@ -37,7 +37,15 @@ import { getGoogleMapsEmbedUrl } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { motion, AnimatePresence } from "framer-motion";
 
-type SettingsSection = "main" | "profile" | "work-hours" | "quick-actions" | "notifications" | "business" | "booking-link" | "regulation";
+type SettingsSection =
+  | "main"
+  | "profile"
+  | "work-hours"
+  | "quick-actions"
+  | "notifications"
+  | "business"
+  | "booking-link"
+  | "regulation";
 
 export default function Settings() {
   const { user, loading, logout } = useAuth();
@@ -46,7 +54,9 @@ export default function Settings() {
   const [location, setLocation] = useLocation();
   const search = useSearch();
 
-  const [activeTab, setActiveTab] = useState<"account" | "business" | "system">("account");
+  const [activeTab, setActiveTab] = useState<"account" | "business" | "system">(
+    "account"
+  );
 
   // Derive active section from URL search params
   const params = new URLSearchParams(search);
@@ -88,7 +98,7 @@ export default function Settings() {
     onSuccess: () => {
       toast.success("Profile updated successfully");
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Failed to update profile: " + error.message);
     },
   });
@@ -97,7 +107,7 @@ export default function Settings() {
     onSuccess: () => {
       toast.success("Business info updated successfully");
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Failed to update business info: " + error.message);
     },
   });
@@ -106,7 +116,7 @@ export default function Settings() {
     onSuccess: () => {
       toast.success("Image uploaded successfully");
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Failed to upload image: " + error.message);
       setUploadingAvatar(false);
     },
@@ -117,7 +127,7 @@ export default function Settings() {
     isLoading: isLoadingSettings,
     isError: isErrorSettings,
     error: settingsError,
-    refetch: refetchSettings
+    refetch: refetchSettings,
   } = trpc.artistSettings.get.useQuery(undefined, {
     enabled: !!user && (user.role === "artist" || user.role === "admin"),
     retry: 3,
@@ -159,7 +169,6 @@ export default function Settings() {
     initializedSettingsRef.current = true;
   }
 
-
   const handleLogout = async () => {
     await logout();
     setLocation("/");
@@ -181,20 +190,20 @@ export default function Settings() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file');
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be less than 5MB');
+      toast.error("Image must be less than 5MB");
       return;
     }
 
     setUploadingAvatar(true);
 
     const reader = new FileReader();
-    reader.onload = async (e) => {
+    reader.onload = async e => {
       const base64Data = e.target?.result as string;
 
       try {
@@ -252,14 +261,19 @@ export default function Settings() {
         <PageHeader title="Booking Link" />
         <div className={tokens.contentContainer.base}>
           <div className="p-6">
-            {user && <ArtistLink artistId={user.id} artistName={user.name || "Artist"} />}
+            {user && (
+              <ArtistLink
+                artistId={user.id}
+                artistName={user.name || "Artist"}
+              />
+            )}
           </div>
         </div>
       </PageShell>
     );
   }
 
-  // --- Sub-View: Work Hours --- 
+  // --- Sub-View: Work Hours ---
   // WorkHoursAndServices should ideally be migrated to Sheet Layout as well.
   // Since we assume we will migrate it next, we render it directly.
   if (activeSection === "work-hours" && isArtist) {
@@ -280,7 +294,11 @@ export default function Settings() {
         <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
           <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center overflow-hidden mb-2">
             {profileAvatar ? (
-              <img src={getAssetUrl(profileAvatar)} alt="Profile" className="w-full h-full object-cover" />
+              <img
+                src={getAssetUrl(profileAvatar)}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <User className="w-10 h-10 text-white/50" />
             )}
@@ -291,7 +309,6 @@ export default function Settings() {
         <div className={tokens.contentContainer.base}>
           <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
             <div className="pb-32 max-w-lg mx-auto space-y-6">
-
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Profile Picture</Label>
@@ -306,11 +323,13 @@ export default function Settings() {
                     />
                     <Button
                       variant="outline"
-                      onClick={() => document.getElementById('avatar-upload')?.click()}
+                      onClick={() =>
+                        document.getElementById("avatar-upload")?.click()
+                      }
                       disabled={uploadingAvatar}
                       className="bg-transparent border-white/10 hover:bg-white/5"
                     >
-                      {uploadingAvatar ? 'Uploading...' : 'Upload New Photo'}
+                      {uploadingAvatar ? "Uploading..." : "Upload New Photo"}
                     </Button>
                   </div>
                 </div>
@@ -320,7 +339,7 @@ export default function Settings() {
                   <Input
                     id="name"
                     value={profileName}
-                    onChange={(e) => setProfileName(e.target.value)}
+                    onChange={e => setProfileName(e.target.value)}
                     placeholder="Your name"
                     className="bg-white/5 border-white/10"
                   />
@@ -331,7 +350,7 @@ export default function Settings() {
                   <Input
                     id="phone"
                     value={profilePhone}
-                    onChange={(e) => setProfilePhone(e.target.value)}
+                    onChange={e => setProfilePhone(e.target.value)}
                     placeholder="Your phone number"
                     className="bg-white/5 border-white/10"
                   />
@@ -343,7 +362,7 @@ export default function Settings() {
                     id="birthday"
                     type="date"
                     value={profileBirthday}
-                    onChange={(e) => setProfileBirthday(e.target.value)}
+                    onChange={e => setProfileBirthday(e.target.value)}
                     className="bg-white/5 border-white/10 [color-scheme:dark]"
                   />
                 </div>
@@ -353,7 +372,7 @@ export default function Settings() {
                   <Textarea
                     id="address"
                     value={profileAddress}
-                    onChange={(e) => setProfileAddress(e.target.value)}
+                    onChange={e => setProfileAddress(e.target.value)}
                     placeholder="E.g. 123 Main St"
                     rows={2}
                     className="bg-white/5 border-white/10"
@@ -365,7 +384,7 @@ export default function Settings() {
                   <Input
                     id="city"
                     value={profileCity}
-                    onChange={(e) => setProfileCity(e.target.value)}
+                    onChange={e => setProfileCity(e.target.value)}
                     placeholder="E.g. Melbourne"
                     className="bg-white/5 border-white/10"
                   />
@@ -376,7 +395,7 @@ export default function Settings() {
                   <Textarea
                     id="bio"
                     value={profileBio}
-                    onChange={(e) => setProfileBio(e.target.value)}
+                    onChange={e => setProfileBio(e.target.value)}
                     placeholder="Tell us about yourself"
                     rows={4}
                     className="bg-white/5 border-white/10"
@@ -391,7 +410,6 @@ export default function Settings() {
               >
                 {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
               </Button>
-
             </div>
           </div>
         </div>
@@ -406,21 +424,24 @@ export default function Settings() {
         <PageHeader title="Business Info" />
 
         <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
-          <p className="text-4xl font-light text-foreground/90 tracking-tight">Business</p>
-          <p className="text-muted-foreground text-lg font-medium mt-1">Details & Payments (Confidential)</p>
+          <p className="text-4xl font-light text-foreground/90 tracking-tight">
+            Business
+          </p>
+          <p className="text-muted-foreground text-lg font-medium mt-1">
+            Details & Payments (Confidential)
+          </p>
         </div>
 
         <div className={tokens.contentContainer.base}>
           <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
             <div className="pb-32 max-w-lg mx-auto space-y-6">
-
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="businessName">Business Name</Label>
                   <Input
                     id="businessName"
                     value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
+                    onChange={e => setBusinessName(e.target.value)}
                     placeholder="Your business name"
                     className="bg-white/5 border-white/10"
                   />
@@ -431,7 +452,7 @@ export default function Settings() {
                   <Input
                     id="displayName"
                     value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
+                    onChange={e => setDisplayName(e.target.value)}
                     placeholder="Alias shown to clients"
                     className="bg-white/5 border-white/10"
                   />
@@ -445,7 +466,7 @@ export default function Settings() {
                   <Input
                     id="businessEmail"
                     value={businessEmail}
-                    onChange={(e) => setBusinessEmail(e.target.value)}
+                    onChange={e => setBusinessEmail(e.target.value)}
                     placeholder="email@example.com"
                     type="email"
                     className="bg-white/5 border-white/10"
@@ -456,16 +477,22 @@ export default function Settings() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="licenceNumber">Artist License Number <span className="text-muted-foreground font-normal">(Optional)</span></Label>
+                  <Label htmlFor="licenceNumber">
+                    Artist License Number{" "}
+                    <span className="text-muted-foreground font-normal">
+                      (Optional)
+                    </span>
+                  </Label>
                   <Input
                     id="licenceNumber"
                     value={licenceNumber}
-                    onChange={(e) => setLicenceNumber(e.target.value)}
+                    onChange={e => setLicenceNumber(e.target.value)}
                     placeholder="E.g. 123456789"
                     className="bg-white/5 border-white/10"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Required for generating health regulation logs (e.g. QLD Form 9)
+                    Required for generating health regulation logs (e.g. QLD
+                    Form 9)
                   </p>
                 </div>
 
@@ -474,13 +501,14 @@ export default function Settings() {
                   <Textarea
                     id="businessAddress"
                     value={businessAddress}
-                    onChange={(e) => setBusinessAddress(e.target.value)}
+                    onChange={e => setBusinessAddress(e.target.value)}
                     placeholder="Your business address"
                     rows={3}
                     className="bg-white/5 border-white/10"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Clients will receive a map link to this address on appointment day
+                    Clients will receive a map link to this address on
+                    appointment day
                   </p>
 
                   {/* Google Maps Preview */}
@@ -505,10 +533,14 @@ export default function Settings() {
               </div>
 
               <div className="space-y-4 pt-4 border-t border-white/10">
-                <h3 className="font-semibold text-foreground">Usage Settings</h3>
+                <h3 className="font-semibold text-foreground">
+                  Usage Settings
+                </h3>
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="autoSendDeposit">Auto-send Deposit Info</Label>
+                    <Label htmlFor="autoSendDeposit">
+                      Auto-send Deposit Info
+                    </Label>
                     <p className="text-xs text-muted-foreground">
                       Send details when client accepts proposal
                     </p>
@@ -522,14 +554,16 @@ export default function Settings() {
               </div>
 
               <div className="space-y-4 pt-4 border-t border-white/10">
-                <h3 className="font-semibold text-foreground">Deposit Payment Settings</h3>
+                <h3 className="font-semibold text-foreground">
+                  Deposit Payment Settings
+                </h3>
 
                 <div className="space-y-2">
                   <Label htmlFor="bsb">BSB</Label>
                   <Input
                     id="bsb"
                     value={bsb}
-                    onChange={(e) => setBsb(e.target.value)}
+                    onChange={e => setBsb(e.target.value)}
                     placeholder="123-456"
                     maxLength={7}
                     className="bg-white/5 border-white/10"
@@ -541,19 +575,21 @@ export default function Settings() {
                   <Input
                     id="accountNumber"
                     value={accountNumber}
-                    onChange={(e) => setAccountNumber(e.target.value)}
+                    onChange={e => setAccountNumber(e.target.value)}
                     placeholder="12345678"
                     className="bg-white/5 border-white/10"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="depositAmount">Deposit Amount (per appointment)</Label>
+                  <Label htmlFor="depositAmount">
+                    Deposit Amount (per appointment)
+                  </Label>
                   <Input
                     id="depositAmount"
                     type="number"
                     value={depositAmount}
-                    onChange={(e) => setDepositAmount(e.target.value)}
+                    onChange={e => setDepositAmount(e.target.value)}
                     placeholder="100"
                     className="bg-white/5 border-white/10"
                   />
@@ -562,15 +598,26 @@ export default function Settings() {
 
               <Button
                 className="w-full shadow-lg shadow-primary/20"
-                onClick={isErrorSettings || (!artistSettings && !isLoadingSettings) ? () => refetchSettings() : handleSaveBusinessInfo}
-                disabled={upsertArtistSettingsMutation.isPending || (isLoadingSettings && !isErrorSettings)}
+                onClick={
+                  isErrorSettings || (!artistSettings && !isLoadingSettings)
+                    ? () => refetchSettings()
+                    : handleSaveBusinessInfo
+                }
+                disabled={
+                  upsertArtistSettingsMutation.isPending ||
+                  (isLoadingSettings && !isErrorSettings)
+                }
                 variant={isErrorSettings ? "destructive" : "default"}
               >
-                {upsertArtistSettingsMutation.isPending ? "Saving..." :
-                  isLoadingSettings ? "Loading..." :
-                    isErrorSettings ? "Retry Loading Data" :
-                      !artistSettings ? "Data Unavailable (Retry)" :
-                        "Save Business Info"}
+                {upsertArtistSettingsMutation.isPending
+                  ? "Saving..."
+                  : isLoadingSettings
+                    ? "Loading..."
+                    : isErrorSettings
+                      ? "Retry Loading Data"
+                      : !artistSettings
+                        ? "Data Unavailable (Retry)"
+                        : "Save Business Info"}
               </Button>
               {isErrorSettings && (
                 <p className="text-xs text-destructive text-center mt-2">
@@ -581,251 +628,424 @@ export default function Settings() {
           </div>
         </div>
       </PageShell>
-    )
+    );
   }
 
   // --- Main View ---
   return (
     <PageShell>
       {/* 1. Page Header - Left aligned, with version number */}
-      <PageHeader
-        title="Settings"
-        subtitle={`v${APP_VERSION}`}
-      />
+      <PageHeader title="Settings" subtitle={`v${APP_VERSION}`} />
 
       {/* 2. Top Context Area (Profile Summary) */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border-2 border-white/5 shadow-lg">
             {user?.avatar ? (
-              <img src={getAssetUrl(user.avatar)} alt="Profile" className="w-full h-full object-cover" />
+              <img
+                src={getAssetUrl(user.avatar)}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <User className="w-8 h-8 text-white/50" />
             )}
           </div>
           <div>
-            <p className="text-xl font-bold text-foreground tracking-tight">{user?.name || "User"}</p>
-            <p className="text-sm text-muted-foreground capitalize">{user?.role || "Account"}</p>
+            <p className="text-xl font-bold text-foreground tracking-tight">
+              {user?.name || "User"}
+            </p>
+            <p className="text-sm text-muted-foreground capitalize">
+              {user?.role || "Account"}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* 3. Horizontal Navigation Tabs */}
-      <div className="flex px-4 gap-2 overflow-x-auto no-scrollbar pb-2 shrink-0 border-b border-white/5">
-        {(["account", "business", "system"] as Array<"account" | "business" | "system">).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap",
-              activeTab === tab
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground"
-            )}
-          >
-            <span className="capitalize">{tab}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* 4. Tab Content Container */}
+      {/* 3. Grid Content Container */}
       <div className={tokens.contentContainer.base}>
         <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y">
-          <div className="pb-32 max-w-lg mx-auto space-y-4">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-4"
+          <div className="pb-32 w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+            {/* ACCOUNT SECTION */}
+            <div className="space-y-4">
+              <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider pl-1">
+                Account
+              </h2>
+              <Card
+                className={cn(
+                  tokens.card.base,
+                  tokens.card.bg,
+                  "border-0 p-0 overflow-hidden"
+                )}
               >
+                <div className="divide-y divide-white/5">
+                  <div
+                    className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                    onClick={() => navigateToSection("profile")}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-primary/20 text-primary">
+                        <User className="w-5 h-5" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold text-foreground">Profile</p>
+                        <p className="text-xs text-muted-foreground">
+                          Manage personal details
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  </div>
 
-                {/* ACCOUNT TAB */}
-                {activeTab === "account" && (
-                  <>
-                    <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")}>
-                      <div className="divide-y divide-white/5">
-                        <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]" onClick={() => navigateToSection("profile")}>
+                  <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
+                        {theme === "dark" ? (
+                          <Moon className="w-5 h-5" />
+                        ) : (
+                          <Sun className="w-5 h-5" />
+                        )}
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold text-foreground">
+                          Appearance
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {theme === "dark" ? "Dark Mode" : "Light Mode"}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={theme === "dark"}
+                      onCheckedChange={toggleTheme}
+                    />
+                  </div>
+                </div>
+              </Card>
+
+              <PushNotificationSettings />
+            </div>
+
+            {/* BUSINESS SECTION */}
+            <div className="space-y-4">
+              <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider pl-1">
+                Business
+              </h2>
+              <Card
+                className={cn(
+                  tokens.card.base,
+                  tokens.card.bg,
+                  "border-0 p-0 overflow-hidden"
+                )}
+              >
+                <div className="divide-y divide-white/5">
+                  {!isArtist && (
+                    <>
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setLocation("/consultations")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400">
+                            <Calendar className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">
+                              Consultations
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Manage booking requests
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setLocation("/policies")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400">
+                            <Bell className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">
+                              Policies
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              View term & conditions
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                    </>
+                  )}
+
+                  {isArtist && (
+                    <>
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setLocation("/clients")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-green-500/20 text-green-400">
+                            <User className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">
+                              Clients
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Manage client list
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => navigateToSection("booking-link")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
+                            <Link2 className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">
+                              Booking Link
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Share your link
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => navigateToSection("business")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400">
+                            <MapPin className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">
+                              Business Info
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Set address & payments
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      {(user?.role === "studio" || user?.role === "admin") && (
+                        <div
+                          className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                          onClick={() => setLocation("/studio")}
+                        >
                           <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-primary/20 text-primary">
-                              <User className="w-5 h-5" />
+                            <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400">
+                              <Users className="w-5 h-5" />
                             </div>
                             <div className="text-left">
-                              <p className="font-semibold text-foreground">Profile</p>
-                              <p className="text-xs text-muted-foreground">Manage personal details</p>
+                              <p className="font-semibold text-foreground">
+                                Studio Headquarters
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Manage your team
+                              </p>
                             </div>
                           </div>
                           <ChevronRight className="w-5 h-5 text-muted-foreground" />
                         </div>
-
-                        <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
-                              {theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                            </div>
-                            <div className="text-left">
-                              <p className="font-semibold text-foreground">Appearance</p>
-                              <p className="text-xs text-muted-foreground">{theme === "dark" ? "Dark Mode" : "Light Mode"}</p>
-                            </div>
-                          </div>
-                          <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
-                        </div>
-                      </div>
-                    </Card>
-
-                    <PushNotificationSettings />
-                  </>
-                )}
-
-                {/* BUSINESS TAB */}
-                {activeTab === "business" && (
-                  <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")}>
-                    <div className="divide-y divide-white/5">
-                      {!isArtist && (
-                        <>
-                          <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]" onClick={() => setLocation("/consultations")}>
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400"><Calendar className="w-5 h-5" /></div>
-                              <div className="text-left"><p className="font-semibold text-foreground">Consultations</p><p className="text-xs text-muted-foreground">Manage booking requests</p></div>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                          </div>
-                          <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]" onClick={() => setLocation("/policies")}>
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400"><Bell className="w-5 h-5" /></div>
-                              <div className="text-left"><p className="font-semibold text-foreground">Policies</p><p className="text-xs text-muted-foreground">View term & conditions</p></div>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                          </div>
-                        </>
                       )}
-
-                      {isArtist && (
-                        <>
-                          <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]" onClick={() => setLocation("/clients")}>
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-xl bg-green-500/20 text-green-400"><User className="w-5 h-5" /></div>
-                              <div className="text-left"><p className="font-semibold text-foreground">Clients</p><p className="text-xs text-muted-foreground">Manage client list</p></div>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                          </div>
-                          <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]" onClick={() => navigateToSection("booking-link")}>
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400"><Link2 className="w-5 h-5" /></div>
-                              <div className="text-left"><p className="font-semibold text-foreground">Booking Link</p><p className="text-xs text-muted-foreground">Share your link</p></div>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                          </div>
-                          <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]" onClick={() => navigateToSection("business")}>
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400"><MapPin className="w-5 h-5" /></div>
-                              <div className="text-left"><p className="font-semibold text-foreground">Business Info</p><p className="text-xs text-muted-foreground">Set address & payments</p></div>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                          </div>
-                          {(user?.role === "studio" || user?.role === "admin") && (
-                            <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]" onClick={() => setLocation("/studio")}>
-                              <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400"><Users className="w-5 h-5" /></div>
-                                <div className="text-left"><p className="font-semibold text-foreground">Studio Headquarters</p><p className="text-xs text-muted-foreground">Manage your team</p></div>
-                              </div>
-                              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                            </div>
-                          )}
-                          <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]" onClick={() => setLocation("/subscriptions")}>
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400"><Zap className="w-5 h-5" /></div>
-                              <div className="text-left"><p className="font-semibold text-foreground">Subscription & Billing</p><p className="text-xs text-muted-foreground">Manage your plan</p></div>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                          </div>
-                          <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]" onClick={() => navigateToSection("work-hours")}>
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-xl bg-pink-500/20 text-pink-400"><Clock className="w-5 h-5" /></div>
-                              <div className="text-left"><p className="font-semibold text-foreground">Work Hours & Services</p><p className="text-xs text-muted-foreground">Manage schedule</p></div>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                          </div>
-                          <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]" onClick={() => navigateToSection("regulation")}>
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400"><Scale className="w-5 h-5" /></div>
-                              <div className="text-left"><p className="font-semibold text-foreground">Regulation & Forms</p><p className="text-xs text-muted-foreground">Form 9, Medical, Consent</p></div>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                          </div>
-                          <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]" onClick={() => setLocation("/quick-actions")}>
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-xl bg-yellow-500/20 text-yellow-400"><Zap className="w-5 h-5" /></div>
-                              <div className="text-left"><p className="font-semibold text-foreground">Quick Actions</p><p className="text-xs text-muted-foreground">Chat shortcuts</p></div>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                          </div>
-                          <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]" onClick={() => setLocation("/notifications-management")}>
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400"><Bell className="w-5 h-5" /></div>
-                              <div className="text-left"><p className="font-semibold text-foreground">Notifications</p><p className="text-xs text-muted-foreground">Manage templates</p></div>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </Card>
-                )}
-
-                {/* SYSTEM TAB */}
-                {activeTab === "system" && (
-                  <>
-                    <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")}>
-                      <div className="divide-y divide-white/5">
-                        <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-slate-500/20 text-slate-400">
-                              <Zap className="w-5 h-5" />
-                            </div>
-                            <div className="text-left">
-                              <p className="font-semibold text-foreground">UI Debug</p>
-                              <p className="text-xs text-muted-foreground">Show technical IDs</p>
-                            </div>
-                          </div>
-                          <Switch checked={showDebugLabels} onCheckedChange={setShowDebugLabels} />
-                        </div>
-
-                        <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99] group" onClick={() => { toast.info("Checking for updates..."); forceUpdate(); }}>
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30 transition-colors">
-                              <RefreshCw className="w-5 h-5" />
-                            </div>
-                            <div className="text-left">
-                              <p className="font-semibold text-foreground">Check for Updates</p>
-                              <p className="text-xs text-muted-foreground">Force refresh app to latest version</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-
-                    <Card className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0 group")} onClick={handleLogout}>
-                      <div className="p-4 flex items-center justify-between">
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setLocation("/subscriptions")}
+                      >
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-xl bg-destructive/10 text-destructive group-hover:bg-destructive/20 transition-colors">
-                            <LogOut className="w-5 h-5" />
+                          <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400">
+                            <Zap className="w-5 h-5" />
                           </div>
                           <div className="text-left">
-                            <p className="font-semibold text-foreground group-hover:text-destructive transition-colors">Log Out</p>
-                            <p className="text-xs text-muted-foreground">Sign out of your account</p>
+                            <p className="font-semibold text-foreground">
+                              Subscription & Billing
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Manage your plan
+                            </p>
                           </div>
                         </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
-                    </Card>
-                  </>
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => navigateToSection("work-hours")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-pink-500/20 text-pink-400">
+                            <Clock className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">
+                              Work Hours & Services
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Manage schedule
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => navigateToSection("regulation")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-orange-500/20 text-orange-400">
+                            <Scale className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">
+                              Regulation & Forms
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Form 9, Medical, Consent
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setLocation("/quick-actions")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-yellow-500/20 text-yellow-400">
+                            <Zap className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">
+                              Quick Actions
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Chat shortcuts
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        onClick={() => setLocation("/notifications-management")}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400">
+                            <Bell className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-semibold text-foreground">
+                              Notifications
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Manage templates
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </Card>
+            </div>
+
+            {/* SYSTEM SECTION */}
+            <div className="space-y-4">
+              <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider pl-1">
+                System
+              </h2>
+              <Card
+                className={cn(
+                  tokens.card.base,
+                  tokens.card.bg,
+                  "border-0 p-0 overflow-hidden"
                 )}
+              >
+                <div className="divide-y divide-white/5">
+                  <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-slate-500/20 text-slate-400">
+                        <Zap className="w-5 h-5" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold text-foreground">
+                          UI Debug
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Show technical IDs
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={showDebugLabels}
+                      onCheckedChange={setShowDebugLabels}
+                    />
+                  </div>
 
-              </motion.div>
-            </AnimatePresence>
+                  <div
+                    className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99] group"
+                    onClick={() => {
+                      toast.info("Checking for updates...");
+                      forceUpdate();
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30 transition-colors">
+                        <RefreshCw className="w-5 h-5" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold text-foreground">
+                          Check for Updates
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Force refresh app to latest version
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
 
+              <Card
+                className={cn(
+                  tokens.card.base,
+                  tokens.card.bg,
+                  tokens.card.interactive,
+                  "border-0 group"
+                )}
+                onClick={handleLogout}
+              >
+                <div className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-destructive/10 text-destructive group-hover:bg-destructive/20 transition-colors">
+                      <LogOut className="w-5 h-5" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-foreground group-hover:text-destructive transition-colors">
+                        Log Out
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Sign out of your account
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

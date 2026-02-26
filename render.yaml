@@ -21,4 +21,3 @@ databases:
   - name: artist-booking-db
     databaseName: artist_booking
     plan: free
-

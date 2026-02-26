@@ -1,5 +1,10 @@
 import { drizzle } from "drizzle-orm/mysql2";
-import { users, conversations, messages, appointments } from "../drizzle/schema";
+import {
+  users,
+  conversations,
+  messages,
+  appointments,
+} from "../drizzle/schema";
 
 const db = drizzle(process.env.DATABASE_URL!);
 
@@ -9,7 +14,7 @@ async function seedTestData() {
   try {
     const artistId = process.env.OWNER_OPEN_ID || "test-artist-id";
     const testClientId = "test-client-" + Date.now();
-    
+
     await db.insert(users).values({
       id: testClientId,
       name: "Sarah Johnson",
@@ -36,25 +41,29 @@ async function seedTestData() {
       {
         conversationId: conversationId,
         senderId: testClientId,
-        content: "Hi! I'd like to book an appointment for a custom tattoo design.",
+        content:
+          "Hi! I'd like to book an appointment for a custom tattoo design.",
         createdAt: new Date(Date.now() - 3600000 * 24),
       },
       {
         conversationId: conversationId,
         senderId: artistId,
-        content: "Hello Sarah! I'd love to help with your custom design. What did you have in mind?",
+        content:
+          "Hello Sarah! I'd love to help with your custom design. What did you have in mind?",
         createdAt: new Date(Date.now() - 3600000 * 23),
       },
       {
         conversationId: conversationId,
         senderId: testClientId,
-        content: "I'm thinking of a floral sleeve design with some geometric elements. Do you have any availability next week?",
+        content:
+          "I'm thinking of a floral sleeve design with some geometric elements. Do you have any availability next week?",
         createdAt: new Date(Date.now() - 3600000 * 22),
       },
       {
         conversationId: conversationId,
         senderId: artistId,
-        content: "That sounds beautiful! Let me check my calendar and get back to you with some available times.",
+        content:
+          "That sounds beautiful! Let me check my calendar and get back to you with some available times.",
         createdAt: new Date(Date.now() - 3600000 * 21),
       },
       {
@@ -78,7 +87,8 @@ async function seedTestData() {
       artistId: artistId,
       clientId: testClientId,
       title: "Custom Floral Sleeve Tattoo - Consultation",
-      description: "Initial consultation and design discussion for custom floral sleeve with geometric elements",
+      description:
+        "Initial consultation and design discussion for custom floral sleeve with geometric elements",
       startTime: nextWeek,
       endTime: endTime,
       serviceName: "Custom Tattoo Design",

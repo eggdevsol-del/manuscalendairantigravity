@@ -1,20 +1,20 @@
 import { useState, useEffect } from "react";
 import {
-    Clock,
-    Loader2,
-    AlertCircle,
-    CheckCircle2,
-    CalendarSearch,
-    Repeat,
-    Repeat1,
-    Calendar,
-    CalendarDays,
-    Send,
-    ArrowLeft,
-    Check,
-    Tag,
-    MapPin,
-    ChevronDown,
+  Clock,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  CalendarSearch,
+  Repeat,
+  Repeat1,
+  Calendar,
+  CalendarDays,
+  Send,
+  ArrowLeft,
+  Check,
+  Tag,
+  MapPin,
+  ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -25,684 +25,945 @@ import { Capacitor } from "@capacitor/core";
 import { FABMenu } from "@/ui/FABMenu";
 import { tokens } from "@/ui/tokens";
 
-type BookingStep = 'service' | 'frequency' | 'review' | 'success';
+type BookingStep = "service" | "frequency" | "review" | "success";
 
 interface ProposalData {
-    metadata: any;
-    message: any;
+  metadata: any;
+  message: any;
 }
 
 interface BookingFABMenuProps {
-    conversationId: number;
-    artistServices: any[];
-    artistSettings?: any;
-    isArtist: boolean;
-    onBookingSuccess: () => void;
-    /** Proposal to show in the FAB (overrides booking wizard) */
-    selectedProposal?: ProposalData | null;
-    onAcceptProposal?: (appliedPromotion?: { id: number; discountAmount: number; finalAmount: number }) => void;
-    onRejectProposal?: () => void;
-    onCancelProposal?: () => void;
-    isPendingProposalAction?: boolean;
-    artistId?: string;
-    /** External open control */
-    externalOpen?: boolean;
-    onExternalOpenChange?: (open: boolean) => void;
-    className?: string;
+  conversationId: number;
+  artistServices: any[];
+  artistSettings?: any;
+  isArtist: boolean;
+  onBookingSuccess: () => void;
+  /** Proposal to show in the FAB (overrides booking wizard) */
+  selectedProposal?: ProposalData | null;
+  onAcceptProposal?: (appliedPromotion?: {
+    id: number;
+    discountAmount: number;
+    finalAmount: number;
+  }) => void;
+  onRejectProposal?: () => void;
+  onCancelProposal?: () => void;
+  isPendingProposalAction?: boolean;
+  artistId?: string;
+  /** External open control */
+  externalOpen?: boolean;
+  onExternalOpenChange?: (open: boolean) => void;
+  className?: string;
 }
 
 /** Collapsible policy dropdown — fetches policy content from server */
-function PolicyDropdown({ label, artistId, policyType, depositAmount, totalCost }: {
-    label: string;
-    artistId: string;
-    policyType: 'cancellation' | 'deposit';
-    depositAmount?: number | null;
-    totalCost?: number;
+function PolicyDropdown({
+  label,
+  artistId,
+  policyType,
+  depositAmount,
+  totalCost,
+}: {
+  label: string;
+  artistId: string;
+  policyType: "cancellation" | "deposit";
+  depositAmount?: number | null;
+  totalCost?: number;
 }) {
-    const [open, setOpen] = useState(false);
-    const { data: policy } = trpc.policies.getByType.useQuery(
-        { artistId, policyType },
-        { enabled: !!artistId }
-    );
+  const [open, setOpen] = useState(false);
+  const { data: policy } = trpc.policies.getByType.useQuery(
+    { artistId, policyType },
+    { enabled: !!artistId }
+  );
 
-    const fallbackContent = policyType === 'cancellation'
-        ? 'Deposits are non-refundable. Cancellations made within 48 hours of the appointment may forfeit the deposit. Please contact the artist directly for rescheduling.'
-        : depositAmount
-            ? `A deposit of $${depositAmount} is required to secure these dates.${totalCost ? ` The remaining balance of $${totalCost - depositAmount} is due upon completion.` : ''}`
-            : 'Contact the artist for deposit requirements.';
+  const fallbackContent =
+    policyType === "cancellation"
+      ? "Deposits are non-refundable. Cancellations made within 48 hours of the appointment may forfeit the deposit. Please contact the artist directly for rescheduling."
+      : depositAmount
+        ? `A deposit of $${depositAmount} is required to secure these dates.${totalCost ? ` The remaining balance of $${totalCost - depositAmount} is due upon completion.` : ""}`
+        : "Contact the artist for deposit requirements.";
 
-    return (
-        <div className="rounded-[4px] border border-white/5 overflow-hidden">
-            <button
-                type="button"
-                className="flex items-center justify-between w-full px-2.5 py-2 text-[10px] font-semibold text-foreground/80 hover:bg-white/[0.02] transition-colors"
-                onClick={() => setOpen(!open)}
-            >
-                {label}
-                <ChevronDown className={cn("w-3 h-3 transition-transform duration-200", open && "rotate-180")} />
-            </button>
-            <AnimatePresence>
-                {open && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                    >
-                        <p className="px-2.5 pb-2.5 text-[9px] leading-relaxed text-muted-foreground">
-                            {policy?.content || fallbackContent}
-                        </p>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-    );
+  return (
+    <div className="rounded-[4px] border border-white/5 overflow-hidden">
+      <button
+        type="button"
+        className="flex items-center justify-between w-full px-2.5 py-2 text-[10px] font-semibold text-foreground/80 hover:bg-white/[0.02] transition-colors"
+        onClick={() => setOpen(!open)}
+      >
+        {label}
+        <ChevronDown
+          className={cn(
+            "w-3 h-3 transition-transform duration-200",
+            open && "rotate-180"
+          )}
+        />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <p className="px-2.5 pb-2.5 text-[9px] leading-relaxed text-muted-foreground">
+              {policy?.content || fallbackContent}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 export function BookingFABMenu({
-    conversationId,
-    artistServices,
-    artistSettings,
-    isArtist,
-    onBookingSuccess,
-    selectedProposal,
-    onAcceptProposal,
-    onRejectProposal,
-    onCancelProposal,
-    isPendingProposalAction,
-    artistId,
-    externalOpen,
-    onExternalOpenChange,
-    className
+  conversationId,
+  artistServices,
+  artistSettings,
+  isArtist,
+  onBookingSuccess,
+  selectedProposal,
+  onAcceptProposal,
+  onRejectProposal,
+  onCancelProposal,
+  isPendingProposalAction,
+  artistId,
+  externalOpen,
+  onExternalOpenChange,
+  className,
 }: BookingFABMenuProps) {
-    const [internalOpen, setInternalOpen] = useState(false);
-    // Use external control when provided, otherwise internal
-    const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
-    const setIsOpen = (v: boolean) => {
-        if (onExternalOpenChange) onExternalOpenChange(v);
-        setInternalOpen(v);
-    };
-    const [step, setStep] = useState<BookingStep>('service');
-    const [selectedService, setSelectedService] = useState<any>(null);
-    const [showVoucherList, setShowVoucherList] = useState(false);
-    const [appliedPromotion, setAppliedPromotion] = useState<{
-        id: number; name: string; discountAmount: number; finalAmount: number;
-    } | null>(null);
-    const [frequency, setFrequency] = useState<"single" | "consecutive" | "weekly" | "biweekly" | "monthly">("consecutive");
-    const [startDate] = useState(new Date());
+  const [internalOpen, setInternalOpen] = useState(false);
+  // Use external control when provided, otherwise internal
+  const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setIsOpen = (v: boolean) => {
+    if (onExternalOpenChange) onExternalOpenChange(v);
+    setInternalOpen(v);
+  };
+  const [step, setStep] = useState<BookingStep>("service");
+  const [selectedService, setSelectedService] = useState<any>(null);
+  const [showVoucherList, setShowVoucherList] = useState(false);
+  const [appliedPromotion, setAppliedPromotion] = useState<{
+    id: number;
+    name: string;
+    discountAmount: number;
+    finalAmount: number;
+  } | null>(null);
+  const [frequency, setFrequency] = useState<
+    "single" | "consecutive" | "weekly" | "biweekly" | "monthly"
+  >("consecutive");
+  const [startDate] = useState(new Date());
 
-    // -- Queries & Mutations --
-    const { data: availablePromotions, isLoading: isLoadingPromotions } = trpc.promotions.getAvailableForBooking.useQuery(
-        { artistId: artistId || "" },
-        { enabled: isOpen && showVoucherList && !!artistId }
+  // -- Queries & Mutations --
+  const { data: availablePromotions, isLoading: isLoadingPromotions } =
+    trpc.promotions.getAvailableForBooking.useQuery(
+      { artistId: artistId || "" },
+      { enabled: isOpen && showVoucherList && !!artistId }
     );
 
-    const {
-        data: availability,
-        isPending: isLoadingAvailability,
-        error: availabilityError
-    } = trpc.booking.checkAvailability.useQuery({
-        conversationId,
-        serviceName: selectedService?.name || '',
-        serviceDuration: selectedService?.duration || 60,
-        sittings: frequency === 'single' ? 1 : (selectedService?.sittings || 1),
-        price: Number(selectedService?.price) || 0,
-        frequency,
-        startDate,
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    }, {
-        enabled: isOpen && step === 'review' && !!selectedService,
-        retry: false,
+  const {
+    data: availability,
+    isPending: isLoadingAvailability,
+    error: availabilityError,
+  } = trpc.booking.checkAvailability.useQuery(
+    {
+      conversationId,
+      serviceName: selectedService?.name || "",
+      serviceDuration: selectedService?.duration || 60,
+      sittings: frequency === "single" ? 1 : selectedService?.sittings || 1,
+      price: Number(selectedService?.price) || 0,
+      frequency,
+      startDate,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    },
+    {
+      enabled: isOpen && step === "review" && !!selectedService,
+      retry: false,
+    }
+  );
+
+  const utils = trpc.useUtils();
+  const sendMessageMutation = trpc.messages.send.useMutation({
+    onSuccess: () => {
+      utils.messages.list.invalidate({ conversationId });
+      toast.success("Proposal Sent Successfully");
+      handleClose();
+      onBookingSuccess();
+    },
+    onError: err => {
+      toast.error("Failed to send proposal: " + err.message);
+    },
+  });
+
+  // -- Handlers --
+  const handleConfirmBooking = () => {
+    if (!availability?.dates || !selectedService) return;
+
+    const datesList = availability.dates
+      .map((date: string | Date) =>
+        format(new Date(date), "EEEE, MMMM do yyyy, h:mm a")
+      )
+      .join("\n");
+
+    const finalSittings =
+      frequency === "single" ? 1 : selectedService.sittings || 1;
+    const message = `I have found the following dates for your ${selectedService.name} project:\n\n${datesList}\n\nThis project consists of ${finalSittings} sittings.\nFrequency: ${frequency}\nPrice per sitting: $${selectedService.price}\n\nPlease confirm these dates.`;
+
+    const totalCost = Number(selectedService.price) * finalSittings;
+
+    const metadata = JSON.stringify({
+      type: "project_proposal",
+      serviceName: selectedService.name,
+      serviceDuration: selectedService.duration,
+      sittings: finalSittings,
+      price: Number(selectedService.price),
+      totalCost: totalCost,
+      frequency: frequency,
+      dates: availability.dates,
+      proposedDates: availability.dates,
+      status: "pending",
+      bsb: artistSettings?.bsb,
+      accountNumber: artistSettings?.accountNumber,
+      depositAmount: artistSettings?.depositAmount,
+      autoSendDeposit: artistSettings?.autoSendDepositInfo,
     });
 
-    const utils = trpc.useUtils();
-    const sendMessageMutation = trpc.messages.send.useMutation({
-        onSuccess: () => {
-            utils.messages.list.invalidate({ conversationId });
-            toast.success("Proposal Sent Successfully");
-            handleClose();
-            onBookingSuccess();
-        },
-        onError: (err) => {
-            toast.error("Failed to send proposal: " + err.message);
-        }
+    sendMessageMutation.mutate({
+      conversationId,
+      content: message,
+      messageType: "appointment_request",
+      metadata: metadata,
     });
+  };
 
-    // -- Handlers --
-    const handleConfirmBooking = () => {
-        if (!availability?.dates || !selectedService) return;
+  const handleClose = () => setIsOpen(false);
 
-        const datesList = availability.dates
-            .map((date: string | Date) => format(new Date(date), 'EEEE, MMMM do yyyy, h:mm a'))
-            .join('\n');
+  const goBack = () => {
+    if (step === "frequency") setStep("service");
+    else if (step === "review") setStep("frequency");
+  };
 
-        const finalSittings = frequency === 'single' ? 1 : (selectedService.sittings || 1);
-        const message = `I have found the following dates for your ${selectedService.name} project:\n\n${datesList}\n\nThis project consists of ${finalSittings} sittings.\nFrequency: ${frequency}\nPrice per sitting: $${selectedService.price}\n\nPlease confirm these dates.`;
+  // Reset when menu closes
+  useEffect(() => {
+    if (!isOpen) {
+      const timer = setTimeout(() => {
+        setStep("service");
+        setSelectedService(null);
+        setFrequency("consecutive");
+        setShowVoucherList(false);
+        setAppliedPromotion(null);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
-        const totalCost = Number(selectedService.price) * finalSittings;
+  const fab = tokens.fab;
+  const card = tokens.card;
 
-        const metadata = JSON.stringify({
-            type: "project_proposal",
-            serviceName: selectedService.name,
-            serviceDuration: selectedService.duration,
-            sittings: finalSittings,
-            price: Number(selectedService.price),
-            totalCost: totalCost,
-            frequency: frequency,
-            dates: availability.dates,
-            proposedDates: availability.dates,
-            status: 'pending',
-            bsb: artistSettings?.bsb,
-            accountNumber: artistSettings?.accountNumber,
-            depositAmount: artistSettings?.depositAmount,
-            autoSendDeposit: artistSettings?.autoSendDepositInfo
-        });
+  // Frequency options with icons
+  const freqOptions = [
+    { id: "single", label: "Single", Icon: Repeat1 },
+    { id: "consecutive", label: "Consecutive", Icon: CalendarDays },
+    { id: "weekly", label: "Weekly", Icon: Calendar },
+    { id: "biweekly", label: "Bi-Weekly", Icon: Repeat },
+    { id: "monthly", label: "Monthly", Icon: CalendarSearch },
+  ] as const;
 
-        sendMessageMutation.mutate({
-            conversationId,
-            content: message,
-            messageType: "appointment_request",
-            metadata: metadata
-        });
-    };
+  // -- Step Titles --
+  const getStepTitle = () => {
+    switch (step) {
+      case "service":
+        return "Select Service";
+      case "frequency":
+        return "Frequency";
+      case "review":
+        return "Review";
+      case "success":
+        return "Done";
+    }
+  };
 
-    const handleClose = () => setIsOpen(false);
+  // Whether to show the proposal view
+  const showProposal = !!selectedProposal?.metadata;
+  const proposalMeta = selectedProposal?.metadata;
 
-    const goBack = () => {
-        if (step === 'frequency') setStep('service');
-        else if (step === 'review') setStep('frequency');
-    };
+  // Proposal display values
+  const proposalDates = proposalMeta
+    ? Array.isArray(proposalMeta.dates)
+      ? proposalMeta.dates
+      : Array.isArray(proposalMeta.proposedDates)
+        ? proposalMeta.proposedDates
+        : []
+    : [];
+  const proposalTotalMinutes = proposalMeta
+    ? (proposalMeta.sittings || 1) * (proposalMeta.serviceDuration || 60)
+    : 0;
+  const proposalHours = Math.floor(proposalTotalMinutes / 60);
+  const hasStoredDiscount =
+    proposalMeta?.discountApplied && proposalMeta?.finalAmount !== undefined;
+  const hasCurrentDiscount = appliedPromotion !== null;
+  const hasDiscount = hasCurrentDiscount || hasStoredDiscount;
+  const displayTotal = hasCurrentDiscount
+    ? appliedPromotion.finalAmount / 100
+    : hasStoredDiscount
+      ? proposalMeta.finalAmount / 100
+      : proposalMeta?.totalCost;
 
-    // Reset when menu closes
-    useEffect(() => {
-        if (!isOpen) {
-            const timer = setTimeout(() => {
-                setStep('service');
-                setSelectedService(null);
-                setFrequency("consecutive");
-                setShowVoucherList(false);
-                setAppliedPromotion(null);
-            }, 300);
-            return () => clearTimeout(timer);
+  return (
+    <>
+      <FABMenu
+        isOpen={isOpen}
+        onOpenChange={setIsOpen}
+        toggleIcon={
+          <span className="text-xl font-black tracking-tight select-none">
+            B
+          </span>
         }
-    }, [isOpen]);
+        className={className}
+      >
+        {/* Voucher List Inline View */}
+        {showVoucherList && (
+          <div className="flex flex-col w-full h-full pt-2 pb-6 px-1">
+            <motion.div variants={fab.animation.item} className={fab.itemRow}>
+              <button
+                onClick={() => setShowVoucherList(false)}
+                className={fab.itemButton}
+              >
+                <ArrowLeft className={fab.itemIconSize} />
+              </button>
+              <span
+                className={
+                  fab.itemLabel + " uppercase tracking-widest font-bold flex-1"
+                }
+              >
+                Available Vouchers
+              </span>
+            </motion.div>
 
-    const fab = tokens.fab;
-    const card = tokens.card;
+            <div className="flex flex-col flex-1 mt-4 px-1 gap-2 overflow-y-auto no-scrollbar">
+              {isLoadingPromotions && (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                </div>
+              )}
+              {availablePromotions?.map(promo => {
+                const originalCents = (proposalMeta?.totalCost || 0) * 100;
+                let discountAmount = 0;
+                if (promo.valueType === "fixed") discountAmount = promo.value;
+                else if (promo.valueType === "percentage")
+                  discountAmount = Math.floor(
+                    originalCents * (promo.value / 100)
+                  );
 
-    // Frequency options with icons
-    const freqOptions = [
-        { id: 'single', label: 'Single', Icon: Repeat1 },
-        { id: 'consecutive', label: 'Consecutive', Icon: CalendarDays },
-        { id: 'weekly', label: 'Weekly', Icon: Calendar },
-        { id: 'biweekly', label: 'Bi-Weekly', Icon: Repeat },
-        { id: 'monthly', label: 'Monthly', Icon: CalendarSearch },
-    ] as const;
+                const finalAmount = Math.max(0, originalCents - discountAmount);
 
-    // -- Step Titles --
-    const getStepTitle = () => {
-        switch (step) {
-            case 'service': return "Select Service";
-            case 'frequency': return "Frequency";
-            case 'review': return "Review";
-            case 'success': return "Done";
-        }
-    };
+                return (
+                  <motion.button
+                    key={promo.id}
+                    variants={fab.animation.item}
+                    className={cn(
+                      card.base,
+                      card.bg,
+                      card.interactive,
+                      "p-3 flex flex-col gap-1 w-full text-left"
+                    )}
+                    onClick={() => {
+                      setAppliedPromotion({
+                        id: promo.id,
+                        name: promo.name,
+                        discountAmount,
+                        finalAmount,
+                      });
+                      setShowVoucherList(false);
+                    }}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">
+                        {promo.name}
+                      </span>
+                      <span className="text-[10px] font-bold text-emerald-500">
+                        {promo.valueType === "fixed"
+                          ? `$${promo.value / 100}`
+                          : `${promo.value}% OFF`}
+                      </span>
+                    </div>
+                    <p className="text-[9px] text-muted-foreground line-clamp-2">
+                      Use this voucher on your next booking.
+                    </p>
+                  </motion.button>
+                );
+              })}
+              {!isLoadingPromotions && availablePromotions?.length === 0 && (
+                <p className="text-[10px] text-muted-foreground text-center py-8 font-bold uppercase tracking-widest opacity-50">
+                  No vouchers available
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
-    // Whether to show the proposal view
-    const showProposal = !!selectedProposal?.metadata;
-    const proposalMeta = selectedProposal?.metadata;
+        {/* ===== PROPOSAL VIEW ===== */}
+        {showProposal && proposalMeta && !showVoucherList && (
+          <div className="flex flex-col gap-2 w-full">
+            {/* Header */}
+            <motion.div variants={fab.animation.item}>
+              <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-primary/70 mb-0.5">
+                Project Proposal
+              </p>
+              <h3 className="text-sm font-bold text-foreground leading-tight">
+                {proposalMeta.serviceName}
+              </h3>
+            </motion.div>
 
-    // Proposal display values
-    const proposalDates = proposalMeta ? (
-        Array.isArray(proposalMeta.dates) ? proposalMeta.dates
-            : Array.isArray(proposalMeta.proposedDates) ? proposalMeta.proposedDates : []
-    ) : [];
-    const proposalTotalMinutes = proposalMeta ? ((proposalMeta.sittings || 1) * (proposalMeta.serviceDuration || 60)) : 0;
-    const proposalHours = Math.floor(proposalTotalMinutes / 60);
-    const hasStoredDiscount = proposalMeta?.discountApplied && proposalMeta?.finalAmount !== undefined;
-    const hasCurrentDiscount = appliedPromotion !== null;
-    const hasDiscount = hasCurrentDiscount || hasStoredDiscount;
-    const displayTotal = hasCurrentDiscount
-        ? appliedPromotion.finalAmount / 100
-        : hasStoredDiscount ? proposalMeta.finalAmount / 100 : proposalMeta?.totalCost;
-
-    return (
-        <>
-            <FABMenu
-                isOpen={isOpen}
-                onOpenChange={setIsOpen}
-                toggleIcon={<span className="text-xl font-black tracking-tight select-none">B</span>}
-                className={className}
+            {/* Stats */}
+            <motion.div
+              variants={fab.animation.item}
+              className={cn(
+                card.base,
+                "grid grid-cols-3 gap-px rounded-[4px] overflow-hidden bg-white/[0.03]"
+              )}
             >
-                {/* Voucher List Inline View */}
-                {showVoucherList && (
-                    <div className="flex flex-col w-full h-full pt-2 pb-6 px-1">
-                        <motion.div variants={fab.animation.item} className={fab.itemRow}>
-                            <button onClick={() => setShowVoucherList(false)} className={fab.itemButton}>
-                                <ArrowLeft className={fab.itemIconSize} />
-                            </button>
-                            <span className={fab.itemLabel + " uppercase tracking-widest font-bold flex-1"}>
-                                Available Vouchers
-                            </span>
-                        </motion.div>
+              {[
+                {
+                  label: "Total",
+                  value: hasDiscount
+                    ? `$${displayTotal}`
+                    : `$${proposalMeta.totalCost}`,
+                  accent: hasDiscount,
+                },
+                { label: "Time", value: `${proposalHours}h`, accent: false },
+                {
+                  label: "Sittings",
+                  value: String(proposalMeta.sittings),
+                  accent: false,
+                },
+              ].map(({ label, value, accent }) => (
+                <div
+                  key={label}
+                  className="p-2 flex flex-col items-center gap-0.5"
+                >
+                  <span className="text-[8px] text-muted-foreground uppercase tracking-wider font-medium">
+                    {label}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-xs font-bold",
+                      accent ? "text-emerald-500" : "text-foreground"
+                    )}
+                  >
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </motion.div>
 
-                        <div className="flex flex-col flex-1 mt-4 px-1 gap-2 overflow-y-auto no-scrollbar">
-                            {isLoadingPromotions && (
-                                <div className="flex items-center justify-center py-8">
-                                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                                </div>
-                            )}
-                            {availablePromotions?.map((promo) => {
-                                const originalCents = (proposalMeta?.totalCost || 0) * 100;
-                                let discountAmount = 0;
-                                if (promo.valueType === 'fixed') discountAmount = promo.value;
-                                else if (promo.valueType === 'percentage') discountAmount = Math.floor(originalCents * (promo.value / 100));
+            {/* Discount badge */}
+            {hasDiscount && (
+              <motion.div
+                variants={fab.animation.item}
+                className="flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-emerald-500/10"
+              >
+                <Tag className="w-3 h-3 text-emerald-500" />
+                <span className="text-[9px] font-medium text-emerald-500">
+                  {hasCurrentDiscount
+                    ? appliedPromotion.name
+                    : proposalMeta.promotionName || "Promotion"}{" "}
+                  applied
+                </span>
+              </motion.div>
+            )}
 
-                                const finalAmount = Math.max(0, originalCents - discountAmount);
-
-                                return (
-                                    <motion.button
-                                        key={promo.id}
-                                        variants={fab.animation.item}
-                                        className={cn(card.base, card.bg, card.interactive, "p-3 flex flex-col gap-1 w-full text-left")}
-                                        onClick={() => {
-                                            setAppliedPromotion({
-                                                id: promo.id,
-                                                name: promo.name,
-                                                discountAmount,
-                                                finalAmount
-                                            });
-                                            setShowVoucherList(false);
-                                        }}
-                                    >
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">{promo.name}</span>
-                                            <span className="text-[10px] font-bold text-emerald-500">
-                                                {promo.valueType === 'fixed' ? `$${promo.value / 100}` : `${promo.value}% OFF`}
-                                            </span>
-                                        </div>
-                                        <p className="text-[9px] text-muted-foreground line-clamp-2">
-                                            Use this voucher on your next booking.
-                                        </p>
-                                    </motion.button>
-                                );
-                            })}
-                            {!isLoadingPromotions && availablePromotions?.length === 0 && (
-                                <p className="text-[10px] text-muted-foreground text-center py-8 font-bold uppercase tracking-widest opacity-50">
-                                    No vouchers available
-                                </p>
-                            )}
-                        </div>
+            {/* Dates */}
+            {proposalDates.length > 0 && (
+              <motion.div variants={fab.animation.item} className="space-y-1">
+                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                  Schedule
+                </p>
+                {proposalDates.slice(0, 4).map((dateStr: string, i: number) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      card.base,
+                      card.bg,
+                      "flex items-center gap-2 p-1.5 rounded-[4px]"
+                    )}
+                  >
+                    <span className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
+                      {i + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-semibold text-foreground truncate">
+                        {format(new Date(dateStr), "EEE, MMM d")}
+                      </p>
+                      <p className="text-[8px] text-muted-foreground">
+                        {format(new Date(dateStr), "h:mm a")} ·{" "}
+                        {proposalMeta.serviceDuration}m
+                      </p>
                     </div>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+
+            {/* Client actions — pending */}
+            {!isArtist && proposalMeta.status === "pending" && (
+              <motion.div
+                variants={fab.animation.item}
+                className="space-y-2 pt-1"
+              >
+                {!appliedPromotion && artistId && (
+                  <button
+                    className={cn(
+                      card.base,
+                      card.bg,
+                      card.interactive,
+                      "flex items-center gap-2 p-2 w-full rounded-[4px]"
+                    )}
+                    onClick={() => setShowVoucherList(true)}
+                  >
+                    <div className={cn(fab.itemButton, "shrink-0 !w-7 !h-7")}>
+                      <Tag className="w-3 h-3" />
+                    </div>
+                    <span className="text-[10px] font-semibold text-foreground">
+                      Apply Voucher
+                    </span>
+                  </button>
                 )}
 
-                {/* ===== PROPOSAL VIEW ===== */}
-                {showProposal && proposalMeta && !showVoucherList && (
-                    <div className="flex flex-col gap-2 w-full">
-                        {/* Header */}
-                        <motion.div variants={fab.animation.item}>
-                            <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-primary/70 mb-0.5">
-                                Project Proposal
-                            </p>
-                            <h3 className="text-sm font-bold text-foreground leading-tight">
-                                {proposalMeta.serviceName}
-                            </h3>
-                        </motion.div>
+                {/* Cancellation Policy dropdown */}
+                {artistId && (
+                  <PolicyDropdown
+                    label="Cancellation Policy"
+                    artistId={artistId}
+                    policyType="cancellation"
+                  />
+                )}
 
-                        {/* Stats */}
+                {/* Deposit Info dropdown */}
+                {artistId && (
+                  <PolicyDropdown
+                    label="Deposit Information"
+                    artistId={artistId}
+                    policyType="deposit"
+                    depositAmount={artistSettings?.depositAmount}
+                    totalCost={proposalMeta.totalCost}
+                  />
+                )}
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={onRejectProposal}
+                    disabled={isPendingProposalAction}
+                    className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-white/5 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                  >
+                    Decline
+                  </button>
+                  <button
+                    onClick={() =>
+                      onAcceptProposal?.(
+                        appliedPromotion
+                          ? {
+                              id: appliedPromotion.id,
+                              discountAmount: appliedPromotion.discountAmount,
+                              finalAmount: appliedPromotion.finalAmount,
+                            }
+                          : undefined
+                      )
+                    }
+                    disabled={isPendingProposalAction}
+                    className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    {isPendingProposalAction ? "..." : "Accept"}
+                  </button>
+                </div>
+                <p className="text-[8px] text-muted-foreground text-center leading-tight">
+                  By accepting, you agree to the cancellation and deposit
+                  policies above.
+                </p>
+              </motion.div>
+            )}
+
+            {/* Artist actions — pending */}
+            {isArtist && proposalMeta.status === "pending" && (
+              <motion.div
+                variants={fab.animation.item}
+                className="space-y-2 pt-1"
+              >
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] bg-orange-500/10">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-500 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500" />
+                  </span>
+                  <span className="text-[9px] font-medium text-orange-500">
+                    Awaiting client response
+                  </span>
+                </div>
+                <button
+                  onClick={onCancelProposal}
+                  className="w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-white/5 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                >
+                  Cancel Proposal
+                </button>
+              </motion.div>
+            )}
+
+            {/* Status — accepted */}
+            {proposalMeta.status === "accepted" && (
+              <motion.div
+                variants={fab.animation.item}
+                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-emerald-500/10"
+              >
+                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="text-[10px] font-bold text-emerald-500">
+                  Accepted
+                </span>
+              </motion.div>
+            )}
+
+            {/* Open in Maps — client only, accepted */}
+            {!isArtist &&
+              proposalMeta.status === "accepted" &&
+              artistSettings?.businessAddress && (
+                <motion.div variants={fab.animation.item}>
+                  <button
+                    className={cn(
+                      card.base,
+                      card.bg,
+                      card.interactive,
+                      "flex items-center gap-2 p-2 w-full rounded-[4px]"
+                    )}
+                    onClick={() => {
+                      const addr = encodeURIComponent(
+                        artistSettings.businessAddress
+                      );
+                      const platform = Capacitor.getPlatform();
+                      if (platform === "ios") {
+                        window.location.href = `maps://?q=${addr}`;
+                      } else if (platform === "android") {
+                        window.location.href = `geo:0,0?q=${addr}`;
+                      } else {
+                        window.open(
+                          `https://maps.google.com/?q=${addr}`,
+                          "_blank"
+                        );
+                      }
+                    }}
+                  >
+                    <div className={cn(fab.itemButton, "shrink-0 !w-7 !h-7")}>
+                      <MapPin className="w-3 h-3" />
+                    </div>
+                    <span className="text-[10px] font-semibold text-foreground">
+                      Open in Maps
+                    </span>
+                  </button>
+                </motion.div>
+              )}
+
+            {/* Status — rejected */}
+            {proposalMeta.status === "rejected" && (
+              <motion.div
+                variants={fab.animation.item}
+                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-red-500/10"
+              >
+                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                <span className="text-[10px] font-bold text-red-500">
+                  Declined
+                </span>
+              </motion.div>
+            )}
+          </div>
+        )}
+
+        {/* ===== BOOKING WIZARD (hidden when proposal or voucher list is shown) ===== */}
+        {!showProposal && !showVoucherList && (
+          <>
+            {/* Panel Header — SSOT label style */}
+            <motion.div variants={fab.animation.item} className={fab.itemRow}>
+              {step !== "service" && step !== "success" && (
+                <button onClick={goBack} className={fab.itemButton}>
+                  <ArrowLeft className={fab.itemIconSize} />
+                </button>
+              )}
+              <span
+                className={
+                  fab.itemLabel + " uppercase tracking-widest font-bold flex-1"
+                }
+              >
+                {getStepTitle()}
+              </span>
+              {selectedService && step !== "service" && (
+                <span className={fab.itemLabel}>{selectedService.name}</span>
+              )}
+            </motion.div>
+
+            {/* STEP: SERVICE — SSOT cards: transparent bg, 4px radius, no gap */}
+            {step === "service" && (
+              <div className="flex flex-col -my-2 w-full">
+                {artistServices.map(service => (
+                  <motion.div
+                    key={service.id || service.name}
+                    variants={fab.animation.item}
+                    className={cn(
+                      card.base,
+                      card.bg,
+                      card.interactive,
+                      "p-2 flex items-center gap-2 w-full"
+                    )}
+                    onClick={() => {
+                      setSelectedService(service);
+                      setTimeout(() => setStep("frequency"), 150);
+                    }}
+                  >
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-xs font-semibold text-foreground truncate">
+                        {service.name}
+                      </p>
+                      <p className="text-[9px] text-muted-foreground font-mono flex items-center gap-1">
+                        <Clock className="w-2.5 h-2.5 shrink-0" />
+                        {service.duration}m · ${service.price} ·{" "}
+                        {service.sittings || 1}s
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+
+            {step === "service" && artistServices.length === 0 && (
+              <motion.div
+                variants={fab.animation.item}
+                className={cn(card.base, card.bg, "p-2 w-full")}
+              >
+                <span className={fab.itemLabel}>No services configured.</span>
+              </motion.div>
+            )}
+
+            {/* STEP: FREQUENCY — SSOT cards: transparent bg, 4px radius, no gap */}
+            {step === "frequency" && (
+              <div className="flex flex-col -my-2 w-full">
+                {freqOptions.map(({ id, label, Icon }) => {
+                  const isSelected = frequency === id;
+                  return (
+                    <motion.div
+                      key={id}
+                      variants={fab.animation.item}
+                      className={cn(
+                        card.base,
+                        card.bg,
+                        card.interactive,
+                        "p-2 flex items-center gap-2 w-full"
+                      )}
+                      onClick={() => setFrequency(id as any)}
+                    >
+                      <div
+                        className={cn(
+                          isSelected ? fab.itemButtonHighlight : fab.itemButton,
+                          "shrink-0"
+                        )}
+                      >
+                        <Icon className={fab.itemIconSize} />
+                      </div>
+                      <span className="text-xs font-semibold text-foreground flex-1">
+                        {label}
+                      </span>
+                      {isSelected && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                      )}
+                    </motion.div>
+                  );
+                })}
+
+                {/* Find Dates action card */}
+                <motion.div
+                  variants={fab.animation.item}
+                  className={cn(
+                    card.base,
+                    card.bgAccent,
+                    card.interactive,
+                    "p-2 flex items-center gap-2 w-full mt-1"
+                  )}
+                  onClick={() => setStep("review")}
+                >
+                  <div className={cn(fab.itemButtonHighlight, "shrink-0")}>
+                    <CalendarSearch className={fab.itemIconSize} />
+                  </div>
+                  <span className="text-xs font-bold text-foreground flex-1">
+                    Find Dates
+                  </span>
+                </motion.div>
+              </div>
+            )}
+
+            {/* STEP: REVIEW — SSOT cards for data rows */}
+            {step === "review" && (
+              <>
+                {isLoadingAvailability && (
+                  <motion.div
+                    variants={fab.animation.item}
+                    className={cn(
+                      card.base,
+                      card.bg,
+                      "p-3 flex items-center justify-center gap-2 w-full"
+                    )}
+                  >
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <span className={cn(fab.itemLabel, "animate-pulse")}>
+                      Scanning...
+                    </span>
+                  </motion.div>
+                )}
+
+                {availabilityError && (
+                  <motion.div
+                    variants={fab.animation.item}
+                    className={cn(card.base, "bg-destructive/10 p-2 w-full")}
+                  >
+                    <span className={fab.itemLabel + " text-destructive"}>
+                      <AlertCircle className="w-3 h-3 inline mr-1" />
+                      {availabilityError.message}
+                    </span>
+                  </motion.div>
+                )}
+
+                {availability && (
+                  <div className="flex flex-col -my-2 w-full">
+                    {/* Metrics */}
+                    <motion.div
+                      variants={fab.animation.item}
+                      className={cn(
+                        card.base,
+                        card.bg,
+                        "p-2 flex items-center justify-between w-full"
+                      )}
+                    >
+                      <span className={fab.itemLabel}>Cost</span>
+                      <span className="text-xs font-bold text-foreground">
+                        ${availability.totalCost}
+                      </span>
+                    </motion.div>
+                    <motion.div
+                      variants={fab.animation.item}
+                      className={cn(
+                        card.base,
+                        card.bg,
+                        "p-2 flex items-center justify-between w-full"
+                      )}
+                    >
+                      <span className={fab.itemLabel}>Sittings</span>
+                      <span className="text-xs font-bold text-foreground">
+                        {frequency === "single"
+                          ? 1
+                          : selectedService?.sittings || 1}
+                      </span>
+                    </motion.div>
+                    <motion.div
+                      variants={fab.animation.item}
+                      className={cn(
+                        card.base,
+                        card.bg,
+                        "p-2 flex items-center justify-between w-full"
+                      )}
+                    >
+                      <span className={fab.itemLabel}>Duration</span>
+                      <span className="text-xs font-bold text-foreground">
+                        {selectedService?.duration}m
+                      </span>
+                    </motion.div>
+
+                    {/* Dates */}
+                    {availability.dates.map(
+                      (date: string | Date, i: number) => (
                         <motion.div
-                            variants={fab.animation.item}
-                            className={cn(card.base, "grid grid-cols-3 gap-px rounded-[4px] overflow-hidden bg-white/[0.03]")}
+                          key={i}
+                          variants={fab.animation.item}
+                          className={cn(
+                            card.base,
+                            card.bg,
+                            "p-2 flex items-center justify-between w-full"
+                          )}
                         >
-                            {[
-                                { label: "Total", value: hasDiscount ? `$${displayTotal}` : `$${proposalMeta.totalCost}`, accent: hasDiscount },
-                                { label: "Time", value: `${proposalHours}h`, accent: false },
-                                { label: "Sittings", value: String(proposalMeta.sittings), accent: false },
-                            ].map(({ label, value, accent }) => (
-                                <div key={label} className="p-2 flex flex-col items-center gap-0.5">
-                                    <span className="text-[8px] text-muted-foreground uppercase tracking-wider font-medium">{label}</span>
-                                    <span className={cn("text-xs font-bold", accent ? "text-emerald-500" : "text-foreground")}>{value}</span>
-                                </div>
-                            ))}
+                          <span className={fab.itemLabel}>
+                            {format(new Date(date), "EEE, MMM do")}
+                          </span>
+                          <span className="text-[10px] font-bold text-primary">
+                            {format(new Date(date), "h:mm a")}
+                          </span>
                         </motion.div>
+                      )
+                    )}
 
-                        {/* Discount badge */}
-                        {hasDiscount && (
-                            <motion.div variants={fab.animation.item} className="flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-emerald-500/10">
-                                <Tag className="w-3 h-3 text-emerald-500" />
-                                <span className="text-[9px] font-medium text-emerald-500">
-                                    {hasCurrentDiscount ? appliedPromotion.name : proposalMeta.promotionName || 'Promotion'} applied
-                                </span>
-                            </motion.div>
+                    {/* Send action */}
+                    <motion.div
+                      variants={fab.animation.item}
+                      className={cn(
+                        card.base,
+                        card.bgAccent,
+                        card.interactive,
+                        "p-2 flex items-center gap-2 w-full mt-1"
+                      )}
+                      onClick={handleConfirmBooking}
+                    >
+                      <div className={cn(fab.itemButtonHighlight, "shrink-0")}>
+                        {sendMessageMutation.isPending ? (
+                          <Loader2
+                            className={cn(fab.itemIconSize, "animate-spin")}
+                          />
+                        ) : (
+                          <Send className={fab.itemIconSize} />
                         )}
-
-                        {/* Dates */}
-                        {proposalDates.length > 0 && (
-                            <motion.div variants={fab.animation.item} className="space-y-1">
-                                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Schedule</p>
-                                {proposalDates.slice(0, 4).map((dateStr: string, i: number) => (
-                                    <div key={i} className={cn(card.base, card.bg, "flex items-center gap-2 p-1.5 rounded-[4px]")}>
-                                        <span className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
-                                            {i + 1}
-                                        </span>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[10px] font-semibold text-foreground truncate">
-                                                {format(new Date(dateStr), "EEE, MMM d")}
-                                            </p>
-                                            <p className="text-[8px] text-muted-foreground">
-                                                {format(new Date(dateStr), "h:mm a")} · {proposalMeta.serviceDuration}m
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-
-                            </motion.div>
-                        )}
-
-                        {/* Client actions — pending */}
-                        {!isArtist && proposalMeta.status === 'pending' && (
-                            <motion.div variants={fab.animation.item} className="space-y-2 pt-1">
-                                {!appliedPromotion && artistId && (
-                                    <button
-                                        className={cn(card.base, card.bg, card.interactive, "flex items-center gap-2 p-2 w-full rounded-[4px]")}
-                                        onClick={() => setShowVoucherList(true)}
-                                    >
-                                        <div className={cn(fab.itemButton, "shrink-0 !w-7 !h-7")}>
-                                            <Tag className="w-3 h-3" />
-                                        </div>
-                                        <span className="text-[10px] font-semibold text-foreground">Apply Voucher</span>
-                                    </button>
-                                )}
-
-                                {/* Cancellation Policy dropdown */}
-                                {artistId && (
-                                    <PolicyDropdown
-                                        label="Cancellation Policy"
-                                        artistId={artistId}
-                                        policyType="cancellation"
-                                    />
-                                )}
-
-                                {/* Deposit Info dropdown */}
-                                {artistId && (
-                                    <PolicyDropdown
-                                        label="Deposit Information"
-                                        artistId={artistId}
-                                        policyType="deposit"
-                                        depositAmount={artistSettings?.depositAmount}
-                                        totalCost={proposalMeta.totalCost}
-                                    />
-                                )}
-
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button
-                                        onClick={onRejectProposal}
-                                        disabled={isPendingProposalAction}
-                                        className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-white/5 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
-                                    >
-                                        Decline
-                                    </button>
-                                    <button
-                                        onClick={() => onAcceptProposal?.(appliedPromotion ? {
-                                            id: appliedPromotion.id,
-                                            discountAmount: appliedPromotion.discountAmount,
-                                            finalAmount: appliedPromotion.finalAmount,
-                                        } : undefined)}
-                                        disabled={isPendingProposalAction}
-                                        className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90"
-                                    >
-                                        {isPendingProposalAction ? "..." : "Accept"}
-                                    </button>
-                                </div>
-                                <p className="text-[8px] text-muted-foreground text-center leading-tight">
-                                    By accepting, you agree to the cancellation and deposit policies above.
-                                </p>
-                            </motion.div>
-                        )}
-
-                        {/* Artist actions — pending */}
-                        {isArtist && proposalMeta.status === 'pending' && (
-                            <motion.div variants={fab.animation.item} className="space-y-2 pt-1">
-                                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] bg-orange-500/10">
-                                    <span className="relative flex h-1.5 w-1.5">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-500 opacity-75" />
-                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500" />
-                                    </span>
-                                    <span className="text-[9px] font-medium text-orange-500">Awaiting client response</span>
-                                </div>
-                                <button
-                                    onClick={onCancelProposal}
-                                    className="w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-white/5 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
-                                >
-                                    Cancel Proposal
-                                </button>
-                            </motion.div>
-                        )}
-
-                        {/* Status — accepted */}
-                        {proposalMeta.status === 'accepted' && (
-                            <motion.div variants={fab.animation.item} className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-emerald-500/10">
-                                <Check className="w-3.5 h-3.5 text-emerald-500" />
-                                <span className="text-[10px] font-bold text-emerald-500">Accepted</span>
-                            </motion.div>
-                        )}
-
-                        {/* Open in Maps — client only, accepted */}
-                        {!isArtist && proposalMeta.status === 'accepted' && artistSettings?.businessAddress && (
-                            <motion.div variants={fab.animation.item}>
-                                <button
-                                    className={cn(card.base, card.bg, card.interactive, "flex items-center gap-2 p-2 w-full rounded-[4px]")}
-                                    onClick={() => {
-                                        const addr = encodeURIComponent(artistSettings.businessAddress);
-                                        const platform = Capacitor.getPlatform();
-                                        if (platform === 'ios') {
-                                            window.location.href = `maps://?q=${addr}`;
-                                        } else if (platform === 'android') {
-                                            window.location.href = `geo:0,0?q=${addr}`;
-                                        } else {
-                                            window.open(`https://maps.google.com/?q=${addr}`, '_blank');
-                                        }
-                                    }}
-                                >
-                                    <div className={cn(fab.itemButton, "shrink-0 !w-7 !h-7")}>
-                                        <MapPin className="w-3 h-3" />
-                                    </div>
-                                    <span className="text-[10px] font-semibold text-foreground">Open in Maps</span>
-                                </button>
-                            </motion.div>
-                        )}
-
-                        {/* Status — rejected */}
-                        {proposalMeta.status === 'rejected' && (
-                            <motion.div variants={fab.animation.item} className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-red-500/10">
-                                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
-                                <span className="text-[10px] font-bold text-red-500">Declined</span>
-                            </motion.div>
-                        )}
-                    </div>
+                      </div>
+                      <span className="text-xs font-bold text-foreground flex-1">
+                        {sendMessageMutation.isPending
+                          ? "Sending..."
+                          : "Send Proposal"}
+                      </span>
+                    </motion.div>
+                  </div>
                 )}
+              </>
+            )}
 
-                {/* ===== BOOKING WIZARD (hidden when proposal or voucher list is shown) ===== */}
-                {!showProposal && !showVoucherList && (
-                    <>
-                        {/* Panel Header — SSOT label style */}
-                        <motion.div variants={fab.animation.item} className={fab.itemRow}>
-                            {step !== 'service' && step !== 'success' && (
-                                <button onClick={goBack} className={fab.itemButton}>
-                                    <ArrowLeft className={fab.itemIconSize} />
-                                </button>
-                            )}
-                            <span className={fab.itemLabel + " uppercase tracking-widest font-bold flex-1"}>
-                                {getStepTitle()}
-                            </span>
-                            {selectedService && step !== 'service' && (
-                                <span className={fab.itemLabel}>{selectedService.name}</span>
-                            )}
-                        </motion.div>
+            {/* STEP: SUCCESS — SSOT cards */}
+            {step === "success" && (
+              <div className="flex flex-col -my-2 w-full">
+                <motion.div
+                  variants={fab.animation.item}
+                  className={cn(
+                    card.base,
+                    card.bg,
+                    "p-4 flex flex-col items-center gap-2 w-full"
+                  )}
+                >
+                  <div className={fab.itemButtonHighlight}>
+                    <CheckCircle2 className={fab.itemIconSize} />
+                  </div>
+                  <span className="text-xs font-bold text-foreground">
+                    Proposal Sent!
+                  </span>
+                </motion.div>
+                <motion.div
+                  variants={fab.animation.item}
+                  className={cn(
+                    card.base,
+                    card.bg,
+                    card.interactive,
+                    "p-2 flex items-center gap-2 w-full"
+                  )}
+                  onClick={handleClose}
+                >
+                  <div className={cn(fab.itemButton, "shrink-0")}>
+                    <CheckCircle2 className={fab.itemIconSize} />
+                  </div>
+                  <span className="text-xs font-semibold text-foreground flex-1">
+                    Close
+                  </span>
+                </motion.div>
+              </div>
+            )}
+          </>
+        )}
+      </FABMenu>
 
-                        {/* STEP: SERVICE — SSOT cards: transparent bg, 4px radius, no gap */}
-                        {step === 'service' && (
-                            <div className="flex flex-col -my-2 w-full">
-                                {artistServices.map(service => (
-                                    <motion.div
-                                        key={service.id || service.name}
-                                        variants={fab.animation.item}
-                                        className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center gap-2 w-full")}
-                                        onClick={() => {
-                                            setSelectedService(service);
-                                            setTimeout(() => setStep('frequency'), 150);
-                                        }}
-                                    >
-                                        <div className="flex-1 min-w-0 text-left">
-                                            <p className="text-xs font-semibold text-foreground truncate">{service.name}</p>
-                                            <p className="text-[9px] text-muted-foreground font-mono flex items-center gap-1">
-                                                <Clock className="w-2.5 h-2.5 shrink-0" />
-                                                {service.duration}m · ${service.price} · {service.sittings || 1}s
-                                            </p>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        )}
-
-                        {step === 'service' && artistServices.length === 0 && (
-                            <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 w-full")}>
-                                <span className={fab.itemLabel}>No services configured.</span>
-                            </motion.div>
-                        )}
-
-                        {/* STEP: FREQUENCY — SSOT cards: transparent bg, 4px radius, no gap */}
-                        {step === 'frequency' && (
-                            <div className="flex flex-col -my-2 w-full">
-                                {freqOptions.map(({ id, label, Icon }) => {
-                                    const isSelected = frequency === id;
-                                    return (
-                                        <motion.div
-                                            key={id}
-                                            variants={fab.animation.item}
-                                            className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center gap-2 w-full")}
-                                            onClick={() => setFrequency(id as any)}
-                                        >
-                                            <div className={cn(isSelected ? fab.itemButtonHighlight : fab.itemButton, "shrink-0")}>
-                                                <Icon className={fab.itemIconSize} />
-                                            </div>
-                                            <span className="text-xs font-semibold text-foreground flex-1">{label}</span>
-                                            {isSelected && (
-                                                <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                                            )}
-                                        </motion.div>
-                                    );
-                                })}
-
-                                {/* Find Dates action card */}
-                                <motion.div
-                                    variants={fab.animation.item}
-                                    className={cn(card.base, card.bgAccent, card.interactive, "p-2 flex items-center gap-2 w-full mt-1")}
-                                    onClick={() => setStep('review')}
-                                >
-                                    <div className={cn(fab.itemButtonHighlight, "shrink-0")}>
-                                        <CalendarSearch className={fab.itemIconSize} />
-                                    </div>
-                                    <span className="text-xs font-bold text-foreground flex-1">Find Dates</span>
-                                </motion.div>
-                            </div>
-                        )}
-
-                        {/* STEP: REVIEW — SSOT cards for data rows */}
-                        {step === 'review' && (
-                            <>
-                                {isLoadingAvailability && (
-                                    <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-3 flex items-center justify-center gap-2 w-full")}>
-                                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                                        <span className={cn(fab.itemLabel, "animate-pulse")}>Scanning...</span>
-                                    </motion.div>
-                                )}
-
-                                {availabilityError && (
-                                    <motion.div variants={fab.animation.item} className={cn(card.base, "bg-destructive/10 p-2 w-full")}>
-                                        <span className={fab.itemLabel + " text-destructive"}>
-                                            <AlertCircle className="w-3 h-3 inline mr-1" />
-                                            {availabilityError.message}
-                                        </span>
-                                    </motion.div>
-                                )}
-
-                                {availability && (
-                                    <div className="flex flex-col -my-2 w-full">
-                                        {/* Metrics */}
-                                        <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 flex items-center justify-between w-full")}>
-                                            <span className={fab.itemLabel}>Cost</span>
-                                            <span className="text-xs font-bold text-foreground">${availability.totalCost}</span>
-                                        </motion.div>
-                                        <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 flex items-center justify-between w-full")}>
-                                            <span className={fab.itemLabel}>Sittings</span>
-                                            <span className="text-xs font-bold text-foreground">
-                                                {frequency === 'single' ? 1 : (selectedService?.sittings || 1)}
-                                            </span>
-                                        </motion.div>
-                                        <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 flex items-center justify-between w-full")}>
-                                            <span className={fab.itemLabel}>Duration</span>
-                                            <span className="text-xs font-bold text-foreground">{selectedService?.duration}m</span>
-                                        </motion.div>
-
-                                        {/* Dates */}
-                                        {availability.dates.map((date: string | Date, i: number) => (
-                                            <motion.div key={i} variants={fab.animation.item} className={cn(card.base, card.bg, "p-2 flex items-center justify-between w-full")}>
-                                                <span className={fab.itemLabel}>{format(new Date(date), "EEE, MMM do")}</span>
-                                                <span className="text-[10px] font-bold text-primary">{format(new Date(date), "h:mm a")}</span>
-                                            </motion.div>
-                                        ))}
-
-                                        {/* Send action */}
-                                        <motion.div
-                                            variants={fab.animation.item}
-                                            className={cn(card.base, card.bgAccent, card.interactive, "p-2 flex items-center gap-2 w-full mt-1")}
-                                            onClick={handleConfirmBooking}
-                                        >
-                                            <div className={cn(fab.itemButtonHighlight, "shrink-0")}>
-                                                {sendMessageMutation.isPending ? (
-                                                    <Loader2 className={cn(fab.itemIconSize, "animate-spin")} />
-                                                ) : (
-                                                    <Send className={fab.itemIconSize} />
-                                                )}
-                                            </div>
-                                            <span className="text-xs font-bold text-foreground flex-1">
-                                                {sendMessageMutation.isPending ? "Sending..." : "Send Proposal"}
-                                            </span>
-                                        </motion.div>
-                                    </div>
-                                )}
-                            </>
-                        )}
-
-                        {/* STEP: SUCCESS — SSOT cards */}
-                        {step === 'success' && (
-                            <div className="flex flex-col -my-2 w-full">
-                                <motion.div variants={fab.animation.item} className={cn(card.base, card.bg, "p-4 flex flex-col items-center gap-2 w-full")}>
-                                    <div className={fab.itemButtonHighlight}>
-                                        <CheckCircle2 className={fab.itemIconSize} />
-                                    </div>
-                                    <span className="text-xs font-bold text-foreground">Proposal Sent!</span>
-                                </motion.div>
-                                <motion.div
-                                    variants={fab.animation.item}
-                                    className={cn(card.base, card.bg, card.interactive, "p-2 flex items-center gap-2 w-full")}
-                                    onClick={handleClose}
-                                >
-                                    <div className={cn(fab.itemButton, "shrink-0")}>
-                                        <CheckCircle2 className={fab.itemIconSize} />
-                                    </div>
-                                    <span className="text-xs font-semibold text-foreground flex-1">Close</span>
-                                </motion.div>
-                            </div>
-                        )}
-                    </>
-                )}
-            </FABMenu>
-
-            {/* Support Sheet Removal */}
-        </>
-    );
+      {/* Support Sheet Removal */}
+    </>
+  );
 }

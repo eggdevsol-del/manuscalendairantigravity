@@ -1,18 +1,29 @@
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Switch } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Switch,
+} from "@/components/ui";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { requestNotificationPermission, isSubscribed, setExternalUserId, getSubscriptionId } from "@/lib/onesignal";
+import {
+  requestNotificationPermission,
+  isSubscribed,
+  setExternalUserId,
+  getSubscriptionId,
+} from "@/lib/onesignal";
 import { Bell, BellOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Capacitor } from '@capacitor/core';
+import { Capacitor } from "@capacitor/core";
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/');
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
 
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
@@ -25,9 +36,9 @@ function urlBase64ToUint8Array(base64String: string) {
 
 // Safe conversion for TS downlevelIteration
 function arrayBufferToBase64(buffer: ArrayBuffer | null) {
-  if (!buffer) return '';
+  if (!buffer) return "";
   const binary = new Uint8Array(buffer);
-  let str = '';
+  let str = "";
   for (let i = 0; i < binary.length; i++) {
     str += String.fromCharCode(binary[i]);
   }
@@ -38,7 +49,8 @@ export default function PushNotificationSettings() {
   const { user } = useAuth();
   const [isEnabled, setIsEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [permission, setPermission] = useState<NotificationPermission>("default");
+  const [permission, setPermission] =
+    useState<NotificationPermission>("default");
   const utils = trpc.useUtils();
   const subscribeMutation = trpc.push.subscribe.useMutation();
 
@@ -49,9 +61,9 @@ export default function PushNotificationSettings() {
   const checkSubscriptionStatus = async () => {
     try {
       let isNativePermissionGranted = false;
-      if ('Notification' in window) {
+      if ("Notification" in window) {
         setPermission(Notification.permission);
-        if (Notification.permission === 'granted') {
+        if (Notification.permission === "granted") {
           isNativePermissionGranted = true;
           // Optimistically set enabled to prevent UI flashing off while OneSignal initializes
           setIsEnabled(true);
@@ -67,7 +79,7 @@ export default function PushNotificationSettings() {
 
       setIsEnabled(isNativePermissionGranted || subscribed);
     } catch (error) {
-      console.error('Failed to check subscription status:', error);
+      console.error("Failed to check subscription status:", error);
     }
   };
 
@@ -86,7 +98,7 @@ export default function PushNotificationSettings() {
       // Fire the native browser prompt instantly inside the raw click handler stack
       const granted = await requestNotificationPermission();
 
-      // Now that the browser has answered, we can safely show loading spinners 
+      // Now that the browser has answered, we can safely show loading spinners
       // while we sync the player ID with the OneSignal backend cloud.
       setIsLoading(true);
 
@@ -100,15 +112,23 @@ export default function PushNotificationSettings() {
 
         // Get subscription ID for verification
         const subscriptionId = await getSubscriptionId();
-        console.log('[Notifications] OneSignal Subscription ID:', subscriptionId);
+        console.log(
+          "[Notifications] OneSignal Subscription ID:",
+          subscriptionId
+        );
 
         // --- VAPID Dual-Blast Fallback Registration for Web/PWA Users ---
-        if (!Capacitor.isNativePlatform() && 'serviceWorker' in navigator && 'PushManager' in window) {
+        if (
+          !Capacitor.isNativePlatform() &&
+          "serviceWorker" in navigator &&
+          "PushManager" in window
+        ) {
           try {
             const keyData = await utils.push.getPublicKey.fetch();
             if (keyData?.publicKey) {
               const registration = await navigator.serviceWorker.ready;
-              const existingSub = await registration.pushManager.getSubscription();
+              const existingSub =
+                await registration.pushManager.getSubscription();
               if (existingSub) await existingSub.unsubscribe();
 
               const sub = await registration.pushManager.subscribe({
@@ -116,8 +136,8 @@ export default function PushNotificationSettings() {
                 applicationServerKey: urlBase64ToUint8Array(keyData.publicKey),
               });
 
-              const p256dh = sub.getKey('p256dh');
-              const auth = sub.getKey('auth');
+              const p256dh = sub.getKey("p256dh");
+              const auth = sub.getKey("auth");
               if (p256dh && auth) {
                 await subscribeMutation.mutateAsync({
                   endpoint: sub.endpoint,
@@ -127,18 +147,25 @@ export default function PushNotificationSettings() {
                   },
                   userAgent: navigator.userAgent,
                 });
-                console.log('[Notifications] VAPID Web Push synced for dual-blast backend');
+                console.log(
+                  "[Notifications] VAPID Web Push synced for dual-blast backend"
+                );
               }
             }
           } catch (vapidErr) {
-            console.error('[Notifications] VAPID dual-blast registration failed (OneSignal may still work):', vapidErr);
+            console.error(
+              "[Notifications] VAPID dual-blast registration failed (OneSignal may still work):",
+              vapidErr
+            );
           }
         }
 
         setIsEnabled(true);
         toast.success("Push notifications enabled!");
       } else {
-        toast.error("Notification permission denied. Please enable in browser settings.");
+        toast.error(
+          "Notification permission denied. Please enable in browser settings."
+        );
       }
     } catch (error) {
       console.error("Failed to enable notifications:", error);
@@ -163,7 +190,7 @@ export default function PushNotificationSettings() {
     }
   };
 
-  if (!('Notification' in window)) {
+  if (!("Notification" in window)) {
     return (
       <Card>
         <CardHeader>
@@ -209,17 +236,18 @@ export default function PushNotificationSettings() {
 
         {permission === "denied" && (
           <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-            To enable notifications, go to your browser settings and allow notifications for this site.
+            To enable notifications, go to your browser settings and allow
+            notifications for this site.
           </div>
         )}
 
         {isEnabled && (
           <div className="text-sm text-muted-foreground bg-green-50 dark:bg-green-950 p-3 rounded-md">
-            ✓ You'll receive push notifications for new messages and appointments
+            ✓ You'll receive push notifications for new messages and
+            appointments
           </div>
         )}
       </CardContent>
     </Card>
   );
 }
-

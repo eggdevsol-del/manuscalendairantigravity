@@ -15,6 +15,7 @@ A full-stack Progressive Web App (PWA) for artists to manage client bookings, ap
 ## Tech Stack
 
 ### Frontend
+
 - React 19
 - Vite
 - TailwindCSS
@@ -23,6 +24,7 @@ A full-stack Progressive Web App (PWA) for artists to manage client bookings, ap
 - tRPC Client
 
 ### Backend
+
 - Node.js / Express
 - tRPC
 - MySQL
@@ -32,6 +34,7 @@ A full-stack Progressive Web App (PWA) for artists to manage client bookings, ap
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 22+
 - pnpm
 - MySQL
@@ -133,4 +136,3 @@ MIT
 ## Support
 
 For questions or issues, please open an issue on GitHub.
-

@@ -1,8 +1,8 @@
 /**
  * SendPromotionSheet - SSOT Compliant
- * 
+ *
  * Sheet for sending promotions to specific clients or setting up auto-apply rules.
- * 
+ *
  * @version 1.0.0
  */
 
@@ -25,7 +25,7 @@ interface SendPromotionSheetProps {
   onSuccess?: () => void;
 }
 
-type SendMode = 'specific' | 'auto';
+type SendMode = "specific" | "auto";
 
 export function SendPromotionSheet({
   isOpen,
@@ -33,58 +33,60 @@ export function SendPromotionSheet({
   promotion,
   onSuccess,
 }: SendPromotionSheetProps) {
-  const [mode, setMode] = useState<SendMode>('specific');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [mode, setMode] = useState<SendMode>("specific");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
-  const [autoApplyStartDate, setAutoApplyStartDate] = useState('');
-  const [autoApplyEndDate, setAutoApplyEndDate] = useState('');
+  const [autoApplyStartDate, setAutoApplyStartDate] = useState("");
+  const [autoApplyEndDate, setAutoApplyEndDate] = useState("");
   const [expiresInDays, setExpiresInDays] = useState<string>(
-    promotion.validityDuration ? promotion.validityDuration.toString() : ''
+    promotion.validityDuration ? promotion.validityDuration.toString() : ""
   );
 
   const utils = trpc.useUtils();
 
   // Fetch clients
-  const { data: clients, isLoading: loadingClients } = trpc.conversations.getClients.useQuery(
-    undefined,
-    { enabled: mode === 'specific' }
-  );
+  const { data: clients, isLoading: loadingClients } =
+    trpc.conversations.getClients.useQuery(undefined, {
+      enabled: mode === "specific",
+    });
 
   // Send mutation
   const sendMutation = trpc.promotions.issuePromotion.useMutation({
     onSuccess: () => {
-      toast.success('Promotion sent successfully!');
+      toast.success("Promotion sent successfully!");
       utils.promotions.getPromotions.invalidate();
       onSuccess?.();
       onClose();
     },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to send promotion');
+    onError: error => {
+      toast.error(error.message || "Failed to send promotion");
     },
   });
 
   // Auto-apply mutation
   const autoApplyMutation = trpc.promotions.createAutoApply.useMutation({
     onSuccess: () => {
-      toast.success('Auto-apply rule created!');
+      toast.success("Auto-apply rule created!");
       utils.promotions.getPromotions.invalidate();
       onSuccess?.();
       onClose();
     },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to create auto-apply rule');
+    onError: error => {
+      toast.error(error.message || "Failed to create auto-apply rule");
     },
   });
 
   // Filter clients by search
-  const validClients = (clients || []).filter((c): c is NonNullable<typeof c> => c !== null && c !== undefined);
+  const validClients = (clients || []).filter(
+    (c): c is NonNullable<typeof c> => c !== null && c !== undefined
+  );
 
   const filteredClients = validClients.filter(client => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
-      (client.name?.toLowerCase() || '').includes(query) ||
-      (client.email?.toLowerCase() || '').includes(query)
+      (client.name?.toLowerCase() || "").includes(query) ||
+      (client.email?.toLowerCase() || "").includes(query)
     );
   });
 
@@ -99,9 +101,9 @@ export function SendPromotionSheet({
 
   // Handle send
   const handleSend = () => {
-    if (mode === 'specific') {
+    if (mode === "specific") {
       if (selectedClientIds.length === 0) {
-        toast.error('Please select at least one client');
+        toast.error("Please select at least one client");
         return;
       }
 
@@ -115,7 +117,7 @@ export function SendPromotionSheet({
       });
     } else {
       if (!autoApplyStartDate || !autoApplyEndDate) {
-        toast.error('Please select date range');
+        toast.error("Please select date range");
         return;
       }
 
@@ -138,10 +140,9 @@ export function SendPromotionSheet({
         <div>
           <p className="text-lg font-bold text-white">{promotion.name}</p>
           <p className="text-sm text-white/70">
-            {promotion.valueType === 'percentage'
+            {promotion.valueType === "percentage"
               ? `${promotion.value}% discount`
-              : `$${(promotion.value / 100).toFixed(2)} value`
-            }
+              : `$${(promotion.value / 100).toFixed(2)} value`}
           </p>
         </div>
       }
@@ -149,10 +150,10 @@ export function SendPromotionSheet({
       {/* Mode Toggle */}
       <div className="flex gap-2 mb-6">
         <button
-          onClick={() => setMode('specific')}
+          onClick={() => setMode("specific")}
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all",
-            mode === 'specific'
+            mode === "specific"
               ? "bg-primary text-primary-foreground"
               : "bg-black/5 dark:bg-white/5 text-muted-foreground"
           )}
@@ -161,10 +162,10 @@ export function SendPromotionSheet({
           <span className="text-sm font-medium">Specific Client</span>
         </button>
         <button
-          onClick={() => setMode('auto')}
+          onClick={() => setMode("auto")}
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all",
-            mode === 'auto'
+            mode === "auto"
               ? "bg-primary text-primary-foreground"
               : "bg-black/5 dark:bg-white/5 text-muted-foreground"
           )}
@@ -174,14 +175,14 @@ export function SendPromotionSheet({
         </button>
       </div>
 
-      {mode === 'specific' ? (
+      {mode === "specific" ? (
         <>
           {/* Search */}
           <div className="relative mb-4">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search clients..."
               className="h-12 rounded-xl pl-10"
             />
@@ -196,8 +197,12 @@ export function SendPromotionSheet({
               <Input
                 type="number"
                 value={expiresInDays}
-                onChange={(e) => setExpiresInDays(e.target.value)}
-                placeholder={promotion.validityDuration ? `Default: ${promotion.validityDuration} days` : "No expiry"}
+                onChange={e => setExpiresInDays(e.target.value)}
+                placeholder={
+                  promotion.validityDuration
+                    ? `Default: ${promotion.validityDuration} days`
+                    : "No expiry"
+                }
                 className="h-12 rounded-xl pl-4"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
@@ -238,7 +243,7 @@ export function SendPromotionSheet({
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground truncate">
-                        {client.name || 'Unknown'}
+                        {client.name || "Unknown"}
                       </p>
                       <p className="text-sm text-muted-foreground truncate">
                         {client.email}
@@ -257,7 +262,8 @@ export function SendPromotionSheet({
 
           {selectedClientIds.length > 0 && (
             <p className="text-sm text-muted-foreground mt-4 text-center">
-              {selectedClientIds.length} client{selectedClientIds.length > 1 ? 's' : ''} selected
+              {selectedClientIds.length} client
+              {selectedClientIds.length > 1 ? "s" : ""} selected
             </p>
           )}
         </>
@@ -269,9 +275,12 @@ export function SendPromotionSheet({
               <div className="flex items-start gap-3">
                 <Calendar className="w-5 h-5 text-primary mt-0.5" />
                 <div>
-                  <h3 className="font-medium text-foreground">Auto-Apply to New Clients</h3>
+                  <h3 className="font-medium text-foreground">
+                    Auto-Apply to New Clients
+                  </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    This promotion will automatically be applied to all new clients who book during the selected date range.
+                    This promotion will automatically be applied to all new
+                    clients who book during the selected date range.
                   </p>
                 </div>
               </div>
@@ -283,9 +292,9 @@ export function SendPromotionSheet({
                 <Input
                   type="date"
                   value={autoApplyStartDate}
-                  onChange={(e) => setAutoApplyStartDate(e.target.value)}
+                  onChange={e => setAutoApplyStartDate(e.target.value)}
                   className="h-12 rounded-xl"
-                  min={format(new Date(), 'yyyy-MM-dd')}
+                  min={format(new Date(), "yyyy-MM-dd")}
                 />
               </div>
 
@@ -294,15 +303,16 @@ export function SendPromotionSheet({
                 <Input
                   type="date"
                   value={autoApplyEndDate}
-                  onChange={(e) => setAutoApplyEndDate(e.target.value)}
+                  onChange={e => setAutoApplyEndDate(e.target.value)}
                   className="h-12 rounded-xl"
-                  min={autoApplyStartDate || format(new Date(), 'yyyy-MM-dd')}
+                  min={autoApplyStartDate || format(new Date(), "yyyy-MM-dd")}
                 />
               </div>
             </div>
 
             <p className="text-sm text-muted-foreground text-center">
-              After the end date, this promotion will stop being automatically applied.
+              After the end date, this promotion will stop being automatically
+              applied.
             </p>
           </div>
         </>
@@ -313,14 +323,17 @@ export function SendPromotionSheet({
         <Button
           className="w-full h-14 rounded-xl font-bold text-base"
           onClick={handleSend}
-          disabled={isPending || (mode === 'specific' && selectedClientIds.length === 0)}
+          disabled={
+            isPending || (mode === "specific" && selectedClientIds.length === 0)
+          }
         >
           {isPending ? (
-            'Sending...'
-          ) : mode === 'specific' ? (
+            "Sending..."
+          ) : mode === "specific" ? (
             <>
               <Send className="w-5 h-5 mr-2" />
-              Send to {selectedClientIds.length || ''} Client{selectedClientIds.length !== 1 ? 's' : ''}
+              Send to {selectedClientIds.length || ""} Client
+              {selectedClientIds.length !== 1 ? "s" : ""}
             </>
           ) : (
             <>

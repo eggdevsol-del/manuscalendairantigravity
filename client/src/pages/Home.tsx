@@ -1,5 +1,12 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { Calendar, MessageCircle, Sparkles, Users } from "lucide-react";
 import { LoadingState } from "@/components/ui/ssot";
@@ -24,7 +31,11 @@ export default function Home() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {APP_LOGO && (
-              <img src={APP_LOGO} alt={APP_TITLE} className="h-8 w-8 rounded-lg" />
+              <img
+                src={APP_LOGO}
+                alt={APP_TITLE}
+                className="h-8 w-8 rounded-lg"
+              />
             )}
             <h1 className="text-xl font-bold text-foreground">{APP_TITLE}</h1>
           </div>
@@ -89,7 +100,9 @@ export default function Home() {
                   <div className="p-2 rounded-lg bg-secondary/10">
                     <Users className="w-5 h-5 text-primary" />
                   </div>
-                  <CardTitle className="text-lg">For Artists & Clients</CardTitle>
+                  <CardTitle className="text-lg">
+                    For Artists & Clients
+                  </CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
@@ -126,9 +139,6 @@ export default function Home() {
         <p>© 2025 {APP_TITLE}. Beautiful appointments made simple.</p>
         <p className="text-xs opacity-50">v{APP_VERSION}</p>
       </footer>
-
-
     </div>
   );
 }
-

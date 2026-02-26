@@ -25,7 +25,7 @@ import { useTabletLandscape } from "@/hooks/useTabletLandscape";
 import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
-import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
+import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 
 const menuItems = [
@@ -54,7 +54,7 @@ export default function DashboardLayout({
   }, [sidebarWidth]);
 
   if (loading) {
-    return <DashboardLayoutSkeleton />
+    return <DashboardLayoutSkeleton />;
   }
 
   if (!user) {
@@ -128,11 +128,11 @@ function DashboardLayoutContent({
   const isTabletLandscape = useTabletLandscape();
   // Ensure we check for artist role here too if we want to be safe, but DashboardLayout is usually protected or used by logged in users.
   // Ideally, we should receive 'isArtist' or check 'user.role' here again.
-  const isArtist = user?.role === 'artist';
+  const isArtist = user?.role === "artist";
 
   // Force expand if artist + tablet landscape
   // We can't easily force the 'state' from here since it's controlled by SidebarProvider/useSidebar context internal state usually.
-  // unique SidebarProvider logic: it uses cookie or localstorage. 
+  // unique SidebarProvider logic: it uses cookie or localstorage.
   // But we can affect the `defaultOpen` or similar if we could.
   // Since `useSidebar` provides `state`, we might want to effect it.
 

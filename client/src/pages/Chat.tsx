@@ -33,7 +33,7 @@ export default function Chat() {
             conversationId={conversationId}
             className="bg-transparent"
             onBack={() => {
-              // On iPad, back might mean deselect? 
+              // On iPad, back might mean deselect?
               // But actually we probably don't show the back button on iPad (handled in ChatInterface logic md:hidden)
               // If we did, it would likely go back to /conversations
               window.history.back();

@@ -87,14 +87,18 @@ export const authRouter = router({
           });
 
           // Create studio member (owner)
-          await db.insert(require("../../drizzle/schema").studioMembers).values({
-            studioId,
-            userId: user.id,
-            role: "owner",
-            status: "active",
-          });
+          await db
+            .insert(require("../../drizzle/schema").studioMembers)
+            .values({
+              studioId,
+              userId: user.id,
+              role: "owner",
+              status: "active",
+            });
         } else {
-          console.error("[Auth] Database not available to create studio records.");
+          console.error(
+            "[Auth] Database not available to create studio records."
+          );
         }
       }
 
@@ -139,7 +143,8 @@ export const authRouter = router({
       if (!user.password) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "This account uses social login. Please use Google or Facebook to sign in.",
+          message:
+            "This account uses social login. Please use Google or Facebook to sign in.",
         });
       }
 
@@ -188,7 +193,8 @@ export const authRouter = router({
         // Don't reveal if user exists or not
         return {
           success: true,
-          message: "If an account exists with this email, a magic link has been sent.",
+          message:
+            "If an account exists with this email, a magic link has been sent.",
         };
       }
 
@@ -202,7 +208,8 @@ export const authRouter = router({
 
       return {
         success: true,
-        message: "If an account exists with this email, a magic link has been sent.",
+        message:
+          "If an account exists with this email, a magic link has been sent.",
         // In development, return the link
         ...(process.env.NODE_ENV === "development" && { magicLink }),
       };
@@ -276,8 +283,8 @@ export const authRouter = router({
       const member = await db.query.studioMembers.findFirst({
         where: and(
           eq(studioMembers.userId, user.id),
-          eq(studioMembers.status, 'active')
-        )
+          eq(studioMembers.status, "active")
+        ),
       });
       if (member) {
         studioId = member.studioId;
@@ -292,7 +299,7 @@ export const authRouter = router({
       role: user.role,
       hasCompletedOnboarding: user.hasCompletedOnboarding,
       studioId,
-      studioRole
+      studioRole,
     };
   }),
 
@@ -310,7 +317,9 @@ export const authRouter = router({
     .input(
       z.object({
         currentPassword: z.string(),
-        newPassword: z.string().min(8, "Password must be at least 8 characters"),
+        newPassword: z
+          .string()
+          .min(8, "Password must be at least 8 characters"),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -334,7 +343,10 @@ export const authRouter = router({
       }
 
       // Verify current password
-      const isValidPassword = await comparePassword(currentPassword, fullUser.password);
+      const isValidPassword = await comparePassword(
+        currentPassword,
+        fullUser.password
+      );
       if (!isValidPassword) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
@@ -442,7 +454,8 @@ export const authRouter = router({
         // Don't reveal if user exists or not
         return {
           success: true,
-          message: "If an account exists with this email, a password reset link has been sent.",
+          message:
+            "If an account exists with this email, a password reset link has been sent.",
         };
       }
 
@@ -455,7 +468,8 @@ export const authRouter = router({
 
       return {
         success: true,
-        message: "If an account exists with this email, a password reset link has been sent.",
+        message:
+          "If an account exists with this email, a password reset link has been sent.",
         // In development, return the link
         ...(process.env.NODE_ENV === "development" && { resetLink }),
       };
@@ -468,7 +482,9 @@ export const authRouter = router({
     .input(
       z.object({
         token: z.string(),
-        newPassword: z.string().min(8, "Password must be at least 8 characters"),
+        newPassword: z
+          .string()
+          .min(8, "Password must be at least 8 characters"),
       })
     )
     .mutation(async ({ input }) => {
@@ -501,4 +517,3 @@ export const authRouter = router({
       return { success: true };
     }),
 });
-

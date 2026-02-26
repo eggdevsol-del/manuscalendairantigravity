@@ -7,66 +7,69 @@ import { defineConfig, loadEnv } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 import { VitePWA } from "vite-plugin-pwa";
 
-
 const plugins = [
   react(),
   tailwindcss(),
   // jsxLocPlugin(),
   vitePluginManusRuntime(),
   VitePWA({
-    strategies: 'injectManifest',
-    srcDir: 'src',
-    filename: 'sw.js',
-    registerType: 'autoUpdate',
-    includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+    strategies: "injectManifest",
+    srcDir: "src",
+    filename: "sw.js",
+    registerType: "autoUpdate",
+    includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
     manifest: {
-      name: 'TOI',
-      short_name: 'TOI',
-      description: 'Beautiful appointments made simple',
-      theme_color: '#000000',
-      background_color: '#000000',
-      display: 'standalone',
-      start_url: '/',
-      scope: '/',
+      name: "TOI",
+      short_name: "TOI",
+      description: "Beautiful appointments made simple",
+      theme_color: "#000000",
+      background_color: "#000000",
+      display: "standalone",
+      start_url: "/",
+      scope: "/",
       icons: [
         {
-          src: '/icon-192.png',
-          sizes: '192x192',
-          type: 'image/png',
-          purpose: 'any maskable'
+          src: "/icon-192.png",
+          sizes: "192x192",
+          type: "image/png",
+          purpose: "any maskable",
         },
         {
-          src: '/icon-512.png',
-          sizes: '512x512',
-          type: 'image/png',
-          purpose: 'any maskable'
-        }
-      ]
+          src: "/icon-512.png",
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "any maskable",
+        },
+      ],
     },
     devOptions: {
       enabled: true,
-      type: 'module',
+      type: "module",
     },
-  })
+  }),
 ];
 
 // Get version from package.json
-const packageVersion = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, 'package.json'), 'utf-8')).version;
+const packageVersion = JSON.parse(
+  fs.readFileSync(path.resolve(import.meta.dirname, "package.json"), "utf-8")
+).version;
 
 export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
-  const env = loadEnv(mode, import.meta.dirname, '');
+  const env = loadEnv(mode, import.meta.dirname, "");
 
   return {
     define: {
-      '__APP_VERSION__': JSON.stringify(packageVersion),
-      'import.meta.env.VITE_ONESIGNAL_APP_ID': JSON.stringify(env.VITE_ONESIGNAL_APP_ID),
+      __APP_VERSION__: JSON.stringify(packageVersion),
+      "import.meta.env.VITE_ONESIGNAL_APP_ID": JSON.stringify(
+        env.VITE_ONESIGNAL_APP_ID
+      ),
     },
     plugins: [
       ...plugins,
       {
-        name: 'html-transform',
+        name: "html-transform",
         transformIndexHtml(html) {
           return html.replace(/%VITE_APP_VERSION%/g, packageVersion);
         },

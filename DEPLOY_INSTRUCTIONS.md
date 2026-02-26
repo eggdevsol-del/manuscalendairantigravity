@@ -48,6 +48,7 @@ git push -u origin main
 7. Click "Apply" to start deployment
 
 Render will automatically:
+
 - Create a web service for your app
 - Create a MySQL database
 - Set up environment variables
@@ -108,6 +109,7 @@ If you prefer not to use the Blueprint:
 ### Add Other Environment Variables
 
 In your web service environment variables:
+
 - `NODE_ENV` = `production`
 - `JWT_SECRET` = (generate a random string, e.g., use https://randomkeygen.com/)
 - `OAUTH_BASE_URL` = `https://vidabiz.butterfly-effect.dev`
@@ -119,25 +121,30 @@ Click "Manual Deploy" → "Deploy latest commit"
 ## Troubleshooting
 
 **Authentication failed when pushing:**
+
 - Make sure you're using a Personal Access Token, not your password
 - Token needs `repo` scope
 
 **Render build fails:**
+
 - Check build logs in Render dashboard
 - Ensure `package.json` has correct build scripts
 
 **App crashes on Render:**
+
 - Check application logs
 - Verify all environment variables are set
 - Ensure DATABASE_URL is correct
 
 **Database connection fails:**
+
 - Verify DATABASE_URL format
 - Check database is running in Render dashboard
 
 ## Free Tier Limits
 
 **Render Free Tier:**
+
 - 750 hours/month runtime
 - App sleeps after 15 min inactivity
 - First request after sleep: 30-60 seconds
@@ -150,4 +157,3 @@ For production with no downtime, upgrade to paid plan ($7/month).
 - Render Docs: https://render.com/docs
 - GitHub Docs: https://docs.github.com
 - Contact me through Manus for assistance!
-

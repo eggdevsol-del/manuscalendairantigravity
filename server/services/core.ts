@@ -13,7 +13,7 @@ export async function getDb() {
         uri: process.env.DATABASE_URL,
         waitForConnections: true,
         connectionLimit: 5,
-        queueLimit: 0
+        queueLimit: 0,
       });
       _db = drizzle(pool, { mode: "default", schema });
       console.log("[Database] Pool initialized.");

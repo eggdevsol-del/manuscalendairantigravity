@@ -6,6 +6,6 @@ import { useMediaQuery } from "./useMediaQuery";
  * This covers iPads in landscape (1024px+) and desktop monitors.
  */
 export function useTabletLandscape() {
-    // 1024px is the standard breakpoint for iPad Landscape and Desktop
-    return useMediaQuery("(min-width: 1024px)");
+  // 1024px is the standard breakpoint for iPad Landscape and Desktop
+  return useMediaQuery("(min-width: 1024px)");
 }

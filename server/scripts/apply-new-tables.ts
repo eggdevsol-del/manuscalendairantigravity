@@ -1,19 +1,19 @@
-import 'dotenv/config';
-import mysql from 'mysql2/promise';
+import "dotenv/config";
+import mysql from "mysql2/promise";
 
 async function run() {
-    if (!process.env.DATABASE_URL) {
-        console.error("DATABASE_URL not found");
-        process.exit(1);
-    }
+  if (!process.env.DATABASE_URL) {
+    console.error("DATABASE_URL not found");
+    process.exit(1);
+  }
 
-    const connection = await mysql.createConnection(process.env.DATABASE_URL);
+  const connection = await mysql.createConnection(process.env.DATABASE_URL);
 
-    console.log("Connected to DB...");
+  console.log("Connected to DB...");
 
-    try {
-        // Portfolios
-        await connection.execute(`
+  try {
+    // Portfolios
+    await connection.execute(`
             CREATE TABLE IF NOT EXISTS portfolios (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 artistId VARCHAR(64) NOT NULL,
@@ -24,10 +24,10 @@ async function run() {
                 FOREIGN KEY (artistId) REFERENCES users(id) ON DELETE CASCADE
             );
         `);
-        console.log("Created portfolios table");
+    console.log("Created portfolios table");
 
-        // Portfolio Likes
-        await connection.execute(`
+    // Portfolio Likes
+    await connection.execute(`
             CREATE TABLE IF NOT EXISTS portfolio_likes (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 portfolioId INT NOT NULL,
@@ -38,10 +38,10 @@ async function run() {
                 UNIQUE KEY user_portfolio_like (userId, portfolioId)
             );
         `);
-        console.log("Created portfolio_likes table");
+    console.log("Created portfolio_likes table");
 
-        // Voucher Templates
-        await connection.execute(`
+    // Voucher Templates
+    await connection.execute(`
             CREATE TABLE IF NOT EXISTS voucher_templates (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 artistId VARCHAR(64) NOT NULL,
@@ -53,10 +53,10 @@ async function run() {
                 FOREIGN KEY (artistId) REFERENCES users(id) ON DELETE CASCADE
             );
         `);
-        console.log("Created voucher_templates table");
+    console.log("Created voucher_templates table");
 
-        // Issued Vouchers
-        await connection.execute(`
+    // Issued Vouchers
+    await connection.execute(`
             CREATE TABLE IF NOT EXISTS issued_vouchers (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 templateId INT NOT NULL,
@@ -73,13 +73,12 @@ async function run() {
                 INDEX idx_voucher_code (code)
             );
         `);
-        console.log("Created issued_vouchers table");
-
-    } catch (e) {
-        console.error("Error creating tables:", e);
-    } finally {
-        await connection.end();
-    }
+    console.log("Created issued_vouchers table");
+  } catch (e) {
+    console.error("Error creating tables:", e);
+  } finally {
+    await connection.end();
+  }
 }
 
 run();

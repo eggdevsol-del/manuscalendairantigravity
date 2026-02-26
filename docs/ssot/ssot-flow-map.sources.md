@@ -1,7 +1,9 @@
 # SSOT Flow Map Sources
+
 This document provides evidence for every node and connection in the SSOT Flow Map, derived strictly from the current codebase.
 
 ## UI LAYER Nodes
+
 - **Node: PageShell**
   - Path: `client/src/components/ui/ssot/PageShell.tsx`
   - Purpose: Root layout component for all authenticated views.
@@ -19,6 +21,7 @@ This document provides evidence for every node and connection in the SSOT Flow M
   - Purpose: Entry point for client consultation intake.
 
 ## STATE LAYER Nodes
+
 - **Node: auth_state**
   - Path: `client/src/_core/hooks/useAuth.ts`
   - Purpose: Single Source of Truth for user identity and role-based gating.
@@ -30,6 +33,7 @@ This document provides evidence for every node and connection in the SSOT Flow M
   - Purpose: Centralized state for BottomNav buttons per-page.
 
 ## FLOW/WIZARD LAYER Nodes
+
 - **Node: FunnelWrapper**
   - Path: `client/src/pages/funnel/FunnelWrapper.tsx`
   - Purpose: Orchestrates the multi-step consultation funnel logic.
@@ -38,6 +42,7 @@ This document provides evidence for every node and connection in the SSOT Flow M
   - Purpose: Step-based workflow for converting conversations into proposals/bookings.
 
 ## DATA/API LAYER Nodes
+
 - **Node: Leads**
   - Path: `drizzle/schema.ts` (Table definition)
   - Purpose: Persisted raw intake data from the funnel.
@@ -52,6 +57,7 @@ This document provides evidence for every node and connection in the SSOT Flow M
   - Purpose: SSOT logic for computing tags from lead data.
 
 ## INTEGRATIONS Nodes
+
 - **Node: OneSignal (Push)**
   - Path: `client/src/components/WebPushSettings.tsx`
   - Purpose: External notification service integration.
@@ -60,6 +66,7 @@ This document provides evidence for every node and connection in the SSOT Flow M
   - Purpose: Utilization of `mailto:` and `sms:` URI protocols for client communication.
 
 ## FLOW CONNECTIONS (Arrows)
+
 - **Consultation -> Leads**
   - Evidence: `client/src/pages/funnel/FunnelWrapper.tsx` (Call to `trpc.funnel.submit.useMutation`)
 - **Leads -> Conversations**

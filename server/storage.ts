@@ -1,8 +1,8 @@
 // Database-backed storage for images and files
 // Stores files as base64 in MySQL database
 
-import { getDb } from './db';
-import { sql } from 'drizzle-orm';
+import { getDb } from "./db";
+import { sql } from "drizzle-orm";
 
 // Initialize storage table
 async function ensureStorageTable() {
@@ -18,19 +18,19 @@ async function ensureStorageTable() {
 }
 
 function getMimeType(filename: string): string {
-  const ext = filename.split('.').pop()?.toLowerCase();
+  const ext = filename.split(".").pop()?.toLowerCase();
   const mimeTypes: Record<string, string> = {
-    'jpg': 'image/jpeg',
-    'jpeg': 'image/jpeg',
-    'png': 'image/png',
-    'gif': 'image/gif',
-    'webp': 'image/webp',
-    'svg': 'image/svg+xml',
-    'pdf': 'application/pdf',
-    'mp4': 'video/mp4',
-    'webm': 'video/webm',
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    gif: "image/gif",
+    webp: "image/webp",
+    svg: "image/svg+xml",
+    pdf: "application/pdf",
+    mp4: "video/mp4",
+    webm: "video/webm",
   };
-  return mimeTypes[ext || ''] || 'application/octet-stream';
+  return mimeTypes[ext || ""] || "application/octet-stream";
 }
 
 export async function storagePut(
@@ -38,17 +38,25 @@ export async function storagePut(
   data: Buffer | Uint8Array | string,
   contentType = "application/octet-stream"
 ): Promise<{ key: string; url: string }> {
-  console.log('[Storage] Starting upload:', { relKey, dataLength: data.length, contentType });
+  console.log("[Storage] Starting upload:", {
+    relKey,
+    dataLength: data.length,
+    contentType,
+  });
   await ensureStorageTable();
-  console.log('[Storage] Storage table ensured');
+  console.log("[Storage] Storage table ensured");
 
-  const key = relKey.replace(/^\/+/, '');
+  const key = relKey.replace(/^\/+/, "");
   const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
-  const base64Data = buffer.toString('base64');
+  const base64Data = buffer.toString("base64");
   const mimeType = contentType || getMimeType(key);
 
   // Insert or update the file
-  console.log('[Storage] Preparing to insert:', { key, base64Length: base64Data.length, mimeType });
+  console.log("[Storage] Preparing to insert:", {
+    key,
+    base64Length: base64Data.length,
+    mimeType,
+  });
   const db = await getDb();
   await db.execute(sql`
     INSERT INTO file_storage (file_key, file_data, mime_type)
@@ -60,21 +68,23 @@ export async function storagePut(
   `);
 
   const url = `/api/files/${key}`;
-  console.log('[Storage] Upload successful:', { key, url });
+  console.log("[Storage] Upload successful:", { key, url });
   return { key, url };
 }
 
 export async function storageGet(
   relKey: string,
   _expiresIn = 300
-): Promise<{ key: string; url: string; }> {
-  const key = relKey.replace(/^\/+/, '');
+): Promise<{ key: string; url: string }> {
+  const key = relKey.replace(/^\/+/, "");
   const url = `/api/files/${key}`;
   return { key, url };
 }
 
 // Helper function to retrieve file data from database
-export async function storageGetData(key: string): Promise<{ data: Buffer; mimeType: string } | null> {
+export async function storageGetData(
+  key: string
+): Promise<{ data: Buffer; mimeType: string } | null> {
   const db = await getDb();
   console.log(`[Storage] GetData query for key: ${key}`);
 
@@ -96,11 +106,12 @@ export async function storageGetData(key: string): Promise<{ data: Buffer; mimeT
     return null;
   }
 
-  console.log(`[Storage] Found data for key: ${key}, mime: ${rows[0].mime_type}`);
+  console.log(
+    `[Storage] Found data for key: ${key}, mime: ${rows[0].mime_type}`
+  );
 
   return {
-    data: Buffer.from(rows[0].file_data as string, 'base64'),
-    mimeType: rows[0].mime_type as string
+    data: Buffer.from(rows[0].file_data as string, "base64"),
+    mimeType: rows[0].mime_type as string,
   };
 }
-

@@ -1,10 +1,36 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+} from "@/components/ui";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
 import { LoadingState } from "@/components/ui/ssot";
 import { trpc } from "@/lib/trpc";
-import { ChevronLeft, Clock, Mail, MessageCircle, Phone, Plus, Search, Trash, User } from "lucide-react";
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
+import {
+  ChevronLeft,
+  Clock,
+  Mail,
+  MessageCircle,
+  Phone,
+  Plus,
+  Search,
+  Trash,
+  User,
+} from "lucide-react";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from "@/components/ui/empty";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -26,29 +52,35 @@ export default function Clients() {
   // Use centralized hook (SSOT)
   const { data: conversations, refetch } = useConversations();
 
-  const createConversationMutation = trpc.conversations.getOrCreate.useMutation({
-    onSuccess: () => {
-      toast.success("Client added successfully");
-      setShowAddDialog(false);
-      resetForm();
-      refetch();
-    },
-    onError: (error: any) => {
-      toast.error("Failed to add client: " + error.message);
-    },
-  });
-
-  const [clientToDelete, setClientToDelete] = useState<{ id: string; name: string } | null>(null);
-
-  const deleteBookingsMutation = trpc.appointments.deleteAllForClient.useMutation({
-    onSuccess: () => {
-      toast.success("All bookings deleted for client");
-      setClientToDelete(null);
-    },
-    onError: (error) => {
-      toast.error("Failed to delete bookings: " + error.message);
+  const createConversationMutation = trpc.conversations.getOrCreate.useMutation(
+    {
+      onSuccess: () => {
+        toast.success("Client added successfully");
+        setShowAddDialog(false);
+        resetForm();
+        refetch();
+      },
+      onError: (error: any) => {
+        toast.error("Failed to add client: " + error.message);
+      },
     }
-  });
+  );
+
+  const [clientToDelete, setClientToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
+  const deleteBookingsMutation =
+    trpc.appointments.deleteAllForClient.useMutation({
+      onSuccess: () => {
+        toast.success("All bookings deleted for client");
+        setClientToDelete(null);
+      },
+      onError: error => {
+        toast.error("Failed to delete bookings: " + error.message);
+      },
+    });
 
   const handleDeleteClick = (client: { id: string; name: string }) => {
     setClientToDelete(client);
@@ -85,26 +117,33 @@ export default function Clients() {
 
     // For now, we need a client ID. In production, this would create a user first.
     // As a workaround, we'll show a message that clients need to sign up first
-    toast.error("Clients must sign up through the app first. Share the app link with them!");
+    toast.error(
+      "Clients must sign up through the app first. Share the app link with them!"
+    );
     setShowAddDialog(false);
     resetForm();
   };
 
   // Extract unique clients from conversations
-  const clients = conversations?.map((conv: any) => ({
-    id: conv.clientId || conv.id,
-    name: conv.clientName || conv.otherUser?.name || "Unknown",
-    email: conv.otherUser?.email || "",
-    phone: conv.otherUser?.phone || "",
-    lastMessage: conv.lastMessage,
-    conversationId: conv.id,
-  })).filter((client: any, index: number, self: any[]) =>
-    index === self.findIndex((c: any) => c.id === client.id)
-  ) || [];
+  const clients =
+    conversations
+      ?.map((conv: any) => ({
+        id: conv.clientId || conv.id,
+        name: conv.clientName || conv.otherUser?.name || "Unknown",
+        email: conv.otherUser?.email || "",
+        phone: conv.otherUser?.phone || "",
+        lastMessage: conv.lastMessage,
+        conversationId: conv.id,
+      }))
+      .filter(
+        (client: any, index: number, self: any[]) =>
+          index === self.findIndex((c: any) => c.id === client.id)
+      ) || [];
 
-  const filteredClients = clients.filter((client: any) =>
-    client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredClients = clients.filter(
+    (client: any) =>
+      client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      client.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -134,22 +173,24 @@ export default function Clients() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search clients..."
               className="pl-9"
             />
           </div>
-          <Button
-            onClick={() => setShowAddDialog(true)}
-            className="tap-target"
-          >
+          <Button onClick={() => setShowAddDialog(true)} className="tap-target">
             <Plus className="w-4 h-4 mr-2" />
             Add
           </Button>
         </div>
 
         {/* Stats */}
-        <Card className={cn(tokens.card.base, "bg-gradient-to-br from-primary/10 to-accent/10 hover:from-primary/15 hover:to-accent/15")}>
+        <Card
+          className={cn(
+            tokens.card.base,
+            "bg-gradient-to-br from-primary/10 to-accent/10 hover:from-primary/15 hover:to-accent/15"
+          )}
+        >
           <CardContent className="pt-6">
             <div className="text-center">
               <p className="text-4xl font-bold text-foreground">
@@ -167,11 +208,16 @@ export default function Clients() {
           <Card className={cn(tokens.card.base, tokens.card.bg, "p-8")}>
             <Empty>
               <EmptyHeader>
-                <EmptyMedia variant="icon" className="w-16 h-16 rounded-full bg-muted">
+                <EmptyMedia
+                  variant="icon"
+                  className="w-16 h-16 rounded-full bg-muted"
+                >
                   <User className="w-8 h-8" />
                 </EmptyMedia>
                 <EmptyTitle>No clients yet</EmptyTitle>
-                <EmptyDescription>Add your first client to get started</EmptyDescription>
+                <EmptyDescription>
+                  Add your first client to get started
+                </EmptyDescription>
               </EmptyHeader>
               <EmptyContent>
                 <Button onClick={() => setShowAddDialog(true)}>
@@ -184,7 +230,15 @@ export default function Clients() {
         ) : (
           <div className="space-y-1">
             {filteredClients.map((client: any) => (
-              <Card key={client.id} className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0")}>
+              <Card
+                key={client.id}
+                className={cn(
+                  tokens.card.base,
+                  tokens.card.bg,
+                  tokens.card.interactive,
+                  "border-0"
+                )}
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3 flex-1">
@@ -213,7 +267,7 @@ export default function Clients() {
                       variant="ghost"
                       size="icon"
                       className="text-muted-foreground hover:text-destructive h-8 w-8 -mr-2 -mt-2"
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         handleDeleteClick({ id: client.id, name: client.name });
                       }}
@@ -228,7 +282,9 @@ export default function Clients() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setLocation(`/chat/${client.conversationId}`)}
+                      onClick={() =>
+                        setLocation(`/chat/${client.conversationId}`)
+                      }
                       className="w-full"
                     >
                       <MessageCircle className="w-4 h-4 mr-2" />
@@ -237,7 +293,11 @@ export default function Clients() {
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => setLocation(`/profile?tab=history&clientId=${client.id}`)}
+                      onClick={() =>
+                        setLocation(
+                          `/profile?tab=history&clientId=${client.id}`
+                        )
+                      }
                       className="w-full"
                     >
                       <Clock className="w-4 h-4 mr-2" />
@@ -247,7 +307,9 @@ export default function Clients() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setLocation(`/profile?clientId=${client.id}`)}
+                    onClick={() =>
+                      setLocation(`/profile?clientId=${client.id}`)
+                    }
                     className="w-full mt-2 text-xs opacity-70"
                   >
                     View Full Profile
@@ -275,7 +337,9 @@ export default function Clients() {
               disabled={createConversationMutation.isPending}
               className="flex-1"
             >
-              {createConversationMutation.isPending ? "Adding..." : "Add Client"}
+              {createConversationMutation.isPending
+                ? "Adding..."
+                : "Add Client"}
             </Button>
             <Button
               variant="outline"
@@ -296,9 +360,7 @@ export default function Clients() {
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
               placeholder="John Doe"
             />
           </div>
@@ -309,7 +371,7 @@ export default function Clients() {
               id="email"
               type="email"
               value={formData.email}
-              onChange={(e) =>
+              onChange={e =>
                 setFormData({ ...formData, email: e.target.value })
               }
               placeholder="john@example.com"
@@ -322,7 +384,7 @@ export default function Clients() {
               id="phone"
               type="tel"
               value={formData.phone}
-              onChange={(e) =>
+              onChange={e =>
                 setFormData({ ...formData, phone: e.target.value })
               }
               placeholder="+1 (555) 123-4567"
@@ -341,13 +403,17 @@ export default function Clients() {
         overlayId="clients.delete_bookings"
         footer={
           <div className="flex w-full justify-end gap-3">
-            <Button variant="outline" onClick={() => setClientToDelete(null)}>No</Button>
+            <Button variant="outline" onClick={() => setClientToDelete(null)}>
+              No
+            </Button>
             <Button
               variant="destructive"
               onClick={confirmDelete}
               disabled={deleteBookingsMutation.isPending}
             >
-              {deleteBookingsMutation.isPending ? "Deleting..." : "Yes, Delete All"}
+              {deleteBookingsMutation.isPending
+                ? "Deleting..."
+                : "Yes, Delete All"}
             </Button>
           </div>
         }

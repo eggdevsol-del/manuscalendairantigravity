@@ -154,12 +154,8 @@
           "name": "appointments_conversationId_conversations_id_fk",
           "tableFrom": "appointments",
           "tableTo": "conversations",
-          "columnsFrom": [
-            "conversationId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversationId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -167,12 +163,8 @@
           "name": "appointments_artistId_users_id_fk",
           "tableFrom": "appointments",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -180,12 +172,8 @@
           "name": "appointments_clientId_users_id_fk",
           "tableFrom": "appointments",
           "tableTo": "users",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -193,9 +181,7 @@
       "compositePrimaryKeys": {
         "appointments_id": {
           "name": "appointments_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -290,12 +276,8 @@
           "name": "artistSettings_userId_users_id_fk",
           "tableFrom": "artistSettings",
           "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -303,9 +285,7 @@
       "compositePrimaryKeys": {
         "artistSettings_id": {
           "name": "artistSettings_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -394,12 +374,8 @@
           "name": "consultations_artistId_users_id_fk",
           "tableFrom": "consultations",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -407,12 +383,8 @@
           "name": "consultations_clientId_users_id_fk",
           "tableFrom": "consultations",
           "tableTo": "users",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -420,12 +392,8 @@
           "name": "consultations_conversationId_conversations_id_fk",
           "tableFrom": "consultations",
           "tableTo": "conversations",
-          "columnsFrom": [
-            "conversationId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversationId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -433,9 +401,7 @@
       "compositePrimaryKeys": {
         "consultations_id": {
           "name": "consultations_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -488,12 +454,8 @@
           "name": "conversations_artistId_users_id_fk",
           "tableFrom": "conversations",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -501,12 +463,8 @@
           "name": "conversations_clientId_users_id_fk",
           "tableFrom": "conversations",
           "tableTo": "users",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -514,9 +472,7 @@
       "compositePrimaryKeys": {
         "conversations_id": {
           "name": "conversations_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -590,12 +546,8 @@
           "name": "messages_conversationId_conversations_id_fk",
           "tableFrom": "messages",
           "tableTo": "conversations",
-          "columnsFrom": [
-            "conversationId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversationId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -603,12 +555,8 @@
           "name": "messages_senderId_users_id_fk",
           "tableFrom": "messages",
           "tableTo": "users",
-          "columnsFrom": [
-            "senderId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["senderId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -616,9 +564,7 @@
       "compositePrimaryKeys": {
         "messages_id": {
           "name": "messages_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -700,12 +646,8 @@
           "name": "notificationTemplates_userId_users_id_fk",
           "tableFrom": "notificationTemplates",
           "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -713,9 +655,7 @@
       "compositePrimaryKeys": {
         "notificationTemplates_id": {
           "name": "notificationTemplates_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -790,12 +730,8 @@
           "name": "policies_artistId_users_id_fk",
           "tableFrom": "policies",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -803,9 +739,7 @@
       "compositePrimaryKeys": {
         "policies_id": {
           "name": "policies_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -857,12 +791,8 @@
           "name": "pushSubscriptions_userId_users_id_fk",
           "tableFrom": "pushSubscriptions",
           "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -870,9 +800,7 @@
       "compositePrimaryKeys": {
         "pushSubscriptions_id": {
           "name": "pushSubscriptions_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -955,12 +883,8 @@
           "name": "quickActionButtons_userId_users_id_fk",
           "tableFrom": "quickActionButtons",
           "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -968,9 +892,7 @@
       "compositePrimaryKeys": {
         "quickActionButtons_id": {
           "name": "quickActionButtons_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1066,12 +988,8 @@
           "name": "socialMessageSync_artistId_users_id_fk",
           "tableFrom": "socialMessageSync",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1079,9 +997,7 @@
       "compositePrimaryKeys": {
         "socialMessageSync_id": {
           "name": "socialMessageSync_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1205,9 +1121,7 @@
       "compositePrimaryKeys": {
         "users_id": {
           "name": "users_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},

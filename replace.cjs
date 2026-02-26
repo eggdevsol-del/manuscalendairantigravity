@@ -1,14 +1,14 @@
-const fs = require('fs');
-const file = 'client/src/features/booking/BookingWizardContent.tsx';
-let content = fs.readFileSync(file, 'utf8');
+const fs = require("fs");
+const file = "client/src/features/booking/BookingWizardContent.tsx";
+let content = fs.readFileSync(file, "utf8");
 
 // 1. Add lucide icons
 content = content.replace(
-    `    ChevronDown,
+  `    ChevronDown,
     MessageCircle,
     FileSignature,
 } from "lucide-react";`,
-    `    ChevronDown,
+  `    ChevronDown,
     MessageCircle,
     FileSignature,
     Gift,
@@ -19,20 +19,20 @@ content = content.replace(
 
 // 2. Remove ApplyPromotionSheet import
 content = content.replace(
-    `import { ApplyPromotionSheet } from "@/features/promotions";\n`,
-    ``
+  `import { ApplyPromotionSheet } from "@/features/promotions";\n`,
+  ``
 );
 
 // 3. Update state variables
 content = content.replace(
-    `    const [showPromotionSheet, setShowPromotionSheet] = useState(false);`,
-    `    const [showVoucherList, setShowVoucherList] = useState(false);`
+  `    const [showPromotionSheet, setShowPromotionSheet] = useState(false);`,
+  `    const [showVoucherList, setShowVoucherList] = useState(false);`
 );
 
 // 4. Add trpc query
 content = content.replace(
-    `    const signFormMutation = trpc.forms.signForm.useMutation({`,
-    `    const { data: availablePromotions, isLoading: isLoadingPromotions } = trpc.promotions.getAvailableForBooking.useQuery(
+  `    const signFormMutation = trpc.forms.signForm.useMutation({`,
+  `    const { data: availablePromotions, isLoading: isLoadingPromotions } = trpc.promotions.getAvailableForBooking.useQuery(
         { artistId: artistId || "" },
         { enabled: showVoucherList && !!artistId }
     );
@@ -42,7 +42,7 @@ content = content.replace(
 
 // 5. Update header of PROPOSAL VIEW
 content = content.replace(
-    `                    {/* Header */}
+  `                    {/* Header */}
                     <motion.div variants={fab.animation.item}>
                         <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-primary/70 mb-0.5">
                             {clientNameOverride || "Project Proposal"}
@@ -53,7 +53,7 @@ content = content.replace(
                     </motion.div>
 
                     {/* Stats */}`,
-    `                    {/* Header */}
+  `                    {/* Header */}
                     {!showVoucherList ? (
                         <motion.div variants={fab.animation.item}>
                             <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-primary/70 mb-0.5">
@@ -82,18 +82,18 @@ content = content.replace(
 
 // 6. Update Apply Voucher button
 content = content.replace(
-    `                                    onClick={() => setShowPromotionSheet(true)}`,
-    `                                    onClick={() => setShowVoucherList(true)}`
+  `                                    onClick={() => setShowPromotionSheet(true)}`,
+  `                                    onClick={() => setShowVoucherList(true)}`
 );
 
 // 7. Inject closing and voucher list
 content = content.replace(
-    `                            </p>
+  `                            </p>
                         </motion.div>
                     )}
 
                     {/* Artist actions — pending */}`,
-    `                            </p>
+  `                            </p>
                         </motion.div>
                     )}
                     
@@ -176,7 +176,7 @@ content = content.replace(
 
 // 8. Delete Support Sheet component
 content = content.replace(
-    `            {/* Support Sheet */}
+  `            {/* Support Sheet */}
             {artistId && (
                 <ApplyPromotionSheet
                     isOpen={showPromotionSheet}
@@ -188,8 +188,8 @@ content = content.replace(
                     }}
                 />
             )}`,
-    `            {/* End Booking Wizard Content */}`
+  `            {/* End Booking Wizard Content */}`
 );
 
 fs.writeFileSync(file, content);
-console.log('done replacing string chunks');
+console.log("done replacing string chunks");

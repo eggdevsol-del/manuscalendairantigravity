@@ -1,31 +1,42 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover"
+    />
+    <link rel="icon" type="image/png" href="%VITE_APP_LOGO%" />
+    <link rel="apple-touch-icon" href="%VITE_APP_LOGO%" />
+    <link rel="manifest" href="/manifest.json" />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
-  <link rel="icon" type="image/png" href="%VITE_APP_LOGO%" />
-  <link rel="apple-touch-icon" href="%VITE_APP_LOGO%" />
-  <link rel="manifest" href="/manifest.json" />
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#000000" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="TOI" />
 
-  <!-- PWA Meta Tags -->
-  <meta name="theme-color" content="#000000" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="TOI" />
+    <title>%VITE_APP_TITLE%</title>
 
-  <title>%VITE_APP_TITLE%</title>
+    <!-- OneSignal Web SDK for PWA -->
+    <script
+      src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+      defer
+    ></script>
+  </head>
 
-  <!-- OneSignal Web SDK for PWA -->
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-</head>
+  <body>
+    <div id="root"></div>
 
-<body>
-  <div id="root"></div>
-
-  <script type="module" src="/src/main.tsx"></script>
-  <script defer src="%VITE_ANALYTICS_ENDPOINT%/umami" data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
-</body>
-
+    <script type="module" src="/src/main.tsx"></script>
+    <script
+      defer
+      src="%VITE_ANALYTICS_ENDPOINT%/umami"
+      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"
+    ></script>
+  </body>
 </html>

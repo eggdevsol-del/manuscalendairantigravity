@@ -11,7 +11,7 @@ async function seedDemoData() {
     // Create test client
     const testClientId = "demo-client-" + Date.now();
     console.log("Creating test client:", testClientId);
-    
+
     await db.upsertUser({
       id: testClientId,
       name: "Sarah Johnson",
@@ -40,27 +40,31 @@ async function seedDemoData() {
     await db.createMessage({
       conversationId: conversation.id,
       senderId: testClientId,
-      content: "Hi! I'd like to book an appointment for a custom tattoo design.",
+      content:
+        "Hi! I'd like to book an appointment for a custom tattoo design.",
     });
-    
+
     await db.createMessage({
       conversationId: conversation.id,
       senderId: artistId,
-      content: "Hello Sarah! I'd love to help with your custom design. What did you have in mind?",
+      content:
+        "Hello Sarah! I'd love to help with your custom design. What did you have in mind?",
     });
-    
+
     await db.createMessage({
       conversationId: conversation.id,
       senderId: testClientId,
-      content: "I'm thinking of a floral sleeve design with some geometric elements. Do you have any availability next week?",
+      content:
+        "I'm thinking of a floral sleeve design with some geometric elements. Do you have any availability next week?",
     });
-    
+
     await db.createMessage({
       conversationId: conversation.id,
       senderId: artistId,
-      content: "That sounds beautiful! Let me check my calendar and get back to you with some available times.",
+      content:
+        "That sounds beautiful! Let me check my calendar and get back to you with some available times.",
     });
-    
+
     await db.createMessage({
       conversationId: conversation.id,
       senderId: testClientId,
@@ -80,7 +84,8 @@ async function seedDemoData() {
       artistId: artistId,
       clientId: testClientId,
       title: "Custom Floral Sleeve Tattoo - Consultation",
-      description: "Initial consultation and design discussion for custom floral sleeve with geometric elements",
+      description:
+        "Initial consultation and design discussion for custom floral sleeve with geometric elements",
       startTime: nextWeek,
       endTime: endTime,
       serviceName: "Custom Tattoo Design",
@@ -97,7 +102,7 @@ async function seedDemoData() {
     console.log("  - 5 messages");
     console.log("  - 1 appointment (next week)");
     console.log("\n🎉 You can now test the app with real data!");
-    
+
     process.exit(0);
   } catch (error) {
     console.error("❌ Error seeding demo data:", error);
@@ -106,4 +111,3 @@ async function seedDemoData() {
 }
 
 seedDemoData();
-

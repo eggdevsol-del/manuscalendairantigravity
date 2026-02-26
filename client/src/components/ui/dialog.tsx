@@ -11,9 +11,9 @@ const DialogCompositionContext = React.createContext<{
   markCompositionEnd: () => void;
 }>({
   isComposing: () => false,
-  setComposing: () => { },
+  setComposing: () => {},
   justEndedComposing: () => false,
-  markCompositionEnd: () => { },
+  markCompositionEnd: () => {},
 });
 
 export const useDialogComposition = () =>
@@ -204,6 +204,5 @@ export {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
 };
-

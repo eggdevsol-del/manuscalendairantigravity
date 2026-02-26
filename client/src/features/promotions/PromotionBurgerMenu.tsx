@@ -1,15 +1,14 @@
-
 import {
-    Plus,
-    Send,
-    Calendar as CalendarIcon,
-    Settings,
-    Grid,
-    GalleryVertical,
-    CreditCard,
-    Monitor,
-    Layout,
-    Trash2
+  Plus,
+  Send,
+  Calendar as CalendarIcon,
+  Settings,
+  Grid,
+  GalleryVertical,
+  CreditCard,
+  Monitor,
+  Layout,
+  Trash2,
 } from "lucide-react";
 import { useState } from "react";
 import { FABMenu, type FABMenuItem } from "@/ui/FABMenu";
@@ -17,88 +16,105 @@ import { PromotionWizardContent, WizardStep } from "./PromotionWizardContent";
 import { cn } from "@/lib/utils";
 
 interface PromotionBurgerMenuProps {
-    viewMode: 'swipe' | 'grid';
-    onViewModeChange: (mode: 'swipe' | 'grid') => void;
-    onAction: (action: 'create' | 'send' | 'auto-apply' | 'settings' | 'delete') => void;
-    isOpen?: boolean;
-    onOpenChange?: (open: boolean) => void;
-    className?: string;
+  viewMode: "swipe" | "grid";
+  onViewModeChange: (mode: "swipe" | "grid") => void;
+  onAction: (
+    action: "create" | "send" | "auto-apply" | "settings" | "delete"
+  ) => void;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  className?: string;
 }
 
 export function PromotionBurgerMenu({
-    viewMode,
-    onViewModeChange,
-    onAction,
-    isOpen,
-    onOpenChange,
-    className
+  viewMode,
+  onViewModeChange,
+  onAction,
+  isOpen,
+  onOpenChange,
+  className,
 }: PromotionBurgerMenuProps) {
-    const [isCreating, setIsCreating] = useState(false);
-    const [currentStep, setCurrentStep] = useState<string>('');
+  const [isCreating, setIsCreating] = useState(false);
+  const [currentStep, setCurrentStep] = useState<string>("");
 
-    const handleClose = () => {
-        setIsCreating(false);
-        if (onOpenChange) onOpenChange(false);
-    };
+  const handleClose = () => {
+    setIsCreating(false);
+    if (onOpenChange) onOpenChange(false);
+  };
 
-    const items: FABMenuItem[] = [
-        {
-            id: 'switch-view',
-            label: 'Switch View',
-            icon: viewMode === 'swipe' ? Grid : GalleryVertical,
-            onClick: () => onViewModeChange(viewMode === 'swipe' ? 'grid' : 'swipe'),
-        },
-        {
-            id: 'create',
-            label: 'New Promotion',
-            icon: Plus,
-            onClick: () => setIsCreating(true),
-            highlight: true,
-            closeOnClick: false,
-        },
-        {
-            id: 'send',
-            label: 'Send Voucher',
-            icon: Send,
-            onClick: () => onAction('send'),
-        },
-        {
-            id: 'auto-apply',
-            label: 'Auto-Apply',
-            icon: CalendarIcon,
-            onClick: () => onAction('auto-apply'),
-        },
-        { id: 'settings', label: 'Voucher Settings', icon: Settings, onClick: () => onAction('settings') },
-        { id: 'delete', label: 'Delete Card', icon: Trash2, onClick: () => onAction('delete'), highlight: true },
-    ];
+  const items: FABMenuItem[] = [
+    {
+      id: "switch-view",
+      label: "Switch View",
+      icon: viewMode === "swipe" ? Grid : GalleryVertical,
+      onClick: () => onViewModeChange(viewMode === "swipe" ? "grid" : "swipe"),
+    },
+    {
+      id: "create",
+      label: "New Promotion",
+      icon: Plus,
+      onClick: () => setIsCreating(true),
+      highlight: true,
+      closeOnClick: false,
+    },
+    {
+      id: "send",
+      label: "Send Voucher",
+      icon: Send,
+      onClick: () => onAction("send"),
+    },
+    {
+      id: "auto-apply",
+      label: "Auto-Apply",
+      icon: CalendarIcon,
+      onClick: () => onAction("auto-apply"),
+    },
+    {
+      id: "settings",
+      label: "Voucher Settings",
+      icon: Settings,
+      onClick: () => onAction("settings"),
+    },
+    {
+      id: "delete",
+      label: "Delete Card",
+      icon: Trash2,
+      onClick: () => onAction("delete"),
+      highlight: true,
+    },
+  ];
 
-    if (isCreating) {
-        return (
-            <FABMenu
-                toggleIcon={<CreditCard className="h-6 w-6" />}
-                isOpen={isOpen}
-                onOpenChange={(open) => {
-                    if (!open) setIsCreating(false);
-                    if (onOpenChange) onOpenChange(open);
-                }}
-                panelClassName={(currentStep === 'design' || currentStep === 'preview') ? "w-[330px]" : undefined}
-                className={className}
-            >
-                <PromotionWizardContent
-                    onClose={handleClose}
-                    onStepChange={setCurrentStep}
-                />
-            </FABMenu>
-        );
-    }
-
+  if (isCreating) {
     return (
-        <FABMenu
-            items={items}
-            toggleIcon={<Settings className="h-6 w-6" />}
-            isOpen={isOpen}
-            onOpenChange={onOpenChange}
-            className={className}
+      <FABMenu
+        toggleIcon={<CreditCard className="h-6 w-6" />}
+        isOpen={isOpen}
+        onOpenChange={open => {
+          if (!open) setIsCreating(false);
+          if (onOpenChange) onOpenChange(open);
+        }}
+        panelClassName={
+          currentStep === "design" || currentStep === "preview"
+            ? "w-[330px]"
+            : undefined
+        }
+        className={className}
+      >
+        <PromotionWizardContent
+          onClose={handleClose}
+          onStepChange={setCurrentStep}
         />
+      </FABMenu>
     );
+  }
+
+  return (
+    <FABMenu
+      items={items}
+      toggleIcon={<Settings className="h-6 w-6" />}
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      className={className}
+    />
+  );
 }

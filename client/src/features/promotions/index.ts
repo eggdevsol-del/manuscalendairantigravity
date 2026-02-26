@@ -1,15 +1,15 @@
 /**
  * Promotions Feature - SSOT Exports
- * 
+ *
  * @version 1.0.0
  */
 
-export * from './PromotionCard';
-export * from './cardTemplates';
-export * from './CreatePromotionWizard';
-export * from './SendPromotionSheet';
-export * from './InteractiveCardPreview';
-export * from './PromotionBurgerMenu';
-export * from './PromotionBurgerMenu';
-export * from './PromotionGrid';
-export * from './PromotionWizardContent';
+export * from "./PromotionCard";
+export * from "./cardTemplates";
+export * from "./CreatePromotionWizard";
+export * from "./SendPromotionSheet";
+export * from "./InteractiveCardPreview";
+export * from "./PromotionBurgerMenu";
+export * from "./PromotionBurgerMenu";
+export * from "./PromotionGrid";
+export * from "./PromotionWizardContent";

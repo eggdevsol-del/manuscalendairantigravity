@@ -189,18 +189,12 @@
       "indexes": {
         "idx_artist_domain": {
           "name": "idx_artist_domain",
-          "columns": [
-            "artistId",
-            "taskDomain"
-          ],
+          "columns": ["artistId", "taskDomain"],
           "isUnique": false
         },
         "idx_artist_score": {
           "name": "idx_artist_score",
-          "columns": [
-            "artistId",
-            "priorityScore"
-          ],
+          "columns": ["artistId", "priorityScore"],
           "isUnique": false
         }
       },
@@ -209,12 +203,8 @@
           "name": "active_tasks_artistId_users_id_fk",
           "tableFrom": "active_tasks",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -222,12 +212,8 @@
           "name": "active_tasks_clientId_users_id_fk",
           "tableFrom": "active_tasks",
           "tableTo": "users",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -235,9 +221,7 @@
       "compositePrimaryKeys": {
         "active_tasks_id": {
           "name": "active_tasks_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -300,9 +284,7 @@
       "indexes": {
         "log_appt_idx": {
           "name": "log_appt_idx",
-          "columns": [
-            "appointmentId"
-          ],
+          "columns": ["appointmentId"],
           "isUnique": false
         }
       },
@@ -311,12 +293,8 @@
           "name": "appointment_logs_appointmentId_appointments_id_fk",
           "tableFrom": "appointment_logs",
           "tableTo": "appointments",
-          "columnsFrom": [
-            "appointmentId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["appointmentId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -324,12 +302,8 @@
           "name": "appointment_logs_performedBy_users_id_fk",
           "tableFrom": "appointment_logs",
           "tableTo": "users",
-          "columnsFrom": [
-            "performedBy"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["performedBy"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -337,9 +311,7 @@
       "compositePrimaryKeys": {
         "appointment_logs_id": {
           "name": "appointment_logs_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -554,12 +526,8 @@
           "name": "appointments_conversationId_conversations_id_fk",
           "tableFrom": "appointments",
           "tableTo": "conversations",
-          "columnsFrom": [
-            "conversationId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversationId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -567,12 +535,8 @@
           "name": "appointments_artistId_users_id_fk",
           "tableFrom": "appointments",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -580,12 +544,8 @@
           "name": "appointments_clientId_users_id_fk",
           "tableFrom": "appointments",
           "tableTo": "users",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -593,9 +553,7 @@
       "compositePrimaryKeys": {
         "appointments_id": {
           "name": "appointments_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -737,9 +695,7 @@
       "indexes": {
         "idx_slug": {
           "name": "idx_slug",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": false
         }
       },
@@ -748,12 +704,8 @@
           "name": "artist_public_profile_artistId_users_id_fk",
           "tableFrom": "artist_public_profile",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -761,23 +713,17 @@
       "compositePrimaryKeys": {
         "artist_public_profile_id": {
           "name": "artist_public_profile_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "artist_public_profile_slug_unique": {
           "name": "artist_public_profile_slug_unique",
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         },
         "artist_public_profile_artist": {
           "name": "artist_public_profile_artist",
-          "columns": [
-            "artistId"
-          ]
+          "columns": ["artistId"]
         }
       },
       "checkConstraint": {}
@@ -964,12 +910,8 @@
           "name": "artistSettings_userId_users_id_fk",
           "tableFrom": "artistSettings",
           "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -977,17 +919,13 @@
       "compositePrimaryKeys": {
         "artistSettings_id": {
           "name": "artistSettings_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "artistSettings_publicSlug_unique": {
           "name": "artistSettings_publicSlug_unique",
-          "columns": [
-            "publicSlug"
-          ]
+          "columns": ["publicSlug"]
         }
       },
       "checkConstraint": {}
@@ -1086,24 +1024,17 @@
       "indexes": {
         "artist_id": {
           "name": "artist_id",
-          "columns": [
-            "artist_id"
-          ],
+          "columns": ["artist_id"],
           "isUnique": false
         },
         "idx_client_artist": {
           "name": "idx_client_artist",
-          "columns": [
-            "client_id",
-            "artist_id"
-          ],
+          "columns": ["client_id", "artist_id"],
           "isUnique": false
         },
         "idx_file_key": {
           "name": "idx_file_key",
-          "columns": [
-            "file_key"
-          ],
+          "columns": ["file_key"],
           "isUnique": false
         }
       },
@@ -1112,12 +1043,8 @@
           "name": "client_content_client_id_users_id_fk",
           "tableFrom": "client_content",
           "tableTo": "users",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1125,12 +1052,8 @@
           "name": "client_content_artist_id_users_id_fk",
           "tableFrom": "client_content",
           "tableTo": "users",
-          "columnsFrom": [
-            "artist_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artist_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1138,9 +1061,7 @@
       "compositePrimaryKeys": {
         "client_content_id": {
           "name": "client_content_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1198,17 +1119,12 @@
       "indexes": {
         "client_id": {
           "name": "client_id",
-          "columns": [
-            "client_id"
-          ],
+          "columns": ["client_id"],
           "isUnique": false
         },
         "idx_artist_client": {
           "name": "idx_artist_client",
-          "columns": [
-            "artist_id",
-            "client_id"
-          ],
+          "columns": ["artist_id", "client_id"],
           "isUnique": false
         }
       },
@@ -1217,12 +1133,8 @@
           "name": "client_notes_artist_id_users_id_fk",
           "tableFrom": "client_notes",
           "tableTo": "users",
-          "columnsFrom": [
-            "artist_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artist_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1230,12 +1142,8 @@
           "name": "client_notes_client_id_users_id_fk",
           "tableFrom": "client_notes",
           "tableTo": "users",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1243,9 +1151,7 @@
       "compositePrimaryKeys": {
         "client_notes_id": {
           "name": "client_notes_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1352,23 +1258,17 @@
       "indexes": {
         "cf_client_idx": {
           "name": "cf_client_idx",
-          "columns": [
-            "clientId"
-          ],
+          "columns": ["clientId"],
           "isUnique": false
         },
         "cf_artist_idx": {
           "name": "cf_artist_idx",
-          "columns": [
-            "artistId"
-          ],
+          "columns": ["artistId"],
           "isUnique": false
         },
         "cf_appointment_idx": {
           "name": "cf_appointment_idx",
-          "columns": [
-            "appointmentId"
-          ],
+          "columns": ["appointmentId"],
           "isUnique": false
         }
       },
@@ -1377,12 +1277,8 @@
           "name": "consent_forms_appointmentId_appointments_id_fk",
           "tableFrom": "consent_forms",
           "tableTo": "appointments",
-          "columnsFrom": [
-            "appointmentId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["appointmentId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1390,12 +1286,8 @@
           "name": "consent_forms_clientId_users_id_fk",
           "tableFrom": "consent_forms",
           "tableTo": "users",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1403,12 +1295,8 @@
           "name": "consent_forms_artistId_users_id_fk",
           "tableFrom": "consent_forms",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1416,9 +1304,7 @@
       "compositePrimaryKeys": {
         "consent_forms_id": {
           "name": "consent_forms_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1522,12 +1408,8 @@
           "name": "consultations_artistId_users_id_fk",
           "tableFrom": "consultations",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1535,12 +1417,8 @@
           "name": "consultations_clientId_users_id_fk",
           "tableFrom": "consultations",
           "tableTo": "users",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1548,12 +1426,8 @@
           "name": "consultations_conversationId_conversations_id_fk",
           "tableFrom": "consultations",
           "tableTo": "conversations",
-          "columnsFrom": [
-            "conversationId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversationId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1561,9 +1435,7 @@
       "compositePrimaryKeys": {
         "consultations_id": {
           "name": "consultations_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1634,16 +1506,12 @@
       "indexes": {
         "conv_artist_idx": {
           "name": "conv_artist_idx",
-          "columns": [
-            "artistId"
-          ],
+          "columns": ["artistId"],
           "isUnique": false
         },
         "conv_client_idx": {
           "name": "conv_client_idx",
-          "columns": [
-            "clientId"
-          ],
+          "columns": ["clientId"],
           "isUnique": false
         }
       },
@@ -1652,12 +1520,8 @@
           "name": "conversations_artistId_users_id_fk",
           "tableFrom": "conversations",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1665,12 +1529,8 @@
           "name": "conversations_clientId_users_id_fk",
           "tableFrom": "conversations",
           "tableTo": "users",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1678,9 +1538,7 @@
       "compositePrimaryKeys": {
         "conversations_id": {
           "name": "conversations_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1765,12 +1623,8 @@
           "name": "dashboard_settings_artistId_users_id_fk",
           "tableFrom": "dashboard_settings",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1778,17 +1632,13 @@
       "compositePrimaryKeys": {
         "dashboard_settings_id": {
           "name": "dashboard_settings_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "artist_dashboard_settings": {
           "name": "artist_dashboard_settings",
-          "columns": [
-            "artistId"
-          ]
+          "columns": ["artistId"]
         }
       },
       "checkConstraint": {}
@@ -1831,9 +1681,7 @@
       "compositePrimaryKeys": {
         "file_storage_file_key": {
           "name": "file_storage_file_key",
-          "columns": [
-            "file_key"
-          ]
+          "columns": ["file_key"]
         }
       },
       "uniqueConstraints": {},
@@ -1988,17 +1836,12 @@
       "indexes": {
         "idx_artist_session": {
           "name": "idx_artist_session",
-          "columns": [
-            "artistId"
-          ],
+          "columns": ["artistId"],
           "isUnique": false
         },
         "idx_abandoned": {
           "name": "idx_abandoned",
-          "columns": [
-            "abandoned",
-            "recoveryEmailSent"
-          ],
+          "columns": ["abandoned", "recoveryEmailSent"],
           "isUnique": false
         }
       },
@@ -2007,12 +1850,8 @@
           "name": "funnel_sessions_artistId_users_id_fk",
           "tableFrom": "funnel_sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2020,12 +1859,8 @@
           "name": "funnel_sessions_leadId_leads_id_fk",
           "tableFrom": "funnel_sessions",
           "tableTo": "leads",
-          "columnsFrom": [
-            "leadId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["leadId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2033,9 +1868,7 @@
       "compositePrimaryKeys": {
         "funnel_sessions_id": {
           "name": "funnel_sessions_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -2179,34 +2012,22 @@
       "indexes": {
         "idx_client_promotions": {
           "name": "idx_client_promotions",
-          "columns": [
-            "clientId",
-            "status"
-          ],
+          "columns": ["clientId", "status"],
           "isUnique": false
         },
         "idx_artist_promotions": {
           "name": "idx_artist_promotions",
-          "columns": [
-            "artistId",
-            "status"
-          ],
+          "columns": ["artistId", "status"],
           "isUnique": false
         },
         "idx_auto_apply": {
           "name": "idx_auto_apply",
-          "columns": [
-            "isAutoApply",
-            "autoApplyStartDate",
-            "autoApplyEndDate"
-          ],
+          "columns": ["isAutoApply", "autoApplyStartDate", "autoApplyEndDate"],
           "isUnique": false
         },
         "idx_templateId": {
           "name": "idx_templateId",
-          "columns": [
-            "templateId"
-          ],
+          "columns": ["templateId"],
           "isUnique": false
         }
       },
@@ -2215,12 +2036,8 @@
           "name": "issued_promotions_templateId_promotion_templates_id_fk",
           "tableFrom": "issued_promotions",
           "tableTo": "promotion_templates",
-          "columnsFrom": [
-            "templateId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["templateId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2228,12 +2045,8 @@
           "name": "issued_promotions_artistId_users_id_fk",
           "tableFrom": "issued_promotions",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2241,12 +2054,8 @@
           "name": "issued_promotions_clientId_users_id_fk",
           "tableFrom": "issued_promotions",
           "tableTo": "users",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -2254,12 +2063,8 @@
           "name": "issued_promotions_redeemedOnAppointmentId_appointments_id_fk",
           "tableFrom": "issued_promotions",
           "tableTo": "appointments",
-          "columnsFrom": [
-            "redeemedOnAppointmentId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["redeemedOnAppointmentId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2267,17 +2072,13 @@
       "compositePrimaryKeys": {
         "issued_promotions_id": {
           "name": "issued_promotions_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "issued_promotions_code": {
           "name": "issued_promotions_code",
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         }
       },
       "checkConstraint": {}
@@ -2354,9 +2155,7 @@
       "indexes": {
         "idx_templateId": {
           "name": "idx_templateId",
-          "columns": [
-            "templateId"
-          ],
+          "columns": ["templateId"],
           "isUnique": false
         }
       },
@@ -2365,12 +2164,8 @@
           "name": "issued_vouchers_templateId_voucher_templates_id_fk",
           "tableFrom": "issued_vouchers",
           "tableTo": "voucher_templates",
-          "columnsFrom": [
-            "templateId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["templateId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2378,12 +2173,8 @@
           "name": "issued_vouchers_artistId_users_id_fk",
           "tableFrom": "issued_vouchers",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2391,12 +2182,8 @@
           "name": "issued_vouchers_clientId_users_id_fk",
           "tableFrom": "issued_vouchers",
           "tableTo": "users",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2404,17 +2191,13 @@
       "compositePrimaryKeys": {
         "issued_vouchers_id": {
           "name": "issued_vouchers_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "issued_vouchers_code_unique": {
           "name": "issued_vouchers_code_unique",
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         }
       },
       "checkConstraint": {}
@@ -2484,10 +2267,7 @@
       "indexes": {
         "idx_lead_activity": {
           "name": "idx_lead_activity",
-          "columns": [
-            "leadId",
-            "createdAt"
-          ],
+          "columns": ["leadId", "createdAt"],
           "isUnique": false
         }
       },
@@ -2496,12 +2276,8 @@
           "name": "lead_activity_log_leadId_leads_id_fk",
           "tableFrom": "lead_activity_log",
           "tableTo": "leads",
-          "columnsFrom": [
-            "leadId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["leadId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2509,12 +2285,8 @@
           "name": "lead_activity_log_performedBy_users_id_fk",
           "tableFrom": "lead_activity_log",
           "tableTo": "users",
-          "columnsFrom": [
-            "performedBy"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["performedBy"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2522,9 +2294,7 @@
       "compositePrimaryKeys": {
         "lead_activity_log_id": {
           "name": "lead_activity_log_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -2894,32 +2664,22 @@
       "indexes": {
         "idx_artist_status": {
           "name": "idx_artist_status",
-          "columns": [
-            "artistId",
-            "status"
-          ],
+          "columns": ["artistId", "status"],
           "isUnique": false
         },
         "idx_artist_priority": {
           "name": "idx_artist_priority",
-          "columns": [
-            "artistId",
-            "priorityScore"
-          ],
+          "columns": ["artistId", "priorityScore"],
           "isUnique": false
         },
         "idx_client_email": {
           "name": "idx_client_email",
-          "columns": [
-            "clientEmail"
-          ],
+          "columns": ["clientEmail"],
           "isUnique": false
         },
         "idx_created": {
           "name": "idx_created",
-          "columns": [
-            "createdAt"
-          ],
+          "columns": ["createdAt"],
           "isUnique": false
         }
       },
@@ -2928,12 +2688,8 @@
           "name": "leads_artistId_users_id_fk",
           "tableFrom": "leads",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2941,12 +2697,8 @@
           "name": "leads_clientId_users_id_fk",
           "tableFrom": "leads",
           "tableTo": "users",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -2954,12 +2706,8 @@
           "name": "leads_appointmentId_appointments_id_fk",
           "tableFrom": "leads",
           "tableTo": "appointments",
-          "columnsFrom": [
-            "appointmentId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["appointmentId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2967,9 +2715,7 @@
       "compositePrimaryKeys": {
         "leads_id": {
           "name": "leads_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -3040,9 +2786,7 @@
       "indexes": {
         "msg_conversation_idx": {
           "name": "msg_conversation_idx",
-          "columns": [
-            "conversationId"
-          ],
+          "columns": ["conversationId"],
           "isUnique": false
         }
       },
@@ -3051,12 +2795,8 @@
           "name": "messages_conversationId_conversations_id_fk",
           "tableFrom": "messages",
           "tableTo": "conversations",
-          "columnsFrom": [
-            "conversationId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversationId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3064,12 +2804,8 @@
           "name": "messages_senderId_users_id_fk",
           "tableFrom": "messages",
           "tableTo": "users",
-          "columnsFrom": [
-            "senderId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["senderId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3077,9 +2813,7 @@
       "compositePrimaryKeys": {
         "messages_id": {
           "name": "messages_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -3124,12 +2858,8 @@
           "name": "moodboard_items_moodboardId_moodboards_id_fk",
           "tableFrom": "moodboard_items",
           "tableTo": "moodboards",
-          "columnsFrom": [
-            "moodboardId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["moodboardId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3137,9 +2867,7 @@
       "compositePrimaryKeys": {
         "moodboard_items_id": {
           "name": "moodboard_items_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -3192,12 +2920,8 @@
           "name": "moodboards_clientId_users_id_fk",
           "tableFrom": "moodboards",
           "tableTo": "users",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3205,9 +2929,7 @@
       "compositePrimaryKeys": {
         "moodboards_id": {
           "name": "moodboards_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -3287,10 +3009,7 @@
       "indexes": {
         "idx_status_next_attempt": {
           "name": "idx_status_next_attempt",
-          "columns": [
-            "status",
-            "nextAttemptAt"
-          ],
+          "columns": ["status", "nextAttemptAt"],
           "isUnique": false
         }
       },
@@ -3298,9 +3017,7 @@
       "compositePrimaryKeys": {
         "notification_outbox_id": {
           "name": "notification_outbox_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -3641,12 +3358,8 @@
           "name": "notificationSettings_userId_users_id_fk",
           "tableFrom": "notificationSettings",
           "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3654,17 +3367,13 @@
       "compositePrimaryKeys": {
         "notificationSettings_id": {
           "name": "notificationSettings_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "userId": {
           "name": "userId",
-          "columns": [
-            "userId"
-          ]
+          "columns": ["userId"]
         }
       },
       "checkConstraint": {}
@@ -3745,12 +3454,8 @@
           "name": "notificationTemplates_userId_users_id_fk",
           "tableFrom": "notificationTemplates",
           "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3758,9 +3463,7 @@
       "compositePrimaryKeys": {
         "notificationTemplates_id": {
           "name": "notificationTemplates_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -3835,9 +3538,7 @@
       "indexes": {
         "pms_artist_idx": {
           "name": "pms_artist_idx",
-          "columns": [
-            "artistId"
-          ],
+          "columns": ["artistId"],
           "isUnique": false
         }
       },
@@ -3846,12 +3547,8 @@
           "name": "payment_method_settings_artistId_users_id_fk",
           "tableFrom": "payment_method_settings",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3859,9 +3556,7 @@
       "compositePrimaryKeys": {
         "payment_method_settings_id": {
           "name": "payment_method_settings_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -3936,12 +3631,8 @@
           "name": "policies_artistId_users_id_fk",
           "tableFrom": "policies",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3949,9 +3640,7 @@
       "compositePrimaryKeys": {
         "policies_id": {
           "name": "policies_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -3996,12 +3685,8 @@
           "name": "portfolio_likes_portfolioId_portfolios_id_fk",
           "tableFrom": "portfolio_likes",
           "tableTo": "portfolios",
-          "columnsFrom": [
-            "portfolioId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["portfolioId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4009,12 +3694,8 @@
           "name": "portfolio_likes_userId_users_id_fk",
           "tableFrom": "portfolio_likes",
           "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4022,18 +3703,13 @@
       "compositePrimaryKeys": {
         "portfolio_likes_id": {
           "name": "portfolio_likes_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "user_portfolio_like": {
           "name": "user_portfolio_like",
-          "columns": [
-            "userId",
-            "portfolioId"
-          ]
+          "columns": ["userId", "portfolioId"]
         }
       },
       "checkConstraint": {}
@@ -4092,12 +3768,8 @@
           "name": "portfolios_artistId_users_id_fk",
           "tableFrom": "portfolios",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4105,9 +3777,7 @@
       "compositePrimaryKeys": {
         "portfolios_id": {
           "name": "portfolios_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -4198,23 +3868,17 @@
       "indexes": {
         "pl_artist_idx": {
           "name": "pl_artist_idx",
-          "columns": [
-            "artistId"
-          ],
+          "columns": ["artistId"],
           "isUnique": false
         },
         "pl_client_idx": {
           "name": "pl_client_idx",
-          "columns": [
-            "clientId"
-          ],
+          "columns": ["clientId"],
           "isUnique": false
         },
         "pl_appointment_idx": {
           "name": "pl_appointment_idx",
-          "columns": [
-            "appointmentId"
-          ],
+          "columns": ["appointmentId"],
           "isUnique": false
         }
       },
@@ -4223,12 +3887,8 @@
           "name": "procedure_logs_appointmentId_appointments_id_fk",
           "tableFrom": "procedure_logs",
           "tableTo": "appointments",
-          "columnsFrom": [
-            "appointmentId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["appointmentId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4236,12 +3896,8 @@
           "name": "procedure_logs_artistId_users_id_fk",
           "tableFrom": "procedure_logs",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4249,12 +3905,8 @@
           "name": "procedure_logs_clientId_users_id_fk",
           "tableFrom": "procedure_logs",
           "tableTo": "users",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4262,9 +3914,7 @@
       "compositePrimaryKeys": {
         "procedure_logs_id": {
           "name": "procedure_logs_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -4327,16 +3977,12 @@
       "indexes": {
         "idx_promotion_redemptions": {
           "name": "idx_promotion_redemptions",
-          "columns": [
-            "promotionId"
-          ],
+          "columns": ["promotionId"],
           "isUnique": false
         },
         "idx_appointment_redemptions": {
           "name": "idx_appointment_redemptions",
-          "columns": [
-            "appointmentId"
-          ],
+          "columns": ["appointmentId"],
           "isUnique": false
         }
       },
@@ -4345,12 +3991,8 @@
           "name": "promotion_redemptions_promotionId_issued_promotions_id_fk",
           "tableFrom": "promotion_redemptions",
           "tableTo": "issued_promotions",
-          "columnsFrom": [
-            "promotionId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["promotionId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4358,12 +4000,8 @@
           "name": "promotion_redemptions_appointmentId_appointments_id_fk",
           "tableFrom": "promotion_redemptions",
           "tableTo": "appointments",
-          "columnsFrom": [
-            "appointmentId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["appointmentId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4371,9 +4009,7 @@
       "compositePrimaryKeys": {
         "promotion_redemptions_id": {
           "name": "promotion_redemptions_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -4549,10 +4185,7 @@
       "indexes": {
         "idx_artist_templates": {
           "name": "idx_artist_templates",
-          "columns": [
-            "artistId",
-            "type"
-          ],
+          "columns": ["artistId", "type"],
           "isUnique": false
         }
       },
@@ -4561,12 +4194,8 @@
           "name": "promotion_templates_artistId_users_id_fk",
           "tableFrom": "promotion_templates",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4574,9 +4203,7 @@
       "compositePrimaryKeys": {
         "promotion_templates_id": {
           "name": "promotion_templates_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -4632,9 +4259,7 @@
       "indexes": {
         "user_id_idx": {
           "name": "user_id_idx",
-          "columns": [
-            "userId"
-          ],
+          "columns": ["userId"],
           "isUnique": false
         }
       },
@@ -4643,12 +4268,8 @@
           "name": "push_subscriptions_userId_users_id_fk",
           "tableFrom": "push_subscriptions",
           "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4656,9 +4277,7 @@
       "compositePrimaryKeys": {
         "push_subscriptions_id": {
           "name": "push_subscriptions_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -4741,12 +4360,8 @@
           "name": "quickActionButtons_userId_users_id_fk",
           "tableFrom": "quickActionButtons",
           "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4754,9 +4369,7 @@
       "compositePrimaryKeys": {
         "quickActionButtons_id": {
           "name": "quickActionButtons_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -4852,12 +4465,8 @@
           "name": "socialMessageSync_artistId_users_id_fk",
           "tableFrom": "socialMessageSync",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4865,9 +4474,7 @@
       "compositePrimaryKeys": {
         "socialMessageSync_id": {
           "name": "socialMessageSync_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -4936,12 +4543,8 @@
           "name": "studio_members_studioId_studios_id_fk",
           "tableFrom": "studio_members",
           "tableTo": "studios",
-          "columnsFrom": [
-            "studioId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["studioId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4949,12 +4552,8 @@
           "name": "studio_members_userId_users_id_fk",
           "tableFrom": "studio_members",
           "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4962,18 +4561,13 @@
       "compositePrimaryKeys": {
         "studio_members_id": {
           "name": "studio_members_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "studio_user_unique": {
           "name": "studio_user_unique",
-          "columns": [
-            "studioId",
-            "userId"
-          ]
+          "columns": ["studioId", "userId"]
         }
       },
       "checkConstraint": {}
@@ -5048,12 +4642,8 @@
           "name": "studios_ownerId_users_id_fk",
           "tableFrom": "studios",
           "tableTo": "users",
-          "columnsFrom": [
-            "ownerId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["ownerId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -5061,9 +4651,7 @@
       "compositePrimaryKeys": {
         "studios_id": {
           "name": "studios_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -5141,23 +4729,17 @@
       "indexes": {
         "sl_level_idx": {
           "name": "sl_level_idx",
-          "columns": [
-            "level"
-          ],
+          "columns": ["level"],
           "isUnique": false
         },
         "sl_category_idx": {
           "name": "sl_category_idx",
-          "columns": [
-            "category"
-          ],
+          "columns": ["category"],
           "isUnique": false
         },
         "sl_user_idx": {
           "name": "sl_user_idx",
-          "columns": [
-            "userId"
-          ],
+          "columns": ["userId"],
           "isUnique": false
         }
       },
@@ -5166,12 +4748,8 @@
           "name": "system_logs_userId_users_id_fk",
           "tableFrom": "system_logs",
           "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -5179,9 +4757,7 @@
       "compositePrimaryKeys": {
         "system_logs_id": {
           "name": "system_logs_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -5294,25 +4870,17 @@
       "indexes": {
         "idx_artist_task_type": {
           "name": "idx_artist_task_type",
-          "columns": [
-            "artistId",
-            "taskType"
-          ],
+          "columns": ["artistId", "taskType"],
           "isUnique": false
         },
         "idx_artist_completed": {
           "name": "idx_artist_completed",
-          "columns": [
-            "artistId",
-            "completedAt"
-          ],
+          "columns": ["artistId", "completedAt"],
           "isUnique": false
         },
         "idx_task_domain": {
           "name": "idx_task_domain",
-          "columns": [
-            "taskDomain"
-          ],
+          "columns": ["taskDomain"],
           "isUnique": false
         }
       },
@@ -5321,12 +4889,8 @@
           "name": "task_completions_artistId_users_id_fk",
           "tableFrom": "task_completions",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5334,12 +4898,8 @@
           "name": "task_completions_clientId_users_id_fk",
           "tableFrom": "task_completions",
           "tableTo": "users",
-          "columnsFrom": [
-            "clientId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["clientId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -5347,9 +4907,7 @@
       "compositePrimaryKeys": {
         "task_completions_id": {
           "name": "task_completions_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -5515,17 +5073,13 @@
       "compositePrimaryKeys": {
         "users_id": {
           "name": "users_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "users_clerkId_unique": {
           "name": "users_clerkId_unique",
-          "columns": [
-            "clerkId"
-          ]
+          "columns": ["clerkId"]
         }
       },
       "checkConstraint": {}
@@ -5591,12 +5145,8 @@
           "name": "voucher_templates_artistId_users_id_fk",
           "tableFrom": "voucher_templates",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -5604,9 +5154,7 @@
       "compositePrimaryKeys": {
         "voucher_templates_id": {
           "name": "voucher_templates_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -5859,10 +5407,7 @@
       "indexes": {
         "idx_artist_week": {
           "name": "idx_artist_week",
-          "columns": [
-            "artistId",
-            "weekStartDate"
-          ],
+          "columns": ["artistId", "weekStartDate"],
           "isUnique": false
         }
       },
@@ -5871,12 +5416,8 @@
           "name": "weekly_analytics_artistId_users_id_fk",
           "tableFrom": "weekly_analytics",
           "tableTo": "users",
-          "columnsFrom": [
-            "artistId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artistId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -5884,18 +5425,13 @@
       "compositePrimaryKeys": {
         "weekly_analytics_id": {
           "name": "weekly_analytics_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "artist_week": {
           "name": "artist_week",
-          "columns": [
-            "artistId",
-            "weekStartDate"
-          ]
+          "columns": ["artistId", "weekStartDate"]
         }
       },
       "checkConstraint": {}

@@ -8,34 +8,36 @@ import { useLocation } from "wouter";
  * If a client lands here with a ref, it automatically creates a conversation.
  */
 export function useArtistReferral() {
-    const { user } = useAuth();
-    const [, setLocation] = useLocation();
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
 
-    const createConversationMutation = trpc.conversations.getOrCreate.useMutation({
-        onSuccess: (conversation) => {
-            if (conversation) {
-                setLocation(`/chat/${conversation.id}`);
-            }
-        },
-    });
-
-    useEffect(() => {
-        if (user && user.role === 'client') {
-            const params = new URLSearchParams(window.location.search);
-            const refArtistId = params.get('ref');
-
-            if (refArtistId && user.id) {
-                createConversationMutation.mutate({
-                    artistId: refArtistId,
-                    clientId: user.id
-                });
-                // Clean up URL
-                window.history.replaceState({}, '', '/conversations');
-            }
+  const createConversationMutation = trpc.conversations.getOrCreate.useMutation(
+    {
+      onSuccess: conversation => {
+        if (conversation) {
+          setLocation(`/chat/${conversation.id}`);
         }
-    }, [user, createConversationMutation]);
+      },
+    }
+  );
 
-    return {
-        isProcessing: createConversationMutation.isPending
-    };
+  useEffect(() => {
+    if (user && user.role === "client") {
+      const params = new URLSearchParams(window.location.search);
+      const refArtistId = params.get("ref");
+
+      if (refArtistId && user.id) {
+        createConversationMutation.mutate({
+          artistId: refArtistId,
+          clientId: user.id,
+        });
+        // Clean up URL
+        window.history.replaceState({}, "", "/conversations");
+      }
+    }
+  }, [user, createConversationMutation]);
+
+  return {
+    isProcessing: createConversationMutation.isPending,
+  };
 }

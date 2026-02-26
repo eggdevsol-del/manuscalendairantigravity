@@ -1,7 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { Capacitor } from "@capacitor/core";
-import { StatusBar, Style } from '@capacitor/status-bar';
-import { UNAUTHED_ERR_MSG } from '@shared/const';
+import { StatusBar, Style } from "@capacitor/status-bar";
+import { UNAUTHED_ERR_MSG } from "@shared/const";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
@@ -53,7 +53,9 @@ const trpcClient = trpc.createClient({
       transformer: superjson,
       fetch(input, init) {
         // Get JWT token from localStorage OR sessionStorage
-        const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+        const token =
+          localStorage.getItem("authToken") ||
+          sessionStorage.getItem("authToken");
 
         // Add Authorization header if token exists
         const headers = {
@@ -80,8 +82,8 @@ createRoot(document.getElementById("root")!).render(
 );
 
 // Current app version (baked in at build time)
-const APP_VERSION = import.meta.env.VITE_APP_VERSION || '0.0.0';
-console.log('[App] Starting version:', APP_VERSION);
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || "0.0.0";
+console.log("[App] Starting version:", APP_VERSION);
 
 // Register service worker for PWA
 if (import.meta.env.PROD) {
@@ -90,7 +92,7 @@ if (import.meta.env.PROD) {
 
 // Initialize OneSignal for push notifications
 initializeOneSignal().catch(err => {
-  console.error('[OneSignal] Failed to initialize:', err);
+  console.error("[OneSignal] Failed to initialize:", err);
 });
 
 // Configure Status Bar for Native/PWA

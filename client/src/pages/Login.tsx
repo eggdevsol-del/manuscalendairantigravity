@@ -1,7 +1,17 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Checkbox, Input, Label } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Checkbox,
+  Input,
+  Label,
+} from "@/components/ui";
 import { PageShell } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
@@ -20,7 +30,7 @@ export default function Login() {
   const { user, loading: authLoading } = useAuth();
 
   const loginMutation = trpc.auth.login.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Clear legacy/other storage first to avoid conflicts
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
@@ -48,7 +58,7 @@ export default function Login() {
 
       setIsLoading(false);
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Login failed. Please try again.");
       setIsLoading(false);
     },
@@ -73,7 +83,9 @@ export default function Login() {
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]">
             <LogIn className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-3xl font-bold tracking-tight text-foreground">Welcome Back</CardTitle>
+          <CardTitle className="text-3xl font-bold tracking-tight text-foreground">
+            Welcome Back
+          </CardTitle>
           <CardDescription className="text-base font-medium">
             Sign in to your account to continue
           </CardDescription>
@@ -89,7 +101,7 @@ export default function Login() {
                   type="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   variant="hero"
                   className="pl-10"
                   disabled={isLoading}
@@ -106,7 +118,7 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   variant="hero"
                   className="pr-10"
                   disabled={isLoading}
@@ -131,7 +143,7 @@ export default function Login() {
               <Checkbox
                 id="remember"
                 checked={rememberMe}
-                onCheckedChange={(checked) => setRememberMe(checked === true)}
+                onCheckedChange={checked => setRememberMe(checked === true)}
                 disabled={isLoading}
               />
               <label
@@ -172,7 +184,10 @@ export default function Login() {
 
             <Button
               type="button"
-              className={cn(tokens.button.secondary, "w-full border border-white/5")}
+              className={cn(
+                tokens.button.secondary,
+                "w-full border border-white/5"
+              )}
               onClick={() => setLocation("/signup")}
               disabled={isLoading}
             >
@@ -181,7 +196,10 @@ export default function Login() {
 
             <Button
               type="button"
-              className={cn(tokens.button.ghost, "w-full text-muted-foreground")}
+              className={cn(
+                tokens.button.ghost,
+                "w-full text-muted-foreground"
+              )}
               onClick={() => setLocation("/forgot-password")}
               disabled={isLoading}
             >
@@ -191,11 +209,12 @@ export default function Login() {
 
           {/* Version Number */}
           <div className="mt-6 text-center">
-            <span className="text-xs text-muted-foreground font-medium">v{APP_VERSION}</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              v{APP_VERSION}
+            </span>
           </div>
         </CardContent>
       </div>
     </PageShell>
   );
 }
-

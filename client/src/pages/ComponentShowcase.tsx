@@ -4,7 +4,37 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Alert, AlertDescription, AlertTitle, AspectRatio, Avatar, AvatarFallback, AvatarImage, Badge, Button, Calendar, Checkbox, Input, Label, Progress, RadioGroup, RadioGroupItem, ScrollArea, Separator, Skeleton, Slider, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, Toggle, ToggleGroup, ToggleGroupItem } from "@/components/ui";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  AspectRatio,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Badge,
+  Button,
+  Calendar,
+  Checkbox,
+  Input,
+  Label,
+  Progress,
+  RadioGroup,
+  RadioGroupItem,
+  ScrollArea,
+  Separator,
+  Skeleton,
+  Slider,
+  Switch,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Textarea,
+  Toggle,
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -433,8 +463,9 @@ export default function ComponentsShowcase() {
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className={`w-full justify-start text-left font-normal ${!datePickerDate && "text-muted-foreground"
-                          }`}
+                        className={`w-full justify-start text-left font-normal ${
+                          !datePickerDate && "text-muted-foreground"
+                        }`}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {datePickerDate ? (
@@ -501,14 +532,14 @@ export default function ComponentsShowcase() {
                       >
                         {selectedFramework
                           ? [
-                            { value: "react", label: "React" },
-                            { value: "vue", label: "Vue" },
-                            { value: "angular", label: "Angular" },
-                            { value: "svelte", label: "Svelte" },
-                            { value: "nextjs", label: "Next.js" },
-                            { value: "nuxt", label: "Nuxt" },
-                            { value: "remix", label: "Remix" },
-                          ].find(fw => fw.value === selectedFramework)?.label
+                              { value: "react", label: "React" },
+                              { value: "vue", label: "Vue" },
+                              { value: "angular", label: "Angular" },
+                              { value: "svelte", label: "Svelte" },
+                              { value: "nextjs", label: "Next.js" },
+                              { value: "nuxt", label: "Nuxt" },
+                              { value: "remix", label: "Remix" },
+                            ].find(fw => fw.value === selectedFramework)?.label
                           : "Select framework..."}
                         <CalendarIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -541,10 +572,11 @@ export default function ComponentsShowcase() {
                                 }}
                               >
                                 <Check
-                                  className={`mr-2 h-4 w-4 ${selectedFramework === framework.value
+                                  className={`mr-2 h-4 w-4 ${
+                                    selectedFramework === framework.value
                                       ? "opacity-100"
                                       : "opacity-0"
-                                    }`}
+                                  }`}
                                 />
                                 {framework.label}
                               </CommandItem>
@@ -983,7 +1015,8 @@ export default function ComponentsShowcase() {
                       <DialogHeader>
                         <DialogTitle>Test Input</DialogTitle>
                         <DialogDescription>
-                          Enter some text below. Press Enter to submit (IME composition supported).
+                          Enter some text below. Press Enter to submit (IME
+                          composition supported).
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4 py-4">
@@ -993,7 +1026,7 @@ export default function ComponentsShowcase() {
                             id="dialog-input"
                             placeholder="Type something..."
                             value={dialogInput}
-                            onChange={(e) => setDialogInput(e.target.value)}
+                            onChange={e => setDialogInput(e.target.value)}
                             onKeyDown={handleDialogKeyDown}
                             autoFocus
                           />

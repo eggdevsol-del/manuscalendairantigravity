@@ -20,31 +20,31 @@ interface FunnelAvailabilityStepProps {
 }
 
 const TIMEFRAME_OPTIONS = [
-  { id: 'asap', label: 'As soon as possible', icon: '⚡' },
-  { id: '1-3-months', label: '1-3 months', icon: '📅' },
-  { id: '3-6-months', label: '3-6 months', icon: '🗓️' },
-  { id: '6-12-months', label: '6-12 months', icon: '📆' },
-  { id: 'flexible', label: 'I\'m flexible', icon: '🤷' },
+  { id: "asap", label: "As soon as possible", icon: "⚡" },
+  { id: "1-3-months", label: "1-3 months", icon: "📅" },
+  { id: "3-6-months", label: "3-6 months", icon: "🗓️" },
+  { id: "6-12-months", label: "6-12 months", icon: "📆" },
+  { id: "flexible", label: "I'm flexible", icon: "🤷" },
 ];
 
 const URGENCY_OPTIONS = [
-  { 
-    id: 'flexible', 
-    label: 'Flexible', 
-    description: 'I can wait for the right time',
-    color: 'text-green-500'
+  {
+    id: "flexible",
+    label: "Flexible",
+    description: "I can wait for the right time",
+    color: "text-green-500",
   },
-  { 
-    id: 'moderate', 
-    label: 'Moderate', 
-    description: 'Would like to book within my timeframe',
-    color: 'text-yellow-500'
+  {
+    id: "moderate",
+    label: "Moderate",
+    description: "Would like to book within my timeframe",
+    color: "text-yellow-500",
   },
-  { 
-    id: 'urgent', 
-    label: 'Urgent', 
-    description: 'Need it done soon (special occasion, etc.)',
-    color: 'text-red-500'
+  {
+    id: "urgent",
+    label: "Urgent",
+    description: "Need it done soon (special occasion, etc.)",
+    color: "text-red-500",
   },
 ];
 
@@ -55,9 +55,12 @@ const getNextMonths = () => {
   for (let i = 0; i < 12; i++) {
     const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
     months.push({
-      id: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
-      label: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-      short: date.toLocaleDateString('en-US', { month: 'short' }),
+      id: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`,
+      label: date.toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      }),
+      short: date.toLocaleDateString("en-US", { month: "short" }),
     });
   }
   return months;
@@ -73,13 +76,13 @@ export default function FunnelAvailabilityStep({
   submitting,
 }: FunnelAvailabilityStepProps) {
   const [preferredTimeframe, setPreferredTimeframe] = useState(
-    stepData.availability?.preferredTimeframe || ''
+    stepData.availability?.preferredTimeframe || ""
   );
   const [preferredMonths, setPreferredMonths] = useState<string[]>(
     stepData.availability?.preferredMonths || []
   );
-  const [urgency, setUrgency] = useState<'flexible' | 'moderate' | 'urgent'>(
-    stepData.availability?.urgency || 'flexible'
+  const [urgency, setUrgency] = useState<"flexible" | "moderate" | "urgent">(
+    stepData.availability?.urgency || "flexible"
   );
 
   const months = getNextMonths();
@@ -93,7 +96,7 @@ export default function FunnelAvailabilityStep({
   };
 
   const handleNext = () => {
-    onNext('availability', {
+    onNext("availability", {
       preferredTimeframe,
       preferredMonths,
       urgency,
@@ -130,14 +133,17 @@ export default function FunnelAvailabilityStep({
               onClick={() => setPreferredTimeframe(option.id)}
               className={`
                 relative w-full p-3 rounded-xl border-2 text-left transition-all flex items-center gap-3
-                ${preferredTimeframe === option.id
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border bg-card hover:border-primary/50'
+                ${
+                  preferredTimeframe === option.id
+                    ? "border-primary bg-primary/10"
+                    : "border-border bg-card hover:border-primary/50"
                 }
               `}
             >
               <span className="text-xl">{option.icon}</span>
-              <span className="font-medium text-foreground">{option.label}</span>
+              <span className="font-medium text-foreground">
+                {option.label}
+              </span>
               {preferredTimeframe === option.id && (
                 <motion.div
                   initial={{ scale: 0 }}
@@ -153,14 +159,15 @@ export default function FunnelAvailabilityStep({
       </div>
 
       {/* Preferred months (optional) */}
-      {preferredTimeframe && preferredTimeframe !== 'asap' && (
+      {preferredTimeframe && preferredTimeframe !== "asap" && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
+          animate={{ opacity: 1, height: "auto" }}
           className="mt-6"
         >
           <label className="block text-sm font-medium text-foreground mb-2">
-            Preferred months <span className="text-muted-foreground">(optional)</span>
+            Preferred months{" "}
+            <span className="text-muted-foreground">(optional)</span>
           </label>
           <div className="flex flex-wrap gap-2">
             {months.map((month, index) => (
@@ -172,9 +179,10 @@ export default function FunnelAvailabilityStep({
                 onClick={() => toggleMonth(month.id)}
                 className={`
                   px-3 py-1.5 rounded-full text-sm font-medium transition-all
-                  ${preferredMonths.includes(month.id)
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  ${
+                    preferredMonths.includes(month.id)
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
                   }
                 `}
               >
@@ -201,13 +209,16 @@ export default function FunnelAvailabilityStep({
               onClick={() => setUrgency(option.id as typeof urgency)}
               className={`
                 relative w-full p-3 rounded-xl border-2 text-left transition-all
-                ${urgency === option.id
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border bg-card hover:border-primary/50'
+                ${
+                  urgency === option.id
+                    ? "border-primary bg-primary/10"
+                    : "border-border bg-card hover:border-primary/50"
                 }
               `}
             >
-              <span className={`font-medium ${option.color}`}>{option.label}</span>
+              <span className={`font-medium ${option.color}`}>
+                {option.label}
+              </span>
               <span className="text-sm text-muted-foreground block mt-0.5">
                 {option.description}
               </span>

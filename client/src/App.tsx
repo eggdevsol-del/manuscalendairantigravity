@@ -2,7 +2,11 @@ import React from "react";
 import { trpc } from "@/lib/trpc";
 import { Toaster, TooltipProvider } from "@/components/ui";
 import { UIDebugProvider } from "@/_core/contexts/UIDebugContext";
-import { BottomNavProvider, useBottomNav, useRegisterFABActions } from "@/contexts/BottomNavContext";
+import {
+  BottomNavProvider,
+  useBottomNav,
+  useRegisterFABActions,
+} from "@/contexts/BottomNavContext";
 import InstallPrompt from "./components/InstallPrompt";
 import IOSInstallPrompt from "./components/IOSInstallPrompt";
 import BottomNav from "@/components/BottomNav";
@@ -49,15 +53,15 @@ function Router() {
   const [location, setLocation] = useLocation();
   const { user } = useAuth();
   const isTabletLandscape = useTabletLandscape();
-  const isArtist = user?.role === 'artist';
+  const isArtist = user?.role === "artist";
 
   // iOS Cold-Boot Deeplink Failsafe
-  // When an iOS PWA is fully asleep and tapped via Push Notification, 
+  // When an iOS PWA is fully asleep and tapped via Push Notification,
   // Apple breaks the sandbox if opened on a deep route instead of root '/'.
   // The service worker passes ?deeplink= in the URL instead.
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const deeplink = params.get('deeplink');
+    const deeplink = params.get("deeplink");
     if (deeplink) {
       window.history.replaceState({}, document.title, window.location.pathname);
       // Wait a tiny fraction of a second for React layout to mount before navigating
@@ -75,20 +79,37 @@ function Router() {
   // Initialize OneSignal user & request push permissions
   React.useEffect(() => {
     if (user?.id) {
-      import("@/lib/onesignal").then(({ setExternalUserId, requestNotificationPermission }) => {
-        setExternalUserId(user.id).then(() => {
-          // Explicitly prompt the user for permission now that they are logged in
-          requestNotificationPermission().catch(err => {
-            console.error('[OneSignal] Failed to request permission on login:', err);
+      import("@/lib/onesignal").then(
+        ({ setExternalUserId, requestNotificationPermission }) => {
+          setExternalUserId(user.id).then(() => {
+            // Explicitly prompt the user for permission now that they are logged in
+            requestNotificationPermission().catch(err => {
+              console.error(
+                "[OneSignal] Failed to request permission on login:",
+                err
+              );
+            });
           });
-        });
-      });
+        }
+      );
     }
   }, [user?.id]);
 
-  const hideBottomNavPaths = ["/", "/login", "/signup", "/set-password", "/complete-profile"];
-  const isPublicFunnel = location.startsWith("/start/") || location.startsWith("/deposit/") || location.startsWith("/studio/");
-  const shouldShowBottomNav = !hideBottomNavPaths.includes(location) && !location.startsWith("/404") && !isPublicFunnel;
+  const hideBottomNavPaths = [
+    "/",
+    "/login",
+    "/signup",
+    "/set-password",
+    "/complete-profile",
+  ];
+  const isPublicFunnel =
+    location.startsWith("/start/") ||
+    location.startsWith("/deposit/") ||
+    location.startsWith("/studio/");
+  const shouldShowBottomNav =
+    !hideBottomNavPaths.includes(location) &&
+    !location.startsWith("/404") &&
+    !isPublicFunnel;
 
   return (
     <div className={`min-h-screen ${shouldShowBottomNav ? "pb-16" : ""}`}>
@@ -118,7 +139,10 @@ function Router() {
         <Route path="/consultations" component={Consultations} />
         <Route path="/policies" component={Policies} />
         <Route path="/policy-management" component={PolicyManagement} />
-        <Route path="/notifications-management" component={NotificationsManagement} />
+        <Route
+          path="/notifications-management"
+          component={NotificationsManagement}
+        />
         <Route path="/work-hours" component={WorkHours} />
         <Route path="/subscriptions" component={Subscriptions} />
         <Route path="/studio" component={StudioDashboard} />
@@ -130,7 +154,6 @@ function Router() {
       </Switch>
       {shouldShowBottomNav && <BottomNav />}
       {isArtist && <AppointmentCheckInOverlay />}
-
     </div>
   );
 }
@@ -156,7 +179,8 @@ function AppointmentCheckInOverlay() {
   }, [activeId, dismissed, setFABOpen]);
 
   const fabContent = React.useMemo(() => {
-    if (!activeCheckIn || dismissed === activeCheckIn.appointment.id) return null;
+    if (!activeCheckIn || dismissed === activeCheckIn.appointment.id)
+      return null;
 
     return (
       <div className="w-full flex-1 bg-card border border-border/50 rounded-3xl p-4 shadow-2xl backdrop-blur-xl">
@@ -173,12 +197,16 @@ function AppointmentCheckInOverlay() {
     );
   }, [activeCheckIn, dismissed, updateAppointment, setFABOpen]);
 
-  return fabContent ? <AppointmentCheckInFABRegistrar content={fabContent} /> : null;
+  return fabContent ? (
+    <AppointmentCheckInFABRegistrar content={fabContent} />
+  ) : null;
 }
 
-
-
-function AppointmentCheckInFABRegistrar({ content }: { content: React.ReactNode }) {
+function AppointmentCheckInFABRegistrar({
+  content,
+}: {
+  content: React.ReactNode;
+}) {
   useRegisterFABActions("appointment-check-in", content);
   return null;
 }
@@ -189,7 +217,8 @@ function AppointmentCheckInFABRegistrar({ content }: { content: React.ReactNode 
  */
 function ConditionalIOSInstallPrompt() {
   const [location] = useLocation();
-  const isPublicFunnel = location.startsWith("/start/") || location.startsWith("/deposit/");
+  const isPublicFunnel =
+    location.startsWith("/start/") || location.startsWith("/deposit/");
 
   // Don't render on funnel pages - the funnel handles its own install prompt
   if (isPublicFunnel) {
@@ -201,10 +230,7 @@ function ConditionalIOSInstallPrompt() {
 
 function App() {
   return (
-    <ThemeProvider
-      defaultTheme="dark"
-      switchable
-    >
+    <ThemeProvider defaultTheme="dark" switchable>
       <TeaserProvider>
         <UIDebugProvider>
           <BottomNavProvider>

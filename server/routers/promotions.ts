@@ -1,12 +1,12 @@
 /**
  * Promotions Router - SSOT Compliant
- * 
+ *
  * Handles all promotion-related operations:
  * - Template CRUD (create, read, update, delete)
  * - Issuing promotions to clients
  * - Auto-apply rules
  * - Redemption during booking
- * 
+ *
  * @version 1.0.0
  */
 
@@ -19,44 +19,62 @@ import { randomBytes } from "crypto";
 import { getDb } from "../db";
 
 // Input validation schemas
-const promotionTypeEnum = z.enum(['voucher', 'discount', 'credit']);
-const valueTypeEnum = z.enum(['fixed', 'percentage']);
-const statusEnum = z.enum(['active', 'partially_used', 'fully_used', 'expired', 'revoked']);
+const promotionTypeEnum = z.enum(["voucher", "discount", "credit"]);
+const valueTypeEnum = z.enum(["fixed", "percentage"]);
+const statusEnum = z.enum([
+  "active",
+  "partially_used",
+  "fully_used",
+  "expired",
+  "revoked",
+]);
 
 export const promotionsRouter = router({
   /**
    * Create a new promotion template
    */
   createTemplate: protectedProcedure
-    .input(z.object({
-      type: promotionTypeEnum,
-      name: z.string().min(1).max(255),
-      description: z.string().max(500).nullable().optional(),
-      valueType: valueTypeEnum.default('fixed'),
-      value: z.number().min(1), // cents for fixed, percentage for percentage
-      templateDesign: z.string().default('classic'),
-      primaryColor: z.string().nullable().optional(),
-      gradientFrom: z.string().nullable().optional(),
-      gradientTo: z.string().nullable().optional(),
-      customText: z.string().max(100).nullable().optional(),
-      logoUrl: z.string().nullable().optional(),
-      backgroundImageUrl: z.string().nullable().optional(),
-      backgroundScale: z.number().min(0.5).max(3).optional(),
-      backgroundPositionX: z.number().min(0).max(100).optional(),
-      backgroundPositionY: z.number().min(0).max(100).optional(),
-      validityDuration: z.number().min(1).nullable().optional(),
-      autoApplyTrigger: z.enum(['none', 'new_client', 'birthday']).default('none'),
-    }))
+    .input(
+      z.object({
+        type: promotionTypeEnum,
+        name: z.string().min(1).max(255),
+        description: z.string().max(500).nullable().optional(),
+        valueType: valueTypeEnum.default("fixed"),
+        value: z.number().min(1), // cents for fixed, percentage for percentage
+        templateDesign: z.string().default("classic"),
+        primaryColor: z.string().nullable().optional(),
+        gradientFrom: z.string().nullable().optional(),
+        gradientTo: z.string().nullable().optional(),
+        customText: z.string().max(100).nullable().optional(),
+        logoUrl: z.string().nullable().optional(),
+        backgroundImageUrl: z.string().nullable().optional(),
+        backgroundScale: z.number().min(0.5).max(3).optional(),
+        backgroundPositionX: z.number().min(0).max(100).optional(),
+        backgroundPositionY: z.number().min(0).max(100).optional(),
+        validityDuration: z.number().min(1).nullable().optional(),
+        autoApplyTrigger: z
+          .enum(["none", "new_client", "birthday"])
+          .default("none"),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       try {
-        if (ctx.user.role !== 'artist' && ctx.user.role !== 'admin') {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can create promotions" });
+        if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only artists can create promotions",
+          });
         }
 
         const db = await getDb();
         if (!db) {
-          console.error('[promotions.createTemplate] Database connection failed');
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+          console.error(
+            "[promotions.createTemplate] Database connection failed"
+          );
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
         }
 
         const [result] = await db.insert(schema.promotionTemplates).values({
@@ -73,7 +91,7 @@ export const promotionsRouter = router({
           customText: input.customText || null,
           logoUrl: input.logoUrl || null,
           backgroundImageUrl: input.backgroundImageUrl || null,
-          backgroundScale: input.backgroundScale?.toString() || '1.00',
+          backgroundScale: input.backgroundScale?.toString() || "1.00",
           backgroundPositionX: input.backgroundPositionX || 50,
           backgroundPositionY: input.backgroundPositionY || 50,
           isActive: 1,
@@ -81,10 +99,12 @@ export const promotionsRouter = router({
           autoApplyTrigger: input.autoApplyTrigger,
         });
 
-        console.log(`[promotions.createTemplate] Created template for artist ${ctx.user.id}`);
+        console.log(
+          `[promotions.createTemplate] Created template for artist ${ctx.user.id}`
+        );
         return { success: true, id: result.insertId };
       } catch (error) {
-        console.error('[promotions.createTemplate] Error:', error);
+        console.error("[promotions.createTemplate] Error:", error);
         throw error;
       }
     }),
@@ -93,35 +113,45 @@ export const promotionsRouter = router({
    * Update an existing promotion template
    */
   updateTemplate: protectedProcedure
-    .input(z.object({
-      id: z.number(),
-      type: promotionTypeEnum,
-      name: z.string().min(1).max(255),
-      description: z.string().max(500).nullable().optional(),
-      valueType: valueTypeEnum.default('fixed'),
-      value: z.number().min(1),
-      templateDesign: z.string().default('classic'),
-      primaryColor: z.string().nullable().optional(),
-      gradientFrom: z.string().nullable().optional(),
-      gradientTo: z.string().nullable().optional(),
-      customText: z.string().max(100).nullable().optional(),
-      logoUrl: z.string().nullable().optional(),
-      backgroundImageUrl: z.string().nullable().optional(),
-      backgroundScale: z.number().min(0.5).max(3).optional(),
-      backgroundPositionX: z.number().min(0).max(100).optional(),
-      backgroundPositionY: z.number().min(0).max(100).optional(),
-      validityDuration: z.number().min(1).nullable().optional(),
-      autoApplyTrigger: z.enum(['none', 'new_client', 'birthday']).default('none'),
-    }))
+    .input(
+      z.object({
+        id: z.number(),
+        type: promotionTypeEnum,
+        name: z.string().min(1).max(255),
+        description: z.string().max(500).nullable().optional(),
+        valueType: valueTypeEnum.default("fixed"),
+        value: z.number().min(1),
+        templateDesign: z.string().default("classic"),
+        primaryColor: z.string().nullable().optional(),
+        gradientFrom: z.string().nullable().optional(),
+        gradientTo: z.string().nullable().optional(),
+        customText: z.string().max(100).nullable().optional(),
+        logoUrl: z.string().nullable().optional(),
+        backgroundImageUrl: z.string().nullable().optional(),
+        backgroundScale: z.number().min(0.5).max(3).optional(),
+        backgroundPositionX: z.number().min(0).max(100).optional(),
+        backgroundPositionY: z.number().min(0).max(100).optional(),
+        validityDuration: z.number().min(1).nullable().optional(),
+        autoApplyTrigger: z
+          .enum(["none", "new_client", "birthday"])
+          .default("none"),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       try {
-        if (ctx.user.role !== 'artist' && ctx.user.role !== 'admin') {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can update promotions" });
+        if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only artists can update promotions",
+          });
         }
 
         const db = await getDb();
         if (!db) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
         }
 
         // Verify ownership
@@ -129,14 +159,18 @@ export const promotionsRouter = router({
           where: and(
             eq(schema.promotionTemplates.id, input.id),
             eq(schema.promotionTemplates.artistId, ctx.user.id)
-          )
+          ),
         });
 
         if (!existing) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Promotion not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Promotion not found",
+          });
         }
 
-        await db.update(schema.promotionTemplates)
+        await db
+          .update(schema.promotionTemplates)
           .set({
             type: input.type,
             name: input.name,
@@ -150,19 +184,21 @@ export const promotionsRouter = router({
             customText: input.customText || null,
             logoUrl: input.logoUrl || null,
             backgroundImageUrl: input.backgroundImageUrl || null,
-            backgroundScale: input.backgroundScale?.toString() || '1.00',
+            backgroundScale: input.backgroundScale?.toString() || "1.00",
             backgroundPositionX: input.backgroundPositionX || 50,
             backgroundPositionY: input.backgroundPositionY || 50,
             validityDuration: input.validityDuration || null,
             autoApplyTrigger: input.autoApplyTrigger,
-            updatedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            updatedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
           })
           .where(eq(schema.promotionTemplates.id, input.id));
 
-        console.log(`[promotions.updateTemplate] Updated template ${input.id} for artist ${ctx.user.id}`);
+        console.log(
+          `[promotions.updateTemplate] Updated template ${input.id} for artist ${ctx.user.id}`
+        );
         return { success: true };
       } catch (error) {
-        console.error('[promotions.updateTemplate] Error:', error);
+        console.error("[promotions.updateTemplate] Error:", error);
         throw error;
       }
     }),
@@ -173,18 +209,28 @@ export const promotionsRouter = router({
    * - Clients: Get promotions issued to them
    */
   getPromotions: protectedProcedure
-    .input(z.object({
-      type: promotionTypeEnum.optional(),
-    }).optional())
+    .input(
+      z
+        .object({
+          type: promotionTypeEnum.optional(),
+        })
+        .optional()
+    )
     .query(async ({ ctx, input }) => {
       try {
         const db = await getDb();
         if (!db) {
-          console.error('[promotions.getPromotions] Database connection failed');
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+          console.error(
+            "[promotions.getPromotions] Database connection failed"
+          );
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
         }
 
-        const isArtist = ctx.user.role === 'artist' || ctx.user.role === 'admin';
+        const isArtist =
+          ctx.user.role === "artist" || ctx.user.role === "admin";
 
         if (isArtist) {
           // Artists see their templates
@@ -192,7 +238,9 @@ export const promotionsRouter = router({
             where: and(
               eq(schema.promotionTemplates.artistId, ctx.user.id),
               eq(schema.promotionTemplates.isActive, 1),
-              input?.type ? eq(schema.promotionTemplates.type, input.type) : undefined
+              input?.type
+                ? eq(schema.promotionTemplates.type, input.type)
+                : undefined
             ),
             orderBy: desc(schema.promotionTemplates.createdAt),
           });
@@ -212,10 +260,12 @@ export const promotionsRouter = router({
             customText: t.customText,
             logoUrl: t.logoUrl,
             backgroundImageUrl: t.backgroundImageUrl,
-            backgroundScale: t.backgroundScale ? parseFloat(t.backgroundScale) : 1,
+            backgroundScale: t.backgroundScale
+              ? parseFloat(t.backgroundScale)
+              : 1,
             backgroundPositionX: t.backgroundPositionX,
             backgroundPositionY: t.backgroundPositionY,
-            status: 'active' as const,
+            status: "active" as const,
             code: null,
             expiresAt: null,
             validityDuration: t.validityDuration, // Return validityDuration
@@ -226,7 +276,9 @@ export const promotionsRouter = router({
           const promotions = await db.query.issuedPromotions.findMany({
             where: and(
               eq(schema.issuedPromotions.clientId, ctx.user.id),
-              input?.type ? eq(schema.issuedPromotions.type, input.type) : undefined
+              input?.type
+                ? eq(schema.issuedPromotions.type, input.type)
+                : undefined
             ),
             with: {
               template: true,
@@ -237,19 +289,21 @@ export const promotionsRouter = router({
           return promotions.map(p => ({
             id: p.id,
             type: p.type,
-            name: p.template?.name || 'Promotion',
+            name: p.template?.name || "Promotion",
             description: p.template?.description,
             valueType: p.valueType,
             value: p.originalValue,
             remainingValue: p.remainingValue,
-            templateDesign: p.template?.templateDesign || 'classic',
+            templateDesign: p.template?.templateDesign || "classic",
             primaryColor: p.template?.primaryColor,
             gradientFrom: p.template?.gradientFrom,
             gradientTo: p.template?.gradientTo,
             customText: p.template?.customText,
             logoUrl: p.template?.logoUrl,
             backgroundImageUrl: p.template?.backgroundImageUrl,
-            backgroundScale: p.template?.backgroundScale ? parseFloat(p.template?.backgroundScale) : 1,
+            backgroundScale: p.template?.backgroundScale
+              ? parseFloat(p.template?.backgroundScale)
+              : 1,
             backgroundPositionX: p.template?.backgroundPositionX,
             backgroundPositionY: p.template?.backgroundPositionY,
             status: p.status,
@@ -259,7 +313,7 @@ export const promotionsRouter = router({
           }));
         }
       } catch (error) {
-        console.error('[promotions.getPromotions] Error:', error);
+        console.error("[promotions.getPromotions] Error:", error);
         throw error;
       }
     }),
@@ -268,21 +322,31 @@ export const promotionsRouter = router({
    * Issue a promotion to a specific client
    */
   issuePromotion: protectedProcedure
-    .input(z.object({
-      templateId: z.number(),
-      clientId: z.string(),
-      expiresInDays: z.number().min(1).max(365).optional(),
-    }))
+    .input(
+      z.object({
+        templateId: z.number(),
+        clientId: z.string(),
+        expiresInDays: z.number().min(1).max(365).optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       try {
-        if (ctx.user.role !== 'artist' && ctx.user.role !== 'admin') {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can issue promotions" });
+        if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only artists can issue promotions",
+          });
         }
 
         const db = await getDb();
         if (!db) {
-          console.error('[promotions.issuePromotion] Database connection failed');
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+          console.error(
+            "[promotions.issuePromotion] Database connection failed"
+          );
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
         }
 
         // Get template
@@ -294,11 +358,14 @@ export const promotionsRouter = router({
         });
 
         if (!template) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Template not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Template not found",
+          });
         }
 
         // Generate unique code
-        const code = randomBytes(4).toString('hex').toUpperCase();
+        const code = randomBytes(4).toString("hex").toUpperCase();
 
         // Calculate expiry
         let expiresAt: string | null = null;
@@ -309,7 +376,7 @@ export const promotionsRouter = router({
         if (daysValid) {
           const date = new Date();
           date.setDate(date.getDate() + daysValid);
-          expiresAt = date.toISOString().slice(0, 19).replace('T', ' ');
+          expiresAt = date.toISOString().slice(0, 19).replace("T", " ");
         }
 
         await db.insert(schema.issuedPromotions).values({
@@ -322,30 +389,32 @@ export const promotionsRouter = router({
           originalValue: template.value,
           remainingValue: template.value,
           isAutoApply: 0,
-          status: 'active',
+          status: "active",
           expiresAt,
         });
 
         // Add to notification outbox
         await db.insert(schema.notificationOutbox).values({
-          eventType: 'push_message',
+          eventType: "push_message",
           payloadJson: JSON.stringify({
             targetUserId: input.clientId,
-            title: 'You received a new promotion!',
+            title: "You received a new promotion!",
             body: `You have received a ${template.name} voucher!`,
             data: {
-              url: '/promotions',
+              url: "/promotions",
               promotionId: input.templateId,
-              code
-            }
+              code,
+            },
           }),
-          status: 'pending',
+          status: "pending",
         });
 
-        console.log(`[promotions.issuePromotion] Issued promotion ${code} to client ${input.clientId}`);
+        console.log(
+          `[promotions.issuePromotion] Issued promotion ${code} to client ${input.clientId}`
+        );
         return { success: true, code };
       } catch (error) {
-        console.error('[promotions.issuePromotion] Error:', error);
+        console.error("[promotions.issuePromotion] Error:", error);
         throw error;
       }
     }),
@@ -354,21 +423,31 @@ export const promotionsRouter = router({
    * Create auto-apply rule for new clients
    */
   createAutoApply: protectedProcedure
-    .input(z.object({
-      templateId: z.number(),
-      startDate: z.string(),
-      endDate: z.string(),
-    }))
+    .input(
+      z.object({
+        templateId: z.number(),
+        startDate: z.string(),
+        endDate: z.string(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       try {
-        if (ctx.user.role !== 'artist' && ctx.user.role !== 'admin') {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can create auto-apply rules" });
+        if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only artists can create auto-apply rules",
+          });
         }
 
         const db = await getDb();
         if (!db) {
-          console.error('[promotions.createAutoApply] Database connection failed');
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+          console.error(
+            "[promotions.createAutoApply] Database connection failed"
+          );
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
         }
 
         // Get template
@@ -380,11 +459,14 @@ export const promotionsRouter = router({
         });
 
         if (!template) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Template not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Template not found",
+          });
         }
 
         // Generate unique code for auto-apply tracking
-        const code = `AUTO-${randomBytes(4).toString('hex').toUpperCase()}`;
+        const code = `AUTO-${randomBytes(4).toString("hex").toUpperCase()}`;
 
         await db.insert(schema.issuedPromotions).values({
           templateId: input.templateId,
@@ -398,13 +480,15 @@ export const promotionsRouter = router({
           isAutoApply: 1,
           autoApplyStartDate: input.startDate,
           autoApplyEndDate: input.endDate,
-          status: 'active',
+          status: "active",
         });
 
-        console.log(`[promotions.createAutoApply] Created auto-apply rule for template ${input.templateId}`);
+        console.log(
+          `[promotions.createAutoApply] Created auto-apply rule for template ${input.templateId}`
+        );
         return { success: true };
       } catch (error) {
-        console.error('[promotions.createAutoApply] Error:', error);
+        console.error("[promotions.createAutoApply] Error:", error);
         throw error;
       }
     }),
@@ -413,18 +497,25 @@ export const promotionsRouter = router({
    * Get available promotions for a client to use on a booking
    */
   getAvailableForBooking: protectedProcedure
-    .input(z.object({
-      artistId: z.string(),
-    }))
+    .input(
+      z.object({
+        artistId: z.string(),
+      })
+    )
     .query(async ({ ctx, input }) => {
       try {
         const db = await getDb();
         if (!db) {
-          console.error('[promotions.getAvailableForBooking] Database connection failed');
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+          console.error(
+            "[promotions.getAvailableForBooking] Database connection failed"
+          );
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
         }
 
-        const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const now = new Date().toISOString().slice(0, 19).replace("T", " ");
 
         // Get promotions issued to this client from this artist
         const promotions = await db.query.issuedPromotions.findMany({
@@ -432,8 +523,8 @@ export const promotionsRouter = router({
             eq(schema.issuedPromotions.clientId, ctx.user.id),
             eq(schema.issuedPromotions.artistId, input.artistId),
             or(
-              eq(schema.issuedPromotions.status, 'active'),
-              eq(schema.issuedPromotions.status, 'partially_used')
+              eq(schema.issuedPromotions.status, "active"),
+              eq(schema.issuedPromotions.status, "partially_used")
             ),
             or(
               isNull(schema.issuedPromotions.expiresAt),
@@ -449,18 +540,18 @@ export const promotionsRouter = router({
         return promotions.map(p => ({
           id: p.id,
           type: p.type,
-          name: p.template?.name || 'Promotion',
+          name: p.template?.name || "Promotion",
           valueType: p.valueType,
           value: p.originalValue,
           remainingValue: p.remainingValue,
-          templateDesign: p.template?.templateDesign || 'classic',
+          templateDesign: p.template?.templateDesign || "classic",
           primaryColor: p.template?.primaryColor,
           gradientFrom: p.template?.gradientFrom,
           code: p.code,
           expiresAt: p.expiresAt,
         }));
       } catch (error) {
-        console.error('[promotions.getAvailableForBooking] Error:', error);
+        console.error("[promotions.getAvailableForBooking] Error:", error);
         throw error;
       }
     }),
@@ -469,17 +560,24 @@ export const promotionsRouter = router({
    * Redeem a promotion on a booking
    */
   redeemPromotion: protectedProcedure
-    .input(z.object({
-      promotionId: z.number(),
-      appointmentId: z.number(),
-      originalAmount: z.number(), // in cents
-    }))
+    .input(
+      z.object({
+        promotionId: z.number(),
+        appointmentId: z.number(),
+        originalAmount: z.number(), // in cents
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       try {
         const db = await getDb();
         if (!db) {
-          console.error('[promotions.redeemPromotion] Database connection failed');
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+          console.error(
+            "[promotions.redeemPromotion] Database connection failed"
+          );
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
         }
 
         // Get promotion
@@ -488,27 +586,35 @@ export const promotionsRouter = router({
             eq(schema.issuedPromotions.id, input.promotionId),
             eq(schema.issuedPromotions.clientId, ctx.user.id),
             or(
-              eq(schema.issuedPromotions.status, 'active'),
-              eq(schema.issuedPromotions.status, 'partially_used')
+              eq(schema.issuedPromotions.status, "active"),
+              eq(schema.issuedPromotions.status, "partially_used")
             )
           ),
         });
 
         if (!promotion) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Promotion not found or not available" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Promotion not found or not available",
+          });
         }
 
         // Calculate redemption amount
         let amountRedeemed: number;
         let finalAmount: number;
 
-        if (promotion.valueType === 'percentage') {
+        if (promotion.valueType === "percentage") {
           // Percentage discount
-          amountRedeemed = Math.round(input.originalAmount * (promotion.remainingValue / 100));
+          amountRedeemed = Math.round(
+            input.originalAmount * (promotion.remainingValue / 100)
+          );
           finalAmount = input.originalAmount - amountRedeemed;
         } else {
           // Fixed amount
-          amountRedeemed = Math.min(promotion.remainingValue, input.originalAmount);
+          amountRedeemed = Math.min(
+            promotion.remainingValue,
+            input.originalAmount
+          );
           finalAmount = input.originalAmount - amountRedeemed;
         }
 
@@ -516,12 +622,14 @@ export const promotionsRouter = router({
         finalAmount = Math.max(0, finalAmount);
 
         // Calculate new remaining value
-        const newRemainingValue = promotion.valueType === 'percentage'
-          ? 0 // Percentage discounts are fully used in one transaction
-          : promotion.remainingValue - amountRedeemed;
+        const newRemainingValue =
+          promotion.valueType === "percentage"
+            ? 0 // Percentage discounts are fully used in one transaction
+            : promotion.remainingValue - amountRedeemed;
 
         // Determine new status
-        const newStatus = newRemainingValue <= 0 ? 'fully_used' : 'partially_used';
+        const newStatus =
+          newRemainingValue <= 0 ? "fully_used" : "partially_used";
 
         // Create redemption record
         await db.insert(schema.promotionRedemptions).values({
@@ -533,23 +641,27 @@ export const promotionsRouter = router({
         });
 
         // Update promotion status
-        await db.update(schema.issuedPromotions)
+        await db
+          .update(schema.issuedPromotions)
           .set({
             remainingValue: newRemainingValue,
             status: newStatus,
-            redeemedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            redeemedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
             redeemedOnAppointmentId: input.appointmentId,
           })
           .where(eq(schema.issuedPromotions.id, input.promotionId));
 
         // Update appointment price
-        await db.update(schema.appointments)
+        await db
+          .update(schema.appointments)
           .set({
             price: finalAmount,
           })
           .where(eq(schema.appointments.id, input.appointmentId));
 
-        console.log(`[promotions.redeemPromotion] Redeemed ${amountRedeemed} cents on appointment ${input.appointmentId}`);
+        console.log(
+          `[promotions.redeemPromotion] Redeemed ${amountRedeemed} cents on appointment ${input.appointmentId}`
+        );
 
         return {
           success: true,
@@ -559,7 +671,7 @@ export const promotionsRouter = router({
           newStatus,
         };
       } catch (error) {
-        console.error('[promotions.redeemPromotion] Error:', error);
+        console.error("[promotions.redeemPromotion] Error:", error);
         throw error;
       }
     }),
@@ -568,22 +680,32 @@ export const promotionsRouter = router({
    * Update auto-apply settings for a template
    */
   updateAutoApply: protectedProcedure
-    .input(z.object({
-      templateId: z.number(),
-      isAutoApply: z.boolean(),
-      startDate: z.string().optional(),
-      endDate: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        templateId: z.number(),
+        isAutoApply: z.boolean(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       try {
-        if (ctx.user.role !== 'artist' && ctx.user.role !== 'admin') {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can update auto-apply settings" });
+        if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only artists can update auto-apply settings",
+          });
         }
 
         const db = await getDb();
         if (!db) {
-          console.error('[promotions.updateAutoApply] Database connection failed');
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+          console.error(
+            "[promotions.updateAutoApply] Database connection failed"
+          );
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
         }
 
         // Get template
@@ -595,7 +717,10 @@ export const promotionsRouter = router({
         });
 
         if (!template) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Template not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Template not found",
+          });
         }
 
         if (input.isAutoApply) {
@@ -604,13 +729,14 @@ export const promotionsRouter = router({
             where: and(
               eq(schema.issuedPromotions.templateId, input.templateId),
               eq(schema.issuedPromotions.isAutoApply, 1),
-              eq(schema.issuedPromotions.status, 'active')
+              eq(schema.issuedPromotions.status, "active")
             ),
           });
 
           if (existingRule) {
             // Update existing rule
-            await db.update(schema.issuedPromotions)
+            await db
+              .update(schema.issuedPromotions)
               .set({
                 autoApplyStartDate: input.startDate || null,
                 autoApplyEndDate: input.endDate || null,
@@ -618,7 +744,7 @@ export const promotionsRouter = router({
               .where(eq(schema.issuedPromotions.id, existingRule.id));
           } else {
             // Create new auto-apply rule
-            const code = `AUTO-${randomBytes(4).toString('hex').toUpperCase()}`;
+            const code = `AUTO-${randomBytes(4).toString("hex").toUpperCase()}`;
             await db.insert(schema.issuedPromotions).values({
               templateId: input.templateId,
               artistId: ctx.user.id,
@@ -631,24 +757,29 @@ export const promotionsRouter = router({
               isAutoApply: 1,
               autoApplyStartDate: input.startDate || null,
               autoApplyEndDate: input.endDate || null,
-              status: 'active',
+              status: "active",
             });
           }
         } else {
           // Disable auto-apply by revoking the rule
-          await db.update(schema.issuedPromotions)
-            .set({ status: 'revoked' })
-            .where(and(
-              eq(schema.issuedPromotions.templateId, input.templateId),
-              eq(schema.issuedPromotions.isAutoApply, 1),
-              eq(schema.issuedPromotions.status, 'active')
-            ));
+          await db
+            .update(schema.issuedPromotions)
+            .set({ status: "revoked" })
+            .where(
+              and(
+                eq(schema.issuedPromotions.templateId, input.templateId),
+                eq(schema.issuedPromotions.isAutoApply, 1),
+                eq(schema.issuedPromotions.status, "active")
+              )
+            );
         }
 
-        console.log(`[promotions.updateAutoApply] Updated auto-apply for template ${input.templateId}: ${input.isAutoApply}`);
+        console.log(
+          `[promotions.updateAutoApply] Updated auto-apply for template ${input.templateId}: ${input.isAutoApply}`
+        );
         return { success: true };
       } catch (error) {
-        console.error('[promotions.updateAutoApply] Error:', error);
+        console.error("[promotions.updateAutoApply] Error:", error);
         throw error;
       }
     }),
@@ -657,33 +788,48 @@ export const promotionsRouter = router({
    * Delete a promotion template
    */
   deleteTemplate: protectedProcedure
-    .input(z.object({
-      templateId: z.number(),
-    }))
+    .input(
+      z.object({
+        templateId: z.number(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       try {
-        if (ctx.user.role !== 'artist' && ctx.user.role !== 'admin') {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can delete promotions" });
+        if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only artists can delete promotions",
+          });
         }
 
         const db = await getDb();
         if (!db) {
-          console.error('[promotions.deleteTemplate] Database connection failed');
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+          console.error(
+            "[promotions.deleteTemplate] Database connection failed"
+          );
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
         }
 
         // Soft delete by setting isActive to 0
-        await db.update(schema.promotionTemplates)
+        await db
+          .update(schema.promotionTemplates)
           .set({ isActive: 0 })
-          .where(and(
-            eq(schema.promotionTemplates.id, input.templateId),
-            eq(schema.promotionTemplates.artistId, ctx.user.id)
-          ));
+          .where(
+            and(
+              eq(schema.promotionTemplates.id, input.templateId),
+              eq(schema.promotionTemplates.artistId, ctx.user.id)
+            )
+          );
 
-        console.log(`[promotions.deleteTemplate] Deleted template ${input.templateId}`);
+        console.log(
+          `[promotions.deleteTemplate] Deleted template ${input.templateId}`
+        );
         return { success: true };
       } catch (error) {
-        console.error('[promotions.deleteTemplate] Error:', error);
+        console.error("[promotions.deleteTemplate] Error:", error);
         throw error;
       }
     }),
@@ -692,18 +838,26 @@ export const promotionsRouter = router({
    * Get all promotions issued to a specific client (Artist view)
    */
   getClientPromotions: protectedProcedure
-    .input(z.object({
-      clientId: z.string(),
-    }))
+    .input(
+      z.object({
+        clientId: z.string(),
+      })
+    )
     .query(async ({ ctx, input }) => {
       try {
-        if (ctx.user.role !== 'artist' && ctx.user.role !== 'admin') {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can view client promotions" });
+        if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only artists can view client promotions",
+          });
         }
 
         const db = await getDb();
         if (!db) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
         }
 
         const promotions = await db.query.issuedPromotions.findMany({
@@ -720,7 +874,7 @@ export const promotionsRouter = router({
         return promotions.map(p => ({
           id: p.id,
           type: p.type,
-          name: p.template?.name || 'Promotion',
+          name: p.template?.name || "Promotion",
           valueType: p.valueType,
           originalValue: p.originalValue,
           remainingValue: p.remainingValue,
@@ -732,7 +886,7 @@ export const promotionsRouter = router({
           redeemedAt: p.redeemedAt,
         }));
       } catch (error) {
-        console.error('[promotions.getClientPromotions] Error:', error);
+        console.error("[promotions.getClientPromotions] Error:", error);
         throw error;
       }
     }),
@@ -741,20 +895,28 @@ export const promotionsRouter = router({
    * Update an issued promotion (e.g. change expiry)
    */
   updateIssuedPromotion: protectedProcedure
-    .input(z.object({
-      id: z.number(),
-      expiresAt: z.string().nullable(), // ISO date string or null
-      status: statusEnum.optional(),
-    }))
+    .input(
+      z.object({
+        id: z.number(),
+        expiresAt: z.string().nullable(), // ISO date string or null
+        status: statusEnum.optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       try {
-        if (ctx.user.role !== 'artist' && ctx.user.role !== 'admin') {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can update issued promotions" });
+        if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only artists can update issued promotions",
+          });
         }
 
         const db = await getDb();
         if (!db) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
         }
 
         // Verify ownership
@@ -762,25 +924,31 @@ export const promotionsRouter = router({
           where: and(
             eq(schema.issuedPromotions.id, input.id),
             eq(schema.issuedPromotions.artistId, ctx.user.id)
-          )
+          ),
         });
 
         if (!existing) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Promotion not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Promotion not found",
+          });
         }
 
-        await db.update(schema.issuedPromotions)
+        await db
+          .update(schema.issuedPromotions)
           .set({
             expiresAt: input.expiresAt,
             status: input.status || existing.status,
-            updatedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            updatedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
           })
           .where(eq(schema.issuedPromotions.id, input.id));
 
-        console.log(`[promotions.updateIssuedPromotion] Updated promotion ${input.id}`);
+        console.log(
+          `[promotions.updateIssuedPromotion] Updated promotion ${input.id}`
+        );
         return { success: true };
       } catch (error) {
-        console.error('[promotions.updateIssuedPromotion] Error:', error);
+        console.error("[promotions.updateIssuedPromotion] Error:", error);
         throw error;
       }
     }),
@@ -790,7 +958,10 @@ export const promotionsRouter = router({
  * Helper to check and apply 'New Client' promotions
  * Should be called when a client makes their first booking
  */
-export async function checkAndApplyNewClient(artistId: string, clientId: string) {
+export async function checkAndApplyNewClient(
+  artistId: string,
+  clientId: string
+) {
   try {
     const db = await getDb();
     if (!db) return;
@@ -800,13 +971,15 @@ export async function checkAndApplyNewClient(artistId: string, clientId: string)
       where: and(
         eq(schema.promotionTemplates.artistId, artistId),
         eq(schema.promotionTemplates.isActive, 1),
-        eq(schema.promotionTemplates.autoApplyTrigger, 'new_client')
-      )
+        eq(schema.promotionTemplates.autoApplyTrigger, "new_client")
+      ),
     });
 
     if (templates.length === 0) return;
 
-    console.log(`[checkAndApplyNewClient] Found ${templates.length} templates for artist ${artistId}`);
+    console.log(
+      `[checkAndApplyNewClient] Found ${templates.length} templates for artist ${artistId}`
+    );
 
     for (const template of templates) {
       // 2. Check if client already has this promotion (to prevent duplicates)
@@ -814,7 +987,7 @@ export async function checkAndApplyNewClient(artistId: string, clientId: string)
         where: and(
           eq(schema.issuedPromotions.templateId, template.id),
           eq(schema.issuedPromotions.clientId, clientId)
-        )
+        ),
       });
 
       if (existing) {
@@ -822,13 +995,13 @@ export async function checkAndApplyNewClient(artistId: string, clientId: string)
       }
 
       // 3. Issue the promotion
-      const code = randomBytes(4).toString('hex').toUpperCase();
+      const code = randomBytes(4).toString("hex").toUpperCase();
       let expiresAt: string | null = null;
 
       if (template.validityDuration) {
         const date = new Date();
         date.setDate(date.getDate() + template.validityDuration);
-        expiresAt = date.toISOString().slice(0, 19).replace('T', ' ');
+        expiresAt = date.toISOString().slice(0, 19).replace("T", " ");
       }
 
       await db.insert(schema.issuedPromotions).values({
@@ -841,13 +1014,15 @@ export async function checkAndApplyNewClient(artistId: string, clientId: string)
         originalValue: template.value,
         remainingValue: template.value,
         isAutoApply: 1,
-        status: 'active',
+        status: "active",
         expiresAt,
       });
 
-      console.log(`[checkAndApplyNewClient] Issued auto-promotion ${code} to ${clientId}`);
+      console.log(
+        `[checkAndApplyNewClient] Issued auto-promotion ${code} to ${clientId}`
+      );
     }
   } catch (error) {
-    console.error('[checkAndApplyNewClient] Error:', error);
+    console.error("[checkAndApplyNewClient] Error:", error);
   }
 }

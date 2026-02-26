@@ -21,14 +21,14 @@ interface FunnelIntentStepProps {
 }
 
 const PROJECT_TYPES = [
-  { id: 'full-sleeve', label: 'Full Sleeve', icon: '💪' },
-  { id: 'half-sleeve', label: 'Half Sleeve', icon: '🦾' },
-  { id: 'back-piece', label: 'Back Piece', icon: '🎨' },
-  { id: 'chest-piece', label: 'Chest Piece', icon: '❤️' },
-  { id: 'cover-up', label: 'Cover Up', icon: '🔄' },
-  { id: 'small-piece', label: 'Small Piece', icon: '✨' },
-  { id: 'touch-up', label: 'Touch Up', icon: '🖌️' },
-  { id: 'custom', label: 'Custom Project', icon: '🎯' },
+  { id: "full-sleeve", label: "Full Sleeve", icon: "💪" },
+  { id: "half-sleeve", label: "Half Sleeve", icon: "🦾" },
+  { id: "back-piece", label: "Back Piece", icon: "🎨" },
+  { id: "chest-piece", label: "Chest Piece", icon: "❤️" },
+  { id: "cover-up", label: "Cover Up", icon: "🔄" },
+  { id: "small-piece", label: "Small Piece", icon: "✨" },
+  { id: "touch-up", label: "Touch Up", icon: "🖌️" },
+  { id: "custom", label: "Custom Project", icon: "🎯" },
 ];
 
 export default function FunnelIntentStep({
@@ -40,11 +40,15 @@ export default function FunnelIntentStep({
   isLastStep,
   submitting,
 }: FunnelIntentStepProps) {
-  const [projectType, setProjectType] = useState(stepData.intent?.projectType || '');
-  const [projectDescription, setProjectDescription] = useState(stepData.intent?.projectDescription || '');
+  const [projectType, setProjectType] = useState(
+    stepData.intent?.projectType || ""
+  );
+  const [projectDescription, setProjectDescription] = useState(
+    stepData.intent?.projectDescription || ""
+  );
 
   const handleNext = () => {
-    onNext('intent', {
+    onNext("intent", {
       projectType,
       projectDescription,
     });
@@ -74,15 +78,16 @@ export default function FunnelIntentStep({
             onClick={() => setProjectType(type.id)}
             className={`
               relative p-4 rounded-2xl border-2 text-left transition-all
-              ${projectType === type.id
-                ? 'border-primary bg-primary/10'
-                : 'border-border bg-card hover:border-primary/50'
+              ${
+                projectType === type.id
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-card hover:border-primary/50"
               }
             `}
           >
             <span className="text-2xl mb-2 block">{type.icon}</span>
             <span className="font-medium text-foreground">{type.label}</span>
-            
+
             {projectType === type.id && (
               <motion.div
                 initial={{ scale: 0 }}
@@ -103,16 +108,15 @@ export default function FunnelIntentStep({
         </label>
         <Textarea
           value={projectDescription}
-          onChange={(e) => setProjectDescription(e.target.value)}
+          onChange={e => setProjectDescription(e.target.value)}
           placeholder="Tell us about your vision... What's the meaning behind it? Any specific elements you want included?"
           rows={4}
           className="resize-none"
         />
         <p className="text-xs text-muted-foreground mt-2">
-          {projectDescription.length < 10 
+          {projectDescription.length < 10
             ? `At least ${10 - projectDescription.length} more characters needed`
-            : '✓ Looking good!'
-          }
+            : "✓ Looking good!"}
         </p>
       </div>
     </FunnelStepWrapper>

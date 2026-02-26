@@ -1,7 +1,6 @@
-
 import { verifyAndFixDatabase } from "../verify-and-fix-db";
-import 'dotenv/config';
+import "dotenv/config";
 
 verifyAndFixDatabase()
-    .then(() => console.log('Verification Complete'))
-    .catch(err => console.error('Verification Failed', err));
+  .then(() => console.log("Verification Complete"))
+  .catch(err => console.error("Verification Failed", err));

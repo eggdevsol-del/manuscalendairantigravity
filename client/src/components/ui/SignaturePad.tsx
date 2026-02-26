@@ -1,127 +1,135 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Button } from '@/components/ui';
-import { uiTokens } from '@/ui';
-import { cn } from '@/lib/utils';
-import { Eraser, Check } from 'lucide-react';
+import React, { useRef, useState, useEffect } from "react";
+import { Button } from "@/components/ui";
+import { uiTokens } from "@/ui";
+import { cn } from "@/lib/utils";
+import { Eraser, Check } from "lucide-react";
 
 interface SignaturePadProps {
-    onSave: (signature: string) => void;
-    onCancel?: () => void;
-    className?: string;
+  onSave: (signature: string) => void;
+  onCancel?: () => void;
+  className?: string;
 }
 
-export function SignaturePad({ onSave, onCancel, className }: SignaturePadProps) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [isDrawing, setIsDrawing] = useState(false);
-    const [hasStarted, setHasStarted] = useState(false);
+export function SignaturePad({
+  onSave,
+  onCancel,
+  className,
+}: SignaturePadProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
 
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-        // Resize canvas to its display size
-        const resizeCanvas = () => {
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-            ctx.strokeStyle = '#FFFFFF';
-            ctx.lineWidth = 3;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-        };
-
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        return () => window.removeEventListener('resize', resizeCanvas);
-    }, []);
-
-    const startDrawing = (e: React.PointerEvent) => {
-        setIsDrawing(true);
-        setHasStarted(true);
-        const canvas = canvasRef.current;
-        const ctx = canvas?.getContext('2d');
-        if (ctx && canvas) {
-            const rect = canvas.getBoundingClientRect();
-            ctx.beginPath();
-            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-        }
+    // Resize canvas to its display size
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      ctx.strokeStyle = "#FFFFFF";
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
     };
 
-    const draw = (e: React.PointerEvent) => {
-        if (!isDrawing) return;
-        const canvas = canvasRef.current;
-        const ctx = canvas?.getContext('2d');
-        if (ctx && canvas) {
-            const rect = canvas.getBoundingClientRect();
-            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-            ctx.stroke();
-        }
-    };
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+    return () => window.removeEventListener("resize", resizeCanvas);
+  }, []);
 
-    const stopDrawing = () => {
-        setIsDrawing(false);
-    };
+  const startDrawing = (e: React.PointerEvent) => {
+    setIsDrawing(true);
+    setHasStarted(true);
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (ctx && canvas) {
+      const rect = canvas.getBoundingClientRect();
+      ctx.beginPath();
+      ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+  };
 
-    const clear = () => {
-        const canvas = canvasRef.current;
-        const ctx = canvas?.getContext('2d');
-        if (ctx && canvas) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            setHasStarted(false);
-        }
-    };
+  const draw = (e: React.PointerEvent) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (ctx && canvas) {
+      const rect = canvas.getBoundingClientRect();
+      ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+      ctx.stroke();
+    }
+  };
 
-    const handleSave = () => {
-        const canvas = canvasRef.current;
-        if (canvas && hasStarted) {
-            onSave(canvas.toDataURL('image/png'));
-        }
-    };
+  const stopDrawing = () => {
+    setIsDrawing(false);
+  };
 
-    return (
-        <div className={cn("flex flex-col gap-4", className)}>
-            <div className="relative aspect-[3/2] w-full bg-slate-900 border border-white/10 rounded-2xl overflow-hidden touch-none">
-                <canvas
-                    ref={canvasRef}
-                    onPointerDown={startDrawing}
-                    onPointerMove={draw}
-                    onPointerUp={stopDrawing}
-                    onPointerLeave={stopDrawing}
-                    className="w-full h-full cursor-crosshair"
-                />
-                {!hasStarted && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
-                        <p className="text-sm font-medium">Sign here with your finger</p>
-                    </div>
-                )}
-            </div>
+  const clear = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (ctx && canvas) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      setHasStarted(false);
+    }
+  };
 
-            <div className="flex items-center gap-3 w-full">
-                <Button
-                    variant="outline"
-                    onClick={clear}
-                    className="shrink-0 aspect-square p-0 border-white/10 shrink-0"
-                    title="Clear Signature"
-                >
-                    <Eraser className="w-5 h-5 mx-auto" />
-                </Button>
-                <Button
-                    disabled={!hasStarted}
-                    onClick={handleSave}
-                    className="flex-1 shadow-lg shadow-primary/20 w-full min-w-0"
-                >
-                    <Check className="w-4 h-4 mr-2 shrink-0" />
-                    <span className="truncate">Save Signature</span>
-                </Button>
-            </div>
-            {onCancel && (
-                <Button variant="ghost" onClick={onCancel} className="text-muted-foreground">
-                    Cancel
-                </Button>
-            )}
-        </div>
-    );
+  const handleSave = () => {
+    const canvas = canvasRef.current;
+    if (canvas && hasStarted) {
+      onSave(canvas.toDataURL("image/png"));
+    }
+  };
+
+  return (
+    <div className={cn("flex flex-col gap-4", className)}>
+      <div className="relative aspect-[3/2] w-full bg-slate-900 border border-white/10 rounded-2xl overflow-hidden touch-none">
+        <canvas
+          ref={canvasRef}
+          onPointerDown={startDrawing}
+          onPointerMove={draw}
+          onPointerUp={stopDrawing}
+          onPointerLeave={stopDrawing}
+          className="w-full h-full cursor-crosshair"
+        />
+        {!hasStarted && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
+            <p className="text-sm font-medium">Sign here with your finger</p>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-3 w-full">
+        <Button
+          variant="outline"
+          onClick={clear}
+          className="shrink-0 aspect-square p-0 border-white/10 shrink-0"
+          title="Clear Signature"
+        >
+          <Eraser className="w-5 h-5 mx-auto" />
+        </Button>
+        <Button
+          disabled={!hasStarted}
+          onClick={handleSave}
+          className="flex-1 shadow-lg shadow-primary/20 w-full min-w-0"
+        >
+          <Check className="w-4 h-4 mr-2 shrink-0" />
+          <span className="truncate">Save Signature</span>
+        </Button>
+      </div>
+      {onCancel && (
+        <Button
+          variant="ghost"
+          onClick={onCancel}
+          className="text-muted-foreground"
+        >
+          Cancel
+        </Button>
+      )}
+    </div>
+  );
 }

@@ -1,8 +1,8 @@
-import { ENV } from './env';
+import { ENV } from "./env";
 
 const ONESIGNAL_APP_ID = ENV.oneSignalAppId;
 const ONESIGNAL_API_KEY = ENV.oneSignalApiKey;
-const ONESIGNAL_API_URL = 'https://onesignal.com/api/v1/notifications';
+const ONESIGNAL_API_URL = "https://onesignal.com/api/v1/notifications";
 
 interface PushNotificationOptions {
   userIds: string[];
@@ -17,14 +17,16 @@ interface PushNotificationOptions {
  * @param options Notification options including user IDs, title, and message
  * @returns Success status
  */
-export async function sendPushNotification(options: PushNotificationOptions): Promise<boolean> {
+export async function sendPushNotification(
+  options: PushNotificationOptions
+): Promise<boolean> {
   if (!ONESIGNAL_APP_ID || !ONESIGNAL_API_KEY) {
-    console.warn('[PushNotification] OneSignal credentials not configured');
+    console.warn("[PushNotification] OneSignal credentials not configured");
     return false;
   }
 
   if (!options.userIds || options.userIds.length === 0) {
-    console.warn('[PushNotification] No user IDs provided');
+    console.warn("[PushNotification] No user IDs provided");
     return false;
   }
 
@@ -33,7 +35,7 @@ export async function sendPushNotification(options: PushNotificationOptions): Pr
       app_id: ONESIGNAL_APP_ID,
       target_channel: "push",
       include_aliases: {
-        external_id: options.userIds
+        external_id: options.userIds,
       },
       headings: { en: options.title },
       contents: { en: options.message },
@@ -42,17 +44,17 @@ export async function sendPushNotification(options: PushNotificationOptions): Pr
     };
 
     const response = await fetch(ONESIGNAL_API_URL, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${ONESIGNAL_API_KEY}`,
+        "Content-Type": "application/json",
+        Authorization: `Basic ${ONESIGNAL_API_KEY}`,
       },
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       const error = await response.text();
-      console.error('[PushNotification] Failed to send notification:', error);
+      console.error("[PushNotification] Failed to send notification:", error);
       return false;
     }
 
@@ -60,14 +62,20 @@ export async function sendPushNotification(options: PushNotificationOptions): Pr
 
     // In OneSignal REST API, returning 200 OK with 0 recipients means the user ID was not found.
     if (result.errors || result.recipients === 0) {
-      console.error('[PushNotification] Validation failed or 0 devices matched the User ID:', JSON.stringify(result));
+      console.error(
+        "[PushNotification] Validation failed or 0 devices matched the User ID:",
+        JSON.stringify(result)
+      );
       return false;
     }
 
-    console.log('[PushNotification] Notification queued successfully by OneSignal:', result);
+    console.log(
+      "[PushNotification] Notification queued successfully by OneSignal:",
+      result
+    );
     return true;
   } catch (error) {
-    console.error('[PushNotification] Error sending notification:', error);
+    console.error("[PushNotification] Error sending notification:", error);
     return false;
   }
 }
@@ -87,7 +95,7 @@ export async function notifyNewMessage(
     message: messagePreview.substring(0, 100),
     url: `/chat/${conversationId}`,
     data: {
-      type: 'new_message',
+      type: "new_message",
       conversationId,
     },
   });
@@ -104,11 +112,11 @@ export async function notifyAppointmentConfirmed(
 ): Promise<boolean> {
   return sendPushNotification({
     userIds: [recipientUserId],
-    title: 'Appointment Confirmed',
+    title: "Appointment Confirmed",
     message: `${clientName} confirmed an appointment on ${appointmentDate}`,
     url: `/calendar`,
     data: {
-      type: 'appointment_confirmed',
+      type: "appointment_confirmed",
       conversationId,
     },
   });
@@ -124,13 +132,12 @@ export async function notifyNewConsultation(
 ): Promise<boolean> {
   return sendPushNotification({
     userIds: [artistUserId],
-    title: 'New Consultation Request',
+    title: "New Consultation Request",
     message: `${clientName} has requested a consultation`,
     url: `/conversations`,
     data: {
-      type: 'new_consultation',
+      type: "new_consultation",
       consultationId,
     },
   });
 }
-

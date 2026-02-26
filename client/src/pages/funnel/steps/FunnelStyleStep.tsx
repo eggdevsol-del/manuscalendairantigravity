@@ -21,16 +21,16 @@ interface FunnelStyleStepProps {
 }
 
 const DEFAULT_STYLES = [
-  { id: 'realism', label: 'Realism', emoji: '📷' },
-  { id: 'traditional', label: 'Traditional', emoji: '⚓' },
-  { id: 'neo-traditional', label: 'Neo-Traditional', emoji: '🌹' },
-  { id: 'japanese', label: 'Japanese', emoji: '🐉' },
-  { id: 'blackwork', label: 'Blackwork', emoji: '⬛' },
-  { id: 'dotwork', label: 'Dotwork', emoji: '⚫' },
-  { id: 'watercolor', label: 'Watercolor', emoji: '🎨' },
-  { id: 'geometric', label: 'Geometric', emoji: '📐' },
-  { id: 'minimalist', label: 'Minimalist', emoji: '✨' },
-  { id: 'other', label: 'Other', emoji: '🤔' },
+  { id: "realism", label: "Realism", emoji: "📷" },
+  { id: "traditional", label: "Traditional", emoji: "⚓" },
+  { id: "neo-traditional", label: "Neo-Traditional", emoji: "🌹" },
+  { id: "japanese", label: "Japanese", emoji: "🐉" },
+  { id: "blackwork", label: "Blackwork", emoji: "⬛" },
+  { id: "dotwork", label: "Dotwork", emoji: "⚫" },
+  { id: "watercolor", label: "Watercolor", emoji: "🎨" },
+  { id: "geometric", label: "Geometric", emoji: "📐" },
+  { id: "minimalist", label: "Minimalist", emoji: "✨" },
+  { id: "other", label: "Other", emoji: "🤔" },
 ];
 
 export default function FunnelStyleStep({
@@ -52,14 +52,20 @@ export default function FunnelStyleStep({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Use artist's custom styles if available, otherwise defaults
-  const availableStyles = artistProfile.styleOptions?.length > 0
-    ? artistProfile.styleOptions.map(id => 
-        DEFAULT_STYLES.find(s => s.id === id) || { id, label: id, emoji: '🎨' }
-      )
-    : DEFAULT_STYLES;
+  const availableStyles =
+    artistProfile.styleOptions?.length > 0
+      ? artistProfile.styleOptions.map(
+          id =>
+            DEFAULT_STYLES.find(s => s.id === id) || {
+              id,
+              label: id,
+              emoji: "🎨",
+            }
+        )
+      : DEFAULT_STYLES;
 
   const toggleStyle = (styleId: string) => {
-    setSelectedStyles(prev => 
+    setSelectedStyles(prev =>
       prev.includes(styleId)
         ? prev.filter(s => s !== styleId)
         : [...prev, styleId]
@@ -75,25 +81,25 @@ export default function FunnelStyleStep({
       // For now, convert to base64 data URLs
       // In production, these would be uploaded to S3/storage
       const newImages: string[] = [];
-      
+
       for (const file of Array.from(files)) {
         if (referenceImages.length + newImages.length >= 5) break;
-        
+
         const reader = new FileReader();
-        const dataUrl = await new Promise<string>((resolve) => {
+        const dataUrl = await new Promise<string>(resolve => {
           reader.onload = () => resolve(reader.result as string);
           reader.readAsDataURL(file);
         });
         newImages.push(dataUrl);
       }
-      
+
       setReferenceImages(prev => [...prev, ...newImages].slice(0, 5));
     } catch (err) {
       console.error("Failed to process images:", err);
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     }
   };
@@ -103,7 +109,7 @@ export default function FunnelStyleStep({
   };
 
   const handleNext = () => {
-    onNext('style', {
+    onNext("style", {
       stylePreferences: selectedStyles,
       referenceImages,
     });
@@ -133,15 +139,18 @@ export default function FunnelStyleStep({
             onClick={() => toggleStyle(style.id)}
             className={`
               relative p-3 rounded-xl border-2 text-left transition-all
-              ${selectedStyles.includes(style.id)
-                ? 'border-primary bg-primary/10'
-                : 'border-border bg-card hover:border-primary/50'
+              ${
+                selectedStyles.includes(style.id)
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-card hover:border-primary/50"
               }
             `}
           >
             <span className="text-lg mr-2">{style.emoji}</span>
-            <span className="font-medium text-foreground text-sm">{style.label}</span>
-            
+            <span className="font-medium text-foreground text-sm">
+              {style.label}
+            </span>
+
             {selectedStyles.includes(style.id) && (
               <motion.div
                 initial={{ scale: 0 }}
@@ -158,9 +167,10 @@ export default function FunnelStyleStep({
       {/* Reference images */}
       <div className="mt-6">
         <label className="block text-sm font-medium text-foreground mb-2">
-          Reference images <span className="text-muted-foreground">(optional, up to 5)</span>
+          Reference images{" "}
+          <span className="text-muted-foreground">(optional, up to 5)</span>
         </label>
-        
+
         <div className="grid grid-cols-3 gap-2">
           {/* Existing images */}
           <AnimatePresence>
@@ -218,7 +228,8 @@ export default function FunnelStyleStep({
         />
 
         <p className="text-xs text-muted-foreground mt-2">
-          Share inspiration photos, reference images, or examples of work you love
+          Share inspiration photos, reference images, or examples of work you
+          love
         </p>
       </div>
     </FunnelStepWrapper>

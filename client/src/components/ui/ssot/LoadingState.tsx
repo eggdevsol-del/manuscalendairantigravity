@@ -3,7 +3,7 @@
  * -------------------------------
  * LoadingState is the canonical loading indicator component.
  * Use this for consistent loading states across all pages.
- * 
+ *
  * DO NOT create custom loading spinners or "Loading..." text in page components.
  */
 import { tokens } from "@/ui/tokens";
@@ -21,7 +21,7 @@ interface LoadingStateProps {
 export function LoadingState({
   message = "Loading...",
   fullScreen = false,
-  className
+  className,
 }: LoadingStateProps) {
   const content = (
     <div className={cn(tokens.loading.base, className)}>
@@ -31,11 +31,7 @@ export function LoadingState({
   );
 
   if (fullScreen) {
-    return (
-      <div className={tokens.loading.fullScreen}>
-        {content}
-      </div>
-    );
+    return <div className={tokens.loading.fullScreen}>{content}</div>;
   }
 
   return content;

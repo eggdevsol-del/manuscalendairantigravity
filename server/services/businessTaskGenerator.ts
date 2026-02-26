@@ -1,21 +1,33 @@
 /**
  * Business Task Generator Service
- * 
+ *
  * Implements the Revenue Protection Algorithm for generating
  * prioritized business tasks based on real data.
  */
 
 import * as schema from "../../drizzle/schema";
-import { eq, and, desc, asc, gte, lt, lte, isNull, or, sql, ne } from "drizzle-orm";
+import {
+  eq,
+  and,
+  desc,
+  asc,
+  gte,
+  lt,
+  lte,
+  isNull,
+  or,
+  sql,
+  ne,
+} from "drizzle-orm";
 import type { MySql2Database } from "drizzle-orm/mysql2";
 
 // ==========================================
 // TYPES
 // ==========================================
 
-export type TaskTier = 'tier1' | 'tier2' | 'tier3' | 'tier4';
-export type PriorityLevel = 'critical' | 'high' | 'medium' | 'low';
-export type ActionType = 'in_app' | 'sms' | 'email' | 'external';
+export type TaskTier = "tier1" | "tier2" | "tier3" | "tier4";
+export type PriorityLevel = "critical" | "high" | "medium" | "low";
+export type ActionType = "in_app" | "sms" | "email" | "external";
 
 export interface BusinessTask {
   taskType: string;
@@ -45,9 +57,9 @@ export interface BusinessTask {
 
 const BENCHMARKS = {
   // Response time benchmarks (in seconds)
-  ELITE_RESPONSE_TIME: 15 * 60,      // 15 minutes
-  EXCELLENT_RESPONSE_TIME: 60 * 60,   // 1 hour
-  GOOD_RESPONSE_TIME: 4 * 60 * 60,    // 4 hours
+  ELITE_RESPONSE_TIME: 15 * 60, // 15 minutes
+  EXCELLENT_RESPONSE_TIME: 60 * 60, // 1 hour
+  GOOD_RESPONSE_TIME: 4 * 60 * 60, // 4 hours
   AVERAGE_RESPONSE_TIME: 24 * 60 * 60, // 24 hours
 
   // Task completion benchmarks
@@ -68,28 +80,28 @@ const BENCHMARKS = {
 // ==========================================
 
 function getPriorityLevel(score: number): PriorityLevel {
-  if (score >= 800) return 'critical';
-  if (score >= 500) return 'high';
-  if (score >= 300) return 'medium';
-  return 'low';
+  if (score >= 800) return "critical";
+  if (score >= 500) return "high";
+  if (score >= 300) return "medium";
+  return "low";
 }
 
 function getTimeMultiplier(hoursUntilDeadline: number): number {
-  if (hoursUntilDeadline < 0) return 0.5;      // Overdue
-  if (hoursUntilDeadline < 6) return 2.0;      // Critical window
-  if (hoursUntilDeadline < 24) return 1.5;     // Same day
-  if (hoursUntilDeadline < 48) return 1.2;     // Tomorrow
-  if (hoursUntilDeadline < 72) return 1.0;     // Within 3 days
-  return 0.8;                                   // Future
+  if (hoursUntilDeadline < 0) return 0.5; // Overdue
+  if (hoursUntilDeadline < 6) return 2.0; // Critical window
+  if (hoursUntilDeadline < 24) return 1.5; // Same day
+  if (hoursUntilDeadline < 48) return 1.2; // Tomorrow
+  if (hoursUntilDeadline < 72) return 1.0; // Within 3 days
+  return 0.8; // Future
 }
 
 function hoursSince(date: Date | string): number {
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = typeof date === "string" ? new Date(date) : date;
   return (Date.now() - d.getTime()) / (1000 * 60 * 60);
 }
 
 function hoursUntil(date: Date | string): number {
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = typeof date === "string" ? new Date(date) : date;
   return (d.getTime() - Date.now()) / (1000 * 60 * 60);
 }
 
@@ -122,9 +134,9 @@ async function generateNewLeadTasks(
   const newLeads = await db.query.leads.findMany({
     where: and(
       eq(schema.leads.artistId, artistId),
-      eq(schema.leads.status, 'new')
+      eq(schema.leads.status, "new")
     ),
-    orderBy: [desc(schema.leads.priorityScore), asc(schema.leads.createdAt)]
+    orderBy: [desc(schema.leads.priorityScore), asc(schema.leads.createdAt)],
   });
 
   for (const lead of newLeads) {
@@ -132,11 +144,15 @@ async function generateNewLeadTasks(
     let baseScore: number;
 
     // New leads from funnel are critical - they've already shown high intent
-    if (hours < 1) baseScore = 980;      // Just submitted
-    else if (hours < 4) baseScore = 900;  // Very fresh
-    else if (hours < 24) baseScore = 750; // Same day
-    else if (hours < 48) baseScore = 550; // Yesterday
-    else baseScore = Math.max(200, 400 - (hours * 3));
+    if (hours < 1)
+      baseScore = 980; // Just submitted
+    else if (hours < 4)
+      baseScore = 900; // Very fresh
+    else if (hours < 24)
+      baseScore = 750; // Same day
+    else if (hours < 48)
+      baseScore = 550; // Yesterday
+    else baseScore = Math.max(200, 400 - hours * 3);
 
     // Boost based on lead's own priority score
     const leadPriorityBoost = Math.min(100, (lead.priorityScore || 0) / 10);
@@ -144,26 +160,27 @@ async function generateNewLeadTasks(
 
     // Parse derived tags for display
     const tags = lead.derivedTags ? JSON.parse(lead.derivedTags) : [];
-    const tagPreview = tags.slice(0, 3).join(' • ');
+    const tagPreview = tags.slice(0, 3).join(" • ");
 
-    const timeLabel = hours < 1
-      ? 'Just now'
-      : hours < 24
-        ? `${Math.floor(hours)}h ago`
-        : `${Math.floor(hours / 24)}d ago`;
+    const timeLabel =
+      hours < 1
+        ? "Just now"
+        : hours < 24
+          ? `${Math.floor(hours)}h ago`
+          : `${Math.floor(hours / 24)}d ago`;
 
     tasks.push({
-      taskType: 'new_lead',
-      taskTier: 'tier1',
+      taskType: "new_lead",
+      taskTier: "tier1",
       title: `New lead: ${lead.clientName}`,
-      context: `${lead.projectType?.replace(/-/g, ' ') || 'Consultation'} • ${tagPreview} • ${timeLabel}`,
+      context: `${lead.projectType?.replace(/-/g, " ") || "Consultation"} • ${tagPreview} • ${timeLabel}`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
-      relatedEntityType: 'lead',
+      relatedEntityType: "lead",
       relatedEntityId: String(lead.id),
       clientId: null,
       clientName: lead.clientName,
-      actionType: 'in_app',
+      actionType: "in_app",
       smsNumber: lead.clientPhone || null,
       smsBody: null,
       emailRecipient: lead.clientEmail || null,
@@ -171,7 +188,7 @@ async function generateNewLeadTasks(
       emailBody: null,
       deepLink: `/conversations?leadId=${lead.id}`,
       dueAt: new Date(new Date(lead.createdAt!).getTime() + 60 * 60 * 1000), // 1 hour after creation
-      expiresAt: null
+      expiresAt: null,
     });
   }
 
@@ -190,13 +207,15 @@ async function generateLeadFollowUpTasks(
   const contactedLeads = await db.query.leads.findMany({
     where: and(
       eq(schema.leads.artistId, artistId),
-      eq(schema.leads.status, 'contacted')
+      eq(schema.leads.status, "contacted")
     ),
-    orderBy: [desc(schema.leads.priorityScore)]
+    orderBy: [desc(schema.leads.priorityScore)],
   });
 
   for (const lead of contactedLeads) {
-    const daysSinceContact = lead.lastContactedAt ? daysSince(lead.lastContactedAt) : daysSince(lead.createdAt!);
+    const daysSinceContact = lead.lastContactedAt
+      ? daysSince(lead.lastContactedAt)
+      : daysSince(lead.createdAt!);
 
     // Only create follow-up task if it's been more than 2 days since contact
     if (daysSinceContact < 2) continue;
@@ -204,44 +223,48 @@ async function generateLeadFollowUpTasks(
     // TIME GROWTH LOGIC:
     // Base 400. Increases by 40 points every day it's left unanswered.
     // Cap at 900 (Critical).
-    // Example: 
+    // Example:
     // Day 3: 400 + (1 * 40) = 440
     // Day 5: 400 + (3 * 40) = 520
     // Day 14: 400 + (12 * 40) = 880
 
     const daysOverdue = Math.max(0, daysSinceContact - 2);
-    let baseScore = 400 + (daysOverdue * 40);
+    let baseScore = 400 + daysOverdue * 40;
     baseScore = Math.min(900, baseScore); // Cap
 
     // Boost based on estimated value
-    if (lead.estimatedValue && lead.estimatedValue > 500000) { // $5000+
+    if (lead.estimatedValue && lead.estimatedValue > 500000) {
+      // $5000+
       baseScore += 100;
-    } else if (lead.estimatedValue && lead.estimatedValue > 200000) { // $2000+
+    } else if (lead.estimatedValue && lead.estimatedValue > 200000) {
+      // $2000+
       baseScore += 50;
     }
 
-    const followUpMessage = `Hey ${lead.clientName}! Just following up on your ${lead.projectType?.replace(/-/g, ' ') || 'tattoo'} inquiry. Let me know if you have any questions or if you'd like to move forward with booking!`;
+    const followUpMessage = `Hey ${lead.clientName}! Just following up on your ${lead.projectType?.replace(/-/g, " ") || "tattoo"} inquiry. Let me know if you have any questions or if you'd like to move forward with booking!`;
 
     tasks.push({
-      taskType: 'lead_follow_up',
-      taskTier: 'tier2',
+      taskType: "lead_follow_up",
+      taskTier: "tier2",
       title: `Follow up: ${lead.clientName}`,
       context: `Contacted ${Math.floor(daysSinceContact)} days ago - needs reply`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
-      relatedEntityType: 'lead',
+      relatedEntityType: "lead",
       relatedEntityId: String(lead.id),
       clientId: null,
       clientName: lead.clientName,
-      actionType: lead.clientPhone ? 'sms' : 'email',
+      actionType: lead.clientPhone ? "sms" : "email",
       smsNumber: lead.clientPhone || null,
       smsBody: lead.clientPhone ? followUpMessage : null,
       emailRecipient: lead.clientEmail || null,
-      emailSubject: lead.clientPhone ? null : `Following up on your tattoo inquiry`,
+      emailSubject: lead.clientPhone
+        ? null
+        : `Following up on your tattoo inquiry`,
       emailBody: lead.clientPhone ? null : followUpMessage,
       deepLink: `/conversations?leadId=${lead.id}`,
       dueAt: null,
-      expiresAt: null
+      expiresAt: null,
     });
   }
 
@@ -260,12 +283,12 @@ async function generateNewConsultationTasks(
   const pendingConsultations = await db.query.consultations.findMany({
     where: and(
       eq(schema.consultations.artistId, artistId),
-      eq(schema.consultations.status, 'pending')
+      eq(schema.consultations.status, "pending")
     ),
     with: {
-      client: true
+      client: true,
     },
-    orderBy: asc(schema.consultations.createdAt)
+    orderBy: asc(schema.consultations.createdAt),
   });
 
   for (const consult of pendingConsultations) {
@@ -276,7 +299,7 @@ async function generateNewConsultationTasks(
     else if (hours < 4) baseScore = 850;
     else if (hours < 24) baseScore = 650;
     else if (hours < 48) baseScore = 450;
-    else baseScore = Math.max(100, 300 - (hours * 2));
+    else baseScore = Math.max(100, 300 - hours * 2);
 
     const isViewed = consult.viewed === 1;
     if (isViewed && hours > 2) {
@@ -284,32 +307,37 @@ async function generateNewConsultationTasks(
       baseScore = Math.min(baseScore, 700);
     }
 
-    const timeLabel = hours < 1
-      ? 'Just now'
-      : hours < 24
-        ? `${Math.floor(hours)}h ago`
-        : `${Math.floor(hours / 24)}d ago`;
+    const timeLabel =
+      hours < 1
+        ? "Just now"
+        : hours < 24
+          ? `${Math.floor(hours)}h ago`
+          : `${Math.floor(hours / 24)}d ago`;
 
     tasks.push({
-      taskType: 'new_consultation',
-      taskTier: 'tier1',
-      title: isViewed ? `Respond to ${consult.client?.name || 'Client'}` : 'New consultation request',
-      context: `${consult.client?.name || 'Client'}: ${consult.subject} • ${timeLabel}`,
+      taskType: "new_consultation",
+      taskTier: "tier1",
+      title: isViewed
+        ? `Respond to ${consult.client?.name || "Client"}`
+        : "New consultation request",
+      context: `${consult.client?.name || "Client"}: ${consult.subject} • ${timeLabel}`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
-      relatedEntityType: 'consultation',
+      relatedEntityType: "consultation",
       relatedEntityId: String(consult.id),
       clientId: consult.clientId,
       clientName: consult.client?.name || null,
-      actionType: 'in_app',
+      actionType: "in_app",
       smsNumber: consult.client?.phone || null,
-      smsBody: consult.client?.phone ? `Hi ${consult.client.name}, thanks for your consultation request! I'll take a look and get back to you shortly.` : null,
+      smsBody: consult.client?.phone
+        ? `Hi ${consult.client.name}, thanks for your consultation request! I'll take a look and get back to you shortly.`
+        : null,
       emailRecipient: null,
       emailSubject: null,
       emailBody: null,
       deepLink: `/conversations?consultationId=${consult.id}`,
       dueAt: new Date(new Date(consult.createdAt!).getTime() + 60 * 60 * 1000), // 1 hour after creation
-      expiresAt: null
+      expiresAt: null,
     });
   }
 
@@ -331,16 +359,16 @@ async function generateDepositTasks(
   const appointmentsNeedingDeposit = await db.query.appointments.findMany({
     where: and(
       eq(schema.appointments.artistId, artistId),
-      eq(schema.appointments.status, 'confirmed'),
+      eq(schema.appointments.status, "confirmed"),
       eq(schema.appointments.depositPaid, 0),
       gte(schema.appointments.startTime, now.toISOString()),
       lte(schema.appointments.startTime, twoWeeksFromNow.toISOString())
     ),
     with: {
       client: true,
-      conversation: true
+      conversation: true,
     },
-    orderBy: asc(schema.appointments.startTime)
+    orderBy: asc(schema.appointments.startTime),
   });
 
   for (const appt of appointmentsNeedingDeposit) {
@@ -358,7 +386,8 @@ async function generateDepositTasks(
     if (hours < 24) urgencyScore = 600;
     else if (hours < 48) urgencyScore = 500;
     else if (hours < 72) urgencyScore = 400;
-    else if (hours < 168) urgencyScore = 300; // 1 week
+    else if (hours < 168)
+      urgencyScore = 300; // 1 week
     else urgencyScore = 200;
 
     // Staleness Score (0-300)
@@ -374,32 +403,36 @@ async function generateDepositTasks(
     }
 
     const depositFormatted = `$${(appt.depositAmount / 100).toFixed(0)}`;
-    const dateFormatted = new Date(appt.startTime).toLocaleDateString('en-AU', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric'
+    const dateFormatted = new Date(appt.startTime).toLocaleDateString("en-AU", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
     });
 
     tasks.push({
-      taskType: 'deposit_collection',
-      taskTier: 'tier1',
+      taskType: "deposit_collection",
+      taskTier: "tier1",
       title: `Collect ${depositFormatted} deposit`,
-      context: `${appt.client?.name || 'Client'} - ${appt.title} on ${dateFormatted}`,
+      context: `${appt.client?.name || "Client"} - ${appt.title} on ${dateFormatted}`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
-      relatedEntityType: 'appointment',
+      relatedEntityType: "appointment",
       relatedEntityId: String(appt.id),
       clientId: appt.clientId,
       clientName: appt.client?.name || null,
-      actionType: 'in_app',
+      actionType: "in_app",
       smsNumber: appt.client?.phone || null,
-      smsBody: appt.client?.phone ? `Hi ${appt.client.name}, just a friendly reminder regarding the deposit for your upcoming appointment on ${dateFormatted}. You can pay via the link: https://calendable.com/pay/${appt.id}` : null,
+      smsBody: appt.client?.phone
+        ? `Hi ${appt.client.name}, just a friendly reminder regarding the deposit for your upcoming appointment on ${dateFormatted}. You can pay via the link: https://calendable.com/pay/${appt.id}`
+        : null,
       emailRecipient: appt.client?.email || null,
       emailSubject: `Deposit Reminder - ${appt.title}`,
       emailBody: `Hi ${appt.client?.name},\n\nJust a friendly reminder regarding the deposit for your upcoming appointment on ${dateFormatted}.\n\nYou can pay securely via this link: https://calendable.com/pay/${appt.id}\n\nThanks!`,
-      deepLink: appt.conversationId ? `/chat/${appt.conversationId}` : `/conversations`,
+      deepLink: appt.conversationId
+        ? `/chat/${appt.conversationId}`
+        : `/conversations`,
       dueAt: new Date(new Date(appt.startTime).getTime() - 72 * 60 * 60 * 1000), // 72 hours before
-      expiresAt: new Date(appt.startTime)
+      expiresAt: new Date(appt.startTime),
     });
   }
 
@@ -421,16 +454,16 @@ async function generateConfirmationTasks(
   const appointmentsNeedingConfirmation = await db.query.appointments.findMany({
     where: and(
       eq(schema.appointments.artistId, artistId),
-      eq(schema.appointments.status, 'confirmed'),
+      eq(schema.appointments.status, "confirmed"),
       eq(schema.appointments.confirmationSent, 0),
       gte(schema.appointments.startTime, now.toISOString()),
       lte(schema.appointments.startTime, twoDaysFromNow.toISOString())
     ),
     with: {
       client: true,
-      conversation: true
+      conversation: true,
     },
-    orderBy: asc(schema.appointments.startTime)
+    orderBy: asc(schema.appointments.startTime),
   });
 
   for (const appt of appointmentsNeedingConfirmation) {
@@ -441,34 +474,39 @@ async function generateConfirmationTasks(
     else if (hours < 24) baseScore = 880;
     else baseScore = 680;
 
-    const timeFormatted = new Date(appt.startTime).toLocaleTimeString('en-AU', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+    const timeFormatted = new Date(appt.startTime).toLocaleTimeString("en-AU", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
 
-    const confirmationMessage = `Hi ${appt.client?.name || 'there'}! Just confirming your appointment tomorrow at ${timeFormatted}. See you then! 🎨`;
+    const confirmationMessage = `Hi ${appt.client?.name || "there"}! Just confirming your appointment tomorrow at ${timeFormatted}. See you then! 🎨`;
 
     tasks.push({
-      taskType: 'appointment_confirmation',
-      taskTier: 'tier1',
-      title: hours < 24 ? "Confirm tomorrow's appointment" : "Send appointment confirmation",
-      context: `${appt.client?.name || 'Client'} - ${timeFormatted}`,
+      taskType: "appointment_confirmation",
+      taskTier: "tier1",
+      title:
+        hours < 24
+          ? "Confirm tomorrow's appointment"
+          : "Send appointment confirmation",
+      context: `${appt.client?.name || "Client"} - ${timeFormatted}`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
-      relatedEntityType: 'appointment',
+      relatedEntityType: "appointment",
       relatedEntityId: String(appt.id),
       clientId: appt.clientId,
       clientName: appt.client?.name || null,
-      actionType: 'sms',
+      actionType: "sms",
       smsNumber: appt.client?.phone || null,
       smsBody: confirmationMessage,
       emailRecipient: appt.client?.email || null,
       emailSubject: `Appointment Confirmation - ${timeFormatted}`,
       emailBody: confirmationMessage,
-      deepLink: appt.conversationId ? `/chat/${appt.conversationId}` : `/conversations`,
+      deepLink: appt.conversationId
+        ? `/chat/${appt.conversationId}`
+        : `/conversations`,
       dueAt: new Date(new Date(appt.startTime).getTime() - 24 * 60 * 60 * 1000), // 24 hours before
-      expiresAt: new Date(appt.startTime)
+      expiresAt: new Date(appt.startTime),
     });
   }
 
@@ -487,17 +525,17 @@ async function generateFollowUpTasks(
   const respondedConsultations = await db.query.consultations.findMany({
     where: and(
       eq(schema.consultations.artistId, artistId),
-      eq(schema.consultations.status, 'responded')
+      eq(schema.consultations.status, "responded")
     ),
     with: {
       client: true,
-      conversation: true
-    }
+      conversation: true,
+    },
   });
 
   // Get all conversations for this artist to lookup by clientId if needed
   const allConversations = await db.query.conversations.findMany({
-    where: eq(schema.conversations.artistId, artistId)
+    where: eq(schema.conversations.artistId, artistId),
   });
   const conversationsByClient = new Map(
     allConversations.map(c => [c.clientId, c.id])
@@ -514,7 +552,7 @@ async function generateFollowUpTasks(
     // Cap at 950 (Critical).
 
     const daysOverdue = Math.max(0, days - 2);
-    baseScore = 400 + (daysOverdue * 50);
+    baseScore = 400 + daysOverdue * 50;
     baseScore = Math.min(950, baseScore);
 
     const daysLabel = Math.floor(days);
@@ -526,25 +564,25 @@ async function generateFollowUpTasks(
     }
 
     tasks.push({
-      taskType: 'follow_up_responded',
-      taskTier: 'tier2',
-      title: `Follow up: ${consult.client?.name || 'Client'}`,
-      context: `Responded ${daysLabel} day${daysLabel !== 1 ? 's' : ''} ago - needs reply`,
+      taskType: "follow_up_responded",
+      taskTier: "tier2",
+      title: `Follow up: ${consult.client?.name || "Client"}`,
+      context: `Responded ${daysLabel} day${daysLabel !== 1 ? "s" : ""} ago - needs reply`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
-      relatedEntityType: 'consultation',
+      relatedEntityType: "consultation",
       relatedEntityId: String(consult.id),
       clientId: consult.clientId,
       clientName: consult.client?.name || null,
-      actionType: 'in_app', // Default to in_app, but UI shows secondary actions
+      actionType: "in_app", // Default to in_app, but UI shows secondary actions
       smsNumber: consult.client?.phone || null,
-      smsBody: `Hi ${consult.client?.name || 'there'}! Just following up on your consultation. Let me know if you have any questions!`,
+      smsBody: `Hi ${consult.client?.name || "there"}! Just following up on your consultation. Let me know if you have any questions!`,
       emailRecipient: consult.client?.email || null,
       emailSubject: `Following up on your consultation`,
-      emailBody: `Hi ${consult.client?.name || 'there'}! Just following up on your consultation. Let me know if you have any questions!`,
+      emailBody: `Hi ${consult.client?.name || "there"}! Just following up on your consultation. Let me know if you have any questions!`,
       deepLink: conversationId ? `/chat/${conversationId}` : `/conversations`,
       dueAt: null,
-      expiresAt: null
+      expiresAt: null,
     });
   }
 
@@ -567,9 +605,9 @@ async function generateStaleConversationTasks(
       client: true,
       messages: {
         orderBy: desc(schema.messages.createdAt),
-        limit: 1
-      }
-    }
+        limit: 1,
+      },
+    },
   });
 
   for (const conv of conversations) {
@@ -588,31 +626,31 @@ async function generateStaleConversationTasks(
     // Cap at 900.
 
     const daysOverdue = Math.max(0, days - 2);
-    baseScore = 300 + (daysOverdue * 40);
+    baseScore = 300 + daysOverdue * 40;
     baseScore = Math.min(900, baseScore);
 
     const daysLabel = Math.floor(days);
 
     tasks.push({
-      taskType: 'stale_conversation',
-      taskTier: 'tier2',
-      title: `Follow up with ${conv.client?.name || 'Client'}`,
+      taskType: "stale_conversation",
+      taskTier: "tier2",
+      title: `Follow up with ${conv.client?.name || "Client"}`,
       context: `No response in ${daysLabel} days`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
-      relatedEntityType: 'conversation',
+      relatedEntityType: "conversation",
       relatedEntityId: String(conv.id),
       clientId: conv.clientId,
       clientName: conv.client?.name || null,
-      actionType: 'in_app',
+      actionType: "in_app",
       smsNumber: conv.client?.phone || null,
-      smsBody: `Hi ${conv.client?.name || 'there'}! Just checking in since we haven't chatted in a while.`,
+      smsBody: `Hi ${conv.client?.name || "there"}! Just checking in since we haven't chatted in a while.`,
       emailRecipient: conv.client?.email || null,
       emailSubject: `Checking in!`,
-      emailBody: `Hi ${conv.client?.name || 'there'}! Just checking in since we haven't chatted in a while.`,
+      emailBody: `Hi ${conv.client?.name || "there"}! Just checking in since we haven't chatted in a while.`,
       deepLink: `/chat/${conv.id}`,
       dueAt: null,
-      expiresAt: null
+      expiresAt: null,
     });
   }
 
@@ -635,12 +673,12 @@ async function generateBirthdayTasks(
   const clientAppointments = await db.query.appointments.findMany({
     where: eq(schema.appointments.artistId, artistId),
     with: {
-      client: true
-    }
+      client: true,
+    },
   });
 
   // Get unique clients
-  const clientMap = new Map<string, typeof clientAppointments[0]['client']>();
+  const clientMap = new Map<string, (typeof clientAppointments)[0]["client"]>();
   for (const appt of clientAppointments) {
     if (appt.client && appt.client.birthday) {
       clientMap.set(appt.clientId, appt.client);
@@ -651,7 +689,11 @@ async function generateBirthdayTasks(
     if (!client?.birthday) continue;
 
     const birthday = new Date(client.birthday);
-    const thisYearBirthday = new Date(now.getFullYear(), birthday.getMonth(), birthday.getDate());
+    const thisYearBirthday = new Date(
+      now.getFullYear(),
+      birthday.getMonth(),
+      birthday.getDate()
+    );
 
     // Check if birthday is within next 7 days
     const daysUntilBirthday = daysUntil(thisYearBirthday);
@@ -660,29 +702,30 @@ async function generateBirthdayTasks(
 
     let baseScore: number;
 
-    if (daysUntilBirthday < 1) baseScore = 400; // Today
+    if (daysUntilBirthday < 1)
+      baseScore = 400; // Today
     else if (daysUntilBirthday < 3) baseScore = 350;
     else baseScore = 280;
 
-    const birthdayFormatted = thisYearBirthday.toLocaleDateString('en-AU', {
-      month: 'short',
-      day: 'numeric'
+    const birthdayFormatted = thisYearBirthday.toLocaleDateString("en-AU", {
+      month: "short",
+      day: "numeric",
     });
 
     const birthdayMessage = `Happy Birthday ${client.name}! 🎂 Hope you have an amazing day! If you're thinking about your next piece, I'd love to create something special for you.`;
 
     tasks.push({
-      taskType: 'birthday_outreach',
-      taskTier: 'tier3',
+      taskType: "birthday_outreach",
+      taskTier: "tier3",
       title: `Birthday: ${client.name}`,
       context: `${birthdayFormatted} - Send wishes or voucher?`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
-      relatedEntityType: 'user',
+      relatedEntityType: "user",
       relatedEntityId: clientId,
       clientId: clientId,
       clientName: client.name || null,
-      actionType: 'sms',
+      actionType: "sms",
       smsNumber: client.phone || null,
       smsBody: birthdayMessage,
       emailRecipient: client.email || null,
@@ -690,7 +733,7 @@ async function generateBirthdayTasks(
       emailBody: birthdayMessage,
       deepLink: `/conversations`,
       dueAt: thisYearBirthday,
-      expiresAt: new Date(thisYearBirthday.getTime() + 24 * 60 * 60 * 1000)
+      expiresAt: new Date(thisYearBirthday.getTime() + 24 * 60 * 60 * 1000),
     });
   }
 
@@ -713,11 +756,11 @@ async function generateAnniversaryTasks(
   const completedAppointments = await db.query.appointments.findMany({
     where: and(
       eq(schema.appointments.artistId, artistId),
-      eq(schema.appointments.status, 'completed')
+      eq(schema.appointments.status, "completed")
     ),
     with: {
-      client: true
-    }
+      client: true,
+    },
   });
 
   for (const appt of completedAppointments) {
@@ -727,30 +770,35 @@ async function generateAnniversaryTasks(
     if (yearsAgo < 1) continue; // Not an anniversary yet
 
     // Calculate this year's anniversary
-    const anniversaryDate = new Date(now.getFullYear(), apptDate.getMonth(), apptDate.getDate());
+    const anniversaryDate = new Date(
+      now.getFullYear(),
+      apptDate.getMonth(),
+      apptDate.getDate()
+    );
     const daysUntilAnniversary = daysUntil(anniversaryDate);
 
     if (daysUntilAnniversary < 0 || daysUntilAnniversary > 7) continue;
 
     let baseScore: number;
 
-    if (yearsAgo === 1) baseScore = 420; // 1 year anniversary is most significant
+    if (yearsAgo === 1)
+      baseScore = 420; // 1 year anniversary is most significant
     else baseScore = 320;
 
-    const anniversaryMessage = `Hey ${appt.client?.name}! 🎨 It's been ${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since we did your ${appt.title}! Hope it's still looking great. Would love to see how it's healed - and if you're thinking about your next piece, let me know!`;
+    const anniversaryMessage = `Hey ${appt.client?.name}! 🎨 It's been ${yearsAgo} year${yearsAgo > 1 ? "s" : ""} since we did your ${appt.title}! Hope it's still looking great. Would love to see how it's healed - and if you're thinking about your next piece, let me know!`;
 
     tasks.push({
-      taskType: 'tattoo_anniversary',
-      taskTier: 'tier3',
-      title: `Tattoo anniversary: ${appt.client?.name || 'Client'}`,
-      context: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since ${appt.title}`,
+      taskType: "tattoo_anniversary",
+      taskTier: "tier3",
+      title: `Tattoo anniversary: ${appt.client?.name || "Client"}`,
+      context: `${yearsAgo} year${yearsAgo > 1 ? "s" : ""} since ${appt.title}`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
-      relatedEntityType: 'appointment',
+      relatedEntityType: "appointment",
       relatedEntityId: String(appt.id),
       clientId: appt.clientId,
       clientName: appt.client?.name || null,
-      actionType: 'sms',
+      actionType: "sms",
       smsNumber: appt.client?.phone || null,
       smsBody: anniversaryMessage,
       emailRecipient: appt.client?.email || null,
@@ -758,7 +806,7 @@ async function generateAnniversaryTasks(
       emailBody: anniversaryMessage,
       deepLink: `/conversations`,
       dueAt: anniversaryDate,
-      expiresAt: new Date(anniversaryDate.getTime() + 24 * 60 * 60 * 1000)
+      expiresAt: new Date(anniversaryDate.getTime() + 24 * 60 * 60 * 1000),
     });
   }
 
@@ -781,15 +829,15 @@ async function generateHealedPhotoTasks(
   const recentlyCompletedAppointments = await db.query.appointments.findMany({
     where: and(
       eq(schema.appointments.artistId, artistId),
-      eq(schema.appointments.status, 'completed'),
+      eq(schema.appointments.status, "completed"),
       gte(schema.appointments.endTime, thirtyDaysAgo.toISOString()),
       lte(schema.appointments.endTime, fourteenDaysAgo.toISOString()),
       eq(schema.appointments.followUpSent, 0)
     ),
     with: {
       client: true,
-      conversation: true
-    }
+      conversation: true,
+    },
   });
 
   for (const appt of recentlyCompletedAppointments) {
@@ -803,25 +851,27 @@ async function generateHealedPhotoTasks(
     const healedPhotoMessage = `Hey ${appt.client?.name}! 📸 Your ${appt.title} should be nicely healed by now. Would love to see how it turned out! If you get a chance, send me a pic - I'd love to add it to my portfolio (with your permission of course!).`;
 
     tasks.push({
-      taskType: 'healed_photo_request',
-      taskTier: 'tier3',
-      title: 'Request healed photo',
+      taskType: "healed_photo_request",
+      taskTier: "tier3",
+      title: "Request healed photo",
       context: `${appt.client?.name}'s ${appt.title} should be healed`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
-      relatedEntityType: 'appointment',
+      relatedEntityType: "appointment",
       relatedEntityId: String(appt.id),
       clientId: appt.clientId,
       clientName: appt.client?.name || null,
-      actionType: 'sms',
+      actionType: "sms",
       smsNumber: appt.client?.phone || null,
       smsBody: healedPhotoMessage,
       emailRecipient: null,
       emailSubject: null,
       emailBody: null,
-      deepLink: appt.conversationId ? `/chat/${appt.conversationId}` : `/conversations`,
+      deepLink: appt.conversationId
+        ? `/chat/${appt.conversationId}`
+        : `/conversations`,
       dueAt: null,
-      expiresAt: null
+      expiresAt: null,
     });
   }
 
@@ -838,45 +888,51 @@ async function generateThankYouTasks(
   const tasks: BusinessTask[] = [];
 
   const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
   const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
 
   const todayCompletedAppointments = await db.query.appointments.findMany({
     where: and(
       eq(schema.appointments.artistId, artistId),
-      eq(schema.appointments.status, 'completed'),
+      eq(schema.appointments.status, "completed"),
       gte(schema.appointments.endTime, startOfToday.toISOString()),
       lt(schema.appointments.endTime, endOfToday.toISOString())
     ),
     with: {
       client: true,
-      conversation: true
-    }
+      conversation: true,
+    },
   });
 
   for (const appt of todayCompletedAppointments) {
     const thankYouMessage = `Thanks so much ${appt.client?.name}! 🙏 It was great working on your ${appt.title} today. Take good care of it during healing - let me know if you have any questions!`;
 
     tasks.push({
-      taskType: 'post_appointment_thankyou',
-      taskTier: 'tier3',
+      taskType: "post_appointment_thankyou",
+      taskTier: "tier3",
       title: `Thank ${appt.client?.name}`,
-      context: 'Session completed today - send thank you',
+      context: "Session completed today - send thank you",
       priorityScore: 400,
-      priorityLevel: 'medium',
-      relatedEntityType: 'appointment',
+      priorityLevel: "medium",
+      relatedEntityType: "appointment",
       relatedEntityId: String(appt.id),
       clientId: appt.clientId,
       clientName: appt.client?.name || null,
-      actionType: 'sms',
+      actionType: "sms",
       smsNumber: appt.client?.phone || null,
       smsBody: thankYouMessage,
       emailRecipient: null,
       emailSubject: null,
       emailBody: null,
-      deepLink: appt.conversationId ? `/chat/${appt.conversationId}` : `/conversations`,
+      deepLink: appt.conversationId
+        ? `/chat/${appt.conversationId}`
+        : `/conversations`,
       dueAt: null,
-      expiresAt: new Date(endOfToday)
+      expiresAt: new Date(endOfToday),
     });
   }
 
@@ -892,33 +948,45 @@ export async function generateBusinessTasks(
   artistId: string,
   maxTasks: number = 10
 ): Promise<BusinessTask[]> {
-  console.log(`[BusinessTaskGenerator] Generating tasks for artist ${artistId}`);
+  console.log(
+    `[BusinessTaskGenerator] Generating tasks for artist ${artistId}`
+  );
 
   // Get recently completed tasks (last 24 hours) to filter them out
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   // Format as MySQL DATETIME: YYYY-MM-DD HH:MM:SS
-  const oneDayAgoStr = oneDayAgo.toISOString().slice(0, 19).replace('T', ' ');
-  console.log(`[BusinessTaskGenerator] Looking for completions after: ${oneDayAgoStr}`);
+  const oneDayAgoStr = oneDayAgo.toISOString().slice(0, 19).replace("T", " ");
+  console.log(
+    `[BusinessTaskGenerator] Looking for completions after: ${oneDayAgoStr}`
+  );
 
   const recentCompletions = await db.query.taskCompletions.findMany({
     where: and(
       eq(schema.taskCompletions.artistId, artistId),
       gte(schema.taskCompletions.completedAt, oneDayAgoStr)
-    )
+    ),
   });
 
-  console.log(`[BusinessTaskGenerator] Raw completions found:`, recentCompletions.map(c => ({
-    taskType: c.taskType,
-    relatedEntityId: c.relatedEntityId,
-    completedAt: c.completedAt
-  })));
+  console.log(
+    `[BusinessTaskGenerator] Raw completions found:`,
+    recentCompletions.map(c => ({
+      taskType: c.taskType,
+      relatedEntityId: c.relatedEntityId,
+      completedAt: c.completedAt,
+    }))
+  );
 
   // Create a set of completed task keys for fast lookup
   const completedTaskKeys = new Set(
-    recentCompletions.map(c => `${c.taskType}-${c.relatedEntityId || 'none'}`)
+    recentCompletions.map(c => `${c.taskType}-${c.relatedEntityId || "none"}`)
   );
-  console.log(`[BusinessTaskGenerator] Completed task keys:`, Array.from(completedTaskKeys));
-  console.log(`[BusinessTaskGenerator] Found ${completedTaskKeys.size} recently completed tasks`);
+  console.log(
+    `[BusinessTaskGenerator] Completed task keys:`,
+    Array.from(completedTaskKeys)
+  );
+  console.log(
+    `[BusinessTaskGenerator] Found ${completedTaskKeys.size} recently completed tasks`
+  );
 
   // Generate all task types in parallel
   const [
@@ -962,20 +1030,29 @@ export async function generateBusinessTasks(
     ...thankYouTasks,
   ];
 
-  console.log(`[BusinessTaskGenerator] Generated ${allTasks.length} total tasks`);
-  console.log(`[BusinessTaskGenerator] Generated task keys:`, allTasks.map(t => `${t.taskType}-${t.relatedEntityId || 'none'}`));
+  console.log(
+    `[BusinessTaskGenerator] Generated ${allTasks.length} total tasks`
+  );
+  console.log(
+    `[BusinessTaskGenerator] Generated task keys:`,
+    allTasks.map(t => `${t.taskType}-${t.relatedEntityId || "none"}`)
+  );
 
   // Filter out recently completed tasks
   const filteredTasks = allTasks.filter(task => {
-    const taskKey = `${task.taskType}-${task.relatedEntityId || 'none'}`;
+    const taskKey = `${task.taskType}-${task.relatedEntityId || "none"}`;
     const isCompleted = completedTaskKeys.has(taskKey);
     if (isCompleted) {
-      console.log(`[BusinessTaskGenerator] Filtering out completed task: ${taskKey}`);
+      console.log(
+        `[BusinessTaskGenerator] Filtering out completed task: ${taskKey}`
+      );
     }
     return !isCompleted;
   });
 
-  console.log(`[BusinessTaskGenerator] After filtering completed: ${filteredTasks.length} tasks`);
+  console.log(
+    `[BusinessTaskGenerator] After filtering completed: ${filteredTasks.length} tasks`
+  );
 
   // Sort by priority score (descending)
   filteredTasks.sort((a, b) => b.priorityScore - a.priorityScore);

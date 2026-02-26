@@ -1,5 +1,21 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Switch,
+  Textarea,
+} from "@/components/ui";
 import { trpc } from "@/lib/trpc";
 import { ChevronLeft, Plus, Save, Trash2, Zap } from "lucide-react";
 import { LoadingState } from "@/components/ui/ssot";
@@ -162,8 +178,9 @@ export default function QuickActionsManagement() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Quick action buttons appear at the bottom of chat conversations. You can
-              create up to 6 buttons that send predefined messages or perform actions.
+              Quick action buttons appear at the bottom of chat conversations.
+              You can create up to 6 buttons that send predefined messages or
+              perform actions.
             </p>
           </CardContent>
         </Card>
@@ -175,7 +192,8 @@ export default function QuickActionsManagement() {
             disabled={(quickActions?.length || 0) >= 6}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Add Quick Action {quickActions?.length ? `(${quickActions.length}/6)` : ""}
+            Add Quick Action{" "}
+            {quickActions?.length ? `(${quickActions.length}/6)` : ""}
           </Button>
         )}
 
@@ -195,7 +213,7 @@ export default function QuickActionsManagement() {
                 <Input
                   id="label"
                   value={formData.label}
-                  onChange={(e) =>
+                  onChange={e =>
                     setFormData({ ...formData, label: e.target.value })
                   }
                   placeholder="e.g., Deposit Info"
@@ -210,7 +228,7 @@ export default function QuickActionsManagement() {
                 <Label htmlFor="actionType">Action Type *</Label>
                 <Select
                   value={formData.actionType}
-                  onValueChange={(value) =>
+                  onValueChange={value =>
                     setFormData({ ...formData, actionType: value as any })
                   }
                 >
@@ -218,7 +236,7 @@ export default function QuickActionsManagement() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {ACTION_TYPES.map((type) => (
+                    {ACTION_TYPES.map(type => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
                       </SelectItem>
@@ -232,7 +250,7 @@ export default function QuickActionsManagement() {
                 <Textarea
                   id="content"
                   value={formData.content}
-                  onChange={(e) =>
+                  onChange={e =>
                     setFormData({ ...formData, content: e.target.value })
                   }
                   placeholder="The message that will be sent when this button is clicked..."
@@ -252,7 +270,7 @@ export default function QuickActionsManagement() {
                 <Switch
                   id="enabled"
                   checked={formData.enabled}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={checked =>
                     setFormData({ ...formData, enabled: checked })
                   }
                 />
@@ -286,7 +304,7 @@ export default function QuickActionsManagement() {
             <h3 className="text-sm font-semibold text-foreground">
               Your Quick Actions
             </h3>
-            {quickActions.map((action) => (
+            {quickActions.map(action => (
               <Card key={action.id}>
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
@@ -299,17 +317,18 @@ export default function QuickActionsManagement() {
                           {action.label}
                         </CardTitle>
                         <CardDescription className="text-sm mt-1">
-                          {ACTION_TYPES.find((t) => t.value === action.actionType)
+                          {ACTION_TYPES.find(t => t.value === action.actionType)
                             ?.label || action.actionType}
                         </CardDescription>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-xs px-2 py-1 rounded-full ${action.enabled
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          action.enabled
                             ? "bg-accent/20 text-accent"
                             : "bg-muted text-muted-foreground"
-                          }`}
+                        }`}
                       >
                         {action.enabled ? "Active" : "Disabled"}
                       </span>
@@ -347,4 +366,3 @@ export default function QuickActionsManagement() {
     </div>
   );
 }
-

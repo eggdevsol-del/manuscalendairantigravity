@@ -7,10 +7,10 @@ dotenv.config();
 
 async function runMigrations() {
   console.log("Starting database migrations...");
-  
+
   const connection = await mysql.createConnection(process.env.DATABASE_URL);
   const db = drizzle(connection);
-  
+
   try {
     await migrate(db, { migrationsFolder: "./drizzle/migrations" });
     console.log("Migrations completed successfully!");
@@ -23,4 +23,3 @@ async function runMigrations() {
 }
 
 runMigrations();
-

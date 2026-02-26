@@ -1,5 +1,22 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input, Label, Switch, Textarea } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+  Switch,
+  Textarea,
+} from "@/components/ui";
 import {
   Select,
   SelectContent,
@@ -46,7 +63,7 @@ export default function WorkHours() {
 
   // Work hours state
   const [schedule, setSchedule] = useState<DaySchedule[]>(
-    DAYS.map((day) => ({
+    DAYS.map(day => ({
       day,
       enabled: false,
       startTime: "09:00",
@@ -77,9 +94,12 @@ export default function WorkHours() {
     sittings: 1,
   });
 
-  const { data: settings, refetch } = trpc.artistSettings.get.useQuery(undefined, {
-    enabled: !!user && (user.role === "artist" || user.role === "admin"),
-  });
+  const { data: settings, refetch } = trpc.artistSettings.get.useQuery(
+    undefined,
+    {
+      enabled: !!user && (user.role === "artist" || user.role === "admin"),
+    }
+  );
 
   const updateSettingsMutation = trpc.artistSettings.upsert.useMutation({
     onSuccess: () => {
@@ -128,17 +148,18 @@ export default function WorkHours() {
     initializedRef.current = true;
   }
 
-
   // Project Builder Logic
   useEffect(() => {
     if (projectBaseServiceId && projectSittings > 0) {
-      const baseService = services.find(s => s.id?.toString() === projectBaseServiceId);
+      const baseService = services.find(
+        s => s.id?.toString() === projectBaseServiceId
+      );
       if (baseService) {
         setNewProjectService(prev => ({
           ...prev,
           duration: baseService.duration, // Duration is per sitting usually, but let's keep it as base duration
           price: baseService.price * projectSittings,
-          sittings: projectSittings
+          sittings: projectSittings,
         }));
       }
     }
@@ -219,7 +240,7 @@ export default function WorkHours() {
   };
 
   const handleRemoveService = (id: number) => {
-    setServices(services.filter((s) => s.id !== id));
+    setServices(services.filter(s => s.id !== id));
     toast.success("Service removed");
   };
 
@@ -275,7 +296,7 @@ export default function WorkHours() {
                     <Input
                       type="time"
                       value={day.startTime}
-                      onChange={(e) =>
+                      onChange={e =>
                         handleTimeChange(index, "startTime", e.target.value)
                       }
                       className="w-24 h-8 text-xs"
@@ -284,7 +305,7 @@ export default function WorkHours() {
                     <Input
                       type="time"
                       value={day.endTime}
-                      onChange={(e) =>
+                      onChange={e =>
                         handleTimeChange(index, "endTime", e.target.value)
                       }
                       className="w-24 h-8 text-xs"
@@ -300,7 +321,9 @@ export default function WorkHours() {
               className="w-full"
             >
               <Save className="w-4 h-4 mr-2" />
-              {updateSettingsMutation.isPending ? "Saving..." : "Save Work Hours"}
+              {updateSettingsMutation.isPending
+                ? "Saving..."
+                : "Save Work Hours"}
             </Button>
           </CardContent>
         </Card>
@@ -342,7 +365,7 @@ export default function WorkHours() {
                 No services added yet
               </p>
             ) : (
-              services.map((service) => (
+              services.map(service => (
                 <Card key={service.id} className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -360,7 +383,8 @@ export default function WorkHours() {
                           ${service.price}
                         </span>
                         <span className="text-sm text-muted-foreground">
-                          {service.sittings || 1} sitting{(service.sittings || 1) > 1 ? 's' : ''}
+                          {service.sittings || 1} sitting
+                          {(service.sittings || 1) > 1 ? "s" : ""}
                         </span>
                       </div>
                     </div>
@@ -385,7 +409,7 @@ export default function WorkHours() {
                     <Input
                       id="serviceName"
                       value={newService.name}
-                      onChange={(e) =>
+                      onChange={e =>
                         setNewService({ ...newService, name: e.target.value })
                       }
                       placeholder="e.g., Custom Tattoo"
@@ -397,7 +421,7 @@ export default function WorkHours() {
                     <Textarea
                       id="serviceDescription"
                       value={newService.description}
-                      onChange={(e) =>
+                      onChange={e =>
                         setNewService({
                           ...newService,
                           description: e.target.value,
@@ -415,7 +439,7 @@ export default function WorkHours() {
                         id="serviceDuration"
                         type="number"
                         value={newService.duration}
-                        onChange={(e) =>
+                        onChange={e =>
                           setNewService({
                             ...newService,
                             duration: parseInt(e.target.value) || 0,
@@ -429,7 +453,7 @@ export default function WorkHours() {
                         id="servicePrice"
                         type="number"
                         value={newService.price}
-                        onChange={(e) =>
+                        onChange={e =>
                           setNewService({
                             ...newService,
                             price: parseFloat(e.target.value) || 0,
@@ -446,7 +470,7 @@ export default function WorkHours() {
                       type="number"
                       min="1"
                       value={newService.sittings || 1}
-                      onChange={(e) =>
+                      onChange={e =>
                         setNewService({
                           ...newService,
                           sittings: parseInt(e.target.value) || 1,
@@ -491,7 +515,10 @@ export default function WorkHours() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Add Project Service</DialogTitle>
-            <DialogDescription>Create a multi-sitting project package based on an existing service.</DialogDescription>
+            <DialogDescription>
+              Create a multi-sitting project package based on an existing
+              service.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
@@ -499,7 +526,12 @@ export default function WorkHours() {
               <Input
                 placeholder="e.g., Full arm sleeve"
                 value={newProjectService.name}
-                onChange={(e) => setNewProjectService({ ...newProjectService, name: e.target.value })}
+                onChange={e =>
+                  setNewProjectService({
+                    ...newProjectService,
+                    name: e.target.value,
+                  })
+                }
               />
             </div>
             <div>
@@ -508,18 +540,29 @@ export default function WorkHours() {
                 placeholder="Description of the project..."
                 rows={2}
                 value={newProjectService.description}
-                onChange={(e) => setNewProjectService({ ...newProjectService, description: e.target.value })}
+                onChange={e =>
+                  setNewProjectService({
+                    ...newProjectService,
+                    description: e.target.value,
+                  })
+                }
               />
             </div>
             <div>
               <Label>Base Service</Label>
-              <Select value={projectBaseServiceId} onValueChange={setProjectBaseServiceId}>
+              <Select
+                value={projectBaseServiceId}
+                onValueChange={setProjectBaseServiceId}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a service..." />
                 </SelectTrigger>
                 <SelectContent>
                   {services.map(service => (
-                    <SelectItem key={service.id} value={service.id?.toString() || ""}>
+                    <SelectItem
+                      key={service.id}
+                      value={service.id?.toString() || ""}
+                    >
                       {service.name} (${service.price} / {service.duration}m)
                     </SelectItem>
                   ))}
@@ -533,7 +576,9 @@ export default function WorkHours() {
                   type="number"
                   min="1"
                   value={projectSittings}
-                  onChange={(e) => setProjectSittings(parseInt(e.target.value) || 1)}
+                  onChange={e =>
+                    setProjectSittings(parseInt(e.target.value) || 1)
+                  }
                 />
               </div>
               <div>
@@ -541,21 +586,35 @@ export default function WorkHours() {
                 <Input
                   type="number"
                   value={newProjectService.price}
-                  onChange={(e) => setNewProjectService({ ...newProjectService, price: parseFloat(e.target.value) || 0 })}
+                  onChange={e =>
+                    setNewProjectService({
+                      ...newProjectService,
+                      price: parseFloat(e.target.value) || 0,
+                    })
+                  }
                 />
                 <p className="text-[10px] text-muted-foreground mt-1">
-                  Auto-calculated: ${services.find(s => s.id?.toString() === projectBaseServiceId)?.price || 0} x {projectSittings}
+                  Auto-calculated: $
+                  {services.find(s => s.id?.toString() === projectBaseServiceId)
+                    ?.price || 0}{" "}
+                  x {projectSittings}
                 </p>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowProjectBuilder(false)}>Cancel</Button>
-            <Button onClick={handleAddProjectService}>Add Project Service</Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowProjectBuilder(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAddProjectService}>
+              Add Project Service
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
-
