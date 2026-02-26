@@ -43,22 +43,60 @@ export function useCalendarAgendaController() {
   );
   const gridEnd = useMemo(() => addDays(anchorDate, BUFFER_DAYS), [anchorDate]);
 
-  const {
-    data: appointments,
-    isLoading,
-    refetch: refetchAppointments,
-  } = trpc.appointments.list.useQuery(
-    { startDate: gridStart, endDate: gridEnd },
-    { enabled: !!user, placeholderData: prev => prev }
-  );
-
-  // Fetch Studio and Artists for the Studio view
-  const { data: currentStudio } = trpc.studios.getCurrentStudio.useQuery(
+  // Fetch Studio and Artists for the Studio view first so we know if we need a studio calendar
+  const { data: currentStudio, isLoading: isLoadingStudio } = trpc.studios.getCurrentStudio.useQuery(
     undefined,
     {
       enabled: !!user && user.role === "artist",
     }
   );
+
+  const { data: teamMembers } = trpc.studios.getStudioMembers.useQuery(
+    { studioId: currentStudio?.id! },
+    { enabled: !!currentStudio?.id }
+  );
+
+  // 1. Studio Context
+  const isStudioView = !!currentStudio && (user?.role === "artist" || user?.role === "studio" || user?.role === "admin");
+  const {
+    data: studioAppointments,
+    isLoading: isLoadingStudioAppts,
+    refetch: refetchStudioAppts,
+  } = trpc.appointments.getStudioCalendar.useQuery(
+    { studioId: currentStudio?.id!, startDate: gridStart, endDate: gridEnd },
+    { enabled: isStudioView, placeholderData: prev => prev }
+  );
+
+  // 2. Artist Context (Solo)
+  const isSoloArtistView = !isStudioView && user?.role === "artist";
+  const {
+    data: soloAppointments,
+    isLoading: isLoadingSoloAppts,
+    refetch: refetchSoloAppts,
+  } = trpc.appointments.getArtistCalendar.useQuery(
+    { artistId: user?.id!, startDate: gridStart, endDate: gridEnd },
+    { enabled: isSoloArtistView, placeholderData: prev => prev }
+  );
+
+  // 3. Client Context
+  const isClientView = user?.role === "client";
+  const {
+    data: clientAppointments,
+    isLoading: isLoadingClientAppts,
+    refetch: refetchClientAppts,
+  } = trpc.appointments.getClientCalendar.useQuery(
+    { clientId: user?.id!, startDate: gridStart, endDate: gridEnd },
+    { enabled: isClientView, placeholderData: prev => prev }
+  );
+
+  const appointments = useMemo(() => {
+    if (isStudioView) return studioAppointments;
+    if (isSoloArtistView) return soloAppointments;
+    if (isClientView) return clientAppointments;
+    return [];
+  }, [isStudioView, studioAppointments, isSoloArtistView, soloAppointments, isClientView, clientAppointments]);
+
+  const isLoading = isLoadingStudioAppts || isLoadingSoloAppts || isLoadingClientAppts || isLoadingStudio;
 
   const { data: teamMembers } = trpc.studios.getStudioMembers.useQuery(
     { studioId: currentStudio?.id! },
@@ -82,8 +120,10 @@ export function useCalendarAgendaController() {
   }, [teamMembers, user]);
 
   const refetch = useCallback(() => {
-    refetchAppointments();
-  }, [refetchAppointments]);
+    if (isStudioView) refetchStudioAppts();
+    else if (isSoloArtistView) refetchSoloAppts();
+    else if (isClientView) refetchClientAppts();
+  }, [isStudioView, refetchStudioAppts, isSoloArtistView, refetchSoloAppts, isClientView, refetchClientAppts]);
 
   // 3. Derived State
   const stripDates = useMemo(() => {

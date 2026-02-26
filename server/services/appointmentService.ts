@@ -224,74 +224,15 @@ export async function deleteAppointment(id: number, performedBy: string) {
   return true;
 }
 
-export async function getAppointmentsForUser(
-  userId: string,
-  role: string,
-  startDate?: Date,
-  endDate?: Date
-) {
+export async function getArtistCalendar(artistId: string, startDate?: Date, endDate?: Date) {
   const db = await getDb();
   if (!db) return [];
 
-  let conditions: any[] = [];
+  let conditions: any[] = [eq(appointments.artistId, artistId)];
 
-  if (role === "artist" || role === "studio" || role === "admin") {
-    const member = await db.query.studioMembers.findFirst({
-      where: and(
-        eq(studioMembers.userId, userId),
-        eq(studioMembers.status, "active")
-      ),
-    });
+  if (startDate) conditions.push(gte(appointments.startTime, startDate.toISOString().slice(0, 19).replace("T", " ")));
+  if (endDate) conditions.push(lte(appointments.startTime, endDate.toISOString().slice(0, 19).replace("T", " ")));
 
-    if (member && (member.role === "owner" || member.role === "manager")) {
-      // Find all active members for this studio
-      const studioArtists = await db.query.studioMembers.findMany({
-        where: and(
-          eq(studioMembers.studioId, member.studioId),
-          eq(studioMembers.status, "active")
-        )
-      });
-      const validArtistIds = studioArtists.map(a => a.userId);
-
-      if (validArtistIds.length > 0) {
-        // Can see all appointments for this studio, OR their own appointments (historical),
-        // or any appointment belonging to any active artist in the studio (catches legacy/standalone appts)
-        conditions.push(
-          or(
-            eq(appointments.studioId, member.studioId),
-            inArray(appointments.artistId, validArtistIds)
-          )
-        );
-      } else {
-        conditions.push(eq(appointments.artistId, userId));
-      }
-    } else {
-      // Standard artist or apprentice: only their own
-      conditions.push(eq(appointments.artistId, userId));
-    }
-  } else {
-    conditions.push(eq(appointments.clientId, userId));
-  }
-
-  if (startDate) {
-    conditions.push(
-      gte(
-        appointments.startTime,
-        startDate.toISOString().slice(0, 19).replace("T", " ")
-      )
-    );
-  }
-
-  if (endDate) {
-    conditions.push(
-      lte(
-        appointments.startTime,
-        endDate.toISOString().slice(0, 19).replace("T", " ")
-      )
-    );
-  }
-
-  // Join with users table to get client/artist names
   const results = await db
     .select({
       id: appointments.id,
@@ -320,17 +261,120 @@ export async function getAppointmentsForUser(
       updatedAt: appointments.updatedAt,
       clientName: users.name,
       clientEmail: users.email,
-      sessionNumber: sql<number>`(
-                SELECT COUNT(*)
-                FROM ${appointments} a2
-                WHERE a2.conversationId = ${appointments.conversationId}
-                AND a2.startTime <= ${appointments.startTime}
-            )`,
-      totalSessions: sql<number>`(
-                SELECT COUNT(*)
-                FROM ${appointments} a2
-                WHERE a2.conversationId = ${appointments.conversationId}
-            )`,
+      sessionNumber: sql<number>`(SELECT COUNT(*) FROM ${appointments} a2 WHERE a2.conversationId = ${appointments.conversationId} AND a2.startTime <= ${appointments.startTime})`,
+      totalSessions: sql<number>`(SELECT COUNT(*) FROM ${appointments} a2 WHERE a2.conversationId = ${appointments.conversationId})`,
+    })
+    .from(appointments)
+    .leftJoin(users, eq(appointments.clientId, users.id))
+    .where(and(...conditions))
+    .orderBy(appointments.startTime);
+
+  return results.map(normalizeAppointment);
+}
+
+export async function getClientCalendar(clientId: string, startDate?: Date, endDate?: Date) {
+  const db = await getDb();
+  if (!db) return [];
+
+  let conditions: any[] = [eq(appointments.clientId, clientId)];
+
+  if (startDate) conditions.push(gte(appointments.startTime, startDate.toISOString().slice(0, 19).replace("T", " ")));
+  if (endDate) conditions.push(lte(appointments.startTime, endDate.toISOString().slice(0, 19).replace("T", " ")));
+
+  const results = await db
+    .select({
+      id: appointments.id,
+      conversationId: appointments.conversationId,
+      artistId: appointments.artistId,
+      clientId: appointments.clientId,
+      title: appointments.title,
+      description: appointments.description,
+      startTime: appointments.startTime,
+      endTime: appointments.endTime,
+      status: appointments.status,
+      serviceName: appointments.serviceName,
+      price: appointments.price,
+      depositAmount: appointments.depositAmount,
+      depositPaid: appointments.depositPaid,
+      confirmationSent: appointments.confirmationSent,
+      reminderSent: appointments.reminderSent,
+      followUpSent: appointments.followUpSent,
+      actualStartTime: appointments.actualStartTime,
+      actualEndTime: appointments.actualEndTime,
+      clientArrived: appointments.clientArrived,
+      clientPaid: appointments.clientPaid,
+      amountPaid: appointments.amountPaid,
+      paymentMethod: appointments.paymentMethod,
+      createdAt: appointments.createdAt,
+      updatedAt: appointments.updatedAt,
+      clientName: users.name,
+      clientEmail: users.email,
+      sessionNumber: sql<number>`(SELECT COUNT(*) FROM ${appointments} a2 WHERE a2.conversationId = ${appointments.conversationId} AND a2.startTime <= ${appointments.startTime})`,
+      totalSessions: sql<number>`(SELECT COUNT(*) FROM ${appointments} a2 WHERE a2.conversationId = ${appointments.conversationId})`,
+    })
+    .from(appointments)
+    .leftJoin(users, eq(appointments.clientId, users.id))
+    .where(and(...conditions))
+    .orderBy(appointments.startTime);
+
+  return results.map(normalizeAppointment);
+}
+
+export async function getStudioCalendar(studioId: string, startDate?: Date, endDate?: Date) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const studioArtists = await db.query.studioMembers.findMany({
+    where: and(
+      eq(studioMembers.studioId, studioId),
+      eq(studioMembers.status, "active")
+    )
+  });
+  const validArtistIds = studioArtists.map(a => a.userId);
+
+  let conditions: any[] = [];
+  if (validArtistIds.length > 0) {
+    conditions.push(or(
+      eq(appointments.studioId, studioId),
+      inArray(appointments.artistId, validArtistIds)
+    ));
+  } else {
+    conditions.push(eq(appointments.studioId, studioId));
+  }
+
+  if (startDate) conditions.push(gte(appointments.startTime, startDate.toISOString().slice(0, 19).replace("T", " ")));
+  if (endDate) conditions.push(lte(appointments.startTime, endDate.toISOString().slice(0, 19).replace("T", " ")));
+
+  const results = await db
+    .select({
+      id: appointments.id,
+      conversationId: appointments.conversationId,
+      artistId: appointments.artistId,
+      clientId: appointments.clientId,
+      title: appointments.title,
+      description: appointments.description,
+      startTime: appointments.startTime,
+      endTime: appointments.endTime,
+      status: appointments.status,
+      serviceName: appointments.serviceName,
+      price: appointments.price,
+      depositAmount: appointments.depositAmount,
+      depositPaid: appointments.depositPaid,
+      confirmationSent: appointments.confirmationSent,
+      reminderSent: appointments.reminderSent,
+      followUpSent: appointments.followUpSent,
+      actualStartTime: appointments.actualStartTime,
+      actualEndTime: appointments.actualEndTime,
+      clientArrived: appointments.clientArrived,
+      clientPaid: appointments.clientPaid,
+      amountPaid: appointments.amountPaid,
+      paymentMethod: appointments.paymentMethod,
+      createdAt: appointments.createdAt,
+      updatedAt: appointments.updatedAt,
+      clientName: users.name,
+      clientEmail: users.email,
+      sessionNumber: sql<number>`(SELECT COUNT(*) FROM ${appointments} a2 WHERE a2.conversationId = ${appointments.conversationId} AND a2.startTime <= ${appointments.startTime})`,
+      totalSessions: sql<number>`(SELECT COUNT(*) FROM ${appointments} a2 WHERE a2.conversationId = ${appointments.conversationId})`,
     })
     .from(appointments)
     .leftJoin(users, eq(appointments.clientId, users.id))

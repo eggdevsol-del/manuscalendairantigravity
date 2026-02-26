@@ -161,7 +161,7 @@ export async function updateUserLastSignedIn(userId: string) {
 
   await db
     .update(users)
-    .set({ lastSignedIn: new Date() })
+    .set({ lastSignedIn: new Date().toISOString().slice(0, 19).replace("T", " ") })
     .where(eq(users.id, userId));
 }
 

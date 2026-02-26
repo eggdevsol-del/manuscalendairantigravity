@@ -43,7 +43,7 @@ export async function upsertPolicy(policy: InsertPolicy) {
   if (existing) {
     await db
       .update(policies)
-      .set({ ...policy, updatedAt: new Date() })
+      .set({ ...policy, updatedAt: new Date().toISOString().slice(0, 19).replace("T", " ") })
       .where(eq(policies.id, existing.id));
     return getPolicyByType(policy.artistId, policy.policyType as any);
   } else {

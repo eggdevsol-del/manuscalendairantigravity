@@ -24,10 +24,22 @@ export function useAppointmentCheckIn() {
     []
   ); // Stable for the component lifecycle
 
-  const { data: appointments } = trpc.appointments.list.useQuery(queryRange, {
-    refetchInterval: 30_000, // Poll every 30s
-    placeholderData: prev => prev,
-  });
+  const { user } = useAuth();
+
+  // Conditionally hook explicit scopes depending on current role context
+  // The system only monitors personal accounts for check-ins (client or artist), not broad studios.
+  const isArtist = user?.role === "artist";
+  const { data: artistApps } = trpc.appointments.getArtistCalendar.useQuery(
+    { artistId: user?.id || "", ...queryRange },
+    { refetchInterval: 30_000, placeholderData: prev => prev, enabled: !!user && isArtist }
+  );
+
+  const { data: clientApps } = trpc.appointments.getClientCalendar.useQuery(
+    { clientId: user?.id || "", ...queryRange },
+    { refetchInterval: 30_000, placeholderData: prev => prev, enabled: !!user && !isArtist && user?.role === "client" }
+  );
+
+  const appointments = isArtist ? artistApps : clientApps;
 
   const activeCheckIn = useMemo<ActiveCheckIn | null>(() => {
     if (!appointments || appointments.length === 0) return null;
@@ -62,7 +74,8 @@ export function useAppointmentCheckIn() {
 
   const updateAppointment = trpc.appointments.update.useMutation({
     onSuccess: () => {
-      utils.appointments.list.invalidate();
+      if (isArtist) utils.appointments.getArtistCalendar.invalidate();
+      else utils.appointments.getClientCalendar.invalidate();
     },
   });
 

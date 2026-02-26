@@ -7,17 +7,95 @@ import { localToUTC, getBusinessTimezone } from "../../shared/utils/timezone";
 import { notificationOutbox } from "../../drizzle/schema";
 
 export const appointmentsRouter = router({
-  list: protectedProcedure
+  getArtistCalendar: protectedProcedure
     .input(
       z.object({
+        artistId: z.string(),
         startDate: z.date().optional(),
         endDate: z.date().optional(),
       })
     )
     .query(async ({ ctx, input }) => {
-      return db.getAppointmentsForUser(
-        ctx.user.id,
-        ctx.user.role,
+      // Validate permission: You must be the artist requesting your own calendar, OR an admin.
+      if (ctx.user.id !== input.artistId && ctx.user.role !== "admin") {
+        const dbRef = await db.getDb();
+        if (!dbRef) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        // Permit studio managers/owners to view their artist's standalone calendar scopes directly if queried
+        const member = await dbRef.query.studioMembers.findFirst({
+          where: (sm, { eq, and }) => and(eq(sm.userId, input.artistId), eq(sm.status, "active"))
+        });
+
+        const requesterMember = member?.studioId
+          ? await dbRef.query.studioMembers.findFirst({
+            where: (sm, { eq, and }) => and(eq(sm.studioId, member.studioId), eq(sm.userId, ctx.user.id))
+          })
+          : null;
+
+        if (!requesterMember || (requesterMember.role !== "owner" && requesterMember.role !== "manager")) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Not authorized to view this calendar",
+          });
+        }
+      }
+      return db.getArtistCalendar(
+        input.artistId,
+        input.startDate,
+        input.endDate
+      );
+    }),
+
+  getClientCalendar: protectedProcedure
+    .input(
+      z.object({
+        clientId: z.string(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      // Validate permission: Clients request their own history
+      if (ctx.user.id !== input.clientId && ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not authorized to view this calendar",
+        });
+      }
+      return db.getClientCalendar(
+        input.clientId,
+        input.startDate,
+        input.endDate
+      );
+    }),
+
+  getStudioCalendar: protectedProcedure
+    .input(
+      z.object({
+        studioId: z.string(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      // Validate permission: Only active members of the studio can fetch its consolidated schedule
+      const dbRef = await db.getDb();
+      if (!dbRef) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const member = await dbRef.query.studioMembers.findFirst({
+        where: (sm, { eq, and }) =>
+          and(eq(sm.studioId, input.studioId), eq(sm.userId, ctx.user.id)),
+      });
+
+      if (!member || member.status !== "active") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not an active member of this studio",
+        });
+      }
+
+      return db.getStudioCalendar(
+        input.studioId,
         input.startDate,
         input.endDate
       );
@@ -355,14 +433,11 @@ export const appointmentsRouter = router({
       }
 
       // Fetch existing appointments for the artist relative to now to catch all future info
-      let searchStart = new Date(input.startDate);
-      const now = new Date();
-      if (searchStart < now) searchStart = now;
+      let searchStart = new Date();
       searchStart.setHours(0, 0, 0, 0);
 
-      const existingAppointments = await db.getAppointmentsForUser(
+      const existingAppointments = await db.getArtistCalendar(
         conversation.artistId,
-        "artist",
         searchStart
       );
 
@@ -577,7 +652,7 @@ export const appointmentsRouter = router({
       let metadata: any = {};
       try {
         metadata = message.metadata ? JSON.parse(message.metadata) : {};
-      } catch (e) {}
+      } catch (e) { }
 
       const appointmentId = metadata.appointmentId || metadata.id; // handle different structures
 

@@ -142,14 +142,56 @@ export default function Calendar() {
     return d;
   }, [anchorDate]);
 
-  const {
-    data: appointments,
-    isLoading,
-    refetch,
-  } = trpc.appointments.list.useQuery(
-    { startDate: gridStart, endDate: gridEnd },
-    { enabled: !!user, placeholderData: prev => prev }
+  const { data: currentStudio, isLoading: isLoadingStudio } = trpc.studios.getCurrentStudio.useQuery(
+    undefined,
+    { enabled: !!user && user.role === "artist" }
   );
+
+  const isStudioView = !!currentStudio && (user?.role === "artist" || user?.role === "studio" || user?.role === "admin");
+  const isSoloArtistView = !isStudioView && user?.role === "artist";
+  const isClientView = user?.role === "client";
+
+  const {
+    data: studioAppointments,
+    isLoading: isLoadingStudioAppts,
+    refetch: refetchStudioAppts,
+  } = trpc.appointments.getStudioCalendar.useQuery(
+    { studioId: currentStudio?.id!, startDate: gridStart, endDate: gridEnd },
+    { enabled: isStudioView, placeholderData: prev => prev }
+  );
+
+  const {
+    data: soloAppointments,
+    isLoading: isLoadingSoloAppts,
+    refetch: refetchSoloAppts,
+  } = trpc.appointments.getArtistCalendar.useQuery(
+    { artistId: user?.id!, startDate: gridStart, endDate: gridEnd },
+    { enabled: isSoloArtistView, placeholderData: prev => prev }
+  );
+
+  const {
+    data: clientAppointments,
+    isLoading: isLoadingClientAppts,
+    refetch: refetchClientAppts,
+  } = trpc.appointments.getClientCalendar.useQuery(
+    { clientId: user?.id!, startDate: gridStart, endDate: gridEnd },
+    { enabled: isClientView, placeholderData: prev => prev }
+  );
+
+  const appointments = useMemo(() => {
+    if (isStudioView) return studioAppointments;
+    if (isSoloArtistView) return soloAppointments;
+    if (isClientView) return clientAppointments;
+    return [];
+  }, [isStudioView, studioAppointments, isSoloArtistView, soloAppointments, isClientView, clientAppointments]);
+
+  const isLoading = isLoadingStudioAppts || isLoadingSoloAppts || isLoadingClientAppts || isLoadingStudio;
+
+  const refetch = useCallback(() => {
+    if (isStudioView) refetchStudioAppts();
+    else if (isSoloArtistView) refetchSoloAppts();
+    else if (isClientView) refetchClientAppts();
+  }, [isStudioView, refetchStudioAppts, isSoloArtistView, refetchSoloAppts, isClientView, refetchClientAppts]);
 
   const { data: conversations } = useConversations();
   const clients =
@@ -367,7 +409,7 @@ export default function Calendar() {
           ref={scrollRef}
           className="flex items-center gap-4 overflow-x-auto hide-scrollbar px-[calc(50%-35px)] py-2 h-full"
           onScroll={handleScroll}
-          // No snap classes!
+        // No snap classes!
         >
           {dates.map(date => {
             const isActive = isSameDay(date, selectedDate);
@@ -511,7 +553,7 @@ export default function Calendar() {
           className="h-full overflow-y-auto hide-scrollbar py-[calc(50vh-56px)]"
           ref={scrollRef}
           onScroll={handleScroll}
-          // No snap classes
+        // No snap classes
         >
           {dates.map(date => {
             const isActive = isSameDay(date, selectedDate);

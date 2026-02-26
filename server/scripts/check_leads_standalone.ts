@@ -26,7 +26,7 @@ async function main() {
 
   for (const artist of artists) {
     console.log(
-      `\nArtist: ${artist.displayName || artist.username} (ID: ${artist.id})`
+      `\nArtist: ${artist.name || "Unknown"} (ID: ${artist.id})`
     );
 
     const leads = await db.query.leads.findMany({
@@ -35,9 +35,9 @@ async function main() {
     });
 
     console.log(`Total Leads: ${leads.length}`);
-    leads.forEach(l => {
+    leads.forEach((l: any) => {
       console.log(
-        ` - Lead #${l.id}: ${l.name} (${l.email}) - Status: '${l.status}'`
+        ` - Lead #${l.id}: ${l.clientName} (${l.clientEmail}) - Status: '${l.status}'`
       );
     });
 

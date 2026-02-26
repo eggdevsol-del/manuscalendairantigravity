@@ -625,6 +625,10 @@ export const moodboardItems = mysqlTable(
 
 export type InsertAppointment = InferInsertModel<typeof appointments>;
 export type SelectAppointment = InferSelectModel<typeof appointments>;
+export type InsertUser = InferInsertModel<typeof users>;
+export type SelectUser = InferSelectModel<typeof users>;
+export type InsertPolicy = InferInsertModel<typeof policies>;
+export type SelectPolicy = InferSelectModel<typeof policies>;
 export type InsertConsultation = InferInsertModel<typeof consultations>;
 export type SelectConsultation = InferSelectModel<typeof consultations>;
 export type InsertConversation = InferInsertModel<typeof conversations>;
