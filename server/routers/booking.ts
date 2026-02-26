@@ -84,9 +84,8 @@ export const bookingRouter = router({
         const searchStart = new Date(input.startDate);
         searchStart.setHours(0, 0, 0, 0);
 
-        const rawAppointments = await db.getAppointmentsForUser(
+        const rawAppointments = await db.getArtistCalendar(
           conversation.artistId,
-          "artist",
           searchStart
         );
 
@@ -187,17 +186,14 @@ export const bookingRouter = router({
 
       // Check if this is a new client (no prior appointments)
       // We check BEFORE creating the new ones to see if they had 0 count
-      const distinctAppointments = await db.getAppointmentsForUser(
-        conversation.artistId, // context is artist
-        "artist" // query as artist to finding *this* client's appointments? No wait.
-        // Helper asks for (userId, role, fromDate?)
+      const distinctAppointments = await db.getArtistCalendar(
+        conversation.artistId
       );
       // db.getAppointmentsForUser might not filter by specific client if querying as artist.
       // Let's use getAppointmentsForUser(conversation.clientId, "client")
 
-      const priorAppointments = await db.getAppointmentsForUser(
-        conversation.clientId,
-        "client"
+      const priorAppointments = await db.getClientCalendar(
+        conversation.clientId
       );
       const isNewClient = priorAppointments.length === 0;
 
@@ -265,7 +261,6 @@ export const bookingRouter = router({
         messageType: "appointment_request",
         metadata: proposalMetadata,
         readBy: null,
-        createdAt: new Date(),
       });
 
       return { success: true, count: createdCount, appointmentIds };

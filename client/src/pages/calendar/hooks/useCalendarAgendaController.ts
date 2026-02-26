@@ -98,10 +98,7 @@ export function useCalendarAgendaController() {
 
   const isLoading = isLoadingStudioAppts || isLoadingSoloAppts || isLoadingClientAppts || isLoadingStudio;
 
-  const { data: teamMembers } = trpc.studios.getStudioMembers.useQuery(
-    { studioId: currentStudio?.id! },
-    { enabled: !!currentStudio?.id }
-  );
+
 
   const activeArtists = useMemo(() => {
     if (!teamMembers || teamMembers.length === 0) {
@@ -112,8 +109,12 @@ export function useCalendarAgendaController() {
     // Deduplicate by userId in case the DB has multiple rows for the same user
     const uniqueMap = new Map();
     filtered.forEach(m => {
-      if (!uniqueMap.has(m.userId)) {
-        uniqueMap.set(m.userId, m);
+      if (!uniqueMap.has(m.user.id)) {
+        uniqueMap.set(m.user.id, {
+          userId: m.user.id,
+          user: m.user,
+          role: m.role
+        });
       }
     });
     return Array.from(uniqueMap.values());

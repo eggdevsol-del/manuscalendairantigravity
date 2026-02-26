@@ -140,8 +140,7 @@ export const messagesRouter = router({
           try {
             await dbInst
               .insert(
-                db.notificationOutbox ||
-                  require("../../drizzle/schema").notificationOutbox
+                notificationOutbox
               )
               .values({
                 eventType: "message.created",
@@ -175,8 +174,7 @@ export const messagesRouter = router({
           try {
             await dbInst
               .insert(
-                db.notificationOutbox ||
-                  require("../../drizzle/schema").notificationOutbox
+                notificationOutbox
               )
               .values({
                 eventType: "appointment.confirmed",

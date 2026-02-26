@@ -17,7 +17,7 @@ export const clientProfileRouter = router({
     .query(async ({ ctx, input }) => {
       const targetId =
         (ctx.user.role === "artist" || ctx.user.role === "admin") &&
-        input?.clientId
+          input?.clientId
           ? input.clientId
           : ctx.user.id;
 
@@ -69,11 +69,11 @@ export const clientProfileRouter = router({
     .query(async ({ ctx, input }) => {
       const targetId =
         (ctx.user.role === "artist" || ctx.user.role === "admin") &&
-        input?.clientId
+          input?.clientId
           ? input.clientId
           : ctx.user.id;
 
-      const appointments = await db.getAppointmentsForUser(targetId, "client");
+      const appointments = await db.getClientCalendar(targetId);
 
       const validAppointments = appointments.filter(
         a => a.status === "completed" || a.status === "confirmed"
@@ -102,7 +102,7 @@ export const clientProfileRouter = router({
     .query(async ({ ctx, input }) => {
       const targetId =
         (ctx.user.role === "artist" || ctx.user.role === "admin") &&
-        input?.clientId
+          input?.clientId
           ? input.clientId
           : ctx.user.id;
 
@@ -193,13 +193,12 @@ export const clientProfileRouter = router({
     .query(async ({ ctx, input }) => {
       const targetId =
         (ctx.user.role === "artist" || ctx.user.role === "admin") &&
-        input?.clientId
+          input?.clientId
           ? input.clientId
           : ctx.user.id;
 
-      const allAppointments = await db.getAppointmentsForUser(
-        targetId,
-        "client"
+      const allAppointments = await db.getClientCalendar(
+        targetId
       );
       const now = new Date();
       return allAppointments
@@ -230,7 +229,7 @@ export const clientProfileRouter = router({
     .query(async ({ ctx, input }) => {
       const targetId =
         (ctx.user.role === "artist" || ctx.user.role === "admin") &&
-        input?.clientId
+          input?.clientId
           ? input.clientId
           : ctx.user.id;
 
@@ -249,7 +248,7 @@ export const clientProfileRouter = router({
     .query(async ({ ctx, input }) => {
       const targetId =
         (ctx.user.role === "artist" || ctx.user.role === "admin") &&
-        input?.clientId
+          input?.clientId
           ? input.clientId
           : ctx.user.id;
 
@@ -340,7 +339,7 @@ export const clientProfileRouter = router({
     .query(async ({ ctx, input }) => {
       const targetId =
         (ctx.user.role === "artist" || ctx.user.role === "admin") &&
-        input?.clientId
+          input?.clientId
           ? input.clientId
           : ctx.user.id;
 
