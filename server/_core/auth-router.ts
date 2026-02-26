@@ -33,11 +33,12 @@ export const authRouter = router({
         email: z.string().email(),
         password: z.string().min(8, "Password must be at least 8 characters"),
         name: z.string().min(1, "Name is required"),
-        role: z.enum(["client", "artist"]).optional(),
+        role: z.enum(["client", "artist", "studio"]).optional(),
+        studioName: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
-      const { email, password, name, role = "client" } = input;
+      const { email, password, name, role = "client", studioName } = input;
 
       // Check if user already exists
       const existingUser = await getUserByEmail(email);
@@ -70,6 +71,31 @@ export const authRouter = router({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to create user",
         });
+      }
+
+      // Handle Studio Creation
+      if (role === "studio") {
+        const db = await getDb();
+        if (db) {
+          const studioId = `studio_${randomBytes(16).toString("hex")}`;
+
+          // Create studio
+          await db.insert(require("../../drizzle/schema").studios).values({
+            id: studioId,
+            name: studioName || `${name}'s Studio`,
+            ownerId: user.id,
+          });
+
+          // Create studio member (owner)
+          await db.insert(require("../../drizzle/schema").studioMembers).values({
+            studioId,
+            userId: user.id,
+            role: "owner",
+            status: "active",
+          });
+        } else {
+          console.error("[Auth] Database not available to create studio records.");
+        }
       }
 
       // Generate JWT token

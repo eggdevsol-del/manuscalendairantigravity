@@ -15,6 +15,7 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<"artist" | "studio">("artist");
+  const [studioName, setStudioName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -103,13 +104,12 @@ export default function Signup() {
             setIsLoading(false);
           } else {
             // New user, proceed with registration
-            // Mapping studio to artist for now until studio onboarding logic is implemented
-            registerMutation.mutate({ name, email, password, role: "artist" });
+            registerMutation.mutate({ name, email, password, role, ...(role === 'studio' ? { studioName } : {}) });
           }
         },
         onError: () => {
           // If check fails, try to register anyway
-          registerMutation.mutate({ name, email, password, role: "artist" });
+          registerMutation.mutate({ name, email, password, role, ...(role === 'studio' ? { studioName } : {}) });
         },
       }
     );
@@ -267,6 +267,25 @@ export default function Signup() {
                 </button>
               </div>
             </div>
+
+            {role === "studio" && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-4 duration-300">
+                <Label htmlFor="studioName">Studio Name <span className="text-muted-foreground font-normal">(Optional)</span></Label>
+                <div className="relative">
+                  <div className="absolute left-3 top-4 h-5 w-5 text-muted-foreground flex items-center justify-center">🏢</div>
+                  <Input
+                    id="studioName"
+                    type="text"
+                    placeholder="e.g. Inked Collective"
+                    value={studioName}
+                    onChange={(e) => setStudioName(e.target.value)}
+                    variant="hero"
+                    className="pl-10"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+            )}
 
             <Button
               type="submit"
