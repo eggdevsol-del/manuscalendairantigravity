@@ -313,7 +313,7 @@ export default function WorkHoursAndServices({
   return (
     <PageShell>
       {/* 1. Page Header - Left aligned, no icons */}
-      <PageHeader title="Work Hours & Services" />
+      <PageHeader title="Work Hours & Services" onBack={onBack} />
 
       {/* 2. Top Context Area */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">

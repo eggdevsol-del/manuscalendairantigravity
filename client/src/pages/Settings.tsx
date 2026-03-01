@@ -258,7 +258,7 @@ export default function Settings() {
   if (activeSection === "booking-link" && isArtist) {
     return (
       <PageShell>
-        <PageHeader title="Booking Link" />
+        <PageHeader title="Booking Link" onBack={() => navigateToSection("main")} />
         <div className={tokens.contentContainer.base}>
           <div className="p-6">
             {user && (
@@ -288,7 +288,7 @@ export default function Settings() {
     return (
       <PageShell>
         {/* 1. Page Header - Left aligned, no icons */}
-        <PageHeader title="Profile" />
+        <PageHeader title="Profile" onBack={() => navigateToSection("main")} />
 
         {/* 2. Top Context Area */}
         <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
@@ -421,7 +421,7 @@ export default function Settings() {
     return (
       <PageShell>
         {/* 1. Page Header - Left aligned, no icons */}
-        <PageHeader title="Business Info" />
+        <PageHeader title="Business Info" onBack={() => navigateToSection("main")} />
 
         <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
           <p className="text-4xl font-light text-foreground/90 tracking-tight">
