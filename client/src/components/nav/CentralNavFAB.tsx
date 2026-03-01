@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Settings, Plus, Sun, Moon, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut } from "lucide-react";
+import { Settings, Plus, Sun, Moon, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database } from "lucide-react";
 import { useLocation } from "wouter";
 import { FABMenu, FABMenuItem } from "@/ui/FABMenu";
 import { cn } from "@/lib/utils";
@@ -22,7 +22,9 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useUIDebug } from "@/_core/contexts/UIDebugContext";
 import { forceUpdate } from "@/lib/pwa";
 
-type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions";
+import { DataImportSettings } from "../settings/DataImportSettings";
+
+type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions" | "data-import";
 
 interface CentralNavFABProps {
   className?: string;
@@ -102,6 +104,13 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           label: "Business Info",
           icon: MapPin,
           onClick: () => handleViewChange("business"),
+          closeOnClick: false,
+        },
+        {
+          id: "data-import",
+          label: "Import Clients (CSV)",
+          icon: Database,
+          onClick: () => handleViewChange("data-import"),
           closeOnClick: false,
         }
       );
@@ -321,6 +330,11 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
         {activeSettingsView === "notifications" && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <NotificationSettings onBack={() => handleViewChange("settings-menu")} />
+          </div>
+        )}
+        {activeSettingsView === "data-import" && (
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
+            <DataImportSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "regulation" && (
