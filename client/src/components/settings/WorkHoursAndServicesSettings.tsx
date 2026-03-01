@@ -415,15 +415,15 @@ export function WorkHoursAndServicesSettings({
 
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="space-y-2">
-                                            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Duration (min)</Label>
+                                            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Duration (Hours)</Label>
                                             <Input
                                                 type="number"
-                                                placeholder="Duration"
-                                                value={newService.duration}
+                                                placeholder="Hours"
+                                                value={newService.duration / 60}
                                                 onChange={e =>
                                                     setNewService({
                                                         ...newService,
-                                                        duration: parseInt(e.target.value) || 0,
+                                                        duration: (parseInt(e.target.value) || 0) * 60,
                                                     })
                                                 }
                                                 className="bg-white/5 border-white/10"
@@ -555,14 +555,14 @@ export function WorkHoursAndServicesSettings({
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="space-y-2">
-                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Duration (min)</Label>
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Duration (Hours)</Label>
                                                 <Input
                                                     type="number"
-                                                    value={editingService.duration}
+                                                    value={editingService.duration / 60}
                                                     onChange={e =>
                                                         setEditingService({
                                                             ...editingService,
-                                                            duration: parseInt(e.target.value) || 0,
+                                                            duration: (parseInt(e.target.value) || 0) * 60,
                                                         })
                                                     }
                                                     className="bg-white/5 border-white/10"
@@ -658,7 +658,7 @@ export function WorkHoursAndServicesSettings({
                                             </h3>
                                             <div className="flex gap-3 mt-1 text-xs text-muted-foreground font-mono">
                                                 <span className="flex items-center gap-1">
-                                                    <Clock className="w-3 h-3" /> {service.duration}m
+                                                    <Clock className="w-3 h-3" /> {service.duration / 60}h
                                                 </span>
                                                 <span className="text-primary font-bold">
                                                     ${service.price}
