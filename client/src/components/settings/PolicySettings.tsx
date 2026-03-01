@@ -89,13 +89,7 @@ export function PolicySettings({ onBack }: PolicySettingsProps) {
                 <LoadingState message="Loading policy..." />
               </div>
             ) : !policy || !policy.enabled ? (
-              <Card
-                className={cn(
-                  tokens.card.base,
-                  tokens.card.bg,
-                  "p-8 text-center"
-                )}
-              >
+              <div className="p-8 text-center bg-white/5 border border-white/5 rounded-[4px] flex flex-col items-center justify-center">
                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                   <FileText className="w-8 h-8 text-muted-foreground" />
                 </div>
@@ -105,24 +99,24 @@ export function PolicySettings({ onBack }: PolicySettingsProps) {
                 <p className="text-muted-foreground text-sm">
                   This policy has not been set up yet.
                 </p>
-              </Card>
+              </div>
             ) : (
-              <Card className={cn(tokens.card.base, tokens.card.bg, "border-0")}>
-                <CardHeader>
-                  <CardTitle>{policy.title}</CardTitle>
-                  <CardDescription>
+              <div className="bg-transparent border-0 space-y-4">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold">{policy.title}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
                     Last updated:{" "}
                     {new Date(policy.updatedAt!).toLocaleDateString()}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+                  </p>
+                </div>
+                <div>
                   <div className="prose prose-sm max-w-none">
                     <p className="whitespace-pre-wrap text-foreground leading-relaxed">
                       {policy.content}
                     </p>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -146,9 +140,7 @@ export function PolicySettings({ onBack }: PolicySettingsProps) {
       <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
         <div className="pb-[180px] max-w-lg mx-auto space-y-4 px-4 pt-6">
           {!artistId ? (
-            <Card
-              className={cn(tokens.card.base, tokens.card.bg, "p-8 text-center")}
-            >
+            <div className="p-8 text-center bg-white/5 border border-white/5 rounded-[4px] flex flex-col items-center justify-center">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-muted-foreground" />
               </div>
@@ -159,32 +151,25 @@ export function PolicySettings({ onBack }: PolicySettingsProps) {
                 Policies are specific to each artist. Start a conversation to view
                 their policies.
               </p>
-            </Card>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {policyTypes.map(({ type, label, icon: Icon }) => (
-                <Card
+                <div
                   key={type}
-                  className={cn(
-                    tokens.card.base,
-                    tokens.card.bg,
-                    tokens.card.interactive,
-                    "border-0"
-                  )}
+                  className="bg-transparent hover:bg-white/5 transition-colors cursor-pointer border-b border-white/5 pb-4 pt-4 last:border-0"
                   onClick={() => setSelectedType(type)}
                 >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-primary/10">
-                          <Icon className="w-5 h-5 text-primary" />
-                        </div>
-                        <CardTitle className="text-base">{label}</CardTitle>
+                  <div className="flex items-center justify-between px-2">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Icon className="w-5 h-5 text-primary" />
                       </div>
-                      <ChevronLeft className="w-5 h-5 text-muted-foreground rotate-180" />
+                      <h3 className="text-base font-semibold text-foreground">{label}</h3>
                     </div>
-                  </CardHeader>
-                </Card>
+                    <ChevronLeft className="w-5 h-5 text-muted-foreground rotate-180" />
+                  </div>
+                </div>
               ))}
             </div>
           )}

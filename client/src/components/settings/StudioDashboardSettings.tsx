@@ -257,7 +257,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
               >
                 {/* Intro for Studio Accounts */}
                 {teamMembers && teamMembers.length <= 1 && (
-                  <Card className="p-6 bg-primary/10 border-primary/30">
+                  <div className="p-6 bg-primary/10 border border-primary/30 rounded-[4px]">
                     <h3 className="text-xl font-bold mb-2">
                       Welcome to your Studio!
                     </h3>
@@ -269,7 +269,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                     <Button onClick={() => setActiveTab("invite")} variant="hero">
                       Invite Artist
                     </Button>
-                  </Card>
+                  </div>
                 )}
 
                 {/* Team List */}
@@ -396,7 +396,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                 transition={{ duration: 0.3 }}
                 className="max-w-2xl mx-auto space-y-6"
               >
-                <Card className="p-8 bg-gradient-to-br from-white/10 to-transparent border-white/20 shadow-xl">
+                <div className="p-8 bg-white/5 border border-white/5 rounded-[4px]">
                   <div className="mb-8 text-center">
                     <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
                       <UserPlus className="w-8 h-8 text-primary" />
@@ -452,7 +452,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                         : "Send Invitation"}
                     </Button>
                   </form>
-                </Card>
+                </div>
               </motion.div>
             )}
 
@@ -465,7 +465,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
-                <Card className="p-12 bg-gradient-to-br from-white/10 to-transparent border-white/20 text-center flex flex-col items-center justify-center min-h-[400px]">
+                <div className="p-12 bg-white/5 border border-white/5 rounded-[4px] text-center flex flex-col items-center justify-center min-h-[400px]">
                   <div className="p-6 rounded-full bg-white/5 border border-white/10 mb-6">
                     <BarChart3 className="w-16 h-16 text-muted-foreground opacity-70" />
                   </div>
@@ -479,7 +479,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                   <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary font-bold text-sm tracking-widest uppercase">
                     Coming Soon
                   </span>
-                </Card>
+                </div>
               </motion.div>
             )}
 
@@ -492,7 +492,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
-                <Card className="p-8 bg-gradient-to-br from-white/10 to-transparent border-white/20 flex flex-col items-center justify-center min-h-[400px] text-center">
+                <div className="p-8 bg-white/5 border border-white/5 rounded-[4px] flex flex-col items-center justify-center min-h-[400px] text-center">
                   <div className="p-6 rounded-full bg-white/5 border border-white/10 mb-6">
                     <SettingsIcon className="w-16 h-16 text-muted-foreground opacity-70" />
                   </div>
@@ -510,7 +510,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                   >
                     Open Settings
                   </Button>
-                </Card>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

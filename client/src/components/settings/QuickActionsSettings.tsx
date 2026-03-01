@@ -171,18 +171,14 @@ export function QuickActionsSettings({ onBack }: QuickActionsSettingsProps) {
 
       <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
         <div className="pb-[180px] max-w-lg mx-auto space-y-4 px-4 pt-6">
-          <Card className="bg-accent/5 border-accent/20">
-            <CardHeader>
-              <CardTitle className="text-base">About Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Quick action buttons appear at the bottom of chat conversations.
-                You can create up to 6 buttons that send predefined messages or
-                perform actions.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="mb-2">
+            <p className="text-muted-foreground text-sm font-medium">About Quick Actions</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Quick action buttons appear at the bottom of chat conversations.
+              You can create up to 6 buttons that send predefined messages or
+              perform actions.
+            </p>
+          </div>
 
           {!showAddNew && (
             <Button
@@ -197,16 +193,16 @@ export function QuickActionsSettings({ onBack }: QuickActionsSettingsProps) {
           )}
 
           {showAddNew && (
-            <Card className="border-primary">
-              <CardHeader>
-                <CardTitle className="text-base">
+            <div className="bg-white/5 border border-primary/30 p-4 rounded-[4px] space-y-4">
+              <div className="mb-2">
+                <h3 className="text-base font-semibold text-foreground">
                   {editingId ? "Edit" : "New"} Quick Action
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-sm text-muted-foreground">
                   Configure the button label and action
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="label">Button Label *</Label>
                   <Input
@@ -294,8 +290,8 @@ export function QuickActionsSettings({ onBack }: QuickActionsSettingsProps) {
                     Cancel
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
           {quickActions && quickActions.length > 0 && (

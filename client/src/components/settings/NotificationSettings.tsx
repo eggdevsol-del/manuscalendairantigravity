@@ -230,7 +230,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                     </Button>
 
                     {templates && templates.length === 0 ? (
-                        <Card className="p-8 bg-white/5 border-white/10">
+                        <div className="p-8 bg-white/5 border border-white/5 rounded-[4px]">
                             <div className="text-center space-y-3">
                                 <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mx-auto">
                                     <Bell className="w-8 h-8 text-white/50" />
@@ -244,12 +244,12 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                                     </p>
                                 </div>
                             </div>
-                        </Card>
+                        </div>
                     ) : (
                         <div className="space-y-3">
                             {templates?.map((template: any) => (
-                                <Card key={template.id} className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")}>
-                                    <div className="p-4 flex items-start justify-between gap-3 border-b border-white/5">
+                                <div key={template.id} className="bg-transparent border-b border-white/5 pb-4 pt-4 last:border-0 overflow-hidden">
+                                    <div className="flex items-start justify-between gap-3 mb-3">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
                                                 <h3 className="text-base font-semibold text-foreground truncate">
@@ -301,12 +301,12 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                                             </Button>
                                         </div>
                                     </div>
-                                    <div className="p-4 bg-black/10">
+                                    <div className="p-4 bg-white/5 rounded-[4px] border border-white/5">
                                         <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
                                             {template.content}
                                         </p>
                                     </div>
-                                </Card>
+                                </div>
                             ))}
                         </div>
                     )}

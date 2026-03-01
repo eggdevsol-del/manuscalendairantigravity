@@ -152,14 +152,9 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
             </div>
           ) : consultations && consultations.length > 0 ? (
             consultations.map(consultation => (
-              <Card
+              <div
                 key={consultation.id}
-                className={cn(
-                  tokens.card.base,
-                  tokens.card.bg,
-                  tokens.card.interactive,
-                  "border-0"
-                )}
+                className="group bg-transparent hover:bg-white/5 transition-colors cursor-pointer border-b border-white/5 pb-4 pt-4 last:border-0 relative overflow-hidden"
                 onClick={() => {
                   if (consultation.conversationId) {
                     setLocation(`/chat/${consultation.conversationId}`);
@@ -168,9 +163,9 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
                   }
                 }}
               >
-                <div className="absolute inset-0 rounded-[4px] bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-                <div className="p-5 relative z-10">
+                <div className="px-2 relative z-10">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
@@ -218,7 +213,7 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
                     </div>
                   </div>
                 </div>
-              </Card>
+              </div>
             ))
           ) : (
             <div className="text-center py-12 px-6">

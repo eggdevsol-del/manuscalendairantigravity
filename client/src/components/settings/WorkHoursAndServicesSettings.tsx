@@ -313,29 +313,18 @@ export function WorkHoursAndServicesSettings({
 
             {/* 2. Scroll Container */}
             <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
-                <div className="pb-[180px] max-w-lg mx-auto space-y-4 px-4 pt-6">
-                    <div className="mb-2">
-                        <p className="text-muted-foreground text-sm font-medium">
-                            Manage availability & offerings
-                        </p>
-                    </div>
-                    {/* Work Schedule Card */}
-                    <Card
-                        className={cn(
-                            tokens.card.base,
-                            tokens.card.bg,
-                            "border-0 overflow-hidden"
-                        )}
-                    >
-                        <div className="p-4 border-b border-white/5">
-                            <h3 className="font-semibold text-foreground">
+                <div className="pb-[180px] max-w-lg mx-auto space-y-8 px-4 pt-6">
+                    {/* Work Schedule Section */}
+                    <div>
+                        <div className="mb-4">
+                            <p className="text-muted-foreground text-sm font-medium">
                                 Start / Finish Times
-                            </h3>
+                            </p>
                             <p className="text-xs text-muted-foreground mt-0.5">
                                 Set enabled days and hours
                             </p>
                         </div>
-                        <div className="p-4 space-y-1">
+                        <div className="space-y-4">
                             {days.map(({ key, label }) => {
                                 const daySchedule = workSchedule[key] || {
                                     enabled: false,
@@ -411,21 +400,15 @@ export function WorkHoursAndServicesSettings({
                                 );
                             })}
                         </div>
-                    </Card>
+                    </div>
 
-                    {/* Services Card */}
-                    <Card
-                        className={cn(
-                            tokens.card.base,
-                            tokens.card.bg,
-                            "border-0 overflow-hidden"
-                        )}
-                    >
-                        <div className="p-4 border-b border-white/5 flex items-center justify-between">
+                    {/* Services Section */}
+                    <div className="pt-4 border-t border-white/5">
+                        <div className="mb-4 flex items-center justify-between">
                             <div>
-                                <h3 className="font-semibold text-foreground">
+                                <p className="text-muted-foreground text-sm font-medium">
                                     Service Menu
-                                </h3>
+                                </p>
                                 <p className="text-xs text-muted-foreground mt-0.5">
                                     Manage list and pricing
                                 </p>
@@ -658,7 +641,7 @@ export function WorkHoursAndServicesSettings({
                                 </div>
                             )}
                         </div>
-                    </Card>
+                    </div>
 
                     <Button
                         className="w-full shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-base font-semibold"

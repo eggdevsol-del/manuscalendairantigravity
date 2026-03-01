@@ -176,22 +176,16 @@ export function RegulationSettings({ onBack }: { onBack: () => void }) {
             </div>
           ) : (
             <>
-              <Card
-                className={cn(
-                  tokens.card.base,
-                  tokens.card.bg,
-                  "border-0 p-6 space-y-4"
-                )}
-              >
+              <div className="space-y-4">
                 {activeTab === "medical" && (
                   <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <div className="space-y-2">
-                      <Label className="text-lg font-bold">
-                        Medical Release Template
-                      </Label>
+                    <div className="mb-2">
+                      <p className="text-muted-foreground text-sm font-medium">Medical Release Template</p>
                       <p className="text-xs text-muted-foreground mb-4">
                         Standard medical questionnaire and liability release.
                       </p>
+                    </div>
+                    <div className="space-y-4">
                       <Textarea
                         value={medical}
                         onChange={e => setMedical(e.target.value)}
@@ -205,14 +199,13 @@ export function RegulationSettings({ onBack }: { onBack: () => void }) {
 
                 {activeTab === "consent" && (
                   <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <div className="space-y-2">
-                      <Label className="text-lg font-bold">
-                        Procedure Consent Template
-                      </Label>
+                    <div className="mb-2">
+                      <p className="text-muted-foreground text-sm font-medium">Procedure Consent Template</p>
                       <p className="text-xs text-muted-foreground mb-4">
-                        Consent for the tattoo procedure, risks, and
-                        copyright.
+                        Consent for the tattoo procedure, risks, and copyright.
                       </p>
+                    </div>
+                    <div className="space-y-4">
                       <Textarea
                         value={consent}
                         onChange={e => setConsent(e.target.value)}
@@ -223,7 +216,7 @@ export function RegulationSettings({ onBack }: { onBack: () => void }) {
                     </div>
                   </div>
                 )}
-              </Card>
+              </div>
 
               <Button
                 className="w-full h-12 shadow-xl shadow-primary/20"

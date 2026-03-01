@@ -19,6 +19,7 @@ import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "../button";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 interface PageHeaderProps {
   /** Page title - rendered with consistent SSOT styling */
@@ -40,20 +41,18 @@ export function PageHeader({
   className,
   onBack,
 }: PageHeaderProps) {
-  // Check for Artist Branding (Teaser Mode or Client View)
-  // We check localStorage directly to avoid prop drilling, as this is a global branding requirement
-  const artistBranding =
-    typeof window !== "undefined"
-      ? localStorage.getItem("calendair_artist_branding")
-      : null;
+  // Use SSOT state from useAuth hook to display the correct Business Name
+  const { user } = useAuth();
 
-  // If branding exists, we override the display logic
-  // Format: [Artist Name] by TOI
+  // Try businessName first, fallback to user name
+  const artistBranding = (user as any)?.artistSettings?.businessName || user?.name || null;
+
+  // Format: [Artist Name] by TATTOI
   const displayTitle = artistBranding ? (
     <span className="flex flex-col">
       <span>{artistBranding}</span>
       <span className="text-[10px] uppercase font-bold tracking-widest opacity-50">
-        by CalendAIr
+        by Tattoi
       </span>
     </span>
   ) : (

@@ -5,7 +5,7 @@ import {
   useRegisterFABActions,
 } from "@/contexts/BottomNavContext";
 import { PageHeader, PageShell } from "@/components/ui/ssot";
-import { Button, Card, Switch } from "@/components/ui";
+import { Button, Switch } from "@/components/ui";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import {
@@ -196,10 +196,10 @@ export function SubscriptionSettings({ onBack }: SubscriptionSettingsProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4 }}
                   className={cn(
-                    "relative rounded-3xl p-6 border overflow-hidden",
+                    "relative rounded-[4px] p-6 border overflow-hidden",
                     plan.isPopular
-                      ? "bg-card border-primary/50 shadow-xl shadow-primary/10"
-                      : "bg-white/5 border-white/10"
+                      ? "bg-primary/5 border-primary/50"
+                      : "bg-white/5 border-white/5"
                   )}
                 >
                   {plan.isPopular && (
