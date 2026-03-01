@@ -267,7 +267,11 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
         portalContainerClassName="bottom-[90px] left-1/2 -translate-x-1/2 items-center"
         panelClassName={cn(
           "!items-center max-h-[calc(100dvh-130px)] overflow-y-auto mb-[20px]",
-          (fabChildren || (activeSettingsView !== "main" && activeSettingsView !== "settings-menu")) ? "w-[calc(100vw-40px)] max-w-[360px] !items-stretch" : "w-[280px] max-w-[calc(100vw-40px)]",
+          activeSettingsView === "settings-menu"
+            ? "w-[min(380px,calc(100vw-40px))] grid grid-cols-2 gap-x-6 gap-y-4 !items-start"
+            : (fabChildren || activeSettingsView !== "main")
+              ? "w-[calc(100vw-40px)] max-w-[360px] !items-stretch"
+              : "w-[280px] max-w-[calc(100vw-40px)]",
           isLargePanel && "max-h-[calc(100dvh-130px)] h-[calc(100dvh-130px)] w-[calc(100vw-40px)] md:w-[600px] overflow-hidden rounded-[32px] relative shadow-2xl bg-background/95 backdrop-blur-3xl border border-white/10"
         )}
       >
