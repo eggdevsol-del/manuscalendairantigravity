@@ -14,7 +14,7 @@ public class NativeWidgetBridge: CAPPlugin {
     @objc func updateWidgetData(_ call: CAPPluginCall) {
         let key = call.getString("key") ?? ""
         let data = call.getString("data") ?? ""
-        let group = call.getString("group") ?? "group.com.manus.calendair"
+        let group = call.getString("group") ?? "group.com.manus.toi"
         
         guard let sharedDefaults = UserDefaults(suiteName: group) else {
             call.reject("Could not find App Group: \(group)")

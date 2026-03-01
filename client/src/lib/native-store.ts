@@ -7,10 +7,9 @@ import { Capacitor } from "@capacitor/core";
  * and Native Platforms (iOS/Android) specifically for Widgets.
  *
  * iOS: Uses UserDefaults with a shared App Group.
- * Android: Uses SharedPreferences.
  */
 
-const APP_GROUP = "group.com.manus.calendair";
+const APP_GROUP = "group.com.manus.toi";
 
 export const NativeStore = {
   /**
