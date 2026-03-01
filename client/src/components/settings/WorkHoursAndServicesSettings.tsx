@@ -319,7 +319,7 @@ export function WorkHoursAndServicesSettings({
             {/* 3. Sheet Container */}
             <div className={tokens.contentContainer.base}>
                 <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
-                    <div className="pb-32 max-w-lg mx-auto space-y-1">
+                    <div className="pb-[180px] max-w-lg mx-auto space-y-1">
                         {/* Work Schedule Card */}
                         <Card
                             className={cn(

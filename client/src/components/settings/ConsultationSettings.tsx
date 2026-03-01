@@ -143,7 +143,7 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
 
         {/* Scrollable Content */}
         <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y">
-          <div className="pb-32 max-w-lg mx-auto space-y-3">
+          <div className="pb-[180px] max-w-lg mx-auto space-y-3">
             {isLoading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>

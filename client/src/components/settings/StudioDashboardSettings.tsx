@@ -223,7 +223,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
       <div
         className={cn(
           tokens.contentContainer.base,
-          "pb-24 pt-8 px-4 max-w-4xl mx-auto"
+          "pb-[180px] pt-8 px-4 max-w-4xl mx-auto"
         )}
       >
         <AnimatePresence mode="wait">

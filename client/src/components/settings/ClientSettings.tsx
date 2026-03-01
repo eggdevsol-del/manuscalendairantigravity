@@ -157,7 +157,7 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
     <div className="w-full h-full flex flex-col bg-background relative isolate">
       <PageHeader title="Clients" onBack={onBack} />
 
-      <main className="flex-1 px-4 py-4 mobile-scroll overflow-y-auto space-y-4">
+      <main className="flex-1 px-4 py-4 pb-[180px] mobile-scroll overflow-y-auto space-y-4">
         {/* Search and Add */}
         <div className="flex gap-2">
           <div className="flex-1 relative">

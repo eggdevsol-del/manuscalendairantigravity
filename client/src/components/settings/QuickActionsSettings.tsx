@@ -164,7 +164,7 @@ export function QuickActionsSettings({ onBack }: QuickActionsSettingsProps) {
         onBack={onBack}
       />
 
-      <main className="flex-1 px-4 py-4 mobile-scroll overflow-y-auto space-y-4">
+      <main className="flex-1 px-4 py-4 pb-[180px] mobile-scroll overflow-y-auto space-y-4">
         <Card className="bg-accent/5 border-accent/20">
           <CardHeader>
             <CardTitle className="text-base">About Quick Actions</CardTitle>
@@ -318,8 +318,8 @@ export function QuickActionsSettings({ onBack }: QuickActionsSettingsProps) {
                     <div className="flex items-center gap-2">
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${action.enabled
-                            ? "bg-accent/20 text-accent"
-                            : "bg-muted text-muted-foreground"
+                          ? "bg-accent/20 text-accent"
+                          : "bg-muted text-muted-foreground"
                           }`}
                       >
                         {action.enabled ? "Active" : "Disabled"}

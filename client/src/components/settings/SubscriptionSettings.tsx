@@ -140,7 +140,7 @@ export function SubscriptionSettings({ onBack }: SubscriptionSettingsProps) {
       <div
         className={cn(
           tokens.contentContainer.base,
-          "pb-24 pt-6 overflow-y-auto h-full"
+          "pb-[180px] pt-6 overflow-y-auto h-full"
         )}
       >
         {/* Hero / Header */}

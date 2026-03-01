@@ -75,7 +75,7 @@ export function PolicySettings({ onBack }: PolicySettingsProps) {
           onBack={() => setSelectedType(null)}
         />
 
-        <main className="flex-1 px-4 py-4 mobile-scroll overflow-y-auto">
+        <main className="flex-1 px-4 py-4 pb-[180px] mobile-scroll overflow-y-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <LoadingState message="Loading policy..." />
@@ -126,7 +126,7 @@ export function PolicySettings({ onBack }: PolicySettingsProps) {
     <div className="w-full h-full flex flex-col bg-background relative isolate">
       <PageHeader title="Policies" onBack={onBack} />
 
-      <main className="flex-1 px-4 py-4 mobile-scroll overflow-y-auto">
+      <main className="flex-1 px-4 py-4 pb-[180px] mobile-scroll overflow-y-auto">
         {!artistId ? (
           <Card
             className={cn(tokens.card.base, tokens.card.bg, "p-8 text-center")}
