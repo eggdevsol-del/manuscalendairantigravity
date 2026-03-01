@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Settings, Plus, Sun, Moon, Link, User, MapPin, ChevronLeft, Bell, FileText } from "lucide-react";
+import { Settings, Plus, Sun, Moon, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut } from "lucide-react";
 import { useLocation } from "wouter";
 import { FABMenu, FABMenuItem } from "@/ui/FABMenu";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,9 @@ import { BusinessSettings } from "../settings/BusinessSettings";
 import { WorkHoursAndServicesSettings } from "../settings/WorkHoursAndServicesSettings";
 import { NotificationSettings } from "../settings/NotificationSettings";
 import { RegulationSettings } from "../settings/RegulationSettings";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { useUIDebug } from "@/_core/contexts/UIDebugContext";
+import { forceUpdate } from "@/lib/pwa";
 
 type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation";
 
@@ -29,7 +32,167 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
   const { fabActions, fabChildren, isFABOpen, setFABOpen, isLargePanel, setLargePanel } =
     useBottomNav();
 
+  const { user, logout } = useAuth();
+  const { showDebugLabels, setShowDebugLabels } = useUIDebug();
   const [activeSettingsView, setActiveSettingsView] = useState<SettingsView>("main");
+
+  const isArtist = user?.role === "artist" || user?.role === "admin";
+  const isStudio = user?.role === "studio" || user?.role === "admin";
+
+  const handleViewChange = (view: SettingsView) => {
+    setActiveSettingsView(view);
+    setLargePanel(view !== "main" && view !== "settings-menu");
+  };
+
+  // Dynamically build settingsMenuItems based on user role
+  const settingsMenuItems = useMemo(() => {
+    const items: FABMenuItem[] = [
+      {
+        id: "back",
+        label: "Back",
+        icon: ChevronLeft,
+        onClick: () => handleViewChange("main"),
+        closeOnClick: false,
+      },
+      {
+        id: "profile",
+        label: "Profile",
+        icon: User,
+        onClick: () => handleViewChange("profile"),
+        closeOnClick: false,
+      }
+    ];
+
+    if (!isArtist) {
+      items.push(
+        {
+          id: "consultations",
+          label: "Consultations",
+          icon: Calendar,
+          onClick: () => {
+            setFABOpen(false);
+            setLocation("/consultations");
+          },
+        },
+        {
+          id: "policies",
+          label: "Policies",
+          icon: Bell, // using Bell as fallback if needed, or another icon
+          onClick: () => {
+            setFABOpen(false);
+            setLocation("/policies");
+          },
+        }
+      );
+    }
+
+    if (isArtist) {
+      items.push(
+        {
+          id: "clients",
+          label: "Clients",
+          icon: User, // using User icon
+          onClick: () => {
+            setFABOpen(false);
+            setLocation("/clients");
+          },
+        },
+        {
+          id: "business",
+          label: "Business Info",
+          icon: MapPin,
+          onClick: () => handleViewChange("business"),
+          closeOnClick: false,
+        }
+      );
+
+      if (isStudio) {
+        items.push({
+          id: "studio",
+          label: "Studio Headquarters",
+          icon: Users,
+          onClick: () => {
+            setFABOpen(false);
+            setLocation("/studio");
+          },
+        });
+      }
+
+      items.push(
+        {
+          id: "subscriptions",
+          label: "Subscription & Billing",
+          icon: Zap,
+          onClick: () => {
+            setFABOpen(false);
+            setLocation("/subscriptions");
+          },
+        },
+        {
+          id: "work-hours",
+          label: "Work Hours & Services",
+          icon: Settings, // or Clock if imported
+          onClick: () => handleViewChange("work-hours"),
+          closeOnClick: false,
+        },
+        {
+          id: "regulation",
+          label: "Regulation & Forms",
+          icon: FileText, // assuming FileText is imported
+          onClick: () => handleViewChange("regulation"),
+          closeOnClick: false,
+        },
+        {
+          id: "quick-actions",
+          label: "Quick Actions",
+          icon: Zap,
+          onClick: () => {
+            setFABOpen(false);
+            setLocation("/quick-actions");
+          },
+        },
+        {
+          id: "notifications",
+          label: "Notifications",
+          icon: Bell, // assuming Bell is imported
+          onClick: () => handleViewChange("notifications"),
+          closeOnClick: false,
+        }
+      );
+    }
+
+    // System Settings for all users
+    items.push(
+      {
+        id: "ui-debug",
+        label: showDebugLabels ? "Hide UI Debug" : "Show UI Debug",
+        icon: Zap,
+        onClick: () => setShowDebugLabels(!showDebugLabels),
+        closeOnClick: false,
+      },
+      {
+        id: "check-updates",
+        label: "Check for Updates",
+        icon: RefreshCw,
+        onClick: () => {
+          toast.info("Checking for updates...");
+          forceUpdate();
+        },
+        closeOnClick: false,
+      },
+      {
+        id: "logout",
+        label: "Log Out",
+        icon: LogOut,
+        onClick: async () => {
+          await logout();
+          setLocation("/");
+        },
+      }
+    );
+
+    return items;
+  }, [isArtist, isStudio, handleViewChange, setLocation, setFABOpen, showDebugLabels, setShowDebugLabels, logout]);
 
   // Fetch artist settings for the booking link slug
   const { data: artistSettings } = trpc.artistSettings.get.useQuery(undefined, {
@@ -46,11 +209,6 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
     const url = `https://calendair.app/start/${artistSettings.publicSlug}`;
     navigator.clipboard.writeText(url);
     toast.success("Booking link copied to clipboard!");
-  };
-
-  const handleViewChange = (view: SettingsView) => {
-    setActiveSettingsView(view);
-    setLargePanel(view !== "main" && view !== "settings-menu");
   };
 
   const permanentItems: FABMenuItem[] = [
@@ -76,50 +234,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
     }
   ];
 
-  const settingsMenuItems: FABMenuItem[] = [
-    {
-      id: "back",
-      label: "Back",
-      icon: ChevronLeft,
-      onClick: () => handleViewChange("main"),
-      closeOnClick: false,
-    },
-    {
-      id: "profile",
-      label: "Profile",
-      icon: User,
-      onClick: () => handleViewChange("profile"),
-      closeOnClick: false,
-    },
-    {
-      id: "business",
-      label: "Business Info",
-      icon: MapPin,
-      onClick: () => handleViewChange("business"),
-      closeOnClick: false,
-    },
-    {
-      id: "work-hours",
-      label: "Work Hours & Services",
-      icon: Settings, // or Clock if imported
-      onClick: () => handleViewChange("work-hours"),
-      closeOnClick: false,
-    },
-    {
-      id: "notifications",
-      label: "Notifications",
-      icon: Bell, // assuming Bell is imported
-      onClick: () => handleViewChange("notifications"),
-      closeOnClick: false,
-    },
-    {
-      id: "regulation",
-      label: "Regulation & Forms",
-      icon: FileText, // assuming FileText is imported
-      onClick: () => handleViewChange("regulation"),
-      closeOnClick: false,
-    }
-  ];
+
 
   // Combine permanent items with dynamic actions from context
   const allItems = useMemo(() => {
