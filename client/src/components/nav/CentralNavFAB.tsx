@@ -13,7 +13,7 @@ import { WorkHoursAndServicesSettings } from "../settings/WorkHoursAndServicesSe
 import { NotificationSettings } from "../settings/NotificationSettings";
 import { RegulationSettings } from "../settings/RegulationSettings";
 
-type SettingsView = "main" | "profile" | "business" | "work-hours" | "notifications" | "regulation";
+type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation";
 
 interface CentralNavFABProps {
   className?: string;
@@ -50,10 +50,40 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
 
   const handleViewChange = (view: SettingsView) => {
     setActiveSettingsView(view);
-    setLargePanel(view !== "main");
+    setLargePanel(view !== "main" && view !== "settings-menu");
   };
 
   const permanentItems: FABMenuItem[] = [
+    {
+      id: "theme",
+      label: theme === "dark" ? "Light Mode" : "Dark Mode",
+      icon: theme === "dark" ? Sun : Moon,
+      onClick: () => toggleTheme?.(),
+      closeOnClick: false, // Keep menu open to show change
+    },
+    {
+      id: "copy-link",
+      label: "Booking Link",
+      icon: Link,
+      onClick: handleCopyLink,
+    },
+    {
+      id: "settings-menu",
+      label: "Settings",
+      icon: Settings,
+      onClick: () => handleViewChange("settings-menu"),
+      closeOnClick: false,
+    }
+  ];
+
+  const settingsMenuItems: FABMenuItem[] = [
+    {
+      id: "back",
+      label: "Back",
+      icon: ChevronLeft,
+      onClick: () => handleViewChange("main"),
+      closeOnClick: false,
+    },
     {
       id: "profile",
       label: "Profile",
@@ -88,28 +118,6 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
       icon: FileText, // assuming FileText is imported
       onClick: () => handleViewChange("regulation"),
       closeOnClick: false,
-    },
-    {
-      id: "theme",
-      label: theme === "dark" ? "Light Mode" : "Dark Mode",
-      icon: theme === "dark" ? Sun : Moon,
-      onClick: () => toggleTheme?.(),
-      closeOnClick: false, // Keep menu open to show change
-    },
-    {
-      id: "copy-link",
-      label: "Booking Link",
-      icon: Link,
-      onClick: handleCopyLink,
-    },
-    {
-      id: "settings-page",
-      label: "All Settings",
-      icon: Settings,
-      onClick: () => {
-        setFABOpen(false);
-        setLocation("/settings");
-      }
     }
   ];
 
@@ -137,40 +145,46 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
     >
       <FABMenu
         toggleIcon={<Plus className="w-6 h-6" />}
-        items={!fabChildren && activeSettingsView === "main" ? allItems : undefined}
+        items={
+          !fabChildren && activeSettingsView === "main"
+            ? allItems
+            : activeSettingsView === "settings-menu"
+              ? settingsMenuItems
+              : undefined
+        }
         isOpen={isFABOpen}
         onOpenChange={setFABOpen}
         className="!static !bottom-auto !right-auto transition-none"
         portalContainerClassName="bottom-[90px] left-1/2 -translate-x-1/2 items-center"
         panelClassName={cn(
           "!items-center",
-          (fabChildren || activeSettingsView !== "main") ? "w-[330px] !items-stretch" : "w-[220px]",
+          (fabChildren || (activeSettingsView !== "main" && activeSettingsView !== "settings-menu")) ? "w-[330px] !items-stretch" : "w-[220px]",
           isLargePanel && "max-h-[85vh] h-[85vh] w-[95vw] md:w-[600px] overflow-hidden rounded-t-[32px] md:rounded-[32px] pb-[100px] md:pb-0 relative shadow-2xl bg-background/95 backdrop-blur-3xl border border-white/10"
         )}
       >
         {activeSettingsView === "profile" && (
           <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
-            <ProfileSettings onBack={() => handleViewChange("main")} />
+            <ProfileSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "business" && (
           <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
-            <BusinessSettings onBack={() => handleViewChange("main")} />
+            <BusinessSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "work-hours" && (
           <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
-            <WorkHoursAndServicesSettings onBack={() => handleViewChange("main")} />
+            <WorkHoursAndServicesSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "notifications" && (
           <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
-            <NotificationSettings onBack={() => handleViewChange("main")} />
+            <NotificationSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "regulation" && (
           <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
-            <RegulationSettings onBack={() => handleViewChange("main")} />
+            <RegulationSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {fabChildren && activeSettingsView === "main" && fabChildren}
