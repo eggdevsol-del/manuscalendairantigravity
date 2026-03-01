@@ -12,11 +12,17 @@ import { BusinessSettings } from "../settings/BusinessSettings";
 import { WorkHoursAndServicesSettings } from "../settings/WorkHoursAndServicesSettings";
 import { NotificationSettings } from "../settings/NotificationSettings";
 import { RegulationSettings } from "../settings/RegulationSettings";
+import { ConsultationSettings } from "../settings/ConsultationSettings";
+import { PolicySettings } from "../settings/PolicySettings";
+import { ClientSettings } from "../settings/ClientSettings";
+import { StudioDashboardSettings } from "../settings/StudioDashboardSettings";
+import { SubscriptionSettings } from "../settings/SubscriptionSettings";
+import { QuickActionsSettings } from "../settings/QuickActionsSettings";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useUIDebug } from "@/_core/contexts/UIDebugContext";
 import { forceUpdate } from "@/lib/pwa";
 
-type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation";
+type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions";
 
 interface CentralNavFABProps {
   className?: string;
@@ -69,19 +75,15 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           id: "consultations",
           label: "Consultations",
           icon: Calendar,
-          onClick: () => {
-            setFABOpen(false);
-            setLocation("/consultations");
-          },
+          onClick: () => handleViewChange("consultations"),
+          closeOnClick: false,
         },
         {
           id: "policies",
           label: "Policies",
           icon: Bell, // using Bell as fallback if needed, or another icon
-          onClick: () => {
-            setFABOpen(false);
-            setLocation("/policies");
-          },
+          onClick: () => handleViewChange("policies"),
+          closeOnClick: false,
         }
       );
     }
@@ -92,10 +94,8 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           id: "clients",
           label: "Clients",
           icon: User, // using User icon
-          onClick: () => {
-            setFABOpen(false);
-            setLocation("/clients");
-          },
+          onClick: () => handleViewChange("clients"),
+          closeOnClick: false,
         },
         {
           id: "business",
@@ -111,10 +111,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           id: "studio",
           label: "Studio Headquarters",
           icon: Users,
-          onClick: () => {
-            setFABOpen(false);
-            setLocation("/studio");
-          },
+          onClick: () => handleViewChange("studio"),
         });
       }
 
@@ -123,10 +120,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           id: "subscriptions",
           label: "Subscription & Billing",
           icon: Zap,
-          onClick: () => {
-            setFABOpen(false);
-            setLocation("/subscriptions");
-          },
+          onClick: () => handleViewChange("subscriptions"),
         },
         {
           id: "work-hours",
@@ -146,10 +140,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           id: "quick-actions",
           label: "Quick Actions",
           icon: Zap,
-          onClick: () => {
-            setFABOpen(false);
-            setLocation("/quick-actions");
-          },
+          onClick: () => handleViewChange("quick-actions"),
         },
         {
           id: "notifications",
@@ -280,6 +271,36 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
         {activeSettingsView === "profile" && (
           <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
             <ProfileSettings onBack={() => handleViewChange("settings-menu")} />
+          </div>
+        )}
+        {activeSettingsView === "consultations" && (
+          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+            <ConsultationSettings onBack={() => handleViewChange("settings-menu")} />
+          </div>
+        )}
+        {activeSettingsView === "policies" && (
+          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+            <PolicySettings onBack={() => handleViewChange("settings-menu")} />
+          </div>
+        )}
+        {activeSettingsView === "clients" && (
+          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+            <ClientSettings onBack={() => handleViewChange("settings-menu")} />
+          </div>
+        )}
+        {activeSettingsView === "studio" && (
+          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+            <StudioDashboardSettings onBack={() => handleViewChange("settings-menu")} />
+          </div>
+        )}
+        {activeSettingsView === "subscriptions" && (
+          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+            <SubscriptionSettings onBack={() => handleViewChange("settings-menu")} />
+          </div>
+        )}
+        {activeSettingsView === "quick-actions" && (
+          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+            <QuickActionsSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "business" && (
