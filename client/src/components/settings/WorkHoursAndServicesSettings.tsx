@@ -88,18 +88,7 @@ export function WorkHoursAndServicesSettings({
         color: "#3b82f6",
     });
 
-    // Project Service Builder State
-    const [showProjectBuilder, setShowProjectBuilder] = useState(false);
-    const [projectBaseServiceId, setProjectBaseServiceId] = useState<string>("");
-    const [projectSittings, setProjectSittings] = useState<number>(1);
-    const [newProjectService, setNewProjectService] = useState<Service>({
-        name: "",
-        duration: 0,
-        price: 0,
-        description: "",
-        sittings: 1,
-    });
-
+    const [isProjectMode, setIsProjectMode] = useState(false);
     const { data: artistSettings } = trpc.artistSettings.get.useQuery(undefined, {
         enabled: !!user && (user.role === "artist" || user.role === "admin"),
     });
@@ -140,22 +129,7 @@ export function WorkHoursAndServicesSettings({
         }
     }, [artistSettings]);
 
-    // Project Builder Logic
-    useEffect(() => {
-        if (projectBaseServiceId && projectSittings > 0) {
-            const baseServiceIndex = parseInt(projectBaseServiceId);
-            const baseService = services[baseServiceIndex];
-
-            if (baseService) {
-                setNewProjectService(prev => ({
-                    ...prev,
-                    duration: baseService.duration,
-                    price: baseService.price * projectSittings,
-                    sittings: projectSittings,
-                }));
-            }
-        }
-    }, [projectBaseServiceId, projectSittings, services]);
+    // Removed Project Builder Logic (integrated directly into the base builder)
 
     const handleDayToggle = (day: keyof WorkSchedule) => {
         setWorkSchedule(prev => ({
@@ -208,30 +182,6 @@ export function WorkHoursAndServicesSettings({
         toast.success("Service added successfully");
     };
 
-    const handleAddProjectService = () => {
-        if (!newProjectService.name.trim()) {
-            toast.error("Project Service name is required");
-            return;
-        }
-        if (!projectBaseServiceId) {
-            toast.error("Base service is required");
-            return;
-        }
-
-        setServices(prev => [...prev, newProjectService]);
-
-        setNewProjectService({
-            name: "",
-            duration: 0,
-            price: 0,
-            description: "",
-            sittings: 1,
-        });
-        setProjectBaseServiceId("");
-        setProjectSittings(1);
-        setShowProjectBuilder(false);
-        toast.success("Project Service added");
-    };
 
     const handleCancelAdd = () => {
         setNewService({
@@ -413,205 +363,271 @@ export function WorkHoursAndServicesSettings({
                                     Manage list and pricing
                                 </p>
                             </div>
-                            <div className="flex gap-2">
+                            {!showAddForm && (
                                 <Button
                                     size="sm"
-                                    variant="outline"
-                                    className="bg-transparent border-white/10 hover:bg-white/5 h-8"
-                                    onClick={() => setShowProjectBuilder(true)}
+                                    onClick={handleShowAddForm}
+                                    className="h-8 shadow-lg shadow-primary/20"
                                 >
-                                    <Layers className="w-3.5 h-3.5 mr-1" />
-                                    Project
+                                    <Plus className="w-3.5 h-3.5 mr-1" />
+                                    New
                                 </Button>
-                                {!showAddForm && (
-                                    <Button
-                                        size="sm"
-                                        onClick={handleShowAddForm}
-                                        className="h-8 shadow-lg shadow-primary/20"
-                                    >
-                                        <Plus className="w-3.5 h-3.5 mr-1" />
-                                        New
-                                    </Button>
-                                )}
-                            </div>
+                            )}
                         </div>
+                    </div>
 
-                        <div className="p-4 space-y-1">
-                            {services.map((service, index) => (
-                                <div
-                                    key={index}
-                                    className="p-4 border border-white/10 rounded-[4px] bg-white/5"
-                                >
-                                    {editingIndex === index && editingService ? (
-                                        // Edit Mode
-                                        <div className="space-y-3">
+                    <div className="p-4 space-y-1">
+                        {services.map((service, index) => (
+                            <div
+                                key={index}
+                                className="p-4 border border-white/10 rounded-[4px] bg-white/5"
+                            >
+                                {editingIndex === index && editingService ? (
+                                    // Edit Mode
+                                    <div className="space-y-3">
+                                        <div className="space-y-4 mb-4 pb-4 border-b border-white/10">
+                                            <div className="flex items-center justify-between">
+                                                <Label className="text-foreground font-semibold">Project Mode</Label>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={cn("text-xs font-medium", editingService.sittings === 1 ? "text-primary" : "text-muted-foreground")}>Single</span>
+                                                    <Switch
+                                                        checked={(editingService.sittings || 1) > 1}
+                                                        onCheckedChange={(checked) => setEditingService({ ...editingService, sittings: checked ? 2 : 1 })}
+                                                    />
+                                                    <span className={cn("text-xs font-medium", (editingService.sittings || 1) > 1 ? "text-primary" : "text-muted-foreground")}>Project</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between">
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Service Name</Label>
+                                            </div>
+                                            <Input
+                                                value={editingService.name}
+                                                onChange={e =>
+                                                    setEditingService({
+                                                        ...editingService,
+                                                        name: e.target.value,
+                                                    })
+                                                }
+                                                className="bg-white/5 border-white/10"
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3">
                                             <div className="space-y-2">
-                                                <Label>Service Name</Label>
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Duration (min)</Label>
                                                 <Input
-                                                    value={editingService.name}
+                                                    type="number"
+                                                    value={editingService.duration}
                                                     onChange={e =>
                                                         setEditingService({
                                                             ...editingService,
-                                                            name: e.target.value,
+                                                            duration: parseInt(e.target.value) || 0,
                                                         })
                                                     }
                                                     className="bg-white/5 border-white/10"
                                                 />
                                             </div>
-
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div className="space-y-2">
-                                                    <Label>Duration (min)</Label>
-                                                    <Input
-                                                        type="number"
-                                                        value={editingService.duration}
-                                                        onChange={e =>
-                                                            setEditingService({
-                                                                ...editingService,
-                                                                duration: parseInt(e.target.value) || 0,
-                                                            })
-                                                        }
-                                                        className="bg-white/5 border-white/10"
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label>Price ($)</Label>
-                                                    <Input
-                                                        type="number"
-                                                        value={editingService.price}
-                                                        onChange={e =>
-                                                            setEditingService({
-                                                                ...editingService,
-                                                                price: parseInt(e.target.value) || 0,
-                                                            })
-                                                        }
-                                                        className="bg-white/5 border-white/10"
-                                                    />
-                                                </div>
-                                            </div>
-
                                             <div className="space-y-2">
-                                                <Label>Color</Label>
-                                                <div className="flex gap-2">
-                                                    <Input
-                                                        type="color"
-                                                        value={editingService.color || "#3b82f6"}
-                                                        onChange={e =>
-                                                            setEditingService({
-                                                                ...editingService,
-                                                                color: e.target.value,
-                                                            })
-                                                        }
-                                                        className="w-12 h-10 p-1 bg-white/5 border-white/10 cursor-pointer"
-                                                    />
-                                                    <Input
-                                                        type="text"
-                                                        value={editingService.color || "#3b82f6"}
-                                                        onChange={e =>
-                                                            setEditingService({
-                                                                ...editingService,
-                                                                color: e.target.value,
-                                                            })
-                                                        }
-                                                        className="flex-1 bg-white/5 border-white/10"
-                                                        placeholder="#3b82f6"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* ... (Other fields can be similarly styled) ... */}
-
-                                            <div className="flex gap-2 pt-2">
-                                                <Button size="sm" onClick={handleSaveEdit}>
-                                                    Save
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={handleCancelEdit}
-                                                >
-                                                    Cancel
-                                                </Button>
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Price ($)</Label>
+                                                <Input
+                                                    type="number"
+                                                    value={editingService.price}
+                                                    onChange={e =>
+                                                        setEditingService({
+                                                            ...editingService,
+                                                            price: parseInt(e.target.value) || 0,
+                                                        })
+                                                    }
+                                                    className="bg-white/5 border-white/10"
+                                                />
                                             </div>
                                         </div>
-                                    ) : (
-                                        // View Mode
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                                <h3 className="font-semibold text-base text-foreground">
-                                                    {service.name}
-                                                </h3>
-                                                <div className="flex gap-3 mt-1 text-xs text-muted-foreground font-mono">
-                                                    <span className="flex items-center gap-1">
-                                                        <Clock className="w-3 h-3" /> {service.duration}m
-                                                    </span>
-                                                    <span className="text-primary font-bold">
-                                                        ${service.price}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 hover:text-primary"
-                                                    onClick={() => handleEditService(index)}
-                                                >
-                                                    <Pencil className="w-3.5 h-3.5" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 hover:text-destructive"
-                                                    onClick={() => handleRemoveService(index)}
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </Button>
+
+                                        <div className="space-y-2">
+                                            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Service Colour</Label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    type="color"
+                                                    value={editingService.color || "#3b82f6"}
+                                                    onChange={e =>
+                                                        setEditingService({
+                                                            ...editingService,
+                                                            color: e.target.value,
+                                                        })
+                                                    }
+                                                    className="w-12 h-10 p-1 bg-white/5 border-white/10 cursor-pointer"
+                                                />
+                                                <Input
+                                                    type="text"
+                                                    value={editingService.color || "#3b82f6"}
+                                                    onChange={e =>
+                                                        setEditingService({
+                                                            ...editingService,
+                                                            color: e.target.value,
+                                                        })
+                                                    }
+                                                    className="flex-1 bg-white/5 border-white/10"
+                                                    placeholder="#3b82f6"
+                                                />
                                             </div>
                                         </div>
-                                    )}
+                                        {(editingService.sittings || 1) > 1 && (
+                                            <div className="space-y-2 bg-primary/10 border border-primary/20 p-3 rounded-[4px] mt-4">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <Layers className="w-4 h-4 text-primary" />
+                                                    <Label className="text-primary font-semibold">Number of Appointments</Label>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground/80 mb-2 leading-snug">
+                                                    This is a multi-session project. The total price entered above will be the combined cost for all sittings.
+                                                </p>
+                                                <Input
+                                                    type="number"
+                                                    min={2}
+                                                    value={editingService.sittings}
+                                                    onChange={e =>
+                                                        setEditingService({
+                                                            ...editingService,
+                                                            sittings: Math.max(2, parseInt(e.target.value) || 2),
+                                                        })
+                                                    }
+                                                    className="bg-black/30 border-white/20"
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div className="flex gap-2 pt-4 mt-2 border-t border-white/5">
+                                            <Button size="sm" onClick={handleSaveEdit}>
+                                                Save
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={handleCancelEdit}
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    // View Mode
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <h3 className="font-semibold text-base text-foreground">
+                                                {service.name}
+                                            </h3>
+                                            <div className="flex gap-3 mt-1 text-xs text-muted-foreground font-mono">
+                                                <span className="flex items-center gap-1">
+                                                    <Clock className="w-3 h-3" /> {service.duration}m
+                                                </span>
+                                                <span className="text-primary font-bold">
+                                                    ${service.price}
+                                                </span>
+                                            </div>
+                                            {service.sittings && service.sittings > 1 && (
+                                                <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-[10px] font-bold text-primary uppercase tracking-wider">
+                                                    <Layers className="w-3 h-3" />
+                                                    Project: {service.sittings} Sittings
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 hover:text-primary"
+                                                onClick={() => handleEditService(index)}
+                                            >
+                                                <Pencil className="w-3.5 h-3.5" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 hover:text-destructive"
+                                                onClick={() => handleRemoveService(index)}
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+
+                        {showAddForm && (
+                            <div className="p-4 border border-dashed border-white/20 rounded-[4px] space-y-3 bg-white/5">
+                                <h3 className="font-semibold text-sm">
+                                    New Service Details
+                                </h3>
+                                <div className="space-y-4 mb-4 pb-4 border-b border-white/10">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="text-foreground font-semibold">Project Mode</Label>
+                                        <div className="flex items-center gap-2">
+                                            <span className={cn("text-xs font-medium", !isProjectMode ? "text-primary" : "text-muted-foreground")}>Single</span>
+                                            <Switch
+                                                checked={isProjectMode}
+                                                onCheckedChange={(checked) => {
+                                                    setIsProjectMode(checked);
+                                                    if (checked) setNewService(prev => ({ ...prev, sittings: 2 }));
+                                                    else setNewService(prev => ({ ...prev, sittings: 1 }));
+                                                }}
+                                            />
+                                            <span className={cn("text-xs font-medium", isProjectMode ? "text-primary" : "text-muted-foreground")}>Project</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            ))}
 
-                            {showAddForm && (
-                                <div className="p-4 border border-dashed border-white/20 rounded-[4px] space-y-3 bg-white/5">
-                                    <h3 className="font-semibold text-sm">
-                                        New Service Details
-                                    </h3>
-                                    <Input
-                                        placeholder="Name"
-                                        value={newService.name}
-                                        onChange={e =>
-                                            setNewService({ ...newService, name: e.target.value })
-                                        }
-                                        className="bg-white/5 border-white/10"
-                                    />
-                                    <div className="flex gap-2">
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Service Name</Label>
                                         <Input
-                                            type="number"
-                                            placeholder="Duration"
-                                            value={newService.duration}
+                                            placeholder="Name"
+                                            value={newService.name}
                                             onChange={e =>
-                                                setNewService({
-                                                    ...newService,
-                                                    duration: parseInt(e.target.value),
-                                                })
+                                                setNewService({ ...newService, name: e.target.value })
                                             }
                                             className="bg-white/5 border-white/10"
                                         />
-                                        <Input
-                                            type="number"
-                                            placeholder="Price"
-                                            value={newService.price}
-                                            onChange={e =>
-                                                setNewService({
-                                                    ...newService,
-                                                    price: parseInt(e.target.value),
-                                                })
-                                            }
-                                            className="bg-white/5 border-white/10"
-                                        />
-                                        <div className="w-16">
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-2">
+                                            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Duration (min)</Label>
+                                            <Input
+                                                type="number"
+                                                placeholder="Duration"
+                                                value={newService.duration}
+                                                onChange={e =>
+                                                    setNewService({
+                                                        ...newService,
+                                                        duration: parseInt(e.target.value) || 0,
+                                                    })
+                                                }
+                                                className="bg-white/5 border-white/10"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Price ($)</Label>
+                                            <Input
+                                                type="number"
+                                                placeholder="Price"
+                                                value={newService.price}
+                                                onChange={e =>
+                                                    setNewService({
+                                                        ...newService,
+                                                        price: parseInt(e.target.value) || 0,
+                                                    })
+                                                }
+                                                className="bg-white/5 border-white/10"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Service Colour</Label>
+                                        <div className="flex gap-2">
                                             <Input
                                                 type="color"
                                                 title="Service Color"
@@ -622,25 +638,61 @@ export function WorkHoursAndServicesSettings({
                                                         color: e.target.value,
                                                     })
                                                 }
-                                                className="h-10 p-1 bg-white/5 border-white/10 w-full cursor-pointer"
+                                                className="w-12 h-10 p-1 bg-white/5 border-white/10 cursor-pointer"
+                                            />
+                                            <Input
+                                                type="text"
+                                                value={newService.color || "#3b82f6"}
+                                                onChange={e =>
+                                                    setNewService({
+                                                        ...newService,
+                                                        color: e.target.value,
+                                                    })
+                                                }
+                                                className="flex-1 bg-white/5 border-white/10"
+                                                placeholder="#3b82f6"
                                             />
                                         </div>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <Button size="sm" onClick={handleAddService}>
-                                            Add
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={handleCancelAdd}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </div>
+
+                                    {isProjectMode && (
+                                        <div className="space-y-2 bg-primary/10 border border-primary/20 p-3 rounded-[4px]">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <Layers className="w-4 h-4 text-primary" />
+                                                <Label className="text-primary font-semibold">Number of Appointments</Label>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground/80 mb-2 leading-snug">
+                                                This is a multi-session project. The total price entered above will be the combined cost for all sittings.
+                                            </p>
+                                            <Input
+                                                type="number"
+                                                min={2}
+                                                value={newService.sittings || 2}
+                                                onChange={e =>
+                                                    setNewService({
+                                                        ...newService,
+                                                        sittings: Math.max(2, parseInt(e.target.value) || 2),
+                                                    })
+                                                }
+                                                className="bg-black/30 border-white/20"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
+                                <div className="flex gap-2 pt-4 mt-2 border-t border-white/5">
+                                    <Button size="sm" onClick={handleAddService}>
+                                        Add
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={handleCancelAdd}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <Button
@@ -652,91 +704,6 @@ export function WorkHoursAndServicesSettings({
                     </Button>
                 </div>
             </div>
-
-            {/* Project Builder Modal - keeping as is, wrapped in ModalShell it should work fine */}
-            <ModalShell
-                isOpen={showProjectBuilder}
-                onClose={() => setShowProjectBuilder(false)}
-                title="Add Project Service"
-                description="Create a multi-sitting project package based on an existing service."
-                className="max-w-md"
-                overlayName="Project Service Builder"
-                overlayId="work_hours.project_builder"
-                footer={
-                    <div className="flex w-full gap-2">
-                        <Button
-                            variant="outline"
-                            className="flex-1 bg-transparent border-white/10 hover:bg-white/5"
-                            onClick={() => setShowProjectBuilder(false)}
-                        >
-                            Cancel
-                        </Button>
-                        <Button className="flex-1" onClick={handleAddProjectService}>
-                            Add Project Service
-                        </Button>
-                    </div>
-                }
-            >
-                <div className="space-y-4 py-2">
-                    {/* ... Inputs ... map to newProjectService state ... */}
-                    <div className="space-y-3">
-                        <Label>Project Name</Label>
-                        <Input
-                            value={newProjectService.name}
-                            onChange={e =>
-                                setNewProjectService({
-                                    ...newProjectService,
-                                    name: e.target.value,
-                                })
-                            }
-                            className="bg-white/5 border-white/10"
-                        />
-
-                        <Label>Base Service</Label>
-                        <Select
-                            value={projectBaseServiceId}
-                            onValueChange={setProjectBaseServiceId}
-                        >
-                            <SelectTrigger className="bg-white/5 border-white/10">
-                                <SelectValue placeholder="Select..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {services.map((s, i) => (
-                                    <SelectItem key={i} value={i.toString()}>
-                                        {s.name} (${s.price})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <Label>Sittings</Label>
-                                <Input
-                                    type="number"
-                                    value={projectSittings}
-                                    onChange={e => setProjectSittings(parseInt(e.target.value))}
-                                    className="bg-white/5 border-white/10"
-                                />
-                            </div>
-                            <div>
-                                <Label>Total Price</Label>
-                                <Input
-                                    type="number"
-                                    value={newProjectService.price}
-                                    onChange={e =>
-                                        setNewProjectService({
-                                            ...newProjectService,
-                                            price: parseFloat(e.target.value),
-                                        })
-                                    }
-                                    className="bg-white/5 border-white/10"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </ModalShell>
         </div >
     );
 }
