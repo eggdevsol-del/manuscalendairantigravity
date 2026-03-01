@@ -270,7 +270,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           (fabChildren || (activeSettingsView !== "main" && activeSettingsView !== "settings-menu"))
             ? "w-[calc(100vw-40px)] max-w-[360px] !items-stretch"
             : "w-[260px] max-w-[calc(100vw-40px)]",
-          isLargePanel && "max-h-[calc(100dvh-130px)] h-[calc(100dvh-130px)] w-[calc(100vw-40px)] md:w-[600px] overflow-hidden rounded-[32px] relative shadow-2xl bg-background/95 backdrop-blur-3xl border border-white/10"
+          isLargePanel && "max-h-[calc(100dvh-130px)] h-[calc(100dvh-130px)] w-[calc(100vw-40px)] md:w-[600px] overflow-hidden rounded-[32px] relative shadow-2xl !bg-transparent !backdrop-blur-none border-0 ring-1 ring-white/10"
         )}
       >
         {activeSettingsView === "profile" && (
