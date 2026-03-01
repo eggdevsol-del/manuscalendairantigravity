@@ -200,7 +200,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
       );
       return;
     }
-    const url = `https://calendair.app/start/${artistSettings.publicSlug}`;
+    const url = `${window.location.origin}/start/${artistSettings.publicSlug}`;
     navigator.clipboard.writeText(url);
     toast.success("Booking link copied to clipboard!");
   };
