@@ -97,16 +97,12 @@
 
   /* Background Image/Gradient */
   --bg-gradient:
-    radial-gradient(
-      circle at 100% 0%,
+    radial-gradient(circle at 100% 0%,
       oklch(0.95 0.05 260) 0%,
-      transparent 40%
-    ),
-    radial-gradient(
-      circle at 0% 100%,
+      transparent 40%),
+    radial-gradient(circle at 0% 100%,
       oklch(0.92 0.05 280) 0%,
-      transparent 40%
-    ),
+      transparent 40%),
     var(--background);
 }
 
@@ -171,6 +167,33 @@
     height: 100%;
   }
 
+  /* Global SSOT Minimal Pill Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--muted-foreground);
+    border-radius: 9999px;
+    /* Pill shape */
+    transition: background-color 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--foreground) 50%, var(--muted-foreground));
+  }
+
+  /* Firefox support */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted-foreground) transparent;
+  }
+
   /* Fixed background layer - works on iOS Safari where background-attachment: fixed doesn't */
   html::before {
     content: "";
@@ -213,6 +236,7 @@
 }
 
 @layer components {
+
   /**
    * Custom container utility that centers content and adds responsive padding.
    *
@@ -268,7 +292,6 @@
   .liquid-glass,
   .glass-card,
   .card,
-  [data-slot="card"],
   .floating-nav {
     @apply backdrop-blur-[20px] shadow-lg rounded-[2rem];
 
@@ -283,13 +306,13 @@
     /* Smooth Shadow */
     box-shadow:
       0 8px 32px -4px rgba(0, 0, 0, 0.1),
-      /* Lighter shadow base */ inset 0 1px 0 0 var(--input);
+      /* Lighter shadow base */
+      inset 0 1px 0 0 var(--input);
   }
 
   .dark .liquid-glass,
   .dark .glass-card,
   .dark .card,
-  .dark [data-slot="card"],
   .dark .floating-nav {
     /* Re-apply stronger shadows for dark mode if needed, or stick to variables */
     box-shadow:
@@ -297,11 +320,9 @@
       inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-top: 1px solid rgba(255, 255, 255, 0.25);
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.08) 0%,
-      rgba(255, 255, 255, 0.03) 100%
-    );
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.03) 100%);
   }
 
   /* Mobile-first utilities */
