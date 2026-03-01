@@ -274,57 +274,57 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
         )}
       >
         {activeSettingsView === "profile" && (
-          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <ProfileSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "consultations" && (
-          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <ConsultationSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "policies" && (
-          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <PolicySettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "clients" && (
-          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <ClientSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "studio" && (
-          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <StudioDashboardSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "subscriptions" && (
-          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <SubscriptionSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "quick-actions" && (
-          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <QuickActionsSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "business" && (
-          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <BusinessSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "work-hours" && (
-          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <WorkHoursAndServicesSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "notifications" && (
-          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <NotificationSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "regulation" && (
-          <div className="w-full h-full relative isolate p-0 absolute inset-0 overflow-y-auto mobile-scroll">
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <RegulationSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
