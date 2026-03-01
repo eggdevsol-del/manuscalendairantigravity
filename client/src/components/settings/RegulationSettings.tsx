@@ -30,7 +30,7 @@ By signing this form, I acknowledge and agree to the following:
 
 type TabType = "medical" | "consent" | "register";
 
-export default function RegulationPage({ onBack }: { onBack: () => void }) {
+export function RegulationSettings({ onBack }: { onBack: () => void }) {
   const [activeTab, setActiveTab] = useState<TabType>("register");
   const [medical, setMedical] = useState("");
   const [consent, setConsent] = useState("");
