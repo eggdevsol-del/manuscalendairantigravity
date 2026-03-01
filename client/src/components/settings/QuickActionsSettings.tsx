@@ -158,203 +158,210 @@ export function QuickActionsSettings({ onBack }: QuickActionsSettingsProps) {
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-background relative isolate">
-      <PageHeader
-        title="Quick Action Buttons"
-        onBack={onBack}
-      />
+    <div className="w-full h-full flex flex-col overflow-hidden relative">
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-background/50 backdrop-blur-md z-20 border-b border-white/5">
+        <button
+          onClick={onBack}
+          className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5 text-foreground" />
+        </button>
+        <h2 className="text-xl font-semibold text-foreground">Quick Action Buttons</h2>
+      </div>
 
-      <main className="flex-1 px-4 py-4 pb-[180px] mobile-scroll overflow-y-auto space-y-4">
-        <Card className="bg-accent/5 border-accent/20">
-          <CardHeader>
-            <CardTitle className="text-base">About Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Quick action buttons appear at the bottom of chat conversations.
-              You can create up to 6 buttons that send predefined messages or
-              perform actions.
-            </p>
-          </CardContent>
-        </Card>
-
-        {!showAddNew && (
-          <Button
-            onClick={() => setShowAddNew(true)}
-            className="w-full"
-            disabled={(quickActions?.length || 0) >= 6}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Quick Action{" "}
-            {quickActions?.length ? `(${quickActions.length}/6)` : ""}
-          </Button>
-        )}
-
-        {showAddNew && (
-          <Card className="border-primary">
+      <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
+        <div className="pb-[180px] max-w-lg mx-auto space-y-4 px-4 pt-6">
+          <Card className="bg-accent/5 border-accent/20">
             <CardHeader>
-              <CardTitle className="text-base">
-                {editingId ? "Edit" : "New"} Quick Action
-              </CardTitle>
-              <CardDescription>
-                Configure the button label and action
-              </CardDescription>
+              <CardTitle className="text-base">About Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="label">Button Label *</Label>
-                <Input
-                  id="label"
-                  value={formData.label}
-                  onChange={e =>
-                    setFormData({ ...formData, label: e.target.value })
-                  }
-                  placeholder="e.g., Deposit Info"
-                  maxLength={20}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Keep it short (max 20 characters)
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="actionType">Action Type *</Label>
-                <Select
-                  value={formData.actionType}
-                  onValueChange={value =>
-                    setFormData({ ...formData, actionType: value as any })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACTION_TYPES.map(type => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="content">Message Content *</Label>
-                <Textarea
-                  id="content"
-                  value={formData.content}
-                  onChange={e =>
-                    setFormData({ ...formData, content: e.target.value })
-                  }
-                  placeholder="The message that will be sent when this button is clicked..."
-                  rows={4}
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-lg border">
-                <div>
-                  <Label htmlFor="enabled" className="text-base">
-                    Enabled
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Show this button in chats
-                  </p>
-                </div>
-                <Switch
-                  id="enabled"
-                  checked={formData.enabled}
-                  onCheckedChange={checked =>
-                    setFormData({ ...formData, enabled: checked })
-                  }
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleSave}
-                  disabled={
-                    createMutation.isPending || updateMutation.isPending
-                  }
-                  className="flex-1"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {editingId ? "Update" : "Create"}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={resetForm}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Quick action buttons appear at the bottom of chat conversations.
+                You can create up to 6 buttons that send predefined messages or
+                perform actions.
+              </p>
             </CardContent>
           </Card>
-        )}
 
-        {quickActions && quickActions.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-foreground">
-              Your Quick Actions
-            </h3>
-            {quickActions.map(action => (
-              <Card key={action.id}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <Zap className="w-4 h-4 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <CardTitle className="text-base">
-                          {action.label}
-                        </CardTitle>
-                        <CardDescription className="text-sm mt-1">
-                          {ACTION_TYPES.find(t => t.value === action.actionType)
-                            ?.label || action.actionType}
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${action.enabled
-                          ? "bg-accent/20 text-accent"
-                          : "bg-muted text-muted-foreground"
-                          }`}
-                      >
-                        {action.enabled ? "Active" : "Disabled"}
-                      </span>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                    {action.content}
+          {!showAddNew && (
+            <Button
+              onClick={() => setShowAddNew(true)}
+              className="w-full"
+              disabled={(quickActions?.length || 0) >= 6}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Quick Action{" "}
+              {quickActions?.length ? `(${quickActions.length}/6)` : ""}
+            </Button>
+          )}
+
+          {showAddNew && (
+            <Card className="border-primary">
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {editingId ? "Edit" : "New"} Quick Action
+                </CardTitle>
+                <CardDescription>
+                  Configure the button label and action
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="label">Button Label *</Label>
+                  <Input
+                    id="label"
+                    value={formData.label}
+                    onChange={e =>
+                      setFormData({ ...formData, label: e.target.value })
+                    }
+                    placeholder="e.g., Deposit Info"
+                    maxLength={20}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Keep it short (max 20 characters)
                   </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(action)}
-                      className="flex-1"
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(action.id)}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="actionType">Action Type *</Label>
+                  <Select
+                    value={formData.actionType}
+                    onValueChange={value =>
+                      setFormData({ ...formData, actionType: value as any })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ACTION_TYPES.map(type => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="content">Message Content *</Label>
+                  <Textarea
+                    id="content"
+                    value={formData.content}
+                    onChange={e =>
+                      setFormData({ ...formData, content: e.target.value })
+                    }
+                    placeholder="The message that will be sent when this button is clicked..."
+                    rows={4}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div>
+                    <Label htmlFor="enabled" className="text-base">
+                      Enabled
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Show this button in chats
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </main>
+                  <Switch
+                    id="enabled"
+                    checked={formData.enabled}
+                    onCheckedChange={checked =>
+                      setFormData({ ...formData, enabled: checked })
+                    }
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleSave}
+                    disabled={
+                      createMutation.isPending || updateMutation.isPending
+                    }
+                    className="flex-1"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {editingId ? "Update" : "Create"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={resetForm}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {quickActions && quickActions.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-foreground">
+                Your Quick Actions
+              </h3>
+              {quickActions.map(action => (
+                <Card key={action.id}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <Zap className="w-4 h-4 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <CardTitle className="text-base">
+                            {action.label}
+                          </CardTitle>
+                          <CardDescription className="text-sm mt-1">
+                            {ACTION_TYPES.find(t => t.value === action.actionType)
+                              ?.label || action.actionType}
+                          </CardDescription>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${action.enabled
+                            ? "bg-accent/20 text-accent"
+                            : "bg-muted text-muted-foreground"
+                            }`}
+                        >
+                          {action.enabled ? "Active" : "Disabled"}
+                        </span>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                      {action.content}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(action)}
+                        className="flex-1"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(action.id)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

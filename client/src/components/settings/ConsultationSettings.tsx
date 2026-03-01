@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { trpc } from "@/lib/trpc";
-import { Calendar, ChevronRight, Clock, Plus } from "lucide-react";
+import { Calendar, ChevronRight, Clock, Plus, ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -118,131 +118,129 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-background relative isolate">
-      {/* 1. Page Header - Left aligned, no icons */}
-      <PageHeader title="Consultations" onBack={onBack} />
-
-      {/* 2. Top Context Area (Stats/Info) */}
-      <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
-        <p className="text-4xl font-light text-foreground/90 tracking-tight">
-          Requests
-        </p>
-        <p className="text-muted-foreground text-lg font-medium mt-1">
-          Manage your bookings
-        </p>
+    <div className="w-full h-full flex flex-col overflow-hidden relative">
+      {/* 1. Page Header - Floating style */}
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-background/50 backdrop-blur-md z-20 border-b border-white/5">
+        <button
+          onClick={onBack}
+          className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5 text-foreground" />
+        </button>
+        <h2 className="text-xl font-semibold text-foreground">Consultations</h2>
       </div>
 
-      {/* 3. Content Container (was GlassSheet) */}
-      <div className={tokens.contentContainer.base}>
-        {/* Sheet Header: Filter/Sort could go here */}
-        <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5">
-          <h2 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">
-            Your History ({consultations?.length || 0})
-          </h2>
-        </div>
+      <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
+        <div className="pb-[180px] max-w-lg mx-auto space-y-4 px-4 pt-6">
+          <div className="mb-2">
+            <p className="text-muted-foreground text-sm font-medium">
+              Manage your bookings
+            </p>
+          </div>
+          {/* List Header */}
+          <div className="shrink-0 pb-2 border-b border-white/5">
+            <h2 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">
+              Your History ({consultations?.length || 0})
+            </h2>
+          </div>
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">
+                Loading consultations...
+              </p>
+            </div>
+          ) : consultations && consultations.length > 0 ? (
+            consultations.map(consultation => (
+              <Card
+                key={consultation.id}
+                className={cn(
+                  tokens.card.base,
+                  tokens.card.bg,
+                  tokens.card.interactive,
+                  "border-0"
+                )}
+                onClick={() => {
+                  if (consultation.conversationId) {
+                    setLocation(`/chat/${consultation.conversationId}`);
+                  } else {
+                    setLocation("/conversations");
+                  }
+                }}
+              >
+                <div className="absolute inset-0 rounded-[4px] bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-        {/* Scrollable Content */}
-        <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y">
-          <div className="pb-[180px] max-w-lg mx-auto space-y-3">
-            {isLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-muted-foreground">
-                  Loading consultations...
-                </p>
-              </div>
-            ) : consultations && consultations.length > 0 ? (
-              consultations.map(consultation => (
-                <Card
-                  key={consultation.id}
-                  className={cn(
-                    tokens.card.base,
-                    tokens.card.bg,
-                    tokens.card.interactive,
-                    "border-0"
-                  )}
-                  onClick={() => {
-                    if (consultation.conversationId) {
-                      setLocation(`/chat/${consultation.conversationId}`);
-                    } else {
-                      setLocation("/conversations");
-                    }
-                  }}
-                >
-                  <div className="absolute inset-0 rounded-[4px] bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-
-                  <div className="p-5 relative z-10">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
-                          {consultation.subject}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mt-0.5">
-                          with{" "}
-                          {consultation.artist?.name ||
-                            consultation.artist?.email ||
-                            "Artist"}
-                        </p>
-                      </div>
-                      <div
-                        className={cn(
-                          "w-3 h-3 rounded-full mt-1.5",
-                          getStatusColor(consultation.status)
-                        )}
-                      />
+                <div className="p-5 relative z-10">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                        {consultation.subject}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        with{" "}
+                        {consultation.artist?.name ||
+                          consultation.artist?.email ||
+                          "Artist"}
+                      </p>
                     </div>
-
-                    <p className="text-sm text-white/60 line-clamp-2 leading-relaxed mb-4">
-                      {consultation.description}
-                    </p>
-
-                    <div className="flex items-center gap-4 text-xs font-medium text-white/40 group-hover:text-white/60 transition-colors">
-                      {consultation.preferredDate && (
-                        <div className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-md">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>
-                            {new Date(
-                              consultation.preferredDate
-                            ).toLocaleDateString()}
-                          </span>
-                        </div>
+                    <div
+                      className={cn(
+                        "w-3 h-3 rounded-full mt-1.5",
+                        getStatusColor(consultation.status)
                       )}
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5" />
+                    />
+                  </div>
+
+                  <p className="text-sm text-white/60 line-clamp-2 leading-relaxed mb-4">
+                    {consultation.description}
+                  </p>
+
+                  <div className="flex items-center gap-4 text-xs font-medium text-white/40 group-hover:text-white/60 transition-colors">
+                    {consultation.preferredDate && (
+                      <div className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-md">
+                        <Calendar className="w-3.5 h-3.5" />
                         <span>
-                          {consultation.createdAt
-                            ? new Date(
-                              consultation.createdAt
-                            ).toLocaleDateString()
-                            : "N/A"}
+                          {new Date(
+                            consultation.preferredDate
+                          ).toLocaleDateString()}
                         </span>
                       </div>
+                    )}
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>
+                        {consultation.createdAt
+                          ? new Date(
+                            consultation.createdAt
+                          ).toLocaleDateString()
+                          : "N/A"}
+                      </span>
                     </div>
                   </div>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center py-12 px-6">
-                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="w-8 h-8 text-muted-foreground opacity-50" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">
-                  No Consultations Yet
-                </h3>
-                <p className="text-muted-foreground mb-6 max-w-xs mx-auto text-sm">
-                  Request a consultation with an artist to start planning your
-                  next tattoo.
-                </p>
-                <Button
-                  onClick={() => setShowNewDialog(true)}
-                  size="lg"
-                  className="rounded-full px-8 shadow-lg shadow-primary/20"
-                >
-                  Start Request
-                </Button>
+              </Card>
+            ))
+          ) : (
+            <div className="text-center py-12 px-6">
+              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+                <Calendar className="w-8 h-8 text-muted-foreground opacity-50" />
               </div>
-            )}
-          </div>
+              <h3 className="text-lg font-semibold mb-2">
+                No Consultations Yet
+              </h3>
+              <p className="text-muted-foreground mb-6 max-w-xs mx-auto text-sm">
+                Request a consultation with an artist to start planning your
+                next tattoo.
+              </p>
+              <Button
+                onClick={() => setShowNewDialog(true)}
+                size="lg"
+                className="rounded-full px-8 shadow-lg shadow-primary/20"
+              >
+                Start Request
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 

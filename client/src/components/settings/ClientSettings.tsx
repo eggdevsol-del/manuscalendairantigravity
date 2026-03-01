@@ -154,163 +154,173 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-background relative isolate">
-      <PageHeader title="Clients" onBack={onBack} />
-
-      <main className="flex-1 px-4 py-4 pb-[180px] mobile-scroll overflow-y-auto space-y-4">
-        {/* Search and Add */}
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search clients..."
-              className="pl-9"
-            />
-          </div>
-          <Button onClick={() => setShowAddDialog(true)} className="tap-target">
-            <Plus className="w-4 h-4 mr-2" />
-            Add
-          </Button>
-        </div>
-
-        {/* Stats */}
-        <Card
-          className={cn(
-            tokens.card.base,
-            "bg-gradient-to-br from-primary/10 to-accent/10 hover:from-primary/15 hover:to-accent/15"
-          )}
+    <div className="w-full h-full flex flex-col overflow-hidden relative">
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-background/50 backdrop-blur-md z-20 border-b border-white/5">
+        <button
+          onClick={onBack}
+          className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
         >
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-4xl font-bold text-foreground">
-                {clients.length}
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Total Clients
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          <ChevronLeft className="w-5 h-5 text-foreground" />
+        </button>
+        <h2 className="text-xl font-semibold text-foreground">Clients</h2>
+      </div>
 
-        {/* Client List */}
-        {filteredClients.length === 0 ? (
-          <Card className={cn(tokens.card.base, tokens.card.bg, "p-8")}>
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia
-                  variant="icon"
-                  className="w-16 h-16 rounded-full bg-muted"
-                >
-                  <User className="w-8 h-8" />
-                </EmptyMedia>
-                <EmptyTitle>No clients yet</EmptyTitle>
-                <EmptyDescription>
-                  Add your first client to get started
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <Button onClick={() => setShowAddDialog(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Client
-                </Button>
-              </EmptyContent>
-            </Empty>
+      <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
+        <div className="pb-[180px] max-w-lg mx-auto space-y-4 px-4 pt-6">
+          {/* Search and Add */}
+          <div className="flex gap-2">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search clients..."
+                className="pl-9"
+              />
+            </div>
+            <Button onClick={() => setShowAddDialog(true)} className="tap-target">
+              <Plus className="w-4 h-4 mr-2" />
+              Add
+            </Button>
+          </div>
+
+          {/* Stats */}
+          <Card
+            className={cn(
+              tokens.card.base,
+              "bg-gradient-to-br from-primary/10 to-accent/10 hover:from-primary/15 hover:to-accent/15"
+            )}
+          >
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-4xl font-bold text-foreground">
+                  {clients.length}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Total Clients
+                </p>
+              </div>
+            </CardContent>
           </Card>
-        ) : (
-          <div className="space-y-1">
-            {filteredClients.map((client: any) => (
-              <Card
-                key={client.id}
-                className={cn(
-                  tokens.card.base,
-                  tokens.card.bg,
-                  tokens.card.interactive,
-                  "border-0"
-                )}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-lg">
-                        {client.name.charAt(0).toUpperCase()}
+
+          {/* Client List */}
+          {filteredClients.length === 0 ? (
+            <Card className={cn(tokens.card.base, tokens.card.bg, "p-8")}>
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia
+                    variant="icon"
+                    className="w-16 h-16 rounded-full bg-muted"
+                  >
+                    <User className="w-8 h-8" />
+                  </EmptyMedia>
+                  <EmptyTitle>No clients yet</EmptyTitle>
+                  <EmptyDescription>
+                    Add your first client to get started
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button onClick={() => setShowAddDialog(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Client
+                  </Button>
+                </EmptyContent>
+              </Empty>
+            </Card>
+          ) : (
+            <div className="space-y-1">
+              {filteredClients.map((client: any) => (
+                <Card
+                  key={client.id}
+                  className={cn(
+                    tokens.card.base,
+                    tokens.card.bg,
+                    tokens.card.interactive,
+                    "border-0"
+                  )}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-lg">
+                          {client.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-base truncate">
+                            {client.name}
+                          </CardTitle>
+                          {client.email && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                              <Mail className="w-3 h-3" />
+                              <span className="truncate">{client.email}</span>
+                            </div>
+                          )}
+                          {client.phone && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                              <Phone className="w-3 h-3" />
+                              <span>{client.phone}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base truncate">
-                          {client.name}
-                        </CardTitle>
-                        {client.email && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                            <Mail className="w-3 h-3" />
-                            <span className="truncate">{client.email}</span>
-                          </div>
-                        )}
-                        {client.phone && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                            <Phone className="w-3 h-3" />
-                            <span>{client.phone}</span>
-                          </div>
-                        )}
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-destructive h-8 w-8 -mr-2 -mt-2"
+                        onClick={e => {
+                          e.stopPropagation();
+                          handleDeleteClick({ id: client.id, name: client.name });
+                        }}
+                        title="Delete all bookings"
+                      >
+                        <Trash className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setLocation(`/chat/${client.conversationId}`)
+                        }
+                        className="w-full"
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Chat
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() =>
+                          setLocation(
+                            `/profile?tab=history&clientId=${client.id}`
+                          )
+                        }
+                        className="w-full"
+                      >
+                        <Clock className="w-4 h-4 mr-2" />
+                        History
+                      </Button>
                     </div>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive h-8 w-8 -mr-2 -mt-2"
-                      onClick={e => {
-                        e.stopPropagation();
-                        handleDeleteClick({ id: client.id, name: client.name });
-                      }}
-                      title="Delete all bookings"
-                    >
-                      <Trash className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      variant="outline"
                       size="sm"
                       onClick={() =>
-                        setLocation(`/chat/${client.conversationId}`)
+                        setLocation(`/profile?clientId=${client.id}`)
                       }
-                      className="w-full"
+                      className="w-full mt-2 text-xs opacity-70"
                     >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Chat
+                      View Full Profile
                     </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() =>
-                        setLocation(
-                          `/profile?tab=history&clientId=${client.id}`
-                        )
-                      }
-                      className="w-full"
-                    >
-                      <Clock className="w-4 h-4 mr-2" />
-                      History
-                    </Button>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      setLocation(`/profile?clientId=${client.id}`)
-                    }
-                    className="w-full mt-2 text-xs opacity-70"
-                  >
-                    View Full Profile
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </main>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Add Client Dialog */}
       <ModalShell

@@ -8,10 +8,6 @@ import {
     Textarea,
 } from "@/components/ui";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
-import {
-    PageShell,
-    PageHeader,
-} from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { trpc } from "@/lib/trpc";
 import {
@@ -20,6 +16,7 @@ import {
     Pencil,
     Layers,
     Clock,
+    ChevronLeft,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -302,373 +299,374 @@ export function WorkHoursAndServicesSettings({
     ];
 
     return (
-        <PageShell>
-            {/* 1. Page Header - Left aligned, no icons */}
-            <PageHeader title="Work Hours & Services" onBack={onBack} />
-
-            {/* 2. Top Context Area */}
-            <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
-                <p className="text-4xl font-light text-foreground/90 tracking-tight">
-                    Schedule
-                </p>
-                <p className="text-muted-foreground text-lg font-medium mt-1">
-                    Manage availability & offerings
-                </p>
+        <div className="w-full h-full flex flex-col overflow-hidden relative">
+            {/* 1. Page Header - Floating style */}
+            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-background/50 backdrop-blur-md z-20 border-b border-white/5">
+                <button
+                    onClick={onBack}
+                    className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                    <ChevronLeft className="w-5 h-5 text-foreground" />
+                </button>
+                <h2 className="text-xl font-semibold text-foreground">Work Hours & Services</h2>
             </div>
 
-            {/* 3. Sheet Container */}
-            <div className={tokens.contentContainer.base}>
-                <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
-                    <div className="pb-[180px] max-w-lg mx-auto space-y-1">
-                        {/* Work Schedule Card */}
-                        <Card
-                            className={cn(
-                                tokens.card.base,
-                                tokens.card.bg,
-                                "border-0 overflow-hidden"
-                            )}
-                        >
-                            <div className="p-4 border-b border-white/5">
+            {/* 2. Scroll Container */}
+            <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
+                <div className="pb-[180px] max-w-lg mx-auto space-y-4 px-4 pt-6">
+                    <div className="mb-2">
+                        <p className="text-muted-foreground text-sm font-medium">
+                            Manage availability & offerings
+                        </p>
+                    </div>
+                    {/* Work Schedule Card */}
+                    <Card
+                        className={cn(
+                            tokens.card.base,
+                            tokens.card.bg,
+                            "border-0 overflow-hidden"
+                        )}
+                    >
+                        <div className="p-4 border-b border-white/5">
+                            <h3 className="font-semibold text-foreground">
+                                Start / Finish Times
+                            </h3>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                                Set enabled days and hours
+                            </p>
+                        </div>
+                        <div className="p-4 space-y-1">
+                            {days.map(({ key, label }) => {
+                                const daySchedule = workSchedule[key] || {
+                                    enabled: false,
+                                    start: "09:00",
+                                    end: "17:00",
+                                };
+                                return (
+                                    <div key={key} className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <Label
+                                                className={cn(
+                                                    "text-base",
+                                                    daySchedule.enabled
+                                                        ? "text-foreground"
+                                                        : "text-muted-foreground"
+                                                )}
+                                            >
+                                                {label}
+                                            </Label>
+                                            <Switch
+                                                checked={daySchedule.enabled}
+                                                onCheckedChange={() => handleDayToggle(key)}
+                                            />
+                                        </div>
+
+                                        {daySchedule.enabled && (
+                                            <div className="flex flex-col gap-2 ml-4">
+                                                {/* Type Selector */}
+                                                <Select
+                                                    value={daySchedule.type || "work"}
+                                                    onValueChange={(val: any) =>
+                                                        handleTypeChange(key, val)
+                                                    }
+                                                >
+                                                    <SelectTrigger className="h-8 bg-white/5 border-white/10 text-xs w-full mb-1">
+                                                        <SelectValue placeholder="Select type" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="work">Work</SelectItem>
+                                                        <SelectItem value="design">Design</SelectItem>
+                                                        <SelectItem value="personal">Personal</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+
+                                                <div className="flex gap-2">
+                                                    <div className="flex-1">
+                                                        <Input
+                                                            type="time"
+                                                            value={daySchedule.start}
+                                                            onChange={e =>
+                                                                handleTimeChange(key, "start", e.target.value)
+                                                            }
+                                                            className="bg-white/5 border-white/10"
+                                                        />
+                                                    </div>
+                                                    <span className="flex items-center text-muted-foreground text-xs">
+                                                        TO
+                                                    </span>
+                                                    <div className="flex-1">
+                                                        <Input
+                                                            type="time"
+                                                            value={daySchedule.end}
+                                                            onChange={e =>
+                                                                handleTimeChange(key, "end", e.target.value)
+                                                            }
+                                                            className="bg-white/5 border-white/10"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </Card>
+
+                    {/* Services Card */}
+                    <Card
+                        className={cn(
+                            tokens.card.base,
+                            tokens.card.bg,
+                            "border-0 overflow-hidden"
+                        )}
+                    >
+                        <div className="p-4 border-b border-white/5 flex items-center justify-between">
+                            <div>
                                 <h3 className="font-semibold text-foreground">
-                                    Start / Finish Times
+                                    Service Menu
                                 </h3>
                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                    Set enabled days and hours
+                                    Manage list and pricing
                                 </p>
                             </div>
-                            <div className="p-4 space-y-1">
-                                {days.map(({ key, label }) => {
-                                    const daySchedule = workSchedule[key] || {
-                                        enabled: false,
-                                        start: "09:00",
-                                        end: "17:00",
-                                    };
-                                    return (
-                                        <div key={key} className="space-y-2">
-                                            <div className="flex items-center justify-between">
-                                                <Label
-                                                    className={cn(
-                                                        "text-base",
-                                                        daySchedule.enabled
-                                                            ? "text-foreground"
-                                                            : "text-muted-foreground"
-                                                    )}
-                                                >
-                                                    {label}
-                                                </Label>
-                                                <Switch
-                                                    checked={daySchedule.enabled}
-                                                    onCheckedChange={() => handleDayToggle(key)}
+                            <div className="flex gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="bg-transparent border-white/10 hover:bg-white/5 h-8"
+                                    onClick={() => setShowProjectBuilder(true)}
+                                >
+                                    <Layers className="w-3.5 h-3.5 mr-1" />
+                                    Project
+                                </Button>
+                                {!showAddForm && (
+                                    <Button
+                                        size="sm"
+                                        onClick={handleShowAddForm}
+                                        className="h-8 shadow-lg shadow-primary/20"
+                                    >
+                                        <Plus className="w-3.5 h-3.5 mr-1" />
+                                        New
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="p-4 space-y-1">
+                            {services.map((service, index) => (
+                                <div
+                                    key={index}
+                                    className="p-4 border border-white/10 rounded-[4px] bg-white/5"
+                                >
+                                    {editingIndex === index && editingService ? (
+                                        // Edit Mode
+                                        <div className="space-y-3">
+                                            <div className="space-y-2">
+                                                <Label>Service Name</Label>
+                                                <Input
+                                                    value={editingService.name}
+                                                    onChange={e =>
+                                                        setEditingService({
+                                                            ...editingService,
+                                                            name: e.target.value,
+                                                        })
+                                                    }
+                                                    className="bg-white/5 border-white/10"
                                                 />
                                             </div>
 
-                                            {daySchedule.enabled && (
-                                                <div className="flex flex-col gap-2 ml-4">
-                                                    {/* Type Selector */}
-                                                    <Select
-                                                        value={daySchedule.type || "work"}
-                                                        onValueChange={(val: any) =>
-                                                            handleTypeChange(key, val)
-                                                        }
-                                                    >
-                                                        <SelectTrigger className="h-8 bg-white/5 border-white/10 text-xs w-full mb-1">
-                                                            <SelectValue placeholder="Select type" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="work">Work</SelectItem>
-                                                            <SelectItem value="design">Design</SelectItem>
-                                                            <SelectItem value="personal">Personal</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-
-                                                    <div className="flex gap-2">
-                                                        <div className="flex-1">
-                                                            <Input
-                                                                type="time"
-                                                                value={daySchedule.start}
-                                                                onChange={e =>
-                                                                    handleTimeChange(key, "start", e.target.value)
-                                                                }
-                                                                className="bg-white/5 border-white/10"
-                                                            />
-                                                        </div>
-                                                        <span className="flex items-center text-muted-foreground text-xs">
-                                                            TO
-                                                        </span>
-                                                        <div className="flex-1">
-                                                            <Input
-                                                                type="time"
-                                                                value={daySchedule.end}
-                                                                onChange={e =>
-                                                                    handleTimeChange(key, "end", e.target.value)
-                                                                }
-                                                                className="bg-white/5 border-white/10"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </Card>
-
-                        {/* Services Card */}
-                        <Card
-                            className={cn(
-                                tokens.card.base,
-                                tokens.card.bg,
-                                "border-0 overflow-hidden"
-                            )}
-                        >
-                            <div className="p-4 border-b border-white/5 flex items-center justify-between">
-                                <div>
-                                    <h3 className="font-semibold text-foreground">
-                                        Service Menu
-                                    </h3>
-                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                        Manage list and pricing
-                                    </p>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="bg-transparent border-white/10 hover:bg-white/5 h-8"
-                                        onClick={() => setShowProjectBuilder(true)}
-                                    >
-                                        <Layers className="w-3.5 h-3.5 mr-1" />
-                                        Project
-                                    </Button>
-                                    {!showAddForm && (
-                                        <Button
-                                            size="sm"
-                                            onClick={handleShowAddForm}
-                                            className="h-8 shadow-lg shadow-primary/20"
-                                        >
-                                            <Plus className="w-3.5 h-3.5 mr-1" />
-                                            New
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="p-4 space-y-1">
-                                {services.map((service, index) => (
-                                    <div
-                                        key={index}
-                                        className="p-4 border border-white/10 rounded-[4px] bg-white/5"
-                                    >
-                                        {editingIndex === index && editingService ? (
-                                            // Edit Mode
-                                            <div className="space-y-3">
+                                            <div className="grid grid-cols-2 gap-3">
                                                 <div className="space-y-2">
-                                                    <Label>Service Name</Label>
+                                                    <Label>Duration (min)</Label>
                                                     <Input
-                                                        value={editingService.name}
+                                                        type="number"
+                                                        value={editingService.duration}
                                                         onChange={e =>
                                                             setEditingService({
                                                                 ...editingService,
-                                                                name: e.target.value,
+                                                                duration: parseInt(e.target.value) || 0,
                                                             })
                                                         }
                                                         className="bg-white/5 border-white/10"
                                                     />
                                                 </div>
-
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <div className="space-y-2">
-                                                        <Label>Duration (min)</Label>
-                                                        <Input
-                                                            type="number"
-                                                            value={editingService.duration}
-                                                            onChange={e =>
-                                                                setEditingService({
-                                                                    ...editingService,
-                                                                    duration: parseInt(e.target.value) || 0,
-                                                                })
-                                                            }
-                                                            className="bg-white/5 border-white/10"
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <Label>Price ($)</Label>
-                                                        <Input
-                                                            type="number"
-                                                            value={editingService.price}
-                                                            onChange={e =>
-                                                                setEditingService({
-                                                                    ...editingService,
-                                                                    price: parseInt(e.target.value) || 0,
-                                                                })
-                                                            }
-                                                            className="bg-white/5 border-white/10"
-                                                        />
-                                                    </div>
-                                                </div>
-
                                                 <div className="space-y-2">
-                                                    <Label>Color</Label>
-                                                    <div className="flex gap-2">
-                                                        <Input
-                                                            type="color"
-                                                            value={editingService.color || "#3b82f6"}
-                                                            onChange={e =>
-                                                                setEditingService({
-                                                                    ...editingService,
-                                                                    color: e.target.value,
-                                                                })
-                                                            }
-                                                            className="w-12 h-10 p-1 bg-white/5 border-white/10 cursor-pointer"
-                                                        />
-                                                        <Input
-                                                            type="text"
-                                                            value={editingService.color || "#3b82f6"}
-                                                            onChange={e =>
-                                                                setEditingService({
-                                                                    ...editingService,
-                                                                    color: e.target.value,
-                                                                })
-                                                            }
-                                                            className="flex-1 bg-white/5 border-white/10"
-                                                            placeholder="#3b82f6"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* ... (Other fields can be similarly styled) ... */}
-
-                                                <div className="flex gap-2 pt-2">
-                                                    <Button size="sm" onClick={handleSaveEdit}>
-                                                        Save
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        onClick={handleCancelEdit}
-                                                    >
-                                                        Cancel
-                                                    </Button>
+                                                    <Label>Price ($)</Label>
+                                                    <Input
+                                                        type="number"
+                                                        value={editingService.price}
+                                                        onChange={e =>
+                                                            setEditingService({
+                                                                ...editingService,
+                                                                price: parseInt(e.target.value) || 0,
+                                                            })
+                                                        }
+                                                        className="bg-white/5 border-white/10"
+                                                    />
                                                 </div>
                                             </div>
-                                        ) : (
-                                            // View Mode
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <h3 className="font-semibold text-base text-foreground">
-                                                        {service.name}
-                                                    </h3>
-                                                    <div className="flex gap-3 mt-1 text-xs text-muted-foreground font-mono">
-                                                        <span className="flex items-center gap-1">
-                                                            <Clock className="w-3 h-3" /> {service.duration}m
-                                                        </span>
-                                                        <span className="text-primary font-bold">
-                                                            ${service.price}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-1">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 hover:text-primary"
-                                                        onClick={() => handleEditService(index)}
-                                                    >
-                                                        <Pencil className="w-3.5 h-3.5" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 hover:text-destructive"
-                                                        onClick={() => handleRemoveService(index)}
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                    </Button>
+
+                                            <div className="space-y-2">
+                                                <Label>Color</Label>
+                                                <div className="flex gap-2">
+                                                    <Input
+                                                        type="color"
+                                                        value={editingService.color || "#3b82f6"}
+                                                        onChange={e =>
+                                                            setEditingService({
+                                                                ...editingService,
+                                                                color: e.target.value,
+                                                            })
+                                                        }
+                                                        className="w-12 h-10 p-1 bg-white/5 border-white/10 cursor-pointer"
+                                                    />
+                                                    <Input
+                                                        type="text"
+                                                        value={editingService.color || "#3b82f6"}
+                                                        onChange={e =>
+                                                            setEditingService({
+                                                                ...editingService,
+                                                                color: e.target.value,
+                                                            })
+                                                        }
+                                                        className="flex-1 bg-white/5 border-white/10"
+                                                        placeholder="#3b82f6"
+                                                    />
                                                 </div>
                                             </div>
-                                        )}
-                                    </div>
-                                ))}
 
-                                {showAddForm && (
-                                    <div className="p-4 border border-dashed border-white/20 rounded-[4px] space-y-3 bg-white/5">
-                                        <h3 className="font-semibold text-sm">
-                                            New Service Details
-                                        </h3>
+                                            {/* ... (Other fields can be similarly styled) ... */}
+
+                                            <div className="flex gap-2 pt-2">
+                                                <Button size="sm" onClick={handleSaveEdit}>
+                                                    Save
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={handleCancelEdit}
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        // View Mode
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <h3 className="font-semibold text-base text-foreground">
+                                                    {service.name}
+                                                </h3>
+                                                <div className="flex gap-3 mt-1 text-xs text-muted-foreground font-mono">
+                                                    <span className="flex items-center gap-1">
+                                                        <Clock className="w-3 h-3" /> {service.duration}m
+                                                    </span>
+                                                    <span className="text-primary font-bold">
+                                                        ${service.price}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 hover:text-primary"
+                                                    onClick={() => handleEditService(index)}
+                                                >
+                                                    <Pencil className="w-3.5 h-3.5" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 hover:text-destructive"
+                                                    onClick={() => handleRemoveService(index)}
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+
+                            {showAddForm && (
+                                <div className="p-4 border border-dashed border-white/20 rounded-[4px] space-y-3 bg-white/5">
+                                    <h3 className="font-semibold text-sm">
+                                        New Service Details
+                                    </h3>
+                                    <Input
+                                        placeholder="Name"
+                                        value={newService.name}
+                                        onChange={e =>
+                                            setNewService({ ...newService, name: e.target.value })
+                                        }
+                                        className="bg-white/5 border-white/10"
+                                    />
+                                    <div className="flex gap-2">
                                         <Input
-                                            placeholder="Name"
-                                            value={newService.name}
+                                            type="number"
+                                            placeholder="Duration"
+                                            value={newService.duration}
                                             onChange={e =>
-                                                setNewService({ ...newService, name: e.target.value })
+                                                setNewService({
+                                                    ...newService,
+                                                    duration: parseInt(e.target.value),
+                                                })
                                             }
                                             className="bg-white/5 border-white/10"
                                         />
-                                        <div className="flex gap-2">
+                                        <Input
+                                            type="number"
+                                            placeholder="Price"
+                                            value={newService.price}
+                                            onChange={e =>
+                                                setNewService({
+                                                    ...newService,
+                                                    price: parseInt(e.target.value),
+                                                })
+                                            }
+                                            className="bg-white/5 border-white/10"
+                                        />
+                                        <div className="w-16">
                                             <Input
-                                                type="number"
-                                                placeholder="Duration"
-                                                value={newService.duration}
+                                                type="color"
+                                                title="Service Color"
+                                                value={newService.color || "#3b82f6"}
                                                 onChange={e =>
                                                     setNewService({
                                                         ...newService,
-                                                        duration: parseInt(e.target.value),
+                                                        color: e.target.value,
                                                     })
                                                 }
-                                                className="bg-white/5 border-white/10"
+                                                className="h-10 p-1 bg-white/5 border-white/10 w-full cursor-pointer"
                                             />
-                                            <Input
-                                                type="number"
-                                                placeholder="Price"
-                                                value={newService.price}
-                                                onChange={e =>
-                                                    setNewService({
-                                                        ...newService,
-                                                        price: parseInt(e.target.value),
-                                                    })
-                                                }
-                                                className="bg-white/5 border-white/10"
-                                            />
-                                            <div className="w-16">
-                                                <Input
-                                                    type="color"
-                                                    title="Service Color"
-                                                    value={newService.color || "#3b82f6"}
-                                                    onChange={e =>
-                                                        setNewService({
-                                                            ...newService,
-                                                            color: e.target.value,
-                                                        })
-                                                    }
-                                                    className="h-10 p-1 bg-white/5 border-white/10 w-full cursor-pointer"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Button size="sm" onClick={handleAddService}>
-                                                Add
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                onClick={handleCancelAdd}
-                                            >
-                                                Cancel
-                                            </Button>
                                         </div>
                                     </div>
-                                )}
-                            </div>
-                        </Card>
+                                    <div className="flex gap-2">
+                                        <Button size="sm" onClick={handleAddService}>
+                                            Add
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={handleCancelAdd}
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </Card>
 
-                        <Button
-                            className="w-full shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-base font-semibold"
-                            onClick={handleSave}
-                            disabled={upsertMutation.isPending}
-                        >
-                            {upsertMutation.isPending ? "Saving..." : "Save Changes"}
-                        </Button>
-                    </div>
+                    <Button
+                        className="w-full shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-base font-semibold"
+                        onClick={handleSave}
+                        disabled={upsertMutation.isPending}
+                    >
+                        {upsertMutation.isPending ? "Saving..." : "Save Changes"}
+                    </Button>
                 </div>
             </div>
 
@@ -756,6 +754,6 @@ export function WorkHoursAndServicesSettings({
                     </div>
                 </div>
             </ModalShell>
-        </PageShell>
+        </div >
     );
 }

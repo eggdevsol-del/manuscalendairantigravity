@@ -5,8 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { getGoogleMapsEmbedUrl } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Button, Input, Label, Textarea, Switch } from "@/components/ui";
-import { PageShell, PageHeader } from "@/components/ui/ssot";
-import { tokens } from "@/ui/tokens";
+import { ChevronLeft } from "lucide-react";
 
 export function BusinessSettings({ onBack }: { onBack: () => void }) {
     const { user } = useAuth();
@@ -81,214 +80,217 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
     };
 
     return (
-        <PageShell>
-            {/* 1. Page Header - Left aligned, no icons */}
-            <PageHeader title="Business Info" onBack={onBack} />
-
-            <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
-                <p className="text-4xl font-light text-foreground/90 tracking-tight">
-                    Business
-                </p>
-                <p className="text-muted-foreground text-lg font-medium mt-1">
-                    Details & Payments (Confidential)
-                </p>
+        <div className="w-full h-full flex flex-col overflow-hidden relative">
+            {/* 1. Page Header - Left aligned, floating panel style */}
+            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-background/50 backdrop-blur-md z-20 border-b border-white/5">
+                <button
+                    onClick={onBack}
+                    className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                    <ChevronLeft className="w-5 h-5 text-foreground" />
+                </button>
+                <h2 className="text-xl font-semibold text-foreground">Business Info</h2>
             </div>
 
-            <div className={tokens.contentContainer.base}>
-                <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
-                    <div className="pb-[180px] max-w-lg mx-auto space-y-6">
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="businessName">Business Name</Label>
-                                <Input
-                                    id="businessName"
-                                    value={businessName}
-                                    onChange={e => setBusinessName(e.target.value)}
-                                    placeholder="Your business name"
-                                    className="bg-white/5 border-white/10"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="displayName">Display Name</Label>
-                                <Input
-                                    id="displayName"
-                                    value={displayName}
-                                    onChange={e => setDisplayName(e.target.value)}
-                                    placeholder="Alias shown to clients"
-                                    className="bg-white/5 border-white/10"
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    This is the name clients will see in messages.
-                                </p>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="businessEmail">Business Email</Label>
-                                <Input
-                                    id="businessEmail"
-                                    value={businessEmail}
-                                    onChange={e => setBusinessEmail(e.target.value)}
-                                    placeholder="email@example.com"
-                                    type="email"
-                                    className="bg-white/5 border-white/10"
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    This email will be used for sending notifications to clients
-                                </p>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="licenceNumber">
-                                    Artist License Number{" "}
-                                    <span className="text-muted-foreground font-normal">
-                                        (Optional)
-                                    </span>
-                                </Label>
-                                <Input
-                                    id="licenceNumber"
-                                    value={licenceNumber}
-                                    onChange={e => setLicenceNumber(e.target.value)}
-                                    placeholder="E.g. 123456789"
-                                    className="bg-white/5 border-white/10"
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    Required for generating health regulation logs (e.g. QLD
-                                    Form 9)
-                                </p>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="businessAddress">Business Address</Label>
-                                <Textarea
-                                    id="businessAddress"
-                                    value={businessAddress}
-                                    onChange={e => setBusinessAddress(e.target.value)}
-                                    placeholder="Your business address"
-                                    rows={3}
-                                    className="bg-white/5 border-white/10"
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    Clients will receive a map link to this address on
-                                    appointment day
-                                </p>
-
-                                {/* Google Maps Preview */}
-                                {businessAddress && (
-                                    <div className="mt-3 rounded-xl overflow-hidden border border-white/10 h-40 bg-black/20 relative group">
-                                        <iframe
-                                            width="100%"
-                                            height="100%"
-                                            frameBorder="0"
-                                            scrolling="no"
-                                            marginHeight={0}
-                                            marginWidth={0}
-                                            src={getGoogleMapsEmbedUrl(debouncedAddress)}
-                                            className="opacity-70 group-hover:opacity-100 transition-opacity"
-                                        />
-                                        <div className="absolute bottom-0 right-0 bg-black/60 px-2 py-1 text-[10px] text-white/70 backdrop-blur-sm rounded-tl-lg pointer-events-none">
-                                            Preview
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 pt-4 border-t border-white/10">
-                            <h3 className="font-semibold text-foreground">
-                                Usage Settings
-                            </h3>
-                            <div className="flex items-center justify-between">
-                                <div className="space-y-0.5">
-                                    <Label htmlFor="autoSendDeposit">
-                                        Auto-send Deposit Info
-                                    </Label>
-                                    <p className="text-xs text-muted-foreground">
-                                        Send details when client accepts proposal
-                                    </p>
-                                </div>
-                                <Switch
-                                    id="autoSendDeposit"
-                                    checked={autoSendDepositInfo}
-                                    onCheckedChange={setAutoSendDepositInfo}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 pt-4 border-t border-white/10">
-                            <h3 className="font-semibold text-foreground">
-                                Deposit Payment Settings
-                            </h3>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="bsb">BSB</Label>
-                                <Input
-                                    id="bsb"
-                                    value={bsb}
-                                    onChange={e => setBsb(e.target.value)}
-                                    placeholder="123-456"
-                                    maxLength={7}
-                                    className="bg-white/5 border-white/10"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="accountNumber">Account Number</Label>
-                                <Input
-                                    id="accountNumber"
-                                    value={accountNumber}
-                                    onChange={e => setAccountNumber(e.target.value)}
-                                    placeholder="12345678"
-                                    className="bg-white/5 border-white/10"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="depositAmount">
-                                    Deposit Amount (per appointment)
-                                </Label>
-                                <Input
-                                    id="depositAmount"
-                                    type="number"
-                                    value={depositAmount}
-                                    onChange={e => setDepositAmount(e.target.value)}
-                                    placeholder="100"
-                                    className="bg-white/5 border-white/10"
-                                />
-                            </div>
-                        </div>
-
-                        <Button
-                            className="w-full shadow-lg shadow-primary/20"
-                            onClick={
-                                isErrorSettings || (!artistSettings && !isLoadingSettings)
-                                    ? () => refetchSettings()
-                                    : handleSaveBusinessInfo
-                            }
-                            disabled={
-                                upsertArtistSettingsMutation.isPending ||
-                                (isLoadingSettings && !isErrorSettings)
-                            }
-                            variant={isErrorSettings ? "destructive" : "default"}
-                        >
-                            {upsertArtistSettingsMutation.isPending
-                                ? "Saving..."
-                                : isLoadingSettings
-                                    ? "Loading..."
-                                    : isErrorSettings
-                                        ? "Retry Loading Data"
-                                        : !artistSettings
-                                            ? "Data Unavailable (Retry)"
-                                            : "Save Business Info"}
-                        </Button>
-                        {isErrorSettings && (
-                            <p className="text-xs text-destructive text-center mt-2">
-                                Error: {settingsError?.message || "Could not load settings"}
-                            </p>
-                        )}
+            <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
+                <div className="pb-[180px] max-w-lg mx-auto space-y-6 px-4 pt-6">
+                    <div className="mb-4">
+                        <p className="text-muted-foreground text-sm font-medium">
+                            Details & Payments (Confidential)
+                        </p>
                     </div>
+
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="businessName">Business Name</Label>
+                            <Input
+                                id="businessName"
+                                value={businessName}
+                                onChange={e => setBusinessName(e.target.value)}
+                                placeholder="Your business name"
+                                className="bg-white/5 border-white/10"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="displayName">Display Name</Label>
+                            <Input
+                                id="displayName"
+                                value={displayName}
+                                onChange={e => setDisplayName(e.target.value)}
+                                placeholder="Alias shown to clients"
+                                className="bg-white/5 border-white/10"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                This is the name clients will see in messages.
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="businessEmail">Business Email</Label>
+                            <Input
+                                id="businessEmail"
+                                value={businessEmail}
+                                onChange={e => setBusinessEmail(e.target.value)}
+                                placeholder="email@example.com"
+                                type="email"
+                                className="bg-white/5 border-white/10"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                This email will be used for sending notifications to clients
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="licenceNumber">
+                                Artist License Number{" "}
+                                <span className="text-muted-foreground font-normal">
+                                    (Optional)
+                                </span>
+                            </Label>
+                            <Input
+                                id="licenceNumber"
+                                value={licenceNumber}
+                                onChange={e => setLicenceNumber(e.target.value)}
+                                placeholder="E.g. 123456789"
+                                className="bg-white/5 border-white/10"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Required for generating health regulation logs (e.g. QLD
+                                Form 9)
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="businessAddress">Business Address</Label>
+                            <Textarea
+                                id="businessAddress"
+                                value={businessAddress}
+                                onChange={e => setBusinessAddress(e.target.value)}
+                                placeholder="Your business address"
+                                rows={3}
+                                className="bg-white/5 border-white/10"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Clients will receive a map link to this address on
+                                appointment day
+                            </p>
+
+                            {/* Google Maps Preview */}
+                            {businessAddress && (
+                                <div className="mt-3 rounded-xl overflow-hidden border border-white/10 h-40 bg-black/20 relative group">
+                                    <iframe
+                                        width="100%"
+                                        height="100%"
+                                        frameBorder="0"
+                                        scrolling="no"
+                                        marginHeight={0}
+                                        marginWidth={0}
+                                        src={getGoogleMapsEmbedUrl(debouncedAddress)}
+                                        className="opacity-70 group-hover:opacity-100 transition-opacity"
+                                    />
+                                    <div className="absolute bottom-0 right-0 bg-black/60 px-2 py-1 text-[10px] text-white/70 backdrop-blur-sm rounded-tl-lg pointer-events-none">
+                                        Preview
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="space-y-4 pt-4 border-t border-white/10">
+                        <h3 className="font-semibold text-foreground">
+                            Usage Settings
+                        </h3>
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label htmlFor="autoSendDeposit">
+                                    Auto-send Deposit Info
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Send details when client accepts proposal
+                                </p>
+                            </div>
+                            <Switch
+                                id="autoSendDeposit"
+                                checked={autoSendDepositInfo}
+                                onCheckedChange={setAutoSendDepositInfo}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-4 pt-4 border-t border-white/10">
+                        <h3 className="font-semibold text-foreground">
+                            Deposit Payment Settings
+                        </h3>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="bsb">BSB</Label>
+                            <Input
+                                id="bsb"
+                                value={bsb}
+                                onChange={e => setBsb(e.target.value)}
+                                placeholder="123-456"
+                                maxLength={7}
+                                className="bg-white/5 border-white/10"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="accountNumber">Account Number</Label>
+                            <Input
+                                id="accountNumber"
+                                value={accountNumber}
+                                onChange={e => setAccountNumber(e.target.value)}
+                                placeholder="12345678"
+                                className="bg-white/5 border-white/10"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="depositAmount">
+                                Deposit Amount (per appointment)
+                            </Label>
+                            <Input
+                                id="depositAmount"
+                                type="number"
+                                value={depositAmount}
+                                onChange={e => setDepositAmount(e.target.value)}
+                                placeholder="100"
+                                className="bg-white/5 border-white/10"
+                            />
+                        </div>
+                    </div>
+
+                    <Button
+                        className="w-full shadow-lg shadow-primary/20"
+                        onClick={
+                            isErrorSettings || (!artistSettings && !isLoadingSettings)
+                                ? () => refetchSettings()
+                                : handleSaveBusinessInfo
+                        }
+                        disabled={
+                            upsertArtistSettingsMutation.isPending ||
+                            (isLoadingSettings && !isErrorSettings)
+                        }
+                        variant={isErrorSettings ? "destructive" : "default"}
+                    >
+                        {upsertArtistSettingsMutation.isPending
+                            ? "Saving..."
+                            : isLoadingSettings
+                                ? "Loading..."
+                                : isErrorSettings
+                                    ? "Retry Loading Data"
+                                    : !artistSettings
+                                        ? "Data Unavailable (Retry)"
+                                        : "Save Business Info"}
+                    </Button>
+                    {isErrorSettings && (
+                        <p className="text-xs text-destructive text-center mt-2">
+                            Error: {settingsError?.message || "Could not load settings"}
+                        </p>
+                    )}
                 </div>
             </div>
-        </PageShell>
+        </div>
     );
 }

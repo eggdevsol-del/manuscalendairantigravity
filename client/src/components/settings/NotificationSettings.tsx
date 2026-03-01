@@ -17,9 +17,9 @@ import {
     Textarea,
 } from "@/components/ui";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
-import { LoadingState, PageShell, PageHeader } from "@/components/ui/ssot";
+import { LoadingState } from "@/components/ui/ssot";
 import { trpc } from "@/lib/trpc";
-import { Bell, Edit, Plus, Trash2, Send } from "lucide-react";
+import { Bell, Edit, Plus, Trash2, Send, ChevronLeft } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -194,121 +194,122 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
     }
 
     return (
-        <PageShell>
-            {/* 1. Page Header - Left aligned, no icons */}
-            <PageHeader title="Notifications" onBack={onBack} />
-
-            {/* 2. Top Context Area */}
-            <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
-                <p className="text-4xl font-light text-foreground/90 tracking-tight">
-                    Templates
-                </p>
-                <p className="text-muted-foreground text-lg font-medium mt-1">
-                    Automated client messaging
-                </p>
+        <div className="w-full h-full flex flex-col overflow-hidden relative">
+            {/* 1. Page Header - Floating style */}
+            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-background/50 backdrop-blur-md z-20 border-b border-white/5">
+                <button
+                    onClick={onBack}
+                    className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                    <ChevronLeft className="w-5 h-5 text-foreground" />
+                </button>
+                <h2 className="text-xl font-semibold text-foreground">Notifications</h2>
             </div>
 
-            {/* 3. Sheet Container */}
-            <div className={tokens.contentContainer.base}>
-                <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto mobile-scroll touch-pan-y">
-                    <div className="pb-[180px] max-w-lg mx-auto space-y-4">
+            {/* 2. Scroll Container */}
+            <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
+                <div className="pb-[180px] max-w-lg mx-auto space-y-4 px-4 pt-6">
+                    <div className="mb-2">
+                        <p className="text-muted-foreground text-sm font-medium">
+                            Automated client messaging
+                        </p>
+                    </div>
 
-                        {/* Web Push Test Controls */}
-                        <WebPushSettings />
+                    {/* Web Push Test Controls */}
+                    <WebPushSettings />
 
-                        <Button
-                            onClick={() => {
-                                resetForm();
-                                setShowDialog(true);
-                            }}
-                            className="w-full tap-target shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-base font-semibold"
-                        >
-                            <Plus className="w-5 h-5 mr-2" />
-                            Add Notification Template
-                        </Button>
+                    <Button
+                        onClick={() => {
+                            resetForm();
+                            setShowDialog(true);
+                        }}
+                        className="w-full tap-target shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-base font-semibold"
+                    >
+                        <Plus className="w-5 h-5 mr-2" />
+                        Add Notification Template
+                    </Button>
 
-                        {templates && templates.length === 0 ? (
-                            <Card className="p-8 bg-white/5 border-white/10">
-                                <div className="text-center space-y-3">
-                                    <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mx-auto">
-                                        <Bell className="w-8 h-8 text-white/50" />
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-foreground">
-                                            No templates yet
-                                        </p>
-                                        <p className="text-sm text-muted-foreground">
-                                            Create your first notification template
-                                        </p>
-                                    </div>
+                    {templates && templates.length === 0 ? (
+                        <Card className="p-8 bg-white/5 border-white/10">
+                            <div className="text-center space-y-3">
+                                <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mx-auto">
+                                    <Bell className="w-8 h-8 text-white/50" />
                                 </div>
-                            </Card>
-                        ) : (
-                            <div className="space-y-3">
-                                {templates?.map((template: any) => (
-                                    <Card key={template.id} className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")}>
-                                        <div className="p-4 flex items-start justify-between gap-3 border-b border-white/5">
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <h3 className="text-base font-semibold text-foreground truncate">
-                                                        {template.title}
-                                                    </h3>
-                                                    <Switch
-                                                        checked={template.enabled}
-                                                        onCheckedChange={checked => {
-                                                            updateMutation.mutate({
-                                                                id: template.id,
-                                                                enabled: checked,
-                                                            });
-                                                        }}
-                                                    />
-                                                </div>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {templateTypeLabels[template.templateType as TemplateType]}
-                                                    {template.timing && (
-                                                        <span className="ml-1 opacity-70">({template.timing})</span>
-                                                    )}
-                                                </p>
+                                <div>
+                                    <p className="font-semibold text-foreground">
+                                        No templates yet
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                        Create your first notification template
+                                    </p>
+                                </div>
+                            </div>
+                        </Card>
+                    ) : (
+                        <div className="space-y-3">
+                            {templates?.map((template: any) => (
+                                <Card key={template.id} className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")}>
+                                    <div className="p-4 flex items-start justify-between gap-3 border-b border-white/5">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h3 className="text-base font-semibold text-foreground truncate">
+                                                    {template.title}
+                                                </h3>
+                                                <Switch
+                                                    checked={template.enabled}
+                                                    onCheckedChange={checked => {
+                                                        updateMutation.mutate({
+                                                            id: template.id,
+                                                            enabled: checked,
+                                                        });
+                                                    }}
+                                                />
                                             </div>
-                                            <div className="flex bg-white/5 rounded-lg border border-white/10">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleTestClick(template)}
-                                                    disabled={isTesting}
-                                                    className="tap-target h-10 w-10 text-primary hover:bg-white/10 rounded-none rounded-l-lg border-r border-white/10"
-                                                    title="Send Test Push"
-                                                >
-                                                    <Send className="w-4 h-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleEdit(template)}
-                                                    className="tap-target h-10 w-10 hover:bg-white/10 rounded-none border-r border-white/10 text-white/70"
-                                                >
-                                                    <Edit className="w-4 h-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleDelete(template.id)}
-                                                    className="tap-target h-10 w-10 text-destructive hover:bg-destructive/20 hover:text-red-400 rounded-none rounded-r-lg"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                        <div className="p-4 bg-black/10">
-                                            <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-                                                {template.content}
+                                            <p className="text-xs text-muted-foreground">
+                                                {templateTypeLabels[template.templateType as TemplateType]}
+                                                {template.timing && (
+                                                    <span className="ml-1 opacity-70">({template.timing})</span>
+                                                )}
                                             </p>
                                         </div>
-                                    </Card>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                                        <div className="flex bg-white/5 rounded-lg border border-white/10">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => handleTestClick(template)}
+                                                disabled={isTesting}
+                                                className="tap-target h-10 w-10 text-primary hover:bg-white/10 rounded-none rounded-l-lg border-r border-white/10"
+                                                title="Send Test Push"
+                                            >
+                                                <Send className="w-4 h-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => handleEdit(template)}
+                                                className="tap-target h-10 w-10 hover:bg-white/10 rounded-none border-r border-white/10 text-white/70"
+                                            >
+                                                <Edit className="w-4 h-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => handleDelete(template.id)}
+                                                className="tap-target h-10 w-10 text-destructive hover:bg-destructive/20 hover:text-red-400 rounded-none rounded-r-lg"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <div className="p-4 bg-black/10">
+                                        <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                                            {template.content}
+                                        </p>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -489,6 +490,6 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                     )}
                 </div>
             </ModalShell>
-        </PageShell>
+        </div >
     );
 }

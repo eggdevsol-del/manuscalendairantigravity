@@ -13,6 +13,7 @@ import {
   UserPlus,
   Trash2,
   User,
+  ChevronLeft,
   Settings as SettingsIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -76,9 +77,17 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
 
   if (isLoadingStudio) {
     return (
-      <div className="w-full h-full flex flex-col bg-background relative isolate">
-        <PageHeader title="Studio Headquarters" onBack={onBack} />
-        <div className="flex bg-background h-screen w-full items-center justify-center">
+      <div className="w-full h-full flex flex-col overflow-hidden relative">
+        <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-background/50 backdrop-blur-md z-20 border-b border-white/5">
+          <button
+            onClick={onBack}
+            className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5 text-foreground" />
+          </button>
+          <h2 className="text-xl font-semibold text-foreground">Studio Headquarters</h2>
+        </div>
+        <div className="flex-1 w-full bg-transparent flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
@@ -91,11 +100,17 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
     (currentStudio.role !== "owner" && currentStudio.role !== "manager")
   ) {
     return (
-      <div className="w-full h-full flex flex-col bg-background relative isolate">
-        <PageHeader title="Studio Headquarters" onBack={onBack} />
-        <div
-          className={cn(tokens.contentContainer.base, "pt-12 text-center px-4")}
-        >
+      <div className="w-full h-full flex flex-col overflow-hidden relative">
+        <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-background/50 backdrop-blur-md z-20 border-b border-white/5">
+          <button
+            onClick={onBack}
+            className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5 text-foreground" />
+          </button>
+          <h2 className="text-xl font-semibold text-foreground">Studio Headquarters</h2>
+        </div>
+        <div className="flex-1 w-full overflow-y-auto px-4 pt-12 text-center pb-[180px]">
           <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
             <ShieldAlert className="w-8 h-8 text-red-500" />
           </div>
@@ -132,11 +147,19 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
     teamMembers?.filter(m => m.status === "pending_invite") || [];
 
   return (
-    <div className="w-full h-full flex flex-col bg-background relative isolate">
-      <PageHeader title={currentStudio.name} onBack={onBack} />
+    <div className="w-full h-full flex flex-col overflow-hidden relative">
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-background/50 backdrop-blur-md z-20 border-b border-white/5">
+        <button
+          onClick={onBack}
+          className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5 text-foreground" />
+        </button>
+        <h2 className="text-xl font-semibold text-foreground">{currentStudio.name}</h2>
+      </div>
 
       {/* Desktop Horizontal Layout Optimized Tabs */}
-      <div className="sticky top-0 z-10 px-4 pt-4 pb-2 bg-background/80 backdrop-blur-md border-b border-border/10">
+      <div className="shrink-0 z-10 px-4 pt-4 pb-2 bg-transparent border-b border-border/10">
         <div className="flex justify-between items-center w-full max-w-4xl mx-auto bg-white/5 rounded-xl p-1 relative border border-white/10 overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab("team")}
@@ -220,281 +243,278 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
         </div>
       </div>
 
-      <div
-        className={cn(
-          tokens.contentContainer.base,
-          "pb-[180px] pt-8 px-4 max-w-4xl mx-auto"
-        )}
-      >
-        <AnimatePresence mode="wait">
-          {activeTab === "team" && (
-            <motion.div
-              key="team-tab"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-8"
-            >
-              {/* Intro for Studio Accounts */}
-              {teamMembers && teamMembers.length <= 1 && (
-                <Card className="p-6 bg-primary/10 border-primary/30">
-                  <h3 className="text-xl font-bold mb-2">
-                    Welcome to your Studio!
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    Your studio account is currently set up as an owner/manager
-                    hub. To start taking bookings, you should invite your
-                    personal Artist profile under the "Invite" tab.
-                  </p>
-                  <Button onClick={() => setActiveTab("invite")} variant="hero">
-                    Invite Artist
-                  </Button>
-                </Card>
-              )}
+      <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
+        <div className="pb-[180px] max-w-4xl mx-auto px-4 pt-8">
+          <AnimatePresence mode="wait">
+            {activeTab === "team" && (
+              <motion.div
+                key="team-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-8"
+              >
+                {/* Intro for Studio Accounts */}
+                {teamMembers && teamMembers.length <= 1 && (
+                  <Card className="p-6 bg-primary/10 border-primary/30">
+                    <h3 className="text-xl font-bold mb-2">
+                      Welcome to your Studio!
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Your studio account is currently set up as an owner/manager
+                      hub. To start taking bookings, you should invite your
+                      personal Artist profile under the "Invite" tab.
+                    </p>
+                    <Button onClick={() => setActiveTab("invite")} variant="hero">
+                      Invite Artist
+                    </Button>
+                  </Card>
+                )}
 
-              {/* Team List */}
-              <div className="space-y-6">
-                {/* Active Members */}
-                <div>
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 pl-1 flex items-center gap-2">
-                    <Users className="w-4 h-4" /> Active Members (
-                    {activeMembers.length})
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {activeMembers.map((member: any) => (
-                      <div
-                        key={member.id}
-                        className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between hover:bg-white/10 transition-colors"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-full bg-white/10 overflow-hidden flex items-center justify-center border border-white/20">
-                            {member.user.avatar ? (
-                              <img
-                                src={member.user.avatar}
-                                alt={member.user.name || "Member"}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <User className="w-6 h-6 text-muted-foreground" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-lg text-foreground">
-                              {member.user.name}
-                            </p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-sm text-muted-foreground">
-                                {member.user.email}
-                              </span>
-                              {member.role === "owner" && (
-                                <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 text-[10px] font-bold uppercase tracking-wider">
-                                  Owner
-                                </span>
-                              )}
-                              {member.role === "manager" && (
-                                <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-500 text-[10px] font-bold uppercase tracking-wider">
-                                  Manager
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Only allow removing if not self, and logged in user is owner/manager */}
-                        {member.user.id !== user?.id &&
-                          currentStudio.role === "owner" && (
-                            <button
-                              onClick={() => handleRemoveMember(member.user.id)}
-                              className="p-2.5 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
-                            >
-                              <Trash2 className="w-5 h-5" />
-                            </button>
-                          )}
-                      </div>
-                    ))}
-                    {activeMembers.length === 0 && (
-                      <p className="text-sm text-muted-foreground italic px-2">
-                        No active members found.
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Pending Invites */}
-                {pendingMembers.length > 0 && (
-                  <div className="pt-4">
+                {/* Team List */}
+                <div className="space-y-6">
+                  {/* Active Members */}
+                  <div>
                     <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 pl-1 flex items-center gap-2">
-                      <Mail className="w-4 h-4" /> Pending Invites (
-                      {pendingMembers.length})
+                      <Users className="w-4 h-4" /> Active Members (
+                      {activeMembers.length})
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {pendingMembers.map((member: any) => (
+                      {activeMembers.map((member: any) => (
                         <div
                           key={member.id}
-                          className="p-4 rounded-xl bg-white/5 border border-white/5 border-dashed flex items-center justify-between opacity-70"
+                          className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between hover:bg-white/10 transition-colors"
                         >
                           <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-white/5 border-2 border-dashed border-white/20 flex items-center justify-center">
-                              <Mail className="w-5 h-5 text-muted-foreground" />
+                            <div className="w-12 h-12 rounded-full bg-white/10 overflow-hidden flex items-center justify-center border border-white/20">
+                              {member.user.avatar ? (
+                                <img
+                                  src={member.user.avatar}
+                                  alt={member.user.name || "Member"}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <User className="w-6 h-6 text-muted-foreground" />
+                              )}
                             </div>
                             <div>
                               <p className="font-semibold text-lg text-foreground">
-                                {member.user.name || member.user.email}
+                                {member.user.name}
                               </p>
                               <div className="flex items-center gap-2 mt-0.5">
                                 <span className="text-sm text-muted-foreground">
-                                  Pending • Invited as {member.role}
+                                  {member.user.email}
                                 </span>
+                                {member.role === "owner" && (
+                                  <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 text-[10px] font-bold uppercase tracking-wider">
+                                    Owner
+                                  </span>
+                                )}
+                                {member.role === "manager" && (
+                                  <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-500 text-[10px] font-bold uppercase tracking-wider">
+                                    Manager
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>
 
-                          {currentStudio.role === "owner" && (
-                            <button
-                              onClick={() => handleRemoveMember(member.user.id)}
-                              className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
-                              title="Cancel Invite"
-                            >
-                              <Trash2 className="w-5 h-5" />
-                            </button>
-                          )}
+                          {/* Only allow removing if not self, and logged in user is owner/manager */}
+                          {member.user.id !== user?.id &&
+                            currentStudio.role === "owner" && (
+                              <button
+                                onClick={() => handleRemoveMember(member.user.id)}
+                                className="p-2.5 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            )}
                         </div>
                       ))}
+                      {activeMembers.length === 0 && (
+                        <p className="text-sm text-muted-foreground italic px-2">
+                          No active members found.
+                        </p>
+                      )}
                     </div>
                   </div>
-                )}
-              </div>
-            </motion.div>
-          )}
 
-          {activeTab === "invite" && (
-            <motion.div
-              key="invite-tab"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="max-w-2xl mx-auto space-y-6"
-            >
-              <Card className="p-8 bg-gradient-to-br from-white/10 to-transparent border-white/20 shadow-xl">
-                <div className="mb-8 text-center">
-                  <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                    <UserPlus className="w-8 h-8 text-primary" />
+                  {/* Pending Invites */}
+                  {pendingMembers.length > 0 && (
+                    <div className="pt-4">
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 pl-1 flex items-center gap-2">
+                        <Mail className="w-4 h-4" /> Pending Invites (
+                        {pendingMembers.length})
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {pendingMembers.map((member: any) => (
+                          <div
+                            key={member.id}
+                            className="p-4 rounded-xl bg-white/5 border border-white/5 border-dashed flex items-center justify-between opacity-70"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-full bg-white/5 border-2 border-dashed border-white/20 flex items-center justify-center">
+                                <Mail className="w-5 h-5 text-muted-foreground" />
+                              </div>
+                              <div>
+                                <p className="font-semibold text-lg text-foreground">
+                                  {member.user.name || member.user.email}
+                                </p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-sm text-muted-foreground">
+                                    Pending • Invited as {member.role}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {currentStudio.role === "owner" && (
+                              <button
+                                onClick={() => handleRemoveMember(member.user.id)}
+                                className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                                title="Cancel Invite"
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === "invite" && (
+              <motion.div
+                key="invite-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="max-w-2xl mx-auto space-y-6"
+              >
+                <Card className="p-8 bg-gradient-to-br from-white/10 to-transparent border-white/20 shadow-xl">
+                  <div className="mb-8 text-center">
+                    <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                      <UserPlus className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2">Invite to Studio</h3>
+                    <p className="text-muted-foreground">
+                      Add artists and managers to your studio space. They will
+                      receive an email invitation to join.
+                    </p>
                   </div>
-                  <h3 className="text-2xl font-bold mb-2">Invite to Studio</h3>
-                  <p className="text-muted-foreground">
-                    Add artists and managers to your studio space. They will
-                    receive an email invitation to join.
+                  <form onSubmit={handleInvite} className="flex flex-col gap-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                          User Email
+                        </label>
+                        <Input
+                          placeholder="artist@example.com"
+                          value={inviteEmail}
+                          onChange={e => setInviteEmail(e.target.value)}
+                          className="w-full bg-black/30 border-white/20 py-6 text-lg"
+                          type="email"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                          Role
+                        </label>
+                        <select
+                          className="w-full bg-black/30 border border-white/20 rounded-xl px-4 py-3 text-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                          value={inviteRole}
+                          onChange={e => setInviteRole(e.target.value as any)}
+                        >
+                          <option value="artist">
+                            Artist (Takes bookings & manages clients)
+                          </option>
+                          <option value="manager">
+                            Manager (Admin access to studio)
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={inviteMutation.isPending || !inviteEmail}
+                      className="w-full py-6 text-lg mt-4 shadow-lg shadow-primary/20"
+                      variant="hero"
+                    >
+                      {inviteMutation.isPending
+                        ? "Sending Invitation..."
+                        : "Send Invitation"}
+                    </Button>
+                  </form>
+                </Card>
+              </motion.div>
+            )}
+
+            {activeTab === "analytics" && (
+              <motion.div
+                key="analytics-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6"
+              >
+                <Card className="p-12 bg-gradient-to-br from-white/10 to-transparent border-white/20 text-center flex flex-col items-center justify-center min-h-[400px]">
+                  <div className="p-6 rounded-full bg-white/5 border border-white/10 mb-6">
+                    <BarChart3 className="w-16 h-16 text-muted-foreground opacity-70" />
+                  </div>
+                  <h3 className="text-3xl font-bold mb-4 tracking-tight">
+                    Studio Analytics
+                  </h3>
+                  <p className="text-muted-foreground text-lg max-w-md mx-auto mb-8 leading-relaxed">
+                    Track total studio revenue, member-specific performance, and
+                    global retention metrics across all your artists.
                   </p>
-                </div>
-                <form onSubmit={handleInvite} className="flex flex-col gap-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                        User Email
-                      </label>
-                      <Input
-                        placeholder="artist@example.com"
-                        value={inviteEmail}
-                        onChange={e => setInviteEmail(e.target.value)}
-                        className="w-full bg-black/30 border-white/20 py-6 text-lg"
-                        type="email"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                        Role
-                      </label>
-                      <select
-                        className="w-full bg-black/30 border border-white/20 rounded-xl px-4 py-3 text-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                        value={inviteRole}
-                        onChange={e => setInviteRole(e.target.value as any)}
-                      >
-                        <option value="artist">
-                          Artist (Takes bookings & manages clients)
-                        </option>
-                        <option value="manager">
-                          Manager (Admin access to studio)
-                        </option>
-                      </select>
-                    </div>
+                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary font-bold text-sm tracking-widest uppercase">
+                    Coming Soon
+                  </span>
+                </Card>
+              </motion.div>
+            )}
+
+            {activeTab === "settings" && (
+              <motion.div
+                key="settings-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6"
+              >
+                <Card className="p-8 bg-gradient-to-br from-white/10 to-transparent border-white/20 flex flex-col items-center justify-center min-h-[400px] text-center">
+                  <div className="p-6 rounded-full bg-white/5 border border-white/10 mb-6">
+                    <SettingsIcon className="w-16 h-16 text-muted-foreground opacity-70" />
                   </div>
-
+                  <h3 className="text-3xl font-bold mb-4 tracking-tight">
+                    Studio Setup
+                  </h3>
+                  <p className="text-muted-foreground text-lg max-w-md mx-auto mb-8 leading-relaxed">
+                    Manage your studio's billing, global policies, and booking
+                    details.
+                  </p>
                   <Button
-                    type="submit"
-                    disabled={inviteMutation.isPending || !inviteEmail}
-                    className="w-full py-6 text-lg mt-4 shadow-lg shadow-primary/20"
+                    onClick={onBack}
                     variant="hero"
+                    className="px-8"
                   >
-                    {inviteMutation.isPending
-                      ? "Sending Invitation..."
-                      : "Send Invitation"}
+                    Open Settings
                   </Button>
-                </form>
-              </Card>
-            </motion.div>
-          )}
-
-          {activeTab === "analytics" && (
-            <motion.div
-              key="analytics-tab"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-6"
-            >
-              <Card className="p-12 bg-gradient-to-br from-white/10 to-transparent border-white/20 text-center flex flex-col items-center justify-center min-h-[400px]">
-                <div className="p-6 rounded-full bg-white/5 border border-white/10 mb-6">
-                  <BarChart3 className="w-16 h-16 text-muted-foreground opacity-70" />
-                </div>
-                <h3 className="text-3xl font-bold mb-4 tracking-tight">
-                  Studio Analytics
-                </h3>
-                <p className="text-muted-foreground text-lg max-w-md mx-auto mb-8 leading-relaxed">
-                  Track total studio revenue, member-specific performance, and
-                  global retention metrics across all your artists.
-                </p>
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary font-bold text-sm tracking-widest uppercase">
-                  Coming Soon
-                </span>
-              </Card>
-            </motion.div>
-          )}
-
-          {activeTab === "settings" && (
-            <motion.div
-              key="settings-tab"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-6"
-            >
-              <Card className="p-8 bg-gradient-to-br from-white/10 to-transparent border-white/20 flex flex-col items-center justify-center min-h-[400px] text-center">
-                <div className="p-6 rounded-full bg-white/5 border border-white/10 mb-6">
-                  <SettingsIcon className="w-16 h-16 text-muted-foreground opacity-70" />
-                </div>
-                <h3 className="text-3xl font-bold mb-4 tracking-tight">
-                  Studio Setup
-                </h3>
-                <p className="text-muted-foreground text-lg max-w-md mx-auto mb-8 leading-relaxed">
-                  Manage your studio's billing, global policies, and booking
-                  details.
-                </p>
-                <Button
-                  onClick={onBack}
-                  variant="hero"
-                  className="px-8"
-                >
-                  Open Settings
-                </Button>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );
