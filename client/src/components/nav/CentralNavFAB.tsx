@@ -112,6 +112,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           label: "Studio Headquarters",
           icon: Users,
           onClick: () => handleViewChange("studio"),
+          closeOnClick: false,
         });
       }
 
@@ -121,6 +122,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           label: "Subscription & Billing",
           icon: Zap,
           onClick: () => handleViewChange("subscriptions"),
+          closeOnClick: false,
         },
         {
           id: "work-hours",
@@ -141,6 +143,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           label: "Quick Actions",
           icon: Zap,
           onClick: () => handleViewChange("quick-actions"),
+          closeOnClick: false,
         },
         {
           id: "notifications",
@@ -263,9 +266,9 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
         className="!static !bottom-auto !right-auto transition-none"
         portalContainerClassName="bottom-[90px] left-1/2 -translate-x-1/2 items-center"
         panelClassName={cn(
-          "!items-center",
-          (fabChildren || (activeSettingsView !== "main" && activeSettingsView !== "settings-menu")) ? "w-[330px] !items-stretch" : "w-[220px]",
-          isLargePanel && "max-h-[85vh] h-[85vh] w-[95vw] md:w-[600px] overflow-hidden rounded-t-[32px] md:rounded-[32px] pb-[100px] md:pb-0 relative shadow-2xl bg-background/95 backdrop-blur-3xl border border-white/10"
+          "!items-center max-h-[calc(100dvh-130px)] overflow-y-auto mb-[20px]",
+          (fabChildren || (activeSettingsView !== "main" && activeSettingsView !== "settings-menu")) ? "w-[calc(100vw-40px)] max-w-[360px] !items-stretch" : "w-[280px] max-w-[calc(100vw-40px)]",
+          isLargePanel && "max-h-[calc(100dvh-130px)] h-[calc(100dvh-130px)] w-[calc(100vw-40px)] md:w-[600px] overflow-hidden rounded-[32px] relative shadow-2xl bg-background/95 backdrop-blur-3xl border border-white/10"
         )}
       >
         {activeSettingsView === "profile" && (
