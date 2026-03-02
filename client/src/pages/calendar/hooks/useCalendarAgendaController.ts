@@ -16,7 +16,7 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useAgendaScrollSpy } from "./useAgendaScrollSpy";
 
-const BUFFER_DAYS = 365; // Fetch buffer (1 year)
+const BUFFER_DAYS = 1825; // Fetch buffer (5 years) to support historical CSV imports
 
 export function useCalendarAgendaController() {
   const { user } = useAuth();
