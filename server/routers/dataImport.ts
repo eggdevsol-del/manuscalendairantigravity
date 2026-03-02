@@ -4,6 +4,7 @@ import * as db from "../db";
 import { users, conversations, appointments } from "../../drizzle/schema";
 import { z } from "zod";
 import { eq, and, or } from "drizzle-orm";
+import { format, parseISO, isValid } from "date-fns";
 
 export const dataImportRouter = router({
     bulkImportClients: protectedProcedure
@@ -156,7 +157,7 @@ export const dataImportRouter = router({
                         startObj = new Date(`${appt.date.trim()}T${appt.startTime.trim()}`);
                     }
 
-                    if (isNaN(startObj.getTime())) {
+                    if (!isValid(startObj) || isNaN(startObj.getTime())) {
                         console.warn(`[DataImport] Skipping unparsable date string: ${parseString}`);
                         results.failed++;
                         continue;
@@ -225,14 +226,15 @@ export const dataImportRouter = router({
                         if (isNaN(parsedEnd.getTime())) {
                             parsedEnd = new Date(`${appt.date.trim()}T${appt.endTime.trim()}`);
                         }
-                        if (!isNaN(parsedEnd.getTime())) {
+                        if (isValid(parsedEnd) && !isNaN(parsedEnd.getTime())) {
                             endObj = parsedEnd;
                         }
                     }
 
-                    // 5. Insert Appointment Schedule
-                    const startStr = startObj.toISOString().slice(0, 19).replace('T', ' ');
-                    const endStr = endObj.toISOString().slice(0, 19).replace('T', ' ');
+                    // 5. Insert Appointment Schedule (Formatted Local Time)
+                    // We avoid toISOString() here because Drizzle stores these fields as text strings denoting exact local time.
+                    const startStr = format(startObj, 'yyyy-MM-dd HH:mm:ss');
+                    const endStr = format(endObj, 'yyyy-MM-dd HH:mm:ss');
 
                     await database.insert(appointments).values({
                         conversationId: convId,
