@@ -4,6 +4,7 @@ import { useState } from "react";
 import Papa from "papaparse";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import { z } from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
@@ -79,8 +80,8 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
             return;
         }
 
-        // Basic Regex to match Zod's internal strictness
-        const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        // Exact Zod schema match to prevent backend batch crashes
+        const isValidEmail = (email: string) => z.string().email().safeParse(email).success;
 
         // Construct standardized payload
         const payload = csvData.map((row, index) => {
