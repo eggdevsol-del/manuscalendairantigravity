@@ -16,7 +16,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { getBankDetailLabels } from "../../../shared/utils/bankDetails";
+import { getBankDetailLabels } from "@shared/utils/bankDetails";
 
 type PaymentMethod = "stripe" | "paypal" | "bank" | "cash";
 

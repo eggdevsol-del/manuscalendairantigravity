@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { getGoogleMapsEmbedUrl } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
-import { getBankDetailLabels } from "../../../shared/utils/bankDetails";
+import { getBankDetailLabels } from "@shared/utils/bankDetails";
 import { Button, Input, Label, Textarea, Switch } from "@/components/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft } from "lucide-react";

@@ -51,20 +51,21 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                     toast.error("Could not find any headers in the CSV.");
                     return;
                 }
-                setCsvHeaders(results.meta.fields);
+                const validHeaders = results.meta.fields.filter(h => h && h.trim() !== "");
+                setCsvHeaders(validHeaders);
                 setCsvData(results.data);
 
                 // Auto-map common headers
-                const lowerHeaders = results.meta.fields.map(h => h.toLowerCase().trim());
+                const lowerHeaders = validHeaders.map(h => h.toLowerCase().trim());
 
                 const guessName = lowerHeaders.findIndex(h => h.includes('name') || h.includes('client'));
-                if (guessName > -1) setNameCol(results.meta.fields[guessName]);
+                if (guessName > -1) setNameCol(validHeaders[guessName]);
 
                 const guessPhone = lowerHeaders.findIndex(h => h.includes('phone') || h.includes('mobile') || h.includes('number'));
-                if (guessPhone > -1) setPhoneCol(results.meta.fields[guessPhone]);
+                if (guessPhone > -1) setPhoneCol(validHeaders[guessPhone]);
 
                 const guessEmail = lowerHeaders.findIndex(h => h.includes('email'));
-                if (guessEmail > -1) setEmailCol(results.meta.fields[guessEmail]);
+                if (guessEmail > -1) setEmailCol(validHeaders[guessEmail]);
             },
             error: (err) => {
                 toast.error(`Parser error: ${err.message}`);
@@ -81,8 +82,8 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
         // Construct standardized payload
         const payload = csvData.map(row => ({
             name: row[nameCol]?.trim() || "Unknown Client",
-            phone: phoneCol ? row[phoneCol]?.trim() : "",
-            email: emailCol ? row[emailCol]?.trim() : "",
+            phone: (phoneCol && phoneCol !== "SKIP") ? row[phoneCol]?.trim() : "",
+            email: (emailCol && emailCol !== "SKIP") ? row[emailCol]?.trim() : "",
             source: "csv_import"
         })).filter(c => c.phone || c.email); // Must have at least one contact point
 
@@ -170,7 +171,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                                 <SelectValue placeholder="Select CSV column..." />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="">-- Skip Phone --</SelectItem>
+                                                <SelectItem value="SKIP">-- Skip Phone --</SelectItem>
                                                 {csvHeaders.map(h => (
                                                     <SelectItem key={h} value={h}>{h}</SelectItem>
                                                 ))}
@@ -184,7 +185,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                                 <SelectValue placeholder="Select CSV column..." />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="">-- Skip Email --</SelectItem>
+                                                <SelectItem value="SKIP">-- Skip Email --</SelectItem>
                                                 {csvHeaders.map(h => (
                                                     <SelectItem key={h} value={h}>{h}</SelectItem>
                                                 ))}
