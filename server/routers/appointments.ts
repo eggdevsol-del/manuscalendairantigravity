@@ -297,6 +297,7 @@ export const appointmentsRouter = router({
     .input(
       z.object({
         clientId: z.string(),
+        deleteProfile: z.boolean().optional()
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -307,7 +308,7 @@ export const appointmentsRouter = router({
         });
       }
 
-      return db.deleteAppointmentsForClient(ctx.user.id, input.clientId);
+      return db.deleteAppointmentsForClient(ctx.user.id, input.clientId, input.deleteProfile);
     }),
 
   confirmDeposit: artistProcedure

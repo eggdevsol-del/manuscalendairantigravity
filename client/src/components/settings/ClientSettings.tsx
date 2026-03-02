@@ -74,11 +74,15 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
     name: string;
   } | null>(null);
 
+  const [deleteMode, setDeleteMode] = useState<"appointments" | "profile">("appointments");
+
   const deleteBookingsMutation =
     trpc.appointments.deleteAllForClient.useMutation({
       onSuccess: () => {
-        toast.success("All bookings deleted for client");
+        toast.success(deleteMode === "profile" ? "Client and all bookings permanently deleted" : "All bookings deleted for client");
         setClientToDelete(null);
+        setDeleteMode("appointments");
+        refetch(); // Ensure UI client list syncs the deletion of the profile
       },
       onError: error => {
         toast.error("Failed to delete bookings: " + error.message);
@@ -87,11 +91,15 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
 
   const handleDeleteClick = (client: { id: string; name: string }) => {
     setClientToDelete(client);
+    setDeleteMode("appointments");
   };
 
   const confirmDelete = () => {
     if (clientToDelete) {
-      deleteBookingsMutation.mutate({ clientId: clientToDelete.id });
+      deleteBookingsMutation.mutate({
+        clientId: clientToDelete.id,
+        deleteProfile: deleteMode === "profile"
+      });
     }
   };
 
@@ -250,44 +258,87 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
                       <Trash className="w-4 h-4" />
                     </Button>
                   </div>
-                  <div className="mt-3 lg:pl-[60px]">
-                    <div className="grid grid-cols-2 gap-2">
+                  {clientToDelete?.id === client.id ? (
+                    <div className="mt-4 p-4 bg-destructive/5 border border-destructive/20 rounded-xl space-y-4 lg:ml-[60px]">
+                      <h4 className="font-semibold text-destructive flex items-center">
+                        <Trash className="w-4 h-4 mr-2" />
+                        Wipe Client Data
+                      </h4>
+
+                      <div className="space-y-3">
+                        <label className="flex items-start gap-3 p-3 rounded-lg border border-white/10 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                          <input
+                            type="radio"
+                            name={`del-${client.id}`}
+                            checked={deleteMode === "appointments"}
+                            onChange={() => setDeleteMode("appointments")}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-foreground">Appointments Only</p>
+                            <p className="text-xs text-muted-foreground mt-1 leading-snug">Deletes all historical and future bookings, but keeps the client's profile and chat history intact.</p>
+                          </div>
+                        </label>
+
+                        <label className="flex items-start gap-3 p-3 rounded-lg border border-destructive/30 bg-destructive/10 cursor-pointer hover:bg-destructive/20 transition-colors">
+                          <input
+                            type="radio"
+                            name={`del-${client.id}`}
+                            checked={deleteMode === "profile"}
+                            onChange={() => setDeleteMode("profile")}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-destructive">Delete Client & Appointments</p>
+                            <p className="text-xs text-muted-foreground mt-1 leading-snug">Permanently wipes their entire profile, chat history, and all associated bookings from your database.</p>
+                          </div>
+                        </label>
+                      </div>
+
+                      <div className="flex justify-end gap-3 pt-2">
+                        <Button variant="outline" size="sm" onClick={() => setClientToDelete(null)}>Cancel</Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={confirmDelete}
+                          disabled={deleteBookingsMutation.isPending}
+                        >
+                          {deleteBookingsMutation.isPending ? "Confirming..." : "Confirm Deletion"}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-3 lg:pl-[60px]">
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setLocation(`/chat/${client.conversationId}`)}
+                          className="w-full"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          Chat
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setLocation(`/profile?tab=history&clientId=${client.id}`)}
+                          className="w-full"
+                        >
+                          <Clock className="w-4 h-4 mr-2" />
+                          History
+                        </Button>
+                      </div>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        onClick={() =>
-                          setLocation(`/chat/${client.conversationId}`)
-                        }
-                        className="w-full"
+                        onClick={() => setLocation(`/profile?clientId=${client.id}`)}
+                        className="w-full mt-2 text-xs opacity-70"
                       >
-                        <MessageCircle className="w-4 h-4 mr-2" />
-                        Chat
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() =>
-                          setLocation(
-                            `/profile?tab=history&clientId=${client.id}`
-                          )
-                        }
-                        className="w-full"
-                      >
-                        <Clock className="w-4 h-4 mr-2" />
-                        History
+                        View Full Profile
                       </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        setLocation(`/profile?clientId=${client.id}`)
-                      }
-                      className="w-full mt-2 text-xs opacity-70"
-                    >
-                      View Full Profile
-                    </Button>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -365,34 +416,6 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
             />
           </div>
         </div>
-      </ModalShell>
-
-      {/* Delete Confirmation Dialog */}
-      <ModalShell
-        isOpen={!!clientToDelete}
-        onClose={() => setClientToDelete(null)}
-        title="Delete Bookings"
-        description="Are you sure you want to delete all of this client's bookings? This action cannot be undone."
-        overlayName="Delete Bookings"
-        overlayId="clients.delete_bookings"
-        footer={
-          <div className="flex w-full justify-end gap-3">
-            <Button variant="outline" onClick={() => setClientToDelete(null)}>
-              No
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmDelete}
-              disabled={deleteBookingsMutation.isPending}
-            >
-              {deleteBookingsMutation.isPending
-                ? "Deleting..."
-                : "Yes, Delete All"}
-            </Button>
-          </div>
-        }
-      >
-        <div />
       </ModalShell>
     </div>
   );

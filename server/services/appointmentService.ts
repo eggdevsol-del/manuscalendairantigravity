@@ -10,6 +10,7 @@ import {
   consentForms,
   messages,
   studioMembers,
+  conversations,
 } from "../../drizzle/schema";
 import { getDb } from "./core";
 
@@ -467,7 +468,8 @@ export async function confirmAppointments(
 }
 export async function deleteAppointmentsForClient(
   artistId: string,
-  clientId: string
+  clientId: string,
+  deleteProfile?: boolean
 ) {
   const db = await getDb();
   if (!db) return false;
@@ -480,6 +482,30 @@ export async function deleteAppointmentsForClient(
         eq(appointments.clientId, clientId)
       )
     );
+
+  if (deleteProfile) {
+    // Drop the conversation binding this client and artist together
+    await db
+      .delete(conversations)
+      .where(
+        and(
+          eq(conversations.artistId, artistId),
+          eq(conversations.clientId, clientId)
+        )
+      );
+
+    // Drop the actual user profile IF they are specifically a generic 'client'
+    // (We ensure we never accidentally drop an artist who happened to book an appointment)
+    await db
+      .delete(users)
+      .where(
+        and(
+          eq(users.id, clientId),
+          eq(users.role, "client")
+        )
+      );
+  }
+
   return true;
 }
 
