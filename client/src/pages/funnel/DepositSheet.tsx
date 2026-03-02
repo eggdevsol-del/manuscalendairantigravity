@@ -16,6 +16,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { getBankDetailLabels } from "../../../shared/utils/bankDetails";
 
 type PaymentMethod = "stripe" | "paypal" | "bank" | "cash";
 
@@ -23,6 +24,7 @@ interface DepositInfo {
   proposalId: number;
   artistName: string;
   artistImage?: string;
+  businessCountry?: string;
   clientName: string;
   projectType?: string;
   selectedDate: string;
@@ -255,11 +257,10 @@ export function DepositSheet() {
           {depositInfo.paymentMethods.stripe && (
             <button
               onClick={() => setSelectedMethod("stripe")}
-              className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-colors ${
-                selectedMethod === "stripe"
-                  ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
-                  : "bg-white/5 border-2 border-transparent"
-              }`}
+              className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-colors ${selectedMethod === "stripe"
+                ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
+                : "bg-white/5 border-2 border-transparent"
+                }`}
             >
               <CreditCard className="w-5 h-5 text-[#7C5CFC]" />
               <div className="text-left">
@@ -274,11 +275,10 @@ export function DepositSheet() {
           {depositInfo.paymentMethods.paypal && (
             <button
               onClick={() => setSelectedMethod("paypal")}
-              className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-colors ${
-                selectedMethod === "paypal"
-                  ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
-                  : "bg-white/5 border-2 border-transparent"
-              }`}
+              className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-colors ${selectedMethod === "paypal"
+                ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
+                : "bg-white/5 border-2 border-transparent"
+                }`}
             >
               <Smartphone className="w-5 h-5 text-[#7C5CFC]" />
               <div className="text-left">
@@ -291,11 +291,10 @@ export function DepositSheet() {
           {depositInfo.paymentMethods.bank && (
             <button
               onClick={() => setSelectedMethod("bank")}
-              className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-colors ${
-                selectedMethod === "bank"
-                  ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
-                  : "bg-white/5 border-2 border-transparent"
-              }`}
+              className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-colors ${selectedMethod === "bank"
+                ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
+                : "bg-white/5 border-2 border-transparent"
+                }`}
             >
               <Building2 className="w-5 h-5 text-[#7C5CFC]" />
               <div className="text-left">
@@ -308,11 +307,10 @@ export function DepositSheet() {
           {depositInfo.paymentMethods.cash && (
             <button
               onClick={() => setSelectedMethod("cash")}
-              className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-colors ${
-                selectedMethod === "cash"
-                  ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
-                  : "bg-white/5 border-2 border-transparent"
-              }`}
+              className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-colors ${selectedMethod === "cash"
+                ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
+                : "bg-white/5 border-2 border-transparent"
+                }`}
             >
               <span className="w-5 h-5 text-[#7C5CFC] font-bold">$</span>
               <div className="text-left">
@@ -340,14 +338,20 @@ export function DepositSheet() {
                   {depositInfo.bankDetails.accountName}
                 </span>
               </div>
+              {depositInfo.bankDetails.bsb && getBankDetailLabels(depositInfo.businessCountry || "AU").bankCodeLabel && (
+                <div className="flex justify-between">
+                  <span className="text-white/60">
+                    {getBankDetailLabels(depositInfo.businessCountry || "AU").bankCodeLabel}
+                  </span>
+                  <span className="text-white font-mono">
+                    {depositInfo.bankDetails.bsb}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between">
-                <span className="text-white/60">BSB</span>
-                <span className="text-white font-mono">
-                  {depositInfo.bankDetails.bsb}
+                <span className="text-white/60">
+                  {getBankDetailLabels(depositInfo.businessCountry || "AU").accountLabel}
                 </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-white/60">Account Number</span>
                 <span className="text-white font-mono">
                   {depositInfo.bankDetails.accountNumber}
                 </span>
@@ -375,11 +379,10 @@ export function DepositSheet() {
               </p>
               <label className="block">
                 <div
-                  className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${
-                    screenshotFile
-                      ? "border-green-500 bg-green-500/10"
-                      : "border-white/20 hover:border-white/40"
-                  }`}
+                  className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${screenshotFile
+                    ? "border-green-500 bg-green-500/10"
+                    : "border-white/20 hover:border-white/40"
+                    }`}
                 >
                   {screenshotFile ? (
                     <div className="flex items-center justify-center gap-2 text-green-400">

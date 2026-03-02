@@ -6,6 +6,7 @@
  */
 
 import * as schema from "../../drizzle/schema";
+import { getBankDetailLabels } from "../../shared/utils/bankDetails";
 import {
   eq,
   and,
@@ -367,6 +368,7 @@ async function generateDepositTasks(
     with: {
       client: true,
       conversation: true,
+      artist: true,
     },
     orderBy: asc(schema.appointments.startTime),
   });
@@ -409,25 +411,47 @@ async function generateDepositTasks(
       day: "numeric",
     });
 
+    const smsPayMsg = (appt as any).client?.phone
+      ? `Hi ${(appt as any).client.name}, just a friendly reminder regarding the deposit for your upcoming appointment on ${dateFormatted}. You can pay via the link: https://tattoi.com/pay/${appt.id}`
+      : null;
+
+    let emailMsgBody = `Hi ${(appt as any).client?.name},\n\nJust a friendly reminder regarding the deposit for your upcoming appointment on ${dateFormatted}.\n\nYou can pay securely via this link: https://tattoi.com/pay/${appt.id}\n\n`;
+
+    const artistSettings = await db.query.artistSettings.findFirst({
+      where: eq(schema.artistSettings.userId, appt.artistId)
+    });
+
+    const countryCode = artistSettings?.businessCountry || 'AU';
+    const bsbValue = artistSettings?.bsb;
+    const accountValue = artistSettings?.accountNumber;
+
+    // Add bank details if present
+    if (bsbValue || accountValue) {
+      const labels = getBankDetailLabels(countryCode);
+      emailMsgBody += `\nAlternatively, you can bank transfer directly:\n`;
+      if (labels.bankCodeLabel && bsbValue) emailMsgBody += `${labels.bankCodeLabel}: ${bsbValue}\n`;
+      if (accountValue) emailMsgBody += `${labels.accountLabel}: ${accountValue}\n`;
+    }
+
+    emailMsgBody += '\nThanks!';
+
     tasks.push({
       taskType: "deposit_collection",
       taskTier: "tier1",
       title: `Collect ${depositFormatted} deposit`,
-      context: `${appt.client?.name || "Client"} - ${appt.title} on ${dateFormatted}`,
+      context: `${(appt as any).client?.name || "Client"} - ${(appt as any).title} on ${dateFormatted}`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
       relatedEntityType: "appointment",
       relatedEntityId: String(appt.id),
       clientId: appt.clientId,
-      clientName: appt.client?.name || null,
+      clientName: (appt as any).client?.name || null,
       actionType: "in_app",
-      smsNumber: appt.client?.phone || null,
-      smsBody: appt.client?.phone
-        ? `Hi ${appt.client.name}, just a friendly reminder regarding the deposit for your upcoming appointment on ${dateFormatted}. You can pay via the link: https://calendable.com/pay/${appt.id}`
-        : null,
-      emailRecipient: appt.client?.email || null,
-      emailSubject: `Deposit Reminder - ${appt.title}`,
-      emailBody: `Hi ${appt.client?.name},\n\nJust a friendly reminder regarding the deposit for your upcoming appointment on ${dateFormatted}.\n\nYou can pay securely via this link: https://calendable.com/pay/${appt.id}\n\nThanks!`,
+      smsNumber: (appt as any).client?.phone || null,
+      smsBody: smsPayMsg,
+      emailRecipient: (appt as any).client?.email || null,
+      emailSubject: `Deposit Reminder - ${(appt as any).title}`,
+      emailBody: emailMsgBody,
       deepLink: appt.conversationId
         ? `/chat/${appt.conversationId}`
         : `/conversations`,

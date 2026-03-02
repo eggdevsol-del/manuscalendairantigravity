@@ -4,7 +4,9 @@ import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { getGoogleMapsEmbedUrl } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
+import { getBankDetailLabels } from "../../../shared/utils/bankDetails";
 import { Button, Input, Label, Textarea, Switch } from "@/components/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft } from "lucide-react";
 
 export function BusinessSettings({ onBack }: { onBack: () => void }) {
@@ -15,6 +17,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
     const [displayName, setDisplayName] = useState("");
     const [businessEmail, setBusinessEmail] = useState("");
     const [businessAddress, setBusinessAddress] = useState("");
+    const [businessCountry, setBusinessCountry] = useState("AU");
     const [bsb, setBsb] = useState("");
     const [accountNumber, setAccountNumber] = useState("");
     const [licenceNumber, setLicenceNumber] = useState("");
@@ -51,6 +54,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
         setDisplayName(artistSettings.displayName || "");
         setBusinessEmail(artistSettings.businessEmail || "");
         setBusinessAddress(artistSettings.businessAddress || "");
+        setBusinessCountry(artistSettings.businessCountry || "AU");
         setBsb(artistSettings.bsb || "");
         setAccountNumber(artistSettings.accountNumber || "");
         setLicenceNumber(artistSettings.licenceNumber || "");
@@ -66,7 +70,8 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                 displayName,
                 businessEmail,
                 businessAddress,
-                bsb,
+                businessCountry,
+                bsb: getBankDetailLabels(businessCountry).bankCodeLabel ? bsb : undefined, // Strip BSB if country doesn't need it
                 accountNumber,
                 licenceNumber,
                 depositAmount: depositAmount ? parseInt(depositAmount) : undefined,
@@ -224,19 +229,39 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                         </h3>
 
                         <div className="space-y-2">
-                            <Label htmlFor="bsb">BSB</Label>
-                            <Input
-                                id="bsb"
-                                value={bsb}
-                                onChange={e => setBsb(e.target.value)}
-                                placeholder="123-456"
-                                maxLength={7}
-                                className="bg-white/5 border-white/10"
-                            />
+                            <Label htmlFor="businessCountry">Business Country</Label>
+                            <Select value={businessCountry} onValueChange={setBusinessCountry}>
+                                <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                    <SelectValue placeholder="Select Country" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="AU">Australia</SelectItem>
+                                    <SelectItem value="NZ">New Zealand</SelectItem>
+                                    <SelectItem value="US">United States</SelectItem>
+                                    <SelectItem value="GB">United Kingdom</SelectItem>
+                                    <SelectItem value="CA">Canada</SelectItem>
+                                    <SelectItem value="EU">Europe (IBAN)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">Sets regional bank formats</p>
                         </div>
 
+                        {getBankDetailLabels(businessCountry).bankCodeLabel && (
+                            <div className="space-y-2">
+                                <Label htmlFor="bsb">{getBankDetailLabels(businessCountry).bankCodeLabel}</Label>
+                                <Input
+                                    id="bsb"
+                                    value={bsb}
+                                    onChange={e => setBsb(e.target.value)}
+                                    placeholder={businessCountry === "AU" ? "123-456" : ""}
+                                    maxLength={15}
+                                    className="bg-white/5 border-white/10"
+                                />
+                            </div>
+                        )}
+
                         <div className="space-y-2">
-                            <Label htmlFor="accountNumber">Account Number</Label>
+                            <Label htmlFor="accountNumber">{getBankDetailLabels(businessCountry).accountLabel}</Label>
                             <Input
                                 id="accountNumber"
                                 value={accountNumber}

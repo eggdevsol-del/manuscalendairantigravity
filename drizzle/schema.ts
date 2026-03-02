@@ -116,6 +116,7 @@ export const artistSettings = mysqlTable(
     businessEmail: varchar({ length: 320 }),
     bsb: varchar({ length: 10 }),
     accountNumber: varchar({ length: 20 }),
+    businessCountry: varchar({ length: 2 }).default("AU").notNull(),
     depositAmount: int(),
     workSchedule: text().notNull(),
     services: text().notNull(),

@@ -754,9 +754,15 @@ async function sendDepositMessage(
 
   if (artistSettings.businessName)
     content += `Business: ${artistSettings.businessName}\n`;
-  if (artistSettings.bsb) content += `BSB: ${artistSettings.bsb}\n`;
+
+  const bankLabels = getBankDetailLabels(artistSettings.businessCountry || 'AU');
+
+  if (artistSettings.bsb && bankLabels.bankCodeLabel) {
+    content += `${bankLabels.bankCodeLabel}: ${artistSettings.bsb}\n`;
+  }
+
   if (artistSettings.accountNumber)
-    content += `Account: ${artistSettings.accountNumber}\n`;
+    content += `${bankLabels.accountLabel}: ${artistSettings.accountNumber}\n`;
   if (artistSettings.depositAmount)
     content += `Amount: $${artistSettings.depositAmount}\n`;
 
