@@ -79,13 +79,26 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
             return;
         }
 
+        // Basic Regex to match Zod's internal strictness
+        const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
         // Construct standardized payload
-        const payload = csvData.map(row => ({
-            name: row[nameCol]?.trim() || "Unknown Client",
-            phone: (phoneCol && phoneCol !== "SKIP") ? row[phoneCol]?.trim() : "",
-            email: (emailCol && emailCol !== "SKIP") ? row[emailCol]?.trim() : "",
-            source: "csv_import"
-        })).filter(c => c.phone || c.email); // Must have at least one contact point
+        const payload = csvData.map((row, index) => {
+            let rawEmail = (emailCol && emailCol !== "SKIP") ? row[emailCol]?.trim() : "";
+
+            // Drop malformed emails cleanly so they don't crash the entire batch insertion
+            if (rawEmail && !isValidEmail(rawEmail)) {
+                console.warn(`Dropped malformed email at row ${index}: ${rawEmail}`);
+                rawEmail = "";
+            }
+
+            return {
+                name: row[nameCol]?.trim() || "Unknown Client",
+                phone: (phoneCol && phoneCol !== "SKIP") ? row[phoneCol]?.trim() : "",
+                email: rawEmail,
+                source: "csv_import"
+            };
+        }).filter(c => c.phone || c.email); // Must have at least one valid contact point
 
         if (payload.length === 0) {
             toast.error("No valid contacts found containing a phone or email.");
