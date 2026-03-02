@@ -18,6 +18,8 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
     const [csvData, setCsvData] = useState<any[]>([]);
 
     const [importMode, setImportMode] = useState<"clients" | "appointments">("clients");
+    const [isReviewing, setIsReviewing] = useState(false);
+    const [reviewStats, setReviewStats] = useState({ valid: 0, skipped: 0 });
 
     // Core Client Mappings
     const [nameCol, setNameCol] = useState<string>("");
@@ -103,6 +105,48 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                 toast.error(`Parser error: ${err.message}`);
             }
         });
+    };
+
+    const handleReview = () => {
+        let valid = 0;
+        let skipped = 0;
+
+        csvData.forEach((row) => {
+            const hasName = nameCol && row[nameCol]?.trim();
+            const hasContact = (phoneCol && row[phoneCol]?.trim()) || (emailCol && row[emailCol]?.trim());
+
+            if (importMode === "clients") {
+                if (hasName && hasContact) {
+                    if (emailCol && row[emailCol]?.trim()) {
+                        const emailValidation = z.string().email().safeParse(row[emailCol].trim());
+                        if (emailValidation.success) valid++;
+                        else skipped++;
+                    } else {
+                        valid++;
+                    }
+                } else {
+                    skipped++;
+                }
+            } else if (importMode === "appointments") {
+                const hasDate = dateCol && row[dateCol]?.trim();
+                const hasTime = startTimeCol && row[startTimeCol]?.trim();
+
+                if (hasName && hasDate && hasTime) {
+                    const baseStr = `${row[dateCol].trim()} ${row[startTimeCol].trim()}`;
+                    let testDate = new Date(baseStr);
+                    if (isNaN(testDate.getTime())) {
+                        testDate = new Date(`${row[dateCol].trim()}T${row[startTimeCol].trim()}`);
+                    }
+                    if (!isNaN(testDate.getTime())) valid++;
+                    else skipped++;
+                } else {
+                    skipped++;
+                }
+            }
+        });
+
+        setReviewStats({ valid, skipped });
+        setIsReviewing(true);
     };
 
     const handleImport = () => {
@@ -241,145 +285,197 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                 </Button>
                             </div>
 
-                            <div className="space-y-4">
-                                <div className="mb-2">
-                                    <p className="text-muted-foreground text-sm font-medium">Map columns from your CSV</p>
+                            <div className="flex items-center justify-between p-4 bg-white/5 rounded-[4px] border border-white/10">
+                                <div>
+                                    <p className="font-semibold flex items-center gap-2">
+                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                        {file.name}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-1">{csvData.length} records parsed securely.</p>
                                 </div>
-
-                                <div className="space-y-4 p-4 bg-black/20 border border-white/10 rounded-[4px]">
-                                    <div className="space-y-2">
-                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Client Name <span className="text-destructive">*</span></Label>
-                                        <Select value={nameCol} onValueChange={setNameCol}>
-                                            <SelectTrigger className="w-full bg-white/5 border-white/10">
-                                                <SelectValue placeholder="Select CSV column..." />
-                                            </SelectTrigger>
-                                            <SelectContent className="z-[200]">
-                                                {csvHeaders.map(h => (
-                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Phone Number</Label>
-                                        <Select value={phoneCol} onValueChange={setPhoneCol}>
-                                            <SelectTrigger className="w-full bg-white/5 border-white/10">
-                                                <SelectValue placeholder="Select CSV column..." />
-                                            </SelectTrigger>
-                                            <SelectContent className="z-[200]">
-                                                <SelectItem value="SKIP">-- Skip Phone --</SelectItem>
-                                                {csvHeaders.map(h => (
-                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Email</Label>
-                                        <Select value={emailCol} onValueChange={setEmailCol}>
-                                            <SelectTrigger className="w-full bg-white/5 border-white/10">
-                                                <SelectValue placeholder="Select CSV column..." />
-                                            </SelectTrigger>
-                                            <SelectContent className="z-[200]">
-                                                <SelectItem value="SKIP">-- Skip Email --</SelectItem>
-                                                {csvHeaders.map(h => (
-                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    {importMode === "appointments" && (
-                                        <>
-                                            <div className="space-y-2 pt-4 border-t border-white/10">
-                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Appointment Date <span className="text-destructive">*</span></Label>
-                                                <Select value={dateCol} onValueChange={setDateCol}>
-                                                    <SelectTrigger className="w-full bg-white/5 border-white/10">
-                                                        <SelectValue placeholder="Select CSV column..." />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="z-[200]">
-                                                        {csvHeaders.map(h => (
-                                                            <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Start Time <span className="text-destructive">*</span></Label>
-                                                <Select value={startTimeCol} onValueChange={setStartTimeCol}>
-                                                    <SelectTrigger className="w-full bg-white/5 border-white/10">
-                                                        <SelectValue placeholder="Select CSV column..." />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="z-[200]">
-                                                        {csvHeaders.map(h => (
-                                                            <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">End Time / Duration</Label>
-                                                <Select value={endTimeCol} onValueChange={setEndTimeCol}>
-                                                    <SelectTrigger className="w-full bg-white/5 border-white/10">
-                                                        <SelectValue placeholder="Select CSV column..." />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="z-[200]">
-                                                        <SelectItem value="SKIP">-- Default 1 Hour --</SelectItem>
-                                                        {csvHeaders.map(h => (
-                                                            <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Service Name</Label>
-                                                <Select value={serviceCol} onValueChange={setServiceCol}>
-                                                    <SelectTrigger className="w-full bg-white/5 border-white/10">
-                                                        <SelectValue placeholder="Select CSV column..." />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="z-[200]">
-                                                        <SelectItem value="SKIP">-- Skip / Unknown --</SelectItem>
-                                                        {csvHeaders.map(h => (
-                                                            <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-
-                                {importMode === "clients" ? (
-                                    <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-[4px] mt-4 flex items-start gap-3">
-                                        <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
-                                        <p className="text-xs text-yellow-200/80 leading-snug">
-                                            Clients must have either an email or a phone number to be imported. Records missing both will be safely skipped.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-[4px] mt-4 flex items-start gap-3">
-                                        <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
-                                        <p className="text-xs text-yellow-200/80 leading-snug">
-                                            Dates and Start Times must be correctly formatted to be ingested. A client profile will be generated automatically if the client isn't already registered.
-                                        </p>
-                                    </div>
-                                )}
-
+                                <Button variant="ghost" size="sm" onClick={() => {
+                                    setFile(null);
+                                    setCsvHeaders([]);
+                                    setIsReviewing(false);
+                                }}>
+                                    Remove
+                                </Button>
                             </div>
 
-                            <Button
-                                className="w-full h-12 text-base font-semibold"
-                                onClick={handleImport}
-                                disabled={clientMutation.isPending || appointmentMutation.isPending || !nameCol}
-                            >
-                                {clientMutation.isPending || appointmentMutation.isPending ? (
-                                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
-                                ) : `Import ${importMode === "clients" ? "Clients" : "Appointments"} to CRM`}
-                            </Button>
+                            {isReviewing ? (
+                                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both">
+                                    <div className="flex flex-col items-center justify-center gap-3 p-6 rounded-[8px] border border-white/5 bg-white/5 text-center mt-4">
+                                        <Database className="w-8 h-8 text-primary" />
+                                        <div>
+                                            <h3 className="text-sm font-bold text-foreground">Ready to Import {importMode === "clients" ? "Clients" : "Appointments"}</h3>
+                                            <p className="text-[11px] text-muted-foreground mt-1 whitespace-pre-line">
+                                                We found <strong className="text-emerald-500">{reviewStats.valid}</strong> valid records to import. {"\n"}
+                                                {reviewStats.skipped > 0 && <span className="text-orange-500">{reviewStats.skipped} records will be safely skipped due to missing or invalid data.</span>}
+                                            </p>
+                                        </div>
+                                    </div>
 
+                                    <div className="grid grid-cols-2 gap-3 mt-6">
+                                        <Button
+                                            variant="outline"
+                                            className="w-full text-xs h-12"
+                                            onClick={() => setIsReviewing(false)}
+                                        >
+                                            Reset Mapping
+                                        </Button>
+                                        <Button
+                                            className="w-full bg-primary text-primary-foreground font-bold uppercase tracking-wider text-[10px] rounded-[4px] h-12"
+                                            onClick={handleImport}
+                                            disabled={clientMutation.isPending || appointmentMutation.isPending || reviewStats.valid === 0}
+                                        >
+                                            {clientMutation.isPending || appointmentMutation.isPending ? (
+                                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                            ) : (
+                                                <CheckCircle2 className="w-4 h-4 mr-2" />
+                                            )}
+                                            {clientMutation.isPending || appointmentMutation.isPending ? "Importing..." : `Import ${reviewStats.valid} Records`}
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="space-y-4">
+                                        <div className="mb-2">
+                                            <p className="text-muted-foreground text-sm font-medium">Map columns from your CSV</p>
+                                        </div>
+
+                                        <div className="space-y-4 p-4 bg-black/20 border border-white/10 rounded-[4px]">
+                                            <div className="space-y-2">
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Client Name <span className="text-destructive">*</span></Label>
+                                                <Select value={nameCol} onValueChange={setNameCol}>
+                                                    <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                                        <SelectValue placeholder="Select CSV column..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="z-[200]">
+                                                        {csvHeaders.map(h => (
+                                                            <SelectItem key={h} value={h}>{h}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Phone Number</Label>
+                                                <Select value={phoneCol} onValueChange={setPhoneCol}>
+                                                    <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                                        <SelectValue placeholder="Select CSV column..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="z-[200]">
+                                                        <SelectItem value="SKIP">-- Skip Phone --</SelectItem>
+                                                        {csvHeaders.map(h => (
+                                                            <SelectItem key={h} value={h}>{h}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Email</Label>
+                                                <Select value={emailCol} onValueChange={setEmailCol}>
+                                                    <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                                        <SelectValue placeholder="Select CSV column..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="z-[200]">
+                                                        <SelectItem value="SKIP">-- Skip Email --</SelectItem>
+                                                        {csvHeaders.map(h => (
+                                                            <SelectItem key={h} value={h}>{h}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+
+                                            {importMode === "appointments" && (
+                                                <>
+                                                    <div className="space-y-2 pt-4 border-t border-white/10">
+                                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Appointment Date <span className="text-destructive">*</span></Label>
+                                                        <Select value={dateCol} onValueChange={setDateCol}>
+                                                            <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                                                <SelectValue placeholder="Select CSV column..." />
+                                                            </SelectTrigger>
+                                                            <SelectContent className="z-[200]">
+                                                                {csvHeaders.map(h => (
+                                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Start Time <span className="text-destructive">*</span></Label>
+                                                        <Select value={startTimeCol} onValueChange={setStartTimeCol}>
+                                                            <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                                                <SelectValue placeholder="Select CSV column..." />
+                                                            </SelectTrigger>
+                                                            <SelectContent className="z-[200]">
+                                                                {csvHeaders.map(h => (
+                                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">End Time / Duration</Label>
+                                                        <Select value={endTimeCol} onValueChange={setEndTimeCol}>
+                                                            <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                                                <SelectValue placeholder="Select CSV column..." />
+                                                            </SelectTrigger>
+                                                            <SelectContent className="z-[200]">
+                                                                <SelectItem value="SKIP">-- Default 1 Hour --</SelectItem>
+                                                                {csvHeaders.map(h => (
+                                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Service Name</Label>
+                                                        <Select value={serviceCol} onValueChange={setServiceCol}>
+                                                            <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                                                <SelectValue placeholder="Select CSV column..." />
+                                                            </SelectTrigger>
+                                                            <SelectContent className="z-[200]">
+                                                                <SelectItem value="SKIP">-- Skip / Unknown --</SelectItem>
+                                                                {csvHeaders.map(h => (
+                                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {importMode === "clients" ? (
+                                            <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-[4px] mt-4 flex items-start gap-3">
+                                                <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
+                                                <p className="text-xs text-yellow-200/80 leading-snug">
+                                                    Clients must have either an email or a phone number to be imported. Records missing both will be safely skipped.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-[4px] mt-4 flex items-start gap-3">
+                                                <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
+                                                <p className="text-xs text-yellow-200/80 leading-snug">
+                                                    Dates and Start Times must be correctly formatted to be ingested. A client profile will be generated automatically if the client isn't already registered.
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        <Button
+                                            className="w-full bg-primary/20 text-primary font-bold uppercase tracking-wider text-[10px] rounded-[4px] border border-primary/30 h-10 mt-6"
+                                            onClick={handleReview}
+                                            disabled={!nameCol || (importMode === "appointments" && (!dateCol || !startTimeCol))}
+                                        >
+                                            Review {importMode === "clients" ? "Clients" : "Appointments"}
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>

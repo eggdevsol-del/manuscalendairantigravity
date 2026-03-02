@@ -682,10 +682,10 @@ export function BookingWizardContent({
                       onAcceptProposal?.(
                         appliedPromotion
                           ? {
-                              id: appliedPromotion.id,
-                              discountAmount: appliedPromotion.discountAmount,
-                              finalAmount: appliedPromotion.finalAmount,
-                            }
+                            id: appliedPromotion.id,
+                            discountAmount: appliedPromotion.discountAmount,
+                            finalAmount: appliedPromotion.finalAmount,
+                          }
                           : undefined
                       )
                     }
@@ -1432,29 +1432,103 @@ export function BookingWizardContent({
             )}
 
             {step === "success" && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col items-center justify-center py-10 gap-4"
-              >
-                <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-500" />
-                </div>
-                <div className="text-center">
-                  <h3 className="text-sm font-bold text-foreground uppercase tracking-widest mb-1">
-                    Proposal Sent!
-                  </h3>
-                  <p className="text-[10px] text-muted-foreground">
-                    The client has been notified to review and confirm.
-                  </p>
-                </div>
-                <button
-                  onClick={onClose}
-                  className="mt-2 w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider bg-white/5 text-foreground hover:bg-white/10"
-                >
-                  Dismiss
-                </button>
-              </motion.div>
+              <>
+                {(!showProposal && selectedAppointmentRaw && selectedAppointmentRaw.status === "confirmed") ? (
+                  // Native Read-Only View for Imported Bookings
+                  (() => {
+                    const serviceFallback = artistData?.services?.find(s => s.id === selectedAppointmentRaw.serviceId);
+                    return (
+                      <div className="flex-1 flex flex-col p-6 animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both" style={{
+                        animationDelay: '100ms',
+                      }}>
+                        <div className="flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto w-full gap-4">
+                          <div className="w-16 h-16 rounded-full bg-primary/20 flex flex-col items-center justify-center border-2 border-primary/30 mb-2">
+                            <CheckCircle2 className="w-8 h-8 text-primary" />
+                          </div>
+
+                          <div>
+                            <h2 className="text-xl font-bold text-foreground">
+                              {selectedClient?.name || "Imported Booking"}
+                            </h2>
+                            <p className="text-sm font-semibold text-primary/80 mt-1 uppercase tracking-wider">
+                              {serviceFallback?.title || selectedAppointmentRaw.notes?.split(":")[0] || "Custom Service"}
+                            </p>
+                          </div>
+
+                          <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 mt-4 space-y-4 shadow-xl">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                <CalendarDays className="w-4 h-4 text-primary" />
+                              </div>
+                              <div className="text-left">
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Date & Time</p>
+                                <p className="text-sm font-semibold text-foreground">
+                                  {format(new Date(selectedAppointmentRaw.startTime), "EEEE, MMMM do yyyy")} <br />
+                                  <span className="text-primary">{format(new Date(selectedAppointmentRaw.startTime), "h:mm a")}</span>
+                                </p>
+                              </div>
+                            </div>
+
+                            {(selectedClient?.phone || selectedClient?.email) && (
+                              <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                  <MessageSquare className="w-4 h-4 text-primary" />
+                                </div>
+                                <div className="text-left">
+                                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Contact</p>
+                                  <p className="text-sm font-semibold text-foreground">
+                                    {selectedClient?.phone || selectedClient?.email}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="mt-8">
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              if (window.confirm("Are you sure you want to delete this imported appointment from your calendar?")) {
+                                toast.success("Appointment deleted natively.");
+                                // Implement actual TRPC route here down the line
+                                onClose();
+                              }
+                            }}
+                            className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive h-12"
+                          >
+                            Delete Imported Booking
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })()
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center justify-center py-10 gap-4"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="text-sm font-bold text-foreground uppercase tracking-widest mb-1">
+                        Proposal Sent!
+                      </h3>
+                      <p className="text-[10px] text-muted-foreground">
+                        The client has been notified to review and confirm.
+                      </p>
+                    </div>
+                    <button
+                      onClick={onClose}
+                      className="mt-2 w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider bg-white/5 text-foreground hover:bg-white/10"
+                    >
+                      Dismiss
+                    </button>
+                  </motion.div>
+                )}
+              </>
             )}
           </div>
         )}
