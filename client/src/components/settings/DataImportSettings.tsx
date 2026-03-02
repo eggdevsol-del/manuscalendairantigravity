@@ -157,7 +157,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                             <SelectTrigger className="w-full bg-white/5 border-white/10">
                                                 <SelectValue placeholder="Select CSV column..." />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className="z-[200]">
                                                 {csvHeaders.map(h => (
                                                     <SelectItem key={h} value={h}>{h}</SelectItem>
                                                 ))}
@@ -170,7 +170,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                             <SelectTrigger className="w-full bg-white/5 border-white/10">
                                                 <SelectValue placeholder="Select CSV column..." />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className="z-[200]">
                                                 <SelectItem value="SKIP">-- Skip Phone --</SelectItem>
                                                 {csvHeaders.map(h => (
                                                     <SelectItem key={h} value={h}>{h}</SelectItem>
@@ -184,7 +184,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                             <SelectTrigger className="w-full bg-white/5 border-white/10">
                                                 <SelectValue placeholder="Select CSV column..." />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className="z-[200]">
                                                 <SelectItem value="SKIP">-- Skip Email --</SelectItem>
                                                 {csvHeaders.map(h => (
                                                     <SelectItem key={h} value={h}>{h}</SelectItem>
