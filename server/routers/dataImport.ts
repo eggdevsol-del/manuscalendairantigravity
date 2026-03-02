@@ -5,6 +5,7 @@ import { users, conversations, appointments } from "../../drizzle/schema";
 import { z } from "zod";
 import { eq, and, or } from "drizzle-orm";
 import { format, parseISO, isValid } from "date-fns";
+import { localToUTC, getBusinessTimezone } from "../../shared/utils/timezone";
 
 export const dataImportRouter = router({
     bulkImportClients: protectedProcedure
@@ -231,10 +232,20 @@ export const dataImportRouter = router({
                         }
                     }
 
-                    // 5. Insert Appointment Schedule (Formatted Local Time)
-                    // We avoid toISOString() here because Drizzle stores these fields as text strings denoting exact local time.
-                    const startStr = format(startObj, 'yyyy-MM-dd HH:mm:ss');
-                    const endStr = format(endObj, 'yyyy-MM-dd HH:mm:ss');
+                    // 5. Insert Appointment Schedule (Converted to UTC ISO for standard frontend parsing)
+                    const timezone = getBusinessTimezone(); // Defaults to Aus/BNE, will be dynamic later
+
+                    // The CSV parsing generated a "local" date object matching the spreadsheet text.
+                    // We extract that local format as a string, then run it through our standard localToUTC converter.
+                    const startLocalFormat = format(startObj, "yyyy-MM-dd'T'HH:mm");
+                    const endLocalFormat = format(endObj, "yyyy-MM-dd'T'HH:mm");
+
+                    const startTimeUTC = localToUTC(startLocalFormat, timezone);
+                    const endTimeUTC = localToUTC(endLocalFormat, timezone);
+
+                    // Convert to MySQL compatible UTC strings (stripping the 'T' and 'Z')
+                    const startStr = new Date(startTimeUTC).toISOString().slice(0, 19).replace('T', ' ');
+                    const endStr = new Date(endTimeUTC).toISOString().slice(0, 19).replace('T', ' ');
 
                     await database.insert(appointments).values({
                         conversationId: convId,
