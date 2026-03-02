@@ -1,7 +1,7 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import * as db from "../db";
-import { users, conversations } from "../../drizzle/schema";
+import { users, conversations, appointments } from "../../drizzle/schema";
 import { z } from "zod";
 import { eq, and, or } from "drizzle-orm";
 
@@ -100,6 +100,155 @@ export const dataImportRouter = router({
                     results.success++;
                 } catch (error) {
                     console.error("[DataImport] Row failure:", error);
+                    results.failed++;
+                }
+            }
+
+            return results;
+        }),
+
+    bulkImportAppointments: protectedProcedure
+        .input(
+            z.object({
+                appointments: z.array(
+                    z.object({
+                        clientName: z.string().min(1),
+                        clientEmail: z.string().email().optional().or(z.literal("")),
+                        clientPhone: z.string().optional().or(z.literal("")),
+                        date: z.string(),
+                        startTime: z.string(),
+                        endTime: z.string().optional(),
+                        serviceName: z.string().optional(),
+                    })
+                ),
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+            if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Only artists can import data directly.",
+                });
+            }
+
+            const database = await db.getDb();
+            if (!database) {
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Database not available",
+                });
+            }
+
+            const results = {
+                success: 0,
+                skipped: 0,
+                failed: 0,
+            };
+
+            for (const appt of input.appointments) {
+                try {
+                    // Try to parse the Date
+                    const parseString = `${appt.date.trim()} ${appt.startTime.trim()}`;
+                    let startObj = new Date(parseString);
+
+                    // Fallback to strict ISO if standard parsing fails
+                    if (isNaN(startObj.getTime())) {
+                        startObj = new Date(`${appt.date.trim()}T${appt.startTime.trim()}`);
+                    }
+
+                    if (isNaN(startObj.getTime())) {
+                        console.warn(`[DataImport] Skipping unparsable date string: ${parseString}`);
+                        results.failed++;
+                        continue;
+                    }
+
+                    // 1. Find existing global user by email or phone
+                    const conditions = [];
+                    if (appt.clientEmail) conditions.push(eq(users.email, appt.clientEmail));
+                    if (appt.clientPhone) conditions.push(eq(users.phone, appt.clientPhone));
+
+                    let existingUser = null;
+                    if (conditions.length > 0) {
+                        existingUser = await database.query.users.findFirst({
+                            where: or(...conditions)
+                        });
+                    }
+
+                    let clientId = "";
+
+                    // 2. Insert or Map
+                    if (existingUser) {
+                        clientId = existingUser.id;
+                    } else {
+                        clientId = `usr_imp_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+                        await database.insert(users).values({
+                            id: clientId,
+                            name: appt.clientName,
+                            email: appt.clientEmail || null,
+                            phone: appt.clientPhone || null,
+                            role: "client",
+                            loginMethod: "imported"
+                        });
+                    }
+
+                    // 3. Bind Context
+                    let convId = 0;
+                    const existingConv = await database.query.conversations.findFirst({
+                        where: and(
+                            eq(conversations.artistId, ctx.user.id),
+                            eq(conversations.clientId, clientId)
+                        )
+                    });
+
+                    if (existingConv) {
+                        convId = existingConv.id;
+                    } else {
+                        await database.insert(conversations).values({
+                            artistId: ctx.user.id,
+                            clientId: clientId
+                        });
+
+                        // Re-query to guarantee reliable integer ID across different drivers
+                        const newConv = await database.query.conversations.findFirst({
+                            where: and(
+                                eq(conversations.artistId, ctx.user.id),
+                                eq(conversations.clientId, clientId)
+                            )
+                        });
+                        convId = newConv!.id;
+                    }
+
+                    // 4. Calculate End Time (Add 1 hour by default if no explicit end time is present/parsable)
+                    let endObj = new Date(startObj.getTime() + 60 * 60 * 1000);
+                    if (appt.endTime) {
+                        let parsedEnd = new Date(`${appt.date.trim()} ${appt.endTime.trim()}`);
+                        if (isNaN(parsedEnd.getTime())) {
+                            parsedEnd = new Date(`${appt.date.trim()}T${appt.endTime.trim()}`);
+                        }
+                        if (!isNaN(parsedEnd.getTime())) {
+                            endObj = parsedEnd;
+                        }
+                    }
+
+                    // 5. Insert Appointment Schedule
+                    const startStr = startObj.toISOString().slice(0, 19).replace('T', ' ');
+                    const endStr = endObj.toISOString().slice(0, 19).replace('T', ' ');
+
+                    await database.insert(appointments).values({
+                        conversationId: convId,
+                        artistId: ctx.user.id,
+                        clientId: clientId,
+                        title: appt.serviceName || "Imported Appointment",
+                        startTime: startStr,
+                        endTime: endStr,
+                        status: "confirmed",
+                        serviceName: appt.serviceName || "Imported Appointment",
+                        timeZone: "Australia/Brisbane", // Configured later based on user settings
+                    });
+
+                    results.success++;
+                } catch (error) {
+                    console.error("[DataImport] Appointment Row failure:", error);
                     results.failed++;
                 }
             }
