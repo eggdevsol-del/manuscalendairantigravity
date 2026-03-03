@@ -97,9 +97,10 @@ export const dataImportRouter = router({
                             artistId: ctx.user.id,
                             clientId: clientId
                         });
+                        results.success++;
+                    } else {
+                        results.skipped++;
                     }
-
-                    results.success++;
                 } catch (error) {
                     console.error("[DataImport] Row failure:", error);
                     results.failed++;
@@ -246,6 +247,19 @@ export const dataImportRouter = router({
                     // Convert to MySQL compatible UTC strings (stripping the 'T' and 'Z')
                     const startStr = new Date(startTimeUTC).toISOString().slice(0, 19).replace('T', ' ');
                     const endStr = new Date(endTimeUTC).toISOString().slice(0, 19).replace('T', ' ');
+
+                    const existingAppt = await database.query.appointments.findFirst({
+                        where: and(
+                            eq(appointments.artistId, ctx.user.id),
+                            eq(appointments.clientId, clientId),
+                            eq(appointments.startTime, startStr)
+                        )
+                    });
+
+                    if (existingAppt) {
+                        results.skipped++;
+                        continue;
+                    }
 
                     await database.insert(appointments).values({
                         conversationId: convId,
