@@ -124,7 +124,7 @@ export const dataImportRouter = router({
                         serviceName: z.string().optional(),
                     })
                 ),
-                serviceMap: z.record(z.string(), z.string()).optional(),
+                serviceMap: z.record(z.string(), z.string().nullish()).optional(),
             })
         )
         .mutation(async ({ ctx, input }) => {
