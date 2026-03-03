@@ -132,10 +132,15 @@ export function EditBookingModal({
                 // Append to existing services
                 const updatedServices = [...effectiveServices, newServiceEntry];
 
+                // Strip nulls from artistSettings to satisfy Zod .optional() rules
+                const sanitizedSettings = Object.fromEntries(
+                    Object.entries(artistSettings || {}).filter(([_, v]) => v !== null)
+                );
+
                 await saveArtistSettings.mutateAsync({
-                    ...artistSettings,
+                    ...(sanitizedSettings as any),
                     services: JSON.stringify(updatedServices),
-                    workSchedule: (artistSettings as any)?.workSchedule ? JSON.stringify((artistSettings as any).workSchedule) : "{}" // Satisfy zod req
+                    workSchedule: sanitizedSettings.workSchedule ? JSON.stringify(sanitizedSettings.workSchedule) : "{}"
                 });
 
                 finalServiceName = newServiceEntry.name;
