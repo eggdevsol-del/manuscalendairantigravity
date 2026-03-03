@@ -21,6 +21,18 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
     const [isReviewing, setIsReviewing] = useState(false);
     const [reviewStats, setReviewStats] = useState({ valid: 0, skipped: 0 });
 
+    const [uniqueServices, setUniqueServices] = useState<string[]>([]);
+    const [serviceMap, setServiceMap] = useState<Record<string, string>>({});
+
+    const { data: artistSettings } = trpc.artistSettings.get.useQuery();
+    let internalServices: any[] = [];
+    if (artistSettings?.services) {
+        try {
+            const parsed = JSON.parse(artistSettings.services);
+            if (Array.isArray(parsed)) internalServices = parsed;
+        } catch (e) { }
+    }
+
     // Core Client Mappings
     const [nameCol, setNameCol] = useState<string>("");
     const [phoneCol, setPhoneCol] = useState<string>("");
@@ -110,6 +122,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
     const handleReview = () => {
         let valid = 0;
         let skipped = 0;
+        const extractedServices = new Set<string>();
 
         csvData.forEach((row) => {
             const hasName = nameCol && row[nameCol]?.trim();
@@ -137,8 +150,13 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                     if (isNaN(testDate.getTime())) {
                         testDate = new Date(`${row[dateCol].trim()}T${row[startTimeCol].trim()}`);
                     }
-                    if (!isNaN(testDate.getTime())) valid++;
-                    else skipped++;
+                    if (!isNaN(testDate.getTime())) {
+                        valid++;
+                        // Extract unique service names for mapping UI
+                        if (importMode === "appointments" && serviceCol && row[serviceCol]?.trim()) {
+                            extractedServices.add(row[serviceCol].trim());
+                        }
+                    } else skipped++;
                 } else {
                     skipped++;
                 }
@@ -146,6 +164,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
         });
 
         setReviewStats({ valid, skipped });
+        setUniqueServices(Array.from(extractedServices));
         setIsReviewing(true);
     };
 
@@ -212,7 +231,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                 toast.error("No valid appointments found containing both Date and Start Time.");
                 return;
             }
-            appointmentMutation.mutate({ appointments: payload });
+            appointmentMutation.mutate({ appointments: payload, serviceMap: serviceMap });
         }
     };
 
@@ -289,6 +308,8 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                     <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground" onClick={() => {
                                         setFile(null);
                                         setCsvHeaders([]);
+                                        setUniqueServices([]);
+                                        setServiceMap({});
                                         setIsReviewing(false);
                                     }}>
                                         Remove
@@ -314,11 +335,42 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                         </div>
                                     </div>
 
+                                    {importMode === "appointments" && uniqueServices.length > 0 && (
+                                        <div className="space-y-4 pt-6 border-t border-white/5">
+                                            <div className="mb-2">
+                                                <h4 className="text-sm font-medium text-foreground">Map Imported Services</h4>
+                                                <p className="text-[11px] text-muted-foreground leading-relaxed mt-1">We detected these raw external service names from your spreadsheet. You can assign them to your internal services now so they inherit the correct price and duration, or leave them as mystery strings to edit locally later.</p>
+                                            </div>
+                                            <div className="space-y-3">
+                                                {uniqueServices.map(extService => (
+                                                    <div key={extService} className="flex flex-col gap-2 p-3 bg-white/5 border border-white/10 rounded-[4px]">
+                                                        <Label className="text-xs font-semibold">{extService}</Label>
+                                                        <Select value={serviceMap[extService] || "SKIP"} onValueChange={(val) => setServiceMap(prev => ({ ...prev, [extService]: val }))}>
+                                                            <SelectTrigger className="w-full bg-black/40 border-white/10 rounded-[4px] h-9 text-xs">
+                                                                <SelectValue placeholder="Do not map (Keep as mystery string)" />
+                                                            </SelectTrigger>
+                                                            <SelectContent className="z-[200] rounded-[4px]">
+                                                                <SelectItem value="SKIP" className="text-xs">Do not map (Keep as mystery string)</SelectItem>
+                                                                {internalServices.map((s: any) => (
+                                                                    <SelectItem key={s.id} value={s.id} className="text-xs">{s.name} ({s.duration}m)</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="grid grid-cols-2 gap-3 mt-6">
                                         <Button
                                             variant="outline"
                                             className="w-full text-xs h-12 rounded-[4px]"
-                                            onClick={() => setIsReviewing(false)}
+                                            onClick={() => {
+                                                setUniqueServices([]);
+                                                setServiceMap({});
+                                                setIsReviewing(false);
+                                            }}
                                         >
                                             Reset Mapping
                                         </Button>

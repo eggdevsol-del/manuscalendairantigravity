@@ -179,7 +179,7 @@ export function TeaserRegistrationForm({
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="Min. 8 characters"
-                  className="pr-10 border-gray-200 focus:border-gray-900 focus:ring-gray-900"
+                  className="pr-10 border-gray-200 focus:border-gray-900 focus:ring-gray-900 text-gray-900 placeholder:text-gray-400"
                   required
                   minLength={8}
                 />

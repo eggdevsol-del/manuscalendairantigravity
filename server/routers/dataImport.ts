@@ -1,7 +1,7 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import * as db from "../db";
-import { users, conversations, appointments } from "../../drizzle/schema";
+import { users, conversations, appointments, artistSettings } from "../../drizzle/schema";
 import { z } from "zod";
 import { eq, and, or } from "drizzle-orm";
 import { format, parseISO, isValid } from "date-fns";
@@ -124,6 +124,7 @@ export const dataImportRouter = router({
                         serviceName: z.string().optional(),
                     })
                 ),
+                serviceMap: z.record(z.string(), z.string()).optional(),
             })
         )
         .mutation(async ({ ctx, input }) => {
@@ -147,6 +148,18 @@ export const dataImportRouter = router({
                 skipped: 0,
                 failed: 0,
             };
+
+            // Fetch artist settings once to resolve mapped services
+            let internalServices: any[] = [];
+            const settings = await database.query.artistSettings.findFirst({
+                where: eq(artistSettings.userId, ctx.user.id)
+            });
+            if (settings?.services) {
+                try {
+                    const parsed = JSON.parse(settings.services);
+                    if (Array.isArray(parsed)) internalServices = parsed;
+                } catch (e) { }
+            }
 
             for (const appt of input.appointments) {
                 try {
@@ -221,9 +234,22 @@ export const dataImportRouter = router({
                         convId = newConv!.id;
                     }
 
-                    // 4. Calculate End Time (Add 1 hour by default if no explicit end time is present/parsable)
-                    let endObj = new Date(startObj.getTime() + 60 * 60 * 1000);
-                    if (appt.endTime) {
+                    // 4. Calculate End Time and Service Mapping Overrides
+                    let mappedService = null;
+                    if (appt.serviceName && input.serviceMap && input.serviceMap[appt.serviceName]) {
+                        const mappedId = input.serviceMap[appt.serviceName];
+                        if (mappedId !== "SKIP") {
+                            mappedService = internalServices.find((s: any) => s.id === mappedId);
+                        }
+                    }
+
+                    let defaultDurationMs = 60 * 60 * 1000;
+                    if (mappedService && typeof mappedService.duration === "number") {
+                        defaultDurationMs = mappedService.duration * 60 * 1000;
+                    }
+
+                    let endObj = new Date(startObj.getTime() + defaultDurationMs);
+                    if (appt.endTime && !mappedService) { // Only trust CSV end time if we aren't overriding via mapping
                         let parsedEnd = new Date(`${appt.date.trim()} ${appt.endTime.trim()}`);
                         if (isNaN(parsedEnd.getTime())) {
                             parsedEnd = new Date(`${appt.date.trim()}T${appt.endTime.trim()}`);
@@ -261,15 +287,19 @@ export const dataImportRouter = router({
                         continue;
                     }
 
+                    const finalServiceName = mappedService ? mappedService.name : (appt.serviceName || "Imported Appointment");
+                    const finalPrice = mappedService && typeof mappedService.price === "number" ? mappedService.price : undefined;
+
                     await database.insert(appointments).values({
                         conversationId: convId,
                         artistId: ctx.user.id,
                         clientId: clientId,
-                        title: appt.serviceName || "Imported Appointment",
+                        title: finalServiceName,
                         startTime: startStr,
                         endTime: endStr,
                         status: "confirmed",
-                        serviceName: appt.serviceName || "Imported Appointment",
+                        serviceName: finalServiceName,
+                        price: finalPrice,
                         timeZone: "Australia/Brisbane", // Configured later based on user settings
                     });
 

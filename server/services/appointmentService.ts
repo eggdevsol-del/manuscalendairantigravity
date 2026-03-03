@@ -631,3 +631,42 @@ export async function generateRequiredForms(appointmentId: number) {
 
   await db.insert(consentForms).values(forms);
 }
+
+/**
+ * Resolves imported mystery strings for a given client across all their appointments
+ */
+export async function resolveMysteryAppointments(
+  artistId: string,
+  clientId: string,
+  mysteryServiceName: string,
+  mappedServiceName: string,
+  mappedPrice: number,
+  mappedDuration: number
+) {
+  const db = await getDb();
+  if (!db) return;
+
+  const apptsToUpdate = await db.query.appointments.findMany({
+    where: and(
+      eq(appointments.artistId, artistId),
+      eq(appointments.clientId, clientId),
+      eq(appointments.serviceName, mysteryServiceName)
+    ),
+  });
+
+  for (const appt of apptsToUpdate) {
+    // Recalculate endTime based on startTime + mappedDuration
+    const start = new Date(appt.startTime);
+    start.setMinutes(start.getMinutes() + mappedDuration);
+    const newEndTime = toMySQL(start);
+
+    await db.update(appointments)
+      .set({
+        serviceName: mappedServiceName,
+        title: mappedServiceName, // Update title to reflect the mapped service
+        price: mappedPrice,
+        endTime: newEndTime,
+      })
+      .where(eq(appointments.id, appt.id));
+  }
+}

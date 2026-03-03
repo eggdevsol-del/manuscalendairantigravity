@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { FullScreenSheet, SheetHeader, LoadingState } from "./ui/ssot";
+import { LoadingState } from "./ui/ssot";
 import {
   Link2,
   Copy,
@@ -16,16 +16,16 @@ import {
   EyeOff,
   ExternalLink,
   AlertCircle,
+  ChevronLeft
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 interface FunnelSettingsProps {
-  isOpen: boolean;
-  onClose: () => void;
+  onBack: () => void;
 }
 
-export function FunnelSettings({ isOpen, onClose }: FunnelSettingsProps) {
+export function FunnelSettings({ onBack }: FunnelSettingsProps) {
   const [slug, setSlug] = useState("");
   const [originalSlug, setOriginalSlug] = useState("");
   const [funnelEnabled, setFunnelEnabled] = useState(true);
@@ -38,8 +38,8 @@ export function FunnelSettings({ isOpen, onClose }: FunnelSettingsProps) {
     data: settings,
     isLoading,
     refetch,
-  } = trpc.artistSettings.get.useQuery();
-  const updateSettings = trpc.artistSettings.upsert.useMutation({
+  } = trpc.funnel.getFunnelSettings.useQuery();
+  const updateSettings = trpc.funnel.updateFunnelSettings.useMutation({
     onSuccess: () => {
       toast.success("Funnel settings updated");
       refetch();
@@ -61,7 +61,7 @@ export function FunnelSettings({ isOpen, onClose }: FunnelSettingsProps) {
       const currentSlug = settings.publicSlug || "";
       setSlug(currentSlug);
       setOriginalSlug(currentSlug);
-      setFunnelEnabled(settings.funnelEnabled ?? true);
+      setFunnelEnabled(!!settings.funnelEnabled);
       setWelcomeMessage(settings.funnelWelcomeMessage || "");
     }
   }, [settings]);
@@ -70,7 +70,7 @@ export function FunnelSettings({ isOpen, onClose }: FunnelSettingsProps) {
   const validateSlug = (value: string): string | null => {
     if (!value) return "Slug is required";
     if (value.length < 3) return "Slug must be at least 3 characters";
-    if (value.length > 30) return "Slug must be 30 characters or less";
+    if (value.length > 50) return "Slug must be 50 characters or less";
     if (!/^[a-z0-9-]+$/.test(value))
       return "Only lowercase letters, numbers, and hyphens allowed";
     if (value.startsWith("-") || value.endsWith("-"))
@@ -161,179 +161,189 @@ export function FunnelSettings({ isOpen, onClose }: FunnelSettingsProps) {
 
   if (isLoading) {
     return (
-      <FullScreenSheet isOpen={isOpen} onClose={onClose}>
-        <SheetHeader title="Booking Link" onClose={onClose} />
-        <div className="flex-1 flex items-center justify-center">
+      <div className="w-full h-full flex flex-col overflow-hidden relative">
+        <div className="flex items-center justify-center h-full">
           <LoadingState />
         </div>
-      </FullScreenSheet>
+      </div>
     );
   }
 
   return (
-    <FullScreenSheet isOpen={isOpen} onClose={onClose}>
-      <SheetHeader title="Booking Link" onClose={onClose} />
+    <div className="w-full h-full flex flex-col overflow-hidden relative">
+      {/* 1. Page Header - Floating style */}
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+        <button
+          onClick={onBack}
+          className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5 text-foreground" />
+        </button>
+        <h2 className="text-xl font-semibold text-foreground">Booking Link</h2>
+      </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* Enable/Disable Toggle */}
-        <div className="bg-white/5 rounded-2xl p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {funnelEnabled ? (
-                <Eye className="w-5 h-5 text-green-400" />
-              ) : (
-                <EyeOff className="w-5 h-5 text-white/40" />
-              )}
+      {/* 2. Scroll Container */}
+      <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
+        <div className="pb-[180px] max-w-lg mx-auto space-y-6 px-4 pt-6">
+          {/* Enable/Disable Toggle */}
+          <div className="bg-white/5 rounded-2xl p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {funnelEnabled ? (
+                  <Eye className="w-5 h-5 text-green-400" />
+                ) : (
+                  <EyeOff className="w-5 h-5 text-white/40" />
+                )}
+                <div>
+                  <p className="text-white font-medium">Public Booking Link</p>
+                  <p className="text-white/60 text-sm">
+                    {funnelEnabled
+                      ? "Clients can request consultations"
+                      : "Link is disabled"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setFunnelEnabled(!funnelEnabled)}
+                className={`w-12 h-7 rounded-full transition-colors relative ${funnelEnabled ? "bg-[#7C5CFC]" : "bg-white/20"
+                  }`}
+              >
+                <div
+                  className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-transform ${funnelEnabled ? "left-6" : "left-1"
+                    }`}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Your Link */}
+          <div>
+            <h3 className="text-white font-medium mb-3 flex items-center gap-2">
+              <Link2 className="w-4 h-4" />
+              Your Link
+            </h3>
+
+            <div className="bg-white/5 rounded-2xl p-4 space-y-4">
+              {/* Slug Input */}
               <div>
-                <p className="text-white font-medium">Public Booking Link</p>
-                <p className="text-white/60 text-sm">
-                  {funnelEnabled
-                    ? "Clients can request consultations"
-                    : "Link is disabled"}
-                </p>
+                <label className="text-white/60 text-sm mb-2 block">
+                  Custom URL Slug
+                </label>
+                <div className="flex gap-2">
+                  <div className="flex-1 flex items-center bg-white/10 rounded-xl overflow-hidden">
+                    <span className="text-white/40 text-sm pl-3 pr-1">
+                      /start/
+                    </span>
+                    <input
+                      type="text"
+                      value={slug}
+                      onChange={e => handleSlugChange(e.target.value)}
+                      onBlur={handleCheckSlug}
+                      placeholder="yourname"
+                      className="flex-1 bg-transparent border-0 py-3 pr-3 text-white placeholder:text-white/30 focus:outline-none"
+                    />
+                  </div>
+                </div>
+                {slugError && (
+                  <p className="text-red-400 text-sm mt-2 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {slugError}
+                  </p>
+                )}
+                {isCheckingSlug && (
+                  <p className="text-white/60 text-sm mt-2">
+                    Checking availability...
+                  </p>
+                )}
+              </div>
+
+              {/* Full URL Display */}
+              {slug && !slugError && (
+                <div className="bg-white/5 rounded-xl p-3">
+                  <p className="text-white/60 text-xs mb-1">Your booking link:</p>
+                  <p className="text-white font-mono text-sm break-all">
+                    {funnelUrl}
+                  </p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCopy}
+                  disabled={!slug || !!slugError}
+                  className="flex-1 bg-white/10 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+                <button
+                  onClick={handleShare}
+                  disabled={!slug || !!slugError}
+                  className="flex-1 bg-white/10 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Share
+                </button>
+                <button
+                  onClick={handlePreview}
+                  disabled={!slug || !!slugError}
+                  className="bg-white/10 text-white p-3 rounded-xl disabled:opacity-50"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                </button>
               </div>
             </div>
-            <button
-              onClick={() => setFunnelEnabled(!funnelEnabled)}
-              className={`w-12 h-7 rounded-full transition-colors relative ${
-                funnelEnabled ? "bg-[#7C5CFC]" : "bg-white/20"
-              }`}
-            >
-              <div
-                className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-transform ${
-                  funnelEnabled ? "left-6" : "left-1"
-                }`}
+          </div>
+
+          {/* Welcome Message */}
+          <div>
+            <h3 className="text-white font-medium mb-3">Welcome Message</h3>
+            <div className="bg-white/5 rounded-2xl p-4">
+              <textarea
+                value={welcomeMessage}
+                onChange={e => setWelcomeMessage(e.target.value)}
+                placeholder="Welcome! I'm excited to work with you on your next tattoo. Fill out this form to get started..."
+                rows={4}
+                className="w-full bg-white/10 border-0 rounded-xl px-4 py-3 text-white placeholder:text-white/40 resize-none"
               />
+              <p className="text-white/40 text-xs mt-2">
+                This message appears at the top of your booking funnel.
+              </p>
+            </div>
+          </div>
+
+          {/* Tips */}
+          <div className="bg-[#7C5CFC]/10 rounded-2xl p-4">
+            <h4 className="text-[#7C5CFC] font-medium mb-2">
+              Tips for your link
+            </h4>
+            <ul className="text-white/70 text-sm space-y-2">
+              <li>• Add it to your Instagram bio</li>
+              <li>• Share it in your TikTok profile</li>
+              <li>• Include it in your email signature</li>
+              <li>• Use it when replying to DM inquiries</li>
+            </ul>
+          </div>
+
+          {/* Save Button */}
+          <div className="pt-4">
+            <button
+              onClick={handleSave}
+              disabled={updateSettings.isPending || !!slugError}
+              className="w-full bg-[#7C5CFC] text-white py-4 rounded-2xl font-medium disabled:opacity-50"
+            >
+              {updateSettings.isPending ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </div>
 
-        {/* Your Link */}
-        <div>
-          <h3 className="text-white font-medium mb-3 flex items-center gap-2">
-            <Link2 className="w-4 h-4" />
-            Your Link
-          </h3>
-
-          <div className="bg-white/5 rounded-2xl p-4 space-y-4">
-            {/* Slug Input */}
-            <div>
-              <label className="text-white/60 text-sm mb-2 block">
-                Custom URL Slug
-              </label>
-              <div className="flex gap-2">
-                <div className="flex-1 flex items-center bg-white/10 rounded-xl overflow-hidden">
-                  <span className="text-white/40 text-sm pl-3 pr-1">
-                    /start/
-                  </span>
-                  <input
-                    type="text"
-                    value={slug}
-                    onChange={e => handleSlugChange(e.target.value)}
-                    onBlur={handleCheckSlug}
-                    placeholder="yourname"
-                    className="flex-1 bg-transparent border-0 py-3 pr-3 text-white placeholder:text-white/30 focus:outline-none"
-                  />
-                </div>
-              </div>
-              {slugError && (
-                <p className="text-red-400 text-sm mt-2 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {slugError}
-                </p>
-              )}
-              {isCheckingSlug && (
-                <p className="text-white/60 text-sm mt-2">
-                  Checking availability...
-                </p>
-              )}
-            </div>
-
-            {/* Full URL Display */}
-            {slug && !slugError && (
-              <div className="bg-white/5 rounded-xl p-3">
-                <p className="text-white/60 text-xs mb-1">Your booking link:</p>
-                <p className="text-white font-mono text-sm break-all">
-                  {funnelUrl}
-                </p>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex gap-2">
-              <button
-                onClick={handleCopy}
-                disabled={!slug || !!slugError}
-                className="flex-1 bg-white/10 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {copied ? (
-                  <Check className="w-4 h-4" />
-                ) : (
-                  <Copy className="w-4 h-4" />
-                )}
-                {copied ? "Copied!" : "Copy"}
-              </button>
-              <button
-                onClick={handleShare}
-                disabled={!slug || !!slugError}
-                className="flex-1 bg-white/10 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                <Share2 className="w-4 h-4" />
-                Share
-              </button>
-              <button
-                onClick={handlePreview}
-                disabled={!slug || !!slugError}
-                className="bg-white/10 text-white p-3 rounded-xl disabled:opacity-50"
-              >
-                <ExternalLink className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Welcome Message */}
-        <div>
-          <h3 className="text-white font-medium mb-3">Welcome Message</h3>
-          <div className="bg-white/5 rounded-2xl p-4">
-            <textarea
-              value={welcomeMessage}
-              onChange={e => setWelcomeMessage(e.target.value)}
-              placeholder="Welcome! I'm excited to work with you on your next tattoo. Fill out this form to get started..."
-              rows={4}
-              className="w-full bg-white/10 border-0 rounded-xl px-4 py-3 text-white placeholder:text-white/40 resize-none"
-            />
-            <p className="text-white/40 text-xs mt-2">
-              This message appears at the top of your booking funnel.
-            </p>
-          </div>
-        </div>
-
-        {/* Tips */}
-        <div className="bg-[#7C5CFC]/10 rounded-2xl p-4">
-          <h4 className="text-[#7C5CFC] font-medium mb-2">
-            Tips for your link
-          </h4>
-          <ul className="text-white/70 text-sm space-y-2">
-            <li>• Add it to your Instagram bio</li>
-            <li>• Share it in your TikTok profile</li>
-            <li>• Include it in your email signature</li>
-            <li>• Use it when replying to DM inquiries</li>
-          </ul>
-        </div>
       </div>
-
-      {/* Save Button */}
-      <div className="p-4 border-t border-white/10">
-        <button
-          onClick={handleSave}
-          disabled={updateSettings.isPending || !!slugError}
-          className="w-full bg-[#7C5CFC] text-white py-4 rounded-2xl font-medium disabled:opacity-50"
-        >
-          {updateSettings.isPending ? "Saving..." : "Save Changes"}
-        </button>
-      </div>
-    </FullScreenSheet>
+    </div>
   );
 }
 

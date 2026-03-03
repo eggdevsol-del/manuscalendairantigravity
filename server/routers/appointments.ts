@@ -5,6 +5,7 @@ import { eventBus } from "../_core/eventBus";
 import * as db from "../db";
 import { localToUTC, getBusinessTimezone } from "../../shared/utils/timezone";
 import { notificationOutbox } from "../../drizzle/schema";
+import { getBankDetailLabels } from "../../shared/utils/bankDetails";
 
 export const appointmentsRouter = router({
   getArtistCalendar: protectedProcedure
@@ -309,6 +310,34 @@ export const appointmentsRouter = router({
       }
 
       return db.deleteAppointmentsForClient(ctx.user.id, input.clientId, input.deleteProfile);
+    }),
+
+  resolveMysteryAppointments: protectedProcedure
+    .input(
+      z.object({
+        clientId: z.string(),
+        mysteryServiceName: z.string(),
+        mappedServiceName: z.string(),
+        mappedPrice: z.number(),
+        mappedDuration: z.number(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only artists can resolve imported appointments",
+        });
+      }
+
+      return db.resolveMysteryAppointments(
+        ctx.user.id,
+        input.clientId,
+        input.mysteryServiceName,
+        input.mappedServiceName,
+        input.mappedPrice,
+        input.mappedDuration
+      );
     }),
 
   confirmDeposit: artistProcedure

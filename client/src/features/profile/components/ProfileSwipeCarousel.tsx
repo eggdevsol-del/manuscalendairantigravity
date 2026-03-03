@@ -227,7 +227,7 @@ export function ProfileSwipeCarousel({
                     // on touch devices if they start slightly horizontal
                   }}
                 >
-                  <div className="px-4 h-full">{tab.content}</div>
+                  <div className="px-4 min-h-full">{tab.content}</div>
                 </div>
               ))}
             </motion.div>

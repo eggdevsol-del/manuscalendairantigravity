@@ -99,7 +99,7 @@ export const funnelRouter = router({
 
       return {
         id: artist.id,
-        displayName: artist.name || "Artist",
+        displayName: settings.businessName || settings.displayName || artist.name || "Artist",
         profileImage: artist.avatar || null,
         slug: settings.publicSlug,
         funnelWelcomeMessage: settings.funnelWelcomeMessage,
@@ -254,7 +254,7 @@ export const funnelRouter = router({
         const existingLead = await db.query.leads.findFirst({
           where: and(
             eq(schema.leads.artistId, artistId),
-            eq(schema.leads.email, flatData.email.toLowerCase())
+            eq(schema.leads.clientEmail, flatData.email.toLowerCase())
           ),
         });
 
@@ -263,8 +263,8 @@ export const funnelRouter = router({
           await db
             .update(schema.leads)
             .set({
-              name: flatData.name,
-              phone: flatData.phone || null,
+              clientName: flatData.name,
+              clientPhone: flatData.phone || null,
               projectType: flatData.projectType || null,
               projectDescription: flatData.projectDescription || null,
               stylePreferences: flatData.stylePreferences
@@ -297,11 +297,11 @@ export const funnelRouter = router({
           const [newLead] = await db.insert(schema.leads).values({
             artistId,
             source: "funnel",
-            sourceUrl: `/start/${input.artistSlug}`,
+            sourceDetails: `/start/${input.artistSlug}`,
             status: "new",
-            name: flatData.name,
-            email: flatData.email.toLowerCase(),
-            phone: flatData.phone || null,
+            clientName: flatData.name,
+            clientEmail: flatData.email.toLowerCase(),
+            clientPhone: flatData.phone || null,
             projectType: flatData.projectType || null,
             projectDescription: flatData.projectDescription || null,
             stylePreferences: flatData.stylePreferences
@@ -333,7 +333,7 @@ export const funnelRouter = router({
           // Create a consultation record linked to the lead
           const [consultation] = await db.insert(schema.consultations).values({
             artistId,
-            clientId: null, // Will be linked when client account is created
+            clientId: null,
             leadId,
             subject: flatData.projectType || "New Consultation",
             description: flatData.projectDescription || "",
@@ -347,10 +347,8 @@ export const funnelRouter = router({
             artistId,
             clientId: null,
             leadId,
-            consultationId: consultation.insertId,
-            lastMessageAt: nowFormatted,
+            pinnedConsultationId: consultation.insertId,
             createdAt: nowFormatted,
-            updatedAt: nowFormatted,
           });
 
           // Create initial message with funnel summary
@@ -419,9 +417,9 @@ export const funnelRouter = router({
       let query = db.query.leads.findMany({
         where: input.status
           ? and(
-              eq(schema.leads.artistId, user.id),
-              eq(schema.leads.status, input.status)
-            )
+            eq(schema.leads.artistId, user.id),
+            eq(schema.leads.status, input.status as any)
+          )
           : eq(schema.leads.artistId, user.id),
         orderBy: [desc(schema.leads.createdAt)],
         limit: input.limit,
@@ -502,12 +500,7 @@ export const funnelRouter = router({
       await db
         .update(schema.leads)
         .set({
-          status: input.status,
-          contactedAt:
-            input.status === "contacted" && !lead.contactedAt
-              ? now
-              : lead.contactedAt,
-          convertedAt: input.status === "converted" ? now : lead.convertedAt,
+          status: input.status as any,
           updatedAt: now,
         })
         .where(eq(schema.leads.id, input.leadId));

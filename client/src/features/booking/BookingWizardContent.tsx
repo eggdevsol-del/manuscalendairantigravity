@@ -226,8 +226,10 @@ export function BookingWizardContent({
   const [showCheckInModal, setShowCheckInModal] = useState<CheckInPhase | null>(
     null
   );
+  const [mysteryMapSelectedServiceId, setMysteryMapSelectedServiceId] = useState("");
 
   // Fetch dynamic services based on the TARGET artist, not necessarily the logged-in user
+
   // The parent component passes artistServices based on the URL context, but in the FAB we need dynamic
   const { data: dynamicArtistSettings } =
     trpc.artistSettings.getPublicByArtistId.useQuery(
@@ -322,7 +324,7 @@ export function BookingWizardContent({
       }
       if (selectedAppointmentRaw?.id) {
         utils.appointments.getByConversation.invalidate(conversationId);
-        utils.appointments.list.invalidate();
+        utils.appointments.getArtistCalendar.invalidate();
       }
       onBookingSuccess();
     },
@@ -330,6 +332,33 @@ export function BookingWizardContent({
       toast.error("Failed to update appointment: " + err.message);
     },
   });
+
+  const resolveMysteryMutation = trpc.appointments.resolveMysteryAppointments.useMutation({
+    onSuccess: () => {
+      toast.success("Imported appointments updated successfully!");
+      setMysteryMapSelectedServiceId("");
+      utils.appointments.getByConversation.invalidate(conversationId);
+      utils.appointments.getArtistCalendar.invalidate();
+      onBookingSuccess();
+    },
+    onError: err => {
+      toast.error("Failed to resolve mystery appointments: " + err.message);
+    }
+  });
+
+  const handleMapMysteryService = () => {
+    if (!mysteryMapSelectedServiceId || !selectedAppointmentRaw) return;
+    const targetService = effectiveServices.find((s: any) => s.id === mysteryMapSelectedServiceId);
+    if (!targetService) return;
+
+    resolveMysteryMutation.mutate({
+      clientId: selectedAppointmentRaw.clientId,
+      mysteryServiceName: selectedAppointmentRaw.serviceName,
+      mappedServiceName: targetService.name,
+      mappedPrice: Number(targetService.price) || 0,
+      mappedDuration: Number(targetService.duration) || 60,
+    });
+  };
 
   const handleConfirmBooking = () => {
     if (!availability?.dates || !selectedService || !conversationId) return;
@@ -990,10 +1019,136 @@ export function BookingWizardContent({
         />
       )}
 
+      {/* ===== STANDALONE / IMPORTED APPOINTMENT VIEW ===== */}
+      {!isLoadingProposal && !showProposal && !activeForm && !showVoucherList && selectedAppointmentRaw && (
+        <div className="flex flex-col gap-2 w-full">
+          <motion.div variants={fab.animation.item}>
+            <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-primary/70 mb-0.5">
+              Saved Appointment
+            </p>
+            <h3 className="text-sm font-bold text-foreground leading-tight">
+              {selectedAppointmentRaw.title}
+            </h3>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              {format(new Date(selectedAppointmentRaw.startTime), "EEEE, MMMM do, h:mm a")}
+            </p>
+          </motion.div>
+
+          {/* Mystery String Resolver */}
+          {isArtist && selectedAppointmentRaw.serviceName && effectiveServices && !effectiveServices.some((s: any) => s.name === selectedAppointmentRaw.serviceName) && (
+            <motion.div variants={fab.animation.item} className="mt-2 pt-2 border-t border-white/5 space-y-2">
+              <div className="flex items-start gap-2 px-2 py-1.5 bg-yellow-500/10 rounded-[4px]">
+                <AlertCircle className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest">
+                    Unmapped Service
+                  </p>
+                  <p className="text-[9px] text-yellow-500/80 leading-tight mt-0.5">
+                    "{selectedAppointmentRaw.serviceName}" is not in your services list. Map it to apply the correct price and duration to all imported appointments.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <select
+                  value={mysteryMapSelectedServiceId}
+                  onChange={e => setMysteryMapSelectedServiceId(e.target.value)}
+                  className="bg-zinc-900 border border-white/10 rounded-[4px] px-2 py-2 text-[11px] text-foreground w-full outline-none"
+                >
+                  <option value="">Select Service to Map...</option>
+                  {effectiveServices.map((s: any) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({s.duration}m / ${s.price})
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleMapMysteryService}
+                  disabled={!mysteryMapSelectedServiceId || resolveMysteryMutation.isPending}
+                  className="bg-primary text-primary-foreground font-bold text-[10px] uppercase tracking-wider px-3 rounded-[4px] disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center shrink-0 min-w-[70px]"
+                >
+                  {resolveMysteryMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Map All"}
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {isArtist && selectedAppointmentRaw.status === "completed" && (
+            <motion.div variants={fab.animation.item} className="pt-1">
+              <div className="flex items-center gap-2 px-3 py-2 bg-zinc-500/10 text-zinc-400 rounded-[4px] border border-zinc-500/20 justify-center">
+                <CheckCircle2 className="w-4 h-4" />
+                <span className="text-[10px] font-bold uppercase tracking-widest">
+                  Project Complete
+                </span>
+              </div>
+            </motion.div>
+          )}
+
+          {isArtist && selectedAppointmentRaw.status !== "completed" && (
+            <motion.div variants={fab.animation.item} className="pt-1 flex flex-col gap-2">
+              {!(
+                selectedAppointmentRaw.clientArrived === 1 ||
+                selectedAppointmentRaw.clientArrived === true
+              ) ? (
+                <button
+                  onClick={() => setShowCheckInModal("arrival")}
+                  className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 flex items-center justify-center gap-2"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Client Check-in
+                </button>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/10 text-emerald-500 rounded-[4px] border border-emerald-500/20 justify-center">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">
+                      In Progress
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setShowCheckInModal("completion")}
+                    className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 mt-1"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    Finish Project
+                  </button>
+                </>
+              )}
+            </motion.div>
+          )}
+
+          {showGoToChat && (
+            <motion.div variants={fab.animation.item} className="pt-1">
+              <button
+                onClick={onGoToChat}
+                className={cn(
+                  card.base,
+                  card.bgAccent,
+                  card.interactive,
+                  "flex items-center gap-2 p-2 w-full rounded-[4px] border border-primary/20"
+                )}
+              >
+                <div className={cn(fab.itemButtonHighlight, "shrink-0 !w-7 !h-7")}>
+                  <MessageCircle className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[10px] font-bold text-foreground">
+                  Go to Chat
+                </span>
+              </button>
+            </motion.div>
+          )}
+        </div>
+      )}
+
+      {/* ===== BOOKING WIZARD ===== */}
       {!isLoadingProposal &&
         !showProposal &&
         !activeForm &&
-        !showVoucherList && (
+        !showVoucherList &&
+        !selectedAppointmentRaw && (
           <div className="flex flex-col gap-2 w-full">
             <motion.div variants={fab.animation.item} className={fab.itemRow}>
               {step !== "service" && step !== "success" && (
@@ -1436,7 +1591,7 @@ export function BookingWizardContent({
                 {(!showProposal && selectedAppointmentRaw && selectedAppointmentRaw.status === "confirmed") ? (
                   // Native Read-Only View for Imported Bookings
                   (() => {
-                    const serviceFallback = artistData?.services?.find(s => s.id === selectedAppointmentRaw.serviceId);
+                    const serviceFallback = effectiveServices?.find((s: any) => s.id === selectedAppointmentRaw.serviceId);
                     return (
                       <div className="flex-1 flex flex-col p-6 animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both" style={{
                         animationDelay: '100ms',
@@ -1448,7 +1603,7 @@ export function BookingWizardContent({
 
                           <div>
                             <h2 className="text-xl font-bold text-foreground">
-                              {selectedClient?.name || "Imported Booking"}
+                              {clientNameOverride || "Imported Booking"}
                             </h2>
                             <p className="text-sm font-semibold text-primary/80 mt-1 uppercase tracking-wider">
                               {serviceFallback?.title || selectedAppointmentRaw.notes?.split(":")[0] || "Custom Service"}
@@ -1469,16 +1624,11 @@ export function BookingWizardContent({
                               </div>
                             </div>
 
-                            {(selectedClient?.phone || selectedClient?.email) && (
+                            {/* Fallback for MessageSquare since it might not be imported */}
+                            {false && (
                               <div className="flex items-center gap-3 pt-4 border-t border-white/5">
-                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                  <MessageSquare className="w-4 h-4 text-primary" />
-                                </div>
                                 <div className="text-left">
                                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Contact</p>
-                                  <p className="text-sm font-semibold text-foreground">
-                                    {selectedClient?.phone || selectedClient?.email}
-                                  </p>
                                 </div>
                               </div>
                             )}
@@ -1486,8 +1636,7 @@ export function BookingWizardContent({
                         </div>
 
                         <div className="mt-8">
-                          <Button
-                            variant="ghost"
+                          <button
                             onClick={() => {
                               if (window.confirm("Are you sure you want to delete this imported appointment from your calendar?")) {
                                 toast.success("Appointment deleted natively.");
@@ -1495,10 +1644,10 @@ export function BookingWizardContent({
                                 onClose();
                               }
                             }}
-                            className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive h-12"
+                            className="w-full text-red-500 hover:bg-red-500/10 h-12 rounded-[4px] uppercase tracking-wider font-bold text-[10px]"
                           >
                             Delete Imported Booking
-                          </Button>
+                          </button>
                         </div>
                       </div>
                     );

@@ -196,9 +196,9 @@ export const consultations = mysqlTable(
     artistId: varchar({ length: 64 })
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    clientId: varchar({ length: 64 })
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+    clientId: varchar({ length: 64 }).references(() => users.id, {
+      onDelete: "cascade",
+    }),
     conversationId: int().references(() => conversations.id, {
       onDelete: "cascade",
     }),
@@ -231,9 +231,9 @@ export const conversations = mysqlTable(
     artistId: varchar({ length: 64 })
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    clientId: varchar({ length: 64 })
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+    clientId: varchar({ length: 64 }).references(() => users.id, {
+      onDelete: "cascade",
+    }),
     leadId: int(),
     pinnedConsultationId: int(), // Breaking circular reference for now
     lastMessageAt: timestamp({ mode: "string" }).default(sql`(now())`),

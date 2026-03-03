@@ -23,8 +23,9 @@ import { useUIDebug } from "@/_core/contexts/UIDebugContext";
 import { forceUpdate } from "@/lib/pwa";
 
 import { DataImportSettings } from "../settings/DataImportSettings";
+import { FunnelSettings } from "../FunnelSettings";
 
-type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions" | "data-import";
+type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions" | "data-import" | "booking-link";
 
 interface CentralNavFABProps {
   className?: string;
@@ -97,6 +98,13 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           label: "Clients",
           icon: User, // using User icon
           onClick: () => handleViewChange("clients"),
+          closeOnClick: false,
+        },
+        {
+          id: "booking-link",
+          label: "Booking Link",
+          icon: Link,
+          onClick: () => handleViewChange("booking-link"),
           closeOnClick: false,
         },
         {
@@ -204,9 +212,8 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
 
   const handleCopyLink = () => {
     if (!artistSettings?.publicSlug) {
-      toast.error(
-        "Booking link not configured. Please set your public slug in settings."
-      );
+      toast.info("Booking link not configured yet. Let's set it up!");
+      handleViewChange("booking-link");
       return;
     }
     const url = `${window.location.origin}/start/${artistSettings.publicSlug}`;
@@ -335,6 +342,11 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
         {activeSettingsView === "data-import" && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <DataImportSettings onBack={() => handleViewChange("settings-menu")} />
+          </div>
+        )}
+        {activeSettingsView === "booking-link" && (
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
+            <FunnelSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {activeSettingsView === "regulation" && (
