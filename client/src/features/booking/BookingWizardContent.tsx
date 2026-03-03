@@ -347,17 +347,28 @@ export function BookingWizardContent({
   });
 
   const handleMapMysteryService = () => {
+    console.log("MAP ALL INITIATED", { mysteryMapSelectedServiceId, selectedAppointmentRaw });
     if (!mysteryMapSelectedServiceId || !selectedAppointmentRaw) return;
-    const targetService = effectiveServices.find((s: any) => s.id.toString() === mysteryMapSelectedServiceId);
-    if (!targetService) return;
 
-    resolveMysteryMutation.mutate({
-      clientId: selectedAppointmentRaw.clientId,
-      mysteryServiceName: selectedAppointmentRaw.serviceName,
-      mappedServiceName: targetService.name,
+    const targetService = effectiveServices.find((s: any) => String(s.id) === String(mysteryMapSelectedServiceId));
+    console.log("TARGET SERVICE MATCHED:", targetService);
+
+    if (!targetService) {
+      toast.error("Failed to find matching service in your settings.");
+      return;
+    }
+
+    const payload = {
+      clientId: String(selectedAppointmentRaw.clientId),
+      mysteryServiceName: String(selectedAppointmentRaw.serviceName || selectedAppointmentRaw.title),
+      mappedServiceName: String(targetService.name),
       mappedPrice: Number(targetService.price) || 0,
       mappedDuration: Number(targetService.duration) || 60,
-    });
+    };
+
+    console.log("DISPATCHING TO BACKEND:", payload);
+
+    resolveMysteryMutation.mutate(payload);
   };
 
   const handleConfirmBooking = () => {

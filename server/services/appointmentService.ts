@@ -646,27 +646,21 @@ export async function resolveMysteryAppointments(
   const db = await getDb();
   if (!db) return;
 
-  console.log("RESOLVE MYSTERY APPOINTMENT TRIGGERED:", {
-    artistId,
-    clientId,
-    mysteryServiceName,
-    mappedServiceName,
-    mappedPrice,
-    mappedDuration
-  });
+  const rawMystery = mysteryServiceName.trim();
 
+  // Find all appointments that have the mystery title OR serviceName
   const apptsToUpdate = await db.query.appointments.findMany({
     where: and(
       eq(appointments.artistId, artistId),
       or(
-        eq(appointments.serviceName, mysteryServiceName),
-        eq(appointments.title, mysteryServiceName)
+        eq(appointments.serviceName, rawMystery),
+        eq(appointments.title, rawMystery)
       )
     ),
   });
 
+  // Execute manual updates to force new durations and titles
   for (const appt of apptsToUpdate) {
-    // Recalculate endTime based on startTime + mappedDuration
     const start = new Date(appt.startTime);
     start.setMinutes(start.getMinutes() + mappedDuration);
     const newEndTime = toMySQL(start);
@@ -674,7 +668,7 @@ export async function resolveMysteryAppointments(
     await db.update(appointments)
       .set({
         serviceName: mappedServiceName,
-        title: mappedServiceName, // Update title to reflect the mapped service
+        title: mappedServiceName,
         price: mappedPrice,
         endTime: newEndTime,
       })
