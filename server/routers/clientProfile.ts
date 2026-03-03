@@ -368,6 +368,43 @@ export const clientProfileRouter = router({
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
     }),
+
+  updateClientProfile: protectedProcedure
+    .input(z.object({
+      clientId: z.string(),
+      name: z.string().min(1),
+      phone: z.string().optional().or(z.literal(""))
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can update client profiles." });
+      }
+
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      // Verify relationship
+      const { conversations } = await import("../../drizzle/schema");
+      const conv = await database.query.conversations.findFirst({
+        where: and(
+          eq(conversations.artistId, ctx.user.id),
+          eq(conversations.clientId, input.clientId)
+        )
+      });
+
+      if (!conv && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "You don't have permission to modify this client." });
+      }
+
+      await database.update(users)
+        .set({
+          name: input.name,
+          phone: input.phone || null
+        })
+        .where(eq(users.id, input.clientId));
+
+      return { success: true };
+    }),
 });
 
 function getActionTitle(action: string) {

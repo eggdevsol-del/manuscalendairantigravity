@@ -820,6 +820,36 @@ export const appointmentsRouter = router({
         return null;
       }
     }),
+
+  batchUpdateClientPrices: protectedProcedure
+    .input(z.object({
+      clientId: z.string(),
+      artistId: z.string(),
+      price: z.number().min(0)
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.id !== input.artistId && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized to batch update this context." });
+      }
+
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const nowString = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+      const { and, eq, gte } = await import("drizzle-orm");
+      await database.update(schema.appointments)
+        .set({ price: input.price })
+        .where(
+          and(
+            eq(schema.appointments.clientId, input.clientId),
+            eq(schema.appointments.artistId, input.artistId),
+            gte(schema.appointments.startTime, nowString)
+          )
+        );
+
+      return { success: true };
+    }),
 });
 
 // Helper function to send deposit info

@@ -23,6 +23,7 @@ import {
   getBusinessTimezone,
 } from "../../../../shared/utils/timezone";
 import { AppointmentCheckInModal } from "@/components/modals/AppointmentCheckInModal";
+import { EditBookingModal } from "@/components/modals/EditBookingModal";
 import type { CheckInPhase } from "@/features/appointments/useAppointmentCheckIn";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -226,6 +227,7 @@ export function BookingWizardContent({
   const [showCheckInModal, setShowCheckInModal] = useState<CheckInPhase | null>(
     null
   );
+  const [showEditBookingModal, setShowEditBookingModal] = useState(false);
   const [mysteryMapSelectedServiceId, setMysteryMapSelectedServiceId] = useState("");
 
   // Fetch dynamic services based on the TARGET artist, not necessarily the logged-in user
@@ -552,8 +554,23 @@ export function BookingWizardContent({
     );
   }
 
+  // Find the exact client object associated with this appointment/conversation if available in filteredClients
+  const matchedClient = filteredClients.find(
+    (c: any) => c?.id === currentUser?.id || c?.id === selectedAppointmentRaw?.clientId
+  );
+
   return (
     <div className="flex flex-col gap-2 w-full">
+      <EditBookingModal
+        isOpen={showEditBookingModal}
+        onClose={() => setShowEditBookingModal(false)}
+        appointment={selectedAppointmentRaw}
+        client={matchedClient}
+        onSuccess={() => {
+          setShowEditBookingModal(false);
+          // Optional: refetch controller data if necessary
+        }}
+      />
       {isLoadingProposal && (
         <div className="flex flex-col items-center justify-center py-10 gap-3">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -905,6 +922,24 @@ export function BookingWizardContent({
               </motion.div>
             )}
 
+            {isArtist && (
+              <motion.div variants={fab.animation.item} className="pt-1">
+                <button
+                  onClick={() => setShowEditBookingModal(true)}
+                  className={cn(
+                    card.base,
+                    card.bg,
+                    card.interactive,
+                    "flex justify-center items-center gap-2 py-2.5 w-full rounded-[4px] border border-white/5"
+                  )}
+                >
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                    Edit Booking
+                  </span>
+                </button>
+              </motion.div>
+            )}
+
             {!isArtist && pendingForms && pendingForms.length > 0 && (
               <motion.div variants={fab.animation.item} className="pt-1">
                 <button
@@ -1147,6 +1182,24 @@ export function BookingWizardContent({
                 </div>
                 <span className="text-[10px] font-bold text-foreground">
                   Go to Chat
+                </span>
+              </button>
+            </motion.div>
+          )}
+
+          {isArtist && (
+            <motion.div variants={fab.animation.item} className="pt-1">
+              <button
+                onClick={() => setShowEditBookingModal(true)}
+                className={cn(
+                  card.base,
+                  card.bg,
+                  card.interactive,
+                  "flex justify-center items-center gap-2 py-2.5 w-full rounded-[4px] border border-white/5"
+                )}
+              >
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                  Edit Booking
                 </span>
               </button>
             </motion.div>
