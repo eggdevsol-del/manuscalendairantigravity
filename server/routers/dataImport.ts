@@ -122,6 +122,7 @@ export const dataImportRouter = router({
                         startTime: z.string(),
                         endTime: z.string().optional(),
                         serviceName: z.string().optional(),
+                        price: z.number().optional(),
                     })
                 ),
                 serviceMap: z.record(z.string(), z.string().nullish()).optional(),
@@ -288,7 +289,7 @@ export const dataImportRouter = router({
                     }
 
                     const finalServiceName = mappedService ? mappedService.name : (appt.serviceName || "Imported Appointment");
-                    const finalPrice = mappedService && typeof mappedService.price === "number" ? mappedService.price : undefined;
+                    const finalPrice = appt.price !== undefined ? appt.price : (mappedService && typeof mappedService.price === "number" ? mappedService.price : undefined);
 
                     await database.insert(appointments).values({
                         conversationId: convId,

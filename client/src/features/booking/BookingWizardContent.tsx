@@ -1261,7 +1261,7 @@ export function BookingWizardContent({
                       />
                     </div>
 
-                    <div className="flex flex-col gap-1.5 min-h-[140px]">
+                    <div className="flex flex-col gap-1.5 min-h-[140px] max-h-[40vh] overflow-y-auto w-full touch-pan-y mobile-scroll px-1">
                       {filteredClients.map(client => {
                         if (!client) return null;
                         return (

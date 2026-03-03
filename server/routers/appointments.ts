@@ -617,7 +617,7 @@ export const appointmentsRouter = router({
         const created = await db.createAppointment({
           conversationId: input.conversationId,
           artistId: conversation.artistId,
-          clientId: conversation.clientId,
+          clientId: conversation.clientId as string,
           title: appt.title,
           description: appt.description,
           startTime: appt.startTime
@@ -777,7 +777,39 @@ export const appointmentsRouter = router({
           }
         });
 
-      if (!proposal) return null;
+      if (!proposal) {
+        // Fallback for standalone/imported appointments: Group by conversation and service name
+        const database = await db.getDb();
+        if (!database) return null;
+
+        const allInConvo = await database.query.appointments.findMany({
+          where: (a, { and, eq, ne, isNotNull }) => and(
+            eq(a.conversationId, appointment.conversationId),
+            isNotNull(a.serviceName),
+            eq(a.serviceName, appointment.serviceName || ""),
+            ne(a.status, "cancelled")
+          ),
+          orderBy: (a, { asc }) => [asc(a.startTime)],
+        });
+
+        // Only group if there are matching appointments
+        if (allInConvo.length > 0) {
+          const totalCost = allInConvo.reduce((sum: number, a: any) => sum + (a.price || 0), 0);
+
+          return {
+            message: { id: -1, messageType: "appointment_request" },
+            metadata: {
+              status: "accepted", // Auto-accept to show timeline
+              serviceName: appointment.serviceName || "Imported Project",
+              sittings: allInConvo.length,
+              totalCost: totalCost,
+              dates: allInConvo.map((a: any) => new Date(a.startTime).toISOString()),
+              serviceDuration: appointment.endTime ? Math.round((new Date(appointment.endTime).getTime() - new Date(appointment.startTime).getTime()) / 60000) : 60,
+            },
+          };
+        }
+        return null;
+      }
 
       try {
         return {
