@@ -646,11 +646,23 @@ export async function resolveMysteryAppointments(
   const db = await getDb();
   if (!db) return;
 
+  console.log("RESOLVE MYSTERY APPOINTMENT TRIGGERED:", {
+    artistId,
+    clientId,
+    mysteryServiceName,
+    mappedServiceName,
+    mappedPrice,
+    mappedDuration
+  });
+
   const apptsToUpdate = await db.query.appointments.findMany({
     where: and(
       eq(appointments.artistId, artistId),
       eq(appointments.clientId, clientId),
-      eq(appointments.serviceName, mysteryServiceName)
+      or(
+        eq(appointments.serviceName, mysteryServiceName),
+        eq(appointments.title, mysteryServiceName)
+      )
     ),
   });
 

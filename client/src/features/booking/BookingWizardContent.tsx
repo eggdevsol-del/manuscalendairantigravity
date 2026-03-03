@@ -1053,7 +1053,7 @@ export function BookingWizardContent({
                 <select
                   value={mysteryMapSelectedServiceId}
                   onChange={e => setMysteryMapSelectedServiceId(e.target.value)}
-                  className="bg-zinc-900 border border-white/10 rounded-[4px] px-2 py-2 text-[11px] text-foreground w-full outline-none"
+                  className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-[4px] px-2 py-2 text-[11px] text-zinc-900 dark:text-foreground w-full outline-none"
                 >
                   <option value="">Select Service to Map...</option>
                   {effectiveServices.map((s: any) => (
