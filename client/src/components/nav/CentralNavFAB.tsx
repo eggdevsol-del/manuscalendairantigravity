@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Settings, Plus, Sun, Moon, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database } from "lucide-react";
+import { Settings, Plus, Sun, Moon, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle } from "lucide-react";
 import { useLocation } from "wouter";
 import { FABMenu, FABMenuItem } from "@/ui/FABMenu";
 import { cn } from "@/lib/utils";
@@ -24,8 +24,9 @@ import { forceUpdate } from "@/lib/pwa";
 
 import { DataImportSettings } from "../settings/DataImportSettings";
 import { FunnelSettings } from "../FunnelSettings";
+import { DangerZoneSettings } from "../settings/DangerZoneSettings";
 
-type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions" | "data-import" | "booking-link";
+type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions" | "data-import" | "booking-link" | "danger-zone";
 
 interface CentralNavFABProps {
   className?: string;
@@ -134,6 +135,14 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
       }
 
       items.push(
+        {
+          id: "danger-zone",
+          label: "Danger Zone",
+          icon: AlertTriangle,
+          onClick: () => handleViewChange("danger-zone"),
+          closeOnClick: false,
+          className: "text-red-500 hover:text-red-400 hover:bg-red-500/10",
+        },
         {
           id: "subscriptions",
           label: "Subscription & Billing",
@@ -352,6 +361,11 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
         {activeSettingsView === "regulation" && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <RegulationSettings onBack={() => handleViewChange("settings-menu")} />
+          </div>
+        )}
+        {activeSettingsView === "danger-zone" && (
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
+            <DangerZoneSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {fabChildren && activeSettingsView === "main" && fabChildren}

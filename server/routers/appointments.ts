@@ -6,6 +6,8 @@ import * as db from "../db";
 import { localToUTC, getBusinessTimezone } from "../../shared/utils/timezone";
 import { notificationOutbox } from "../../drizzle/schema";
 import { getBankDetailLabels } from "../../shared/utils/bankDetails";
+import { eq } from "drizzle-orm";
+import * as schema from "../../drizzle/schema";
 
 export const appointmentsRouter = router({
   getArtistCalendar: protectedProcedure
@@ -310,6 +312,24 @@ export const appointmentsRouter = router({
       }
 
       return db.deleteAppointmentsForClient(ctx.user.id, input.clientId, input.deleteProfile);
+    }),
+
+  deleteAllForArtist: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only artists can delete all their bookings",
+        });
+      }
+
+      const database = await db.getDb();
+      if (!database) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      }
+
+      await database.delete(schema.appointments).where(eq(schema.appointments.artistId, ctx.user.id));
+      return { success: true };
     }),
 
   resolveMysteryAppointments: protectedProcedure

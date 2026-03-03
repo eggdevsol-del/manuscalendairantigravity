@@ -328,4 +328,24 @@ export const conversationsRouter = router({
 
       return conversation;
     }),
+
+  deleteAllClientsForArtist: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only artists can delete their clients list",
+        });
+      }
+
+      const database = await getDb();
+      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      // Severing the artist's conversations effectively empties their client roster.
+      // Simultaneously wiping appointments tied to them ensures total wiped state for the feature.
+      await database.delete(schema.conversations).where(eq(schema.conversations.artistId, ctx.user.id));
+      await database.delete(schema.appointments).where(eq(schema.appointments.artistId, ctx.user.id));
+
+      return { success: true };
+    }),
 });
