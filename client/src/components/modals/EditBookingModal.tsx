@@ -342,11 +342,13 @@ export function EditBookingModal({
                     </div>
                 </label>
 
-                <label className={cn(
-                    card.base,
-                    "flex items-center gap-3 p-3 rounded-[4px] cursor-pointer active:scale-[0.98] transition-all border border-transparent mt-2",
-                    applyToAll ? "bg-primary/10 border-primary/20" : card.bg
-                )}>
+                <label
+                    onClick={() => setApplyToAll(!applyToAll)}
+                    className={cn(
+                        card.base,
+                        "flex items-center gap-3 p-3 rounded-[4px] cursor-pointer active:scale-[0.98] transition-all border border-transparent mt-2",
+                        applyToAll ? "bg-primary/10 border-primary/20" : card.bg
+                    )}>
                     <div className={cn(
                         "w-4 h-4 rounded-[2px] border flex items-center justify-center transition-colors shrink-0",
                         applyToAll ? "bg-primary border-primary text-primary-foreground" : "border-white/20 bg-black/20"
