@@ -658,7 +658,6 @@ export async function resolveMysteryAppointments(
   const apptsToUpdate = await db.query.appointments.findMany({
     where: and(
       eq(appointments.artistId, artistId),
-      eq(appointments.clientId, clientId),
       or(
         eq(appointments.serviceName, mysteryServiceName),
         eq(appointments.title, mysteryServiceName)
