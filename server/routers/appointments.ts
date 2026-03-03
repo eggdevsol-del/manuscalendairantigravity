@@ -825,7 +825,8 @@ export const appointmentsRouter = router({
     .input(z.object({
       clientId: z.string(),
       artistId: z.string(),
-      price: z.number().min(0)
+      price: z.number().min(0),
+      serviceName: z.string().optional()
     }))
     .mutation(async ({ ctx, input }) => {
       if (ctx.user.id !== input.artistId && ctx.user.role !== "admin") {
@@ -838,8 +839,14 @@ export const appointmentsRouter = router({
       const nowString = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
       const { and, eq, gte } = await import("drizzle-orm");
+
+      const payload: any = { price: input.price };
+      if (input.serviceName) {
+        payload.serviceName = input.serviceName;
+      }
+
       await database.update(schema.appointments)
-        .set({ price: input.price })
+        .set(payload)
         .where(
           and(
             eq(schema.appointments.clientId, input.clientId),

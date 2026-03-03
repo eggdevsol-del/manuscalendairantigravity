@@ -41,7 +41,18 @@ export function EditBookingModal({
     const [name, setName] = useState(client?.name || appointment?.clientName || "");
     const [phone, setPhone] = useState(client?.phone || "");
 
-    // Tab 2: Cost
+    // Tab 2: Service & Cost
+    const { data: artistSettings } = trpc.artistSettings.getPublicByArtistId.useQuery(
+        { artistId: appointment?.artistId || "" },
+        { enabled: !!appointment?.artistId }
+    );
+    const effectiveServices = artistSettings?.services
+        ? (typeof artistSettings.services === "string" ? JSON.parse(artistSettings.services) : artistSettings.services)
+        : [];
+
+    const [serviceName, setServiceName] = useState<string>(appointment?.serviceName || "");
+    const [newServiceName, setNewServiceName] = useState("");
+    const [newServiceDuration, setNewServiceDuration] = useState("60");
     const [price, setPrice] = useState<string>(
         appointment?.price !== undefined && appointment?.price !== null
             ? String(appointment.price)
@@ -67,6 +78,7 @@ export function EditBookingModal({
     const updateProfileMutation = trpc.clientProfile.updateClientProfile.useMutation();
     const updateApptMutation = trpc.appointments.update.useMutation();
     const batchUpdatePricesMutation = trpc.appointments.batchUpdateClientPrices.useMutation();
+    const saveArtistSettings = trpc.artistSettings.upsert.useMutation();
 
     if (!isOpen || !appointment) return null;
 
@@ -100,19 +112,52 @@ export function EditBookingModal({
             const parsedPrice = parseFloat(price);
             if (isNaN(parsedPrice)) throw new Error("Invalid price");
 
+            let finalServiceName = serviceName;
+
+            // Handle New Service Creation inline
+            if (serviceName === "__NEW__") {
+                if (!newServiceName.trim()) throw new Error("Please provide a name for the new service");
+
+                const durationNum = parseInt(newServiceDuration) || 60;
+
+                // Construct new service object
+                const newServiceEntry = {
+                    id: crypto.randomUUID(),
+                    name: newServiceName.trim(),
+                    duration: durationNum,
+                    price: parsedPrice,
+                    color: "#9333ea"
+                };
+
+                // Append to existing services
+                const updatedServices = [...effectiveServices, newServiceEntry];
+
+                await saveArtistSettings.mutateAsync({
+                    ...artistSettings,
+                    services: JSON.stringify(updatedServices),
+                    workSchedule: (artistSettings as any)?.workSchedule ? JSON.stringify((artistSettings as any).workSchedule) : "{}" // Satisfy zod req
+                });
+
+                finalServiceName = newServiceEntry.name;
+                toast.success("New service created and saved globally.");
+                utils.artistSettings.invalidate();
+            }
+
             if (applyToAll && appointment.clientId) {
                 await batchUpdatePricesMutation.mutateAsync({
                     clientId: appointment.clientId,
                     artistId: appointment.artistId,
                     price: parsedPrice,
+                    serviceName: finalServiceName !== "" ? finalServiceName : undefined
                 });
-                toast.success("Price updated for all upcoming bookings");
+                toast.success("Service/Price updated for all upcoming bookings");
             } else {
                 await updateApptMutation.mutateAsync({
                     id: appointment.id,
                     price: parsedPrice,
+                    serviceName: finalServiceName !== "" ? finalServiceName : undefined
                 });
-                toast.success("Price updated");
+                toast.success("Service/Price updated");
             }
             utils.appointments.invalidate();
             onSuccess();
@@ -211,6 +256,67 @@ export function EditBookingModal({
         <div className="space-y-4 pt-2">
             <div className="space-y-3">
                 <label className="flex flex-col gap-1.5">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Service</span>
+                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-white/5")}>
+                        <select
+                            value={serviceName}
+                            onChange={(e) => {
+                                setServiceName(e.target.value);
+                                if (e.target.value === "__NEW__") {
+                                    setPrice("");
+                                } else {
+                                    const mappedService = effectiveServices.find((s: any) => s.name === e.target.value);
+                                    if (mappedService) setPrice(String(mappedService.price));
+                                }
+                            }}
+                            className="bg-transparent border-none outline-none text-[11px] text-foreground w-full font-medium"
+                        >
+                            <option value="">-- No Service Mapped --</option>
+                            {effectiveServices.map((s: any) => (
+                                <option key={s.id} value={s.name}>
+                                    {s.name} ({s.duration}m)
+                                </option>
+                            ))}
+                            <option value="__NEW__">+ Create New Service</option>
+                        </select>
+                    </div>
+                </label>
+
+                <AnimatePresence>
+                    {serviceName === "__NEW__" && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="space-y-3 overflow-hidden"
+                        >
+                            <div className="grid grid-cols-2 gap-3">
+                                <label className="flex flex-col gap-1.5">
+                                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">New Name</span>
+                                    <input
+                                        type="text"
+                                        value={newServiceName}
+                                        onChange={(e) => setNewServiceName(e.target.value)}
+                                        className={cn(card.base, card.bg, "px-3 py-2.5 rounded-[4px] border-white/5 text-[11px] text-foreground font-medium")}
+                                        placeholder="e.g. Touch Up"
+                                    />
+                                </label>
+                                <label className="flex flex-col gap-1.5">
+                                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Duration (m)</span>
+                                    <input
+                                        type="number"
+                                        value={newServiceDuration}
+                                        onChange={(e) => setNewServiceDuration(e.target.value)}
+                                        className={cn(card.base, card.bg, "px-3 py-2.5 rounded-[4px] border-white/5 text-[11px] text-foreground font-medium")}
+                                        placeholder="60"
+                                    />
+                                </label>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                <label className="flex flex-col gap-1.5 pt-1">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Price per Session</span>
                     <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-white/5 focus-within:border-primary/50 transition-colors")}>
                         <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
@@ -228,7 +334,7 @@ export function EditBookingModal({
 
                 <label className={cn(
                     card.base,
-                    "flex items-center gap-3 p-3 rounded-[4px] cursor-pointer active:scale-[0.98] transition-all border border-transparent",
+                    "flex items-center gap-3 p-3 rounded-[4px] cursor-pointer active:scale-[0.98] transition-all border border-transparent mt-2",
                     applyToAll ? "bg-primary/10 border-primary/20" : card.bg
                 )}>
                     <div className={cn(
@@ -240,7 +346,7 @@ export function EditBookingModal({
                     <div className="flex-1 min-w-0">
                         <p className="text-[11px] font-bold text-foreground">Apply to all upcoming</p>
                         <p className="text-[9px] text-muted-foreground leading-tight mt-0.5">
-                            Update the cost for this and any future bookings for this client.
+                            Update the service and cost for this and any future bookings for this client.
                         </p>
                     </div>
                 </label>
@@ -248,10 +354,10 @@ export function EditBookingModal({
 
             <button
                 onClick={handleSaveCost}
-                disabled={isSubmitting || price === ""}
+                disabled={isSubmitting || price === "" || (serviceName === "__NEW__" && !newServiceName)}
                 className="w-full py-3 rounded-[4px] bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-wider active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center"
             >
-                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Update Price"}
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Updates"}
             </button>
         </div>
     );

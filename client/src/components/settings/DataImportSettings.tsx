@@ -375,10 +375,10 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                         </div>
                                     )}
 
-                                    <div className="grid grid-cols-2 gap-3 mt-6">
+                                    <div className="flex flex-col sm:flex-row gap-3 mt-6">
                                         <Button
                                             variant="outline"
-                                            className="w-full text-xs h-12 rounded-[4px]"
+                                            className="w-full sm:w-1/3 text-xs h-12 rounded-[4px]"
                                             onClick={() => {
                                                 setUniqueServices([]);
                                                 setServiceMap({});
@@ -388,7 +388,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                             Reset Mapping
                                         </Button>
                                         <Button
-                                            className="w-full bg-primary text-primary-foreground font-bold uppercase tracking-wider text-[10px] rounded-[4px] h-12"
+                                            className="w-full sm:w-2/3 bg-primary text-primary-foreground font-bold uppercase tracking-wider text-[10px] rounded-[4px] h-12"
                                             onClick={handleImport}
                                             disabled={clientMutation.isPending || appointmentMutation.isPending || reviewStats.valid === 0}
                                         >
