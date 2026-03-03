@@ -143,6 +143,14 @@ export function EditBookingModal({
                 utils.artistSettings.invalidate();
             }
 
+            // ALWAYS update the specific appointment regardless of applyToAll
+            await updateApptMutation.mutateAsync({
+                id: appointment.id,
+                price: parsedPrice,
+                serviceName: finalServiceName !== "" ? finalServiceName : undefined
+            });
+
+            // OPTIONALLY cascade to future ones
             if (applyToAll && appointment.clientId) {
                 await batchUpdatePricesMutation.mutateAsync({
                     clientId: appointment.clientId,
@@ -150,15 +158,11 @@ export function EditBookingModal({
                     price: parsedPrice,
                     serviceName: finalServiceName !== "" ? finalServiceName : undefined
                 });
-                toast.success("Service/Price updated for all upcoming bookings");
+                toast.success("Service/Price updated for this and all upcoming bookings");
             } else {
-                await updateApptMutation.mutateAsync({
-                    id: appointment.id,
-                    price: parsedPrice,
-                    serviceName: finalServiceName !== "" ? finalServiceName : undefined
-                });
                 toast.success("Service/Price updated");
             }
+
             utils.appointments.invalidate();
             onSuccess();
         } catch (e: any) {
