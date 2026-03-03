@@ -43,6 +43,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
     const [startTimeCol, setStartTimeCol] = useState<string>("");
     const [endTimeCol, setEndTimeCol] = useState<string>("");
     const [serviceCol, setServiceCol] = useState<string>("");
+    const [priceCol, setPriceCol] = useState<string>("");
 
     const clientMutation = trpc.dataImport.bulkImportClients.useMutation({
         onSuccess: (data) => {
@@ -112,6 +113,9 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
 
                 const guessService = lowerHeaders.findIndex(h => h.includes('service') || h.includes('treatment'));
                 if (guessService > -1) setServiceCol(validHeaders[guessService]);
+
+                const guessPrice = lowerHeaders.findIndex(h => h.includes('price') || h.includes('cost') || h.includes('total') || h.includes('amount'));
+                if (guessPrice > -1) setPriceCol(validHeaders[guessPrice]);
             },
             error: (err) => {
                 toast.error(`Parser error: ${err.message}`);
@@ -216,6 +220,14 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                     rawEmail = "";
                 }
 
+                // Safely extract price if mapped. Strip '$', ',', etc.
+                let parsedPrice: number | undefined = undefined;
+                if (priceCol && priceCol !== "SKIP" && row[priceCol]) {
+                    const rawValue = row[priceCol].replace(/[^0-9.-]+/g, "");
+                    const parsedFloat = parseFloat(rawValue);
+                    if (!isNaN(parsedFloat)) parsedPrice = parsedFloat;
+                }
+
                 return {
                     clientName: row[nameCol]?.trim() || "Unknown Client",
                     clientPhone: (phoneCol && phoneCol !== "SKIP") ? row[phoneCol]?.trim() : "",
@@ -224,6 +236,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                     startTime: row[startTimeCol]?.trim() || "",
                     endTime: (endTimeCol && endTimeCol !== "SKIP") ? row[endTimeCol]?.trim() : undefined,
                     serviceName: (serviceCol && serviceCol !== "SKIP") ? row[serviceCol]?.trim() : undefined,
+                    price: parsedPrice,
                 };
             }).filter(a => a.date && a.startTime);
 
@@ -491,6 +504,36 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                                             </SelectTrigger>
                                                             <SelectContent className="z-[200] rounded-[4px]">
                                                                 <SelectItem value="SKIP">-- Skip / Unknown --</SelectItem>
+                                                                {csvHeaders.map(h => (
+                                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Service / Treatment</Label>
+                                                        <Select value={serviceCol} onValueChange={setServiceCol}>
+                                                            <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
+                                                                <SelectValue placeholder="Select CSV column..." />
+                                                            </SelectTrigger>
+                                                            <SelectContent className="z-[200] rounded-[4px]">
+                                                                <SelectItem value="SKIP">-- Unmapped Appointment --</SelectItem>
+                                                                {csvHeaders.map(h => (
+                                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+
+                                                    <div className="space-y-2 pb-4">
+                                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Price / Cost (Optional)</Label>
+                                                        <Select value={priceCol} onValueChange={setPriceCol}>
+                                                            <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
+                                                                <SelectValue placeholder="Select CSV column..." />
+                                                            </SelectTrigger>
+                                                            <SelectContent className="z-[200] rounded-[4px]">
+                                                                <SelectItem value="SKIP">-- Skip Price --</SelectItem>
                                                                 {csvHeaders.map(h => (
                                                                     <SelectItem key={h} value={h}>{h}</SelectItem>
                                                                 ))}

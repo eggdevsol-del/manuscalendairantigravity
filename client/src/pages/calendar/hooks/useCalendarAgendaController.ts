@@ -294,11 +294,13 @@ export function useCalendarAgendaController() {
     Date | undefined
   >(undefined);
 
-  const { data: proposalData, isPending: isLoadingProposal } =
+  const { data: proposalData, isPending } =
     trpc.appointments.getProposalForAppointment.useQuery(
       selectedAppointment?.id,
       { enabled: !!selectedAppointment?.id }
     );
+
+  const isLoadingProposal = !!selectedAppointment?.id && isPending;
 
   const handleAppointmentTap = useCallback(
     (apt: any) => {
