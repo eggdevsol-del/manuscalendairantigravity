@@ -348,7 +348,7 @@ export function BookingWizardContent({
 
   const handleMapMysteryService = () => {
     if (!mysteryMapSelectedServiceId || !selectedAppointmentRaw) return;
-    const targetService = effectiveServices.find((s: any) => s.id === mysteryMapSelectedServiceId);
+    const targetService = effectiveServices.find((s: any) => s.id.toString() === mysteryMapSelectedServiceId);
     if (!targetService) return;
 
     resolveMysteryMutation.mutate({
@@ -429,7 +429,7 @@ export function BookingWizardContent({
         // Now pair this newly created client with the TARGET artist via a conversation
         const newConvoPairing = await getOrCreateConversation.mutateAsync({
           artistId: targetArtistId,
-          clientId: convo.clientId, // createClient returns the conversation, we need the client ID
+          clientId: convo.clientId as string, // createClient returns the conversation, we need the client ID
         });
 
         if (newConvoPairing) setConversationId(newConvoPairing.id);

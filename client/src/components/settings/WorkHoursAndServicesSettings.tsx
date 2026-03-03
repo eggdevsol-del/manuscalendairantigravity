@@ -413,8 +413,8 @@ export function WorkHoursAndServicesSettings({
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="space-y-2">
+                                    <div className="grid grid-cols-2 gap-3 items-end">
+                                        <div className="space-y-2 flex flex-col justify-end">
                                             <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Duration (Hours)</Label>
                                             <Input
                                                 type="number"
@@ -429,7 +429,7 @@ export function WorkHoursAndServicesSettings({
                                                 className="bg-white/5 border-white/10"
                                             />
                                         </div>
-                                        <div className="space-y-2">
+                                        <div className="space-y-2 flex flex-col justify-end">
                                             <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Price ($)</Label>
                                             <Input
                                                 type="number"
