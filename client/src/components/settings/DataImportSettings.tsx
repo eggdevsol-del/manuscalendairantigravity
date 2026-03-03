@@ -233,10 +233,10 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                 <div className="pb-[180px] max-w-lg mx-auto space-y-6 px-4 pt-6">
 
                     {/* Header Info */}
-                    <div className="flex flex-col items-center justify-center p-6 bg-primary/10 border border-primary/20 rounded-2xl text-center space-y-3">
-                        <Database className="w-8 h-8 text-primary" />
-                        <h3 className="font-semibold">Switching Apps?</h3>
-                        <p className="text-sm text-primary/80">Upload a .CSV file exported from tools like Vagaro, Square, or Fresha to instantly copy your {importMode === "clients" ? "client roster" : "appointment history"} directly into your Tattoi CRM safely.</p>
+                    <div className="flex flex-col items-center justify-center py-6 border-b border-white/5 mb-2 text-center space-y-3">
+                        <Database className="w-8 h-8 text-primary opacity-80" />
+                        <h3 className="font-semibold text-foreground tracking-tight">Data Migration Tool</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed max-w-[90%]">Upload a .CSV file exported from tools like Vagaro, Square, or Fresha to instantly copy your {importMode === "clients" ? "client roster" : "appointment history"} directly into your CRM.</p>
                     </div>
 
                     {/* Mode Switcher */}
@@ -272,53 +272,52 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                     ) : (
                         <div className="space-y-6">
 
-                            <div className="flex items-center justify-between p-4 bg-white/5 rounded-[4px] border border-white/10">
-                                <div>
-                                    <p className="font-semibold flex items-center gap-2">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        {file.name}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground mt-1">{csvData.length} records parsed securely.</p>
-                                </div>
-                                <Button variant="ghost" size="sm" onClick={() => { setFile(null); setCsvHeaders([]); }}>
-                                    Remove
-                                </Button>
-                            </div>
 
-                            <div className="flex items-center justify-between p-4 bg-white/5 rounded-[4px] border border-white/10">
-                                <div>
-                                    <p className="font-semibold flex items-center gap-2">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        {file.name}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground mt-1">{csvData.length} records parsed securely.</p>
+
+                            <div className="space-y-4">
+                                <div className="mb-2">
+                                    <p className="text-muted-foreground text-sm font-medium">Uploaded File</p>
                                 </div>
-                                <Button variant="ghost" size="sm" onClick={() => {
-                                    setFile(null);
-                                    setCsvHeaders([]);
-                                    setIsReviewing(false);
-                                }}>
-                                    Remove
-                                </Button>
+                                <div className="flex items-center justify-between px-4 py-3 bg-white/5 border border-white/10 rounded-[4px]">
+                                    <div>
+                                        <p className="font-semibold text-sm flex items-center gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                            {file.name}
+                                        </p>
+                                        <p className="text-[11px] text-muted-foreground mt-1">{csvData.length} records parsed securely.</p>
+                                    </div>
+                                    <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground" onClick={() => {
+                                        setFile(null);
+                                        setCsvHeaders([]);
+                                        setIsReviewing(false);
+                                    }}>
+                                        Remove
+                                    </Button>
+                                </div>
                             </div>
 
                             {isReviewing ? (
                                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both">
-                                    <div className="flex flex-col items-center justify-center gap-3 p-6 rounded-[8px] border border-white/5 bg-white/5 text-center mt-4">
-                                        <Database className="w-8 h-8 text-primary" />
-                                        <div>
-                                            <h3 className="text-sm font-bold text-foreground">Ready to Import {importMode === "clients" ? "Clients" : "Appointments"}</h3>
-                                            <p className="text-[11px] text-muted-foreground mt-1 whitespace-pre-line">
-                                                We found <strong className="text-emerald-500">{reviewStats.valid}</strong> valid records to import. {"\n"}
-                                                {reviewStats.skipped > 0 && <span className="text-orange-500">{reviewStats.skipped} records will be safely skipped due to missing or invalid data.</span>}
-                                            </p>
+                                    <div className="space-y-4">
+                                        <div className="mb-2">
+                                            <p className="text-muted-foreground text-sm font-medium">Status summary</p>
+                                        </div>
+                                        <div className="flex items-start gap-4 p-4 bg-white/5 border border-white/10 rounded-[4px]">
+                                            <Database className="w-6 h-6 text-primary mt-1" />
+                                            <div>
+                                                <h3 className="text-sm font-semibold text-foreground">Ready to Import {importMode === "clients" ? "Clients" : "Appointments"}</h3>
+                                                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                                                    We found <strong className="text-emerald-500 font-bold">{reviewStats.valid}</strong> valid records to import. {"\n"}
+                                                    {reviewStats.skipped > 0 && <span className="text-orange-400 font-medium">{reviewStats.skipped} records will be safely skipped due to missing or invalid data.</span>}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3 mt-6">
                                         <Button
                                             variant="outline"
-                                            className="w-full text-xs h-12"
+                                            className="w-full text-xs h-12 rounded-[4px]"
                                             onClick={() => setIsReviewing(false)}
                                         >
                                             Reset Mapping
@@ -348,10 +347,10 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                             <div className="space-y-2">
                                                 <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Client Name <span className="text-destructive">*</span></Label>
                                                 <Select value={nameCol} onValueChange={setNameCol}>
-                                                    <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                                    <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
                                                         <SelectValue placeholder="Select CSV column..." />
                                                     </SelectTrigger>
-                                                    <SelectContent className="z-[200]">
+                                                    <SelectContent className="z-[200] rounded-[4px]">
                                                         {csvHeaders.map(h => (
                                                             <SelectItem key={h} value={h}>{h}</SelectItem>
                                                         ))}
@@ -361,10 +360,10 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                             <div className="space-y-2">
                                                 <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Phone Number</Label>
                                                 <Select value={phoneCol} onValueChange={setPhoneCol}>
-                                                    <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                                    <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
                                                         <SelectValue placeholder="Select CSV column..." />
                                                     </SelectTrigger>
-                                                    <SelectContent className="z-[200]">
+                                                    <SelectContent className="z-[200] rounded-[4px]">
                                                         <SelectItem value="SKIP">-- Skip Phone --</SelectItem>
                                                         {csvHeaders.map(h => (
                                                             <SelectItem key={h} value={h}>{h}</SelectItem>
@@ -375,10 +374,10 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                             <div className="space-y-2">
                                                 <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Email</Label>
                                                 <Select value={emailCol} onValueChange={setEmailCol}>
-                                                    <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                                    <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
                                                         <SelectValue placeholder="Select CSV column..." />
                                                     </SelectTrigger>
-                                                    <SelectContent className="z-[200]">
+                                                    <SelectContent className="z-[200] rounded-[4px]">
                                                         <SelectItem value="SKIP">-- Skip Email --</SelectItem>
                                                         {csvHeaders.map(h => (
                                                             <SelectItem key={h} value={h}>{h}</SelectItem>
@@ -392,10 +391,10 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                                     <div className="space-y-2 pt-4 border-t border-white/10">
                                                         <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Appointment Date <span className="text-destructive">*</span></Label>
                                                         <Select value={dateCol} onValueChange={setDateCol}>
-                                                            <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                                            <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
                                                                 <SelectValue placeholder="Select CSV column..." />
                                                             </SelectTrigger>
-                                                            <SelectContent className="z-[200]">
+                                                            <SelectContent className="z-[200] rounded-[4px]">
                                                                 {csvHeaders.map(h => (
                                                                     <SelectItem key={h} value={h}>{h}</SelectItem>
                                                                 ))}
@@ -406,10 +405,10 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                                     <div className="space-y-2">
                                                         <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Start Time <span className="text-destructive">*</span></Label>
                                                         <Select value={startTimeCol} onValueChange={setStartTimeCol}>
-                                                            <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                                            <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
                                                                 <SelectValue placeholder="Select CSV column..." />
                                                             </SelectTrigger>
-                                                            <SelectContent className="z-[200]">
+                                                            <SelectContent className="z-[200] rounded-[4px]">
                                                                 {csvHeaders.map(h => (
                                                                     <SelectItem key={h} value={h}>{h}</SelectItem>
                                                                 ))}
@@ -420,10 +419,10 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                                     <div className="space-y-2">
                                                         <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">End Time / Duration</Label>
                                                         <Select value={endTimeCol} onValueChange={setEndTimeCol}>
-                                                            <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                                            <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
                                                                 <SelectValue placeholder="Select CSV column..." />
                                                             </SelectTrigger>
-                                                            <SelectContent className="z-[200]">
+                                                            <SelectContent className="z-[200] rounded-[4px]">
                                                                 <SelectItem value="SKIP">-- Default 1 Hour --</SelectItem>
                                                                 {csvHeaders.map(h => (
                                                                     <SelectItem key={h} value={h}>{h}</SelectItem>
@@ -435,10 +434,10 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                                     <div className="space-y-2">
                                                         <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Service Name</Label>
                                                         <Select value={serviceCol} onValueChange={setServiceCol}>
-                                                            <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                                            <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
                                                                 <SelectValue placeholder="Select CSV column..." />
                                                             </SelectTrigger>
-                                                            <SelectContent className="z-[200]">
+                                                            <SelectContent className="z-[200] rounded-[4px]">
                                                                 <SelectItem value="SKIP">-- Skip / Unknown --</SelectItem>
                                                                 {csvHeaders.map(h => (
                                                                     <SelectItem key={h} value={h}>{h}</SelectItem>
