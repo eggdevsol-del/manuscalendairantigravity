@@ -350,7 +350,7 @@ export function BookingWizardContent({
     console.log("MAP ALL INITIATED", { mysteryMapSelectedServiceId, selectedAppointmentRaw });
     if (!mysteryMapSelectedServiceId || !selectedAppointmentRaw) return;
 
-    const targetService = effectiveServices.find((s: any) => String(s.id) === String(mysteryMapSelectedServiceId));
+    const targetService = effectiveServices.find((s: any) => String(s.name) === String(mysteryMapSelectedServiceId));
     console.log("TARGET SERVICE MATCHED:", targetService);
 
     if (!targetService) {
@@ -1067,8 +1067,8 @@ export function BookingWizardContent({
                   className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-[4px] px-2 py-2 text-[11px] text-zinc-900 dark:text-foreground w-full outline-none"
                 >
                   <option value="">Select Service to Map...</option>
-                  {effectiveServices.map((s: any) => (
-                    <option key={s.id} value={s.id}>
+                  {effectiveServices.map((s: any, idx: number) => (
+                    <option key={s.id || s.name || idx} value={s.name}>
                       {s.name} ({s.duration}m / ${s.price})
                     </option>
                   ))}
