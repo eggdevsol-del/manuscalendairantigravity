@@ -139,6 +139,7 @@ export function EditBookingModal({
 
                 await saveArtistSettings.mutateAsync({
                     ...(sanitizedSettings as any),
+                    autoSendDepositInfo: sanitizedSettings.autoSendDepositInfo !== undefined ? Boolean(sanitizedSettings.autoSendDepositInfo) : undefined,
                     services: JSON.stringify(updatedServices),
                     workSchedule: sanitizedSettings.workSchedule ? JSON.stringify(sanitizedSettings.workSchedule) : "{}"
                 });
