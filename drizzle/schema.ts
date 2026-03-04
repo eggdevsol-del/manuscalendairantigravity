@@ -127,6 +127,8 @@ export const artistSettings = mysqlTable(
     publicSlug: varchar({ length: 50 }),
     funnelEnabled: tinyint().default(0),
     funnelWelcomeMessage: text(),
+    funnelTheme: varchar({ length: 10 }).default("light"), // SSOT styling theme toggle
+    funnelBannerUrl: text(), // Absolute path to a banner image upload
     styleOptions: text(), // JSON array of style options
     placementOptions: text(), // JSON array of placement options
     budgetRanges: text(), // JSON array of budget range objects

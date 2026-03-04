@@ -19,13 +19,13 @@ import { tokens } from "@/ui/tokens";
 interface TeaserRegistrationFormProps {
   email: string;
   name: string;
-  artistName: string;
+  artistId: string;
 }
 
 export function TeaserRegistrationForm({
   email,
   name,
-  artistName,
+  artistId,
 }: TeaserRegistrationFormProps) {
   const [, setLocation] = useLocation();
   const { enableTeaserMode } = useTeaser();
@@ -65,7 +65,7 @@ export function TeaserRegistrationForm({
     localStorage.setItem("user", JSON.stringify(data.user));
 
     // 1b. Store artist branding
-    localStorage.setItem("calendair_artist_branding", artistName);
+    localStorage.setItem("calendair_artist_branding", artistId);
 
     // 2. Enable Teaser Mode
     enableTeaserMode();

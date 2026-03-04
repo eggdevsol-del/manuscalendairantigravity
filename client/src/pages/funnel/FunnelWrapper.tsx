@@ -55,6 +55,8 @@ export interface ArtistProfile {
   slug: string;
   displayName: string;
   tagline?: string;
+  theme: "light" | "dark";
+  bannerUrl: string | null;
   profileImageUrl?: string;
   coverImageUrl?: string;
   styleOptions: string[];
@@ -114,9 +116,9 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="text-gray-400 mb-2">Loading...</div>
+          <div className="text-muted-foreground mb-2">Loading...</div>
         </div>
       </div>
     );
@@ -125,15 +127,15 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
   // Error state
   if (error || !artistProfile) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-6">
+      <div className="min-h-screen bg-background flex items-center justify-center px-6">
         <div className="text-center max-w-md">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+          <h1 className="text-2xl font-semibold text-foreground mb-2">
             Not Available
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-muted-foreground mb-6">
             {error || "This booking link is not available."}
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground/50">
             Please contact the artist directly if you believe this is an error.
           </p>
         </div>
@@ -144,38 +146,56 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
   // Success state (Teaser Registration)
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <TeaserRegistrationForm
-          email={email}
-          name={`${firstName} ${lastName}`.trim()}
-          artistName={artistProfile.displayName}
-        />
+      <div className={`min-h-[100dvh] w-full flex flex-col bg-background font-sans ${artistProfile.theme === "dark" ? "dark" : ""}`}>
+        <div className="flex-1 flex items-center justify-center p-4">
+          <TeaserRegistrationForm
+            email={email}
+            name={`${firstName} ${lastName}`.trim()}
+            artistId={artistProfile.id}
+          />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Progress bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100">
-        <div className="h-1 bg-gray-100">
+    <div className={`min-h-[100dvh] w-full flex flex-col bg-background font-sans ${artistProfile.theme === "dark" ? "dark" : ""}`}>
+      {/* Banner Image */}
+      {artistProfile.bannerUrl && (
+        <div className="absolute top-0 left-0 w-full h-[200px] sm:h-[240px] pointer-events-none z-0">
           <div
-            className="h-full bg-gray-900 transition-all duration-300"
-            style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
+            className="w-full h-full bg-cover bg-center bg-no-repeat opacity-40 dark:opacity-20 transition-opacity"
+            style={{
+              backgroundImage: `url(${artistProfile.bannerUrl})`,
+              maskImage: "linear-gradient(to right, black 0%, transparent 75%)",
+              WebkitMaskImage: "linear-gradient(to right, black 0%, transparent 75%)",
+            }}
           />
         </div>
-        <div className="px-4 py-3 flex items-center justify-between">
-          <span className="text-sm text-gray-500">
-            Step {currentStep + 1} of {totalSteps}
-          </span>
-          <span className="text-sm font-medium text-gray-900">
-            {artistProfile.displayName}
-          </span>
+      )}
+
+      {/* Header Profile Section */}
+      <div className="relative z-10 w-full pt-12 pb-6 px-4 shrink-0 border-b border-border/50">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+          <div className="h-1 bg-white/5">
+            <div
+              className="h-full bg-foreground transition-all duration-300"
+              style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
+            />
+          </div>
+          <div className="px-4 py-3 flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
+              Step {currentStep + 1} of {totalSteps}
+            </span>
+            <span className="text-sm font-medium text-foreground">
+              {artistProfile.displayName}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="pt-20 pb-32 px-6 max-w-lg mx-auto">
+      <div className="pt-20 pb-32 px-6 max-w-lg mx-auto relative z-10">
         <h2 className="text-2xl font-semibold text-gray-900 mb-6">
           {STEP_TITLES[currentStep]}
         </h2>
@@ -192,11 +212,10 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   <button
                     key={type.id}
                     onClick={() => setProjectType(type.id)}
-                    className={`p-3 text-left rounded-lg border transition-colors ${
-                      projectType === type.id
-                        ? "border-gray-900 bg-gray-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
+                    className={`p-3 text-left rounded-lg border transition-colors ${projectType === type.id
+                      ? "border-gray-900 bg-gray-50"
+                      : "border-gray-200 hover:border-gray-300"
+                      }`}
                   >
                     <span className="text-sm font-medium text-gray-900">
                       {type.label}
@@ -312,11 +331,10 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   <button
                     key={style}
                     onClick={() => toggleStyle(style)}
-                    className={`px-4 py-2 rounded-full border transition-colors ${
-                      selectedStyles.includes(style)
-                        ? "border-gray-900 bg-gray-900 text-white"
-                        : "border-gray-200 text-gray-700 hover:border-gray-300"
-                    }`}
+                    className={`px-4 py-2 rounded-full border transition-colors ${selectedStyles.includes(style)
+                      ? "border-gray-900 bg-gray-900 text-white"
+                      : "border-gray-200 text-gray-700 hover:border-gray-300"
+                      }`}
                   >
                     {style}
                   </button>
@@ -443,11 +461,10 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 <button
                   key={budget.label}
                   onClick={() => setSelectedBudget(budget)}
-                  className={`w-full p-4 text-left rounded-lg border transition-colors ${
-                    selectedBudget?.label === budget.label
-                      ? "border-gray-900 bg-gray-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
+                  className={`w-full p-4 text-left rounded-lg border transition-colors ${selectedBudget?.label === budget.label
+                    ? "border-gray-900 bg-gray-50"
+                    : "border-gray-200 hover:border-gray-300"
+                    }`}
                 >
                   <span className="font-medium text-gray-900">
                     {budget.label}
@@ -469,11 +486,10 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 <button
                   key={option.id}
                   onClick={() => setTimeframe(option.id)}
-                  className={`w-full p-4 text-left rounded-lg border transition-colors ${
-                    timeframe === option.id
-                      ? "border-gray-900 bg-gray-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
+                  className={`w-full p-4 text-left rounded-lg border transition-colors ${timeframe === option.id
+                    ? "border-gray-900 bg-gray-50"
+                    : "border-gray-200 hover:border-gray-300"
+                    }`}
                 >
                   <span className="font-medium text-gray-900">
                     {option.label}
@@ -534,12 +550,14 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
       />
 
       {/* IOS Install Prompt */}
-      {showInstallPrompt && (
-        <IOSInstallPrompt
-          forceShow={showInstallPrompt}
-          onDismiss={() => setShowInstallPrompt(false)}
-        />
-      )}
-    </div>
+      {
+        showInstallPrompt && (
+          <IOSInstallPrompt
+            forceShow={showInstallPrompt}
+            onDismiss={() => setShowInstallPrompt(false)}
+          />
+        )
+      }
+    </div >
   );
 }

@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from "react";
 import { LoadingState } from "./ui/ssot";
+import { ImageUpload } from "@/components/ui";
 import {
   Link2,
   Copy,
@@ -29,7 +30,8 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
   const [slug, setSlug] = useState("");
   const [originalSlug, setOriginalSlug] = useState("");
   const [funnelEnabled, setFunnelEnabled] = useState(true);
-  const [welcomeMessage, setWelcomeMessage] = useState("");
+  const [funnelTheme, setFunnelTheme] = useState<"light" | "dark">("light");
+  const [funnelBannerUrl, setFunnelBannerUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [slugError, setSlugError] = useState<string | null>(null);
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
@@ -62,7 +64,8 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
       setSlug(currentSlug);
       setOriginalSlug(currentSlug);
       setFunnelEnabled(!!settings.funnelEnabled);
-      setWelcomeMessage(settings.funnelWelcomeMessage || "");
+      setFunnelTheme(settings.funnelTheme as "light" | "dark" || "light");
+      setFunnelBannerUrl(settings.funnelBannerUrl || null);
     }
   }, [settings]);
 
@@ -121,7 +124,8 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
     await updateSettings.mutateAsync({
       publicSlug: slug,
       funnelEnabled,
-      funnelWelcomeMessage: welcomeMessage,
+      funnelTheme,
+      funnelBannerUrl,
     });
   };
 
@@ -300,19 +304,44 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
             </div>
           </div>
 
-          {/* Welcome Message */}
+          {/* Funnel Theme Toggle */}
           <div>
-            <h3 className="text-white font-medium mb-3">Welcome Message</h3>
+            <h3 className="text-white font-medium mb-3">Booking Link Theme</h3>
+            <div className="bg-white/5 rounded-2xl p-2 flex gap-2">
+              <button
+                onClick={() => setFunnelTheme("light")}
+                className={`flex-1 py-3 px-4 rounded-xl font-medium transition-colors ${funnelTheme === "light"
+                  ? "bg-white text-black"
+                  : "text-white/60 hover:text-white hover:bg-white/5"
+                  }`}
+              >
+                Light Theme
+              </button>
+              <button
+                onClick={() => setFunnelTheme("dark")}
+                className={`flex-1 py-3 px-4 rounded-xl font-medium transition-colors ${funnelTheme === "dark"
+                  ? "bg-[#1E1E1E] text-white border border-white/10"
+                  : "text-white/60 hover:text-white hover:bg-white/5"
+                  }`}
+              >
+                Dark Theme
+              </button>
+            </div>
+          </div>
+
+          {/* Banner Image Upload */}
+          <div>
+            <h3 className="text-white font-medium mb-3">Header Banner Image</h3>
             <div className="bg-white/5 rounded-2xl p-4">
-              <textarea
-                value={welcomeMessage}
-                onChange={e => setWelcomeMessage(e.target.value)}
-                placeholder="Welcome! I'm excited to work with you on your next tattoo. Fill out this form to get started..."
-                rows={4}
-                className="w-full bg-white/10 border-0 rounded-xl px-4 py-3 text-white placeholder:text-white/40 resize-none"
+              <ImageUpload
+                value={funnelBannerUrl || ""}
+                onChange={(url: string) => setFunnelBannerUrl(url)}
+                onRemove={() => setFunnelBannerUrl(null)}
+                label="Upload Banner (16:9 recommended)"
+                className="w-full aspect-[21/9] rounded-xl overflow-hidden"
               />
-              <p className="text-white/40 text-xs mt-2">
-                This message appears at the top of your booking funnel.
+              <p className="text-white/40 text-xs mt-3">
+                This image will appear at the top of your booking link and smoothly fade into the background.
               </p>
             </div>
           </div>

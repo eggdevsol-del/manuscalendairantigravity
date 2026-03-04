@@ -204,6 +204,8 @@ export function registerPublicFunnelRoutes(app: Express) {
         displayName:
           settings.displayName || (artist as any).displayName || (artist as any).username || artist.name || "Artist",
         tagline: settings.funnelWelcomeMessage || null,
+        theme: settings.funnelTheme || "light",
+        bannerUrl: settings.funnelBannerUrl || null,
         profileImageUrl: (artist as any).profileImage || (artist as any).avatar || null,
         coverImageUrl: null,
         styleOptions,

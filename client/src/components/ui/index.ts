@@ -54,3 +54,4 @@ export * from "./tooltip";
 export * from "./overlays/modal-shell";
 export * from "./overlays/sheet-shell";
 export * from "./SignaturePad";
+export * from "./ImageUpload";

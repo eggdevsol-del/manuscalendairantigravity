@@ -102,7 +102,8 @@ export const funnelRouter = router({
         displayName: settings.businessName || settings.displayName || artist.name || "Artist",
         profileImage: artist.avatar || null,
         slug: settings.publicSlug,
-        funnelWelcomeMessage: settings.funnelWelcomeMessage,
+        funnelTheme: settings.funnelTheme || "light",
+        funnelBannerUrl: settings.funnelBannerUrl || null,
         styleOptions: settings.styleOptions
           ? JSON.parse(settings.styleOptions)
           : [],
@@ -517,7 +518,8 @@ export const funnelRouter = router({
       z.object({
         publicSlug: z.string().min(3).max(50).optional(),
         funnelEnabled: z.boolean().optional(),
-        funnelWelcomeMessage: z.string().max(500).optional(),
+        funnelTheme: z.string().max(10).optional(),
+        funnelBannerUrl: z.string().nullable().optional(),
         styleOptions: z.array(z.string()).optional(),
         placementOptions: z.array(z.string()).optional(),
         budgetRanges: z
@@ -567,8 +569,11 @@ export const funnelRouter = router({
       if (input.funnelEnabled !== undefined) {
         updateData.funnelEnabled = input.funnelEnabled;
       }
-      if (input.funnelWelcomeMessage !== undefined) {
-        updateData.funnelWelcomeMessage = input.funnelWelcomeMessage;
+      if (input.funnelTheme !== undefined) {
+        updateData.funnelTheme = input.funnelTheme;
+      }
+      if (input.funnelBannerUrl !== undefined) {
+        updateData.funnelBannerUrl = input.funnelBannerUrl;
       }
       if (input.styleOptions !== undefined) {
         updateData.styleOptions = JSON.stringify(input.styleOptions);
@@ -593,7 +598,8 @@ export const funnelRouter = router({
           services: JSON.stringify([]), // Required field - empty default
           publicSlug: updateData.publicSlug || null,
           funnelEnabled: updateData.funnelEnabled ?? 0,
-          funnelWelcomeMessage: updateData.funnelWelcomeMessage || null,
+          funnelTheme: updateData.funnelTheme || "light",
+          funnelBannerUrl: updateData.funnelBannerUrl || null,
           styleOptions: updateData.styleOptions || null,
           placementOptions: updateData.placementOptions || null,
           budgetRanges: updateData.budgetRanges || null,
@@ -623,7 +629,8 @@ export const funnelRouter = router({
       return {
         publicSlug: null,
         funnelEnabled: false,
-        funnelWelcomeMessage: null,
+        funnelTheme: "light",
+        funnelBannerUrl: null,
         styleOptions: [],
         placementOptions: [],
         budgetRanges: [],
@@ -633,7 +640,8 @@ export const funnelRouter = router({
     return {
       publicSlug: settings.publicSlug,
       funnelEnabled: settings.funnelEnabled,
-      funnelWelcomeMessage: settings.funnelWelcomeMessage,
+      funnelTheme: settings.funnelTheme || "light",
+      funnelBannerUrl: settings.funnelBannerUrl || null,
       styleOptions: settings.styleOptions
         ? JSON.parse(settings.styleOptions)
         : [],
