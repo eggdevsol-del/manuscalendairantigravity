@@ -146,237 +146,296 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
   // Success state (Teaser Registration)
   if (submitted) {
     return (
-      <div className={`min-h-[100dvh] w-full flex flex-col bg-background font-sans ${artistProfile.theme === "dark" ? "dark" : ""}`}>
-        <div className="flex-1 flex items-center justify-center p-4">
-          <TeaserRegistrationForm
-            email={email}
-            name={`${firstName} ${lastName}`.trim()}
-            artistId={artistProfile.id}
-          />
+      <div className={artistProfile.theme === "dark" ? "dark" : ""}>
+        <div className="min-h-[100dvh] w-full flex flex-col bg-background font-sans">
+          <div className="flex-1 flex items-center justify-center p-4">
+            <TeaserRegistrationForm
+              email={email}
+              name={`${firstName} ${lastName}`.trim()}
+              artistId={artistProfile.id}
+            />
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-[100dvh] w-full flex flex-col bg-background font-sans ${artistProfile.theme === "dark" ? "dark" : ""}`}>
-      {/* Banner Image */}
-      {artistProfile.bannerUrl && (
-        <div className="absolute top-0 left-0 w-full h-[200px] sm:h-[240px] pointer-events-none z-0">
-          <div
-            className="w-full h-full bg-cover bg-center bg-no-repeat opacity-40 dark:opacity-20 transition-opacity"
-            style={{
-              backgroundImage: `url(${artistProfile.bannerUrl})`,
-              maskImage: "linear-gradient(to right, black 0%, transparent 75%)",
-              WebkitMaskImage: "linear-gradient(to right, black 0%, transparent 75%)",
-            }}
-          />
-        </div>
-      )}
-
-      {/* Header Profile Section */}
-      <div className="relative z-10 w-full pt-12 pb-6 px-4 shrink-0 border-b border-border/50">
-        <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-          <div className="h-1 bg-white/5">
+    <div className={artistProfile.theme === "dark" ? "dark" : ""}>
+      <div className="min-h-[100dvh] w-full flex flex-col bg-background font-sans relative">
+        {/* Banner Image */}
+        {artistProfile.bannerUrl && (
+          <div className="absolute top-0 left-0 w-full h-[200px] sm:h-[240px] pointer-events-none z-0">
             <div
-              className="h-full bg-foreground transition-all duration-300"
-              style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
+              className="w-full h-full bg-cover bg-center bg-no-repeat transition-opacity"
+              style={{
+                backgroundImage: `url(${artistProfile.bannerUrl})`,
+                maskImage: "linear-gradient(to right, black 0%, transparent 75%)",
+                WebkitMaskImage: "linear-gradient(to right, black 0%, transparent 75%)",
+              }}
             />
           </div>
-          <div className="px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
-              Step {currentStep + 1} of {totalSteps}
-            </span>
-            <span className="text-sm font-medium text-foreground">
-              {artistProfile.displayName}
-            </span>
+        )}
+
+        {/* Header Profile Section */}
+        <div className="relative z-10 w-full pt-12 pb-6 px-4 shrink-0 border-b border-border/50">
+          <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+            <div className="h-1 bg-white/5">
+              <div
+                className="h-full bg-foreground transition-all duration-300"
+                style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
+              />
+            </div>
+            <div className="px-4 py-3 flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">
+                Step {currentStep + 1} of {totalSteps}
+              </span>
+              <span className="text-sm font-medium text-foreground">
+                {artistProfile.displayName}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="pt-20 pb-32 px-6 max-w-lg mx-auto relative z-10">
-        <h2 className="text-2xl font-semibold text-foreground mb-6">
-          {STEP_TITLES[currentStep]}
-        </h2>
+        {/* Content */}
+        <div className="pt-20 pb-32 px-6 max-w-lg mx-auto relative z-10">
+          <h2 className="text-2xl font-semibold text-foreground mb-6">
+            {STEP_TITLES[currentStep]}
+          </h2>
 
-        {/* Step 0: Intent */}
-        {currentStep === 0 && (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-3">
-                Project type
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {PROJECT_TYPES.map(type => (
-                  <button
-                    key={type.id}
-                    onClick={() => setProjectType(type.id)}
-                    className={`p-3 text-left rounded-[4px] border transition-colors ${projectType === type.id
-                      ? "border-foreground bg-white/10"
-                      : "border-border hover:border-foreground/30"
-                      }`}
-                  >
-                    <span className="text-sm font-medium text-foreground">
-                      {type.label}
-                    </span>
-                  </button>
-                ))}
+          {/* Step 0: Intent */}
+          {currentStep === 0 && (
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-3">
+                  Project type
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {PROJECT_TYPES.map(type => (
+                    <button
+                      key={type.id}
+                      onClick={() => setProjectType(type.id)}
+                      className={`p-3 text-left rounded-[4px] border transition-colors ${projectType === type.id
+                        ? "border-foreground bg-white/10"
+                        : "border-border hover:border-foreground/30"
+                        }`}
+                    >
+                      <span className="text-sm font-medium text-foreground">
+                        {type.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Describe your idea
-              </label>
-              <textarea
-                value={projectDescription}
-                onChange={e => setProjectDescription(e.target.value)}
-                placeholder="Tell us about your vision..."
-                rows={4}
-                className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent resize-none text-foreground bg-background placeholder-muted-foreground"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                {projectDescription.length < 10
-                  ? `At least ${10 - projectDescription.length} more characters`
-                  : "Great!"}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Step 1: Contact (Expanded) */}
-        {currentStep === 1 && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  First name *
+                  Describe your idea
+                </label>
+                <textarea
+                  value={projectDescription}
+                  onChange={e => setProjectDescription(e.target.value)}
+                  placeholder="Tell us about your vision..."
+                  rows={4}
+                  className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent resize-none text-foreground bg-background placeholder-muted-foreground"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {projectDescription.length < 10
+                    ? `At least ${10 - projectDescription.length} more characters`
+                    : "Great!"}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Step 1: Contact (Expanded) */}
+          {currentStep === 1 && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    First name *
+                  </label>
+                  <input
+                    type="text"
+                    value={firstName}
+                    onChange={e => setFirstName(e.target.value)}
+                    placeholder="First name"
+                    className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Last name *
+                  </label>
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={e => setLastName(e.target.value)}
+                    placeholder="Last name"
+                    className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Date of birth *
                 </label>
                 <input
-                  type="text"
-                  value={firstName}
-                  onChange={e => setFirstName(e.target.value)}
-                  placeholder="First name"
+                  type="date"
+                  value={birthdate}
+                  onChange={e => setBirthdate(e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                  className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  You must be 18 or older to book a tattoo
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="your@email.com"
                   className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Last name *
+                  Phone number
                 </label>
                 <input
-                  type="text"
-                  value={lastName}
-                  onChange={e => setLastName(e.target.value)}
-                  placeholder="Last name"
+                  type="tel"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  placeholder="Your phone number"
                   className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
                 />
               </div>
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Date of birth *
-              </label>
-              <input
-                type="date"
-                value={birthdate}
-                onChange={e => setBirthdate(e.target.value)}
-                max={new Date().toISOString().split("T")[0]}
-                className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                You must be 18 or older to book a tattoo
-              </p>
-            </div>
+          {/* Step 2: Style + Reference Images */}
+          {currentStep === 2 && (
+            <div className="space-y-6">
+              <div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Select all styles you're interested in
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {STYLE_OPTIONS.map(style => (
+                    <button
+                      key={style}
+                      onClick={() => toggleStyle(style)}
+                      className={`px-4 py-2 rounded-full border transition-colors ${selectedStyles.includes(style)
+                        ? "border-foreground bg-foreground text-background"
+                        : "border-border text-foreground hover:border-foreground/30"
+                        }`}
+                    >
+                      {style}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Email *
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
-              />
-            </div>
+              {/* Reference Images Upload Button */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Reference images (optional)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowReferenceUpload(true)}
+                  className="w-full p-4 border border-border rounded-[4px] hover:border-foreground/30 transition-colors flex items-center justify-between bg-white/5"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/10 rounded-[4px] flex items-center justify-center">
+                      <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-foreground">
+                        {referenceImages.length > 0
+                          ? `${referenceImages.length} image${referenceImages.length > 1 ? "s" : ""} added`
+                          : "Add reference images"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Tattoos, artwork, or inspiration
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </button>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Phone number
-              </label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                placeholder="Your phone number"
-                className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Style + Reference Images */}
-        {currentStep === 2 && (
-          <div className="space-y-6">
-            <div>
-              <p className="text-sm text-muted-foreground mb-4">
-                Select all styles you're interested in
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {STYLE_OPTIONS.map(style => (
-                  <button
-                    key={style}
-                    onClick={() => toggleStyle(style)}
-                    className={`px-4 py-2 rounded-full border transition-colors ${selectedStyles.includes(style)
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border text-foreground hover:border-foreground/30"
-                      }`}
-                  >
-                    {style}
-                  </button>
-                ))}
+                {/* Preview thumbnails */}
+                {referenceImages.length > 0 && (
+                  <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
+                    {referenceImages.slice(0, 4).map(img => (
+                      <div
+                        key={img.id}
+                        className="w-16 h-16 rounded-[4px] overflow-hidden flex-shrink-0 border border-border/50"
+                      >
+                        <img
+                          src={img.preview}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                    {referenceImages.length > 4 && (
+                      <div className="w-16 h-16 rounded-[4px] bg-white/10 flex items-center justify-center flex-shrink-0 border border-border/50">
+                        <span className="text-sm font-medium text-muted-foreground">
+                          +{referenceImages.length - 4}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
+          )}
 
-            {/* Reference Images Upload Button */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Reference images (optional)
-              </label>
+          {/* Step 3: Body Placement */}
+          {currentStep === 3 && (
+            <div className="space-y-6">
+              <p className="text-sm text-muted-foreground">
+                Upload photos of the body area where you'd like the tattoo. This
+                helps the artist understand the placement and size better.
+              </p>
+
               <button
                 type="button"
-                onClick={() => setShowReferenceUpload(true)}
-                className="w-full p-4 border border-border rounded-[4px] hover:border-foreground/30 transition-colors flex items-center justify-between bg-white/5"
+                onClick={() => setShowBodyPlacementUpload(true)}
+                className="w-full p-6 border-2 border-dashed border-border rounded-[4px] hover:border-foreground/40 transition-colors flex flex-col items-center justify-center gap-3 bg-white/5"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/10 rounded-[4px] flex items-center justify-center">
-                    <ImageIcon className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-foreground">
-                      {referenceImages.length > 0
-                        ? `${referenceImages.length} image${referenceImages.length > 1 ? "s" : ""} added`
-                        : "Add reference images"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Tattoos, artwork, or inspiration
-                    </p>
-                  </div>
+                <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center">
+                  <Camera className="w-7 h-7 text-muted-foreground" />
                 </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                <div className="text-center">
+                  <p className="text-sm font-medium text-foreground">
+                    {bodyPlacementImages.length > 0
+                      ? `${bodyPlacementImages.length} photo${bodyPlacementImages.length > 1 ? "s" : ""} added`
+                      : "Add body placement photos"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Take or upload photos of the area
+                  </p>
+                </div>
               </button>
 
               {/* Preview thumbnails */}
-              {referenceImages.length > 0 && (
-                <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
-                  {referenceImages.slice(0, 4).map(img => (
+              {bodyPlacementImages.length > 0 && (
+                <div className="grid grid-cols-3 gap-3">
+                  {bodyPlacementImages.map(img => (
                     <div
                       key={img.id}
-                      className="w-16 h-16 rounded-[4px] overflow-hidden flex-shrink-0 border border-border/50"
+                      className="aspect-square rounded-[4px] overflow-hidden border border-border/50"
                     >
                       <img
                         src={img.preview}
@@ -385,179 +444,124 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                       />
                     </div>
                   ))}
-                  {referenceImages.length > 4 && (
-                    <div className="w-16 h-16 rounded-[4px] bg-white/10 flex items-center justify-center flex-shrink-0 border border-border/50">
-                      <span className="text-sm font-medium text-muted-foreground">
-                        +{referenceImages.length - 4}
-                      </span>
-                    </div>
-                  )}
                 </div>
               )}
+
+              <p className="text-xs text-muted-foreground text-center">
+                This step is optional but highly recommended
+              </p>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Step 3: Body Placement */}
-        {currentStep === 3 && (
-          <div className="space-y-6">
-            <p className="text-sm text-muted-foreground">
-              Upload photos of the body area where you'd like the tattoo. This
-              helps the artist understand the placement and size better.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setShowBodyPlacementUpload(true)}
-              className="w-full p-6 border-2 border-dashed border-border rounded-[4px] hover:border-foreground/40 transition-colors flex flex-col items-center justify-center gap-3 bg-white/5"
-            >
-              <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center">
-                <Camera className="w-7 h-7 text-muted-foreground" />
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-medium text-foreground">
-                  {bodyPlacementImages.length > 0
-                    ? `${bodyPlacementImages.length} photo${bodyPlacementImages.length > 1 ? "s" : ""} added`
-                    : "Add body placement photos"}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Take or upload photos of the area
-                </p>
-              </div>
-            </button>
-
-            {/* Preview thumbnails */}
-            {bodyPlacementImages.length > 0 && (
-              <div className="grid grid-cols-3 gap-3">
-                {bodyPlacementImages.map(img => (
-                  <div
-                    key={img.id}
-                    className="aspect-square rounded-[4px] overflow-hidden border border-border/50"
+          {/* Step 4: Budget */}
+          {currentStep === 4 && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground mb-4">
+                What's your budget for this project?
+              </p>
+              <div className="space-y-2">
+                {BUDGET_RANGES.map(budget => (
+                  <button
+                    key={budget.label}
+                    onClick={() => setSelectedBudget(budget)}
+                    className={`w-full p-4 text-left rounded-[4px] border transition-colors ${selectedBudget?.label === budget.label
+                      ? "border-foreground bg-white/10"
+                      : "border-border hover:border-foreground/30 bg-white/5"
+                      }`}
                   >
-                    <img
-                      src={img.preview}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                    <span className="font-medium text-foreground">
+                      {budget.label}
+                    </span>
+                  </button>
                 ))}
               </div>
-            )}
-
-            <p className="text-xs text-muted-foreground text-center">
-              This step is optional but highly recommended
-            </p>
-          </div>
-        )}
-
-        {/* Step 4: Budget */}
-        {currentStep === 4 && (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              What's your budget for this project?
-            </p>
-            <div className="space-y-2">
-              {BUDGET_RANGES.map(budget => (
-                <button
-                  key={budget.label}
-                  onClick={() => setSelectedBudget(budget)}
-                  className={`w-full p-4 text-left rounded-[4px] border transition-colors ${selectedBudget?.label === budget.label
-                    ? "border-foreground bg-white/10"
-                    : "border-border hover:border-foreground/30 bg-white/5"
-                    }`}
-                >
-                  <span className="font-medium text-foreground">
-                    {budget.label}
-                  </span>
-                </button>
-              ))}
             </div>
-          </div>
-        )}
-
-        {/* Step 5: Availability */}
-        {currentStep === 5 && (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              When are you hoping to get started?
-            </p>
-            <div className="space-y-2">
-              {TIMEFRAME_OPTIONS.map(option => (
-                <button
-                  key={option.id}
-                  onClick={() => setTimeframe(option.id)}
-                  className={`w-full p-4 text-left rounded-[4px] border transition-colors ${timeframe === option.id
-                    ? "border-foreground bg-white/10"
-                    : "border-border hover:border-foreground/30 bg-white/5"
-                    }`}
-                >
-                  <span className="font-medium text-foreground">
-                    {option.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-md border-t border-border p-4 z-50">
-        <div className="max-w-lg mx-auto flex gap-3">
-          {currentStep > 0 && (
-            <button
-              onClick={handleBack}
-              disabled={submitting}
-              className="flex-1 py-3 px-6 border border-border rounded-[4px] font-medium text-foreground hover:bg-white/10 disabled:opacity-50"
-            >
-              Back
-            </button>
           )}
-          <button
-            onClick={handleNext}
-            disabled={!canProceed() || submitting}
-            className={`${currentStep === 0 ? "w-full" : "flex-1"} py-3 px-6 bg-primary text-primary-foreground rounded-[4px] font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            {submitting
-              ? "Submitting..."
-              : currentStep === totalSteps - 1
-                ? "Submit Request"
-                : currentStep === 3 && bodyPlacementImages.length === 0
-                  ? "Skip for now"
-                  : "Continue"}
-          </button>
+
+          {/* Step 5: Availability */}
+          {currentStep === 5 && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground mb-4">
+                When are you hoping to get started?
+              </p>
+              <div className="space-y-2">
+                {TIMEFRAME_OPTIONS.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => setTimeframe(option.id)}
+                    className={`w-full p-4 text-left rounded-[4px] border transition-colors ${timeframe === option.id
+                      ? "border-foreground bg-white/10"
+                      : "border-border hover:border-foreground/30 bg-white/5"
+                      }`}
+                  >
+                    <span className="font-medium text-foreground">
+                      {option.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Navigation */}
+        <div className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-md border-t border-border p-4 z-50">
+          <div className="max-w-lg mx-auto flex gap-3">
+            {currentStep > 0 && (
+              <button
+                onClick={handleBack}
+                disabled={submitting}
+                className="flex-1 py-3 px-6 border border-border rounded-[4px] font-medium text-foreground hover:bg-white/10 disabled:opacity-50"
+              >
+                Back
+              </button>
+            )}
+            <button
+              onClick={handleNext}
+              disabled={!canProceed() || submitting}
+              className={`${currentStep === 0 ? "w-full" : "flex-1"} py-3 px-6 bg-primary text-primary-foreground rounded-[4px] font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {submitting
+                ? "Submitting..."
+                : currentStep === totalSteps - 1
+                  ? "Submit Request"
+                  : currentStep === 3 && bodyPlacementImages.length === 0
+                    ? "Skip for now"
+                    : "Continue"}
+            </button>
+          </div>
+        </div>
+
+        {/* Reference Images Upload Sheet */}
+        <ImageUploadSheet
+          isOpen={showReferenceUpload}
+          onClose={() => setShowReferenceUpload(false)}
+          onImagesChange={setReferenceImages}
+          images={referenceImages}
+          title="Reference Images"
+          description="Add tattoos or artwork for inspiration"
+        />
+
+        {/* Body Placement Upload Sheet */}
+        <ImageUploadSheet
+          isOpen={showBodyPlacementUpload}
+          onClose={() => setShowBodyPlacementUpload(false)}
+          onImagesChange={setBodyPlacementImages}
+          images={bodyPlacementImages}
+          title="Placement Photos"
+          description="Show us where the tattoo will go"
+        />
+
+        {/* IOS Install Prompt */}
+        {
+          showInstallPrompt && (
+            <IOSInstallPrompt
+              forceShow={showInstallPrompt}
+              onDismiss={() => setShowInstallPrompt(false)}
+            />
+          )
+        }
       </div>
-
-      {/* Reference Images Upload Sheet */}
-      <ImageUploadSheet
-        isOpen={showReferenceUpload}
-        onClose={() => setShowReferenceUpload(false)}
-        onImagesChange={setReferenceImages}
-        images={referenceImages}
-        title="Reference Images"
-        description="Add tattoos or artwork for inspiration"
-      />
-
-      {/* Body Placement Upload Sheet */}
-      <ImageUploadSheet
-        isOpen={showBodyPlacementUpload}
-        onClose={() => setShowBodyPlacementUpload(false)}
-        onImagesChange={setBodyPlacementImages}
-        images={bodyPlacementImages}
-        title="Placement Photos"
-        description="Show us where the tattoo will go"
-      />
-
-      {/* IOS Install Prompt */}
-      {
-        showInstallPrompt && (
-          <IOSInstallPrompt
-            forceShow={showInstallPrompt}
-            onDismiss={() => setShowInstallPrompt(false)}
-          />
-        )
-      }
-    </div >
+    </div>
   );
 }
