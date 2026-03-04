@@ -18,7 +18,7 @@ interface ProposalMetadata {
   totalCost: number;
   sittings: number;
   dates: string[];
-  status: "pending" | "accepted" | "rejected" | "canceled";
+  status: "pending" | "accepted" | "rejected" | "canceled" | "remittance_uploaded" | "confirmed";
   serviceDuration?: number;
   autoSendDeposit?: boolean;
   depositAmount?: number;
@@ -40,7 +40,7 @@ interface ProjectProposalMessageProps {
 /** Glow accent by status — uses SSOT card.glow tokens */
 function getGlow(status: string) {
   const g = tokens.card.glow;
-  if (status === "accepted") return g.low; // emerald
+  if (status === "accepted" || status === "remittance_uploaded" || status === "confirmed") return g.low; // emerald
   if (status === "rejected") return g.high; // red
   return g.medium; // orange for pending
 }
@@ -48,6 +48,8 @@ function getGlow(status: string) {
 /** Short status label */
 function getStatusLabel(status: string) {
   if (status === "accepted") return "Accepted";
+  if (status === "remittance_uploaded") return "Deposit Pending";
+  if (status === "confirmed") return "Confirmed";
   if (status === "rejected") return "Declined";
   return "Pending";
 }
@@ -69,8 +71,8 @@ export function ProjectProposalMessage({
   const hours = Math.floor(totalMinutes / 60);
 
   const statusLabel = getStatusLabel(status);
-  const isAccepted = status === "accepted";
   const isPending = status === "pending";
+  const isSuccessState = ["accepted", "remittance_uploaded", "confirmed"].includes(status);
 
   // ---------- PINNED variant (compact, horizontal) ----------
   if (variant === "pinned") {
@@ -112,7 +114,7 @@ export function ProjectProposalMessage({
           <span
             className={cn(
               "text-[8px] font-bold uppercase tracking-wider",
-              isAccepted
+              isSuccessState
                 ? "text-emerald-500"
                 : status === "rejected"
                   ? "text-red-500"
@@ -145,7 +147,7 @@ export function ProjectProposalMessage({
       className={cn(
         card.base,
         card.interactive,
-        isAccepted ? card.bgAccent : card.bg,
+        isSuccessState ? card.bgAccent : card.bg,
         "w-[85vw] max-w-[340px] p-0 self-center"
       )}
       onClick={onPress}
@@ -191,14 +193,14 @@ export function ProjectProposalMessage({
           <div
             className={cn(
               "flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider",
-              isAccepted
+              isSuccessState
                 ? "bg-emerald-500/10 text-emerald-500"
                 : status === "rejected"
                   ? "bg-red-500/10 text-red-500"
                   : "bg-orange-500/10 text-orange-500"
             )}
           >
-            {isAccepted && <Check className="w-2.5 h-2.5" />}
+            {isSuccessState && <Check className="w-2.5 h-2.5" />}
             {statusLabel}
           </div>
 

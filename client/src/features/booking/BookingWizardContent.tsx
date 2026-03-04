@@ -66,6 +66,7 @@ interface BookingWizardContentProps {
   }) => void;
   onRejectProposal?: () => void;
   onCancelProposal?: () => void;
+  onUpdateProposalState?: (newMetadata: any) => void;
   isPendingProposalAction?: boolean;
   isLoadingProposal?: boolean;
   artistId?: string;
@@ -147,6 +148,7 @@ export function BookingWizardContent({
   onAcceptProposal,
   onRejectProposal,
   onCancelProposal,
+  onUpdateProposalState,
   isPendingProposalAction,
   isLoadingProposal,
   artistId,
@@ -357,9 +359,13 @@ export function BookingWizardContent({
           messageType: "text",
         });
 
+        if (onUpdateProposalState) {
+          onUpdateProposalState(JSON.parse(newMetadata));
+        }
+
         toast.success("Deposit receipt uploaded successfully!");
         onBookingSuccess();
-        onClose();
+        // Kept open so user can instantly see the UI change
 
       } catch (err: any) {
         toast.error("Failed to upload receipt: " + err.message);
@@ -939,9 +945,13 @@ export function BookingWizardContent({
                           messageType: "text"
                         });
 
+                        if (onUpdateProposalState) {
+                          onUpdateProposalState(JSON.parse(newMeta));
+                        }
+
                         toast.success("Deposit confirmed! Appointments are locked.");
                         onBookingSuccess();
-                        onClose();
+                        // View stays open showing the new Confirmed state
                       } catch (err: any) {
                         toast.error("Error confirming deposit");
                       }
@@ -949,8 +959,8 @@ export function BookingWizardContent({
                     disabled={updateMetadataMutation.isPending || updateAppointmentMutation.isPending}
                     className="w-full py-3 mt-1 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500 text-white hover:bg-emerald-600 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
                   >
-                    {updateMetadataMutation.isPending || updateAppointmentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                    Confirm Deposit & Book Dates
+                    {updateMetadataMutation.isPending || updateAppointmentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                    Confirm Deposit
                   </button>
                 </div>
               </motion.div>

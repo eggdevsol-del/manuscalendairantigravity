@@ -137,7 +137,7 @@ export function ChatInterface({
           )
             return false;
           if (meta.status === "pending") return true;
-          if (meta.status === "accepted") {
+          if (["accepted", "remittance_uploaded", "confirmed"].includes(meta.status)) {
             // Pin until all appointment dates have passed
             const dates = Array.isArray(meta.dates)
               ? meta.dates
@@ -210,6 +210,11 @@ export function ChatInterface({
           }
           onRejectProposal={() => {
             setSelectedProposal(null);
+          }}
+          onUpdateProposalState={(newMeta) => {
+            if (selectedProposal) {
+              setSelectedProposal({ message: selectedProposal.message, metadata: newMeta });
+            }
           }}
           onCancelProposal={() => {
             if (selectedProposal)
@@ -294,7 +299,7 @@ export function ChatInterface({
     messagesLoading,
     conversation?.id,
     showBookingWizard,
-    selectedProposal?.message?.id,
+    selectedProposal,
     conversationId,
     availableServices,
     artistSettings,
@@ -319,18 +324,18 @@ export function ChatInterface({
     const userActions: ChatAction[] =
       isAuthorized && quickActions
         ? quickActions.map(qa => {
-            let Icon = Zap;
-            if (qa.actionType === "find_availability") Icon = FileText;
-            else if (qa.actionType === "deposit_info") Icon = Send;
+          let Icon = Zap;
+          if (qa.actionType === "find_availability") Icon = FileText;
+          else if (qa.actionType === "deposit_info") Icon = Send;
 
-            return {
-              id: qa.id,
-              label: qa.label,
-              icon: Icon,
-              onClick: () => handleQuickAction(qa),
-              highlight: false,
-            };
-          })
+          return {
+            id: qa.id,
+            label: qa.label,
+            icon: Icon,
+            onClick: () => handleQuickAction(qa),
+            highlight: false,
+          };
+        })
         : [];
 
     const allActions = [...systemActions, ...userActions];
@@ -605,7 +610,7 @@ export function ChatInterface({
                   metadata = message.metadata
                     ? JSON.parse(message.metadata)
                     : null;
-                } catch (e) {}
+                } catch (e) { }
 
                 const isProjectProposal = metadata?.type === "project_proposal";
                 const isClientConfirmation =
@@ -636,70 +641,69 @@ export function ChatInterface({
                       (metadata?.status === "canceled" ||
                         metadata?.status === "revoked" ||
                         metadata?.isDeleted) ? null : isProjectProposal &&
-                      metadata?.status ===
-                        "pending" ? // Pending proposals are pinned to the header — skip inline
-                    null : isProjectProposal ? (
-                      <div className="w-full flex justify-center">
-                        <ProjectProposalMessage
-                          metadata={metadata}
-                          isArtist={isArtist}
-                          variant="inline"
-                          onPress={() => {
-                            handleViewProposal(message, metadata);
-                            setFABOpen(true);
-                          }}
-                          onCancel={() =>
-                            handleCancelProposal(message, metadata)
-                          }
-                        />
-                      </div>
-                    ) : (
-                      <div
-                        className={`max-w-[85%] rounded-2xl px-4 py-2 overflow-hidden ${
-                          isOwn
+                          metadata?.status ===
+                          "pending" ? // Pending proposals are pinned to the header — skip inline
+                      null : isProjectProposal ? (
+                        <div className="w-full flex justify-center">
+                          <ProjectProposalMessage
+                            metadata={metadata}
+                            isArtist={isArtist}
+                            variant="inline"
+                            onPress={() => {
+                              handleViewProposal(message, metadata);
+                              setFABOpen(true);
+                            }}
+                            onCancel={() =>
+                              handleCancelProposal(message, metadata)
+                            }
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          className={`max-w-[85%] rounded-2xl px-4 py-2 overflow-hidden ${isOwn
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted"
-                        }`}
-                      >
-                        {isImage ? (
-                          <div className="space-y-2">
-                            <img
-                              src={message.content}
-                              alt="Uploaded image"
-                              className="rounded-lg max-w-full h-auto cursor-pointer"
-                              onClick={() =>
-                                window.open(message.content, "_blank")
-                              }
-                              style={{ maxHeight: "300px" }}
-                            />
-                          </div>
-                        ) : (
-                          <p className="text-sm break-words whitespace-pre-wrap overflow-wrap-anywhere">
-                            {message.content}
+                            }`}
+                        >
+                          {isImage ? (
+                            <div className="space-y-2">
+                              <img
+                                src={message.content}
+                                alt="Uploaded image"
+                                className="rounded-lg max-w-full h-auto cursor-pointer"
+                                onClick={() =>
+                                  window.open(message.content, "_blank")
+                                }
+                                style={{ maxHeight: "300px" }}
+                              />
+                            </div>
+                          ) : (
+                            <p className="text-sm break-words whitespace-pre-wrap overflow-wrap-anywhere">
+                              {message.content}
+                            </p>
+                          )}
+                          <p className="text-xs opacity-70 mt-1">
+                            {message.createdAt &&
+                              new Date(message.createdAt).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
                           </p>
-                        )}
-                        <p className="text-xs opacity-70 mt-1">
-                          {message.createdAt &&
-                            new Date(message.createdAt).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                        </p>
 
-                        {isArtist && isClientConfirmation && (
-                          <Button
-                            className="mt-2 w-full bg-background/20 hover:bg-background/30 text-inherit border-none"
-                            size="sm"
-                            onClick={() => handleArtistBookProject(metadata)}
-                            disabled={bookProjectMutation.isPending}
-                          >
-                            {bookProjectMutation.isPending
-                              ? "Booking..."
-                              : "Confirm & Book"}
-                          </Button>
-                        )}
-                      </div>
-                    )}
+                          {isArtist && isClientConfirmation && (
+                            <Button
+                              className="mt-2 w-full bg-background/20 hover:bg-background/30 text-inherit border-none"
+                              size="sm"
+                              onClick={() => handleArtistBookProject(metadata)}
+                              disabled={bookProjectMutation.isPending}
+                            >
+                              {bookProjectMutation.isPending
+                                ? "Booking..."
+                                : "Confirm & Book"}
+                            </Button>
+                          )}
+                        </div>
+                      )}
                   </div>
                 );
               })
