@@ -19,6 +19,8 @@ export function OnboardingClientFlow({ onComplete }: OnboardingClientFlowProps) 
     const [name, setName] = useState(user?.name || "");
     const [phone, setPhone] = useState(user?.phone || "");
     const [avatar, setAvatar] = useState(user?.avatar || "");
+    const [instagramUsername, setInstagramUsername] = useState(user?.instagramUsername || "");
+    const [birthday, setBirthday] = useState(user?.birthday ? new Date(user.birthday).toISOString().split("T")[0] : "");
     const updateProfileMutation = trpc.auth.updateProfile.useMutation();
 
     const handleNext = async () => {
@@ -32,7 +34,9 @@ export function OnboardingClientFlow({ onComplete }: OnboardingClientFlowProps) 
                 await updateProfileMutation.mutateAsync({
                     name,
                     phone,
-                    avatar
+                    avatar,
+                    instagramUsername,
+                    birthday: birthday ? new Date(birthday).toISOString() : undefined,
                 });
                 await refresh();
                 setStep(2);
@@ -100,6 +104,34 @@ export function OnboardingClientFlow({ onComplete }: OnboardingClientFlowProps) 
                                     onChange={(e) => setPhone(e.target.value)}
                                     placeholder="e.g. +61 400 000 000"
                                     className="bg-accent/5"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5 pt-2 border-t border-white/5">
+                                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Instagram Handle (Optional)</Label>
+                                <div className="flex rounded-md overflow-hidden bg-accent/5 focus-within:ring-2 focus-within:ring-primary/50 transition-all border border-input">
+                                    <div className="px-3 py-2 bg-black/40 text-muted-foreground text-sm border-r border-input flex items-center shrink-0">
+                                        @
+                                    </div>
+                                    <input
+                                        type="text"
+                                        className="flex-1 bg-transparent px-3 text-sm outline-none w-full"
+                                        value={instagramUsername}
+                                        onChange={(e) => setInstagramUsername(e.target.value.replace('@', ''))}
+                                        placeholder="username"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Date of Birth</Label>
+                                <p className="text-[10px] text-muted-foreground leading-tight pb-1">Tattooing requires age verification. Providing this now saves time later.</p>
+                                <Input
+                                    type="date"
+                                    value={birthday}
+                                    onChange={(e) => setBirthday(e.target.value)}
+                                    className="bg-accent/5 text-sm"
+                                    max={new Date().toISOString().split("T")[0]}
                                 />
                             </div>
                         </motion.div>

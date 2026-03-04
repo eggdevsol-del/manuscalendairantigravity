@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button, Input, Label, Textarea } from "@/components/ui";
+import { Button, Input, Label, Textarea, Switch } from "@/components/ui";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
@@ -9,6 +17,33 @@ import { Camera, RefreshCw, Calendar as CalendarIcon, Wallet as WalletIcon, Sett
 interface OnboardingArtistFlowProps {
     onComplete: () => Promise<void>;
 }
+
+interface DaySchedule {
+    enabled: boolean;
+    start: string;
+    end: string;
+    type?: "work" | "design" | "personal";
+}
+
+interface WorkSchedule {
+    monday: DaySchedule;
+    tuesday: DaySchedule;
+    wednesday: DaySchedule;
+    thursday: DaySchedule;
+    friday: DaySchedule;
+    saturday: DaySchedule;
+    sunday: DaySchedule;
+}
+
+const defaultSchedule: WorkSchedule = {
+    monday: { enabled: true, start: "09:00", end: "17:00", type: "work" },
+    tuesday: { enabled: true, start: "09:00", end: "17:00", type: "work" },
+    wednesday: { enabled: true, start: "09:00", end: "17:00", type: "work" },
+    thursday: { enabled: true, start: "09:00", end: "17:00", type: "work" },
+    friday: { enabled: true, start: "09:00", end: "17:00", type: "work" },
+    saturday: { enabled: false, start: "09:00", end: "17:00", type: "work" },
+    sunday: { enabled: false, start: "09:00", end: "17:00", type: "work" },
+};
 
 export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) {
     const { user, refresh } = useAuth();
@@ -26,7 +61,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
     const [depositAmount, setDepositAmount] = useState<string>("50");
     const [bsb, setBsb] = useState("");
     const [acc, setAcc] = useState("");
-    const [workSchedule, setWorkSchedule] = useState({});
+    const [workSchedule, setWorkSchedule] = useState<WorkSchedule>(defaultSchedule);
 
     // Step 3 state for Calendar Sync
     const [appleCalendarUrl, setAppleCalendarUrl] = useState("");
@@ -36,6 +71,44 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
     const updateProfileMutation = trpc.auth.updateProfile.useMutation();
     const updateSettingsMutation = trpc.artistSettings.upsert.useMutation();
     const testCalendarUrlMutation = trpc.artistSettings.testExternalCalendarUrl.useMutation();
+
+    const handleDayToggle = (day: keyof WorkSchedule) => {
+        setWorkSchedule(prev => ({
+            ...prev,
+            [day]: { ...prev[day], enabled: !prev[day].enabled },
+        }));
+    };
+
+    const handleTimeChange = (
+        day: keyof WorkSchedule,
+        field: "start" | "end",
+        value: string
+    ) => {
+        setWorkSchedule(prev => ({
+            ...prev,
+            [day]: { ...prev[day], [field]: value },
+        }));
+    };
+
+    const handleTypeChange = (
+        day: keyof WorkSchedule,
+        value: "work" | "design" | "personal"
+    ) => {
+        setWorkSchedule(prev => ({
+            ...prev,
+            [day]: { ...prev[day], type: value },
+        }));
+    };
+
+    const days: Array<{ key: keyof WorkSchedule; label: string }> = [
+        { key: "monday", label: "Monday" },
+        { key: "tuesday", label: "Tuesday" },
+        { key: "wednesday", label: "Wednesday" },
+        { key: "thursday", label: "Thursday" },
+        { key: "friday", label: "Friday" },
+        { key: "saturday", label: "Saturday" },
+        { key: "sunday", label: "Sunday" },
+    ];
 
     const handleNext = async () => {
         if (step === 1) {
@@ -251,9 +324,76 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                 </p>
                             </div>
 
-                            <div className="flex flex-col items-center justify-center p-4 bg-primary/10 rounded-lg border border-primary/20 text-center mb-6">
-                                <CalendarIcon className="w-6 h-6 text-primary mb-2" />
-                                <span className="text-xs text-primary font-medium">Standard Hours Configurator<br />(Module Loading soon...)</span>
+                            <div className="space-y-4 pb-4">
+                                {days.map(({ key, label }) => {
+                                    const daySchedule = workSchedule[key];
+                                    return (
+                                        <div key={key} className="space-y-2 p-3 border border-white/5 rounded-lg bg-black/20">
+                                            <div className="flex items-center justify-between">
+                                                <Label
+                                                    className={cn(
+                                                        "text-sm font-semibold",
+                                                        daySchedule.enabled
+                                                            ? "text-foreground"
+                                                            : "text-muted-foreground"
+                                                    )}
+                                                >
+                                                    {label}
+                                                </Label>
+                                                <Switch
+                                                    checked={daySchedule.enabled}
+                                                    onCheckedChange={() => handleDayToggle(key)}
+                                                />
+                                            </div>
+
+                                            {daySchedule.enabled && (
+                                                <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-white/5">
+                                                    <Select
+                                                        value={daySchedule.type || "work"}
+                                                        onValueChange={(val: any) =>
+                                                            handleTypeChange(key, val)
+                                                        }
+                                                    >
+                                                        <SelectTrigger className="h-8 bg-white/5 border-white/10 text-xs w-full mb-1">
+                                                            <SelectValue placeholder="Select type" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="work">Work</SelectItem>
+                                                            <SelectItem value="design">Design</SelectItem>
+                                                            <SelectItem value="personal">Personal</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+
+                                                    <div className="flex gap-2">
+                                                        <div className="flex-1">
+                                                            <Input
+                                                                type="time"
+                                                                value={daySchedule.start}
+                                                                onChange={e =>
+                                                                    handleTimeChange(key, "start", e.target.value)
+                                                                }
+                                                                className="h-8 text-xs bg-white/5 border-white/10"
+                                                            />
+                                                        </div>
+                                                        <span className="flex items-center text-muted-foreground text-[10px] font-bold">
+                                                            TO
+                                                        </span>
+                                                        <div className="flex-1">
+                                                            <Input
+                                                                type="time"
+                                                                value={daySchedule.end}
+                                                                onChange={e =>
+                                                                    handleTimeChange(key, "end", e.target.value)
+                                                                }
+                                                                className="h-8 text-xs bg-white/5 border-white/10"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
 
                             <div className="pt-4 border-t border-white/10 space-y-3">

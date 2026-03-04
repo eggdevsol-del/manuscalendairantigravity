@@ -27,6 +27,7 @@ export const authRouter = router({
         address: z.string().optional(),
         city: z.string().optional(),
         birthday: z.string().optional(),
+        instagramUsername: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
