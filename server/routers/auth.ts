@@ -40,8 +40,8 @@ export const authRouter = router({
       });
     }),
   completeOnboarding: protectedProcedure.mutation(async ({ ctx }) => {
-    return db.updateUserProfile(ctx.user.id, {
-      isOnboardingComplete: 1,
+    await db.updateUserProfile(ctx.user.id, {
+      hasCompletedOnboarding: 1,
     });
   }),
   linkInstagram: protectedProcedure

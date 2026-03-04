@@ -63,7 +63,7 @@ export const authRouter = router({
         name,
         role,
         loginMethod: "email",
-        hasCompletedOnboarding: false,
+        hasCompletedOnboarding: 0,
       });
 
       if (!user) {

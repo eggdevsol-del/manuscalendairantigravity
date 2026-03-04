@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { artistProcedure, protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { parseExternalCalendar } from "../services/icalParser";
 
 export const artistSettingsRouter = router({
   get: artistProcedure.query(async ({ ctx }) => {
@@ -54,6 +55,16 @@ export const artistSettingsRouter = router({
         autoSendDepositInfo: settings.autoSendDepositInfo,
       };
     }),
+  testExternalCalendarUrl: artistProcedure
+    .input(z.object({ url: z.string().url() }))
+    .mutation(async ({ input }) => {
+      try {
+        const events = await parseExternalCalendar(input.url);
+        return { success: true, eventCount: events.length, message: "Calendar connected successfully!" };
+      } catch (error: any) {
+        return { success: false, message: error.message || "Failed to reach Calendar URL" };
+      }
+    }),
   upsert: artistProcedure
     .input(
       z.object({
@@ -71,6 +82,8 @@ export const artistSettingsRouter = router({
         publicSlug: z.string().optional(),
         funnelEnabled: z.boolean().optional(),
         licenceNumber: z.string().optional(),
+        googleCalendarToken: z.string().optional(),
+        appleCalendarUrl: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -89,6 +102,8 @@ export const artistSettingsRouter = router({
               ? 1
               : 0
             : undefined,
+        googleCalendarToken: input.googleCalendarToken,
+        appleCalendarUrl: input.appleCalendarUrl,
       } as any);
     }),
 });

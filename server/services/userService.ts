@@ -56,9 +56,9 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.role = user.role;
     }
 
-    if (user.isOnboardingComplete !== undefined) {
-      values.isOnboardingComplete = user.isOnboardingComplete;
-      updateSet.isOnboardingComplete = user.isOnboardingComplete;
+    if (user.hasCompletedOnboarding !== undefined) {
+      values.hasCompletedOnboarding = user.hasCompletedOnboarding;
+      updateSet.hasCompletedOnboarding = user.hasCompletedOnboarding;
     }
 
     if (Object.keys(updateSet).length === 0) {

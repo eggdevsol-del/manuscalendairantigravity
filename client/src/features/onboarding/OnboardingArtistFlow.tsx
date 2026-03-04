@@ -4,8 +4,7 @@ import { Button, Input, Label, Textarea } from "@/components/ui";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
-import { Camera, RefreshCw, Calendar as CalendarIcon, Wallet as WalletIcon, Settings as SettingsIcon } from "lucide-react";
-import { TimeSlotPicker } from "@/features/settings/components/TimeSlotPicker";
+import { Camera, RefreshCw, Calendar as CalendarIcon, Wallet as WalletIcon, Settings as SettingsIcon, Link as LinkIcon, CheckCircle2 } from "lucide-react";
 
 interface OnboardingArtistFlowProps {
     onComplete: () => Promise<void>;
@@ -29,8 +28,14 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
     const [acc, setAcc] = useState("");
     const [workSchedule, setWorkSchedule] = useState({});
 
+    // Step 3 state for Calendar Sync
+    const [appleCalendarUrl, setAppleCalendarUrl] = useState("");
+    const [syncStatus, setSyncStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
+    const [syncMessage, setSyncMessage] = useState("");
+
     const updateProfileMutation = trpc.auth.updateProfile.useMutation();
-    const updateSettingsMutation = trpc.settings.updateArtistSettings.useMutation();
+    const updateSettingsMutation = trpc.artistSettings.upsert.useMutation();
+    const testCalendarUrlMutation = trpc.artistSettings.testExternalCalendarUrl.useMutation();
 
     const handleNext = async () => {
         if (step === 1) {
@@ -47,7 +52,9 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                     avatar
                 });
                 await updateSettingsMutation.mutateAsync({
-                    publicSlug: slug
+                    publicSlug: slug,
+                    workSchedule: "{}",
+                    services: "[]"
                 });
                 setStep(2);
             } catch (e) {
@@ -56,13 +63,55 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                 setIsSubmitting(false);
             }
         } else if (step === 2) {
-            // Step 2 logic will hit settings API 
-            setStep(3);
+            setIsSubmitting(true);
+            try {
+                await updateSettingsMutation.mutateAsync({
+                    depositAmount: Number(depositAmount),
+                    bsb,
+                    accountNumber: acc,
+                    workSchedule: JSON.stringify(workSchedule),
+                    services: "[]"
+                });
+                setStep(3);
+            } catch (e) {
+                toast.error("Failed to save bank details.");
+            } finally {
+                setIsSubmitting(false);
+            }
         } else if (step === 3) {
-            // Step 3 Logic will hit policies / calendar sync
-            setStep(4);
+            setIsSubmitting(true);
+            try {
+                await updateSettingsMutation.mutateAsync({
+                    appleCalendarUrl,
+                    workSchedule: JSON.stringify(workSchedule),
+                    services: JSON.stringify([]) // Handled later
+                });
+                setStep(4);
+            } catch (e) {
+                toast.error("Failed to save schedule.");
+            } finally {
+                setIsSubmitting(false);
+            }
         } else if (step === 4) {
             onComplete();
+        }
+    };
+
+    const handleTestUrl = async () => {
+        if (!appleCalendarUrl) return;
+        setSyncStatus("testing");
+        try {
+            const res = await testCalendarUrlMutation.mutateAsync({ url: appleCalendarUrl });
+            if (res.success) {
+                setSyncStatus("success");
+                setSyncMessage(`${res.eventCount} events synced.`);
+            } else {
+                setSyncStatus("error");
+                setSyncMessage(res.message);
+            }
+        } catch (e) {
+            setSyncStatus("error");
+            setSyncMessage("Invalid link format");
         }
     };
 
@@ -202,9 +251,45 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                 </p>
                             </div>
 
-                            <div className="flex flex-col items-center justify-center p-4 bg-primary/10 rounded-lg border border-primary/20 text-center">
+                            <div className="flex flex-col items-center justify-center p-4 bg-primary/10 rounded-lg border border-primary/20 text-center mb-6">
                                 <CalendarIcon className="w-6 h-6 text-primary mb-2" />
                                 <span className="text-xs text-primary font-medium">Standard Hours Configurator<br />(Module Loading soon...)</span>
+                            </div>
+
+                            <div className="pt-4 border-t border-white/10 space-y-3">
+                                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                    <LinkIcon className="w-3.5 h-3.5" /> External Calendar Sync
+                                </Label>
+                                <p className="text-[11px] text-muted-foreground leading-tight">
+                                    Paste a public Apple iCloud or Google Calendar `Secret address in iCal format` (.ics) URL here to automatically block busy slots.
+                                </p>
+                                <div className="space-y-2">
+                                    <Input
+                                        value={appleCalendarUrl}
+                                        onChange={(e) => {
+                                            setAppleCalendarUrl(e.target.value);
+                                            setSyncStatus("idle");
+                                            setSyncMessage("");
+                                        }}
+                                        placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
+                                        className="bg-accent/5"
+                                    />
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-xs font-medium">
+                                            {syncStatus === "success" && <span className="text-emerald-500 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> {syncMessage}</span>}
+                                            {syncStatus === "error" && <span className="text-red-400">{syncMessage}</span>}
+                                        </div>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={handleTestUrl}
+                                            disabled={!appleCalendarUrl || syncStatus === "testing"}
+                                            className="h-8 text-xs px-3"
+                                        >
+                                            {syncStatus === "testing" ? "Testing..." : "Test Sync"}
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
                         </motion.div>
                     )}

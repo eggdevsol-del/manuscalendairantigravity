@@ -66,7 +66,7 @@ function Router() {
             setLocation("/login");
             return null;
           }
-          if (user.isOnboardingComplete === 0 && location !== "/onboarding") {
+          if (user.hasCompletedOnboarding === 0 && location !== "/onboarding") {
             setLocation("/onboarding");
             return null;
           }
