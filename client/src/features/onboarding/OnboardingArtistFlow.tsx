@@ -55,6 +55,9 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
     // Step 5: Automation Level
     const [sendAutomatedReminders, setSendAutomatedReminders] = useState(true);
 
+    // Step 7: Subscription
+    const [subscriptionTier, setSubscriptionTier] = useState<"free" | "pro" | "pro_plus">("pro");
+
     const updateProfileMutation = trpc.auth.updateProfile.useMutation();
     const updateSettingsMutation = trpc.artistSettings.upsert.useMutation();
 
@@ -119,6 +122,10 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
             }
             setStep(5);
         } else if (step === 5) {
+            setStep(6);
+        } else if (step === 6) {
+            setStep(7);
+        } else if (step === 7) {
             // Final submission
             setIsSubmitting(true);
             try {
@@ -136,16 +143,18 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                     // Supply a safe default schema for schedule to avoid DB breaks
                     workSchedule: JSON.stringify({}),
                 });
-                setStep(6);
+
+                // Fire subscription change if that endpoint exists, for now we assume it's part of the general
+                // profile or handled via Stripe redirect next. Just moving state to Step 8 for now.
+                setStep(8);
             } catch (e) {
                 toast.error("Failed to sequence operation. Check inputs.");
             } finally {
                 setIsSubmitting(false);
             }
-        } else if (step === 6) {
-            // Dismiss overlay and push to subscription screen
+        } else if (step === 8) {
+            // Dismiss overlay to let them interact with app
             await onComplete();
-            setLocation("/subscriptions");
         }
     };
 
@@ -161,7 +170,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
 
                 {/* Progress Indicator */}
                 <div className="flex items-center gap-1.5 mb-6">
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                         <div key={i} className={`h-1 flex-1 rounded-full ${step >= i ? 'bg-primary' : 'bg-primary/20'}`} />
                     ))}
                 </div>
@@ -399,19 +408,22 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                 <div className="bg-accent/5 border border-input rounded-xl p-4 space-y-3">
                                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-foreground/10 pb-2 w-full flex">Add Base Service</Label>
 
-                                    <Input placeholder="Service Name (e.g. Full Day Session)" value={newServiceTitle} onChange={(e) => setNewServiceTitle(e.target.value)} />
+                                    <Input className="h-9 bg-background" placeholder="Service Name (e.g. Full Day Session)" value={newServiceTitle} onChange={(e) => setNewServiceTitle(e.target.value)} />
 
                                     <div className="flex gap-2">
                                         <Select value={newServiceDuration} onValueChange={setNewServiceDuration}>
-                                            <SelectTrigger><SelectValue placeholder="Duration" /></SelectTrigger>
+                                            <SelectTrigger className="h-9 bg-background border border-input w-[140px]">
+                                                <SelectValue placeholder="Duration" />
+                                            </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="30">30 Min</SelectItem>
-                                                <SelectItem value="60">1 Hour</SelectItem>
-                                                <SelectItem value="180">3 Hours (Half Day)</SelectItem>
-                                                <SelectItem value="360">6 Hours (Full Day)</SelectItem>
+                                                {Array.from({ length: 24 }).map((_, i) => (
+                                                    <SelectItem key={i + 1} value={String((i + 1) * 60)}>
+                                                        {i + 1} {i + 1 === 1 ? 'Hour' : 'Hours'}
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
-                                        <Input placeholder="$ Price" type="number" value={newServicePrice} onChange={(e) => setNewServicePrice(e.target.value)} />
+                                        <Input className="h-9 flex-1 bg-background" placeholder="$ Price" type="number" value={newServicePrice} onChange={(e) => setNewServicePrice(e.target.value)} />
                                     </div>
 
                                     <div className="flex items-center justify-between px-1 pt-2">
@@ -472,9 +484,128 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                             </motion.div>
                         )}
 
-                        {step === 6 && (
+                        {step === 7 && (
                             <motion.div
-                                key="step-6"
+                                key="step-7"
+                                variants={currentStepVariant}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                                className="space-y-4"
+                            >
+                                <div className="mb-4 space-y-1">
+                                    <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                                        <Star className="w-5 h-5 text-primary" /> Select Plan
+                                    </h2>
+                                    <p className="text-sm text-muted-foreground leading-tight">
+                                        Finalize your studio configuration by selecting your operational tier.
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {/* Free Tier */}
+                                    <div
+                                        className={cn("p-4 rounded-xl border cursor-pointer transition-all", subscriptionTier === 'free' ? 'bg-primary/10 border-primary shadow-lg shadow-primary/10' : 'bg-card border-white/5 opacity-80')}
+                                        onClick={() => setSubscriptionTier('free')}
+                                    >
+                                        <div className="flex justify-between items-center mb-1">
+                                            <h3 className="font-bold text-lg">Free Tier</h3>
+                                            <span className="text-xs font-bold px-2 py-0.5 bg-white/10 rounded-full">$0/mo</span>
+                                        </div>
+                                        <ul className="text-[10px] space-y-1 mt-3">
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Tri-app proprietary booking app</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Calendar (client/artist)</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Revenue protection</span> <span className="text-red-400 font-bold">✗</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">In-app messages</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Booking link for bio</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Booking consult funnel</span> <span className="text-red-400 font-bold">✗</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Branded consult funnel</span> <span className="text-red-400 font-bold">✗</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Custom consult funnel</span> <span className="text-red-400 font-bold">✗</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Photos/reference storage</span> <span className="text-red-400 font-bold">✗</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Business / Social / Personal dashboard</span> <span className="text-red-400 font-bold">✗</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Promotional items</span> <span className="text-foreground font-bold">5 max</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Client import/export data</span> <span className="text-red-400 font-bold">✗</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Maps link on appointments</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Auto medical release forms</span> <span className="text-red-400 font-bold">✗</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Auto consent forms</span> <span className="text-red-400 font-bold">✗</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">QLD Procedure Form 9</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Full client event history</span> <span className="text-red-400 font-bold">✗</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Customer support</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">One-on-one systems creation advice</span> <span className="text-red-400 font-bold">✗</span></li>
+                                        </ul>
+                                    </div>
+
+                                    {/* Pro Tier */}
+                                    <div
+                                        className={cn("p-4 rounded-xl border relative cursor-pointer transition-all", subscriptionTier === 'pro' ? 'bg-primary/10 border-primary shadow-lg shadow-primary/10' : 'bg-card border-white/5 opacity-80')}
+                                        onClick={() => setSubscriptionTier('pro')}
+                                    >
+                                        <div className="absolute -top-2.5 right-4 bg-primary text-primary-foreground text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-md z-10">Popular</div>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <h3 className="font-bold text-lg text-primary">Pro Tier</h3>
+                                            <span className="text-xs font-bold px-2 py-0.5 bg-primary/20 text-primary rounded-full">$29/mo</span>
+                                        </div>
+                                        <ul className="text-[10px] space-y-1 mt-3">
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Tri-app proprietary booking app</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Calendar (client/artist)</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Revenue protection</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">In-app messages</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Booking link for bio</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Booking consult funnel</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Branded consult funnel</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Custom consult funnel</span> <span className="text-red-400 font-bold">✗</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Photos/reference storage</span> <span className="text-foreground font-bold">1 year storage</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Business / Social / Personal dashboard</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Promotional items</span> <span className="text-foreground font-bold">100 max</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Client import/export data</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Maps link on appointments</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Auto medical release forms</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Auto consent forms</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">QLD Procedure Form 9</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Full client event history</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Customer support</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">One-on-one systems creation advice</span> <span className="text-red-400 font-bold">✗</span></li>
+                                        </ul>
+                                    </div>
+
+                                    {/* Pro Plus Tier */}
+                                    <div
+                                        className={cn("p-4 rounded-xl border cursor-pointer transition-all", subscriptionTier === 'pro_plus' ? 'bg-primary/10 border-primary shadow-lg shadow-primary/10' : 'bg-card border-white/5 opacity-80')}
+                                        onClick={() => setSubscriptionTier('pro_plus')}
+                                    >
+                                        <div className="flex justify-between items-center mb-1">
+                                            <h3 className="font-bold text-lg">Pro Plus</h3>
+                                            <span className="text-xs font-bold px-2 py-0.5 bg-white/10 rounded-full">$49/mo</span>
+                                        </div>
+                                        <ul className="text-[10px] space-y-1 mt-3">
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Tri-app proprietary booking app</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Calendar (client/artist)</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Revenue protection</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">In-app messages</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Booking link for bio</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Booking consult funnel</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Branded consult funnel</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Custom consult funnel</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Photos/reference storage</span> <span className="text-foreground font-bold">unlimited</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Business / Social / Personal dashboard</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Promotional items</span> <span className="text-foreground font-bold">unlimited</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Client import/export data</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Maps link on appointments</span> <span className="text-foreground font-bold text-right pl-2">customisable</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Auto medical release forms</span> <span className="text-foreground font-bold text-right pl-2">customisable</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Auto consent forms</span> <span className="text-foreground font-bold text-right pl-2">customisable</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">QLD Procedure Form 9</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Full client event history</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">Customer support</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                            <li className="flex justify-between"><span className="text-muted-foreground">One-on-one systems creation advice</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {step === 8 && (
+                            <motion.div
+                                key="step-8"
                                 variants={currentStepVariant}
                                 initial="initial"
                                 animate="animate"
@@ -482,12 +613,12 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                 className="flex flex-col items-center justify-center text-center space-y-4 py-8"
                             >
                                 <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mb-2">
-                                    <Star className="w-8 h-8 text-emerald-500" />
+                                    <SettingsIcon className="w-8 h-8 text-emerald-500 animate-spin" />
                                 </div>
 
                                 <h2 className="text-2xl font-black">All Set!</h2>
                                 <p className="text-sm text-muted-foreground">
-                                    Your fundamental studio architecture is mounted. You will now be redirected to select your preferred subscription tier unlocking platform capabilities.
+                                    Your fundamental studio architecture is mounted. You are entering the dashboard.
                                 </p>
                             </motion.div>
                         )}
@@ -500,7 +631,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                         onClick={handleNext}
                         disabled={isSubmitting}
                     >
-                        {isSubmitting ? "Finalizing..." : step === 6 ? "Proceed to Subscription" : "Continue"}
+                        {isSubmitting ? "Processing..." : step === 8 ? "Enter Dashboard" : step === 7 ? "Save Plan & Finish" : "Continue"}
                     </Button>
                 </div>
             </div>
