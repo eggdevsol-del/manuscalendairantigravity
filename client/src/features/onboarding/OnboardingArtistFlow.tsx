@@ -13,7 +13,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
-import { Camera, RefreshCw, Settings as SettingsIcon, MapPin, Building2, CreditCard, Scissors, Bell, Star } from "lucide-react";
+import { Camera, RefreshCw, Settings as SettingsIcon, MapPin, Building2, CreditCard, Scissors, Bell, Star, Calendar as CalendarIcon, Link as LinkIcon, Wallet as WalletIcon } from "lucide-react";
 
 interface OnboardingArtistFlowProps {
     onComplete: () => Promise<void>;
@@ -124,8 +124,6 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
         } else if (step === 5) {
             setStep(6);
         } else if (step === 6) {
-            setStep(7);
-        } else if (step === 7) {
             // Final submission
             setIsSubmitting(true);
             try {
@@ -144,15 +142,14 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                     workSchedule: JSON.stringify({}),
                 });
 
-                // Fire subscription change if that endpoint exists, for now we assume it's part of the general
-                // profile or handled via Stripe redirect next. Just moving state to Step 8 for now.
-                setStep(8);
+                // Move to Walkthrough
+                setStep(7);
             } catch (e) {
                 toast.error("Failed to sequence operation. Check inputs.");
             } finally {
                 setIsSubmitting(false);
             }
-        } else if (step === 8) {
+        } else if (step === 7) {
             // Dismiss overlay to let them interact with app
             await onComplete();
         }
@@ -170,7 +167,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
 
                 {/* Progress Indicator */}
                 <div className="flex items-center gap-1.5 mb-6">
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                    {[1, 2, 3, 4, 5, 6, 7].map((i) => (
                         <div key={i} className={`h-1 flex-1 rounded-full ${step >= i ? 'bg-primary' : 'bg-primary/20'}`} />
                     ))}
                 </div>
@@ -484,9 +481,9 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                             </motion.div>
                         )}
 
-                        {step === 7 && (
+                        {step === 6 && (
                             <motion.div
-                                key="step-7"
+                                key="step-6"
                                 variants={currentStepVariant}
                                 initial="initial"
                                 animate="animate"
@@ -603,23 +600,68 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                             </motion.div>
                         )}
 
-                        {step === 8 && (
+                        {step === 7 && (
                             <motion.div
-                                key="step-8"
+                                key="step-7"
                                 variants={currentStepVariant}
                                 initial="initial"
                                 animate="animate"
                                 exit="exit"
-                                className="flex flex-col items-center justify-center text-center space-y-4 py-8"
+                                className="space-y-6 pt-2 pb-8"
                             >
-                                <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mb-2">
-                                    <SettingsIcon className="w-8 h-8 text-emerald-500 animate-spin" />
+                                <div className="text-center space-y-2 mb-8">
+                                    <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                                        <SettingsIcon className="w-8 h-8 text-emerald-500 animate-spin-slow" />
+                                    </div>
+                                    <h2 className="text-2xl font-black">Platform Activated</h2>
+                                    <p className="text-sm text-muted-foreground">
+                                        Your fundamental studio architecture is mounted. Here is how to navigate your new operational hub.
+                                    </p>
                                 </div>
 
-                                <h2 className="text-2xl font-black">All Set!</h2>
-                                <p className="text-sm text-muted-foreground">
-                                    Your fundamental studio architecture is mounted. You are entering the dashboard.
-                                </p>
+                                <div className="space-y-4">
+                                    <div className="flex gap-4 p-4 rounded-xl bg-card border border-white/5">
+                                        <div className="shrink-0 pt-1">
+                                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                                                <CalendarIcon className="w-4 h-4 text-primary" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-sm text-foreground">Central Calendar Engine</h4>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                All bookings route through here. Tap the center FAB button to quickly block out personal time, sync external calendars, or create custom appointments.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-4 p-4 rounded-xl bg-card border border-white/5">
+                                        <div className="shrink-0 pt-1">
+                                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                                                <LinkIcon className="w-4 h-4 text-primary" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-sm text-foreground">Booking Link Funnel</h4>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                Link <span className="text-primary font-mono text-[10px]">calendair.net/{publicSlug}</span> in your Instagram bio. Clients use this to submit requests directly into your Messages inbox.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-4 p-4 rounded-xl bg-card border border-white/5">
+                                        <div className="shrink-0 pt-1">
+                                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                                                <WalletIcon className="w-4 h-4 text-primary" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-sm text-foreground">Deposit Routing</h4>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                When you 'Accept' a client request from Messages, they are automatically prompted to send remittance to the Bank Account you just configured.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -631,7 +673,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                         onClick={handleNext}
                         disabled={isSubmitting}
                     >
-                        {isSubmitting ? "Processing..." : step === 8 ? "Enter Dashboard" : step === 7 ? "Save Plan & Finish" : "Continue"}
+                        {isSubmitting ? "Finalizing Studio..." : step === 7 ? "Enter Dashboard" : step === 6 ? "Activate Subscription" : "Continue"}
                     </Button>
                 </div>
             </div>
