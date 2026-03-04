@@ -92,7 +92,7 @@ export function registerPublicFunnelRoutes(app: Express) {
         return res.status(404).json({ error: "Artist not found" });
       }
       console.log(
-        `[PublicFunnel] GET /api/public/artist/${slug} - Found user: id=${artist.id}, name=${artist.name || artist.displayName || artist.username}`
+        `[PublicFunnel] GET /api/public/artist/${slug} - Found user: id=${artist.id}, name=${artist.name || "Artist"}`
       );
 
       // Parse JSON fields with defaults
@@ -104,17 +104,17 @@ export function registerPublicFunnelRoutes(app: Express) {
         styleOptions = settings.styleOptions
           ? JSON.parse(settings.styleOptions)
           : [
-              "realism",
-              "traditional",
-              "neo-traditional",
-              "japanese",
-              "blackwork",
-              "dotwork",
-              "watercolor",
-              "geometric",
-              "minimalist",
-              "other",
-            ];
+            "realism",
+            "traditional",
+            "neo-traditional",
+            "japanese",
+            "blackwork",
+            "dotwork",
+            "watercolor",
+            "geometric",
+            "minimalist",
+            "other",
+          ];
       } catch (parseError) {
         console.error(
           `[PublicFunnel] GET /api/public/artist/${slug} - Error parsing styleOptions:`,
@@ -138,19 +138,19 @@ export function registerPublicFunnelRoutes(app: Express) {
         placementOptions = settings.placementOptions
           ? JSON.parse(settings.placementOptions)
           : [
-              "full-sleeve",
-              "half-sleeve",
-              "forearm",
-              "upper-arm",
-              "back-piece",
-              "chest",
-              "ribs",
-              "thigh",
-              "calf",
-              "hand",
-              "neck",
-              "other",
-            ];
+            "full-sleeve",
+            "half-sleeve",
+            "forearm",
+            "upper-arm",
+            "back-piece",
+            "chest",
+            "ribs",
+            "thigh",
+            "calf",
+            "hand",
+            "neck",
+            "other",
+          ];
       } catch (parseError) {
         console.error(
           `[PublicFunnel] GET /api/public/artist/${slug} - Error parsing placementOptions:`,
@@ -176,13 +176,13 @@ export function registerPublicFunnelRoutes(app: Express) {
         budgetRanges = settings.budgetRanges
           ? JSON.parse(settings.budgetRanges)
           : [
-              { label: "Under $500", min: 0, max: 500 },
-              { label: "$500-$1,000", min: 500, max: 1000 },
-              { label: "$1,000-$2,500", min: 1000, max: 2500 },
-              { label: "$2,500-$5,000", min: 2500, max: 5000 },
-              { label: "$5,000-$10,000", min: 5000, max: 10000 },
-              { label: "$10,000+", min: 10000, max: null },
-            ];
+            { label: "Under $500", min: 0, max: 500 },
+            { label: "$500-$1,000", min: 500, max: 1000 },
+            { label: "$1,000-$2,500", min: 1000, max: 2500 },
+            { label: "$2,500-$5,000", min: 2500, max: 5000 },
+            { label: "$5,000-$10,000", min: 5000, max: 10000 },
+            { label: "$10,000+", min: 10000, max: null },
+          ];
       } catch (parseError) {
         console.error(
           `[PublicFunnel] GET /api/public/artist/${slug} - Error parsing budgetRanges:`,
@@ -202,9 +202,9 @@ export function registerPublicFunnelRoutes(app: Express) {
         id: artist.id,
         slug: settings.publicSlug,
         displayName:
-          artist.displayName || artist.username || artist.name || "Artist",
+          settings.displayName || (artist as any).displayName || (artist as any).username || artist.name || "Artist",
         tagline: settings.funnelWelcomeMessage || null,
-        profileImageUrl: artist.profileImage || artist.avatar || null,
+        profileImageUrl: (artist as any).profileImage || (artist as any).avatar || null,
         coverImageUrl: null,
         styleOptions,
         placementOptions,
