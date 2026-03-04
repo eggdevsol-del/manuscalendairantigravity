@@ -128,26 +128,26 @@ export default function ImageUploadSheet({
 
       {/* Sheet */}
       <div
-        className="relative w-full max-w-lg bg-white rounded-t-3xl max-h-[85vh] overflow-hidden animate-slide-up"
+        className="relative w-full max-w-lg bg-background rounded-t-3xl max-h-[85vh] overflow-hidden animate-slide-up"
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          <div className="w-10 h-1 bg-border rounded-full" />
         </div>
 
         {/* Header */}
-        <div className="px-6 pb-4 border-b border-gray-100">
+        <div className="px-6 pb-4 border-b border-border/50">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+            <h2 className="text-xl font-semibold text-foreground">{title}</h2>
             <button
               onClick={onClose}
-              className="p-2 -mr-2 text-gray-500 hover:text-gray-700"
+              className="p-2 -mr-2 text-muted-foreground hover:text-foreground"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
-          <p className="text-sm text-gray-600 mt-1">{description}</p>
+          <p className="text-sm text-muted-foreground mt-1">{description}</p>
         </div>
 
         {/* Content */}
@@ -159,18 +159,17 @@ export default function ImageUploadSheet({
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
-              className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors mb-6 ${
-                dragActive
-                  ? "border-gray-900 bg-gray-50"
-                  : "border-gray-300 hover:border-gray-400"
-              }`}
+              className={`relative border-2 border-dashed rounded-[4px] p-8 text-center transition-colors mb-6 ${dragActive
+                  ? "border-foreground bg-white/10"
+                  : "border-border hover:border-foreground/30"
+                }`}
             >
               <div className="flex flex-col items-center">
-                <Upload className="w-10 h-10 text-gray-400 mb-3" />
-                <p className="text-sm font-medium text-gray-700 mb-1">
+                <Upload className="w-10 h-10 text-muted-foreground mb-3" />
+                <p className="text-sm font-medium text-foreground mb-1">
                   Drag & drop images here
                 </p>
-                <p className="text-xs text-gray-500 mb-4">
+                <p className="text-xs text-muted-foreground mb-4">
                   or use the buttons below
                 </p>
 
@@ -178,7 +177,7 @@ export default function ImageUploadSheet({
                   <button
                     type="button"
                     onClick={openFileSelector}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-[4px] text-sm font-medium hover:opacity-90 transition-colors"
                   >
                     <ImageIcon className="w-4 h-4" />
                     Choose Files
@@ -186,7 +185,7 @@ export default function ImageUploadSheet({
                   <button
                     type="button"
                     onClick={openCamera}
-                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-[4px] text-sm font-medium hover:bg-white/5 transition-colors"
                   >
                     <Camera className="w-4 h-4" />
                     Take Photo
@@ -218,14 +217,14 @@ export default function ImageUploadSheet({
           {images.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-gray-700">
+                <p className="text-sm font-medium text-foreground">
                   {images.length} of {maxImages} images
                 </p>
                 {images.length < maxImages && (
                   <button
                     type="button"
                     onClick={openFileSelector}
-                    className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+                    className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
                   >
                     <Plus className="w-4 h-4" />
                     Add more
@@ -237,7 +236,7 @@ export default function ImageUploadSheet({
                 {images.map(image => (
                   <div
                     key={image.id}
-                    className="relative aspect-square rounded-lg overflow-hidden bg-gray-100"
+                    className="relative aspect-square rounded-[4px] overflow-hidden bg-muted border border-border/50"
                   >
                     <img
                       src={image.preview}
@@ -277,18 +276,18 @@ export default function ImageUploadSheet({
 
           {/* Empty state */}
           {images.length === 0 && (
-            <p className="text-center text-sm text-gray-500 py-4">
+            <p className="text-center text-sm text-muted-foreground py-4">
               No images added yet
             </p>
           )}
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-100 bg-white">
+        <div className="p-6 border-t border-border/50 bg-background">
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+            className="w-full py-3 bg-primary text-primary-foreground rounded-[4px] font-medium hover:bg-primary/90 transition-colors"
           >
             Done ({images.length} {images.length === 1 ? "image" : "images"})
           </button>

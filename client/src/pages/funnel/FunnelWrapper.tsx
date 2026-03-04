@@ -196,7 +196,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
 
       {/* Content */}
       <div className="pt-20 pb-32 px-6 max-w-lg mx-auto relative z-10">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+        <h2 className="text-2xl font-semibold text-foreground mb-6">
           {STEP_TITLES[currentStep]}
         </h2>
 
@@ -204,7 +204,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         {currentStep === 0 && (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-foreground mb-3">
                 Project type
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -212,12 +212,12 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   <button
                     key={type.id}
                     onClick={() => setProjectType(type.id)}
-                    className={`p-3 text-left rounded-lg border transition-colors ${projectType === type.id
-                      ? "border-gray-900 bg-gray-50"
-                      : "border-gray-200 hover:border-gray-300"
+                    className={`p-3 text-left rounded-[4px] border transition-colors ${projectType === type.id
+                      ? "border-foreground bg-white/10"
+                      : "border-border hover:border-foreground/30"
                       }`}
                   >
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium text-foreground">
                       {type.label}
                     </span>
                   </button>
@@ -226,7 +226,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Describe your idea
               </label>
               <textarea
@@ -234,9 +234,9 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 onChange={e => setProjectDescription(e.target.value)}
                 placeholder="Tell us about your vision..."
                 rows={4}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none text-gray-900 bg-white placeholder-gray-400"
+                className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent resize-none text-foreground bg-background placeholder-muted-foreground"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {projectDescription.length < 10
                   ? `At least ${10 - projectDescription.length} more characters`
                   : "Great!"}
@@ -250,7 +250,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   First name *
                 </label>
                 <input
@@ -258,11 +258,11 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   value={firstName}
                   onChange={e => setFirstName(e.target.value)}
                   placeholder="First name"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 bg-white placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Last name *
                 </label>
                 <input
@@ -270,13 +270,13 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   value={lastName}
                   onChange={e => setLastName(e.target.value)}
                   placeholder="Last name"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 bg-white placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Date of birth *
               </label>
               <input
@@ -284,15 +284,15 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 value={birthdate}
                 onChange={e => setBirthdate(e.target.value)}
                 max={new Date().toISOString().split("T")[0]}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 bg-white"
+                className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 You must be 18 or older to book a tattoo
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Email *
               </label>
               <input
@@ -300,12 +300,12 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 bg-white placeholder-gray-400"
+                className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Phone number
               </label>
               <input
@@ -313,7 +313,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 placeholder="Your phone number"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 bg-white placeholder-gray-400"
+                className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
               />
             </div>
           </div>
@@ -323,7 +323,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         {currentStep === 2 && (
           <div className="space-y-6">
             <div>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 Select all styles you're interested in
               </p>
               <div className="flex flex-wrap gap-2">
@@ -332,8 +332,8 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                     key={style}
                     onClick={() => toggleStyle(style)}
                     className={`px-4 py-2 rounded-full border transition-colors ${selectedStyles.includes(style)
-                      ? "border-gray-900 bg-gray-900 text-white"
-                      : "border-gray-200 text-gray-700 hover:border-gray-300"
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border text-foreground hover:border-foreground/30"
                       }`}
                   >
                     {style}
@@ -344,30 +344,30 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
 
             {/* Reference Images Upload Button */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Reference images (optional)
               </label>
               <button
                 type="button"
                 onClick={() => setShowReferenceUpload(true)}
-                className="w-full p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors flex items-center justify-between"
+                className="w-full p-4 border border-border rounded-[4px] hover:border-foreground/30 transition-colors flex items-center justify-between bg-white/5"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <ImageIcon className="w-5 h-5 text-gray-500" />
+                  <div className="w-10 h-10 bg-white/10 rounded-[4px] flex items-center justify-center">
+                    <ImageIcon className="w-5 h-5 text-muted-foreground" />
                   </div>
                   <div className="text-left">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-foreground">
                       {referenceImages.length > 0
                         ? `${referenceImages.length} image${referenceImages.length > 1 ? "s" : ""} added`
                         : "Add reference images"}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       Tattoos, artwork, or inspiration
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </button>
 
               {/* Preview thumbnails */}
@@ -376,7 +376,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   {referenceImages.slice(0, 4).map(img => (
                     <div
                       key={img.id}
-                      className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0"
+                      className="w-16 h-16 rounded-[4px] overflow-hidden flex-shrink-0 border border-border/50"
                     >
                       <img
                         src={img.preview}
@@ -386,8 +386,8 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                     </div>
                   ))}
                   {referenceImages.length > 4 && (
-                    <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm font-medium text-gray-600">
+                    <div className="w-16 h-16 rounded-[4px] bg-white/10 flex items-center justify-center flex-shrink-0 border border-border/50">
+                      <span className="text-sm font-medium text-muted-foreground">
                         +{referenceImages.length - 4}
                       </span>
                     </div>
@@ -401,7 +401,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         {/* Step 3: Body Placement */}
         {currentStep === 3 && (
           <div className="space-y-6">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Upload photos of the body area where you'd like the tattoo. This
               helps the artist understand the placement and size better.
             </p>
@@ -409,18 +409,18 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
             <button
               type="button"
               onClick={() => setShowBodyPlacementUpload(true)}
-              className="w-full p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-gray-400 transition-colors flex flex-col items-center justify-center gap-3"
+              className="w-full p-6 border-2 border-dashed border-border rounded-[4px] hover:border-foreground/40 transition-colors flex flex-col items-center justify-center gap-3 bg-white/5"
             >
-              <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center">
-                <Camera className="w-7 h-7 text-gray-500" />
+              <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center">
+                <Camera className="w-7 h-7 text-muted-foreground" />
               </div>
               <div className="text-center">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-foreground">
                   {bodyPlacementImages.length > 0
                     ? `${bodyPlacementImages.length} photo${bodyPlacementImages.length > 1 ? "s" : ""} added`
                     : "Add body placement photos"}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Take or upload photos of the area
                 </p>
               </div>
@@ -432,7 +432,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 {bodyPlacementImages.map(img => (
                   <div
                     key={img.id}
-                    className="aspect-square rounded-lg overflow-hidden"
+                    className="aspect-square rounded-[4px] overflow-hidden border border-border/50"
                   >
                     <img
                       src={img.preview}
@@ -444,7 +444,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               </div>
             )}
 
-            <p className="text-xs text-gray-500 text-center">
+            <p className="text-xs text-muted-foreground text-center">
               This step is optional but highly recommended
             </p>
           </div>
@@ -453,7 +453,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         {/* Step 4: Budget */}
         {currentStep === 4 && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               What's your budget for this project?
             </p>
             <div className="space-y-2">
@@ -461,12 +461,12 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 <button
                   key={budget.label}
                   onClick={() => setSelectedBudget(budget)}
-                  className={`w-full p-4 text-left rounded-lg border transition-colors ${selectedBudget?.label === budget.label
-                    ? "border-gray-900 bg-gray-50"
-                    : "border-gray-200 hover:border-gray-300"
+                  className={`w-full p-4 text-left rounded-[4px] border transition-colors ${selectedBudget?.label === budget.label
+                    ? "border-foreground bg-white/10"
+                    : "border-border hover:border-foreground/30 bg-white/5"
                     }`}
                 >
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-foreground">
                     {budget.label}
                   </span>
                 </button>
@@ -478,7 +478,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         {/* Step 5: Availability */}
         {currentStep === 5 && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               When are you hoping to get started?
             </p>
             <div className="space-y-2">
@@ -486,12 +486,12 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 <button
                   key={option.id}
                   onClick={() => setTimeframe(option.id)}
-                  className={`w-full p-4 text-left rounded-lg border transition-colors ${timeframe === option.id
-                    ? "border-gray-900 bg-gray-50"
-                    : "border-gray-200 hover:border-gray-300"
+                  className={`w-full p-4 text-left rounded-[4px] border transition-colors ${timeframe === option.id
+                    ? "border-foreground bg-white/10"
+                    : "border-border hover:border-foreground/30 bg-white/5"
                     }`}
                 >
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-foreground">
                     {option.label}
                   </span>
                 </button>
@@ -502,13 +502,13 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
       </div>
 
       {/* Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-md border-t border-border p-4 z-50">
         <div className="max-w-lg mx-auto flex gap-3">
           {currentStep > 0 && (
             <button
               onClick={handleBack}
               disabled={submitting}
-              className="flex-1 py-3 px-6 border border-gray-200 rounded-lg font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="flex-1 py-3 px-6 border border-border rounded-[4px] font-medium text-foreground hover:bg-white/10 disabled:opacity-50"
             >
               Back
             </button>
@@ -516,7 +516,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
           <button
             onClick={handleNext}
             disabled={!canProceed() || submitting}
-            className={`${currentStep === 0 ? "w-full" : "flex-1"} py-3 px-6 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`${currentStep === 0 ? "w-full" : "flex-1"} py-3 px-6 bg-primary text-primary-foreground rounded-[4px] font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {submitting
               ? "Submitting..."

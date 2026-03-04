@@ -132,11 +132,10 @@ export default function FunnelAvailabilityStep({
               transition={{ delay: index * 0.05 }}
               onClick={() => setPreferredTimeframe(option.id)}
               className={`
-                relative w-full p-3 rounded-xl border-2 text-left transition-all flex items-center gap-3
-                ${
-                  preferredTimeframe === option.id
-                    ? "border-primary bg-primary/10"
-                    : "border-border bg-card hover:border-primary/50"
+                relative w-full p-3 rounded-[4px] border-2 text-left transition-all flex items-center gap-3
+                ${preferredTimeframe === option.id
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-card hover:border-primary/50"
                 }
               `}
             >
@@ -179,10 +178,9 @@ export default function FunnelAvailabilityStep({
                 onClick={() => toggleMonth(month.id)}
                 className={`
                   px-3 py-1.5 rounded-full text-sm font-medium transition-all
-                  ${
-                    preferredMonths.includes(month.id)
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  ${preferredMonths.includes(month.id)
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
                   }
                 `}
               >
@@ -208,11 +206,10 @@ export default function FunnelAvailabilityStep({
               transition={{ delay: 0.3 + index * 0.05 }}
               onClick={() => setUrgency(option.id as typeof urgency)}
               className={`
-                relative w-full p-3 rounded-xl border-2 text-left transition-all
-                ${
-                  urgency === option.id
-                    ? "border-primary bg-primary/10"
-                    : "border-border bg-card hover:border-primary/50"
+                relative w-full p-3 rounded-[4px] border-2 text-left transition-all
+                ${urgency === option.id
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-card hover:border-primary/50"
                 }
               `}
             >

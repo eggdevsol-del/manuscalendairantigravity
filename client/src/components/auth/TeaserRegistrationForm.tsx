@@ -123,19 +123,19 @@ export function TeaserRegistrationForm({
   };
 
   return (
-    <Card className="w-full max-w-md bg-white border-0 shadow-xl rounded-3xl overflow-hidden">
+    <Card className="w-full max-w-md bg-background border-border shadow-xl rounded-[4px] overflow-hidden">
       <CardHeader className="text-center pt-8 pb-4">
-        <CardTitle className="text-2xl font-bold text-gray-900">
+        <CardTitle className="text-2xl font-bold text-foreground">
           Create your client account
         </CardTitle>
-        <CardDescription className="text-base text-gray-500">
+        <CardDescription className="text-base text-muted-foreground">
           Save your consult and manage your booking
         </CardDescription>
       </CardHeader>
       <CardContent className="px-8 pb-8 space-y-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-700">
+            <Label htmlFor="email" className="text-foreground">
               Email
             </Label>
             <div className="relative">
@@ -144,7 +144,7 @@ export function TeaserRegistrationForm({
                 type="email"
                 value={email}
                 disabled
-                className="bg-gray-50 border-gray-200 text-gray-500"
+                className="bg-muted border-border text-muted-foreground rounded-[4px]"
               />
               {/* Status Indicator */}
               {isCheckingEmail ? (
@@ -166,7 +166,7 @@ export function TeaserRegistrationForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-700">
+            <Label htmlFor="password" className="text-foreground">
               {emailStatus?.exists && !emailStatus.isFunnelClient
                 ? "Log in to continue"
                 : "Create Password"}
@@ -179,14 +179,14 @@ export function TeaserRegistrationForm({
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="Min. 8 characters"
-                  className="pr-10 border-gray-200 focus:border-gray-900 focus:ring-gray-900 text-gray-900 placeholder:text-gray-400"
+                  className="pr-10 border-border focus:border-foreground focus:ring-foreground text-foreground placeholder:text-muted-foreground rounded-[4px]"
                   required
                   minLength={8}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -231,10 +231,10 @@ export function TeaserRegistrationForm({
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-100" />
+            <span className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-gray-400">
+            <span className="bg-background px-2 text-muted-foreground">
               Already have an account?
             </span>
           </div>

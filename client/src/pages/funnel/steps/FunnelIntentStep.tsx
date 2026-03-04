@@ -77,11 +77,10 @@ export default function FunnelIntentStep({
             transition={{ delay: index * 0.05 }}
             onClick={() => setProjectType(type.id)}
             className={`
-              relative p-4 rounded-2xl border-2 text-left transition-all
-              ${
-                projectType === type.id
-                  ? "border-primary bg-primary/10"
-                  : "border-border bg-card hover:border-primary/50"
+              relative p-4 rounded-[4px] border-2 text-left transition-all
+              ${projectType === type.id
+                ? "border-primary bg-primary/10"
+                : "border-border bg-card hover:border-primary/50"
               }
             `}
           >

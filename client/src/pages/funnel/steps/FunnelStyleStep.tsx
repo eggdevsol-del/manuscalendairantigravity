@@ -55,13 +55,13 @@ export default function FunnelStyleStep({
   const availableStyles =
     artistProfile.styleOptions?.length > 0
       ? artistProfile.styleOptions.map(
-          id =>
-            DEFAULT_STYLES.find(s => s.id === id) || {
-              id,
-              label: id,
-              emoji: "🎨",
-            }
-        )
+        id =>
+          DEFAULT_STYLES.find(s => s.id === id) || {
+            id,
+            label: id,
+            emoji: "🎨",
+          }
+      )
       : DEFAULT_STYLES;
 
   const toggleStyle = (styleId: string) => {
@@ -138,11 +138,10 @@ export default function FunnelStyleStep({
             transition={{ delay: index * 0.03 }}
             onClick={() => toggleStyle(style.id)}
             className={`
-              relative p-3 rounded-xl border-2 text-left transition-all
-              ${
-                selectedStyles.includes(style.id)
-                  ? "border-primary bg-primary/10"
-                  : "border-border bg-card hover:border-primary/50"
+              relative p-3 rounded-[4px] border-2 text-left transition-all
+              ${selectedStyles.includes(style.id)
+                ? "border-primary bg-primary/10"
+                : "border-border bg-card hover:border-primary/50"
               }
             `}
           >
@@ -180,7 +179,7 @@ export default function FunnelStyleStep({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                className="relative aspect-square rounded-xl overflow-hidden bg-muted"
+                className="relative aspect-square rounded-[4px] overflow-hidden bg-muted"
               >
                 <img
                   src={img}
@@ -204,7 +203,7 @@ export default function FunnelStyleStep({
               animate={{ opacity: 1 }}
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="aspect-square rounded-xl border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 transition-colors"
+              className="aspect-square rounded-[4px] border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 transition-colors"
             >
               {uploading ? (
                 <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />

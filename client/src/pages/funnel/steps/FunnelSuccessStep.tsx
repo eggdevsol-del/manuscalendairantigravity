@@ -64,7 +64,7 @@ export default function FunnelSuccessStep({
         </h2>
 
         <div className="space-y-4">
-          <div className="flex gap-4 items-start p-4 rounded-xl bg-card border border-border">
+          <div className="flex gap-4 items-start p-4 rounded-[4px] bg-card border border-border">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <MessageCircle className="w-5 h-5 text-primary" />
             </div>
@@ -77,7 +77,7 @@ export default function FunnelSuccessStep({
             </div>
           </div>
 
-          <div className="flex gap-4 items-start p-4 rounded-xl bg-card border border-border">
+          <div className="flex gap-4 items-start p-4 rounded-[4px] bg-card border border-border">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Clock className="w-5 h-5 text-primary" />
             </div>
@@ -91,7 +91,7 @@ export default function FunnelSuccessStep({
             </div>
           </div>
 
-          <div className="flex gap-4 items-start p-4 rounded-xl bg-card border border-border">
+          <div className="flex gap-4 items-start p-4 rounded-[4px] bg-card border border-border">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Bell className="w-5 h-5 text-primary" />
             </div>

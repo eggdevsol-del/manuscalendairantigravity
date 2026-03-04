@@ -29,13 +29,17 @@ export default function FunnelContactStep({
   isLastStep,
   submitting,
 }: FunnelContactStepProps) {
-  const [name, setName] = useState(stepData.contact?.name || "");
+  const [firstName, setFirstName] = useState(stepData.contact?.firstName || "");
+  const [lastName, setLastName] = useState(stepData.contact?.lastName || "");
+  const [birthdate, setBirthdate] = useState(stepData.contact?.birthdate || "");
   const [email, setEmail] = useState(stepData.contact?.email || "");
   const [phone, setPhone] = useState(stepData.contact?.phone || "");
 
   const handleNext = () => {
     onNext("contact", {
-      name: name.trim(),
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      birthdate,
       email: email.trim().toLowerCase(),
       phone: phone.trim() || undefined,
     });
@@ -43,7 +47,7 @@ export default function FunnelContactStep({
 
   // Basic validation
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isValid = name.trim().length >= 2 && isValidEmail;
+  const isValid = firstName.trim().length >= 2 && lastName.trim().length >= 2 && birthdate && isValidEmail;
 
   return (
     <FunnelStepWrapper
@@ -62,20 +66,46 @@ export default function FunnelContactStep({
         className="space-y-4"
       >
         {/* Name */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            Your name *
-          </label>
-          <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-foreground mb-2">
+              First name *
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                type="text"
+                value={firstName}
+                onChange={e => setFirstName(e.target.value)}
+                placeholder="First name"
+                className="pl-10"
+              />
+            </div>
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Last name *
+            </label>
             <Input
               type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="Enter your full name"
-              className="pl-10"
+              value={lastName}
+              onChange={e => setLastName(e.target.value)}
+              placeholder="Last name"
             />
           </div>
+        </div>
+
+        {/* Date of Birth */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            Date of birth *
+          </label>
+          <Input
+            type="date"
+            value={birthdate}
+            onChange={e => setBirthdate(e.target.value)}
+            max={new Date().toISOString().split("T")[0]}
+          />
         </div>
 
         {/* Email */}
@@ -127,7 +157,7 @@ export default function FunnelContactStep({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="mt-6 p-4 rounded-xl bg-muted/50"
+        className="mt-6 p-4 rounded-[4px] bg-muted/50"
       >
         <p className="text-xs text-muted-foreground">
           🔒 Your information is secure and will only be used to communicate
