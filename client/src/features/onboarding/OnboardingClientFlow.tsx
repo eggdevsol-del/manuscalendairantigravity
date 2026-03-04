@@ -57,7 +57,7 @@ export function OnboardingClientFlow({ onComplete }: OnboardingClientFlowProps) 
     };
 
     return (
-        <div className="flex flex-col h-full w-full max-w-sm mx-auto p-6 relative bg-card border border-white/5 rounded-3xl shadow-2xl">
+        <div className="flex flex-col h-full w-full relative">
             <div className="mb-6 space-y-1">
                 <h2 className="text-xl font-bold tracking-tight text-foreground">
                     {step === 1 ? "Complete Your Profile" : "All Set!"}

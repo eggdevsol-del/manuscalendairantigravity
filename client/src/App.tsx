@@ -44,11 +44,11 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import SetPassword from "./pages/SetPassword";
 import ClientProfile from "./pages/ClientProfile";
-import { OnboardingWizard } from "./features/onboarding/OnboardingWizard";
 import { PublicFunnel } from "./pages/funnel";
 import PublicStudioFunnel from "./pages/funnel/PublicStudioFunnel";
 import { DepositSheet } from "./pages/funnel/DepositSheet";
 import LeadDetail from "./pages/LeadDetail";
+import { GlobalOnboardingOverlay } from "./features/onboarding/GlobalOnboardingOverlay";
 
 function Router() {
   const [location, setLocation] = useLocation();
@@ -64,10 +64,6 @@ function Router() {
         component={(props: any) => {
           if (!user) {
             setLocation("/login");
-            return null;
-          }
-          if (user.hasCompletedOnboarding === 0 && location !== "/onboarding") {
-            setLocation("/onboarding");
             return null;
           }
           return <Component {...props} />;
@@ -122,7 +118,6 @@ function Router() {
     "/signup",
     "/set-password",
     "/complete-profile",
-    "/onboarding",
   ];
   const isPublicFunnel =
     location.startsWith("/start/") ||
@@ -147,11 +142,6 @@ function Router() {
         <Route path="/studio/:slug" component={PublicStudioFunnel} />
         <Route path="/start/:slug" component={PublicFunnel} />
         <Route path="/deposit/:token" component={DepositSheet} />
-
-        {/* Onboarding Flow */}
-        <Route path="/onboarding">
-          {(!user) ? <Login /> : <OnboardingWizard />}
-        </Route>
 
         {/* Protected Routes */}
         <GuardedRoute path="/conversations" component={Conversations} />
@@ -183,6 +173,7 @@ function Router() {
       </Switch>
       {shouldShowBottomNav && <BottomNav />}
       {isArtist && <AppointmentCheckInOverlay />}
+      {user && user.hasCompletedOnboarding === 0 && <GlobalOnboardingOverlay />}
     </div>
   );
 }
