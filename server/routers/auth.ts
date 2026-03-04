@@ -37,9 +37,13 @@ export const authRouter = router({
     .mutation(async ({ ctx, input }) => {
       return db.updateUserProfile(ctx.user.id, {
         role: input,
-        hasCompletedOnboarding: 1,
       });
     }),
+  completeOnboarding: protectedProcedure.mutation(async ({ ctx }) => {
+    return db.updateUserProfile(ctx.user.id, {
+      isOnboardingComplete: 1,
+    });
+  }),
   linkInstagram: protectedProcedure
     .input(
       z.object({

@@ -136,6 +136,9 @@ export const artistSettings = mysqlTable(
     consentTemplate: text(),
     medicalTemplate: text(),
     form9Template: text(),
+    // Calendar Synchronisation
+    googleCalendarToken: text(), // Secure oauth JSON
+    appleCalendarUrl: text(), // Secure polling URL
   },
   table => [unique("artistSettings_publicSlug_unique").on(table.publicSlug)]
 );

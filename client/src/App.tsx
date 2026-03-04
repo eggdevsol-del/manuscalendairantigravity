@@ -44,6 +44,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import SetPassword from "./pages/SetPassword";
 import ClientProfile from "./pages/ClientProfile";
+import { OnboardingWizard } from "./features/onboarding/OnboardingWizard";
 import { PublicFunnel } from "./pages/funnel";
 import PublicStudioFunnel from "./pages/funnel/PublicStudioFunnel";
 import { DepositSheet } from "./pages/funnel/DepositSheet";
@@ -54,6 +55,26 @@ function Router() {
   const { user } = useAuth();
   const isTabletLandscape = useTabletLandscape();
   const isArtist = user?.role === "artist";
+
+  // Guard routing component
+  const GuardedRoute = ({ component: Component, ...rest }: any) => {
+    return (
+      <Route
+        {...rest}
+        component={(props: any) => {
+          if (!user) {
+            setLocation("/login");
+            return null;
+          }
+          if (user.isOnboardingComplete === 0 && location !== "/onboarding") {
+            setLocation("/onboarding");
+            return null;
+          }
+          return <Component {...props} />;
+        }}
+      />
+    );
+  };
 
   // iOS Cold-Boot Deeplink Failsafe
   // When an iOS PWA is fully asleep and tapped via Push Notification,
@@ -101,6 +122,7 @@ function Router() {
     "/signup",
     "/set-password",
     "/complete-profile",
+    "/onboarding",
   ];
   const isPublicFunnel =
     location.startsWith("/start/") ||
@@ -126,29 +148,36 @@ function Router() {
         <Route path="/start/:slug" component={PublicFunnel} />
         <Route path="/deposit/:token" component={DepositSheet} />
 
-        <Route path="/conversations" component={Conversations} />
-        <Route path="/lead/:id" component={LeadDetail} />
-        <Route path="/chat/:id" component={Chat} />
-        <Route path="/calendar" component={Calendar} />
+        {/* Onboarding Flow */}
+        <Route path="/onboarding">
+          {(!user) ? <Login /> : <OnboardingWizard />}
+        </Route>
 
-        <Route path="/dashboard" component={Dashboard} />
+        {/* Protected Routes */}
+        <GuardedRoute path="/conversations" component={Conversations} />
+        <GuardedRoute path="/lead/:id" component={LeadDetail} />
+        <GuardedRoute path="/chat/:id" component={Chat} />
+        <GuardedRoute path="/calendar" component={Calendar} />
+
+        <GuardedRoute path="/dashboard" component={Dashboard} />
         {/* Portfolio routes removed */}
-        <Route path="/promotions" component={Promotions} />
+        <GuardedRoute path="/promotions" component={Promotions} />
 
-        <Route path="/settings" component={Settings} />
-        <Route path="/consultations" component={Consultations} />
-        <Route path="/policies" component={Policies} />
-        <Route path="/policy-management" component={PolicyManagement} />
-        <Route
+        <GuardedRoute path="/settings" component={Settings} />
+        <GuardedRoute path="/consultations" component={Consultations} />
+        <GuardedRoute path="/policies" component={Policies} />
+        <GuardedRoute path="/policy-management" component={PolicyManagement} />
+        <GuardedRoute
           path="/notifications-management"
           component={NotificationsManagement}
         />
-        <Route path="/work-hours" component={WorkHours} />
-        <Route path="/subscriptions" component={Subscriptions} />
-        <Route path="/studio" component={StudioDashboard} />
-        <Route path="/quick-actions" component={QuickActionsManagement} />
-        <Route path="/clients" component={Clients} />
-        <Route path="/profile" component={ClientProfile} />
+        <GuardedRoute path="/work-hours" component={WorkHours} />
+        <GuardedRoute path="/subscriptions" component={Subscriptions} />
+        <GuardedRoute path="/studio" component={StudioDashboard} />
+        <GuardedRoute path="/quick-actions" component={QuickActionsManagement} />
+        <GuardedRoute path="/clients" component={Clients} />
+        <GuardedRoute path="/profile" component={ClientProfile} />
+
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
