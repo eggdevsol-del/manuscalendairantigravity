@@ -20,6 +20,7 @@ export const artistSettingsRouter = router({
         businessCountry: "AU", // Safe fallback
         depositAmount: null,
         autoSendDepositInfo: false,
+        sendAutomatedReminders: true,
         workSchedule: JSON.stringify({}),
         services: JSON.stringify([]),
         publicSlug: null,
@@ -77,6 +78,7 @@ export const artistSettingsRouter = router({
         businessCountry: z.string().length(2).optional(),
         depositAmount: z.number().optional(),
         autoSendDepositInfo: z.boolean().optional(),
+        sendAutomatedReminders: z.boolean().optional(),
         workSchedule: z.string(),
         services: z.string(),
         publicSlug: z.string().optional(),
@@ -93,6 +95,12 @@ export const artistSettingsRouter = router({
         autoSendDepositInfo:
           input.autoSendDepositInfo !== undefined
             ? input.autoSendDepositInfo
+              ? 1
+              : 0
+            : undefined,
+        sendAutomatedReminders:
+          input.sendAutomatedReminders !== undefined
+            ? input.sendAutomatedReminders
               ? 1
               : 0
             : undefined,

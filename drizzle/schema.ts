@@ -123,6 +123,7 @@ export const artistSettings = mysqlTable(
     createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
     updatedAt: timestamp({ mode: "string" }).default(sql`(now())`),
     autoSendDepositInfo: tinyint().default(0),
+    sendAutomatedReminders: tinyint().default(1),
     // Funnel settings (SSOT for booking link)
     publicSlug: varchar({ length: 50 }),
     funnelEnabled: tinyint().default(0),
