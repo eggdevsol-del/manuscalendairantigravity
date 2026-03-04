@@ -241,108 +241,61 @@ export function useChatController(conversationId: number) {
         return;
       }
 
-      // Calculate price - use promotion final amount if applied, otherwise original
-      const finalPrice = appliedPromotion
-        ? appliedPromotion.finalAmount / 100 // Convert cents to dollars
-        : metadata.price || 0;
+      // Send plain text message indicating acceptance
+      const acceptMessage = appliedPromotion
+        ? `I accept the project proposal for ${metadata.serviceName}. (Promotion applied: -$${(appliedPromotion.discountAmount / 100).toFixed(2)})`
+        : `I accept the project proposal for ${metadata.serviceName}. I am ready to upload my deposit remittance.`;
 
-      const appointments = bookingDates.map((dateStr: string) => {
-        // Fix Date Shifting: If dateStr is just YYYY-MM-DD, append noon.
-        // If it's already ISO (has T/Z), use as is.
-        const safeDateStr = dateStr.includes("T")
-          ? dateStr
-          : `${dateStr}T12:00:00`;
-        const startTime = new Date(safeDateStr);
-        const duration = metadata.serviceDuration || 60;
-
-        return {
-          startTime,
-          endTime: new Date(startTime.getTime() + duration * 60 * 1000),
-          title: metadata.serviceName,
-          description: appliedPromotion
-            ? `Project Booking (Client Accepted - Promotion Applied: -$${(appliedPromotion.discountAmount / 100).toFixed(2)})`
-            : "Project Booking (Client Accepted)",
-          serviceName: metadata.serviceName,
-          price: finalPrice,
-          depositAmount: 0,
-        };
+      sendMessageMutation.mutate({
+        conversationId,
+        content: acceptMessage,
+        messageType: "text",
       });
 
-      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-      loggy.info("chat:acceptance", "Client accepting proposal", {
-        messageIdToUpdate: message?.id || selectedProposal?.message?.id,
-        proposalDate: metadata.date,
-        serviceName: metadata.serviceName,
-        finalPrice,
-        appliedPromotionId: appliedPromotion?.id,
+      const newMetadata = JSON.stringify({
+        ...metadata,
+        status: "accepted",
+        discountApplied: !!appliedPromotion,
+        discountAmount: appliedPromotion?.discountAmount,
+        finalAmount: appliedPromotion?.finalAmount,
+        promotionName: appliedPromotion ? "Promotion" : undefined,
+        appliedPromotion: appliedPromotion
+          ? {
+            id: appliedPromotion.id,
+            discountAmount: appliedPromotion.discountAmount,
+            finalAmount: appliedPromotion.finalAmount,
+          }
+          : undefined,
       });
 
-      bookProjectMutation.mutate(
-        {
-          conversationId,
-          appointments,
-          timeZone,
-        },
-        {
-          onSuccess: async result => {
-            // If promotion was applied, redeem it on the first appointment
-            if (appliedPromotion && result?.appointmentIds?.[0]) {
-              try {
-                await redeemPromotionMutation.mutateAsync({
-                  promotionId: appliedPromotion.id,
-                  appointmentId: result.appointmentIds[0],
-                  originalAmount: (metadata.price || 0) * 100, // Convert to cents
-                });
-                console.log(
-                  "[handleClientAcceptProposal] Promotion redeemed successfully"
-                );
-              } catch (error) {
-                console.error(
-                  "[handleClientAcceptProposal] Failed to redeem promotion:",
-                  error
-                );
-              }
-            }
+      updateMetadataMutation.mutate({
+        messageId: message?.id || selectedProposal?.message?.id,
+        metadata: newMetadata,
+      });
 
-            const newMetadata = JSON.stringify({
-              ...metadata,
-              status: "accepted",
-              // Store discount info in a format the modal can display
-              discountApplied: !!appliedPromotion,
-              discountAmount: appliedPromotion?.discountAmount,
-              finalAmount: appliedPromotion?.finalAmount,
-              promotionName: appliedPromotion ? "Promotion" : undefined,
-              appliedPromotion: appliedPromotion
-                ? {
-                    id: appliedPromotion.id,
-                    discountAmount: appliedPromotion.discountAmount,
-                    finalAmount: appliedPromotion.finalAmount,
-                  }
-                : undefined,
-            });
+      // No longer calling bookProjectMutation because pending appointments are already created on send!
+      // We will only confirm the appointments when the artist verifies the uploaded receipt.
 
-            updateMetadataMutation.mutate({
-              messageId: message?.id || selectedProposal?.message?.id,
-              metadata: newMetadata,
-            });
-
-            setScrollIntent("AUTO_FOLLOW");
-            scrollToBottom("smooth");
-            setSelectedProposal(null); // Close modal on success
-
-            const acceptMessage = appliedPromotion
-              ? `I accept the project proposal for ${metadata.serviceName}. (Promotion applied: -$${(appliedPromotion.discountAmount / 100).toFixed(2)})`
-              : `I accept the project proposal for ${metadata.serviceName}.`;
-
-            sendMessageMutation.mutate({
-              conversationId,
-              content: acceptMessage,
-              messageType: "text",
-            });
-          },
+      if (appliedPromotion && metadata?.appointmentIds?.[0]) {
+        try {
+          redeemPromotionMutation.mutateAsync({
+            promotionId: appliedPromotion.id,
+            appointmentId: metadata.appointmentIds[0],
+            originalAmount: (metadata.price || 0) * 100,
+          });
+        } catch (error) {
+          console.error("Failed to redeem:", error);
         }
-      );
+      }
+
+      setScrollIntent("AUTO_FOLLOW");
+      scrollToBottom("smooth");
+      // Do NOT set selectedProposal to null! Keep it open so they see the deposit UI.
+      // We manually update the selectedProposal state in-memory so the UI updates instantly:
+      setSelectedProposal({
+        message: message || selectedProposal?.message,
+        metadata: JSON.parse(newMetadata)
+      });
     },
     [
       conversationId,

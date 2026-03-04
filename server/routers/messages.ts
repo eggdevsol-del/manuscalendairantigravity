@@ -76,6 +76,50 @@ export const messagesRouter = router({
         });
       }
 
+      // Handle project proposals: Inject pending appointments immediately
+      if (input.messageType === "appointment_request") {
+        let metaObj: any = null;
+        try {
+          if (input.metadata) metaObj = JSON.parse(input.metadata);
+        } catch (e) { }
+
+        if (metaObj && metaObj.status === "pending" && Array.isArray(metaObj.dates) && metaObj.dates.length > 0) {
+          const appointmentIds: number[] = [];
+          for (const dateStr of metaObj.dates) {
+            const startTime = new Date(dateStr);
+            const duration = metaObj.serviceDuration || 60;
+            const endTime = new Date(startTime.getTime() + duration * 60 * 1000);
+
+            const safePrice = typeof metaObj.price === "number" ? metaObj.price : 0;
+            const safeDeposit = typeof metaObj.depositAmount === "number" ? metaObj.depositAmount : 0;
+
+            const inserted = await db.createAppointment({
+              conversationId: input.conversationId,
+              artistId: conversation.artistId,
+              clientId: conversation.clientId || "",
+              title: metaObj.serviceName || "Project Proposal",
+              description: "Pending Proposal Dates",
+              startTime: startTime.toISOString().slice(0, 19).replace("T", " "),
+              endTime: endTime.toISOString().slice(0, 19).replace("T", " "),
+              serviceName: metaObj.serviceName || "Project Proposal",
+              price: safePrice,
+              depositAmount: safeDeposit,
+              status: "pending",
+            });
+
+            if (inserted && inserted.id) {
+              appointmentIds.push(inserted.id);
+            }
+          }
+
+          if (appointmentIds.length > 0) {
+            metaObj.appointmentIds = appointmentIds;
+            // Update the message metadata before it is created
+            input.metadata = JSON.stringify(metaObj);
+          }
+        }
+      }
+
       const message = await db.createMessage({
         conversationId: input.conversationId,
         senderId: ctx.user.id,

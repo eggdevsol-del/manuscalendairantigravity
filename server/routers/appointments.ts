@@ -704,23 +704,28 @@ export const appointmentsRouter = router({
         metadata = message.metadata ? JSON.parse(message.metadata) : {};
       } catch (e) { }
 
-      const appointmentId = metadata.appointmentId || metadata.id; // handle different structures
+      const singleApptId = metadata.appointmentId || metadata.id;
+      const appointmentIds: number[] = Array.isArray(metadata.appointmentIds)
+        ? metadata.appointmentIds
+        : (singleApptId ? [singleApptId] : []);
 
-      if (appointmentId) {
-        // Cancel the appointment
-        await db.updateAppointment(
-          appointmentId,
-          { status: "cancelled" },
-          ctx.user.id
-        );
+      if (appointmentIds.length > 0) {
+        for (const appId of appointmentIds) {
+          // Cancel the appointment
+          await db.updateAppointment(
+            appId,
+            { status: "cancelled" },
+            ctx.user.id
+          );
 
-        // Log special action
-        await db.logAppointmentAction({
-          appointmentId,
-          action: "proposal_revoked",
-          performedBy: ctx.user.id,
-          newValue: JSON.stringify({ messageId: input.messageId }),
-        });
+          // Log special action
+          await db.logAppointmentAction({
+            appointmentId: appId,
+            action: "proposal_revoked",
+            performedBy: ctx.user.id,
+            newValue: JSON.stringify({ messageId: input.messageId }),
+          });
+        }
       } else {
         console.warn(
           `[deleteProposal] No appointmentId found for message ${input.messageId}, revoking without appointment update.`

@@ -17,6 +17,7 @@ import {
   ChevronDown,
   MessageCircle,
   FileSignature,
+  Upload,
 } from "lucide-react";
 import {
   formatLocalTime,
@@ -38,6 +39,7 @@ type BookingStep =
   | "artist"
   | "client"
   | "service"
+  | "sittings"
   | "frequency"
   | "review"
   | "success";
@@ -204,6 +206,7 @@ export function BookingWizardContent({
     initialConversationId
   );
   const [selectedService, setSelectedService] = useState<any>(null);
+  const [requiredSittings, setRequiredSittings] = useState<number>(1);
   const [showVoucherList, setShowVoucherList] = useState(false);
   const [appliedPromotion, setAppliedPromotion] = useState<{
     id: number;
@@ -290,7 +293,7 @@ export function BookingWizardContent({
       conversationId: conversationId || 0,
       serviceName: selectedService?.name || "",
       serviceDuration: selectedService?.duration || 60,
-      sittings: frequency === "single" ? 1 : selectedService?.sittings || 1,
+      sittings: requiredSittings,
       price: Number(selectedService?.price) || 0,
       frequency,
       startDate,
@@ -318,6 +321,52 @@ export function BookingWizardContent({
   });
 
   const createClientMutation = trpc.conversations.createClient.useMutation();
+
+  const uploadMutation = trpc.upload.uploadImage.useMutation();
+  const updateMetadataMutation = trpc.messages.updateMetadata.useMutation();
+
+  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedProposal) return;
+
+    toast.info("Uploading deposit receipt...");
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64Data = event.target?.result as string;
+      try {
+        const result = await uploadMutation.mutateAsync({
+          fileName: file.name,
+          fileData: base64Data,
+          contentType: file.type,
+        });
+
+        const newMetadata = JSON.stringify({
+          ...(selectedProposal.metadata || {}),
+          status: "remittance_uploaded",
+          receiptUrl: result.url,
+        });
+
+        await updateMetadataMutation.mutateAsync({
+          messageId: selectedProposal.message.id,
+          metadata: newMetadata,
+        });
+
+        await sendMessageMutation.mutateAsync({
+          conversationId: selectedProposal.message.conversationId,
+          content: "I have uploaded my deposit bank remittance receipt.",
+          messageType: "text",
+        });
+
+        toast.success("Deposit receipt uploaded successfully!");
+        onBookingSuccess();
+        onClose();
+
+      } catch (err: any) {
+        toast.error("Failed to upload receipt: " + err.message);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const updateAppointmentMutation = trpc.appointments.update.useMutation({
     onSuccess: () => {
@@ -382,11 +431,11 @@ export function BookingWizardContent({
       )
       .join("\n");
 
-    const finalSittings =
-      frequency === "single" ? 1 : selectedService.sittings || 1;
+    const finalSittings = requiredSittings;
     const message = `I have found the following dates for your ${selectedService.name} project:\n\n${datesList}\n\nThis project consists of ${finalSittings} sittings.\nFrequency: ${frequency}\nPrice per sitting: $${selectedService.price}\n\nPlease confirm these dates.`;
 
     const totalCost = Number(selectedService.price) * finalSittings;
+    const totalDeposit = Number(artistSettings?.depositAmount || 0) * finalSittings;
 
     const metadata = JSON.stringify({
       type: "project_proposal",
@@ -401,7 +450,7 @@ export function BookingWizardContent({
       status: "pending",
       bsb: artistSettings?.bsb,
       accountNumber: artistSettings?.accountNumber,
-      depositAmount: artistSettings?.depositAmount,
+      depositAmount: totalDeposit,
       autoSendDeposit: artistSettings?.autoSendDepositInfo,
     });
 
@@ -460,10 +509,16 @@ export function BookingWizardContent({
   const goBack = () => {
     if (step === "service") {
       if (!initialConversationId) setStep("client");
-    } else if (step === "frequency") {
+    } else if (step === "sittings") {
       setStep("service");
+    } else if (step === "frequency") {
+      setStep("sittings");
     } else if (step === "review") {
-      setStep("frequency");
+      if (requiredSittings === 1) {
+        setStep("sittings");
+      } else {
+        setStep("frequency");
+      }
     }
   };
 
@@ -486,6 +541,8 @@ export function BookingWizardContent({
         return "Select Client";
       case "service":
         return "Select Service";
+      case "sittings":
+        return "Project Size";
       case "frequency":
         return "Frequency";
       case "review":
@@ -782,14 +839,143 @@ export function BookingWizardContent({
               </motion.div>
             )}
 
-            {proposalMeta.status === "accepted" && (
+            {!isArtist && proposalMeta.status === "accepted" && (
+              <motion.div variants={fab.animation.item} className="flex flex-col gap-3 py-2">
+                <div className="p-3 bg-indigo-500/10 rounded-[8px] border border-indigo-500/20">
+                  <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><Tag className="w-3 h-3" /> Deposit Required</h4>
+                  <p className="text-[11px] text-foreground/90 font-medium leading-relaxed">
+                    Please transfer <strong className="text-primary">${proposalMeta.depositAmount || 0}</strong> to secure your calendar dates.
+                  </p>
+                  <div className="mt-3 p-2.5 bg-background/50 rounded-[4px] font-mono text-[10px] text-muted-foreground border border-white/5 space-y-1">
+                    <p className="flex justify-between"><span>BSB:</span> <span className="text-foreground font-bold">{proposalMeta.bsb || "Not provided"}</span></p>
+                    <p className="flex justify-between"><span>ACC:</span> <span className="text-foreground font-bold">{proposalMeta.accountNumber || "Not provided"}</span></p>
+                  </div>
+                </div>
+
+                <label className="w-full relative cursor-pointer group">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleReceiptUpload}
+                    disabled={uploadMutation.isPending || updateMetadataMutation.isPending}
+                  />
+                  <div className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]">
+                    {uploadMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    <span>{uploadMutation.isPending ? "Uploading..." : "Upload Receipt"}</span>
+                  </div>
+                </label>
+              </motion.div>
+            )}
+
+            {isArtist && proposalMeta.status === "accepted" && (
               <motion.div
                 variants={fab.animation.item}
                 className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-emerald-500/10"
               >
-                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                <div className="w-3.5 h-3.5 rounded-full border border-emerald-500 border-t-transparent animate-spin" />
                 <span className="text-[10px] font-bold text-emerald-500">
-                  Accepted
+                  Awaiting Client Remittance...
+                </span>
+              </motion.div>
+            )}
+
+            {isArtist && proposalMeta.status === "remittance_uploaded" && (
+              <motion.div variants={fab.animation.item} className="flex flex-col gap-3 pt-2">
+                <div className="flex flex-col gap-2 p-3 bg-indigo-500/10 rounded-[8px] border border-indigo-500/20">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <CheckCircle2 className="w-4 h-4 text-indigo-400" />
+                    <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">
+                      Client Uploaded Receipt
+                    </span>
+                  </div>
+
+                  {proposalMeta.receiptUrl && (
+                    <a
+                      href={proposalMeta.receiptUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="relative block w-full h-32 rounded-[4px] overflow-hidden border border-white/10 group bg-black/40 flex items-center justify-center cursor-pointer"
+                    >
+                      <img
+                        src={proposalMeta.receiptUrl}
+                        alt="Deposit Receipt"
+                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-white text-[10px] font-bold uppercase tracking-wider">Tap to View</span>
+                      </div>
+                    </a>
+                  )}
+
+                  <button
+                    onClick={async () => {
+                      if (!proposalMeta.appointmentIds) {
+                        toast.error("No pending appointments found to confirm!");
+                        return;
+                      }
+
+                      try {
+                        const newMeta = JSON.stringify({
+                          ...proposalMeta,
+                          status: "confirmed"
+                        });
+
+                        await updateMetadataMutation.mutateAsync({
+                          messageId: selectedProposal.message.id,
+                          metadata: newMeta
+                        });
+
+                        for (const appId of proposalMeta.appointmentIds) {
+                          await updateAppointmentMutation.mutateAsync({
+                            id: appId,
+                            status: "confirmed"
+                          });
+                        }
+
+                        await sendMessageMutation.mutateAsync({
+                          conversationId: selectedProposal.message.conversationId,
+                          content: "I have confirmed your deposit. Your dates are officially booked! 🎉",
+                          messageType: "text"
+                        });
+
+                        toast.success("Deposit confirmed! Appointments are locked.");
+                        onBookingSuccess();
+                        onClose();
+                      } catch (err: any) {
+                        toast.error("Error confirming deposit");
+                      }
+                    }}
+                    disabled={updateMetadataMutation.isPending || updateAppointmentMutation.isPending}
+                    className="w-full py-3 mt-1 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500 text-white hover:bg-emerald-600 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                  >
+                    {updateMetadataMutation.isPending || updateAppointmentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                    Confirm Deposit & Book Dates
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {!isArtist && proposalMeta.status === "remittance_uploaded" && (
+              <motion.div
+                variants={fab.animation.item}
+                className="flex items-center gap-2 px-3 py-2 rounded-[4px] bg-indigo-500/10 border border-indigo-500/20"
+              >
+                <div className="w-3.5 h-3.5 rounded-full border border-indigo-400 border-t-transparent animate-spin" />
+                <span className="text-[10px] font-bold text-indigo-400">
+                  Awaiting Artist Confirmation...
+                </span>
+              </motion.div>
+            )}
+
+            {proposalMeta.status === "confirmed" && (
+              <motion.div
+                variants={fab.animation.item}
+                className="flex items-center gap-1.5 px-3 py-2.5 rounded-[4px] bg-emerald-500/10 border border-emerald-500/20"
+              >
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+                  Deposit Paid & Project Booked!
                 </span>
               </motion.div>
             )}
@@ -1494,7 +1680,7 @@ export function BookingWizardContent({
                     )}
                     onClick={() => {
                       setSelectedService(service);
-                      setStep("frequency");
+                      setStep("sittings");
                     }}
                   >
                     <div className="flex-1 min-w-0">
@@ -1510,6 +1696,34 @@ export function BookingWizardContent({
                     </div>
                   </motion.button>
                 ))}
+              </div>
+            )}
+
+            {step === "sittings" && (
+              <div className="flex flex-col gap-3 pt-1">
+                <div className={cn(card.base, card.bg, "px-3 py-2.5 rounded-[4px] border border-white/5")}>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Number of Sittings Required</p>
+                  <input
+                    type="number"
+                    min="1"
+                    className="bg-transparent border-none outline-none text-[11px] font-medium text-foreground w-full"
+                    value={requiredSittings}
+                    onChange={(e) => setRequiredSittings(parseInt(e.target.value) || 1)}
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    if (requiredSittings === 1) {
+                      setFrequency("single");
+                      setStep("review");
+                    } else {
+                      setStep("frequency");
+                    }
+                  }}
+                  className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Continue
+                </button>
               </div>
             )}
 
