@@ -1681,7 +1681,7 @@ export function BookingWizardContent({
                       card.base,
                       card.bg,
                       card.interactive,
-                      "p-3 flex items-center justify-between gap-3 w-full text-left"
+                      "p-3 flex items-center justify-between gap-3 w-full text-left relative overflow-hidden"
                     )}
                     onClick={() => {
                       setSelectedService(service);
@@ -1695,16 +1695,21 @@ export function BookingWizardContent({
                       }
                     }}
                   >
-                    <div className="flex-1 min-w-0">
+                    {service.color && (
+                      <div
+                        className="absolute inset-0 pointer-events-none opacity-20"
+                        style={{
+                          background: `linear-gradient(to right, ${service.color}, transparent)`,
+                        }}
+                      />
+                    )}
+                    <div className="flex-1 min-w-0 relative z-10">
                       <p className="text-[11px] font-bold text-foreground uppercase tracking-wider truncate">
                         {service.name}
                       </p>
                       <p className="text-[9px] text-muted-foreground">
                         {service.duration} mins · ${service.price}
                       </p>
-                    </div>
-                    <div className={cn(fab.itemButton, "shrink-0")}>
-                      <Clock className="w-3.5 h-3.5" />
                     </div>
                   </motion.button>
                 ))}
