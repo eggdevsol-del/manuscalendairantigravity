@@ -1698,11 +1698,11 @@ export function BookingWizardContent({
                     {service.color && (
                       <>
                         <div
-                          className="absolute inset-y-0 left-0 w-1.5 pointer-events-none z-0 brightness-110"
+                          className="absolute inset-y-0 left-0 w-1.5 pointer-events-none z-0 brightness-110 saturate-50"
                           style={{ backgroundColor: service.color }}
                         />
                         <div
-                          className="absolute inset-y-0 left-0 w-1/4 pointer-events-none opacity-30 z-0"
+                          className="absolute inset-y-0 left-0 w-1/4 pointer-events-none opacity-30 z-0 saturate-50"
                           style={{
                             background: `linear-gradient(to right, ${service.color}, transparent)`,
                           }}
