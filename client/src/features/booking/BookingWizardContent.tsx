@@ -39,7 +39,6 @@ type BookingStep =
   | "artist"
   | "client"
   | "service"
-  | "sittings"
   | "frequency"
   | "review"
   | "success";
@@ -515,13 +514,11 @@ export function BookingWizardContent({
   const goBack = () => {
     if (step === "service") {
       if (!initialConversationId) setStep("client");
-    } else if (step === "sittings") {
-      setStep("service");
     } else if (step === "frequency") {
-      setStep("sittings");
+      setStep("service");
     } else if (step === "review") {
       if (requiredSittings === 1) {
-        setStep("sittings");
+        setStep("service");
       } else {
         setStep("frequency");
       }
@@ -547,8 +544,6 @@ export function BookingWizardContent({
         return "Select Client";
       case "service":
         return "Select Service";
-      case "sittings":
-        return "Project Size";
       case "frequency":
         return "Frequency";
       case "review":
@@ -1690,7 +1685,14 @@ export function BookingWizardContent({
                     )}
                     onClick={() => {
                       setSelectedService(service);
-                      setStep("sittings");
+                      const sittings = Number(service.sittings) || 1;
+                      setRequiredSittings(sittings);
+                      if (sittings === 1) {
+                        setFrequency("single");
+                        setStep("review");
+                      } else {
+                        setStep("frequency");
+                      }
                     }}
                   >
                     <div className="flex-1 min-w-0">
@@ -1709,33 +1711,7 @@ export function BookingWizardContent({
               </div>
             )}
 
-            {step === "sittings" && (
-              <div className="flex flex-col gap-3 pt-1">
-                <div className={cn(card.base, card.bg, "px-3 py-2.5 rounded-[4px] border border-white/5")}>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Number of Sittings Required</p>
-                  <input
-                    type="number"
-                    min="1"
-                    className="bg-transparent border-none outline-none text-[11px] font-medium text-foreground w-full"
-                    value={requiredSittings}
-                    onChange={(e) => setRequiredSittings(parseInt(e.target.value) || 1)}
-                  />
-                </div>
-                <button
-                  onClick={() => {
-                    if (requiredSittings === 1) {
-                      setFrequency("single");
-                      setStep("review");
-                    } else {
-                      setStep("frequency");
-                    }
-                  }}
-                  className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  Continue
-                </button>
-              </div>
-            )}
+
 
             {step === "frequency" && (
               <div className="flex flex-col gap-2 pt-1">
