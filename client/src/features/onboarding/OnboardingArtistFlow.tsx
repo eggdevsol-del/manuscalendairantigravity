@@ -34,9 +34,9 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
     const [avatar, setAvatar] = useState(user?.avatar || "");
 
     // Step 2: Business Details
-    const [businessName, setBusinessName] = useState("");
-    const [publicSlug, setPublicSlug] = useState("");
-    const [businessEmail, setBusinessEmail] = useState("");
+    const [businessName, setBusinessName] = useState(user?.name || "");
+    const [publicSlug, setPublicSlug] = useState(user?.username || "");
+    const [businessEmail, setBusinessEmail] = useState(user?.email || "");
     const [licenceNumber, setLicenceNumber] = useState("");
 
     // Identify if Queensland compliance is required
