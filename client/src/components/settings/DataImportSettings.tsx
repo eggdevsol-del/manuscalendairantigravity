@@ -1,5 +1,6 @@
-import { ChevronLeft, UploadCloud, Database, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
+import { ChevronLeft, UploadCloud, Database, CheckCircle2, AlertTriangle, Loader2, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import Papa from "papaparse";
 import { toast } from "sonner";
@@ -64,6 +65,30 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
             toast.error(err.message || "Failed to import processing CSV.");
         }
     });
+
+    const [extCalendarUrl, setExtCalendarUrl] = useState("");
+    const [isSavingUrl, setIsSavingUrl] = useState(false);
+
+    const upsertMutation = trpc.artistSettings.upsert.useMutation({
+        onSuccess: () => {
+            toast.success("External Calendar linked successfully!");
+            setIsSavingUrl(false);
+        },
+        onError: (err) => {
+            toast.error(err.message || "Failed to link calendar. Please check the URL.");
+            setIsSavingUrl(false);
+        }
+    });
+
+    const handleSaveCalendar = () => {
+        if (!extCalendarUrl) return;
+        setIsSavingUrl(true);
+        upsertMutation.mutate({ 
+            appleCalendarUrl: extCalendarUrl, 
+            workSchedule: artistSettings?.workSchedule || "{}", 
+            services: artistSettings?.services || "[]" 
+        });
+    };
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -300,6 +325,41 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                 </div>
                                 <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} />
                             </label>
+
+                            {importMode === "appointments" && (
+                                <div className="pt-6 mt-6 border-t border-white/5 space-y-4">
+                                    <Label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground ml-1">External Calendar Sync</Label>
+                                    <p className="text-[11px] text-muted-foreground/80 px-1 leading-relaxed">
+                                        If you use Google Calendar, Apple Calendar, or any other platform that outputs a public <span className="text-primary font-mono bg-primary/10 px-1 py-0.5 rounded">.ics</span> link, paste it below to continuously block your availability based on external events.
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <div className="relative flex-1">
+                                            <Link2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <Input 
+                                                value={extCalendarUrl}
+                                                onChange={(e) => setExtCalendarUrl(e.target.value)}
+                                                placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" 
+                                                className="pl-9 h-10 text-xs bg-black/20 border-white/10"
+                                            />
+                                        </div>
+                                        <Button 
+                                            variant="secondary" 
+                                            className="h-10 text-[11px] font-bold shrink-0 whitespace-nowrap bg-white/10 hover:bg-white/20"
+                                            disabled={!extCalendarUrl || isSavingUrl}
+                                            onClick={handleSaveCalendar}
+                                        >
+                                            {isSavingUrl ? <Loader2 className="w-4 h-4 animate-spin" /> : "Connect Calendar"}
+                                        </Button>
+                                    </div>
+                                    {artistSettings?.appleCalendarUrl && (
+                                        <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/5 border border-emerald-500/20 rounded-[4px] mt-2">
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                            <p className="text-[10px] text-emerald-400 font-medium">Currently receiving active syncs from external calendar.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                         </div>
                     ) : (
                         <div className="space-y-6">
