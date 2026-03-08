@@ -71,7 +71,7 @@ export const tokens = {
 
     // The expanding glassmorphism panel — fixed dimensions, scroll if needed
     panel:
-      "mb-2 p-4 rounded-[2rem] border border-white/10 shadow-2xl flex flex-col items-end gap-4 bg-[#EFE3C3]/[0.35] dark:bg-[#EFE3C3]/[0.35] backdrop-blur-[32px] w-[220px] max-h-[50vh] overflow-y-auto",
+      "mb-2 p-4 rounded-[2rem] border border-white/10 shadow-2xl flex flex-col items-end gap-4 bg-[color-mix(in_srgb,var(--background)_95%,white)]/[0.85] dark:bg-[color-mix(in_srgb,var(--background)_95%,white)]/[0.85] backdrop-blur-[32px] w-[220px] max-h-[50vh] overflow-y-auto",
 
     // Individual menu item row (label + button)
     itemRow: "flex items-center justify-end gap-3 w-full",
@@ -85,7 +85,7 @@ export const tokens = {
 
     // Menu item icon button (highlighted / primary)
     itemButtonHighlight:
-      "h-10 w-10 rounded-full shadow-lg border border-white/10 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center transition-all active:scale-95",
+      "h-10 w-10 rounded-full shadow-lg border border-white/10 bg-[#d4a84a] text-white hover:bg-[#c29840] flex items-center justify-center transition-all active:scale-95",
 
     // Menu item button icon size
     itemIconSize: "h-4 w-4",
@@ -94,7 +94,7 @@ export const tokens = {
     toggle:
       "h-14 w-14 rounded-full shadow-2xl flex items-center justify-center transition-colors border border-white/10",
     toggleOpen: "bg-white text-slate-900 dark:bg-white dark:text-slate-900",
-    toggleClosed: "bg-primary text-white",
+    toggleClosed: "bg-[#d4a84a] text-white",
     toggleIconSize: "h-6 w-6",
 
     // Animation variants (used as framer-motion presets)
