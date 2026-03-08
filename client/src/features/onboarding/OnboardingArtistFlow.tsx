@@ -417,22 +417,34 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                 </p>
                             </div>
 
-                            <div className="space-y-1.5">
-                                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Account BSB / Routing Number</Label>
-                                <Input
-                                    value={bsb}
-                                    onChange={(e) => setBsb(e.target.value)}
-                                    placeholder="e.g. 064-000"
-                                    className="bg-accent/5"
-                                />
-                            </div>
+                            {businessCountry !== "NZ" && (
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                        {businessCountry === "AU" ? "BSB Number" :
+                                            businessCountry === "UK" ? "Sort Code" :
+                                                businessCountry === "CA" ? "Transit & Inst. Number" :
+                                                    "Routing Number"}
+                                    </Label>
+                                    <Input
+                                        value={bsb}
+                                        onChange={(e) => setBsb(e.target.value)}
+                                        placeholder={
+                                            businessCountry === "AU" ? "e.g. 064-000" :
+                                                businessCountry === "UK" ? "e.g. 20-00-00" :
+                                                    businessCountry === "CA" ? "e.g. 12345-001" :
+                                                        "e.g. 122000248"
+                                        }
+                                        className="bg-accent/5"
+                                    />
+                                </div>
+                            )}
 
                             <div className="space-y-1.5">
                                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Account Number</Label>
                                 <Input
                                     value={accountNumber}
                                     onChange={(e) => setAccountNumber(e.target.value)}
-                                    placeholder="e.g. 12345678"
+                                    placeholder={businessCountry === "NZ" ? "e.g. 12-3456-1234567-00" : "e.g. 12345678"}
                                     className="bg-accent/5"
                                 />
                             </div>
@@ -459,7 +471,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                             initial="initial"
                             animate="animate"
                             exit="exit"
-                            className={cn("space-y-4 h-full relative", showImporter && "absolute inset-0 z-50 bg-background/95 backdrop-blur-md pb-0")}
+                            className={cn("space-y-4", showImporter ? "h-[65vh] min-h-[500px] relative" : "h-full relative")}
                         >
                             {showImporter ? (
                                 <DataImportSettings onBack={() => setShowImporter(false)} />
@@ -686,7 +698,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                     <div>
                                         <h4 className="font-bold text-sm text-foreground">Central Calendar Engine</h4>
                                         <p className="text-xs text-muted-foreground mt-1">
-                                            All bookings route through here. Tap the center FAB button to quickly block out personal time, sync external calendars, or create custom appointments.
+                                            All studio operations route through here. Tap the center FAB button anytime to manage your availability, process Consultations, or add new projects.
                                         </p>
                                     </div>
                                 </div>
@@ -698,9 +710,9 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                         </div>
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-sm text-foreground">Booking Link Funnel</h4>
+                                        <h4 className="font-bold text-sm text-foreground">Studio Booking Link</h4>
                                         <p className="text-xs text-muted-foreground mt-1">
-                                            Link <span className="text-primary font-mono text-[10px]">calendair.net/{publicSlug}</span> in your Instagram bio. Clients use this to submit requests directly into your Messages inbox.
+                                            Add <span className="text-primary font-mono text-[10px]">calendair.net/{publicSlug}</span> to your Instagram bio. Your custom booking wizard collects client requests and reference photos into your inbox.
                                         </p>
                                     </div>
                                 </div>
@@ -714,7 +726,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                     <div>
                                         <h4 className="font-bold text-sm text-foreground">Deposit Routing</h4>
                                         <p className="text-xs text-muted-foreground mt-1">
-                                            When you 'Accept' a client request from Messages, they are automatically prompted to send remittance to the Bank Account you just configured.
+                                            When you approve a Consultation, clients are instantly sent a secure checkout link allowing them to process the deposit directly to your configured Bank Account.
                                         </p>
                                     </div>
                                 </div>

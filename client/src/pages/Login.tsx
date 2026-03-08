@@ -47,11 +47,9 @@ export default function Login() {
 
       toast.success("Welcome back!");
 
-      // Redirect based on role or onboarding status
+      // Redirect based on role
       if (data.user.role === "studio") {
         setLocation("/studio");
-      } else if (!data.user.hasCompletedOnboarding) {
-        setLocation("/complete-profile");
       } else {
         setLocation("/calendar");
       }
