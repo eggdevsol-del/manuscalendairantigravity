@@ -13,8 +13,7 @@ import {
   conversations,
 } from "../../drizzle/schema";
 import { getDb } from "./core";
-
-// Helper to ensure dates are ISO formatted (UTC) for the client
+import { parseExternalCalendar } from "./icalParser";
 // MySQL returns "YYYY-MM-DD HH:mm:ss", we need "YYYY-MM-DDTHH:mm:ssZ"
 function toISO(dateStr: any): string {
   if (!dateStr) return dateStr as any;
@@ -270,7 +269,55 @@ export async function getArtistCalendar(artistId: string, startDate?: Date, endD
     .where(and(...conditions))
     .orderBy(appointments.startTime);
 
-  return results.map(normalizeAppointment);
+  let mergedResults = results.map(normalizeAppointment);
+
+  // Attempt to fetch and overlay external calendar events
+  try {
+    const settings = await db.query.artistSettings.findFirst({
+        where: eq(artistSettings.userId, artistId)
+    });
+
+    if (settings?.appleCalendarUrl) {
+        const events = await parseExternalCalendar(settings.appleCalendarUrl);
+        const externalAppts = events.filter(e => {
+            if (startDate && e.end < startDate) return false;
+            if (endDate && e.start > endDate) return false;
+            return true;
+        }).map(e => ({
+            id: -Math.floor(Math.random() * 1000000), // Fake negative ID
+            conversationId: 0,
+            artistId,
+            clientId: "external-sync",
+            title: e.summary || "Busy",
+            description: "External Calendar Block",
+            startTime: e.start.toISOString().slice(0, 19).replace("T", " "), // MySQL format emulation
+            endTime: e.end.toISOString().slice(0, 19).replace("T", " "),
+            status: "confirmed",
+            serviceName: "External Sync",
+            price: 0,
+            depositAmount: 0,
+            depositPaid: true,
+            confirmationSent: false,
+            reminderSent: false,
+            followUpSent: false,
+            clientName: "External Event",
+            clientEmail: null,
+            sessionNumber: 1,
+            totalSessions: 1,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        }));
+
+        mergedResults = [...mergedResults, ...externalAppts.map(normalizeAppointment)];
+        
+        // Ensure chronological ordering after merge
+        mergedResults.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    }
+  } catch (err) {
+      console.warn(`[getArtistCalendar] Failed to fetch external calendar for ${artistId}:`, err);
+  }
+
+  return mergedResults;
 }
 
 export async function getClientCalendar(clientId: string, startDate?: Date, endDate?: Date) {
