@@ -13,7 +13,8 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
-import { Camera, RefreshCw, Settings as SettingsIcon, MapPin, Building2, CreditCard, Scissors, Bell, Star, Calendar as CalendarIcon, Link as LinkIcon, Wallet as WalletIcon } from "lucide-react";
+import { Camera, RefreshCw, Settings as SettingsIcon, MapPin, Building2, CreditCard, Scissors, Bell, Star, Calendar as CalendarIcon, Link as LinkIcon, Wallet as WalletIcon, Database } from "lucide-react";
+import { DataImportSettings } from "@/components/settings/DataImportSettings";
 
 interface OnboardingArtistFlowProps {
     onComplete: () => Promise<void>;
@@ -44,13 +45,16 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
     const [bsb, setBsb] = useState("");
     const [accountNumber, setAccountNumber] = useState("");
 
-    // Step 4: Intro Services
+    // Services (Merged into Step 2)
     const [services, setServices] = useState<any[]>([]);
     const [newServiceTitle, setNewServiceTitle] = useState("");
     const [newServiceDuration, setNewServiceDuration] = useState("60");
     const [newServicePrice, setNewServicePrice] = useState("");
     const [newServiceIsProject, setNewServiceIsProject] = useState(false);
     const [newServiceSittings, setNewServiceSittings] = useState("1");
+
+    // Step 4: Data Import
+    const [showImporter, setShowImporter] = useState(false);
 
     // Step 5: Automation Level
     const [sendAutomatedReminders, setSendAutomatedReminders] = useState(true);
@@ -112,13 +116,16 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                 toast.error("QLD Licence Number is required for your locale.");
                 return;
             }
+            if (services.length === 0) {
+                toast.error("Please create at least one introductory service.");
+                return;
+            }
             setStep(3);
         } else if (step === 3) {
             setStep(4);
         } else if (step === 4) {
-            if (services.length === 0) {
-                toast.error("Please create at least one introductory service.");
-                return;
+            if (showImporter) {
+                setShowImporter(false);
             }
             setStep(5);
         } else if (step === 5) {
@@ -192,18 +199,8 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                     </p>
                                 </div>
 
-                                <div className="flex justify-center mb-6">
-                                    <div className="w-24 h-24 rounded-full bg-accent/30 border-2 border-primary/20 flex flex-col items-center justify-center text-primary/50 cursor-pointer hover:bg-accent/50 transition-colors relative overflow-hidden group">
-                                        {avatar ?
-                                            <img src={avatar} alt="Avatar" className="w-full h-full object-cover group-hover:opacity-50 transition-opacity" />
-                                            :
-                                            <><Camera className="w-8 h-8 mb-1" /><span className="text-[10px] font-bold uppercase tracking-wider">Photo</span></>
-                                        }
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Country</Label>
+                                <div className="space-y-1.5 mb-6">
+                                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Country <span className="text-primary">*</span></Label>
                                     <Select value={businessCountry} onValueChange={setBusinessCountry}>
                                         <SelectTrigger className="bg-accent/5 border border-input">
                                             <SelectValue placeholder="Select your Country" />
@@ -216,6 +213,16 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                             <SelectItem value="CA">Canada</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                </div>
+
+                                <div className="flex justify-center mb-6">
+                                    <div className="w-24 h-24 rounded-full bg-accent/30 border-2 border-primary/20 flex flex-col items-center justify-center text-primary/50 cursor-pointer hover:bg-accent/50 transition-colors relative overflow-hidden group">
+                                        {avatar ?
+                                            <img src={avatar} alt="Avatar" className="w-full h-full object-cover group-hover:opacity-50 transition-opacity" />
+                                            :
+                                            <><Camera className="w-8 h-8 mb-1" /><span className="text-[10px] font-bold uppercase tracking-wider">Photo</span></>
+                                        }
+                                    </div>
                                 </div>
 
                                 <div className="space-y-1.5">
@@ -313,6 +320,72 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                         />
                                     </div>
                                 )}
+
+                                <div className="space-y-1.5 pt-6 border-t border-white/10 mt-6">
+                                    <div className="mb-4 space-y-1">
+                                        <h3 className="text-sm font-bold tracking-tight text-foreground flex items-center gap-2 uppercase">
+                                            <Scissors className="w-4 h-4 text-primary" /> Base Services
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground leading-tight">
+                                            Map out your core offerings. You can build advanced variables later.
+                                        </p>
+                                    </div>
+
+                                    <div className="flex flex-col gap-2 mb-4">
+                                        {services.map((s, i) => (
+                                            <div key={i} className="flex flex-col bg-white/5 border border-white/10 rounded-lg p-3">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-semibold">{s.title}</span>
+                                                    <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => handleRemoveService(s.id)}>Remove</Button>
+                                                </div>
+                                                <div className="text-[11px] text-muted-foreground mt-1">
+                                                    {s.durationMinutes} minutes • ${s.price} total
+                                                    {s.sittings > 1 && ` • Project: ${s.sittings} Sittings`}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="bg-accent/5 border border-input rounded-xl p-4 space-y-3">
+                                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-foreground/10 pb-2 w-full flex">Add Base Service</Label>
+
+                                        <Input className="h-9 bg-background" placeholder="Service Name (e.g. Full Day Session)" value={newServiceTitle} onChange={(e) => setNewServiceTitle(e.target.value)} />
+
+                                        <div className="flex gap-2">
+                                            <Select value={newServiceDuration} onValueChange={setNewServiceDuration}>
+                                                <SelectTrigger className="h-9 bg-background border border-input w-[140px]">
+                                                    <SelectValue placeholder="Duration" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {Array.from({ length: 24 }).map((_, i) => (
+                                                        <SelectItem key={i + 1} value={String((i + 1) * 60)}>
+                                                            {i + 1} {i + 1 === 1 ? 'Hour' : 'Hours'}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <Input className="h-9 flex-1 bg-background" placeholder="$ Price" type="number" value={newServicePrice} onChange={(e) => setNewServicePrice(e.target.value)} />
+                                        </div>
+
+                                        <div className="flex items-center justify-between px-1 pt-2">
+                                            <div className="flex flex-col">
+                                                <Label className="text-xs font-semibold text-foreground">Project Mode Toggle</Label>
+                                                <span className="text-[10px] text-muted-foreground">Spans multi-session tattoos</span>
+                                            </div>
+                                            <Switch checked={newServiceIsProject} onCheckedChange={setNewServiceIsProject} />
+                                        </div>
+
+                                        {newServiceIsProject && (
+                                            <div className="bg-primary/5 p-3 rounded-md border border-primary/20 space-y-2 mt-2">
+                                                <Label className="text-xs text-primary font-bold uppercase tracking-wider">Number of Sittings/Sessions</Label>
+                                                <Input type="number" min="2" value={newServiceSittings} onChange={(e) => setNewServiceSittings(e.target.value)} />
+                                                <p className="text-[10px] text-primary/70 leading-tight">This is a multi-session project. The total price entered above will be the combined cost for all sittings.</p>
+                                            </div>
+                                        )}
+
+                                        <Button variant="secondary" className="w-full h-8 text-xs mt-2" onClick={handleAddService}>Add Service</Button>
+                                    </div>
+                                </div>
                             </motion.div>
                         )}
 
@@ -376,72 +449,46 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                 initial="initial"
                                 animate="animate"
                                 exit="exit"
-                                className="space-y-4"
+                                className={cn("space-y-4 h-full relative", showImporter && "absolute inset-0 z-50 bg-background/95 backdrop-blur-md pb-0")}
                             >
-                                <div className="mb-4 space-y-1">
-                                    <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                                        <Scissors className="w-5 h-5 text-primary" /> Introductory Services
-                                    </h2>
-                                    <p className="text-sm text-muted-foreground leading-tight">
-                                        Map out your core offerings. You can build advanced variables later.
-                                    </p>
-                                </div>
+                                {showImporter ? (
+                                    <DataImportSettings onBack={() => setShowImporter(false)} />
+                                ) : (
+                                    <>
+                                        <div className="mb-4 space-y-1">
+                                            <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                                                <Database className="w-5 h-5 text-primary" /> Data Import
+                                            </h2>
+                                            <p className="text-sm text-muted-foreground leading-tight">
+                                                Transfer your existing client roster and historic appointments from other booking platforms.
+                                            </p>
+                                        </div>
 
-                                <div className="flex flex-col gap-2 mb-4">
-                                    {services.map((s, i) => (
-                                        <div key={i} className="flex flex-col bg-white/5 border border-white/10 rounded-lg p-3">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-sm font-semibold">{s.title}</span>
-                                                <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => handleRemoveService(s.id)}>Remove</Button>
+                                        <div className="bg-accent/5 border border-input rounded-xl p-5 space-y-4 text-center flex flex-col items-center mt-8">
+                                            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                                                <Database className="w-8 h-8 text-primary" />
                                             </div>
-                                            <div className="text-[11px] text-muted-foreground mt-1">
-                                                {s.durationMinutes} minutes • ${s.price} total
-                                                {s.sittings > 1 && ` • Project: ${s.sittings} Sittings`}
-                                            </div>
+                                            <h3 className="font-bold text-foreground">Have existing records?</h3>
+                                            <p className="text-xs text-muted-foreground px-4 leading-relaxed">
+                                                You can automatically ingest .CSV exports from platforms like Fresha, Vagaro, or Square. This ensures your calendars and CRM are fully populated from day one.
+                                            </p>
+                                            <Button
+                                                variant="default"
+                                                className="w-full mt-4"
+                                                onClick={() => setShowImporter(true)}
+                                            >
+                                                Upload CSV File
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                className="w-full text-xs text-muted-foreground"
+                                                onClick={() => setStep(5)}
+                                            >
+                                                Skip for now
+                                            </Button>
                                         </div>
-                                    ))}
-                                </div>
-
-                                <div className="bg-accent/5 border border-input rounded-xl p-4 space-y-3">
-                                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-foreground/10 pb-2 w-full flex">Add Base Service</Label>
-
-                                    <Input className="h-9 bg-background" placeholder="Service Name (e.g. Full Day Session)" value={newServiceTitle} onChange={(e) => setNewServiceTitle(e.target.value)} />
-
-                                    <div className="flex gap-2">
-                                        <Select value={newServiceDuration} onValueChange={setNewServiceDuration}>
-                                            <SelectTrigger className="h-9 bg-background border border-input w-[140px]">
-                                                <SelectValue placeholder="Duration" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {Array.from({ length: 24 }).map((_, i) => (
-                                                    <SelectItem key={i + 1} value={String((i + 1) * 60)}>
-                                                        {i + 1} {i + 1 === 1 ? 'Hour' : 'Hours'}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <Input className="h-9 flex-1 bg-background" placeholder="$ Price" type="number" value={newServicePrice} onChange={(e) => setNewServicePrice(e.target.value)} />
-                                    </div>
-
-                                    <div className="flex items-center justify-between px-1 pt-2">
-                                        <div className="flex flex-col">
-                                            <Label className="text-xs font-semibold text-foreground">Project Mode Toggle</Label>
-                                            <span className="text-[10px] text-muted-foreground">Spans multi-session tattoos</span>
-                                        </div>
-                                        <Switch checked={newServiceIsProject} onCheckedChange={setNewServiceIsProject} />
-                                    </div>
-
-                                    {newServiceIsProject && (
-                                        <div className="bg-primary/5 p-3 rounded-md border border-primary/20 space-y-2 mt-2">
-                                            <Label className="text-xs text-primary font-bold uppercase tracking-wider">Number of Sittings/Sessions</Label>
-                                            <Input type="number" min="2" value={newServiceSittings} onChange={(e) => setNewServiceSittings(e.target.value)} />
-                                            <p className="text-[10px] text-primary/70 leading-tight">This is a multi-session project. The total price entered above will be the combined cost for all sittings.</p>
-                                        </div>
-                                    )}
-
-                                    <Button variant="secondary" className="w-full h-8 text-xs mt-2" onClick={handleAddService}>Add Service</Button>
-                                </div>
-
+                                    </>
+                                )}
                             </motion.div>
                         )}
 
@@ -667,15 +714,18 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                     </AnimatePresence>
                 </div>
 
-                <div className="absolute bottom-6 left-6 right-6">
-                    <Button
-                        className="w-full h-12 text-sm font-bold tracking-wide uppercase shadow-lg shadow-primary/20"
-                        onClick={handleNext}
-                        disabled={isSubmitting}
-                    >
-                        {isSubmitting ? "Finalizing Studio..." : step === 7 ? "Enter Dashboard" : step === 6 ? "Activate Subscription" : "Continue"}
-                    </Button>
-                </div>
+                {/* Fixed Footer */}
+                {(!showImporter || step !== 4) && (
+                    <div className="absolute bottom-6 left-6 right-6 z-40">
+                        <Button
+                            className="w-full h-12 text-sm font-bold tracking-wide uppercase shadow-lg shadow-primary/20"
+                            onClick={handleNext}
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? "Finalizing Studio..." : step === 7 ? "Enter Dashboard" : step === 6 ? "Activate Subscription" : step === 4 ? "Skip Data Import" : "Continue"}
+                        </Button>
+                    </div>
+                )}
             </div>
         </div>
     );
