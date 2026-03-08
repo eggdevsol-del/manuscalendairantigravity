@@ -36,7 +36,7 @@ export function GlobalOnboardingOverlay() {
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 className={cn(
                     "w-full max-w-md max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-[2.5rem]",
-                    "bg-card/95 border border-white/10 shadow-2xl relative scrollbar-hide"
+                    "bg-[#EFE3C3] border border-white/10 shadow-2xl relative scrollbar-hide"
                 )}
             >
                 <div className="p-6">

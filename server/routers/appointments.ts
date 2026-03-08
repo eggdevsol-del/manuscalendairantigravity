@@ -42,11 +42,17 @@ export const appointmentsRouter = router({
           });
         }
       }
-      return db.getArtistCalendar(
+      const results = await db.getArtistCalendar(
         input.artistId,
         input.startDate,
         input.endDate
       );
+      console.log(`[TRPC API] getArtistCalendar returned ${results.length} events for user ${input.artistId}`);
+      if (results.length > 0) {
+         const external = results.filter((r: any) => r.clientId === "external-sync");
+         console.log(`[TRPC API] Found ${external.length} external sync events embedded in payload.`);
+      }
+      return results;
     }),
 
   getClientCalendar: protectedProcedure

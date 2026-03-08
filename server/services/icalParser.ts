@@ -5,7 +5,13 @@ export interface ExternalEvent {
 }
 
 function parseIcsDate(d: string): Date {
-    const clean = d.trim().replace("Z", "");
+    let clean = d.trim().replace("Z", "");
+    
+    // Strip parameters like TZID=...: or VALUE=DATE:
+    if (clean.includes(":")) {
+        clean = clean.split(":").pop() || clean;
+    }
+
     if (clean.length === 8) {
         // All day event: YYYYMMDD
         return new Date(
@@ -43,6 +49,10 @@ export async function parseExternalCalendar(url: string): Promise<ExternalEvent[
                 try {
                     const start = parseIcsDate(dtstartMatch[1]);
                     const end = dtendMatch ? parseIcsDate(dtendMatch[1]) : start;
+
+                    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                        throw new Error(`Invalid Date format parsed from ${dtstartMatch[1]}`);
+                    }
 
                     events.push({
                         start,

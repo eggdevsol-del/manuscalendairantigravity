@@ -96,6 +96,13 @@ export function useCalendarAgendaController() {
     return [];
   }, [isStudioView, studioAppointments, isSoloArtistView, soloAppointments, isClientView, clientAppointments]);
 
+  useEffect(() => {
+    console.log("[CalendarHook] Payload Size:", appointments?.length);
+    if (appointments?.length) {
+        console.log("[CalendarHook] Sample Event:", appointments[appointments.length - 1]?.title);
+    }
+  }, [appointments]);
+
   const isLoading = isLoadingStudioAppts || isLoadingSoloAppts || isLoadingClientAppts || isLoadingStudio;
 
 
