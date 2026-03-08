@@ -160,7 +160,7 @@ export function OnboardingClientFlow({ onComplete }: OnboardingClientFlowProps) 
 
             <div className="mt-8">
                 <Button
-                    className="w-full h-12 text-sm font-bold tracking-wide uppercase bg-[#d4a84a] text-white hover:bg-[#c29840]"
+                    className="w-full h-12 text-sm font-bold tracking-wide uppercase bg-[#E09F3E] text-white hover:bg-[#C98B32]"
                     onClick={handleNext}
                     disabled={isSubmitting}
                 >
