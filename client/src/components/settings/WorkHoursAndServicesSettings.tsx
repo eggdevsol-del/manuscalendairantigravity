@@ -89,12 +89,15 @@ export function WorkHoursAndServicesSettings({
     });
 
     const [isProjectMode, setIsProjectMode] = useState(false);
+    const utils = trpc.useUtils();
     const { data: artistSettings } = trpc.artistSettings.get.useQuery(undefined, {
         enabled: !!user && (user.role === "artist" || user.role === "admin"),
     });
 
     const upsertMutation = trpc.artistSettings.upsert.useMutation({
         onSuccess: () => {
+            utils.artistSettings.getPublicByArtistId.invalidate({ artistId: user?.id || "" });
+            utils.artistSettings.get.invalidate();
             toast.success("Settings saved successfully");
         },
         onError: error => {

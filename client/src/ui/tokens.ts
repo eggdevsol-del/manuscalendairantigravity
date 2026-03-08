@@ -85,7 +85,7 @@ export const tokens = {
 
     // Menu item icon button (highlighted / primary)
     itemButtonHighlight:
-      "h-10 w-10 rounded-full shadow-lg border border-white/10 bg-[#E09F3E] text-white hover:bg-[#C98B32] flex items-center justify-center transition-all active:scale-95",
+      "h-10 w-10 rounded-full shadow-lg border border-white/10 bg-[#E09F3E]/75 text-white hover:bg-[#C98B32]/75 flex items-center justify-center transition-all active:scale-95",
 
     // Menu item button icon size
     itemIconSize: "h-4 w-4",
@@ -94,7 +94,7 @@ export const tokens = {
     toggle:
       "h-14 w-14 rounded-full shadow-2xl flex items-center justify-center transition-colors border border-white/10",
     toggleOpen: "bg-white text-slate-900 dark:bg-white dark:text-slate-900",
-    toggleClosed: "bg-[#E09F3E] text-white",
+    toggleClosed: "bg-[#E09F3E]/75 text-white",
     toggleIconSize: "h-6 w-6",
 
     // Animation variants (used as framer-motion presets)

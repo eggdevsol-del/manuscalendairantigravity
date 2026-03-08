@@ -175,7 +175,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                 {/* Progress Indicator */}
                 <div className="flex items-center gap-1.5 mb-6">
                     {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-                        <div key={i} className={`h-1 flex-1 rounded-full ${step >= i ? 'bg-[#E09F3E]' : 'bg-[#E09F3E]/20'}`} />
+                        <div key={i} className={`h-1 flex-1 rounded-full ${step >= i ? 'bg-[#E09F3E]/75' : 'bg-[#E09F3E]/20'}`} />
                     ))}
                 </div>
             </div>
@@ -740,7 +740,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
             {(!showImporter || step !== 4) && (
                 <div className="absolute bottom-6 left-6 right-6 z-40">
                     <Button
-                        className="w-full h-12 text-sm font-bold tracking-wide uppercase bg-[#E09F3E] text-white hover:bg-[#C98B32]"
+                        className="w-full h-12 text-sm font-bold tracking-wide uppercase bg-[#E09F3E]/75 text-white hover:bg-[#C98B32]/75"
                         onClick={handleNext}
                         disabled={isSubmitting}
                     >
