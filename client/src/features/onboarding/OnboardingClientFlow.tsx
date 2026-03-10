@@ -36,7 +36,7 @@ export function OnboardingClientFlow({ onComplete }: OnboardingClientFlowProps) 
                     phone,
                     avatar,
                     instagramUsername,
-                    birthday: birthday ? new Date(birthday).toISOString() : undefined,
+                    birthday: birthday || undefined,
                 });
                 await refresh();
                 setStep(2);
