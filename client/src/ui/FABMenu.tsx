@@ -167,7 +167,7 @@ export function FABMenu(props: FABMenuProps) {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={toggle}
-        className={cn("nav-fab-button", fab.toggle, isOpen ? fab.toggleOpen : fab.toggleClosed)}
+        className={cn(fab.toggle, isOpen ? fab.toggleOpen : fab.toggleClosed)}
       >
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

@@ -157,7 +157,7 @@ export default function CalendarAgendaPage() {
 
   return (
     <div
-      className="calendar-view-container fixed inset-0 flex flex-col md:flex-row bg-transparent"
+      className="fixed inset-0 flex flex-col md:flex-row bg-transparent"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
