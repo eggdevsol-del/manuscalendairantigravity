@@ -48,7 +48,7 @@ export function useAppointmentCheckIn() {
     const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
     for (const appt of appointments) {
-      if (appt.status === "cancelled") continue;
+      if (appt.status === "cancelled" || appt.status === "no-show") continue;
 
       const start = new Date(appt.startTime);
       const end = new Date(appt.endTime);
