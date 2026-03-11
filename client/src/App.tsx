@@ -48,7 +48,7 @@ import { PublicFunnel } from "./pages/funnel";
 import PublicStudioFunnel from "./pages/funnel/PublicStudioFunnel";
 import { DepositSheet } from "./pages/funnel/DepositSheet";
 import LeadDetail from "./pages/LeadDetail";
-import { GlobalOnboardingOverlay } from "./features/onboarding/GlobalOnboardingOverlay";
+import { AppTour } from "./features/onboarding/AppTour";
 
 function Router() {
   const [location, setLocation] = useLocation();
@@ -171,9 +171,9 @@ function Router() {
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
+      <AppTour />
       {shouldShowBottomNav && <BottomNav />}
       {isArtist && <AppointmentCheckInOverlay />}
-      {user && user.hasCompletedOnboarding === 0 && <GlobalOnboardingOverlay />}
     </div>
   );
 }

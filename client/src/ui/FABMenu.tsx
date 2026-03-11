@@ -163,12 +163,11 @@ export function FABMenu(props: FABMenuProps) {
     <div className={cn(fab.container, props.className)}>
       {mounted && createPortal(portalContent, document.body)}
 
-      {/* Main Toggle Button */}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={toggle}
-        className={cn(fab.toggle, isOpen ? fab.toggleOpen : fab.toggleClosed)}
+        className={cn("nav-fab-button", fab.toggle, isOpen ? fab.toggleOpen : fab.toggleClosed)}
       >
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
