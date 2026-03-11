@@ -7,7 +7,11 @@ import { Button, Input, Label, Textarea } from "@/components/ui";
 import { ChevronLeft, User } from "lucide-react";
 
 export function ProfileSettings({ onBack }: { onBack: () => void }) {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
+
+    // Danger Zone state for clients
+    const [activeAction, setActiveAction] = useState<"account" | null>(null);
+    const [confirmText, setConfirmText] = useState("");
 
     // Profile state
     const [profileName, setProfileName] = useState("");
@@ -38,6 +42,17 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
         },
     });
 
+    const deleteAccountMutation = trpc.auth.deleteAccount.useMutation({
+        onSuccess: async () => {
+            toast.success("Your account has been permanently deleted.");
+            await logout();
+            window.location.href = "/";
+        },
+        onError: error => {
+            toast.error("Failed to delete account: " + error.message);
+        }
+    });
+
     const initializedProfileRef = useRef(false);
 
     // Initialize Profile state from user once
@@ -62,6 +77,14 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
             address: profileAddress,
             city: profileCity,
         });
+    };
+
+    const handleExecuteDelete = () => {
+        if (confirmText !== "DELETE") {
+            toast.error("You must type exactly 'DELETE' to confirm.");
+            return;
+        }
+        deleteAccountMutation.mutate();
     };
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -237,6 +260,39 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
                     >
                         {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
                     </Button>
+
+                    {user?.role === "client" && (
+                        <div className="pt-8 text-center pb-8">
+                            <button
+                                onClick={() => setActiveAction(activeAction === "account" ? null : "account")}
+                                className="text-[10px] text-muted-foreground/30 hover:text-red-500/80 transition-colors uppercase tracking-widest"
+                            >
+                                delete account
+                            </button>
+                            
+                            {activeAction === "account" && (
+                                <div className="mt-4 p-4 border border-red-500/20 bg-red-500/5 rounded-lg animate-in fade-in slide-in-from-top-2 text-left">
+                                    <p className="text-xs text-red-500 mb-2 font-medium">Type <strong>DELETE</strong> below to permanently delete your account and all data.</p>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={confirmText}
+                                            onChange={(e) => setConfirmText(e.target.value)}
+                                            placeholder="DELETE"
+                                            className="bg-zinc-900 border border-red-500/50 rounded-[4px] px-3 py-2 text-xs text-foreground w-full outline-none focus:border-red-500 flex-1"
+                                        />
+                                        <button
+                                            onClick={handleExecuteDelete}
+                                            disabled={confirmText !== "DELETE" || deleteAccountMutation.isPending}
+                                            className="bg-red-500 text-white font-bold text-xs uppercase tracking-wider px-3 rounded-[4px] disabled:opacity-50 transition-all active:scale-95"
+                                        >
+                                            Confirm
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
