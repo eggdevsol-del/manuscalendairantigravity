@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Joyride, { Step, CallBackProps, STATUS } from "react-joyride";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 
 export function AppTour() {
     const { user } = useAuth();
