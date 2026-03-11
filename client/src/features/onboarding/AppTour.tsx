@@ -5,6 +5,7 @@ import { trpc } from "@/lib/trpc";
 
 export function AppTour() {
     const { user } = useAuth();
+    const updateOnboardingMutation = trpc.auth.completeOnboarding.useMutation();
     const [run, setRun] = useState(false);
 
     // Only run tour for users who haven't completed onboarding yet
@@ -96,8 +97,6 @@ export function AppTour() {
     ];
 
     const steps = isClient ? clientSteps : artistSteps;
-
-    const updateOnboardingMutation = trpc.auth.completeOnboarding.useMutation();
 
     const handleJoyrideCallback = async (data: CallBackProps) => {
         const { status } = data;
