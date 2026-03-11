@@ -1,25 +1,27 @@
 import React, { useState, useEffect } from "react";
 import Joyride, { Step, CallBackProps, STATUS } from "react-joyride";
+import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 
 export function AppTour() {
     const { user } = useAuth();
+    const [location] = useLocation();
     const updateOnboardingMutation = trpc.auth.completeOnboarding.useMutation();
     const [run, setRun] = useState(false);
 
-    // Only run tour for users who haven't completed onboarding yet
+    // Only run tour for users who haven't completed onboarding yet on the Calendar
     useEffect(() => {
         if (typeof window === "undefined") return;
 
         // Give the DOM a tiny fraction of a second to render the layout before starting the tour
-        if (user && user.hasCompletedOnboarding === 0) {
+        if (user && user.hasCompletedOnboarding === 0 && location === "/calendar") {
             const timer = setTimeout(() => {
                 setRun(true);
             }, 800);
             return () => clearTimeout(timer);
         }
-    }, [user]);
+    }, [user, location]);
 
     if (!user || user.hasCompletedOnboarding !== 0) {
         return null; // Don't mount at all if they are already onboarded
