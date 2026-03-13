@@ -24,6 +24,7 @@ interface ProposalMetadata {
   depositAmount?: number;
   bsb?: string;
   accountNumber?: string;
+  isImported?: boolean;
 }
 
 interface ProjectProposalMessageProps {
@@ -64,15 +65,18 @@ export function ProjectProposalMessage({
   const { serviceName, totalCost, sittings, status, serviceDuration } =
     metadata;
   const card = tokens.card;
-  const glow = getGlow(status);
+
+  // Intercept status for imported appointments
+  const effectiveStatus = metadata.isImported ? "confirmed" : status;
+  const glow = getGlow(effectiveStatus);
 
   // Derive time
   const totalMinutes = (sittings || 1) * (serviceDuration || 60);
   const hours = Math.floor(totalMinutes / 60);
 
-  const statusLabel = getStatusLabel(status);
-  const isPending = status === "pending";
-  const isSuccessState = ["accepted", "remittance_uploaded", "confirmed"].includes(status);
+  const statusLabel = getStatusLabel(effectiveStatus);
+  const isPending = effectiveStatus === "pending";
+  const isSuccessState = ["accepted", "remittance_uploaded", "confirmed"].includes(effectiveStatus);
 
   // ---------- PINNED variant (compact, horizontal) ----------
   if (variant === "pinned") {

@@ -49,8 +49,8 @@ export const appointmentsRouter = router({
       );
       console.log(`[TRPC API] getArtistCalendar returned ${results.length} events for user ${input.artistId}`);
       if (results.length > 0) {
-         const external = results.filter((r: any) => r.clientId === "external-sync");
-         console.log(`[TRPC API] Found ${external.length} external sync events embedded in payload.`);
+        const external = results.filter((r: any) => r.clientId === "external-sync");
+        console.log(`[TRPC API] Found ${external.length} external sync events embedded in payload.`);
       }
       return results;
     }),
@@ -816,6 +816,7 @@ export const appointmentsRouter = router({
               totalCost: totalCost,
               dates: allInConvo.map((a: any) => new Date(a.startTime).toISOString()),
               serviceDuration: appointment.endTime ? Math.round((new Date(appointment.endTime).getTime() - new Date(appointment.startTime).getTime()) / 60000) : 60,
+              isImported: true,
             },
           };
         }
