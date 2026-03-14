@@ -198,6 +198,42 @@ export function registerPublicFunnelRoutes(app: Express) {
         ];
       }
 
+      let services: any[] = [];
+      try {
+        if (settings.services) {
+          services = JSON.parse(settings.services);
+        }
+
+        // Ensure there's always something to show, using PROJECT_TYPES as fallback
+        if (!services || services.length === 0) {
+          services = [
+            { id: "full-sleeve", name: "Full Sleeve", price: 0, duration: 0, sittings: 1 },
+            { id: "half-sleeve", name: "Half Sleeve", price: 0, duration: 0, sittings: 1 },
+            { id: "back-piece", name: "Back Piece", price: 0, duration: 0, sittings: 1 },
+            { id: "chest-piece", name: "Chest Piece", price: 0, duration: 0, sittings: 1 },
+            { id: "cover-up", name: "Cover Up", price: 0, duration: 0, sittings: 1 },
+            { id: "small-piece", name: "Small Piece", price: 0, duration: 0, sittings: 1 },
+            { id: "touch-up", name: "Touch Up", price: 0, duration: 0, sittings: 1 },
+            { id: "custom", name: "Custom Project", price: 0, duration: 0, sittings: 1 },
+          ];
+        }
+      } catch (parseError) {
+        console.error(
+          `[PublicFunnel] GET /api/public/artist/${slug} - Error parsing services:`,
+          parseError
+        );
+        services = [
+          { id: "full-sleeve", name: "Full Sleeve", price: 0, duration: 0, sittings: 1 },
+          { id: "half-sleeve", name: "Half Sleeve", price: 0, duration: 0, sittings: 1 },
+          { id: "back-piece", name: "Back Piece", price: 0, duration: 0, sittings: 1 },
+          { id: "chest-piece", name: "Chest Piece", price: 0, duration: 0, sittings: 1 },
+          { id: "cover-up", name: "Cover Up", price: 0, duration: 0, sittings: 1 },
+          { id: "small-piece", name: "Small Piece", price: 0, duration: 0, sittings: 1 },
+          { id: "touch-up", name: "Touch Up", price: 0, duration: 0, sittings: 1 },
+          { id: "custom", name: "Custom Project", price: 0, duration: 0, sittings: 1 },
+        ];
+      }
+
       const response = {
         id: artist.id,
         slug: settings.publicSlug,
@@ -211,6 +247,7 @@ export function registerPublicFunnelRoutes(app: Express) {
         styleOptions,
         placementOptions,
         budgetRanges,
+        services,
         enabledSteps: [
           "intent",
           "contact",

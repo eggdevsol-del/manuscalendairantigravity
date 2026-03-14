@@ -19,20 +19,6 @@ interface FunnelStyleStepProps {
   isLastStep: boolean;
   submitting: boolean;
 }
-
-const DEFAULT_STYLES = [
-  { id: "realism", label: "Realism", emoji: "📷" },
-  { id: "traditional", label: "Traditional", emoji: "⚓" },
-  { id: "neo-traditional", label: "Neo-Traditional", emoji: "🌹" },
-  { id: "japanese", label: "Japanese", emoji: "🐉" },
-  { id: "blackwork", label: "Blackwork", emoji: "⬛" },
-  { id: "dotwork", label: "Dotwork", emoji: "⚫" },
-  { id: "watercolor", label: "Watercolor", emoji: "🎨" },
-  { id: "geometric", label: "Geometric", emoji: "📐" },
-  { id: "minimalist", label: "Minimalist", emoji: "✨" },
-  { id: "other", label: "Other", emoji: "🤔" },
-];
-
 export default function FunnelStyleStep({
   artistProfile,
   stepData,
@@ -51,28 +37,21 @@ export default function FunnelStyleStep({
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Use artist's custom styles if available, otherwise defaults
-  const availableStyles =
-    artistProfile.styleOptions?.length > 0
-      ? artistProfile.styleOptions.map(
-        id =>
-          DEFAULT_STYLES.find(s => s.id === id) || {
-            id,
-            label: id,
-            emoji: "🎨",
-          }
-      )
-      : DEFAULT_STYLES;
+  const availableServices = (artistProfile.services || [])
+    .filter((s: any) => s.showInFunnel !== false)
+    .map((s: any) => ({
+      id: s.name,
+      label: s.name,
+      price: s.price,
+      duration: s.duration,
+      sittings: s.sittings,
+    }));
 
-  const toggleStyle = (styleId: string) => {
+  const toggleStyle = (serviceName: string) => {
     setSelectedStyles(prev =>
-      prev.includes(styleId)
-        ? prev.filter(s => s !== styleId)
-        : [...prev, styleId]
+      prev.includes(serviceName) ? [] : [serviceName]
     );
-  };
-
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  }; const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -119,8 +98,8 @@ export default function FunnelStyleStep({
 
   return (
     <FunnelStepWrapper
-      title="What style are you into?"
-      subtitle="Select all that apply"
+      title="What service are you looking for?"
+      subtitle="Select the service you'd like to book"
       onNext={handleNext}
       onBack={onBack}
       isFirstStep={isFirstStep}
@@ -128,39 +107,53 @@ export default function FunnelStyleStep({
       nextDisabled={!isValid}
       submitting={submitting}
     >
-      {/* Style selection */}
-      <div className="grid grid-cols-2 gap-3">
-        {availableStyles.map((style, index) => (
-          <motion.button
-            key={style.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.03 }}
-            onClick={() => toggleStyle(style.id)}
-            className={`
-              relative p-3 rounded-[4px] border-2 text-left transition-all
-              ${selectedStyles.includes(style.id)
-                ? "border-primary bg-primary/10"
-                : "border-border bg-card hover:border-primary/50"
-              }
-            `}
-          >
-            <span className="text-lg mr-2">{style.emoji}</span>
-            <span className="font-medium text-foreground text-sm">
-              {style.label}
-            </span>
+      {/* Service selection */}
+      <div className="grid gap-3">
+        {availableServices.length > 0 ? (
+          availableServices.map((service: any, index: number) => (
+            <motion.button
+              key={service.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03 }}
+              onClick={() => toggleStyle(service.id)}
+              className={`
+                relative p-4 rounded-[4px] border-2 text-left transition-all flex flex-col gap-1
+                ${selectedStyles.includes(service.id)
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-card hover:border-primary/50"
+                }
+              `}
+            >
+              <div className="flex justify-between items-start w-full pr-8">
+                <span className="font-semibold text-foreground text-sm">
+                  {service.label}
+                </span>
+                <span className="font-bold text-primary text-sm">${service.price}</span>
+              </div>
+              {(service.duration > 0 || service.sittings > 1) && (
+                <div className="flex gap-3 text-[11px] text-muted-foreground font-mono mt-1">
+                  {service.duration > 0 && <span>{service.duration / 60}h</span>}
+                  {service.sittings > 1 && <span>Project: {service.sittings} Sittings</span>}
+                </div>
+              )}
 
-            {selectedStyles.includes(style.id) && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute top-2 right-2 w-4 h-4 rounded-full bg-primary flex items-center justify-center"
-              >
-                <Check className="w-2.5 h-2.5 text-primary-foreground" />
-              </motion.div>
-            )}
-          </motion.button>
-        ))}
+              {selectedStyles.includes(service.id) && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute top-1/2 -translate-y-1/2 right-4 w-5 h-5 rounded-full bg-primary flex items-center justify-center"
+                >
+                  <Check className="w-3.5 h-3.5 text-primary-foreground" />
+                </motion.div>
+              )}
+            </motion.button>
+          ))
+        ) : (
+          <div className="p-6 border border-dashed border-border rounded-[4px] text-center text-sm text-muted-foreground">
+            This artist has not listed any public services yet.
+          </div>
+        )}
       </div>
 
       {/* Reference images */}

@@ -19,6 +19,7 @@ import {
   FileSignature,
   Upload,
 } from "lucide-react";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import {
   formatLocalTime,
   getBusinessTimezone,
@@ -40,6 +41,7 @@ type BookingStep =
   | "client"
   | "service"
   | "frequency"
+  | "custom_dates"
   | "review"
   | "success";
 
@@ -218,6 +220,7 @@ export function BookingWizardContent({
   const [frequency, setFrequency] = useState<
     "single" | "consecutive" | "weekly" | "biweekly" | "monthly"
   >("consecutive");
+  const [customDates, setCustomDates] = useState<Date[]>([]);
   const [startDate] = useState(initialDate || new Date());
 
   const [clientSearch, setClientSearch] = useState("");
@@ -301,7 +304,7 @@ export function BookingWizardContent({
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     },
     {
-      enabled: step === "review" && !!selectedService && !!conversationId,
+      enabled: step === "review" && !!selectedService && !!conversationId && frequency !== "single",
       retry: false,
     }
   );
@@ -428,16 +431,20 @@ export function BookingWizardContent({
   };
 
   const handleConfirmBooking = () => {
-    if (!availability?.dates || !selectedService || !conversationId) return;
+    if (!selectedService || !conversationId) return;
+    if (frequency !== "single" && !availability?.dates) return;
+    if (frequency === "single" && customDates.length === 0) return;
 
-    const datesList = availability.dates
+    const datesToUse = frequency === "single" ? customDates : availability.dates;
+
+    const datesList = datesToUse
       .map((date: string | Date) =>
         format(new Date(date), "EEEE, MMMM do yyyy, h:mm a")
       )
       .join("\n");
 
-    const finalSittings = requiredSittings;
-    const message = `I have found the following dates for your ${selectedService.name} project:\n\n${datesList}\n\nThis project consists of ${finalSittings} sittings.\nFrequency: ${frequency}\nPrice per sitting: $${selectedService.price}\n\nPlease confirm these dates.`;
+    const finalSittings = frequency === "single" ? customDates.length : requiredSittings;
+    const message = `I have found the following dates for your ${selectedService.name} project:\n\n${datesList}\n\nThis project consists of ${finalSittings} sittings.\nFrequency: ${frequency === "single" ? "Custom dates" : frequency}\nPrice per sitting: $${selectedService.price}\n\nPlease confirm these dates.`;
 
     const totalCost = Number(selectedService.price) * finalSittings;
     const totalDeposit = Number(artistSettings?.depositAmount || 0) * finalSittings;
@@ -449,9 +456,9 @@ export function BookingWizardContent({
       sittings: finalSittings,
       price: Number(selectedService.price),
       totalCost: totalCost,
-      frequency: frequency,
-      dates: availability.dates,
-      proposedDates: availability.dates,
+      frequency: frequency === "single" ? "Custom dates" : frequency,
+      dates: datesToUse,
+      proposedDates: datesToUse,
       status: "pending",
       bsb: artistSettings?.bsb,
       accountNumber: artistSettings?.accountNumber,
@@ -516,8 +523,16 @@ export function BookingWizardContent({
       if (!initialConversationId) setStep("client");
     } else if (step === "frequency") {
       setStep("service");
-    } else if (step === "review") {
+    } else if (step === "custom_dates") {
       if (requiredSittings === 1) {
+        setStep("service");
+      } else {
+        setStep("frequency");
+      }
+    } else if (step === "review") {
+      if (frequency === "single") {
+        setStep("custom_dates");
+      } else if (requiredSittings === 1) {
         setStep("service");
       } else {
         setStep("frequency");
@@ -529,7 +544,7 @@ export function BookingWizardContent({
   const card = tokens.card;
 
   const freqOptions = [
-    { id: "single", label: "Single", Icon: Repeat1 },
+    { id: "single", label: "Custom dates", Icon: Repeat1 },
     { id: "consecutive", label: "Consecutive", Icon: CalendarDays },
     { id: "weekly", label: "Weekly", Icon: Calendar },
     { id: "biweekly", label: "Bi-Weekly", Icon: Repeat },
@@ -546,6 +561,8 @@ export function BookingWizardContent({
         return "Select Service";
       case "frequency":
         return "Frequency";
+      case "custom_dates":
+        return "Select Dates";
       case "review":
         return "Review";
       case "success":
@@ -1689,7 +1706,7 @@ export function BookingWizardContent({
                       setRequiredSittings(sittings);
                       if (sittings === 1) {
                         setFrequency("single");
-                        setStep("review");
+                        setStep("custom_dates");
                       } else {
                         setStep("frequency");
                       }
@@ -1739,7 +1756,11 @@ export function BookingWizardContent({
                     )}
                     onClick={() => {
                       setFrequency(id);
-                      setStep("review");
+                      if (id === "single") {
+                        setStep("custom_dates");
+                      } else {
+                        setStep("review");
+                      }
                     }}
                   >
                     <div
@@ -1755,6 +1776,41 @@ export function BookingWizardContent({
                     </span>
                   </motion.button>
                 ))}
+              </div>
+            )}
+
+            {step === "custom_dates" && (
+              <div className="flex flex-col gap-4 pt-1 items-center pb-2">
+                <div className={cn(card.base, card.bg, "p-3 w-full rounded-[4px]")}>
+                  <p className="text-[11px] text-muted-foreground text-center mb-1">
+                    Select one or more dates for this project
+                  </p>
+                  <div className="flex justify-center flex-col items-center">
+                    <CalendarPicker
+                      mode="multiple"
+                      selected={customDates}
+                      onSelect={(dates: Date[] | undefined) => {
+                        // Ensure we always work with an array
+                        const selectedDates = dates || [];
+                        setCustomDates(selectedDates);
+                      }}
+                      className="rounded-md border-0 pointer-events-auto"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    if (customDates.length > 0) {
+                      setStep("review");
+                    } else {
+                      toast.error("Please select at least one date.");
+                    }
+                  }}
+                  disabled={customDates.length === 0}
+                  className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  Confirm Dates ({customDates.length})
+                </button>
               </div>
             )}
 
@@ -1798,12 +1854,35 @@ export function BookingWizardContent({
                     </div>
                     <span className="text-[10px] font-bold text-muted-foreground">
                       {frequency === "single"
-                        ? "1 sitting"
+                        ? `${customDates.length} sitting${customDates.length > 1 ? "s" : ""}`
                         : `${selectedService.sittings || 1} sittings`}
                     </span>
                   </div>
 
-                  {isLoadingAvailability ? (
+                  {frequency === "single" ? (
+                    <div className="space-y-2">
+                      <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Selected Dates
+                      </p>
+                      <div className="max-h-[120px] overflow-y-auto no-scrollbar space-y-1 pr-1">
+                        {[...customDates]
+                          .sort((a, b) => a.getTime() - b.getTime())
+                          .map((dateValue: Date, i: number) => (
+                            <div
+                              key={i}
+                              className="flex items-center justify-between text-[10px] font-medium text-foreground py-0.5"
+                            >
+                              <span>
+                                {format(dateValue, "EEE, MMM do")}
+                              </span>
+                              <span className="text-muted-foreground">
+                                {format(dateValue, "h:mm a")} {/* Assuming the date has a default time or time isn't strict here */}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  ) : isLoadingAvailability ? (
                     <div className="flex items-center gap-2 text-primary">
                       <Loader2 className="w-3 h-3 animate-spin" />
                       <span className="text-[9px] font-bold uppercase tracking-widest">
@@ -1848,7 +1927,7 @@ export function BookingWizardContent({
                 <button
                   onClick={handleConfirmBooking}
                   disabled={
-                    sendMessageMutation.isPending || !availability?.dates
+                    sendMessageMutation.isPending || (frequency !== "single" && !availability?.dates) || (frequency === "single" && customDates.length === 0)
                   }
                   className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
                 >

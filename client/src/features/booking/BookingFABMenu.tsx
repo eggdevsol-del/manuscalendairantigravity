@@ -16,6 +16,7 @@ import {
   MapPin,
   ChevronDown,
 } from "lucide-react";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
@@ -25,7 +26,7 @@ import { Capacitor } from "@capacitor/core";
 import { FABMenu } from "@/ui/FABMenu";
 import { tokens } from "@/ui/tokens";
 
-type BookingStep = "service" | "frequency" | "review" | "success";
+type BookingStep = "service" | "frequency" | "custom_dates" | "review" | "success";
 
 interface ProposalData {
   metadata: any;
@@ -151,6 +152,7 @@ export function BookingFABMenu({
   const [frequency, setFrequency] = useState<
     "single" | "consecutive" | "weekly" | "biweekly" | "monthly"
   >("consecutive");
+  const [customDates, setCustomDates] = useState<Date[]>([]);
   const [startDate] = useState(new Date());
 
   // -- Queries & Mutations --
@@ -176,7 +178,7 @@ export function BookingFABMenu({
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     },
     {
-      enabled: isOpen && step === "review" && !!selectedService,
+      enabled: isOpen && step === "review" && !!selectedService && frequency !== "single",
       retry: false,
     }
   );
@@ -196,17 +198,21 @@ export function BookingFABMenu({
 
   // -- Handlers --
   const handleConfirmBooking = () => {
-    if (!availability?.dates || !selectedService) return;
+    if (!selectedService) return;
+    if (frequency !== "single" && !availability?.dates) return;
+    if (frequency === "single" && customDates.length === 0) return;
 
-    const datesList = availability.dates
+    const datesToUse = frequency === "single" ? customDates : availability.dates;
+
+    const datesList = datesToUse
       .map((date: string | Date) =>
         format(new Date(date), "EEEE, MMMM do yyyy, h:mm a")
       )
       .join("\n");
 
     const finalSittings =
-      frequency === "single" ? 1 : selectedService.sittings || 1;
-    const message = `I have found the following dates for your ${selectedService.name} project:\n\n${datesList}\n\nThis project consists of ${finalSittings} sittings.\nFrequency: ${frequency}\nPrice per sitting: $${selectedService.price}\n\nPlease confirm these dates.`;
+      frequency === "single" ? customDates.length : selectedService.sittings || 1;
+    const message = `I have found the following dates for your ${selectedService.name} project:\n\n${datesList}\n\nThis project consists of ${finalSittings} sittings.\nFrequency: ${frequency === "single" ? "Custom dates" : frequency}\nPrice per sitting: $${selectedService.price}\n\nPlease confirm these dates.`;
 
     const totalCost = Number(selectedService.price) * finalSittings;
 
@@ -217,9 +223,9 @@ export function BookingFABMenu({
       sittings: finalSittings,
       price: Number(selectedService.price),
       totalCost: totalCost,
-      frequency: frequency,
-      dates: availability.dates,
-      proposedDates: availability.dates,
+      frequency: frequency === "single" ? "Custom dates" : frequency,
+      dates: datesToUse,
+      proposedDates: datesToUse,
       status: "pending",
       bsb: artistSettings?.bsb,
       accountNumber: artistSettings?.accountNumber,
@@ -239,7 +245,11 @@ export function BookingFABMenu({
 
   const goBack = () => {
     if (step === "frequency") setStep("service");
-    else if (step === "review") setStep("frequency");
+    else if (step === "custom_dates") setStep("frequency");
+    else if (step === "review") {
+      if (frequency === "single") setStep("custom_dates");
+      else setStep("frequency");
+    }
   };
 
   // Reset when menu closes
@@ -249,6 +259,7 @@ export function BookingFABMenu({
         setStep("service");
         setSelectedService(null);
         setFrequency("consecutive");
+        setCustomDates([]);
         setShowVoucherList(false);
         setAppliedPromotion(null);
       }, 300);
@@ -261,7 +272,7 @@ export function BookingFABMenu({
 
   // Frequency options with icons
   const freqOptions = [
-    { id: "single", label: "Single", Icon: Repeat1 },
+    { id: "single", label: "Custom dates", Icon: Repeat1 },
     { id: "consecutive", label: "Consecutive", Icon: CalendarDays },
     { id: "weekly", label: "Weekly", Icon: Calendar },
     { id: "biweekly", label: "Bi-Weekly", Icon: Repeat },
@@ -275,6 +286,8 @@ export function BookingFABMenu({
         return "Select Service";
       case "frequency":
         return "Frequency";
+      case "custom_dates":
+        return "Select Dates";
       case "review":
         return "Review";
       case "success":
@@ -562,10 +575,10 @@ export function BookingFABMenu({
                       onAcceptProposal?.(
                         appliedPromotion
                           ? {
-                              id: appliedPromotion.id,
-                              discountAmount: appliedPromotion.discountAmount,
-                              finalAmount: appliedPromotion.finalAmount,
-                            }
+                            id: appliedPromotion.id,
+                            discountAmount: appliedPromotion.discountAmount,
+                            finalAmount: appliedPromotion.finalAmount,
+                          }
                           : undefined
                       )
                     }
@@ -710,7 +723,12 @@ export function BookingFABMenu({
                     )}
                     onClick={() => {
                       setSelectedService(service);
-                      setTimeout(() => setStep("frequency"), 150);
+                      if ((service.sittings || 1) === 1) {
+                        setFrequency("single");
+                        setTimeout(() => setStep("custom_dates"), 150);
+                      } else {
+                        setTimeout(() => setStep("frequency"), 150);
+                      }
                     }}
                   >
                     <div className="flex-1 min-w-0 text-left">
@@ -752,7 +770,14 @@ export function BookingFABMenu({
                         card.interactive,
                         "p-2 flex items-center gap-2 w-full"
                       )}
-                      onClick={() => setFrequency(id as any)}
+                      onClick={() => {
+                        setFrequency(id as any);
+                        if (id === "single") {
+                          setStep("custom_dates");
+                        } else {
+                          setStep("review");
+                        }
+                      }}
                     >
                       <div
                         className={cn(
@@ -772,24 +797,36 @@ export function BookingFABMenu({
                   );
                 })}
 
-                {/* Find Dates action card */}
-                <motion.div
-                  variants={fab.animation.item}
-                  className={cn(
-                    card.base,
-                    card.bgAccent,
-                    card.interactive,
-                    "p-2 flex items-center gap-2 w-full mt-1"
-                  )}
-                  onClick={() => setStep("review")}
-                >
-                  <div className={cn(fab.itemButtonHighlight, "shrink-0")}>
-                    <CalendarSearch className={fab.itemIconSize} />
+              </div>
+            )}
+
+            {step === "custom_dates" && (
+              <div className="flex flex-col gap-4 pt-1 items-center pb-2">
+                <div className={cn(card.base, card.bg, "p-3 w-full rounded-[4px]")}>
+                  <p className="text-[11px] text-muted-foreground text-center mb-1">
+                    Select one or more dates for this project
+                  </p>
+                  <div className="flex justify-center flex-col items-center">
+                    <CalendarPicker
+                      mode="multiple"
+                      selected={customDates}
+                      onSelect={(dates: Date[] | undefined) => {
+                        const selectedDates = dates || [];
+                        setCustomDates(selectedDates);
+                      }}
+                      className="rounded-md border-0 pointer-events-auto"
+                    />
                   </div>
-                  <span className="text-xs font-bold text-foreground flex-1">
-                    Find Dates
-                  </span>
-                </motion.div>
+                </div>
+                <button
+                  onClick={handleConfirmBooking}
+                  disabled={
+                    sendMessageMutation.isPending || (frequency !== "single" && !availability?.dates) || (frequency === "single" && customDates.length === 0)
+                  }
+                  className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(var(--primary),0.3)] disabled:opacity-50 mt-2"
+                >
+                  Confirm Dates ({customDates.length})
+                </button>
               </div>
             )}
 
@@ -849,46 +886,74 @@ export function BookingFABMenu({
                       )}
                     >
                       <span className={fab.itemLabel}>Sittings</span>
-                      <span className="text-xs font-bold text-foreground">
+                      <span className="text-[10px] font-bold text-muted-foreground">
                         {frequency === "single"
-                          ? 1
-                          : selectedService?.sittings || 1}
-                      </span>
-                    </motion.div>
-                    <motion.div
-                      variants={fab.animation.item}
-                      className={cn(
-                        card.base,
-                        card.bg,
-                        "p-2 flex items-center justify-between w-full"
-                      )}
-                    >
-                      <span className={fab.itemLabel}>Duration</span>
-                      <span className="text-xs font-bold text-foreground">
-                        {selectedService?.duration}m
+                          ? `${customDates.length} sitting${customDates.length > 1 ? "s" : ""}`
+                          : `${selectedService.sittings || 1} sittings`}
                       </span>
                     </motion.div>
 
-                    {/* Dates */}
-                    {availability.dates.map(
-                      (date: string | Date, i: number) => (
-                        <motion.div
-                          key={i}
-                          variants={fab.animation.item}
-                          className={cn(
-                            card.base,
-                            card.bg,
-                            "p-2 flex items-center justify-between w-full"
-                          )}
-                        >
-                          <span className={fab.itemLabel}>
-                            {format(new Date(date), "EEE, MMM do")}
-                          </span>
-                          <span className="text-[10px] font-bold text-primary">
-                            {format(new Date(date), "h:mm a")}
-                          </span>
-                        </motion.div>
-                      )
+                    {frequency === "single" ? (
+                      <div className="space-y-2">
+                        <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Selected Dates
+                        </p>
+                        <div className="max-h-[120px] overflow-y-auto no-scrollbar space-y-1 pr-1">
+                          {[...customDates]
+                            .sort((a, b) => a.getTime() - b.getTime())
+                            .map((dateValue: Date, i: number) => (
+                              <div
+                                key={i}
+                                className="flex items-center justify-between text-[10px] font-medium text-foreground py-0.5"
+                              >
+                                <span>
+                                  {format(dateValue, "EEE, MMM do")}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  {format(dateValue, "h:mm a")}
+                                </span>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    ) : isLoadingAvailability ? (
+                      <motion.div
+                        variants={fab.animation.item}
+                        className={cn(
+                          card.base,
+                          card.bg,
+                          "p-2 flex items-center justify-between w-full"
+                        )}
+                      >
+                        <span className={fab.itemLabel}>Duration</span>
+                        <span className="text-xs font-bold text-foreground">
+                          {selectedService?.duration}m
+                        </span>
+                      </motion.div>
+                    ) : (
+                      <>
+                        {/* Dates */}
+                        {availability.dates.map(
+                          (date: string | Date, i: number) => (
+                            <motion.div
+                              key={i}
+                              variants={fab.animation.item}
+                              className={cn(
+                                card.base,
+                                card.bg,
+                                "p-2 flex items-center justify-between w-full"
+                              )}
+                            >
+                              <span className={fab.itemLabel}>
+                                {format(new Date(date), "EEE, MMM do")}
+                              </span>
+                              <span className="text-[10px] font-bold text-primary">
+                                {format(new Date(date), "h:mm a")}
+                              </span>
+                            </motion.div>
+                          )
+                        )}
+                      </>
                     )}
 
                     {/* Send action */}
@@ -961,7 +1026,7 @@ export function BookingFABMenu({
             )}
           </>
         )}
-      </FABMenu>
+      </FABMenu >
 
       {/* Support Sheet Removal */}
     </>

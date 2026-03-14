@@ -17,6 +17,7 @@ import {
     Layers,
     Clock,
     ChevronLeft,
+    Globe,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -57,6 +58,7 @@ interface Service {
     description: string;
     sittings?: number;
     color?: string;
+    showInFunnel?: boolean;
 }
 
 const defaultSchedule: WorkSchedule = {
@@ -86,6 +88,7 @@ export function WorkHoursAndServicesSettings({
         description: "",
         sittings: 1,
         color: "#3b82f6",
+        showInFunnel: true,
     });
 
     const [isProjectMode, setIsProjectMode] = useState(false);
@@ -479,6 +482,17 @@ export function WorkHoursAndServicesSettings({
                                         </div>
                                     </div>
 
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Show in Booking Funnel</Label>
+                                            <Switch
+                                                checked={newService.showInFunnel !== false}
+                                                onCheckedChange={(checked) => setNewService({ ...newService, showInFunnel: checked })}
+                                            />
+                                        </div>
+                                        <p className="text-[10px] text-muted-foreground leading-snug">Allow clients to select this service directly from your public booking link.</p>
+                                    </div>
+
                                     {isProjectMode && (
                                         <div className="space-y-2 bg-primary/10 border border-primary/20 p-3 rounded-[4px]">
                                             <div className="flex items-center gap-2 mb-1">
@@ -615,6 +629,16 @@ export function WorkHoursAndServicesSettings({
                                                 />
                                             </div>
                                         </div>
+                                        <div className="space-y-2 mt-4">
+                                            <div className="flex items-center justify-between">
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Show in Booking Funnel</Label>
+                                                <Switch
+                                                    checked={editingService.showInFunnel !== false}
+                                                    onCheckedChange={(checked) => setEditingService({ ...editingService, showInFunnel: checked })}
+                                                />
+                                            </div>
+                                            <p className="text-[10px] text-muted-foreground leading-snug">Allow clients to select this service directly from your public booking link.</p>
+                                        </div>
                                         {(editingService.sittings || 1) > 1 && (
                                             <div className="space-y-2 bg-primary/10 border border-primary/20 p-3 rounded-[4px] mt-4">
                                                 <div className="flex items-center gap-2 mb-1">
@@ -667,12 +691,25 @@ export function WorkHoursAndServicesSettings({
                                                     ${service.price}
                                                 </span>
                                             </div>
-                                            {service.sittings && service.sittings > 1 && (
-                                                <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-[10px] font-bold text-primary uppercase tracking-wider">
-                                                    <Layers className="w-3 h-3" />
-                                                    Project: {service.sittings} Sittings
-                                                </div>
-                                            )}
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                {service.showInFunnel !== false ? (
+                                                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-500 uppercase tracking-wider">
+                                                        <Globe className="w-3 h-3" />
+                                                        In Funnel
+                                                    </div>
+                                                ) : (
+                                                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted border border-white/10 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                                        <Globe className="w-3 h-3 opacity-50" />
+                                                        Hidden
+                                                    </div>
+                                                )}
+                                                {service.sittings && service.sittings > 1 && (
+                                                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-[10px] font-bold text-primary uppercase tracking-wider">
+                                                        <Layers className="w-3 h-3" />
+                                                        Project: {service.sittings} Sittings
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="flex gap-1">
                                             <Button

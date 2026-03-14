@@ -14,7 +14,7 @@ import {
 } from "./constants";
 import IOSInstallPrompt from "@/components/IOSInstallPrompt";
 import ImageUploadSheet, { UploadedImage } from "./components/ImageUploadSheet";
-import { Camera, Image as ImageIcon, ChevronRight } from "lucide-react";
+import { Camera, Image as ImageIcon, ChevronRight, Check } from "lucide-react";
 import { TeaserRegistrationForm } from "@/components/auth/TeaserRegistrationForm";
 
 export interface FunnelStepData {
@@ -62,6 +62,7 @@ export interface ArtistProfile {
   styleOptions: string[];
   placementOptions: string[];
   budgetRanges: { label: string; min: number; max: number | null }[];
+  services?: any[];
   enabledSteps: string[];
 }
 
@@ -143,6 +144,16 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
     );
   }
 
+  const availableServices = (artistProfile?.services || [])
+    .filter((s: any) => s.showInFunnel !== false)
+    .map((s: any) => ({
+      id: s.name,
+      label: s.name,
+      price: s.price,
+      duration: s.duration,
+      sittings: s.sittings,
+    }));
+
   // Success state (Teaser Registration)
   if (submitted) {
     return (
@@ -208,23 +219,43 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-3">
-                  Project type
+                  Select a Service
                 </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {PROJECT_TYPES.map(type => (
-                    <button
-                      key={type.id}
-                      onClick={() => setProjectType(type.id)}
-                      className={`p-3 text-left rounded-[4px] border transition-colors ${projectType === type.id
-                        ? "border-foreground bg-white/10"
-                        : "border-border hover:border-foreground/30"
-                        }`}
-                    >
-                      <span className="text-sm font-medium text-foreground">
-                        {type.label}
-                      </span>
-                    </button>
-                  ))}
+                <div className="grid grid-cols-1 gap-3">
+                  {availableServices.length > 0 ? (
+                    availableServices.map((service: any) => (
+                      <button
+                        key={service.id}
+                        onClick={() => setProjectType(service.id)}
+                        className={`relative p-4 rounded-[4px] border-2 text-left transition-all flex flex-col gap-1 ${projectType === service.id
+                          ? "border-primary bg-primary/10"
+                          : "border-border bg-card hover:border-primary/50"
+                          }`}
+                      >
+                        <div className="flex justify-between items-start w-full pr-8">
+                          <span className="font-semibold text-foreground text-sm">
+                            {service.label}
+                          </span>
+                          <span className="font-bold text-primary text-sm">${service.price}</span>
+                        </div>
+                        {(service.duration > 0 || service.sittings > 1) && (
+                          <div className="flex gap-3 text-[11px] text-muted-foreground font-mono mt-1">
+                            {service.duration > 0 && <span>{service.duration / 60}h</span>}
+                            {service.sittings > 1 && <span>Project: {service.sittings} Sittings</span>}
+                          </div>
+                        )}
+                        {projectType === service.id && (
+                          <div className="absolute top-1/2 -translate-y-1/2 right-4 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                            <Check className="w-3.5 h-3.5 text-primary-foreground" />
+                          </div>
+                        )}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="p-6 border border-dashed border-border rounded-[4px] text-center text-sm text-muted-foreground">
+                      This artist has not listed any public services yet.
+                    </div>
+                  )}
                 </div>
               </div>
 
