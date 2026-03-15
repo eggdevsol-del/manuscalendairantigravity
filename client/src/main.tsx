@@ -97,7 +97,7 @@ initializeOneSignal().catch(err => {
 
 // Configure Status Bar for Native/PWA
 if (Capacitor.isNativePlatform()) {
-  StatusBar.setStyle({ style: Style.Dark }).catch(() => {
+  StatusBar.setStyle({ style: Style.Default }).catch(() => {
     // Silently fail on web environments that don't support the Native API
   });
 }
