@@ -154,6 +154,19 @@ export function BookingFABMenu({
   >("consecutive");
   const [customDates, setCustomDates] = useState<Date[]>([]);
   const [startDate] = useState(new Date());
+  const [calendarMonth, setCalendarMonth] = useState<Date>(startDate);
+
+  // Fetch calendar indicators for ±1 month around the viewed calendar month
+  const { data: dateIndicators } = trpc.booking.getCalendarIndicators.useQuery(
+    {
+      artistId: artistId || "",
+      startDate: new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1),
+      endDate: new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 2, 0),
+    },
+    {
+      enabled: isOpen && !!artistId && step === "custom_dates",
+    }
+  );
 
   // -- Queries & Mutations --
   const { data: availablePromotions, isLoading: isLoadingPromotions } =
@@ -202,7 +215,7 @@ export function BookingFABMenu({
     if (frequency !== "single" && !availability?.dates) return;
     if (frequency === "single" && customDates.length === 0) return;
 
-    const datesToUse = frequency === "single" ? customDates : availability.dates;
+    const datesToUse = frequency === "single" ? customDates : availability?.dates || [];
 
     const datesList = datesToUse
       .map((date: string | Date) =>
@@ -814,6 +827,8 @@ export function BookingFABMenu({
                         const selectedDates = dates || [];
                         setCustomDates(selectedDates);
                       }}
+                      onMonthChange={setCalendarMonth}
+                      dateIndicators={dateIndicators}
                       className="rounded-md border-0 pointer-events-auto"
                     />
                   </div>

@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { artistProcedure, router } from "../_core/trpc";
+import { artistProcedure, router, publicProcedure } from "../_core/trpc";
 import * as db from "../db";
 import * as BookingService from "../services/booking.service";
 import { checkAndApplyNewClient } from "./promotions";
@@ -128,6 +128,86 @@ export const bookingRouter = router({
         console.error("[BookingRouter] Error in checkAvailability:", error);
         throw error;
       }
+    }),
+
+  getCalendarIndicators: publicProcedure
+    .input(
+      z.object({
+        artistId: z.string(),
+        startDate: z.date(),
+        endDate: z.date(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { artistId, startDate, endDate } = input;
+
+      const artistSettings = await db.getArtistSettings(artistId);
+      if (!artistSettings || !artistSettings.services) return {};
+
+      let services: any[] = [];
+      try {
+        services = JSON.parse(artistSettings.services);
+      } catch (e) {
+        console.error("[BookingRouter] Failed to parse services json for indicators", e);
+      }
+
+      const serviceColorMap: Record<string, string> = {};
+      services.forEach((s) => {
+        if (s.name && s.color) {
+          serviceColorMap[s.name] = s.color;
+        }
+      });
+
+      const rawAppts = await db.getArtistCalendar(artistId, startDate, endDate);
+      const validAppts = rawAppts.filter(
+        (a) =>
+          a.status === "confirmed" ||
+          a.status === "pending" ||
+          a.status === "completed" ||
+          a.status === "no-show"
+      );
+
+      const indicators: Record<
+        string,
+        { duration: number; color: string; percentage: number }[]
+      > = {};
+
+      for (const appt of validAppts) {
+        if (!appt.startTime || !appt.endTime || !appt.serviceName) continue;
+
+        const start = new Date(appt.startTime);
+        const end = new Date(appt.endTime);
+        const durationMinutes = (end.getTime() - start.getTime()) / 60000;
+
+        if (durationMinutes <= 0) continue;
+
+        // Use standard YYYY-MM-DD local format
+        const dateKey = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(
+          2,
+          "0"
+        )}-${String(start.getDate()).padStart(2, "0")}`;
+
+        let percentage = 25; // partial / quarter day
+        if (durationMinutes >= 300) {
+          percentage = 100; // full day (5+ hours)
+        } else if (durationMinutes >= 180) {
+          percentage = 50; // half day (3-5 hours)
+        }
+
+        const color = serviceColorMap[appt.serviceName] || "#6366f1"; // default to primary
+
+        if (!indicators[dateKey]) {
+          indicators[dateKey] = [];
+        }
+
+        indicators[dateKey].push({
+          duration: durationMinutes,
+          color,
+          percentage,
+        });
+      }
+
+      return indicators;
     }),
 
   // Migration of the bookProject mutation

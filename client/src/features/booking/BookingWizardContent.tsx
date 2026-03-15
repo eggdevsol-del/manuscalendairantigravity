@@ -222,6 +222,19 @@ export function BookingWizardContent({
   >("consecutive");
   const [customDates, setCustomDates] = useState<Date[]>([]);
   const [startDate] = useState(initialDate || new Date());
+  const [calendarMonth, setCalendarMonth] = useState<Date>(startDate);
+
+  // Fetch calendar indicators for ±1 month around the viewed calendar month
+  const { data: dateIndicators } = trpc.booking.getCalendarIndicators.useQuery(
+    {
+      artistId: targetArtistId || "",
+      startDate: new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1),
+      endDate: new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 2, 0),
+    },
+    {
+      enabled: !!targetArtistId && step === "custom_dates",
+    }
+  );
 
   const [clientSearch, setClientSearch] = useState("");
   const [isAddingNewClient, setIsAddingNewClient] = useState(false);
@@ -435,7 +448,7 @@ export function BookingWizardContent({
     if (frequency !== "single" && !availability?.dates) return;
     if (frequency === "single" && customDates.length === 0) return;
 
-    const datesToUse = frequency === "single" ? customDates : availability.dates;
+    const datesToUse = frequency === "single" ? customDates : availability?.dates || [];
 
     const datesList = datesToUse
       .map((date: string | Date) =>
@@ -1794,6 +1807,8 @@ export function BookingWizardContent({
                         const selectedDates = dates || [];
                         setCustomDates(selectedDates);
                       }}
+                      onMonthChange={setCalendarMonth}
+                      dateIndicators={dateIndicators}
                       className="rounded-md border-0 pointer-events-auto"
                     />
                   </div>

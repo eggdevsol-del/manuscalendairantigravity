@@ -17,9 +17,11 @@ function Calendar({
   buttonVariant = "ghost",
   formatters,
   components,
+  dateIndicators,
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>["variant"];
+  dateIndicators?: Record<string, { color: string; percentage: number }[]>;
 }) {
   const defaultClassNames = getDefaultClassNames();
 
@@ -153,7 +155,24 @@ function Calendar({
             <ChevronDownIcon className={cn("size-4", className)} {...props} />
           );
         },
-        DayButton: CalendarDayButton,
+        DayButton: (dayProps) => {
+          const idStr = `${dayProps.day.date.getFullYear()}-${String(
+            dayProps.day.date.getMonth() + 1
+          ).padStart(2, "0")}-${String(dayProps.day.date.getDate()).padStart(
+            2,
+            "0"
+          )}`;
+          return (
+            <CalendarDayButton
+              {...dayProps}
+              indicators={dateIndicators?.[idStr]}
+            >
+              <span className="relative z-10 pointer-events-none">
+                {dayProps.children}
+              </span>
+            </CalendarDayButton>
+          );
+        },
         WeekNumber: ({ children, ...props }) => {
           return (
             <td {...props}>
@@ -174,8 +193,12 @@ function CalendarDayButton({
   className,
   day,
   modifiers,
+  indicators,
+  children,
   ...props
-}: React.ComponentProps<typeof DayButton>) {
+}: React.ComponentProps<typeof DayButton> & {
+  indicators?: { color: string; percentage: number }[];
+}) {
   const defaultClassNames = getDefaultClassNames();
 
   const ref = React.useRef<HTMLButtonElement>(null);
@@ -199,12 +222,25 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        "data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 dark:hover:text-accent-foreground flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] data-[range-end=true]:rounded-md data-[range-end=true]:rounded-r-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md data-[range-start=true]:rounded-l-md [&>span]:text-xs [&>span]:opacity-70",
+        "relative overflow-hidden data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 dark:hover:text-accent-foreground flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] data-[range-end=true]:rounded-md data-[range-end=true]:rounded-r-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md data-[range-start=true]:rounded-l-md [&>span]:text-xs [&>span]:opacity-70",
         defaultClassNames.day,
         className
       )}
       {...props}
-    />
+    >
+      {indicators && indicators.length > 0 && (
+        <div className="absolute inset-x-0 bottom-0 top-0 flex flex-col justify-end opacity-40 pointer-events-none z-0">
+          {indicators.map((ind, i) => (
+            <div
+              key={i}
+              style={{ backgroundColor: ind.color, height: `${ind.percentage}%` }}
+              className="w-full"
+            />
+          ))}
+        </div>
+      )}
+      {children}
+    </Button>
   );
 }
 
