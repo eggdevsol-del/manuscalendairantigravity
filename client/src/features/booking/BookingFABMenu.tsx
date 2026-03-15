@@ -215,23 +215,7 @@ export function BookingFABMenu({
     if (frequency !== "single" && !availability?.dates) return;
     if (frequency === "single" && customDates.length === 0) return;
 
-    let datesToUse = frequency === "single" ? customDates : availability?.dates || [];
-
-    if (frequency === "single") {
-      const workingHours = artistSettings?.hours || {};
-      datesToUse = datesToUse.map((d: Date) => {
-        const newDate = new Date(d);
-        const dayOfWeek = format(newDate, "EEEE").toLowerCase();
-        const hoursForDay = workingHours[dayOfWeek];
-        if (hoursForDay && !hoursForDay.isOff && hoursForDay.start) {
-          const [hh, mm] = hoursForDay.start.split(":").map(Number);
-          newDate.setHours(hh, mm, 0, 0);
-        } else {
-          newDate.setHours(9, 0, 0, 0); // fallback 9 AM
-        }
-        return newDate;
-      });
-    }
+    const datesToUse = frequency === "single" ? customDates : availability?.dates || [];
 
     const datesList = datesToUse
       .map((date: string | Date) =>
@@ -841,7 +825,20 @@ export function BookingFABMenu({
                       selected={customDates}
                       onSelect={(dates: Date[] | undefined) => {
                         const selectedDates = dates || [];
-                        setCustomDates(selectedDates);
+                        const workingHours = artistSettings?.hours || {};
+                        const adjustedDates = selectedDates.map((d: Date) => {
+                          const newDate = new Date(d);
+                          const dayOfWeek = format(newDate, "EEEE").toLowerCase();
+                          const hoursForDay = workingHours[dayOfWeek];
+                          if (hoursForDay && !hoursForDay.isOff && hoursForDay.start) {
+                            const [hh, mm] = hoursForDay.start.split(":").map(Number);
+                            newDate.setHours(hh, mm, 0, 0);
+                          } else {
+                            newDate.setHours(9, 0, 0, 0); // fallback 9 AM
+                          }
+                          return newDate;
+                        });
+                        setCustomDates(adjustedDates);
                       }}
                       onMonthChange={setCalendarMonth}
                       dateIndicators={dateIndicators}

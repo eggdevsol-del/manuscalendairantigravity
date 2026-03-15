@@ -448,23 +448,7 @@ export function BookingWizardContent({
     if (frequency !== "single" && !availability?.dates) return;
     if (frequency === "single" && customDates.length === 0) return;
 
-    let datesToUse = frequency === "single" ? customDates : availability?.dates || [];
-
-    if (frequency === "single") {
-      const workingHours = effectiveSettings?.hours || {};
-      datesToUse = datesToUse.map((d: Date) => {
-        const newDate = new Date(d);
-        const dayOfWeek = format(newDate, "EEEE").toLowerCase();
-        const hoursForDay = workingHours[dayOfWeek];
-        if (hoursForDay && !hoursForDay.isOff && hoursForDay.start) {
-          const [hh, mm] = hoursForDay.start.split(":").map(Number);
-          newDate.setHours(hh, mm, 0, 0);
-        } else {
-          newDate.setHours(9, 0, 0, 0); // fallback 9 AM
-        }
-        return newDate;
-      });
-    }
+    const datesToUse = frequency === "single" ? customDates : availability?.dates || [];
 
     const datesList = datesToUse
       .map((date: string | Date) =>
@@ -1819,9 +1803,21 @@ export function BookingWizardContent({
                       mode="multiple"
                       selected={customDates}
                       onSelect={(dates: Date[] | undefined) => {
-                        // Ensure we always work with an array
                         const selectedDates = dates || [];
-                        setCustomDates(selectedDates);
+                        const workingHours = effectiveSettings?.hours || {};
+                        const adjustedDates = selectedDates.map((d: Date) => {
+                          const newDate = new Date(d);
+                          const dayOfWeek = format(newDate, "EEEE").toLowerCase();
+                          const hoursForDay = workingHours[dayOfWeek];
+                          if (hoursForDay && !hoursForDay.isOff && hoursForDay.start) {
+                            const [hh, mm] = hoursForDay.start.split(":").map(Number);
+                            newDate.setHours(hh, mm, 0, 0);
+                          } else {
+                            newDate.setHours(9, 0, 0, 0); // fallback 9 AM
+                          }
+                          return newDate;
+                        });
+                        setCustomDates(adjustedDates);
                       }}
                       onMonthChange={setCalendarMonth}
                       dateIndicators={dateIndicators}
