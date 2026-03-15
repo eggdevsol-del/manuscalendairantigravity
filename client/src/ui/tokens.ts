@@ -33,7 +33,7 @@ export const tokens = {
   // Global App Card (Dashboard, Settings, etc.) - Rectangular SSOT (v1.0.319)
   card: {
     base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px]", // Global 4px radius, no margin
-    bg: "bg-transparent hover:bg-white/5", // Transparent base, subtle hover
+    bg: "bg-transparent hover:bg-secondary", // Transparent base, subtle hover
     bgAccent:
       "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
     interactive: "cursor-pointer active:scale-[0.98]",
@@ -52,15 +52,15 @@ export const tokens = {
       "shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-12 px-6 rounded-xl text-base font-semibold transition-all active:scale-[0.98]",
     hero: "w-full h-14 rounded-2xl font-bold text-base shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-all active:scale-[0.97]",
     secondary:
-      "bg-white/5 hover:bg-white/10 text-foreground h-12 px-6 rounded-xl text-base font-semibold transition-all active:scale-[0.98]",
+      "bg-secondary hover:bg-secondary/80 text-secondary-foreground h-12 px-6 rounded-xl text-base font-semibold transition-all active:scale-[0.98]",
     destructive:
-      "bg-destructive hover:bg-destructive/90 text-white h-12 px-6 rounded-xl text-base font-semibold transition-all active:scale-[0.98]",
+      "bg-destructive hover:bg-destructive/90 text-destructive-foreground h-12 px-6 rounded-xl text-base font-semibold transition-all active:scale-[0.98]",
     outline:
-      "border border-white/10 bg-transparent hover:bg-white/5 text-foreground h-10 px-4 rounded-xl text-sm font-medium transition-all active:scale-[0.98]",
+      "border border-border bg-transparent hover:bg-secondary text-foreground h-10 px-4 rounded-xl text-sm font-medium transition-all active:scale-[0.98]",
     ghost:
-      "text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors",
+      "text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors",
     link: "text-primary underline-offset-4 hover:underline px-0 transition-opacity active:opacity-70",
-    icon: "rounded-full bg-white/5 hover:bg-white/10 text-foreground w-10 h-10 flex items-center justify-center transition-all active:scale-90",
+    icon: "rounded-full bg-secondary hover:bg-secondary/80 text-foreground w-10 h-10 flex items-center justify-center transition-all active:scale-90",
   },
 
   // 5. FAB Menu (Floating Action Button Menu) — SSOT for all FAB menus
@@ -71,7 +71,7 @@ export const tokens = {
 
     // The expanding glassmorphism panel — fixed dimensions, scroll if needed
     panel:
-      "mb-2 p-4 rounded-[2rem] border border-white/10 shadow-2xl flex flex-col items-end gap-4 bg-[color-mix(in_srgb,var(--background)_95%,white)]/[0.85] dark:bg-[color-mix(in_srgb,var(--background)_95%,white)]/[0.85] backdrop-blur-[32px] w-[220px] max-h-[50vh] overflow-y-auto",
+      "mb-2 p-4 rounded-[2rem] border border-border shadow-2xl flex flex-col items-end gap-4 bg-[color-mix(in_srgb,var(--background)_95%,white)]/[0.85] dark:bg-[color-mix(in_srgb,var(--background)_95%,white)]/[0.85] backdrop-blur-[32px] w-[220px] max-h-[50vh] overflow-y-auto",
 
     // Individual menu item row (label + button)
     itemRow: "flex items-center justify-end gap-3 w-full",
@@ -81,20 +81,20 @@ export const tokens = {
 
     // Menu item icon button (default)
     itemButton:
-      "h-10 w-10 rounded-full shadow-lg border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all active:scale-95",
+      "h-10 w-10 rounded-full shadow-lg border border-border bg-card hover:bg-secondary flex items-center justify-center transition-all active:scale-95 text-foreground",
 
     // Menu item icon button (highlighted / primary)
     itemButtonHighlight:
-      "h-10 w-10 rounded-full shadow-lg border border-white/10 bg-[#E09F3E]/75 text-white hover:bg-[#C98B32]/75 flex items-center justify-center transition-all active:scale-95",
+      "h-10 w-10 rounded-full shadow-lg border border-border bg-[#E09F3E]/80 text-white hover:bg-[#C98B32]/80 flex items-center justify-center transition-all active:scale-95",
 
     // Menu item button icon size
     itemIconSize: "h-4 w-4",
 
     // Main toggle FAB button
     toggle:
-      "h-14 w-14 rounded-full shadow-2xl flex items-center justify-center transition-colors border border-white/10",
-    toggleOpen: "bg-white text-slate-900 dark:bg-white dark:text-slate-900",
-    toggleClosed: "bg-[#E09F3E]/75 text-white",
+      "h-14 w-14 rounded-full shadow-2xl flex items-center justify-center transition-colors border border-border",
+    toggleOpen: "bg-foreground text-background dark:bg-foreground dark:text-background",
+    toggleClosed: "bg-[#E09F3E]/90 text-white",
     toggleIconSize: "h-6 w-6",
 
     // Animation variants (used as framer-motion presets)
@@ -121,7 +121,7 @@ export const tokens = {
   input: {
     base: "flex w-full min-w-0 border bg-transparent px-4 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground",
     default: "h-12 rounded-[4px]",
-    hero: "h-14 rounded-[4px] px-5 text-base border-white/10 bg-white/5 focus-visible:border-primary/50 text-foreground",
+    hero: "h-14 rounded-[4px] px-5 text-base border-border bg-transparent hover:bg-secondary focus-visible:border-primary/50 text-foreground",
   },
 
   // 6. Typography
@@ -154,7 +154,7 @@ export const tokens = {
   navAction: {
     base: "flex flex-col items-center justify-center h-full py-2 px-4 gap-1 min-w-[72px] shrink-0 bg-transparent border-0 rounded-xl transition-all duration-150 touch-none select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
     pressed: "scale-90 opacity-70",
-    idle: "opacity-90 hover:opacity-100 hover:bg-white/10 dark:hover:bg-white/5",
+    idle: "opacity-90 hover:opacity-100 hover:bg-secondary dark:hover:bg-secondary",
     icon: {
       primary: "text-blue-500 dark:text-blue-400 fill-current/10",
       accent: "text-amber-500 dark:text-amber-400 fill-current/10",
@@ -267,17 +267,17 @@ export const tokens = {
   // Calendar-specific tokens
   calendar: {
     // Cell backgrounds and borders
-    cellBg: "bg-white/5",
-    cellBgHover: "hover:bg-white/10",
-    cellBorder: "border-white/10",
-    cellBorderHover: "hover:border-white/20",
+    cellBg: "bg-black/5 dark:bg-white/5",
+    cellBgHover: "hover:bg-black/10 dark:hover:bg-white/10",
+    cellBorder: "border-black/5 dark:border-white/10",
+    cellBorderHover: "hover:border-black/10 dark:hover:border-white/20",
     selectedBg: "bg-primary/10",
     selectedBorder: "border-primary/50",
     selectedCellBg: "bg-primary/20",
     selectedCellBorder: "border-primary",
     todayBg: "bg-primary/5",
     todayRing: "ring-1 ring-primary/50",
-    dimmedBg: "bg-white/[0.02]",
+    dimmedBg: "bg-black/5 dark:bg-white/[0.02]",
 
     // New Calendar Redesign Colors (Pastel Palette)
     event: {
@@ -308,9 +308,9 @@ export const tokens = {
       },
       // Fallback
       default: {
-        bg: "bg-white/5",
+        bg: "bg-secondary",
         text: "text-foreground",
-        border: "border-white/10",
+        border: "border-border",
       },
     },
 
@@ -321,7 +321,7 @@ export const tokens = {
         "flex flex-col items-center justify-center min-w-[60px] h-[80px] rounded-2xl transition-all duration-300 relative group shrink-0",
       dayBtnActive:
         "bg-blue-500 text-white shadow-lg shadow-blue-500/30 scale-105",
-      dayBtnInactive: "bg-transparent text-foreground hover:bg-white/5",
+      dayBtnInactive: "bg-transparent text-foreground hover:bg-secondary",
       dayName: "text-xs font-medium mb-1",
       dayNumber: "text-xl font-bold",
     },
@@ -330,7 +330,7 @@ export const tokens = {
     timeGrid: {
       timeLabel:
         "text-xs text-muted-foreground font-medium w-12 text-right pr-3 -mt-2",
-      line: "border-t border-gray-200 dark:border-white/10 w-full relative",
+      line: "border-t border-border w-full relative",
       currentTimeIndicator:
         "absolute left-0 right-0 border-t-2 border-blue-500 z-20 pointer-events-none flex items-center",
       currentTimeBubble:
@@ -338,24 +338,24 @@ export const tokens = {
     },
 
     // Timeline
-    timelineBg: "bg-black/20",
-    headerBg: "bg-white/5",
-    slotHover: "hover:bg-white/5",
-    slotActive: "active:bg-white/10",
-    appointmentBorder: "border-white/10",
-    emptyStateBg: "bg-white/5",
+    timelineBg: "bg-black/5 dark:bg-black/20",
+    headerBg: "bg-secondary",
+    slotHover: "hover:bg-border",
+    slotActive: "active:bg-secondary",
+    appointmentBorder: "border-border",
+    emptyStateBg: "bg-secondary/50",
 
     // Text colors
     selectedText: "text-primary",
     todayText: "text-primary",
-    dimmedText: "text-white/30",
+    dimmedText: "text-muted-foreground/30",
     hourLabel: "text-muted-foreground/60",
     appointmentText: "text-foreground/90",
 
     // Dividers
-    divider: "border-white/5",
-    hourBorder: "border-white/10",
-    minuteBorder: "border-white/[0.02]",
+    divider: "border-border",
+    hourBorder: "border-border",
+    minuteBorder: "border-border/50",
 
     // Spacing
     contextHeight: "h-[20vh]",
@@ -366,10 +366,10 @@ export const tokens = {
     minuteSlotHeight: "h-6",
 
     // Icons/Badges
-    iconBg: "bg-white/10",
-    iconText: "text-white/70",
-    badgeBg: "bg-white/5",
-    badgeText: "text-white/90",
+    iconBg: "bg-secondary",
+    iconText: "text-secondary-foreground",
+    badgeBg: "bg-secondary",
+    badgeText: "text-secondary-foreground",
     dot: "bg-primary",
     dotSelected: "bg-primary-foreground/90",
 
@@ -421,7 +421,7 @@ export const tokens = {
   appointmentWizard: {
     // Header
     headerPadding: "px-4 py-4",
-    backButton: "rounded-full bg-white/5 hover:bg-white/10",
+    backButton: "rounded-full bg-secondary hover:bg-secondary/80 text-foreground",
     title: "text-2xl font-bold text-foreground",
 
     // Context Area
@@ -432,11 +432,11 @@ export const tokens = {
     contextSubtitle: "text-sm text-muted-foreground",
 
     // Sheet Container
-    sheetBg: "bg-white/5",
+    sheetBg: "bg-card",
     sheetBlur: "backdrop-blur-2xl",
     sheetRadius: "rounded-t-[2.5rem]",
     sheetShadow: "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)]",
-    highlightGradient: "bg-gradient-to-l from-white/20 to-transparent",
+    highlightGradient: "bg-gradient-to-l from-foreground/10 to-transparent",
     highlightOpacity: "opacity-50",
 
     // Content
@@ -446,14 +446,14 @@ export const tokens = {
     // Form Inputs
     inputHeight: "h-14",
     inputRadius: "rounded-xl",
-    inputBg: "bg-white/5",
-    inputBorder: "border-white/10",
-    inputBorderHover: "hover:bg-white/10",
+    inputBg: "bg-background",
+    inputBorder: "border-border",
+    inputBorderHover: "hover:bg-secondary",
     inputBorderFocus: "focus:border-primary/50",
 
     // Buttons
     cancelButton:
-      "bg-transparent border-white/10 hover:bg-white/5 text-muted-foreground",
+      "bg-transparent border-border hover:bg-secondary text-muted-foreground",
     createButton:
       "bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-[0_0_20px_-5px_rgba(var(--primary-rgb),0.5)]",
     buttonHeight: "h-14",
@@ -463,19 +463,19 @@ export const tokens = {
   // Proposal Modal (Chat feature)
   proposalModal: {
     // Sheet Container
-    sheetBg: "bg-white/5",
+    sheetBg: "bg-card",
     sheetBlur: "backdrop-blur-2xl",
     sheetRadius: "md:rounded-t-[2.5rem]",
-    sheetShadow: "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)]",
-    highlightGradient: "bg-gradient-to-l from-white/20 to-transparent",
+    sheetShadow: "shadow-2xl shadow-foreground/5 dark:shadow-none border border-border md:border-b-0",
+    highlightGradient: "bg-gradient-to-l from-foreground/10 to-transparent",
     highlightOpacity: "opacity-50",
 
     // Close Button
-    closeButton: "rounded-full bg-white/5 hover:bg-white/10",
+    closeButton: "rounded-full bg-secondary hover:bg-secondary/80 text-foreground",
 
     // Cards
-    cardBg: "bg-white/5",
-    cardBorder: "border-white/10",
+    cardBg: "bg-card hover:bg-secondary/50",
+    cardBorder: "border-border",
     cardRadius: "rounded-[4px]",
     cardPadding: "p-4",
 
@@ -487,13 +487,13 @@ export const tokens = {
     title: "text-4xl font-light text-foreground tracking-tight",
 
     // Session Items
-    sessionBadge: "w-10 h-10 rounded-full bg-white/5 border border-white/10",
+    sessionBadge: "w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center font-bold text-foreground",
     durationBadge:
       "text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md",
 
     // Accordion
     accordionTrigger:
-      "text-sm hover:no-underline hover:bg-white/[0.02] px-2 rounded-lg py-3 text-foreground font-medium",
+      "text-sm hover:no-underline hover:bg-secondary px-2 rounded-lg py-3 text-foreground font-medium",
 
     // Buttons
     buttonHeight: "h-12",
@@ -501,7 +501,7 @@ export const tokens = {
     voucherButton:
       "border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold",
     declineButton:
-      "border-white/10 bg-white/5 hover:bg-white/10 text-foreground font-semibold",
+      "border-border bg-secondary hover:bg-secondary/80 text-foreground font-semibold",
     acceptButton:
       "bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/20",
 

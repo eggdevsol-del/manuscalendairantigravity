@@ -448,7 +448,23 @@ export function BookingWizardContent({
     if (frequency !== "single" && !availability?.dates) return;
     if (frequency === "single" && customDates.length === 0) return;
 
-    const datesToUse = frequency === "single" ? customDates : availability?.dates || [];
+    let datesToUse = frequency === "single" ? customDates : availability?.dates || [];
+
+    if (frequency === "single") {
+      const workingHours = effectiveSettings?.hours || {};
+      datesToUse = datesToUse.map((d: Date) => {
+        const newDate = new Date(d);
+        const dayOfWeek = format(newDate, "EEEE").toLowerCase();
+        const hoursForDay = workingHours[dayOfWeek];
+        if (hoursForDay && !hoursForDay.isOff && hoursForDay.start) {
+          const [hh, mm] = hoursForDay.start.split(":").map(Number);
+          newDate.setHours(hh, mm, 0, 0);
+        } else {
+          newDate.setHours(9, 0, 0, 0); // fallback 9 AM
+        }
+        return newDate;
+      });
+    }
 
     const datesList = datesToUse
       .map((date: string | Date) =>
