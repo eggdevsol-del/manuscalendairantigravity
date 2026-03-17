@@ -51,7 +51,7 @@ export default function FunnelContactStep({
 
   // Basic validation
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isValid = firstName.trim().length >= 2 && lastName.trim().length >= 2 && birthdate && isValidEmail;
+  const isValid = firstName.trim().length >= 2 && lastName.trim().length >= 2 && birthdate && isValidEmail && city.trim().length >= 1 && country.trim().length >= 1;
 
   return (
     <FunnelStepWrapper
@@ -158,8 +158,7 @@ export default function FunnelContactStep({
         {/* Location */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Your location{" "}
-            <span className="text-muted-foreground">(optional)</span>
+            Your location *
           </label>
           <div className="flex gap-3">
             <div className="flex-1 relative">

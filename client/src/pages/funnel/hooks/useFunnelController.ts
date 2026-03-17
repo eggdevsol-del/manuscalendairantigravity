@@ -221,7 +221,9 @@ export function useFunnelController(artistSlug: string) {
           lastName.trim() &&
           email.trim() &&
           email.includes("@") &&
-          birthdate
+          birthdate &&
+          city.trim() &&
+          country.trim()
         );
       case 2:
         return selectedStyles.length > 0;

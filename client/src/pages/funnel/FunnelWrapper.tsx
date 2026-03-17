@@ -359,8 +359,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
 
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Your location{" "}
-                  <span className="text-muted-foreground">(optional)</span>
+                  Your location *
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <input
