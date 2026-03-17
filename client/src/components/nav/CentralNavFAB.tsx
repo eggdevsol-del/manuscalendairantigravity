@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Settings, Plus, Sun, Moon, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle } from "lucide-react";
+import { Settings, Plus, Sun, Moon, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane } from "lucide-react";
 import { useLocation } from "wouter";
 import { FABMenu, FABMenuItem } from "@/ui/FABMenu";
 import { cn } from "@/lib/utils";
@@ -25,8 +25,9 @@ import { forceUpdate } from "@/lib/pwa";
 import { DataImportSettings } from "../settings/DataImportSettings";
 import { FunnelSettings } from "../FunnelSettings";
 import { DangerZoneSettings } from "../settings/DangerZoneSettings";
+import { TravelSettings } from "../settings/TravelSettings";
 
-type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions" | "data-import" | "booking-link" | "danger-zone";
+type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions" | "data-import" | "booking-link" | "travel" | "danger-zone";
 
 interface CentralNavFABProps {
   className?: string;
@@ -99,6 +100,13 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           label: "Clients",
           icon: User, // using User icon
           onClick: () => handleViewChange("clients"),
+          closeOnClick: false,
+        },
+        {
+          id: "travel",
+          label: "Travel Dates",
+          icon: Plane,
+          onClick: () => handleViewChange("travel"),
           closeOnClick: false,
         },
         {
@@ -316,6 +324,11 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
         {activeSettingsView === "clients" && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <ClientSettings onBack={() => handleViewChange("settings-menu")} />
+          </div>
+        )}
+        {activeSettingsView === "travel" && (
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
+            <TravelSettings onBack={() => handleViewChange("settings-menu")} onNavigateToClients={() => handleViewChange("clients")} />
           </div>
         )}
         {activeSettingsView === "studio" && (

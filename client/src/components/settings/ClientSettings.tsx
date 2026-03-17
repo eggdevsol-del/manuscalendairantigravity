@@ -22,6 +22,10 @@ import {
   Search,
   Trash,
   User,
+  Filter,
+  CheckSquare,
+  Square,
+  Send
 } from "lucide-react";
 import {
   Empty,
@@ -37,6 +41,16 @@ import { toast } from "sonner";
 import { useConversations } from "@/hooks/useConversations";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
 interface ClientSettingsProps {
   onBack: () => void;
 }
@@ -46,14 +60,37 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showBulkMessage, setShowBulkMessage] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState("");
+
+  // Advanced Filter States
+  const [showFilters, setShowFilters] = useState(false);
+  const [locationFilter, setLocationFilter] = useState("");
+  const [genderFilter, setGenderFilter] = useState("all");
+  const [minTlv, setMinTlv] = useState<number | "">("");
+  const [maxTlv, setMaxTlv] = useState<number | "">("");
+  const [minSittings, setMinSittings] = useState<number | "">("");
+  const [birthMonth, setBirthMonth] = useState<string>("all");
+
+  const [selectedClients, setSelectedClients] = useState<Set<string>>(new Set());
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
   });
 
-  // Use centralized hook (SSOT)
-  const { data: conversations, refetch } = useConversations();
+  // Fetch demographic clients instead of basic conversations
+  const { data: demographicClients, refetch, isFetching } = trpc.conversations.getClients.useQuery({
+    location: locationFilter || undefined,
+    gender: genderFilter !== "all" ? genderFilter : undefined,
+    minTlv: minTlv !== "" ? Number(minTlv) : undefined,
+    maxTlv: maxTlv !== "" ? Number(maxTlv) : undefined,
+    minSittings: minSittings !== "" ? Number(minSittings) : undefined,
+    birthMonth: birthMonth !== "all" ? Number(birthMonth) : undefined,
+  }, {
+    enabled: !!user && (user.role === "artist" || user.role === "admin"),
+  });
 
   const createConversationMutation = trpc.conversations.getOrCreate.useMutation(
     {
@@ -68,6 +105,18 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
       },
     }
   );
+
+  const bulkMessageMutation = trpc.conversations.bulkMessageClients.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Broadcasting... generated ${data.count} independent conversations.`);
+      setShowBulkMessage(false);
+      setBulkMessage("");
+      setSelectedClients(new Set());
+    },
+    onError: (error) => {
+      toast.error("Broadcast failed: " + error.message);
+    }
+  });
 
   const [clientToDelete, setClientToDelete] = useState<{
     id: string;
@@ -135,29 +184,35 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
     resetForm();
   };
 
-  // Extract unique clients from conversations
-  const clients =
-    conversations
-      ?.map((conv: any) => ({
-        id: conv.clientId || conv.id,
-        name: conv.clientName || conv.otherUser?.name || "Unknown",
-        email: conv.otherUser?.email || "",
-        phone: conv.otherUser?.phone || "",
-        lastMessage: conv.lastMessage,
-        conversationId: conv.id,
-      }))
-      .filter(
-        (client: any, index: number, self: any[]) =>
-          index === self.findIndex((c: any) => c.id === client.id)
-      ) || [];
+  // Handle Selection Toggling
+  const toggleSelection = (id: string) => {
+    const newSet = new Set(selectedClients);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedClients(newSet);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedClients.size === filteredClients.length && filteredClients.length > 0) {
+      setSelectedClients(new Set());
+    } else {
+      setSelectedClients(new Set(filteredClients.map((c: any) => c.id)));
+    }
+  };
+
+  // Hydrate client array natively safely 
+  const clients = demographicClients || [];
 
   const filteredClients = clients.filter(
     (client: any) =>
-      client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchQuery.toLowerCase())
+      client.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      client.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) {
+  if (loading || isFetching && clients.length === 0) {
     return <LoadingState message="Loading..." fullScreen />;
   }
 
@@ -186,13 +241,86 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
                 className="pl-9"
               />
             </div>
+            <Button variant={showFilters ? "secondary" : "outline"} onClick={() => setShowFilters(!showFilters)} className="tap-target px-3">
+              <Filter className="w-4 h-4" />
+            </Button>
             <Button onClick={() => setShowAddDialog(true)} className="tap-target">
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-4 h-4 mr-2 hidden sm:block" />
               Add
             </Button>
           </div>
 
-          {/* Stats */}
+          {/* Advanced Filter Drawer */}
+          {showFilters && (
+            <div className="bg-white/5 border border-white/5 rounded-[4px] p-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5 ">
+                  <Label className="text-xs text-muted-foreground">Location</Label>
+                  <Input
+                    placeholder="City or Country"
+                    value={locationFilter}
+                    onChange={(e) => setLocationFilter(e.target.value)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1.5 flex flex-col">
+                  <Label className="text-xs text-muted-foreground">Gender</Label>
+                  <Select value={genderFilter} onValueChange={setGenderFilter}>
+                    <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Any Gender</SelectItem>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Min TLV ($)</Label>
+                  <Input
+                    type="number"
+                    placeholder="e.g 500"
+                    value={minTlv}
+                    onChange={(e) => setMinTlv(e.target.value === "" ? "" : Number(e.target.value))}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Min Completed Sittings</Label>
+                  <Input
+                    type="number"
+                    placeholder="e.g 3"
+                    value={minSittings}
+                    onChange={(e) => setMinSittings(e.target.value === "" ? "" : Number(e.target.value))}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1.5 flex flex-col col-span-2">
+                  <Label className="text-xs text-muted-foreground">Birth Month</Label>
+                  <Select value={birthMonth} onValueChange={setBirthMonth}>
+                    <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="All Months" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Any Month</SelectItem>
+                      <SelectItem value="1">January</SelectItem>
+                      <SelectItem value="2">February</SelectItem>
+                      <SelectItem value="3">March</SelectItem>
+                      <SelectItem value="4">April</SelectItem>
+                      <SelectItem value="5">May</SelectItem>
+                      <SelectItem value="6">June</SelectItem>
+                      <SelectItem value="7">July</SelectItem>
+                      <SelectItem value="8">August</SelectItem>
+                      <SelectItem value="9">September</SelectItem>
+                      <SelectItem value="10">October</SelectItem>
+                      <SelectItem value="11">November</SelectItem>
+                      <SelectItem value="12">December</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Stats Header */}
           <div className="bg-gradient-to-br from-primary/10 to-accent/10 hover:from-primary/15 hover:to-accent/15 rounded-[4px] p-6 text-center border border-white/5">
             <p className="text-4xl font-bold text-foreground">
               {clients.length}
@@ -217,31 +345,67 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
             </div>
           ) : (
             <div className="space-y-4">
+              <div className="flex items-center justify-between px-2 mb-2">
+                <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="h-8 text-xs font-semibold px-2 hover:bg-white/5">
+                  {selectedClients.size === filteredClients.length && filteredClients.length > 0 ? (
+                    <CheckSquare className="w-4 h-4 mr-2" />
+                  ) : (
+                    <Square className="w-4 h-4 mr-2" />
+                  )}
+                  Select All
+                </Button>
+                <div className="text-xs text-muted-foreground">
+                  {filteredClients.length} Match{filteredClients.length !== 1 ? 'es' : ''}
+                </div>
+              </div>
+
               {filteredClients.map((client: any) => (
                 <div
                   key={client.id}
-                  className="bg-transparent hover:bg-white/5 transition-colors border-b border-white/5 pb-4 last:border-0"
+                  onClick={() => toggleSelection(client.id)}
+                  className={cn(
+                    "bg-transparent hover:bg-white/5 transition-colors border-b border-white/5 pb-4 pt-3 px-2 rounded-[4px] last:border-0 cursor-pointer",
+                    selectedClients.has(client.id) && "bg-primary/5 hover:bg-primary/10 border-primary/20"
+                  )}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3 flex-1">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-lg">
+
+                      {/* Checkbox Overlay Indicator */}
+                      <div className="flex items-center justify-center shrink-0">
+                        <Checkbox checked={selectedClients.has(client.id)} />
+                      </div>
+
+                      <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm">
                         {client.name.charAt(0).toUpperCase()}
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 pr-2">
                         <h4 className="text-base font-semibold text-foreground truncate">
                           {client.name}
                         </h4>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-1">
+                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 mt-1">
                           {client.phone && (
-                            <div className="flex items-center text-xs text-muted-foreground mr-3">
+                            <div className="flex items-center text-xs text-muted-foreground shrink-0 mr-3">
                               <Phone className="w-3 h-3 mr-1" />
                               {client.phone}
                             </div>
                           )}
-                          <div className="flex items-center text-xs text-muted-foreground truncate">
-                            <Mail className="w-3 h-3 mr-1" />
-                            {client.email}
-                          </div>
+                          {client.email && (
+                            <div className="flex items-center text-xs text-muted-foreground shrink-0 truncate">
+                              <Mail className="w-3 h-3 mr-1" />
+                              {client.email}
+                            </div>
+                          )}
+                          {client.tlv !== undefined && (
+                            <div className="flex items-center text-[11px] text-primary/80 font-semibold uppercase tracking-wider shrink-0">
+                              TLV: ${client.tlv.toFixed(0)}
+                            </div>
+                          )}
+                          {client.sittings !== undefined && client.sittings > 0 && (
+                            <div className="flex items-center text-[11px] text-muted-foreground uppercase tracking-wider shrink-0">
+                              {client.sittings} Sitting{client.sittings !== 1 ? 's' : ''}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -342,9 +506,77 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
                 </div>
               ))}
             </div>
-          )}
+          )
+          }
+        </div >
+      </div >
+
+      {/* Bulk Action Dock */}
+      {
+        selectedClients.size > 0 && (
+          <div className="absolute bottom-0 left-0 right-0 z-40 bg-zinc-900 border-t border-white/10 shadow-2xl p-4 animate-in slide-in-from-bottom-full duration-300">
+            <div className="max-w-lg mx-auto flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                  <span className="text-primary font-bold text-sm">{selectedClients.size}</span>
+                </div>
+                <span className="text-sm font-semibold">Selected</span>
+              </div>
+              <Button onClick={() => setShowBulkMessage(true)} className="flex-1 max-w-[200px]">
+                <Send className="w-4 h-4 mr-2" />
+                Message Segment
+              </Button>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Bulk Message Modal Overlay */}
+      <ModalShell
+        isOpen={showBulkMessage}
+        onClose={() => setShowBulkMessage(false)}
+        title={`Message ${selectedClients.size} Clients`}
+        description="This will send an individual direct message to each selected profile simulating 1-to-1 conversation organically."
+        className="max-w-md"
+        overlayName="Bulk Message"
+        overlayId="clients.bulk_message"
+        footer={
+          <div className="flex w-full gap-2">
+            <Button
+              onClick={() => {
+                if (bulkMessage.trim().length === 0) {
+                  toast.error("Message content cannot be empty.");
+                  return;
+                }
+                bulkMessageMutation.mutate({
+                  clientIds: Array.from(selectedClients),
+                  messageContent: bulkMessage
+                });
+              }}
+              disabled={bulkMessageMutation.isPending}
+              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {bulkMessageMutation.isPending ? "Broadcasting..." : "Broadcast Message"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowBulkMessage(false)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+          </div>
+        }
+      >
+        <div className="py-2">
+          <Textarea
+            className="min-h-[160px] text-base"
+            placeholder="Type your broadcast message here...&#10;&#10;E.g., Hey! I'll be in London next week and have a few last-minute spots opening up."
+            value={bulkMessage}
+            onChange={e => setBulkMessage(e.target.value)}
+          />
         </div>
-      </div>
+      </ModalShell>
 
       {/* Add Client Dialog */}
       <ModalShell
@@ -417,6 +649,6 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
           </div>
         </div>
       </ModalShell>
-    </div>
+    </div >
   );
 }

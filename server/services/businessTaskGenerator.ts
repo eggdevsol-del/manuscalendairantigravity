@@ -963,6 +963,83 @@ async function generateThankYouTasks(
   return tasks;
 }
 
+/**
+ * TIER 1/2: Upcoming Appointment Warning (7 Days Local, 28 Days Non-Local)
+ */
+async function generateUpcomingWarningTasks(
+  db: MySql2Database<typeof schema>,
+  artistId: string
+): Promise<BusinessTask[]> {
+  const tasks: BusinessTask[] = [];
+
+  const now = new Date();
+  const fourWeeksFromNow = new Date(now.getTime() + 28 * 24 * 60 * 60 * 1000);
+
+  const artistSettings = await db.query.artistSettings.findFirst({
+    where: eq(schema.artistSettings.userId, artistId)
+  });
+
+  const artistCountry = artistSettings?.businessCountry?.trim().toLowerCase() || 'au';
+
+  const upcomingAppointments = await db.query.appointments.findMany({
+    where: and(
+      eq(schema.appointments.artistId, artistId),
+      eq(schema.appointments.status, "confirmed"),
+      gte(schema.appointments.startTime, now.toISOString()),
+      lte(schema.appointments.startTime, fourWeeksFromNow.toISOString())
+    ),
+    with: { client: true, conversation: true },
+    orderBy: asc(schema.appointments.startTime),
+  });
+
+  for (const appt of upcomingAppointments) {
+    if (!appt.client) continue;
+
+    const clientCountry = appt.client.country?.trim().toLowerCase();
+
+    // Core logical assertion: Flag foreign clients 28 days out.
+    const isOverseas = clientCountry && clientCountry !== artistCountry;
+
+    const days = daysUntil(appt.startTime);
+
+    // Threshold calculation natively overriding 7 to 28 based on foreign flag natively
+    const threshold = isOverseas ? 28 : 7;
+
+    if (days > threshold) continue;
+    if (days < 2) continue; // Skip if it's within 48 hours (Confirmation Tasks handles this)
+
+    // Overseas clients immediately score high enough to crack Tier 1
+    let baseScore = isOverseas ? 650 : 450;
+    baseScore += Math.max(0, (threshold - days) * 5); // Add urgency points natively
+
+    const daysLabel = Math.floor(days);
+
+    tasks.push({
+      taskType: isOverseas ? "upcoming_overseas" : "upcoming_local",
+      taskTier: isOverseas ? "tier1" : "tier2",
+      title: isOverseas ? `Overseas Client: ${appt.client.name}` : `Upcoming: ${appt.client.name}`,
+      context: `Arriving in ${daysLabel} days for ${appt.title}`,
+      priorityScore: baseScore,
+      priorityLevel: getPriorityLevel(baseScore),
+      relatedEntityType: "appointment",
+      relatedEntityId: String(appt.id),
+      clientId: appt.clientId,
+      clientName: appt.client.name || null,
+      actionType: "in_app",
+      smsNumber: appt.client.phone || null,
+      smsBody: null, // Allow artist to click and message directly
+      emailRecipient: null,
+      emailSubject: null,
+      emailBody: null,
+      deepLink: appt.conversationId ? `/chat/${appt.conversationId}` : `/conversations`,
+      dueAt: null,
+      expiresAt: new Date(appt.startTime),
+    });
+  }
+
+  return tasks;
+}
+
 // ==========================================
 // MAIN GENERATOR FUNCTION
 // ==========================================
@@ -1025,6 +1102,7 @@ export async function generateBusinessTasks(
     anniversaryTasks,
     healedPhotoTasks,
     thankYouTasks,
+    upcomingWarningTasks,
   ] = await Promise.all([
     generateNewLeadTasks(db, artistId),
     generateLeadFollowUpTasks(db, artistId),
@@ -1037,6 +1115,7 @@ export async function generateBusinessTasks(
     generateAnniversaryTasks(db, artistId),
     generateHealedPhotoTasks(db, artistId),
     generateThankYouTasks(db, artistId),
+    generateUpcomingWarningTasks(db, artistId),
   ]);
 
   // Combine all tasks
@@ -1052,6 +1131,7 @@ export async function generateBusinessTasks(
     ...anniversaryTasks,
     ...healedPhotoTasks,
     ...thankYouTasks,
+    ...upcomingWarningTasks,
   ];
 
   console.log(

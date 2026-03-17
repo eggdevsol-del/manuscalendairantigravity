@@ -33,6 +33,7 @@ export const artistSettingsRouter = router({
         consentTemplate: null,
         medicalTemplate: null,
         form9Template: null,
+        travelDates: JSON.stringify([]),
         createdAt: new Date(),
         updatedAt: new Date(),
       }
@@ -54,6 +55,7 @@ export const artistSettingsRouter = router({
         accountNumber: settings.accountNumber,
         businessCountry: settings.businessCountry,
         autoSendDepositInfo: settings.autoSendDepositInfo,
+        travelDates: settings.travelDates,
       };
     }),
   testExternalCalendarUrl: artistProcedure
@@ -86,6 +88,7 @@ export const artistSettingsRouter = router({
         licenceNumber: z.string().optional(),
         googleCalendarToken: z.string().optional(),
         appleCalendarUrl: z.string().optional(),
+        travelDates: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -112,6 +115,7 @@ export const artistSettingsRouter = router({
             : undefined,
         googleCalendarToken: input.googleCalendarToken,
         appleCalendarUrl: input.appleCalendarUrl,
+        travelDates: input.travelDates,
       } as any);
     }),
 });

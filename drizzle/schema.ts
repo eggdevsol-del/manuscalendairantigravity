@@ -140,6 +140,8 @@ export const artistSettings = mysqlTable(
     // Calendar Synchronisation
     googleCalendarToken: text(), // Secure oauth JSON
     appleCalendarUrl: text(), // Secure polling URL
+    // Travel Features
+    travelDates: text(), // JSON array of { id, location, country, startDate, endDate }
   },
   table => [unique("artistSettings_publicSlug_unique").on(table.publicSlug)]
 );
@@ -487,6 +489,8 @@ export const users = mysqlTable(
     birthday: datetime({ mode: "string" }),
     address: text(),
     city: varchar({ length: 255 }),
+    country: varchar({ length: 100 }), // ISO or full string
+    gender: mysqlEnum(["male", "female", "other", "prefer_not_to_say"]),
     savedSignature: longtext(),
   },
   table => []
