@@ -243,7 +243,6 @@ export const conversationsRouter = router({
       birthMonth: z.number().optional(), // 1-12
       minSittings: z.number().optional(),
       maxSittings: z.number().optional(),
-      gender: z.string().optional(),
     }).optional())
     .query(async ({ ctx, input }) => {
       if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
@@ -276,8 +275,7 @@ export const conversationsRouter = router({
           const user = await db.getUser(clientId);
           if (!user) return null;
 
-          // Apply direct demographic filters (gender, location, birthday) safely
-          if (input?.gender && user.gender !== input.gender) return null;
+          // Apply direct demographic filters (location, birthday) safely
           if (input?.location) {
             const cityMatch = user.city ? user.city.toLowerCase().includes(input.location.toLowerCase()) : false;
             const countryMatch = user.country ? user.country.toLowerCase().includes(input.location.toLowerCase()) : false;
@@ -297,8 +295,9 @@ export const conversationsRouter = router({
             if (appt.status === "completed") {
               sittings += 1;
             }
+            // amountPaid is stored as whole dollars (int), not cents
             if (appt.clientPaid === 1 && appt.amountPaid) {
-              tlv += (appt.amountPaid / 100); // Assuming cents based on context
+              tlv += appt.amountPaid;
             } else if (appt.clientPaid === 1 && appt.price) {
               tlv += appt.price; // fallback if amountPaid isn't recorded but it is checked out
             }

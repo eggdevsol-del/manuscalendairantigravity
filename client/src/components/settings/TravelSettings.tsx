@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button, Input, Label, Card, CardContent } from "@/components/ui";
-import { ChevronLeft, Plus, Trash, Plane, MapPin, CalendarDays, Loader2, Navigation } from "lucide-react";
+import { ChevronLeft, Plus, Trash, Plane, MapPin, CalendarDays, Loader2, Navigation, Send, Users } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingState } from "@/components/ui/ssot";
 import { GooglePlacesInput } from "@/components/ui/GooglePlacesInput";
@@ -33,20 +33,11 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
         }
     }, [settings?.travelDates]);
 
-    const handleSave = async (updatedTrips: Trip[], promptRouting = true) => {
+    const handleSave = async (updatedTrips: Trip[]) => {
         try {
             await upsert.mutateAsync({ travelDates: JSON.stringify(updatedTrips) });
             toast.success("Travel calendar updated globally");
             refetch();
-            if (promptRouting && onNavigateToClients) {
-                toast("Notify your clients in this region?", {
-                    action: {
-                        label: "Blast Segment",
-                        onClick: () => onNavigateToClients()
-                    },
-                    duration: 8000
-                });
-            }
         } catch (e: any) {
             toast.error(e.message);
         }
@@ -61,13 +52,13 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
         setTrips(updated);
         setIsAdding(false);
         setNewTrip({ id: "", location: "", country: "", startDate: "", endDate: "" });
-        handleSave(updated, true);
+        handleSave(updated);
     };
 
     const removeTrip = (id: string) => {
         const updated = trips.filter(t => t.id !== id);
         setTrips(updated);
-        handleSave(updated, false);
+        handleSave(updated);
     };
 
     if (isLoading) return <LoadingState fullScreen message="Loading travel manifest..." />;
@@ -202,6 +193,17 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
                             </div>
                         ))}
                     </div>
+
+                    {/* Permanent Notify Clients Button */}
+                    {trips.length > 0 && onNavigateToClients && (
+                        <Button
+                            onClick={onNavigateToClients}
+                            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                        >
+                            <Send className="w-5 h-5 mr-3" />
+                            Notify Clients
+                        </Button>
+                    )}
 
                 </div>
             </div>

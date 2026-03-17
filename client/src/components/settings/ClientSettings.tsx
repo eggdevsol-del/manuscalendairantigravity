@@ -35,7 +35,7 @@ import {
   EmptyDescription,
   EmptyContent,
 } from "@/components/ui/empty";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { useConversations } from "@/hooks/useConversations";
@@ -66,11 +66,21 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
   // Advanced Filter States
   const [showFilters, setShowFilters] = useState(false);
   const [locationFilter, setLocationFilter] = useState("");
-  const [genderFilter, setGenderFilter] = useState("all");
+  const [debouncedLocation, setDebouncedLocation] = useState("");
+  const locationDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const [minTlv, setMinTlv] = useState<number | "">("");
   const [maxTlv, setMaxTlv] = useState<number | "">("");
   const [minSittings, setMinSittings] = useState<number | "">("");
   const [birthMonth, setBirthMonth] = useState<string>("all");
+
+  // Debounce location filter to avoid refetch on every keystroke
+  const handleLocationChange = useCallback((value: string) => {
+    setLocationFilter(value);
+    if (locationDebounceRef.current) clearTimeout(locationDebounceRef.current);
+    locationDebounceRef.current = setTimeout(() => {
+      setDebouncedLocation(value);
+    }, 500);
+  }, []);
 
   const [selectedClients, setSelectedClients] = useState<Set<string>>(new Set());
 
@@ -82,8 +92,7 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
 
   // Fetch demographic clients instead of basic conversations
   const { data: demographicClients, refetch, isFetching } = trpc.conversations.getClients.useQuery({
-    location: locationFilter || undefined,
-    gender: genderFilter !== "all" ? genderFilter : undefined,
+    location: debouncedLocation || undefined,
     minTlv: minTlv !== "" ? Number(minTlv) : undefined,
     maxTlv: maxTlv !== "" ? Number(maxTlv) : undefined,
     minSittings: minSittings !== "" ? Number(minSittings) : undefined,
@@ -259,21 +268,9 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
                   <Input
                     placeholder="City or Country"
                     value={locationFilter}
-                    onChange={(e) => setLocationFilter(e.target.value)}
+                    onChange={(e) => handleLocationChange(e.target.value)}
                     className="h-8 text-sm"
                   />
-                </div>
-                <div className="space-y-1.5 flex flex-col">
-                  <Label className="text-xs text-muted-foreground">Gender</Label>
-                  <Select value={genderFilter} onValueChange={setGenderFilter}>
-                    <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="All" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Any Gender</SelectItem>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">Min TLV ($)</Label>
