@@ -97,71 +97,118 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
                     </div>
 
                     {isAdding && (
-                        <Card className="border-primary/20 bg-primary/5 animate-in slide-in-from-top-2 duration-200">
-                            <CardContent className="pt-6 space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label className="text-xs">Destination Search</Label>
-                                        <div className="relative">
-                                            <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
-                                            <GooglePlacesInput
-                                                className="pl-9 h-9"
-                                                placeholder="e.g. London, UK"
-                                                onPlaceSelected={(place) => {
-                                                    // Extract country and specific location from Google Places Payload
-                                                    let extractedCountry = "";
-                                                    let extractedLocation = place.name || "";
+                        <Card className="border-primary/20 bg-primary/5 animate-in slide-in-from-top-2 duration-200 overflow-visible">
+                            <CardContent className="pt-6 space-y-5">
 
-                                                    if (place.address_components) {
-                                                        const countryComponent = place.address_components.find(
-                                                            (c: any) => c.types.includes("country")
-                                                        );
-                                                        if (countryComponent) {
-                                                            extractedCountry = countryComponent.long_name;
-                                                        }
+                                {/* Step 1: Destination */}
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                        <span className="w-5 h-5 rounded-full bg-primary/20 text-primary text-[10px] font-bold flex items-center justify-center">1</span>
+                                        Where are you going?
+                                    </Label>
+                                    <div className="relative">
+                                        <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
+                                        <GooglePlacesInput
+                                            className="pl-9 h-10"
+                                            placeholder="Search a city, e.g. London, Tokyo, Auckland..."
+                                            onPlaceSelected={(place) => {
+                                                let extractedCountry = "";
+                                                let extractedLocation = place.name || "";
 
-                                                        // Ensure location string doesn't duplicate country
-                                                        if (!extractedLocation && place.formatted_address) {
-                                                            extractedLocation = place.formatted_address.replace(`, ${extractedCountry}`, '');
-                                                        }
+                                                if (place.address_components) {
+                                                    const countryComponent = place.address_components.find(
+                                                        (c: any) => c.types.includes("country")
+                                                    );
+                                                    if (countryComponent) {
+                                                        extractedCountry = countryComponent.long_name;
                                                     }
+                                                    if (!extractedLocation && place.formatted_address) {
+                                                        extractedLocation = place.formatted_address.replace(`, ${extractedCountry}`, '');
+                                                    }
+                                                }
 
-                                                    setNewTrip({
-                                                        ...newTrip,
-                                                        location: extractedLocation,
-                                                        country: extractedCountry || place.formatted_address
-                                                    });
-                                                }}
-                                            />
-                                        </div>
+                                                setNewTrip({
+                                                    ...newTrip,
+                                                    location: extractedLocation,
+                                                    country: extractedCountry || place.formatted_address
+                                                });
+                                            }}
+                                        />
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-xs">Verified Details</Label>
-                                        <div className="flex gap-2">
-                                            <Input className="h-9 flex-1 text-xs" placeholder="City/Region" readOnly value={newTrip.location} />
-                                            <Input className="h-9 flex-1 text-xs" placeholder="Country" readOnly value={newTrip.country} />
+
+                                    {/* Confirmed destination pill */}
+                                    {newTrip.location && newTrip.country && (
+                                        <div className="flex items-center gap-2 px-3 py-2 rounded-[4px] bg-primary/10 border border-primary/20 text-sm">
+                                            <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                                            <span className="font-medium text-foreground">{newTrip.location}</span>
+                                            <span className="text-muted-foreground">•</span>
+                                            <span className="text-muted-foreground">{newTrip.country}</span>
                                         </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-xs">Arrival Date</Label>
-                                        <div className="relative">
-                                            <CalendarDays className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                                            <Input className="pl-9 h-9 text-sm" type="date" value={newTrip.startDate} onChange={e => setNewTrip({ ...newTrip, startDate: e.target.value })} />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-xs">Departure Date</Label>
-                                        <div className="relative">
-                                            <CalendarDays className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                                            <Input className="pl-9 h-9 text-sm" type="date" value={newTrip.endDate} onChange={e => setNewTrip({ ...newTrip, endDate: e.target.value })} />
-                                        </div>
-                                    </div>
+                                    )}
                                 </div>
-                                <div className="flex gap-2 pt-2">
-                                    <Button className="flex-1" onClick={addTrip} disabled={upsert.isPending}>
-                                        {upsert.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm Leg"}
+
+                                {/* Divider */}
+                                <div className="border-t border-white/5" />
+
+                                {/* Step 2: Travel Dates */}
+                                <div className="space-y-3">
+                                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                        <span className="w-5 h-5 rounded-full bg-primary/20 text-primary text-[10px] font-bold flex items-center justify-center">2</span>
+                                        When are you travelling?
+                                    </Label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[11px] text-muted-foreground">Arriving</Label>
+                                            <div className="relative">
+                                                <CalendarDays className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                                                <Input
+                                                    className="pl-9 h-10 text-sm"
+                                                    type="date"
+                                                    value={newTrip.startDate}
+                                                    onChange={e => setNewTrip({ ...newTrip, startDate: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[11px] text-muted-foreground">Departing</Label>
+                                            <div className="relative">
+                                                <CalendarDays className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                                                <Input
+                                                    className="pl-9 h-10 text-sm"
+                                                    type="date"
+                                                    value={newTrip.endDate}
+                                                    onChange={e => setNewTrip({ ...newTrip, endDate: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Duration pill */}
+                                    {newTrip.startDate && newTrip.endDate && (
+                                        <div className="text-xs text-muted-foreground text-center py-1">
+                                            {(() => {
+                                                const days = Math.ceil((new Date(newTrip.endDate).getTime() - new Date(newTrip.startDate).getTime()) / (1000 * 60 * 60 * 24));
+                                                if (days <= 0) return <span className="text-destructive">Departure must be after arrival</span>;
+                                                return <span>{days} day{days !== 1 ? 's' : ''} abroad</span>;
+                                            })()}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Divider */}
+                                <div className="border-t border-white/5" />
+
+                                {/* Actions */}
+                                <div className="flex gap-3">
+                                    <Button className="flex-1 h-10" onClick={addTrip} disabled={upsert.isPending}>
+                                        {upsert.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                            <>
+                                                <Plus className="w-4 h-4 mr-2" />
+                                                Add to Itinerary
+                                            </>
+                                        )}
                                     </Button>
-                                    <Button variant="outline" className="flex-1" onClick={() => setIsAdding(false)}>
+                                    <Button variant="outline" onClick={() => setIsAdding(false)} className="h-10 px-6">
                                         Cancel
                                     </Button>
                                 </div>
