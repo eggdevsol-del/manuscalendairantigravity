@@ -14,8 +14,8 @@ interface GooglePlacesInputProps {
 export const GooglePlacesInput = React.forwardRef<HTMLInputElement, GooglePlacesInputProps>(
     ({ onPlaceSelected, placeholder = "Search location...", className, defaultValue, types = ['(cities)'] }, ref) => {
 
-        // We safely expose this variable from the Vite environment
-        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+        // Hardcoded fallback for Capacitor/PWA cache bugs where env variables are stripped from JS bundle
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyBNYw3_dI5dw7xjWKcLs23EYNDrQfjZrnE";
 
         if (!apiKey) {
             return (
