@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte, gt, lt, ne, sql, or, inArray } from "drizzle-orm";
+import { and, desc, eq, gte, lte, gt, lt, ne, sql, or, inArray, notInArray } from "drizzle-orm";
 import {
   appointments,
   InsertAppointment,
@@ -224,11 +224,15 @@ export async function deleteAppointment(id: number, performedBy: string) {
   return true;
 }
 
-export async function getArtistCalendar(artistId: string, startDate?: Date, endDate?: Date) {
+export async function getArtistCalendar(artistId: string, startDate?: Date, endDate?: Date, excludeStatuses: string[] = ["cancelled"]) {
   const db = await getDb();
   if (!db) return [];
 
   let conditions: any[] = [eq(appointments.artistId, artistId)];
+
+  if (excludeStatuses.length > 0) {
+    conditions.push(notInArray(appointments.status, excludeStatuses as any[]));
+  }
 
   if (startDate) conditions.push(gte(appointments.startTime, startDate.toISOString().slice(0, 19).replace("T", " ")));
   if (endDate) conditions.push(lte(appointments.startTime, endDate.toISOString().slice(0, 19).replace("T", " ")));
@@ -274,57 +278,61 @@ export async function getArtistCalendar(artistId: string, startDate?: Date, endD
   // Attempt to fetch and overlay external calendar events
   try {
     const settings = await db.query.artistSettings.findFirst({
-        where: eq(artistSettings.userId, artistId)
+      where: eq(artistSettings.userId, artistId)
     });
 
     if (settings?.appleCalendarUrl) {
-        const events = await parseExternalCalendar(settings.appleCalendarUrl);
-        const externalAppts = events.filter(e => {
-            if (startDate && e.end < startDate) return false;
-            if (endDate && e.start > endDate) return false;
-            return true;
-        }).map(e => ({
-            id: -Math.floor(Math.random() * 1000000), // Fake negative ID
-            conversationId: 0,
-            artistId,
-            clientId: "external-sync",
-            title: e.summary || "Busy",
-            description: "External Calendar Block",
-            startTime: e.start.toISOString().slice(0, 19).replace("T", " "), // MySQL format emulation
-            endTime: e.end.toISOString().slice(0, 19).replace("T", " "),
-            status: "confirmed",
-            serviceName: "External Sync",
-            price: 0,
-            depositAmount: 0,
-            depositPaid: true,
-            confirmationSent: false,
-            reminderSent: false,
-            followUpSent: false,
-            clientName: "External Event",
-            clientEmail: null,
-            sessionNumber: 1,
-            totalSessions: 1,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        }));
+      const events = await parseExternalCalendar(settings.appleCalendarUrl);
+      const externalAppts = events.filter(e => {
+        if (startDate && e.end < startDate) return false;
+        if (endDate && e.start > endDate) return false;
+        return true;
+      }).map(e => ({
+        id: -Math.floor(Math.random() * 1000000), // Fake negative ID
+        conversationId: 0,
+        artistId,
+        clientId: "external-sync",
+        title: e.summary || "Busy",
+        description: "External Calendar Block",
+        startTime: e.start.toISOString().slice(0, 19).replace("T", " "), // MySQL format emulation
+        endTime: e.end.toISOString().slice(0, 19).replace("T", " "),
+        status: "confirmed",
+        serviceName: "External Sync",
+        price: 0,
+        depositAmount: 0,
+        depositPaid: true,
+        confirmationSent: false,
+        reminderSent: false,
+        followUpSent: false,
+        clientName: "External Event",
+        clientEmail: null,
+        sessionNumber: 1,
+        totalSessions: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }));
 
-        mergedResults = [...mergedResults, ...externalAppts.map(normalizeAppointment)];
-        
-        // Ensure chronological ordering after merge
-        mergedResults.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      mergedResults = [...mergedResults, ...externalAppts.map(normalizeAppointment)];
+
+      // Ensure chronological ordering after merge
+      mergedResults.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
     }
   } catch (err) {
-      console.warn(`[getArtistCalendar] Failed to fetch external calendar for ${artistId}:`, err);
+    console.warn(`[getArtistCalendar] Failed to fetch external calendar for ${artistId}:`, err);
   }
 
   return mergedResults;
 }
 
-export async function getClientCalendar(clientId: string, startDate?: Date, endDate?: Date) {
+export async function getClientCalendar(clientId: string, startDate?: Date, endDate?: Date, excludeStatuses: string[] = ["cancelled"]) {
   const db = await getDb();
   if (!db) return [];
 
   let conditions: any[] = [eq(appointments.clientId, clientId)];
+
+  if (excludeStatuses.length > 0) {
+    conditions.push(notInArray(appointments.status, excludeStatuses as any[]));
+  }
 
   if (startDate) conditions.push(gte(appointments.startTime, startDate.toISOString().slice(0, 19).replace("T", " ")));
   if (endDate) conditions.push(lte(appointments.startTime, endDate.toISOString().slice(0, 19).replace("T", " ")));
@@ -368,7 +376,7 @@ export async function getClientCalendar(clientId: string, startDate?: Date, endD
   return results.map(normalizeAppointment);
 }
 
-export async function getStudioCalendar(studioId: string, startDate?: Date, endDate?: Date) {
+export async function getStudioCalendar(studioId: string, startDate?: Date, endDate?: Date, excludeStatuses: string[] = ["cancelled"]) {
   const db = await getDb();
   if (!db) return [];
 
@@ -388,6 +396,10 @@ export async function getStudioCalendar(studioId: string, startDate?: Date, endD
     ));
   } else {
     conditions.push(eq(appointments.studioId, studioId));
+  }
+
+  if (excludeStatuses.length > 0) {
+    conditions.push(notInArray(appointments.status, excludeStatuses as any[]));
   }
 
   if (startDate) conditions.push(gte(appointments.startTime, startDate.toISOString().slice(0, 19).replace("T", " ")));

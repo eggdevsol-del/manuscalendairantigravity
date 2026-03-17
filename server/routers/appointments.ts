@@ -45,7 +45,8 @@ export const appointmentsRouter = router({
       const results = await db.getArtistCalendar(
         input.artistId,
         input.startDate,
-        input.endDate
+        input.endDate,
+        ["cancelled", "pending"]
       );
       console.log(`[TRPC API] getArtistCalendar returned ${results.length} events for user ${input.artistId}`);
       if (results.length > 0) {
@@ -74,7 +75,8 @@ export const appointmentsRouter = router({
       return db.getClientCalendar(
         input.clientId,
         input.startDate,
-        input.endDate
+        input.endDate,
+        ["cancelled", "pending"]
       );
     }),
 
@@ -106,7 +108,8 @@ export const appointmentsRouter = router({
       return db.getStudioCalendar(
         input.studioId,
         input.startDate,
-        input.endDate
+        input.endDate,
+        ["cancelled", "pending"]
       );
     }),
   getByConversation: protectedProcedure
