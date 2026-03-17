@@ -14,29 +14,28 @@ export const conversationsRouter = router({
     // Fetch user details for each conversation
     const enriched = await Promise.all(
       convos.map(async conv => {
-        convos.map(async conv => {
-          const otherUserId =
-            ((ctx.user.role === "artist" ? conv.clientId : conv.artistId) || "") as string;
-          const otherUser = await db.resolveIdentity(otherUserId, "user");
+        const otherUserId =
+          ((ctx.user.role === "artist" ? conv.clientId : conv.artistId) || "") as string;
+        const otherUser = await db.resolveIdentity(otherUserId, "user");
 
-          if (ctx.user.role === "client" && otherUser) {
-            const settings = await db.getArtistSettings(otherUserId);
-            if (settings?.displayName) {
-              otherUser.name = settings.displayName;
-            }
+        if (ctx.user.role === "client" && otherUser) {
+          const settings = await db.getArtistSettings(otherUserId);
+          if (settings?.displayName) {
+            otherUser.name = settings.displayName;
           }
+        }
 
-          const unreadCount = await db.getUnreadMessageCount(
-            conv.id,
-            ctx.user.id
-          );
+        const unreadCount = await db.getUnreadMessageCount(
+          conv.id,
+          ctx.user.id
+        );
 
-          return {
-            ...conv,
-            otherUser,
-            unreadCount,
-          };
-        })
+        return {
+          ...conv,
+          otherUser,
+          unreadCount,
+        };
+      })
     );
 
     return enriched;
