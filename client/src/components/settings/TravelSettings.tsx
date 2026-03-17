@@ -4,6 +4,7 @@ import { Button, Input, Label, Card, CardContent } from "@/components/ui";
 import { ChevronLeft, Plus, Trash, Plane, MapPin, CalendarDays, Loader2, Navigation } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingState } from "@/components/ui/ssot";
+import { GooglePlacesInput } from "@/components/ui/GooglePlacesInput";
 import { cn } from "@/lib/utils";
 
 interface Trip {
@@ -109,15 +110,46 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
                             <CardContent className="pt-6 space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label className="text-xs">City/Region</Label>
+                                        <Label className="text-xs">Destination Search</Label>
                                         <div className="relative">
-                                            <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                                            <Input className="pl-9 h-9" placeholder="e.g. London" value={newTrip.location} onChange={e => setNewTrip({ ...newTrip, location: e.target.value })} />
+                                            <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
+                                            <GooglePlacesInput
+                                                className="pl-9 h-9"
+                                                placeholder="e.g. London, UK"
+                                                onPlaceSelected={(place) => {
+                                                    // Extract country and specific location from Google Places Payload
+                                                    let extractedCountry = "";
+                                                    let extractedLocation = place.name || "";
+
+                                                    if (place.address_components) {
+                                                        const countryComponent = place.address_components.find(
+                                                            (c: any) => c.types.includes("country")
+                                                        );
+                                                        if (countryComponent) {
+                                                            extractedCountry = countryComponent.long_name;
+                                                        }
+
+                                                        // Ensure location string doesn't duplicate country
+                                                        if (!extractedLocation && place.formatted_address) {
+                                                            extractedLocation = place.formatted_address.replace(`, ${extractedCountry}`, '');
+                                                        }
+                                                    }
+
+                                                    setNewTrip({
+                                                        ...newTrip,
+                                                        location: extractedLocation,
+                                                        country: extractedCountry || place.formatted_address
+                                                    });
+                                                }}
+                                            />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-xs">Country (ISO or Name)</Label>
-                                        <Input className="h-9" placeholder="e.g. UK" value={newTrip.country} onChange={e => setNewTrip({ ...newTrip, country: e.target.value })} />
+                                        <Label className="text-xs">Verified Details</Label>
+                                        <div className="flex gap-2">
+                                            <Input className="h-9 flex-1 text-xs" placeholder="City/Region" readOnly value={newTrip.location} />
+                                            <Input className="h-9 flex-1 text-xs" placeholder="Country" readOnly value={newTrip.country} />
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-xs">Arrival Date</Label>

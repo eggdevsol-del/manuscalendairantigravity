@@ -206,6 +206,9 @@ importers:
       react-dom:
         specifier: ^19.1.1
         version: 19.2.3(react@19.2.3)
+      react-google-autocomplete:
+        specifier: ^2.7.5
+        version: 2.7.5(react@19.2.3)
       react-hook-form:
         specifier: ^7.64.0
         version: 7.71.0(react@19.2.3)
@@ -4736,6 +4739,11 @@ packages:
     resolution: {integrity: sha512-yELu4WmLPw5Mr/lmeEpox5rw3RETacE++JgHqQzd2dg+YbJuat3jH4ingc+WPZhxaoFzdv9y33G+F7Nl5O0GBg==}
     peerDependencies:
       react: ^19.2.3
+
+  react-google-autocomplete@2.7.5:
+    resolution: {integrity: sha512-CPHMFBCgaJER19iA/y9Isjxh5au8mRxkt6przu9miOHLqrno+ifwJGXQOzMvtwdqNPXhb5Z6jpTtiJrbFeUvHg==}
+    peerDependencies:
+      react: '>=16.8.0'
 
   react-hook-form@7.71.0:
     resolution: {integrity: sha512-oFDt/iIFMV9ZfV52waONXzg4xuSlbwKUPvXVH2jumL1me5qFhBMc4knZxuXiZ2+j6h546sYe3ZKJcg/900/iHw==}
@@ -10346,6 +10354,12 @@ snapshots:
     dependencies:
       react: 19.2.3
       scheduler: 0.27.0
+
+  react-google-autocomplete@2.7.5(react@19.2.3):
+    dependencies:
+      lodash.debounce: 4.0.8
+      prop-types: 15.8.1
+      react: 19.2.3
 
   react-hook-form@7.71.0(react@19.2.3):
     dependencies:
