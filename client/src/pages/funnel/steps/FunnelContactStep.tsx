@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, Mail, Phone } from "lucide-react";
+import { User, Mail, Phone, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import FunnelStepWrapper from "../components/FunnelStepWrapper";
 import type { ArtistProfile, FunnelStepData } from "../FunnelWrapper";
@@ -34,6 +34,8 @@ export default function FunnelContactStep({
   const [birthdate, setBirthdate] = useState(stepData.contact?.birthdate || "");
   const [email, setEmail] = useState(stepData.contact?.email || "");
   const [phone, setPhone] = useState(stepData.contact?.phone || "");
+  const [city, setCity] = useState(stepData.contact?.city || "");
+  const [country, setCountry] = useState(stepData.contact?.country || "");
 
   const handleNext = () => {
     onNext("contact", {
@@ -42,6 +44,8 @@ export default function FunnelContactStep({
       birthdate,
       email: email.trim().toLowerCase(),
       phone: phone.trim() || undefined,
+      city: city.trim() || undefined,
+      country: country.trim() || undefined,
     });
   };
 
@@ -148,6 +152,37 @@ export default function FunnelContactStep({
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             For SMS appointment reminders
+          </p>
+        </div>
+
+        {/* Location */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            Your location{" "}
+            <span className="text-muted-foreground">(optional)</span>
+          </label>
+          <div className="flex gap-3">
+            <div className="flex-1 relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                type="text"
+                value={city}
+                onChange={e => setCity(e.target.value)}
+                placeholder="City"
+                className="pl-10"
+              />
+            </div>
+            <div className="flex-1">
+              <Input
+                type="text"
+                value={country}
+                onChange={e => setCountry(e.target.value)}
+                placeholder="Country"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Helps your artist notify you about sessions in your area
           </p>
         </div>
       </motion.div>

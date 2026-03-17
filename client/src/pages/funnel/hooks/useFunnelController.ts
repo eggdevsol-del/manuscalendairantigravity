@@ -33,6 +33,8 @@ export function useFunnelController(artistSlug: string) {
   const [birthdate, setBirthdate] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [city, setCity] = useState("");
+  const [country, setCountry] = useState("");
 
   // 4. Form State - Style & References
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
@@ -170,6 +172,8 @@ export function useFunnelController(artistSlug: string) {
           birthdate,
           email,
           phone: phone || undefined,
+          city: city || undefined,
+          country: country || undefined,
         },
         style: {
           stylePreferences: selectedStyles,
@@ -285,6 +289,10 @@ export function useFunnelController(artistSlug: string) {
     setEmail,
     phone,
     setPhone,
+    city,
+    setCity,
+    country,
+    setCountry,
     selectedStyles,
     toggleStyle,
     referenceImages,

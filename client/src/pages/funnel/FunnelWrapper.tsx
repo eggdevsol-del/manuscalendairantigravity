@@ -28,6 +28,8 @@ export interface FunnelStepData {
     birthdate: string;
     email: string;
     phone?: string;
+    city?: string;
+    country?: string;
   };
   style?: {
     stylePreferences: string[];
@@ -95,6 +97,10 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
     setEmail,
     phone,
     setPhone,
+    city,
+    setCity,
+    country,
+    setCountry,
     selectedStyles,
     toggleStyle,
     referenceImages,
@@ -349,6 +355,32 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   placeholder="Your phone number"
                   className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Your location{" "}
+                  <span className="text-muted-foreground">(optional)</span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={city}
+                    onChange={e => setCity(e.target.value)}
+                    placeholder="City"
+                    className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
+                  />
+                  <input
+                    type="text"
+                    value={country}
+                    onChange={e => setCountry(e.target.value)}
+                    placeholder="Country"
+                    className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Helps your artist notify you about sessions in your area
+                </p>
               </div>
             </div>
           )}
