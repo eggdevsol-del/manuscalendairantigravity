@@ -19,41 +19,47 @@ interface Trip {
 
 /** Individual trip card with map background */
 function TripCard({ trip, onRemove }: { trip: Trip; onRemove: () => void }) {
+    // For trips without lat/lng, geocode from city name
+    const geocodeQuery = trpc.places.geocode.useQuery(
+        { address: `${trip.location}, ${trip.country}` },
+        {
+            enabled: !trip.lat && !trip.lng,
+            staleTime: Infinity,
+            refetchOnWindowFocus: false,
+        }
+    );
+
+    const lat = trip.lat ?? geocodeQuery.data?.lat;
+    const lng = trip.lng ?? geocodeQuery.data?.lng;
+
     const { data: mapData } = trpc.places.staticMap.useQuery(
-        { lat: trip.lat!, lng: trip.lng!, width: 600, height: 200, zoom: 11 },
-        { enabled: !!(trip.lat && trip.lng), staleTime: Infinity, refetchOnWindowFocus: false }
+        { lat: lat!, lng: lng!, width: 600, height: 200, zoom: 11 },
+        { enabled: !!(lat && lng), staleTime: Infinity, refetchOnWindowFocus: false }
     );
 
     return (
         <div className="relative bg-white/5 border border-white/5 rounded-[4px] overflow-hidden hover:border-white/10 transition-colors">
             {/* Map background layer */}
             {mapData?.imageUrl && (
-                <div
-                    className="absolute inset-0 pointer-events-none z-0"
-                    style={{ opacity: 0.28 }}
-                >
-                    <img
-                        src={mapData.imageUrl}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        draggable={false}
-                    />
-                </div>
+                <img
+                    src={mapData.imageUrl}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                    style={{ opacity: 0.35 }}
+                    draggable={false}
+                />
             )}
 
-            {/* Dark overlay */}
-            <div className="absolute inset-0 bg-background/50 pointer-events-none z-[1]" />
-
-            {/* Gradient fade: clearer on left, obscured on right */}
+            {/* Combined gradient overlay: subtle on left (map shows), opaque on right (text area) */}
             <div
-                className="absolute inset-0 pointer-events-none z-[2]"
+                className="absolute inset-0 pointer-events-none"
                 style={{
-                    background: "linear-gradient(to right, transparent 0%, rgba(10,10,25,0.85) 70%, rgba(10,10,25,0.95) 100%)",
+                    background: "linear-gradient(to right, rgba(10,10,25,0.4) 0%, rgba(10,10,25,0.75) 55%, rgba(10,10,25,0.92) 100%)",
                 }}
             />
 
             {/* Card content */}
-            <div className="relative z-[3] p-4 flex items-center justify-between">
+            <div className="relative z-10 p-4 flex items-center justify-between">
                 <div className="flex flex-col">
                     <h5 className="font-semibold text-base flex items-center">
                         <MapPin className="w-4 h-4 mr-2 text-primary" />

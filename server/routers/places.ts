@@ -135,4 +135,38 @@ export const placesRouter = router({
                 return { imageUrl: null };
             }
         }),
+
+    /**
+     * Geocode an address string to lat/lng.
+     * Used as fallback for trips created before lat/lng capture was added.
+     */
+    geocode: protectedProcedure
+        .input(z.object({ address: z.string().min(1).max(300) }))
+        .query(async ({ input }) => {
+            const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+            if (!apiKey) {
+                console.error("[Geocode Proxy] GOOGLE_MAPS_API_KEY not set");
+                return { lat: null, lng: null };
+            }
+
+            const url = new URL("https://maps.googleapis.com/maps/api/geocode/json");
+            url.searchParams.set("address", input.address);
+            url.searchParams.set("key", apiKey);
+
+            try {
+                const res = await fetch(url.toString());
+                const data = await res.json();
+
+                if (data.status !== "OK" || !data.results?.length) {
+                    console.error("[Geocode Proxy] No results for:", input.address, data.status);
+                    return { lat: null, lng: null };
+                }
+
+                const loc = data.results[0].geometry.location;
+                return { lat: loc.lat as number, lng: loc.lng as number };
+            } catch (err) {
+                console.error("[Geocode Proxy] Error:", err);
+                return { lat: null, lng: null };
+            }
+        }),
 });
