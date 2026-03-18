@@ -1,12 +1,12 @@
 {
-  "name": "TOI",
-  "short_name": "TOI",
+  "name": "TATTOI",
+  "short_name": "TATTOI",
   "description": "Beautiful appointments made simple",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#f5f3ff",
+  "theme_color": "#f5f3ff",
   "orientation": "portrait",
   "icons": [
     {
