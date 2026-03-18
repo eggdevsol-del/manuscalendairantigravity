@@ -37,10 +37,13 @@ export const authRouter = router({
         studioName: z.string().optional(),
         phone: z.string().max(20).optional(),
         birthday: z.string().max(20).optional(),
+        gender: z.enum(["male", "female", "other", "prefer_not_to_say"]).optional(),
+        city: z.string().max(100).optional(),
+        country: z.string().max(100).optional(),
       })
     )
     .mutation(async ({ input }) => {
-      const { email, password, name, role = "client", studioName, phone, birthday } = input;
+      const { email, password, name, role = "client", studioName, phone, birthday, gender, city, country } = input;
 
       // Check if user already exists
       const existingUser = await getUserByEmail(email);
@@ -68,6 +71,9 @@ export const authRouter = router({
         hasCompletedOnboarding: 0,
         ...(phone ? { phone } : {}),
         ...(birthday ? { birthday } : {}),
+        ...(gender ? { gender } : {}),
+        ...(city ? { city } : {}),
+        ...(country ? { country } : {}),
       });
 
       if (!user) {
@@ -520,4 +526,96 @@ export const authRouter = router({
 
       return { success: true };
     }),
+
+  /**
+   * Google OAuth login/register
+   * Verifies Google ID token, finds or creates user, returns JWT
+   */
+  googleLogin: publicProcedure
+    .input(
+      z.object({
+        credential: z.string(), // Google ID token
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { credential } = input;
+
+      // Verify Google access token via Google's userinfo endpoint
+      const googleRes = await fetch(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        {
+          headers: { Authorization: `Bearer ${credential}` },
+        }
+      );
+
+      if (!googleRes.ok) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Invalid Google token",
+        });
+      }
+
+      const googlePayload = (await googleRes.json()) as {
+        email: string;
+        name: string;
+        picture?: string;
+        sub: string;
+      };
+
+      if (!googlePayload.email) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No email found in Google account",
+        });
+      }
+
+      // Check if user exists
+      let user = await getUserByEmail(googlePayload.email);
+      let isNewUser = false;
+
+      if (!user) {
+        // Create new user
+        isNewUser = true;
+        const userId = `user_${randomBytes(16).toString("hex")}`;
+
+        user = await createUser({
+          id: userId,
+          email: googlePayload.email,
+          name: googlePayload.name || "User",
+          role: "client",
+          loginMethod: "google",
+          avatar: googlePayload.picture || undefined,
+          hasCompletedOnboarding: 0,
+        });
+
+        if (!user) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create user",
+          });
+        }
+      } else {
+        // Existing user — update last signed in
+        await updateUserLastSignedIn(user.id);
+      }
+
+      // Generate JWT token
+      const token = generateToken({
+        id: user.id,
+        email: user.email as string,
+      });
+
+      return {
+        user: {
+          id: user.id,
+          email: user.email as string,
+          name: user.name,
+          role: user.role,
+          hasCompletedOnboarding: user.hasCompletedOnboarding,
+        },
+        token,
+        isNewUser,
+      };
+    }),
 });
+
