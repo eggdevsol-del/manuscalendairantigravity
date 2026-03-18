@@ -13,6 +13,67 @@ interface Trip {
     country: string;
     startDate: string;
     endDate: string;
+    lat?: number;
+    lng?: number;
+}
+
+/** Individual trip card with map background */
+function TripCard({ trip, onRemove }: { trip: Trip; onRemove: () => void }) {
+    const { data: mapData } = trpc.places.staticMap.useQuery(
+        { lat: trip.lat!, lng: trip.lng!, width: 600, height: 200, zoom: 11 },
+        { enabled: !!(trip.lat && trip.lng), staleTime: Infinity, refetchOnWindowFocus: false }
+    );
+
+    return (
+        <div className="relative bg-white/5 border border-white/5 rounded-[4px] overflow-hidden hover:border-white/10 transition-colors">
+            {/* Map background layer */}
+            {mapData?.imageUrl && (
+                <div
+                    className="absolute inset-0 pointer-events-none z-0"
+                    style={{ opacity: 0.28 }}
+                >
+                    <img
+                        src={mapData.imageUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        draggable={false}
+                    />
+                </div>
+            )}
+
+            {/* Dark overlay */}
+            <div className="absolute inset-0 bg-background/50 pointer-events-none z-[1]" />
+
+            {/* Gradient fade: clearer on left, obscured on right */}
+            <div
+                className="absolute inset-0 pointer-events-none z-[2]"
+                style={{
+                    background: "linear-gradient(to right, transparent 0%, rgba(10,10,25,0.85) 70%, rgba(10,10,25,0.95) 100%)",
+                }}
+            />
+
+            {/* Card content */}
+            <div className="relative z-[3] p-4 flex items-center justify-between">
+                <div className="flex flex-col">
+                    <h5 className="font-semibold text-base flex items-center">
+                        <MapPin className="w-4 h-4 mr-2 text-primary" />
+                        {trip.location}, {trip.country}
+                    </h5>
+                    <span className="text-sm text-muted-foreground mt-1 ml-6 font-mono">
+                        {new Date(trip.startDate).toLocaleDateString()} - {new Date(trip.endDate).toLocaleDateString()}
+                    </span>
+                </div>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:bg-destructive/20 hover:text-destructive shrink-0"
+                    onClick={onRemove}
+                >
+                    <Trash className="w-4 h-4" />
+                </Button>
+            </div>
+        </div>
+    );
 }
 
 export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => void, onNavigateToClients?: () => void }) {
@@ -130,7 +191,9 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
                                                 setNewTrip({
                                                     ...newTrip,
                                                     location: extractedLocation,
-                                                    country: extractedCountry || place.formatted_address
+                                                    country: extractedCountry || place.formatted_address,
+                                                    lat: place.lat,
+                                                    lng: place.lng,
                                                 });
                                             }}
                                         />
@@ -224,20 +287,7 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
                             </div>
                         )}
                         {trips.map(trip => (
-                            <div key={trip.id} className="bg-white/5 border border-white/5 p-4 rounded-[4px] flex items-center justify-between hover:bg-white/10 transition-colors">
-                                <div className="flex flex-col">
-                                    <h5 className="font-semibold text-base flex items-center">
-                                        <MapPin className="w-4 h-4 mr-2 text-primary" />
-                                        {trip.location}, {trip.country}
-                                    </h5>
-                                    <span className="text-sm text-muted-foreground mt-1 ml-6 font-mono">
-                                        {new Date(trip.startDate).toLocaleDateString()} - {new Date(trip.endDate).toLocaleDateString()}
-                                    </span>
-                                </div>
-                                <Button variant="ghost" size="icon" className="text-muted-foreground hover:bg-destructive/20 hover:text-destructive shrink-0" onClick={() => removeTrip(trip.id)}>
-                                    <Trash className="w-4 h-4" />
-                                </Button>
-                            </div>
+                            <TripCard key={trip.id} trip={trip} onRemove={() => removeTrip(trip.id)} />
                         ))}
                     </div>
 

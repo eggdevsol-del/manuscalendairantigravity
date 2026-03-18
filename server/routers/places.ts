@@ -84,4 +84,55 @@ export const placesRouter = router({
                 },
             };
         }),
+
+    /**
+     * Proxy for Google Maps Static API.
+     * Generates a dark-styled, label-free map image for a given lat/lng.
+     * Returns the image as a base64 data URI so the API key never reaches the client.
+     */
+    staticMap: protectedProcedure
+        .input(
+            z.object({
+                lat: z.number(),
+                lng: z.number(),
+                width: z.number().min(100).max(800).optional().default(600),
+                height: z.number().min(100).max(400).optional().default(200),
+                zoom: z.number().min(3).max(18).optional().default(11),
+            })
+        )
+        .query(async ({ input }) => {
+            const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+            if (!apiKey) {
+                console.error("[Map Proxy] GOOGLE_MAPS_API_KEY not set");
+                return { imageUrl: null };
+            }
+
+            // Dark style with no labels and subtle roads
+            const style = [
+                "style=element:geometry|color:0x1a1a2e",
+                "style=element:labels|visibility:off",
+                "style=feature:road|element:geometry|color:0x2a2a4a",
+                "style=feature:water|element:geometry|color:0x0d0d1a",
+                "style=feature:landscape|element:geometry|color:0x16162b",
+                "style=feature:poi|visibility:off",
+                "style=feature:transit|visibility:off",
+            ].join("&");
+
+            const url = `https://maps.googleapis.com/maps/api/staticmap?center=${input.lat},${input.lng}&zoom=${input.zoom}&size=${input.width}x${input.height}&scale=2&maptype=roadmap&${style}&key=${apiKey}`;
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) {
+                    console.error("[Map Proxy] Static map fetch failed:", res.status);
+                    return { imageUrl: null };
+                }
+
+                const buffer = Buffer.from(await res.arrayBuffer());
+                const base64 = buffer.toString("base64");
+                return { imageUrl: `data:image/png;base64,${base64}` };
+            } catch (err) {
+                console.error("[Map Proxy] Error fetching static map:", err);
+                return { imageUrl: null };
+            }
+        }),
 });

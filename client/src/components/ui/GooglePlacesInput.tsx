@@ -15,6 +15,8 @@ interface GooglePlacesInputProps {
         name: string;
         formatted_address: string;
         address_components: { long_name: string; types: string[] }[];
+        lat?: number;
+        lng?: number;
     }) => void;
     placeholder?: string;
     className?: string;
@@ -85,6 +87,8 @@ export const GooglePlacesInput = React.forwardRef<HTMLInputElement, GooglePlaces
                     name: details.result.name || prediction.mainText,
                     formatted_address: details.result.formattedAddress || prediction.description,
                     address_components: addressComponents,
+                    lat: details.result.lat,
+                    lng: details.result.lng,
                 });
             }
         }, [onPlaceSelected, utils]);
