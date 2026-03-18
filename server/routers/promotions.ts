@@ -99,9 +99,6 @@ export const promotionsRouter = router({
           autoApplyTrigger: input.autoApplyTrigger,
         });
 
-        console.log(
-          `[promotions.createTemplate] Created template for artist ${ctx.user.id}`
-        );
         return { success: true, id: result.insertId };
       } catch (error) {
         console.error("[promotions.createTemplate] Error:", error);
@@ -193,9 +190,6 @@ export const promotionsRouter = router({
           })
           .where(eq(schema.promotionTemplates.id, input.id));
 
-        console.log(
-          `[promotions.updateTemplate] Updated template ${input.id} for artist ${ctx.user.id}`
-        );
         return { success: true };
       } catch (error) {
         console.error("[promotions.updateTemplate] Error:", error);
@@ -409,9 +403,6 @@ export const promotionsRouter = router({
           status: "pending",
         });
 
-        console.log(
-          `[promotions.issuePromotion] Issued promotion ${code} to client ${input.clientId}`
-        );
         return { success: true, code };
       } catch (error) {
         console.error("[promotions.issuePromotion] Error:", error);
@@ -483,9 +474,6 @@ export const promotionsRouter = router({
           status: "active",
         });
 
-        console.log(
-          `[promotions.createAutoApply] Created auto-apply rule for template ${input.templateId}`
-        );
         return { success: true };
       } catch (error) {
         console.error("[promotions.createAutoApply] Error:", error);
@@ -659,10 +647,6 @@ export const promotionsRouter = router({
           })
           .where(eq(schema.appointments.id, input.appointmentId));
 
-        console.log(
-          `[promotions.redeemPromotion] Redeemed ${amountRedeemed} cents on appointment ${input.appointmentId}`
-        );
-
         return {
           success: true,
           amountRedeemed,
@@ -774,9 +758,6 @@ export const promotionsRouter = router({
             );
         }
 
-        console.log(
-          `[promotions.updateAutoApply] Updated auto-apply for template ${input.templateId}: ${input.isAutoApply}`
-        );
         return { success: true };
       } catch (error) {
         console.error("[promotions.updateAutoApply] Error:", error);
@@ -824,9 +805,6 @@ export const promotionsRouter = router({
             )
           );
 
-        console.log(
-          `[promotions.deleteTemplate] Deleted template ${input.templateId}`
-        );
         return { success: true };
       } catch (error) {
         console.error("[promotions.deleteTemplate] Error:", error);
@@ -943,9 +921,6 @@ export const promotionsRouter = router({
           })
           .where(eq(schema.issuedPromotions.id, input.id));
 
-        console.log(
-          `[promotions.updateIssuedPromotion] Updated promotion ${input.id}`
-        );
         return { success: true };
       } catch (error) {
         console.error("[promotions.updateIssuedPromotion] Error:", error);
@@ -977,9 +952,7 @@ export async function checkAndApplyNewClient(
 
     if (templates.length === 0) return;
 
-    console.log(
-      `[checkAndApplyNewClient] Found ${templates.length} templates for artist ${artistId}`
-    );
+
 
     for (const template of templates) {
       // 2. Check if client already has this promotion (to prevent duplicates)
@@ -1018,9 +991,6 @@ export async function checkAndApplyNewClient(
         expiresAt,
       });
 
-      console.log(
-        `[checkAndApplyNewClient] Issued auto-promotion ${code} to ${clientId}`
-      );
     }
   } catch (error) {
     console.error("[checkAndApplyNewClient] Error:", error);

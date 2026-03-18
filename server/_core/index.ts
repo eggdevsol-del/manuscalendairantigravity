@@ -107,7 +107,6 @@ async function startServer() {
           callback(null, true);
         } else {
           // Log unauthorized origins for debugging in server logs
-          console.log(`[CORS] Blocked origin: ${origin}`);
           callback(null, false);
         }
       },
@@ -118,6 +117,24 @@ async function startServer() {
   // Handle preflight for all routes
   app.options("*", cors());
 
+  // Content Security Policy headers
+  app.use((_req, res, next) => {
+    res.setHeader(
+      "Content-Security-Policy",
+      [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.onesignal.com",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com",
+        "img-src 'self' data: blob: https: http:",
+        "connect-src 'self' https: wss:",
+        "frame-src 'self' https://js.stripe.com",
+        "worker-src 'self' blob:",
+      ].join("; ")
+    );
+    next();
+  });
+
   // MUST BE BEFORE express.json() to capture raw payload for signature verification
   app.post(
     "/api/webhooks/stripe",
@@ -125,9 +142,9 @@ async function startServer() {
     handleStripeWebhook
   );
 
-  // 2. Configure body parsers
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  // 2. Configure body parsers (5mb is generous for JSON + base64 images)
+  app.use(express.json({ limit: "5mb" }));
+  app.use(express.urlencoded({ limit: "5mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
@@ -135,7 +152,6 @@ async function startServer() {
   const uploadDir = path.join(process.cwd(), "server", "uploads");
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
-    console.log("[Server] Created uploads directory at:", uploadDir);
   }
 
   // Serve static uploads
@@ -166,7 +182,6 @@ async function startServer() {
     try {
       // Get the full path after /api/files/
       const key = (req.params as any)[0];
-      console.log(`[File Serving] Request for key: ${key}`);
       const file = await storageGetData(key);
 
       if (!file) {
@@ -174,9 +189,6 @@ async function startServer() {
         return res.status(404).json({ error: "File not found" });
       }
 
-      console.log(
-        `[File Serving] Serving file: ${key} (${file.mimeType}, ${file.data.length} bytes)`
-      );
       res.setHeader("Content-Type", file.mimeType);
       res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
       res.send(file.data);
@@ -214,13 +226,10 @@ async function startServer() {
 
   if (process.env.NODE_ENV === "development") {
     port = await findAvailablePort(preferredPort);
-    if (port !== preferredPort) {
-      console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
-    }
   }
 
   server.listen(port, "0.0.0.0", () => {
-    console.log(`Server running on http://0.0.0.0:${port}/`);
+    console.info(`Server running on http://0.0.0.0:${port}/`);
   });
 }
 

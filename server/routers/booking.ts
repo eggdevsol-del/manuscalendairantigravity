@@ -29,11 +29,6 @@ export const bookingRouter = router({
       const { conversationId, frequency, sittings, serviceDuration } = input;
 
       try {
-        console.log("[BookingRouter] Checking availability for:", {
-          conversationId,
-          frequency,
-          sittings,
-        });
 
         const conversation = await db.getConversationById(conversationId);
 
@@ -49,8 +44,6 @@ export const bookingRouter = router({
           conversation.artistId
         );
 
-        console.log("[BookingRouter] Artist Settings found:", !!artistSettings);
-
         if (!artistSettings) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
@@ -61,10 +54,6 @@ export const bookingRouter = router({
         // 1. Parse Schedule
         const workSchedule = BookingService.parseWorkSchedule(
           artistSettings.workSchedule
-        );
-        console.log(
-          "[BookingRouter] Work Schedule parsed, days enabled:",
-          workSchedule.filter(d => d.enabled).length
         );
 
         // 2. Validate Duration Constraints
@@ -97,11 +86,6 @@ export const bookingRouter = router({
             endTime: new Date(a.endTime),
           }));
 
-        console.log(
-          "[BookingRouter] Existing appointments count:",
-          existingAppointments.length
-        );
-
         // 4. Calculate Dates
         const dates = BookingService.calculateProjectDates({
           serviceDuration,
@@ -112,11 +96,6 @@ export const bookingRouter = router({
           existingAppointments,
           timeZone: input.timeZone,
         });
-
-        console.log(
-          "[BookingRouter] Calculation success, dates found:",
-          dates.length
-        );
 
         const totalCost = input.price * input.sittings;
 

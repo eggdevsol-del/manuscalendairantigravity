@@ -46,7 +46,6 @@ export const invitationsRouter = router({
 
       // For now, we simulate sending the email
       const inviteLink = `${process.env.VITE_APP_URL || "http://localhost:3000"}/studio/join?code=${inviteCode}&studio=${input.studioId}`;
-      console.log(`[Invitations] Invite for ${input.email}: ${inviteLink}`);
 
       return {
         success: true,

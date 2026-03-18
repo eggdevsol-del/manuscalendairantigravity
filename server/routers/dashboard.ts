@@ -12,7 +12,6 @@ export const dashboardRouter = router({
       throw new TRPCError({ code: "FORBIDDEN" });
     }
 
-    console.log(`[Dashboard] Fetching artist overview for ${user.id}`);
     const db = await getDb();
     if (!db) {
       console.error("[Dashboard] Database connection failed");

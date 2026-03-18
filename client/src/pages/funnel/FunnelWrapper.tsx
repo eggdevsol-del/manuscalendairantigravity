@@ -16,6 +16,7 @@ import IOSInstallPrompt from "@/components/IOSInstallPrompt";
 import ImageUploadSheet, { UploadedImage } from "./components/ImageUploadSheet";
 import { Camera, Image as ImageIcon, ChevronRight, Check } from "lucide-react";
 import { TeaserRegistrationForm } from "@/components/auth/TeaserRegistrationForm";
+import FunnelContactStep from "./steps/FunnelContactStep";
 
 export interface FunnelStepData {
   intent?: {
@@ -285,103 +286,30 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
             </div>
           )}
 
-          {/* Step 1: Contact (Expanded) */}
+          {/* Step 1: Contact — rendered by FunnelContactStep (single source of truth) */}
           {currentStep === 1 && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    First name *
-                  </label>
-                  <input
-                    type="text"
-                    value={firstName}
-                    onChange={e => setFirstName(e.target.value)}
-                    placeholder="First name"
-                    className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Last name *
-                  </label>
-                  <input
-                    type="text"
-                    value={lastName}
-                    onChange={e => setLastName(e.target.value)}
-                    placeholder="Last name"
-                    className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Date of birth *
-                </label>
-                <input
-                  type="date"
-                  value={birthdate}
-                  onChange={e => setBirthdate(e.target.value)}
-                  max={new Date().toISOString().split("T")[0]}
-                  className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  You must be 18 or older to book a tattoo
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Phone number
-                </label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={e => setPhone(e.target.value)}
-                  placeholder="Your phone number"
-                  className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Your location *
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    value={city}
-                    onChange={e => setCity(e.target.value)}
-                    placeholder="City"
-                    className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
-                  />
-                  <input
-                    type="text"
-                    value={country}
-                    onChange={e => setCountry(e.target.value)}
-                    placeholder="Country"
-                    className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent text-foreground bg-background placeholder-muted-foreground"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Helps your artist notify you about sessions in your area
-                </p>
-              </div>
-            </div>
+            <FunnelContactStep
+              artistProfile={artistProfile}
+              stepData={{
+                contact: { firstName, lastName, birthdate, email, phone, city, country },
+              }}
+              onNext={(_step: string, data: any) => {
+                if (data) {
+                  setFirstName(data.firstName || "");
+                  setLastName(data.lastName || "");
+                  setBirthdate(data.birthdate || "");
+                  setEmail(data.email || "");
+                  setPhone(data.phone || "");
+                  setCity(data.city || "");
+                  setCountry(data.country || "");
+                }
+                handleNext();
+              }}
+              onBack={handleBack}
+              isFirstStep={false}
+              isLastStep={false}
+              submitting={submitting}
+            />
           )}
 
           {/* Step 2: Style + Reference Images */}

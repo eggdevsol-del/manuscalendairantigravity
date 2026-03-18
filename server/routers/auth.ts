@@ -19,15 +19,15 @@ export const authRouter = router({
   updateProfile: protectedProcedure
     .input(
       z.object({
-        name: z.string().optional(),
-        phone: z.string().optional(),
-        avatar: z.string().optional(),
-        bio: z.string().optional(),
-        savedSignature: z.string().optional(),
-        address: z.string().optional(),
-        city: z.string().optional(),
-        birthday: z.string().optional(),
-        instagramUsername: z.string().optional(),
+        name: z.string().max(100).optional(),
+        phone: z.string().max(30).optional(),
+        avatar: z.string().max(2000).optional(),
+        bio: z.string().max(500).optional(),
+        savedSignature: z.string().max(50000).optional(),
+        address: z.string().max(300).optional(),
+        city: z.string().max(100).optional(),
+        birthday: z.string().max(20).optional(),
+        instagramUsername: z.string().max(60).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -68,7 +68,7 @@ export const authRouter = router({
     // when Instagram credentials are configured
     return { url: "" };
   }),
-  listArtists: publicProcedure.query(async () => {
+  listArtists: protectedProcedure.query(async () => {
     // Get all users with artist or admin role
     return db.getArtists();
   }),

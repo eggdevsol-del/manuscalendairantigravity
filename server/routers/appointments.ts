@@ -48,11 +48,6 @@ export const appointmentsRouter = router({
         input.endDate,
         ["cancelled", "pending"]
       );
-      console.log(`[TRPC API] getArtistCalendar returned ${results.length} events for user ${input.artistId}`);
-      if (results.length > 0) {
-        const external = results.filter((r: any) => r.clientId === "external-sync");
-        console.log(`[TRPC API] Found ${external.length} external sync events embedded in payload.`);
-      }
       return results;
     }),
 
@@ -448,7 +443,6 @@ export const appointmentsRouter = router({
       }
 
       if (!workSchedule || workSchedule.length === 0) {
-        console.log("Debug: Work schedule empty");
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           message: "Work hours not set up",
@@ -475,16 +469,7 @@ export const appointmentsRouter = router({
         return Math.max(max, minutes);
       }, 0);
 
-      console.log(
-        `Debug: maxDailyMinutes=${maxDailyMinutes}, serviceDuration=${input.serviceDuration}`
-      );
-      console.log(
-        "Debug: Work Schedule Sample:",
-        JSON.stringify(workSchedule[0])
-      );
-
       if (input.serviceDuration > maxDailyMinutes) {
-        console.log("Debug: Service duration exceeds maxDailyMinutes");
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           message: `Service duration (${input.serviceDuration} min) exceeds your longest work day (${maxDailyMinutes} min).`,

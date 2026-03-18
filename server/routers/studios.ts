@@ -494,9 +494,7 @@ export const studiosRouter = router({
           message: "Database connection failed",
         });
 
-      console.log(
-        `[respondToInvite] Invoked with inviteId ${input.inviteId} by userId ${ctx.user.id}`
-      );
+
 
       const invite = await db.query.studioMembers.findFirst({
         where: and(
