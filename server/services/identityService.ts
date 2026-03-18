@@ -35,6 +35,7 @@ export async function resolveIdentity(
         birthday: user.birthday ?? undefined,
         avatar: user.avatar ?? undefined,
         clerkId: user.clerkId ?? undefined,
+        hasPassword: !!user.password,
       };
     } else {
       const result = await db

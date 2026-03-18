@@ -164,6 +164,7 @@ export function ChatInterface({
     null
   );
   const [isProposalsExpanded, setIsProposalsExpanded] = useState(false);
+  const [inviteDismissed, setInviteDismissed] = useState(false);
 
   // Add state for selected studio invite
   const [selectedInvite, setSelectedInvite] = useState<{
@@ -724,6 +725,42 @@ export function ChatInterface({
           </div>
         </ScrollArea>
       </div>
+
+      {/* Invite Client Banner — shows when artist is chatting with an imported client who hasn't signed up */}
+      {isArtist &&
+        conversation.otherUser &&
+        !(conversation.otherUser as any).hasPassword &&
+        (conversation.otherUser as any).phone &&
+        !inviteDismissed && (() => {
+          const clientFirst = (conversation.otherUser as any).firstName || (conversation.otherUser as any).name?.split(/\s+/)[0] || "there";
+          const phone = (conversation.otherUser as any).phone;
+          const appUrl = `${window.location.origin}/signup`;
+          const smsBody = encodeURIComponent(`Hey ${clientFirst}, I'm using a new app for my bookings. You can sign up here to stay in the loop and book directly: ${appUrl}`);
+          // Android uses sms:?body=, iOS uses sms:&body=
+          const isIOS = /iPhone|iPad/.test(navigator.userAgent);
+          const smsHref = `sms:${phone}${isIOS ? "&" : "?"}body=${smsBody}`;
+          return (
+            <div
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-2"
+            >
+              <span className="text-xs text-amber-200/80 flex-1">
+                📱 <strong>{clientFirst}</strong> hasn't signed up yet
+              </span>
+              <a
+                href={smsHref}
+                className="shrink-0 px-3 py-1 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
+              >
+                Invite via SMS
+              </a>
+              <button
+                onClick={() => setInviteDismissed(true)}
+                className="shrink-0 p-1 rounded-md hover:bg-white/10 transition-colors text-muted-foreground"
+              >
+                <XIcon className="w-3 h-3" />
+              </button>
+            </div>
+          );
+        })()}
 
       {/* Floating Bottom Input & Actions */}
       <div
