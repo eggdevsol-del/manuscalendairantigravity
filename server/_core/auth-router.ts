@@ -35,10 +35,12 @@ export const authRouter = router({
         name: z.string().min(1, "Name is required"),
         role: z.enum(["client", "artist", "studio"]).optional(),
         studioName: z.string().optional(),
+        phone: z.string().max(20).optional(),
+        birthday: z.string().max(20).optional(),
       })
     )
     .mutation(async ({ input }) => {
-      const { email, password, name, role = "client", studioName } = input;
+      const { email, password, name, role = "client", studioName, phone, birthday } = input;
 
       // Check if user already exists
       const existingUser = await getUserByEmail(email);
@@ -64,6 +66,8 @@ export const authRouter = router({
         role,
         loginMethod: "email",
         hasCompletedOnboarding: 0,
+        ...(phone ? { phone } : {}),
+        ...(birthday ? { birthday } : {}),
       });
 
       if (!user) {

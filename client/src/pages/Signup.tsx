@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import {
   Button,
-  Card,
   CardContent,
   CardDescription,
   CardHeader,
@@ -15,16 +14,16 @@ import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, UserPlus, Mail, User } from "lucide-react";
+import { Eye, EyeOff, Loader2, UserPlus, Mail, User, Phone, CalendarDays } from "lucide-react";
 
 export default function Signup() {
   const [, setLocation] = useLocation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [birthday, setBirthday] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<"artist" | "studio">("artist");
-  const [studioName, setStudioName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,46 +32,31 @@ export default function Signup() {
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: data => {
-      // Store JWT token in localStorage
       localStorage.setItem("authToken", data.token);
-
-      // Store user info
       localStorage.setItem("user", JSON.stringify(data.user));
-
-      toast.success("Account created successfully!");
-
-      // Redirect based on role
-      if (data.user.role === "studio") {
-        setLocation("/studio");
-      } else {
-        setLocation("/calendar");
-      }
-
+      toast.success("Account created! Welcome to TATTOI.");
+      setLocation("/calendar");
       setIsLoading(false);
     },
     onError: error => {
-      // Check if this is an "email exists" error
       if (
         error.data?.code === "CONFLICT" ||
         error.message.includes("already exists")
       ) {
-        // Check if it's a funnel client
         checkEmailMutation.mutate(
           { email },
           {
             onSuccess: result => {
               if (result.exists && result.isFunnelClient) {
-                // Redirect to set password page
                 toast.info(
-                  "You've already submitted a consultation! Let's set up your password."
+                  "Looks like you've already been in touch with your artist. Let's set up your password."
                 );
                 setLocation(
                   `/set-password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(result.name || name)}`
                 );
               } else if (result.exists) {
-                // User has a password, suggest login
                 toast.error(
-                  "An account with this email already exists. Please sign in instead."
+                  "An account with this email already exists. Try signing in instead."
                 );
               }
               setIsLoading(false);
@@ -94,7 +78,7 @@ export default function Signup() {
     e.preventDefault();
 
     if (!name || !email || !password || !confirmPassword) {
-      toast.error("Please fill in all fields");
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -110,45 +94,42 @@ export default function Signup() {
 
     setIsLoading(true);
 
-    // First check if email exists and is a funnel client
     checkEmailMutation.mutate(
       { email },
       {
         onSuccess: result => {
           if (result.exists && result.isFunnelClient) {
-            // Redirect to set password page
             toast.info(
-              "You've already submitted a consultation! Let's set up your password."
+              "Looks like you've already been in touch with your artist. Let's set up your password."
             );
             setLocation(
               `/set-password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(result.name || name)}`
             );
             setIsLoading(false);
           } else if (result.exists) {
-            // User has a password, suggest login
             toast.error(
-              "An account with this email already exists. Please sign in instead."
+              "An account with this email already exists. Try signing in instead."
             );
             setIsLoading(false);
           } else {
-            // New user, proceed with registration
             registerMutation.mutate({
               name,
               email,
               password,
-              role,
-              ...(role === "studio" ? { studioName } : {}),
+              role: "client",
+              ...(phone ? { phone } : {}),
+              ...(birthday ? { birthday } : {}),
             });
           }
         },
         onError: () => {
-          // If check fails, try to register anyway
           registerMutation.mutate({
             name,
             email,
             password,
-            role,
-            ...(role === "studio" ? { studioName } : {}),
+            role: "client",
+            ...(phone ? { phone } : {}),
+            ...(birthday ? { birthday } : {}),
           });
         },
       }
@@ -166,13 +147,14 @@ export default function Signup() {
             Create Account
           </CardTitle>
           <CardDescription className="text-base font-medium">
-            Join us to book appointments and connect with artists
+            Sign up to book appointments and stay connected with your artist
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Full Name */}
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">Full Name <span className="text-red-400">*</span></Label>
               <div className="relative">
                 <User className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
                 <Input
@@ -189,8 +171,9 @@ export default function Signup() {
               </div>
             </div>
 
+            {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email <span className="text-red-400">*</span></Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
                 <Input
@@ -207,8 +190,47 @@ export default function Signup() {
               </div>
             </div>
 
+            {/* Phone */}
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="phone">Phone Number</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="04XX XXX XXX"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  variant="hero"
+                  className="pl-10"
+                  disabled={isLoading}
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground/70">
+                So your artist can send you appointment reminders
+              </p>
+            </div>
+
+            {/* Birthday */}
+            <div className="space-y-2">
+              <Label htmlFor="birthday">Date of Birth</Label>
+              <div className="relative">
+                <CalendarDays className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
+                <Input
+                  id="birthday"
+                  type="date"
+                  value={birthday}
+                  onChange={e => setBirthday(e.target.value)}
+                  variant="hero"
+                  className="pl-10"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div className="space-y-2">
+              <Label htmlFor="password">Password <span className="text-red-400">*</span></Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -237,8 +259,9 @@ export default function Signup() {
               </div>
             </div>
 
+            {/* Confirm Password */}
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">Confirm Password <span className="text-red-400">*</span></Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
@@ -265,76 +288,6 @@ export default function Signup() {
                 </button>
               </div>
             </div>
-
-            <div className="space-y-3">
-              <Label>I am a...</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRole("artist")}
-                  className={cn(
-                    "p-4 rounded-xl border-2 transition-all outline-none",
-                    role === "artist"
-                      ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(var(--primary-rgb),0.15)]"
-                      : "border-white/10 bg-white/5 hover:bg-white/10"
-                  )}
-                  disabled={isLoading}
-                >
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">🎨</div>
-                    <div className="font-semibold text-foreground">Artist</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Independent booking
-                    </div>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole("studio")}
-                  className={cn(
-                    "p-4 rounded-xl border-2 transition-all outline-none",
-                    role === "studio"
-                      ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(var(--primary-rgb),0.15)]"
-                      : "border-white/10 bg-white/5 hover:bg-white/10"
-                  )}
-                  disabled={isLoading}
-                >
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">🏢</div>
-                    <div className="font-semibold text-foreground">Studio</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Manage a team
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            {role === "studio" && (
-              <div className="space-y-2 animate-in fade-in slide-in-from-top-4 duration-300">
-                <Label htmlFor="studioName">
-                  Studio Name{" "}
-                  <span className="text-muted-foreground font-normal">
-                    (Optional)
-                  </span>
-                </Label>
-                <div className="relative">
-                  <div className="absolute left-3 top-4 h-5 w-5 text-muted-foreground flex items-center justify-center">
-                    🏢
-                  </div>
-                  <Input
-                    id="studioName"
-                    type="text"
-                    placeholder="e.g. Inked Collective"
-                    value={studioName}
-                    onChange={e => setStudioName(e.target.value)}
-                    variant="hero"
-                    className="pl-10"
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-            )}
 
             <Button
               type="submit"
