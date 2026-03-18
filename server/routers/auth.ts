@@ -36,6 +36,13 @@ export const authRouter = router({
   setRole: protectedProcedure
     .input(z.enum(["artist", "client"]))
     .mutation(async ({ ctx, input }) => {
+      // Only allow role selection during onboarding (before completion)
+      if (ctx.user.hasCompletedOnboarding) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Role cannot be changed after onboarding is complete",
+        });
+      }
       return db.updateUserProfile(ctx.user.id, {
         role: input,
       });

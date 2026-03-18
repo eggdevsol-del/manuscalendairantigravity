@@ -1,9 +1,9 @@
-import { router, publicProcedure } from "../_core/trpc";
+import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { MediaService } from "../services/media.service";
 
 export const uploadRouter = router({
-  uploadImage: publicProcedure
+  uploadImage: protectedProcedure
     .input(
       z.object({
         fileData: z.string().optional(), // Base64 string (legacy)

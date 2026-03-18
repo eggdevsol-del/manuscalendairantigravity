@@ -2,6 +2,7 @@ import "dotenv/config";
 import fs from "fs";
 import express from "express";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
@@ -16,6 +17,34 @@ import { startOutboxWorker } from "../workers/outboxProcessor";
 import { registerPublicFunnelRoutes } from "./publicFunnelRoutes";
 import { handleStripeWebhook } from "../services/stripe";
 import "../services/notificationOrchestrator";
+
+// ── Rate Limiters ──────────────────────────────────────────────
+// General API limiter: 100 requests per 15 minutes per IP
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later." },
+});
+
+// Strict limiter for public funnel submit: 10 per 15 minutes per IP
+const funnelSubmitLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many submissions, please try again later." },
+});
+
+// Upload limiter: 20 per minute per IP
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many uploads, please try again later." },
+});
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -113,6 +142,8 @@ async function startServer() {
   app.use("/uploads", express.static(uploadDir));
 
   // Public funnel API routes (no auth required)
+  // Apply strict rate limit to funnel submit endpoint
+  app.use("/api/public/funnel/submit", funnelSubmitLimiter);
   registerPublicFunnelRoutes(app);
 
   // Version endpoint for cache-busting (returns current server version)
@@ -154,7 +185,9 @@ async function startServer() {
       res.status(500).json({ error: "Failed to retrieve file" });
     }
   });
-  // tRPC API
+  // tRPC API — rate limited and upload-specific limiter
+  app.use("/api/trpc/upload", uploadLimiter);
+  app.use("/api/trpc", apiLimiter);
   app.use(
     "/api/trpc",
     createExpressMiddleware({
@@ -164,7 +197,6 @@ async function startServer() {
         console.error(`[tRPC Error] Path: ${path}`);
         console.error(`[tRPC Error] Code: ${error.code}`);
         console.error(`[tRPC Error] Message: ${error.message}`);
-        console.error(`[tRPC Error] Stack:`, error.stack);
       },
     })
   );

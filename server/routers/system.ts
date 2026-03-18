@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { systemRouter as coreSystemRouter } from "../_core/systemRouter";
-import { publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, router } from "../_core/trpc";
 import { createLog } from "../services/systemLogService";
 
 export const systemRouter = router({
   ...coreSystemRouter._def.procedures,
-  addLog: publicProcedure
+  addLog: protectedProcedure
     .input(
       z.object({
         level: z.enum(["debug", "info", "warn", "error"]),

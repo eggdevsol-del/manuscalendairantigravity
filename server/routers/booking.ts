@@ -159,17 +159,18 @@ export const bookingRouter = router({
       });
 
       const rawAppts = await db.getArtistCalendar(artistId, startDate, endDate);
+      // Only show confirmed and completed — pending bookings should NOT block public calendar
       const validAppts = rawAppts.filter(
         (a) =>
           a.status === "confirmed" ||
-          a.status === "pending" ||
           a.status === "completed" ||
           a.status === "no-show"
       );
 
+      // Public response only exposes busy percentage per day — NOT exact durations or times
       const indicators: Record<
         string,
-        { duration: number; color: string; percentage: number }[]
+        { color: string; percentage: number }[]
       > = {};
 
       for (const appt of validAppts) {
@@ -201,7 +202,6 @@ export const bookingRouter = router({
         }
 
         indicators[dateKey].push({
-          duration: durationMinutes,
           color,
           percentage,
         });

@@ -105,3 +105,26 @@ temp/
 *.db
 *.sqlite
 *.sqlite3
+
+# Security — leaked keys and secrets
+temp_keys.json
+temp_keys.ts
+
+# Debug and audit artifacts
+*.log
+*.txt
+!README.md
+!ARCHITECTURE.md
+!DEPLOYMENT.md
+!DEPLOY_INSTRUCTIONS.md
+!DEVELOPMENT.md
+audit_report*.md
+deep_audit_report*.md
+complete_codebase.txt
+outbox.json
+fix_*.sql
+repro_*.ts
+check_*.ts
+create-test-session.ts
+test_*.ts
+test-*.ts
