@@ -199,7 +199,7 @@ export default function Signup() {
               name,
               email,
               password,
-              role: "client",
+              role: referralArtistId ? "client" : "artist",
               ...(phone ? { phone } : {}),
               ...(birthday ? { birthday } : {}),
               ...(gender ? { gender: gender as any } : {}),
@@ -214,7 +214,7 @@ export default function Signup() {
             name,
             email,
             password,
-            role: "client",
+            role: referralArtistId ? "client" : "artist",
             ...(phone ? { phone } : {}),
             ...(birthday ? { birthday } : {}),
             ...(gender ? { gender: gender as any } : {}),
@@ -406,10 +406,12 @@ export default function Signup() {
             <UserPlus className="w-8 h-8 text-primary" />
           </div>
           <CardTitle className="text-3xl font-bold tracking-tight text-foreground">
-            Create Account
+            {referralArtistId ? "Create Account" : "Create Artist Account"}
           </CardTitle>
           <CardDescription className="text-base font-medium">
-            Sign up to book appointments and stay connected with your artist
+            {referralArtistId
+              ? "Sign up to book appointments and stay connected with your artist"
+              : "Set up your booking link and start managing clients"}
           </CardDescription>
         </CardHeader>
         <CardContent>

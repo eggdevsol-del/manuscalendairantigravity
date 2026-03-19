@@ -12,7 +12,6 @@ import {
   Check,
   Info,
   Sparkles,
-  Building,
   User,
   ArrowRight,
 } from "lucide-react";
@@ -47,24 +46,6 @@ export default function Subscriptions() {
         "Digital Intake & Consent Forms",
         "Waitlist & Flash Tattoo Claims",
         "Basic Analytics Dashboard",
-      ],
-      isPopular: false,
-      color: "blue",
-    },
-    {
-      id: "studio",
-      name: "Studio Manager",
-      icon: Building,
-      tagline: "Scale your business with shared resources & team scheduling.",
-      priceMonthly: 99,
-      priceAnnual: 79, // $948/yr
-      features: [
-        "Everything in Solo",
-        "Multi-Artist Master Calendar",
-        "Centralized Client Database",
-        "Owner / Manager / Artist Roles",
-        "Studio Analytics & Revenue Reports",
-        "+$15/mo per additional seat",
       ],
       isPopular: true,
       color: "purple",
@@ -115,9 +96,9 @@ export default function Subscriptions() {
     },
   });
 
-  const handleAction = (planId: "solo" | "studio") => {
+  const handleAction = (planId: string) => {
     // BYPASS STRIPE FOR TESTING
-    testUpgradeStudio.mutate({ tier: planId });
+    testUpgradeStudio.mutate({ tier: planId as any });
   };
 
   const isPending =
