@@ -159,6 +159,26 @@ export function ChatInterface({
       }));
   }, [messages]);
 
+  // Fetch appointments for this conversation (catches imported appointments too)
+  const { data: conversationAppointments } =
+    trpc.appointments.getByConversation.useQuery(conversationId, {
+      enabled: !!conversation && conversationId > 0,
+      staleTime: 30000,
+    });
+
+  // Derive upcoming appointments (confirmed/pending/in-progress with future dates)
+  const upcomingAppointments = useMemo(() => {
+    if (!conversationAppointments) return [];
+    const now = new Date();
+    return conversationAppointments.filter((appt: any) => {
+      const endTime = new Date(appt.endTime);
+      return (
+        endTime > now &&
+        ["confirmed", "pending", "in-progress"].includes(appt.status)
+      );
+    });
+  }, [conversationAppointments]);
+
   const [showBookingWizard, setShowBookingWizard] = useState(false);
   const [selectedMediaImage, setSelectedMediaImage] = useState<string | null>(
     null
@@ -588,6 +608,83 @@ export function ChatInterface({
                   <>View all ({pinnedProposals.length})</>
                 )}
               </Button>
+            )}
+          </div>
+        )}
+
+        {/* Upcoming Appointments Banner — shows for imported/direct appointments when no pinned proposals */}
+        {pinnedProposals.length === 0 && upcomingAppointments.length > 0 && (
+          <div className="px-3 py-2 border-b border-white/5 bg-primary/5 space-y-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-semibold px-1 mb-1">
+              Upcoming Appointments
+            </p>
+            {upcomingAppointments.slice(0, 3).map((appt: any) => (
+              <button
+                key={appt.id}
+                onClick={() => {
+                  // Open booking wizard with this appointment's details
+                  handleViewProposal(
+                    { id: -1, messageType: "appointment_request" },
+                    {
+                      type: "project_proposal",
+                      status: appt.status === "confirmed" ? "accepted" : "pending",
+                      serviceName: appt.serviceName || appt.title,
+                      dates: [appt.startTime],
+                      proposedDates: [appt.startTime],
+                      duration: appt.serviceName ? undefined : undefined,
+                      totalCost: appt.price || 0,
+                      appointmentIds: [appt.id],
+                    }
+                  );
+                  setFABOpen(true);
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-left group"
+              >
+                <div className="p-1.5 rounded-lg bg-primary/15 text-primary shrink-0">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {appt.title || appt.serviceName || "Appointment"}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {new Date(appt.startTime).toLocaleDateString(undefined, {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                    {" · "}
+                    {new Date(appt.startTime).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {appt.price != null && appt.price > 0 && (
+                    <span className="text-xs font-medium text-muted-foreground">
+                      ${appt.price.toLocaleString()}
+                    </span>
+                  )}
+                  <span
+                    className={cn(
+                      "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full",
+                      appt.status === "confirmed"
+                        ? "bg-green-500/15 text-green-400"
+                        : appt.status === "in-progress"
+                          ? "bg-blue-500/15 text-blue-400"
+                          : "bg-amber-500/15 text-amber-400"
+                    )}
+                  >
+                    {appt.status}
+                  </span>
+                </div>
+              </button>
+            ))}
+            {upcomingAppointments.length > 3 && (
+              <p className="text-xs text-muted-foreground text-center py-1">
+                +{upcomingAppointments.length - 3} more
+              </p>
             )}
           </div>
         )}
