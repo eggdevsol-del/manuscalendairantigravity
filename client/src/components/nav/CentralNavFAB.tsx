@@ -228,14 +228,22 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
   });
 
   const handleCopyLink = () => {
-    if (!artistSettings?.publicSlug) {
-      toast.info("Booking link not configured yet. Let's set it up!");
-      handleViewChange("booking-link");
-      return;
+    if (isArtist) {
+      // Artist: copy booking link
+      if (!artistSettings?.publicSlug) {
+        toast.info("Booking link not configured yet. Let's set it up!");
+        handleViewChange("booking-link");
+        return;
+      }
+      const url = `${window.location.origin}/start/${artistSettings.publicSlug}`;
+      navigator.clipboard.writeText(url);
+      toast.success("Booking link copied to clipboard!");
+    } else {
+      // Client: copy referral signup link
+      const url = `${window.location.origin}/signup?ref=${user?.id || ""}`;
+      navigator.clipboard.writeText(url);
+      toast.success("Referral link copied to clipboard!");
     }
-    const url = `${window.location.origin}/start/${artistSettings.publicSlug}`;
-    navigator.clipboard.writeText(url);
-    toast.success("Booking link copied to clipboard!");
   };
 
   const permanentItems: FABMenuItem[] = [
@@ -248,7 +256,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
     },
     {
       id: "copy-link",
-      label: "Booking Link",
+      label: isArtist ? "Booking Link" : "Referral Link",
       icon: Link,
       onClick: handleCopyLink,
     },
