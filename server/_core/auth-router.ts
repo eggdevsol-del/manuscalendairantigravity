@@ -14,6 +14,7 @@ import {
   updateUserLastSignedIn,
   getUserById,
   updateUserPassword,
+  createConversation,
 } from "../db";
 import { getDb } from "../services/core";
 import { eq, and } from "drizzle-orm";
@@ -40,10 +41,11 @@ export const authRouter = router({
         gender: z.enum(["male", "female", "other", "prefer_not_to_say"]).optional(),
         city: z.string().max(100).optional(),
         country: z.string().max(100).optional(),
+        referralArtistId: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
-      const { email, password, name, role = "client", studioName, phone, birthday, gender, city, country } = input;
+      const { email, password, name, role = "client", studioName, phone, birthday, gender, city, country, referralArtistId } = input;
 
       // Check if user already exists
       const existingUser = await getUserByEmail(email);
@@ -114,6 +116,19 @@ export const authRouter = router({
 
       // Generate JWT token
       const token = generateToken({ id: user.id, email: user.email as string });
+
+      // Auto-connect with referring artist (creates conversation)
+      if (referralArtistId && role === "client") {
+        try {
+          await createConversation({
+            artistId: referralArtistId,
+            clientId: user.id,
+          });
+        } catch (e) {
+          // Non-fatal: conversation may already exist from import
+          console.log("[Auth] Referral conversation creation:", (e as any)?.message || e);
+        }
+      }
 
       return {
         user: {

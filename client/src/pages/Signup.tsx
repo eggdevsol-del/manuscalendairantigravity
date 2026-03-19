@@ -50,6 +50,12 @@ export default function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Referral artist ID from SMS invite link (?ref=user_xxx)
+  const [referralArtistId] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("ref") || undefined;
+  });
+
   // Google OAuth state — stored so we can update profile after completion
   const [googleToken, setGoogleToken] = useState<string | null>(null);
 
@@ -199,6 +205,7 @@ export default function Signup() {
               ...(gender ? { gender: gender as any } : {}),
               ...(city ? { city } : {}),
               ...(country ? { country } : {}),
+              ...(referralArtistId ? { referralArtistId } : {}),
             });
           }
         },
@@ -213,6 +220,7 @@ export default function Signup() {
             ...(gender ? { gender: gender as any } : {}),
             ...(city ? { city } : {}),
             ...(country ? { country } : {}),
+            ...(referralArtistId ? { referralArtistId } : {}),
           });
         },
       }

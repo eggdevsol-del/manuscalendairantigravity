@@ -849,10 +849,7 @@ export function ChatInterface({
           !inviteDismissed && (() => {
             const clientFirst = (conversation.otherUser as any).firstName || (conversation.otherUser as any).name?.split(/\s+/)[0] || "there";
             const phone = (conversation.otherUser as any).phone;
-            const artistSlug = (artistSettings as any)?.publicSlug;
-            const appUrl = artistSlug
-              ? `${window.location.origin}/start/${artistSlug}`
-              : `${window.location.origin}/signup`;
+            const appUrl = `${window.location.origin}/signup?ref=${user?.id || ""}`;
             const smsBody = encodeURIComponent(`Hey ${clientFirst}, I'm using a new app for my bookings. You can sign up here to stay in the loop and book directly: ${appUrl}`);
             const isIOS = /iPhone|iPad/.test(navigator.userAgent);
             const smsHref = `sms:${phone}${isIOS ? "&" : "?"}body=${smsBody}`;
