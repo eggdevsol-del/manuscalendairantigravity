@@ -84,8 +84,7 @@ function TripCard({ trip, onRemove, onEdit }: { trip: Trip; onRemove: () => void
     return (
         <div
             ref={cardRef}
-            className="relative overflow-hidden border border-white/10 hover:border-white/20 transition-colors cursor-pointer"
-            style={{ borderRadius: "var(--radius)" }}
+            className="relative overflow-hidden border border-white/10 hover:border-white/20 transition-colors cursor-pointer rounded-2xl"
             onClick={() => setFabOpen(prev => !prev)}
         >
             {/* Full satellite map background — 100% opacity */}
@@ -141,8 +140,7 @@ function TripCard({ trip, onRemove, onEdit }: { trip: Trip; onRemove: () => void
                 <button
                     onClick={handleNotify}
                     disabled={scanning || matchQuery.isLoading}
-                    className="w-full h-10 flex items-center justify-center gap-2 text-sm font-semibold text-white backdrop-blur-xl bg-white/10 border border-white/15 hover:bg-white/15 transition-all disabled:opacity-60"
-                    style={{ borderRadius: "var(--radius-sm)" }}
+                    className="w-full h-10 flex items-center justify-center gap-2 text-sm font-semibold text-white backdrop-blur-xl bg-white/10 border border-white/15 hover:bg-white/15 transition-all disabled:opacity-60 rounded-xl"
                 >
                     {scanning || matchQuery.isLoading ? (
                         <><Loader2 className="w-4 h-4 animate-spin" /> Scanning Clients...</>
@@ -157,8 +155,8 @@ function TripCard({ trip, onRemove, onEdit }: { trip: Trip; onRemove: () => void
             {/* Edit FAB Menu — appears on card tap */}
             {fabOpen && (
                 <div
-                    className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-md bg-black/50 animate-in fade-in duration-200"
-                    style={{ borderRadius: "var(--radius)" }}
+                    className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-md bg-black/50 animate-in fade-in duration-200 rounded-2xl"
+
                 >
                     <div className="flex gap-3">
                         <button
