@@ -83,10 +83,10 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
     const handleSaveCalendar = () => {
         if (!extCalendarUrl) return;
         setIsSavingUrl(true);
-        upsertMutation.mutate({ 
-            appleCalendarUrl: extCalendarUrl, 
-            workSchedule: artistSettings?.workSchedule || "{}", 
-            services: artistSettings?.services || "[]" 
+        upsertMutation.mutate({
+            appleCalendarUrl: extCalendarUrl,
+            workSchedule: artistSettings?.workSchedule || "{}",
+            services: artistSettings?.services || "[]"
         });
     };
 
@@ -335,15 +335,15 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                     <div className="flex gap-2">
                                         <div className="relative flex-1">
                                             <Link2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <Input 
+                                            <Input
                                                 value={extCalendarUrl}
                                                 onChange={(e) => setExtCalendarUrl(e.target.value)}
-                                                placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" 
+                                                placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
                                                 className="pl-9 h-10 text-xs bg-black/20 border-white/10"
                                             />
                                         </div>
-                                        <Button 
-                                            variant="secondary" 
+                                        <Button
+                                            variant="secondary"
                                             className="h-10 text-[11px] font-bold shrink-0 whitespace-nowrap bg-white/10 hover:bg-white/20"
                                             disabled={!extCalendarUrl || isSavingUrl}
                                             onClick={handleSaveCalendar}
