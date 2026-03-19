@@ -197,6 +197,59 @@ async function startServer() {
       res.status(500).json({ error: "Failed to retrieve file" });
     }
   });
+  // ── Map image proxy ───────────────────────────────────────────
+  // Direct Express route that streams Google Maps Static images as PNG.
+  // Avoids base64/tRPC overhead and keeps the API key server-side.
+  app.get("/api/map-image", async (req, res) => {
+    try {
+      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+      if (!apiKey) {
+        console.error("[Map Image] GOOGLE_MAPS_API_KEY not set");
+        return res.status(503).end();
+      }
+
+      const lat = parseFloat(req.query.lat as string);
+      const lng = parseFloat(req.query.lng as string);
+      const width = parseInt(req.query.w as string) || 600;
+      const height = parseInt(req.query.h as string) || 200;
+      const zoom = parseInt(req.query.z as string) || 11;
+
+      if (isNaN(lat) || isNaN(lng)) {
+        return res.status(400).json({ error: "lat and lng are required" });
+      }
+
+      // Dark style with no labels
+      const styles = [
+        "style=element:geometry|color:0x1a1a2e",
+        "style=element:labels|visibility:off",
+        "style=feature:road|element:geometry|color:0x2a2a4a",
+        "style=feature:water|element:geometry|color:0x0d0d1a",
+        "style=feature:landscape|element:geometry|color:0x16162b",
+        "style=feature:poi|visibility:off",
+        "style=feature:transit|visibility:off",
+      ].join("&");
+
+      const url = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${zoom}&size=${width}x${height}&scale=2&maptype=roadmap&${styles}&key=${apiKey}`;
+
+      console.log("[Map Image] Fetching map for", lat, lng);
+      const googleRes = await fetch(url);
+
+      if (!googleRes.ok) {
+        console.error("[Map Image] Google returned", googleRes.status, await googleRes.text());
+        return res.status(502).end();
+      }
+
+      res.setHeader("Content-Type", "image/png");
+      res.setHeader("Cache-Control", "public, max-age=604800"); // 7-day cache
+
+      const arrayBuffer = await googleRes.arrayBuffer();
+      res.send(Buffer.from(arrayBuffer));
+    } catch (err) {
+      console.error("[Map Image] Error:", err);
+      res.status(500).end();
+    }
+  });
+
   // tRPC API — rate limited and upload-specific limiter
   app.use("/api/trpc/upload", uploadLimiter);
   app.use("/api/trpc", apiLimiter);

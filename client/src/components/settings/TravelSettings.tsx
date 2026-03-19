@@ -19,6 +19,8 @@ interface Trip {
 
 /** Individual trip card with map background */
 function TripCard({ trip, onRemove }: { trip: Trip; onRemove: () => void }) {
+    const [mapLoaded, setMapLoaded] = useState(false);
+
     // For trips without lat/lng, geocode from city name
     const geocodeQuery = trpc.places.geocode.useQuery(
         { address: `${trip.location}, ${trip.country}` },
@@ -32,29 +34,30 @@ function TripCard({ trip, onRemove }: { trip: Trip; onRemove: () => void }) {
     const lat = trip.lat ?? geocodeQuery.data?.lat;
     const lng = trip.lng ?? geocodeQuery.data?.lng;
 
-    const { data: mapData } = trpc.places.staticMap.useQuery(
-        { lat: lat!, lng: lng!, width: 600, height: 200, zoom: 11 },
-        { enabled: !!(lat && lng), staleTime: Infinity, refetchOnWindowFocus: false }
-    );
+    // Build the direct image URL — bypasses tRPC entirely
+    const mapSrc = lat && lng
+        ? `/api/map-image?lat=${lat}&lng=${lng}&w=600&h=200&z=11`
+        : null;
 
     return (
-        <div className="relative bg-white/5 border border-white/5 rounded-[4px] overflow-hidden hover:border-white/10 transition-colors">
-            {/* Map background layer */}
-            {mapData?.imageUrl && (
+        <div className="relative bg-white/5 border border-white/5 rounded-[4px] overflow-hidden hover:border-white/10 transition-colors min-h-[72px]">
+            {/* Map background — loaded as a normal image via Express proxy */}
+            {mapSrc && (
                 <img
-                    src={mapData.imageUrl}
+                    src={mapSrc}
                     alt=""
-                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-                    style={{ opacity: 0.35 }}
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-500"
+                    style={{ opacity: mapLoaded ? 0.35 : 0 }}
                     draggable={false}
+                    onLoad={() => setMapLoaded(true)}
                 />
             )}
 
-            {/* Combined gradient overlay: subtle on left (map shows), opaque on right (text area) */}
+            {/* Gradient overlay: visible map on left, fades to dark on right */}
             <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                    background: "linear-gradient(to right, rgba(10,10,25,0.4) 0%, rgba(10,10,25,0.75) 55%, rgba(10,10,25,0.92) 100%)",
+                    background: "linear-gradient(to right, rgba(10,10,25,0.35) 0%, rgba(10,10,25,0.7) 50%, rgba(10,10,25,0.92) 100%)",
                 }}
             />
 
