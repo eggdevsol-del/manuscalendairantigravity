@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Settings, Plus, Sun, Moon, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane } from "lucide-react";
+import { Settings, Plus, Sun, Moon, Crown, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane } from "lucide-react";
 import { useLocation } from "wouter";
 import { FABMenu, FABMenuItem } from "@/ui/FABMenu";
 import { cn } from "@/lib/utils";
@@ -241,8 +241,8 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
   const permanentItems: FABMenuItem[] = [
     {
       id: "theme",
-      label: theme === "dark" ? "Light Mode" : "Dark Mode",
-      icon: theme === "dark" ? Sun : Moon,
+      label: theme === "dark" ? "Light Mode" : theme === "light" ? "Noir" : "Dark Mode",
+      icon: theme === "dark" ? Sun : theme === "light" ? Crown : Moon,
       onClick: () => toggleTheme?.(),
       closeOnClick: false, // Keep menu open to show change
     },

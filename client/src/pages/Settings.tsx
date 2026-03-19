@@ -13,6 +13,7 @@ import {
   Calendar,
   ChevronRight,
   Clock,
+  Crown,
   Link2,
   LogOut,
   MapPin,
@@ -141,11 +142,19 @@ export default function Settings() {
                     <ChevronRight className="w-5 h-5 text-muted-foreground" />
                   </div>
 
-                  <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                  <div
+                    className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                    onClick={toggleTheme}
+                  >
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
+                      <div className={cn(
+                        "p-2 rounded-xl",
+                        theme === "noir" ? "bg-amber-500/20 text-amber-400" : "bg-purple-500/20 text-purple-400"
+                      )}>
                         {theme === "dark" ? (
                           <Moon className="w-5 h-5" />
+                        ) : theme === "noir" ? (
+                          <Crown className="w-5 h-5" />
                         ) : (
                           <Sun className="w-5 h-5" />
                         )}
@@ -155,14 +164,11 @@ export default function Settings() {
                           Appearance
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {theme === "dark" ? "Dark Mode" : "Light Mode"}
+                          {theme === "dark" ? "Dark Mode" : theme === "noir" ? "Noir Mode" : "Light Mode"}
                         </p>
                       </div>
                     </div>
-                    <Switch
-                      checked={theme === "dark"}
-                      onCheckedChange={toggleTheme}
-                    />
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
                   </div>
                 </div>
               </Card>
