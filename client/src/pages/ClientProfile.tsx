@@ -16,7 +16,7 @@ import {
   User,
   ToggleLeft,
   ToggleRight,
-  LayoutTemplate,
+  MessageCircle,
 } from "lucide-react";
 import { NavActionButton } from "@/components/ui/ssot";
 
@@ -24,10 +24,13 @@ import { useTeaser } from "@/contexts/TeaserContext";
 import { Lock } from "lucide-react";
 import { InstallAppModal } from "@/components/modals/InstallAppModal";
 import { cn } from "@/lib/utils";
+import { trpc } from "@/lib/trpc";
+import { useLocation } from "wouter";
 
 export default function ClientProfile() {
   const { isTeaserClient } = useTeaser();
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [, setLocation] = useLocation();
 
   const {
     profile,
@@ -43,16 +46,21 @@ export default function ClientProfile() {
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [isBioModalOpen, setIsBioModalOpen] = useState(false);
-  const [activeTabId, setActiveTabId] = useState("upcoming");
+  const [activeTabId, setActiveTabId] = useState("artists");
 
   // Deep-linking to tabs via query param
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tab = params.get("tab");
-    if (tab && ["upcoming", "forms", "history", "photos"].includes(tab)) {
+    if (tab && ["artists", "upcoming", "forms", "history", "photos"].includes(tab)) {
       setActiveTabId(tab);
     }
   }, []);
+
+  // Fetch conversations to get connected artists
+  const { data: conversations } = trpc.conversations.list.useQuery(undefined, {
+    staleTime: 30000,
+  });
 
   // File Input Ref for Profile Pic
   const handleProfilePicUpload = () => {
@@ -100,8 +108,110 @@ export default function ClientProfile() {
 
   useRegisterBottomNavRow("client-profile", clientProfileActions);
 
+  // Artist cards content
+  const artistCardsContent = useMemo(() => {
+    if (!conversations || conversations.length === 0) {
+      return (
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center space-y-2">
+            <MessageCircle className="w-12 h-12 text-muted-foreground/30 mx-auto" />
+            <p className="text-muted-foreground text-sm">No artists yet</p>
+            <p className="text-muted-foreground/60 text-xs">Your artist connections will appear here</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="p-4 space-y-3 overflow-y-auto mobile-scroll h-full">
+        {conversations.map((conv: any) => {
+          const artist = conv.otherUser;
+          if (!artist) return null;
+
+          const bannerUrl = artist.funnelBannerUrl || null;
+          const artistName = artist.name || artist.firstName || "Artist";
+          const avatarUrl = artist.avatar || null;
+
+          return (
+            <button
+              key={conv.id}
+              onClick={() => setLocation(`/conversations/${conv.id}`)}
+              className="w-full relative rounded-2xl overflow-hidden group active:scale-[0.98] transition-all duration-200"
+              style={{ minHeight: "140px" }}
+            >
+              {/* Banner Background */}
+              {bannerUrl ? (
+                <img
+                  src={bannerUrl}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/20 to-primary/10" />
+              )}
+
+              {/* Overlay gradient for text readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+
+              {/* Content */}
+              <div className="relative z-10 flex items-end p-4 h-full" style={{ minHeight: "140px" }}>
+                <div className="flex items-center gap-3 w-full">
+                  {/* Artist Avatar */}
+                  <div className="w-12 h-12 rounded-full bg-white/10 border-2 border-white/20 overflow-hidden shrink-0 shadow-lg">
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt={artistName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary to-accent">
+                        <span className="text-white font-bold text-lg">
+                          {artistName.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Artist Info */}
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-white font-bold text-lg leading-tight truncate drop-shadow-md">
+                      {artistName}
+                    </p>
+                    {conv.unreadCount > 0 && (
+                      <p className="text-primary text-xs font-medium mt-0.5">
+                        {conv.unreadCount} unread message{conv.unreadCount > 1 ? "s" : ""}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Chat Arrow */}
+                  <div className="shrink-0 w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                    <MessageCircle className="w-5 h-5 text-white" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Unread badge overlay */}
+              {conv.unreadCount > 0 && (
+                <div className="absolute top-3 right-3 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-lg ring-2 ring-black/20">
+                  {conv.unreadCount > 9 ? "9+" : conv.unreadCount}
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }, [conversations, setLocation]);
+
   const tabs = useMemo(
     () => [
+      {
+        id: "artists",
+        label: "My Artists",
+        content: artistCardsContent,
+      },
       {
         id: "upcoming",
         label: "Upcoming",
@@ -123,7 +233,7 @@ export default function ClientProfile() {
         content: <PhotosCard photos={photos || []} isEditMode={isEditMode} />,
       },
     ],
-    [upcoming, forms, history, photos, isEditMode]
+    [upcoming, forms, history, photos, isEditMode, artistCardsContent]
   );
 
   return (
