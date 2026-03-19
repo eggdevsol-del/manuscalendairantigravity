@@ -218,15 +218,20 @@ async function startServer() {
         return res.status(400).json({ error: "lat and lng are required" });
       }
 
-      // Dark style with no labels
+      // Vibrant night-mode colour style — no labels, atmospheric feel
       const styles = [
-        "style=element:geometry|color:0x1a1a2e",
+        "style=element:geometry|color:0x212144",
         "style=element:labels|visibility:off",
-        "style=feature:road|element:geometry|color:0x2a2a4a",
-        "style=feature:water|element:geometry|color:0x0d0d1a",
-        "style=feature:landscape|element:geometry|color:0x16162b",
+        "style=feature:road|element:geometry|color:0x3a3a6a",
+        "style=feature:road|element:geometry.stroke|color:0x2a2a55",
+        "style=feature:water|element:geometry|color:0x1a3a5c",
+        "style=feature:water|element:geometry.stroke|color:0x144a6e",
+        "style=feature:landscape.natural|element:geometry|color:0x1e1e42",
+        "style=feature:landscape.man_made|element:geometry|color:0x252550",
+        "style=feature:poi.park|element:geometry|color:0x1a3040",
         "style=feature:poi|visibility:off",
         "style=feature:transit|visibility:off",
+        "style=feature:administrative|element:geometry.stroke|color:0x3a3a7a",
       ].join("&");
 
       const url = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${zoom}&size=${width}x${height}&scale=2&maptype=roadmap&${styles}&key=${apiKey}`;

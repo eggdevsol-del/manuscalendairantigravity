@@ -47,7 +47,7 @@ function TripCard({ trip, onRemove }: { trip: Trip; onRemove: () => void }) {
                     src={mapSrc}
                     alt=""
                     className="absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-500"
-                    style={{ opacity: mapLoaded ? 0.35 : 0 }}
+                    style={{ opacity: mapLoaded ? 0.55 : 0 }}
                     draggable={false}
                     onLoad={() => setMapLoaded(true)}
                 />
@@ -57,7 +57,7 @@ function TripCard({ trip, onRemove }: { trip: Trip; onRemove: () => void }) {
             <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                    background: "linear-gradient(to right, rgba(10,10,25,0.35) 0%, rgba(10,10,25,0.7) 50%, rgba(10,10,25,0.92) 100%)",
+                    background: "linear-gradient(to right, rgba(10,10,25,0.15) 0%, rgba(10,10,25,0.55) 45%, rgba(10,10,25,0.88) 100%)",
                 }}
             />
 
