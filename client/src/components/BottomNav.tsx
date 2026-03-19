@@ -58,10 +58,10 @@ export default function BottomNav() {
         key={item.id} // moved key here
         variant="ghost"
         className={cn(
-          "flex flex-col items-center justify-center gap-1.5 h-full min-w-[64px] flex-1 rounded-none hover:bg-gray-200/50 dark:hover:bg-white/5 transition-all relative shrink-0", // flex-1 for equal width, min-w-[64px] for safety
+          "flex flex-col items-center justify-center gap-1.5 h-full min-w-[64px] flex-1 rounded-none hover:bg-gray-200/50 dark:hover:bg-white/5 noir:hover:bg-white/5 transition-all relative shrink-0",
           active
-            ? "text-gray-900 dark:text-white"
-            : "text-gray-500 dark:text-white/40"
+            ? "text-gray-900 dark:text-white noir:text-white"
+            : "text-gray-500 dark:text-white/40 noir:text-white/40"
         )}
         onClick={item.action}
       >
@@ -70,8 +70,8 @@ export default function BottomNav() {
             className={cn(
               "w-6 h-6 transition-all duration-300",
               active
-                ? "text-gray-900 dark:text-white scale-110 drop-shadow-[0_0_8px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-                : "text-gray-500 dark:text-white/40 group-hover:text-gray-700 dark:group-hover:text-white/70"
+                ? "text-gray-900 dark:text-white noir:text-white scale-110 drop-shadow-[0_0_8px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] noir:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                : "text-gray-500 dark:text-white/40 noir:text-white/40 group-hover:text-gray-700 dark:group-hover:text-white/70 noir:group-hover:text-white/70"
             )}
             strokeWidth={active ? 2.5 : 2}
           />
@@ -93,14 +93,14 @@ export default function BottomNav() {
           className={cn(
             "text-[11px] font-medium tracking-wide transition-all duration-300",
             active
-              ? "text-gray-900 dark:text-white opacity-100"
-              : "text-gray-500 dark:text-white/40 opacity-70"
+              ? "text-gray-900 dark:text-white noir:text-white opacity-100"
+              : "text-gray-500 dark:text-white/40 noir:text-white/40 opacity-70"
           )}
         >
           {item.label}
         </span>
         {active && (
-          <div className="absolute bottom-2 w-1 h-1 rounded-full bg-gray-900 dark:bg-white shadow-[0_0_8px_rgba(0,0,0,0.3)] dark:shadow-[0_0_8px_white]" />
+          <div className="absolute bottom-2 w-1 h-1 rounded-full bg-gray-900 dark:bg-white noir:bg-white shadow-[0_0_8px_rgba(0,0,0,0.3)] dark:shadow-[0_0_8px_white] noir:shadow-[0_0_8px_white]" />
         )}
       </Button>
     );
@@ -110,7 +110,7 @@ export default function BottomNav() {
     <nav className="fixed bottom-0 inset-x-0 z-[50] select-none">
       {/* Main container - Animating Height instead of Transform */}
       <motion.div
-        className="bg-gray-100/90 dark:bg-slate-950/60 backdrop-blur-[32px] border-t border-gray-200 dark:border-white/10 overflow-hidden"
+        className="bg-gray-100/90 dark:bg-slate-950/60 noir:bg-black/80 backdrop-blur-[32px] border-t border-gray-200 dark:border-white/10 noir:border-white/10 overflow-hidden"
         initial={false}
         animate={{
           height: isContextualVisible ? ROW_HEIGHT * 2 : ROW_HEIGHT,
@@ -165,7 +165,7 @@ export default function BottomNav() {
            * Row 1: Contextual Actions
            */}
           <div
-            className="w-full flex items-center justify-start px-2 shrink-0 border-t border-gray-200 dark:border-white/5"
+            className="w-full flex items-center justify-start px-2 shrink-0 border-t border-gray-200 dark:border-white/5 noir:border-white/5"
             style={{
               height: ROW_HEIGHT,
             }}
