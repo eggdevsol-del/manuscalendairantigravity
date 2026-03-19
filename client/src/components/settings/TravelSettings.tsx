@@ -20,6 +20,8 @@ interface Trip {
 /** Individual trip card with map background */
 function TripCard({ trip, onRemove }: { trip: Trip; onRemove: () => void }) {
     const [mapLoaded, setMapLoaded] = useState(false);
+    const [scanning, setScanning] = useState(false);
+    const [matchCount, setMatchCount] = useState<number | null>(null);
 
     // For trips without lat/lng, geocode from city name
     const geocodeQuery = trpc.places.geocode.useQuery(
@@ -36,49 +38,101 @@ function TripCard({ trip, onRemove }: { trip: Trip; onRemove: () => void }) {
 
     // Build the direct image URL — bypasses tRPC entirely
     const mapSrc = lat && lng
-        ? `/api/map-image?lat=${lat}&lng=${lng}&w=600&h=200&z=11`
+        ? `/api/map-image?lat=${lat}&lng=${lng}&w=600&h=300&z=11`
         : null;
 
+    // Lazy query for client location matching
+    const matchQuery = trpc.artistSettings.matchClientsByLocation.useQuery(
+        { city: trip.location, country: trip.country },
+        { enabled: scanning, staleTime: 0, refetchOnWindowFocus: false }
+    );
+
+    useEffect(() => {
+        if (matchQuery.data && scanning) {
+            setScanning(false);
+            setMatchCount(matchQuery.data.total);
+            if (matchQuery.data.total > 0) {
+                toast.success(
+                    `Found ${matchQuery.data.total} client${matchQuery.data.total > 1 ? 's' : ''} near ${trip.location}!`,
+                    { description: matchQuery.data.clients.map((c: any) => c.name || c.email).join(', ') }
+                );
+            } else {
+                toast.info(`No clients found near ${trip.location}`);
+            }
+        }
+    }, [matchQuery.data, scanning]);
+
+    const handleNotify = () => {
+        setScanning(true);
+        setMatchCount(null);
+    };
+
     return (
-        <div className="relative bg-white/5 border border-white/5 rounded-[4px] overflow-hidden hover:border-white/10 transition-colors min-h-[72px]">
-            {/* Map background — loaded as a normal image via Express proxy */}
+        <div className="relative rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-colors">
+            {/* Full satellite map background — 100% opacity */}
             {mapSrc && (
                 <img
                     src={mapSrc}
                     alt=""
-                    className="absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-500"
-                    style={{ opacity: mapLoaded ? 0.55 : 0 }}
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-700"
+                    style={{ opacity: mapLoaded ? 1 : 0 }}
                     draggable={false}
                     onLoad={() => setMapLoaded(true)}
                 />
             )}
 
-            {/* Gradient overlay: visible map on left, fades to dark on right */}
+            {/* Gradient overlay — keeps text readable on the right */}
             <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                    background: "linear-gradient(to right, rgba(10,10,25,0.15) 0%, rgba(10,10,25,0.55) 45%, rgba(10,10,25,0.88) 100%)",
+                    background: "linear-gradient(to right, rgba(10,10,25,0.25) 0%, rgba(10,10,25,0.6) 40%, rgba(10,10,25,0.85) 100%)",
+                }}
+            />
+
+            {/* Bottom vignette for button area */}
+            <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                    background: "linear-gradient(to top, rgba(10,10,25,0.7) 0%, transparent 40%)",
                 }}
             />
 
             {/* Card content */}
-            <div className="relative z-10 p-4 flex items-center justify-between">
-                <div className="flex flex-col">
-                    <h5 className="font-semibold text-base flex items-center">
-                        <MapPin className="w-4 h-4 mr-2 text-primary" />
-                        {trip.location}, {trip.country}
-                    </h5>
-                    <span className="text-sm text-muted-foreground mt-1 ml-6 font-mono">
-                        {new Date(trip.startDate).toLocaleDateString()} - {new Date(trip.endDate).toLocaleDateString()}
-                    </span>
+            <div className="relative z-10 p-4 flex flex-col gap-3">
+                {/* Top row: location + delete */}
+                <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                        <h5 className="font-semibold text-base flex items-center text-white drop-shadow-md">
+                            <MapPin className="w-4 h-4 mr-2 text-primary" />
+                            {trip.location}, {trip.country}
+                        </h5>
+                        <span className="text-sm text-white/70 mt-1 ml-6 font-mono drop-shadow-sm">
+                            {new Date(trip.startDate).toLocaleDateString()} – {new Date(trip.endDate).toLocaleDateString()}
+                        </span>
+                    </div>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-white/60 hover:bg-destructive/20 hover:text-destructive shrink-0"
+                        onClick={onRemove}
+                    >
+                        <Trash className="w-4 h-4" />
+                    </Button>
                 </div>
+
+                {/* Per-card Notify Clients */}
                 <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground hover:bg-destructive/20 hover:text-destructive shrink-0"
-                    onClick={onRemove}
+                    onClick={handleNotify}
+                    disabled={scanning || matchQuery.isLoading}
+                    className="w-full h-10 text-sm font-semibold bg-gradient-to-r from-primary/90 to-accent/80 hover:from-primary hover:to-accent backdrop-blur-sm"
                 >
-                    <Trash className="w-4 h-4" />
+                    {scanning || matchQuery.isLoading ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Scanning Clients...</>
+                    ) : matchCount !== null ? (
+                        <><Users className="w-4 h-4 mr-2" /> {matchCount} Client{matchCount !== 1 ? 's' : ''} Found — Notify</>
+                    ) : (
+                        <><Send className="w-4 h-4 mr-2" /> Notify Clients</>
+                    )}
                 </Button>
             </div>
         </div>
@@ -300,16 +354,6 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
                         ))}
                     </div>
 
-                    {/* Permanent Notify Clients Button */}
-                    {trips.length > 0 && onNavigateToClients && (
-                        <Button
-                            onClick={onNavigateToClients}
-                            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
-                        >
-                            <Send className="w-5 h-5 mr-3" />
-                            Notify Clients
-                        </Button>
-                    )}
 
                 </div>
             </div>

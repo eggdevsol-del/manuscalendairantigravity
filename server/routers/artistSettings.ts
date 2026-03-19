@@ -2,6 +2,9 @@ import { z } from "zod";
 import { artistProcedure, protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { parseExternalCalendar } from "../services/icalParser";
+import { getDb } from "../services/core";
+import * as schema from "../../drizzle/schema";
+import { eq, and, or, like, inArray } from "drizzle-orm";
 
 export const artistSettingsRouter = router({
   get: artistProcedure.query(async ({ ctx }) => {
@@ -117,5 +120,62 @@ export const artistSettingsRouter = router({
         appleCalendarUrl: input.appleCalendarUrl,
         travelDates: input.travelDates,
       } as any);
+    }),
+
+  /**
+   * Match artist's clients whose city/country match a travel destination.
+   * Returns client profiles for the "Notify Clients" per-trip feature.
+   */
+  matchClientsByLocation: artistProcedure
+    .input(
+      z.object({
+        city: z.string().min(1),
+        country: z.string().min(1),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const artistId = ctx.user.id;
+      const database = (await getDb())!;
+
+      // Step 1: Find all distinct client IDs for this artist via conversations
+      const convos = await database
+        .select({ clientId: schema.conversations.clientId })
+        .from(schema.conversations)
+        .where(eq(schema.conversations.artistId, artistId));
+
+      const clientIds = Array.from(
+        new Set(convos.map((c: any) => c.clientId).filter(Boolean) as string[])
+      );
+
+      if (clientIds.length === 0) return { clients: [], total: 0 };
+
+      // Step 2: Find users whose city or country matches the trip destination
+      const cityPattern = `%${input.city}%`;
+      const countryPattern = `%${input.country}%`;
+
+      const matchedClients = await database
+        .select({
+          id: schema.users.id,
+          name: schema.users.name,
+          email: schema.users.email,
+          phone: schema.users.phone,
+          city: schema.users.city,
+          country: schema.users.country,
+        })
+        .from(schema.users)
+        .where(
+          and(
+            inArray(schema.users.id, clientIds),
+            or(
+              like(schema.users.city, cityPattern),
+              like(schema.users.country, countryPattern)
+            )
+          )
+        );
+
+      return {
+        clients: matchedClients,
+        total: matchedClients.length,
+      };
     }),
 });
