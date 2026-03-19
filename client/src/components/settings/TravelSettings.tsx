@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button, Input, Label, Card, CardContent } from "@/components/ui";
-import { ChevronLeft, Plus, Trash, Plane, MapPin, CalendarDays, Loader2, Navigation, Send, Users } from "lucide-react";
+import { ChevronLeft, Plus, Trash, Plane, MapPin, CalendarDays, Loader2, Navigation, Send, Users, Pencil, X, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingState } from "@/components/ui/ssot";
 import { GooglePlacesInput } from "@/components/ui/GooglePlacesInput";
@@ -17,11 +17,13 @@ interface Trip {
     lng?: number;
 }
 
-/** Individual trip card with map background */
-function TripCard({ trip, onRemove }: { trip: Trip; onRemove: () => void }) {
+/** Individual trip card with map background + edit FAB */
+function TripCard({ trip, onRemove, onEdit }: { trip: Trip; onRemove: () => void; onEdit: (trip: Trip) => void }) {
     const [mapLoaded, setMapLoaded] = useState(false);
     const [scanning, setScanning] = useState(false);
     const [matchCount, setMatchCount] = useState<number | null>(null);
+    const [fabOpen, setFabOpen] = useState(false);
+    const cardRef = useRef<HTMLDivElement>(null);
 
     // For trips without lat/lng, geocode from city name
     const geocodeQuery = trpc.places.geocode.useQuery(
@@ -36,7 +38,6 @@ function TripCard({ trip, onRemove }: { trip: Trip; onRemove: () => void }) {
     const lat = trip.lat ?? geocodeQuery.data?.lat;
     const lng = trip.lng ?? geocodeQuery.data?.lng;
 
-    // Build the direct image URL — bypasses tRPC entirely
     const mapSrc = lat && lng
         ? `/api/map-image?lat=${lat}&lng=${lng}&w=600&h=300&z=11`
         : null;
@@ -62,13 +63,31 @@ function TripCard({ trip, onRemove }: { trip: Trip; onRemove: () => void }) {
         }
     }, [matchQuery.data, scanning]);
 
-    const handleNotify = () => {
+    // Close FAB when clicking outside
+    useEffect(() => {
+        if (!fabOpen) return;
+        const handler = (e: MouseEvent) => {
+            if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+                setFabOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, [fabOpen]);
+
+    const handleNotify = (e: React.MouseEvent) => {
+        e.stopPropagation();
         setScanning(true);
         setMatchCount(null);
     };
 
     return (
-        <div className="relative rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-colors">
+        <div
+            ref={cardRef}
+            className="relative overflow-hidden border border-white/10 hover:border-white/20 transition-colors cursor-pointer"
+            style={{ borderRadius: "var(--radius)" }}
+            onClick={() => setFabOpen(prev => !prev)}
+        >
             {/* Full satellite map background — 100% opacity */}
             {mapSrc && (
                 <img
@@ -81,7 +100,7 @@ function TripCard({ trip, onRemove }: { trip: Trip; onRemove: () => void }) {
                 />
             )}
 
-            {/* Gradient overlay — keeps text readable on the right */}
+            {/* Gradient overlay — keeps text readable */}
             <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
@@ -99,8 +118,8 @@ function TripCard({ trip, onRemove }: { trip: Trip; onRemove: () => void }) {
 
             {/* Card content */}
             <div className="relative z-10 p-4 flex flex-col gap-3">
-                {/* Top row: location + delete */}
-                <div className="flex items-center justify-between">
+                {/* Top row: location + mini delete */}
+                <div className="flex items-start justify-between">
                     <div className="flex flex-col">
                         <h5 className="font-semibold text-base flex items-center text-white drop-shadow-md">
                             <MapPin className="w-4 h-4 mr-2 text-primary" />
@@ -110,31 +129,62 @@ function TripCard({ trip, onRemove }: { trip: Trip; onRemove: () => void }) {
                             {new Date(trip.startDate).toLocaleDateString()} – {new Date(trip.endDate).toLocaleDateString()}
                         </span>
                     </div>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-white/60 hover:bg-destructive/20 hover:text-destructive shrink-0"
-                        onClick={onRemove}
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onRemove(); }}
+                        className="w-6 h-6 flex items-center justify-center rounded-full text-white/40 hover:text-destructive hover:bg-destructive/20 transition-colors shrink-0"
                     >
-                        <Trash className="w-4 h-4" />
-                    </Button>
+                        <Trash className="w-3 h-3" />
+                    </button>
                 </div>
 
-                {/* Per-card Notify Clients */}
-                <Button
+                {/* Per-card Notify Clients — blurred glass background */}
+                <button
                     onClick={handleNotify}
                     disabled={scanning || matchQuery.isLoading}
-                    className="w-full h-10 text-sm font-semibold bg-gradient-to-r from-primary/90 to-accent/80 hover:from-primary hover:to-accent backdrop-blur-sm"
+                    className="w-full h-10 flex items-center justify-center gap-2 text-sm font-semibold text-white backdrop-blur-xl bg-white/10 border border-white/15 hover:bg-white/15 transition-all disabled:opacity-60"
+                    style={{ borderRadius: "var(--radius-sm)" }}
                 >
                     {scanning || matchQuery.isLoading ? (
-                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Scanning Clients...</>
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Scanning Clients...</>
                     ) : matchCount !== null ? (
-                        <><Users className="w-4 h-4 mr-2" /> {matchCount} Client{matchCount !== 1 ? 's' : ''} Found — Notify</>
+                        <><Users className="w-4 h-4" /> {matchCount} Client{matchCount !== 1 ? 's' : ''} Found — Notify</>
                     ) : (
-                        <><Send className="w-4 h-4 mr-2" /> Notify Clients</>
+                        <><Send className="w-4 h-4" /> Notify Clients</>
                     )}
-                </Button>
+                </button>
             </div>
+
+            {/* Edit FAB Menu — appears on card tap */}
+            {fabOpen && (
+                <div
+                    className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-md bg-black/50 animate-in fade-in duration-200"
+                    style={{ borderRadius: "var(--radius)" }}
+                >
+                    <div className="flex gap-3">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setFabOpen(false); onEdit(trip); }}
+                            className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors backdrop-blur-sm"
+                        >
+                            <Pencil className="w-5 h-5" />
+                            <span className="text-xs font-medium">Edit</span>
+                        </button>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setFabOpen(false); onRemove(); }}
+                            className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl bg-destructive/20 hover:bg-destructive/30 text-destructive transition-colors backdrop-blur-sm"
+                        >
+                            <Trash className="w-5 h-5" />
+                            <span className="text-xs font-medium">Delete</span>
+                        </button>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setFabOpen(false); }}
+                            className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors backdrop-blur-sm"
+                        >
+                            <X className="w-5 h-5" />
+                            <span className="text-xs font-medium">Close</span>
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -350,7 +400,26 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
                             </div>
                         )}
                         {trips.map(trip => (
-                            <TripCard key={trip.id} trip={trip} onRemove={() => removeTrip(trip.id)} />
+                            <TripCard
+                                key={trip.id}
+                                trip={trip}
+                                onRemove={() => removeTrip(trip.id)}
+                                onEdit={(t) => {
+                                    // Pre-fill the form with trip data for editing
+                                    setNewTrip({
+                                        id: "",
+                                        location: t.location,
+                                        country: t.country,
+                                        startDate: t.startDate,
+                                        endDate: t.endDate,
+                                        lat: t.lat,
+                                        lng: t.lng,
+                                    });
+                                    setIsAdding(true);
+                                    // Remove the old trip so saving creates a fresh one
+                                    removeTrip(t.id);
+                                }}
+                            />
                         ))}
                     </div>
 
