@@ -148,6 +148,25 @@ export const GRADIENTS: GradientOption[] = [
 ];
 
 // ==========================================
+// TYPOGRAPHY PALETTE
+// ==========================================
+
+export interface FontOption {
+  id: string;
+  name: string;
+  className: string; // Tailwind class or distinct identifier
+}
+
+export const FONT_OPTIONS: FontOption[] = [
+  { id: "sans", name: "Modern Sans", className: "font-sans" },
+  { id: "serif", name: "Elegant Serif", className: "font-serif" },
+  { id: "mono", name: "Tech Mono", className: "font-mono tracking-tighter" },
+  { id: "cursive", name: "Signature", className: "font-cursive italic" },
+  { id: "black", name: "Heavy Block", className: "font-sans font-black uppercase tracking-tight" },
+  { id: "light", name: "Minimalist", className: "font-sans font-light tracking-widest uppercase" }
+];
+
+// ==========================================
 // CARD DESIGN TEMPLATES
 // ==========================================
 
@@ -163,11 +182,11 @@ export interface CardTemplate {
   hasMagStripe: boolean;
   hasHologram: boolean;
   logoPosition:
-    | "top-left"
-    | "top-right"
-    | "bottom-left"
-    | "bottom-right"
-    | "center";
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right"
+  | "center";
   valuePosition: "center" | "bottom-left" | "bottom-right";
   aspectRatio: string; // CSS aspect-ratio value
 }

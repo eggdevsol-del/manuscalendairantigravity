@@ -103,7 +103,13 @@ initializeOneSignal().catch(err => {
 
 // Configure Status Bar for Native/PWA
 if (Capacitor.isNativePlatform()) {
-  StatusBar.setStyle({ style: Style.Default }).catch(() => {
-    // Silently fail on web environments that don't support the Native API
-  });
+  try {
+    // Make status bar transparent and overlay the webview content underneath
+    StatusBar.setOverlaysWebView({ overlay: true });
+    // Set style to Dark so the white time/battery text contrasts well with the dark theme
+    StatusBar.setStyle({ style: Style.Dark });
+  } catch (err) {
+    // Silently fail on environments that don't fully support this
+    console.warn("StatusBar setup failed:", err);
+  }
 }

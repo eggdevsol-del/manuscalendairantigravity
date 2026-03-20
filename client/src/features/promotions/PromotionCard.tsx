@@ -18,6 +18,7 @@ import {
   getTypeDefaults,
   formatPromotionValue,
   getContrastTextColor,
+  FONT_OPTIONS,
 } from "./cardTemplates";
 import { getAssetUrl } from "@/lib/assets";
 
@@ -34,6 +35,7 @@ export interface PromotionCardData {
   gradientFrom?: string | null;
   gradientTo?: string | null;
   customText?: string | null;
+  fontFamily?: string | null; // Added font picking
   customColor?: string; // For custom color picker
   logoUrl?: string | null;
   backgroundImageUrl?: string | null;
@@ -180,7 +182,7 @@ export function PromotionCard({
         sizeClasses[size],
         blurred && "opacity-40 blur-[2px] scale-95",
         selected &&
-          "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105 z-10",
+        "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105 z-10",
         className
       )}
       style={cardStyle}
@@ -226,7 +228,7 @@ export function PromotionCard({
               template.logoPosition === "bottom-left" && "bottom-4 left-4",
               template.logoPosition === "bottom-right" && "bottom-4 right-4",
               template.logoPosition === "center" &&
-                "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+              "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
             )}
           />
         ) : (
@@ -238,7 +240,7 @@ export function PromotionCard({
               template.logoPosition === "bottom-left" && "bottom-4 left-4",
               template.logoPosition === "bottom-right" && "bottom-4 right-4",
               template.logoPosition === "center" &&
-                "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+              "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
               textColor === "white" ? "text-white" : "text-black"
             )}
           >
@@ -254,14 +256,18 @@ export function PromotionCard({
           className={cn(
             "absolute left-6 right-6",
             template.hasChip ? "top-16" : "top-6",
-            textColor === "white" ? "text-white" : "text-black"
+            textColor === "white" ? "text-white" : "text-black",
+            // Apply font family if specified, otherwise default to bold
+            data.fontFamily
+              ? FONT_OPTIONS.find(f => f.id === data.fontFamily)?.className || "font-bold text-lg"
+              : "font-bold text-lg"
           )}
         >
-          <h3 className="font-bold text-lg truncate">
+          <h3 className="truncate text-inherit">
             {data.customText || data.name}
           </h3>
           {data.description && (
-            <p className="text-xs opacity-70 truncate mt-0.5">
+            <p className="text-xs opacity-70 truncate mt-0.5 font-sans font-normal tracking-normal normal-case not-italic">
               {data.description}
             </p>
           )}
@@ -272,7 +278,7 @@ export function PromotionCard({
           className={cn(
             "absolute",
             template.valuePosition === "center" &&
-              "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+            "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
             template.valuePosition === "bottom-left" && "bottom-4 left-6",
             template.valuePosition === "bottom-right" && "bottom-4 right-6",
             textColor === "white" ? "text-white" : "text-black"
@@ -337,7 +343,7 @@ export function PromotionCard({
               className={cn(
                 "px-2 py-0.5 rounded-full text-xs font-medium",
                 data.status === "partially_used" &&
-                  "bg-yellow-500/80 text-yellow-900",
+                "bg-yellow-500/80 text-yellow-900",
                 data.status === "fully_used" && "bg-gray-500/80 text-white",
                 data.status === "expired" && "bg-red-500/80 text-white",
                 data.status === "revoked" && "bg-red-700/80 text-white"

@@ -43,6 +43,7 @@ import {
   CARD_TEMPLATES,
   getTypeDefaults,
   getContrastTextColor,
+  FONT_OPTIONS,
 } from "./cardTemplates";
 import { InteractiveCardPreview } from "./InteractiveCardPreview";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -123,9 +124,10 @@ export function PromotionWizardContent({
     initialData?.gradientFrom || "gold_shimmer"
   );
   const [customColor, setCustomColor] = useState(
-    initialData?.customColor || "#667eea"
+    initialData?.customColor || "#000000"
   );
   const [customText, setCustomText] = useState(initialData?.customText || "");
+  const [fontFamily, setFontFamily] = useState(initialData?.fontFamily || "sans");
   const [logoUrl, setLogoUrl] = useState<string | null>(
     initialData?.logoUrl || null
   );
@@ -265,6 +267,7 @@ export function PromotionWizardContent({
           : null,
     gradientFrom: colorMode === "gradient" ? gradientId : null,
     customText: customText || null,
+    fontFamily: fontFamily || null,
     customColor: colorMode === "custom" ? customColor : undefined,
     logoUrl,
     backgroundImageUrl: localBackgroundPreview || backgroundImageUrl,
@@ -297,6 +300,7 @@ export function PromotionWizardContent({
       gradientFrom: colorMode === "gradient" ? gradientId : null,
       gradientTo: null,
       customText: customText || null,
+      fontFamily: fontFamily || null,
       logoUrl,
       backgroundImageUrl,
       backgroundScale,
@@ -412,6 +416,8 @@ export function PromotionWizardContent({
                 setCustomColor={setCustomColor}
                 customText={customText}
                 setCustomText={setCustomText}
+                fontFamily={fontFamily}
+                setFontFamily={setFontFamily}
                 logoUrl={logoUrl}
                 setLogoUrl={setLogoUrl}
                 backgroundImageUrl={backgroundImageUrl}
@@ -489,25 +495,25 @@ function TypeSelectionStep({
     title: string;
     description: string;
   }[] = [
-    {
-      id: "voucher",
-      icon: Gift,
-      title: "Gift Voucher",
-      description: "Fixed dollar amount",
-    },
-    {
-      id: "discount",
-      icon: Percent,
-      title: "Discount Card",
-      description: "Percentage off",
-    },
-    {
-      id: "credit",
-      icon: CreditCard,
-      title: "Store Credit",
-      description: "Balance used across bookings",
-    },
-  ];
+      {
+        id: "voucher",
+        icon: Gift,
+        title: "Gift Voucher",
+        description: "Fixed dollar amount",
+      },
+      {
+        id: "discount",
+        icon: Percent,
+        title: "Discount Card",
+        description: "Percentage off",
+      },
+      {
+        id: "credit",
+        icon: CreditCard,
+        title: "Store Credit",
+        description: "Balance used across bookings",
+      },
+    ];
   const fab = tokens.fab;
   const card = tokens.card;
 
@@ -719,10 +725,23 @@ function RulesConfigStep({
 }
 
 function DesignCustomizationStep({
+  type,
+  templateDesign,
+  setTemplateDesign,
   colorMode,
   setColorMode,
+  primaryColor,
+  setPrimaryColor,
   gradientId,
   setGradientId,
+  customColor,
+  setCustomColor,
+  customText,
+  setCustomText,
+  fontFamily,
+  setFontFamily,
+  logoUrl,
+  setLogoUrl,
   previewData,
   handleLogoUpload,
   uploadingLogo,
@@ -749,12 +768,39 @@ function DesignCustomizationStep({
         variants={fab.animation.item}
         className="flex justify-center -mx-2"
       >
-        <div className="w-full scale-[0.85] origin-top mb-[-20px]">
-          <PromotionCard
-            data={previewData}
-            size="md"
-            className="shadow-2xl mx-auto"
-          />
+        <div
+          className="w-full scale-[0.85] origin-top mb-[-20px] relative touch-none"
+          onWheel={(e) => {
+            if (!backgroundImageUrl) return;
+            e.preventDefault();
+            // Negative delta = zoom in
+            setBackgroundScale((prev: number) => Math.min(Math.max(prev - e.deltaY * 0.002, 0.5), 3));
+          }}
+        >
+          <motion.div
+            drag={!!backgroundImageUrl}
+            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+            dragElastic={0}
+            dragMomentum={false}
+            onPan={(e, info) => {
+              if (!backgroundImageUrl) return;
+              // Reduce drag sensitivity by multiplying delta with small factor
+              setBackgroundPositionX((prev: number) => Math.min(Math.max(prev - info.delta.x * 0.2, 0), 100));
+              setBackgroundPositionY((prev: number) => Math.min(Math.max(prev - info.delta.y * 0.2, 0), 100));
+            }}
+          >
+            <PromotionCard
+              data={previewData}
+              size="md"
+              className="shadow-2xl mx-auto"
+            />
+          </motion.div>
+          {backgroundImageUrl && (
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 flex items-center gap-2 pointer-events-none z-20 shadow-lg">
+              <Move className="w-3 h-3 text-white/70" />
+              <span className="text-[9px] font-medium text-white/90 tracking-wide uppercase">Drag to pan • Scroll to zoom</span>
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -765,7 +811,7 @@ function DesignCustomizationStep({
             Theme Mode
           </p>
           <div className="flex gap-1">
-            {["solid", "gradient", "custom"].map(m => (
+            {["solid", "gradient"].map(m => (
               <button
                 key={m}
                 onClick={() => setColorMode(m as any)}
@@ -788,21 +834,45 @@ function DesignCustomizationStep({
             variants={fab.animation.item}
             className="grid grid-cols-4 gap-1.5 p-2 bg-white/5 rounded-[4px]"
           >
-            {Object.keys(GRADIENTS).map(g => (
+            {GRADIENTS.map(gradient => (
               <button
-                key={g}
-                onClick={() => setGradientId(g)}
+                key={gradient.id}
+                onClick={() => setGradientId(gradient.id)}
                 className={cn(
                   "h-6 rounded-sm border transition-all",
-                  gradientId === g
+                  gradientId === gradient.id
                     ? "border-white scale-110 shadow-lg"
                     : "border-white/10 opacity-60"
                 )}
-                style={{ background: (GRADIENTS as any)[g].css }}
+                style={{ background: `linear-gradient(${gradient.direction}, ${gradient.from}, ${gradient.to})` }}
               />
             ))}
           </motion.div>
         )}
+
+        {/* Typography / Font Style */}
+        <motion.div variants={fab.animation.item} className="space-y-1">
+          <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
+            Typography
+          </p>
+          <div className="grid grid-cols-2 gap-1.5">
+            {FONT_OPTIONS.map(font => (
+              <button
+                key={font.id}
+                onClick={() => setFontFamily(font.id)}
+                className={cn(
+                  "p-2 rounded-[4px] text-xs transition-all border",
+                  font.className,
+                  fontFamily === font.id
+                    ? "bg-primary/20 border-primary text-foreground"
+                    : "bg-white/5 border-white/5 text-muted-foreground hover:bg-white/10"
+                )}
+              >
+                {font.name}
+              </button>
+            ))}
+          </div>
+        </motion.div>
 
         {/* Background Customization */}
         <motion.div variants={fab.animation.item} className="space-y-1">
@@ -833,60 +903,6 @@ function DesignCustomizationStep({
                 accept="image/*"
               />
             </div>
-
-            {backgroundImageUrl && (
-              <div className="space-y-3 pt-1 border-t border-white/5">
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-[8px] text-muted-foreground uppercase font-bold">
-                    <div className="flex items-center gap-1">
-                      <Maximize2 className="w-2.5 h-2.5" /> Scale
-                    </div>
-                    <span>{Math.round(backgroundScale * 100)}%</span>
-                  </div>
-                  <Slider
-                    value={[backgroundScale]}
-                    min={0.5}
-                    max={3}
-                    step={0.05}
-                    onValueChange={([val]) => setBackgroundScale(val)}
-                    className="py-1"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-[8px] text-muted-foreground uppercase font-bold">
-                    <div className="flex items-center gap-1">
-                      <Move className="w-2.5 h-2.5" /> Horizontal Position
-                    </div>
-                    <span>{backgroundPositionX}%</span>
-                  </div>
-                  <Slider
-                    value={[backgroundPositionX]}
-                    min={0}
-                    max={100}
-                    step={1}
-                    onValueChange={([val]) => setBackgroundPositionX(val)}
-                    className="py-1"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-[8px] text-muted-foreground uppercase font-bold">
-                    <div className="flex items-center gap-1">
-                      <Move className="w-2.5 h-2.5 rotate-90" /> Vertical
-                      Position
-                    </div>
-                    <span>{backgroundPositionY}%</span>
-                  </div>
-                  <Slider
-                    value={[backgroundPositionY]}
-                    min={0}
-                    max={100}
-                    step={1}
-                    onValueChange={([val]) => setBackgroundPositionY(val)}
-                    className="py-1"
-                  />
-                </div>
-              </div>
-            )}
           </div>
         </motion.div>
 

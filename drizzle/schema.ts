@@ -1502,6 +1502,7 @@ export const promotionTemplates = mysqlTable(
     gradientFrom: varchar({ length: 50 }), // Gradient start color key
     gradientTo: varchar({ length: 50 }), // Gradient end color key
     customText: varchar({ length: 100 }), // Custom text overlay
+    fontFamily: varchar({ length: 50 }), // Custom font style
     logoUrl: text(), // S3 URL for custom logo
     backgroundImageUrl: text(), // S3 URL for background image
     backgroundScale: decimal({ precision: 3, scale: 2 }).default("1.00"), // Scale factor for background image
