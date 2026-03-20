@@ -128,7 +128,7 @@ function Router() {
     !isPublicFunnel;
 
   return (
-    <div className={`min-h-screen translate-y-[5px] ${shouldShowBottomNav ? "pb-16" : ""}`}>
+    <div className={`min-h-screen ${shouldShowBottomNav ? "pb-16" : ""}`}>
       <SplashScreen />
       <Switch>
         <Route path="/" component={Login} />
