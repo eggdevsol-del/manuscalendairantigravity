@@ -274,7 +274,7 @@
     touch-action: manipulation;
     overscroll-behavior-y: none;
     /* Extend to safe areas */
-    padding-top: env(safe-area-inset-top);
+    padding-top: calc(env(safe-area-inset-top) + 6px);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }
