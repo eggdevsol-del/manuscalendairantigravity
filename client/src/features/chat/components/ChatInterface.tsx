@@ -851,7 +851,7 @@ export function ChatInterface({
             const artistHandle = (artistSettings as any)?.publicSlug ? `@${(artistSettings as any).publicSlug}` : (user?.name?.split(/\s+/)[0] || "your artist");
             const phone = (conversation.otherUser as any).phone;
             const appUrl = `${window.location.origin}/signup?ref=${user?.id || ""}`;
-            const smsBody = encodeURIComponent(`Hey ${clientFirst}, it's ${artistHandle} here! I've moved my bookings to a new app called CalendAIr. Join here to book sessions, get reminders and stay connected: ${appUrl}`);
+            const smsBody = encodeURIComponent(`Hey ${clientFirst}, it's ${artistHandle}! I've just joined TATTOI and added you as my client. Sign up to get real-time cancellation alerts, chat with me directly, receive exclusive vouchers & deals, view your full tattoo history, and manage all your appointments in your own calendar: ${appUrl}`);
             const isIOS = /iPhone|iPad/.test(navigator.userAgent);
             const smsHref = `sms:${phone}${isIOS ? "&" : "?"}body=${smsBody}`;
             return (
