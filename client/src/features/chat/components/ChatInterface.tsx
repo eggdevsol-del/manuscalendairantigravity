@@ -848,10 +848,10 @@ export function ChatInterface({
           (conversation.otherUser as any).phone &&
           !inviteDismissed && (() => {
             const clientFirst = (conversation.otherUser as any).firstName || (conversation.otherUser as any).name?.split(/\s+/)[0] || "there";
-            const artistName = user?.name?.split(/\s+/)[0] || "your artist";
+            const artistHandle = (artistSettings as any)?.publicSlug ? `@${(artistSettings as any).publicSlug}` : (user?.name?.split(/\s+/)[0] || "your artist");
             const phone = (conversation.otherUser as any).phone;
             const appUrl = `${window.location.origin}/signup?ref=${user?.id || ""}`;
-            const smsBody = encodeURIComponent(`Hey ${clientFirst}, it's ${artistName} here! I've moved my bookings to a new app called CalendAIr. Join here to book sessions, get reminders and stay connected: ${appUrl}`);
+            const smsBody = encodeURIComponent(`Hey ${clientFirst}, it's ${artistHandle} here! I've moved my bookings to a new app called CalendAIr. Join here to book sessions, get reminders and stay connected: ${appUrl}`);
             const isIOS = /iPhone|iPad/.test(navigator.userAgent);
             const smsHref = `sms:${phone}${isIOS ? "&" : "?"}body=${smsBody}`;
             return (
