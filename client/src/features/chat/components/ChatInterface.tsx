@@ -430,7 +430,7 @@ export function ChatInterface({
       <div className="flex-none z-50 bg-transparent">
         <header
           className="sticky top-0 z-50 px-4 py-3 pb-4 bg-transparent"
-          style={{ paddingTop: "env(safe-area-inset-top)" }}
+          style={{ paddingTop: "env(safe-area-inset-top)", transform: 'translate(1px, 9px)' }}
         >
           <div className="flex items-center justify-between">
             {/* Left Group: Back + Avatar + Name */}
@@ -875,7 +875,7 @@ export function ChatInterface({
             );
           })()}
 
-        <div className="flex items-center gap-2 p-2 rounded-2xl bg-gray-100/80 dark:bg-slate-950/80 backdrop-blur-xl border border-white/10 shadow-lg">
+        <div className="flex items-center gap-2 p-2 rounded-2xl bg-gray-100/80 dark:bg-slate-950/80 backdrop-blur-xl border border-white/10 shadow-lg" style={{ transform: 'translate(0px, 21px)' }}>
           <label className="cursor-pointer p-2 hover:bg-white/10 rounded-xl transition-colors">
             <input
               type="file"
