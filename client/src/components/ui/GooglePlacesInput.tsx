@@ -148,7 +148,7 @@ export const GooglePlacesInput = React.forwardRef<HTMLInputElement, GooglePlaces
                 )}
 
                 {showDropdown && predictions.length > 0 && (
-                    <div className="absolute z-50 top-full mt-1 w-full bg-card border border-white/10 rounded-[4px] shadow-xl max-h-[200px] overflow-y-auto">
+                    <div className="absolute z-50 top-full mt-1 w-full border border-white/10 rounded-[4px] shadow-xl max-h-[200px] overflow-y-auto" style={{ backgroundColor: '#0e1732' }}>
                         {predictions.map((p, i) => (
                             <button
                                 key={p.placeId}
