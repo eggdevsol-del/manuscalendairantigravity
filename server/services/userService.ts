@@ -115,7 +115,15 @@ export async function updateUserProfile(
   const db = await getDb();
   if (!db) return undefined;
 
-  await db.update(users).set(updates).where(eq(users.id, userId));
+  // Sanitize: convert empty strings to null so MySQL date/text columns don't choke
+  const sanitized = Object.fromEntries(
+    Object.entries(updates).map(([key, value]) => [
+      key,
+      value === "" ? null : value,
+    ])
+  );
+
+  await db.update(users).set(sanitized).where(eq(users.id, userId));
   return getUser(userId);
 }
 
