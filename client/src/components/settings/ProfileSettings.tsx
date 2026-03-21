@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { getAssetUrl } from "@/lib/assets";
 import { Button, Input, Label, Textarea } from "@/components/ui";
+import { GooglePlacesInput } from "@/components/ui/GooglePlacesInput";
 import { ChevronLeft, User } from "lucide-react";
 
 export function ProfileSettings({ onBack }: { onBack: () => void }) {
@@ -231,11 +232,13 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
 
                         <div className="space-y-2">
                             <Label htmlFor="city">City</Label>
-                            <Input
-                                id="city"
-                                value={profileCity}
-                                onChange={e => setProfileCity(e.target.value)}
-                                placeholder="E.g. Melbourne"
+                            <GooglePlacesInput
+                                placeholder="Search city..."
+                                defaultValue={profileCity}
+                                onPlaceSelected={(place) => {
+                                    const cityComp = place.address_components.find(c => c.types.includes("locality"));
+                                    setProfileCity(cityComp?.long_name || place.name || "");
+                                }}
                                 className="bg-white/5 border-white/10"
                             />
                         </div>
@@ -269,7 +272,7 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
                             >
                                 delete account
                             </button>
-                            
+
                             {activeAction === "account" && (
                                 <div className="mt-4 p-4 border border-red-500/20 bg-red-500/5 rounded-lg animate-in fade-in slide-in-from-top-2 text-left">
                                     <p className="text-xs text-red-500 mb-2 font-medium">Type <strong>DELETE</strong> below to permanently delete your account and all data.</p>

@@ -10,6 +10,7 @@ import {
   Label,
 } from "@/components/ui";
 import { PageShell } from "@/components/ui/ssot";
+import { GooglePlacesInput } from "@/components/ui/GooglePlacesInput";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
@@ -336,19 +337,17 @@ export default function Signup() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="city">City</Label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-4 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="city"
-                      type="text"
-                      placeholder="Auckland"
-                      value={city}
-                      onChange={e => setCity(e.target.value)}
-                      variant="hero"
-                      className="pl-9"
-                      disabled={isLoading}
-                    />
-                  </div>
+                  <GooglePlacesInput
+                    placeholder="Search city..."
+                    defaultValue={city}
+                    onPlaceSelected={(place) => {
+                      const cityComp = place.address_components.find(c => c.types.includes("locality"));
+                      const countryComp = place.address_components.find(c => c.types.includes("country"));
+                      setCity(cityComp?.long_name || place.name || "");
+                      if (countryComp) setCountry(countryComp.long_name);
+                    }}
+                    className="bg-white/5 border-white/10 h-[52px] rounded-xl pl-3"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="country">Country</Label>
@@ -567,19 +566,17 @@ export default function Signup() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="city">City</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-4 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="city"
-                    type="text"
-                    placeholder="Auckland"
-                    value={city}
-                    onChange={e => setCity(e.target.value)}
-                    variant="hero"
-                    className="pl-9"
-                    disabled={isLoading}
-                  />
-                </div>
+                <GooglePlacesInput
+                  placeholder="Search city..."
+                  defaultValue={city}
+                  onPlaceSelected={(place) => {
+                    const cityComp = place.address_components.find(c => c.types.includes("locality"));
+                    const countryComp = place.address_components.find(c => c.types.includes("country"));
+                    setCity(cityComp?.long_name || place.name || "");
+                    if (countryComp) setCountry(countryComp.long_name);
+                  }}
+                  className="bg-white/5 border-white/10 h-[52px] rounded-xl pl-3"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="country">Country</Label>
