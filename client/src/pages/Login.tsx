@@ -156,6 +156,7 @@ export default function Login() {
               type="submit"
               className={cn(tokens.button.hero, "mt-2")}
               disabled={isLoading}
+              style={{ borderRadius: '6px' }}
             >
               {isLoading ? (
                 <>
@@ -188,6 +189,7 @@ export default function Login() {
               )}
               onClick={() => setLocation("/signup")}
               disabled={isLoading}
+              style={{ borderRadius: '6px' }}
             >
               Create Account
             </Button>
@@ -200,6 +202,7 @@ export default function Login() {
               )}
               onClick={() => setLocation("/forgot-password")}
               disabled={isLoading}
+              style={{ borderRadius: '6px' }}
             >
               Forgot password?
             </Button>
