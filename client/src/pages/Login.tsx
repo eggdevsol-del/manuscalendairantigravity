@@ -77,25 +77,8 @@ export default function Login() {
   return (
     <PageShell className="justify-center items-center px-4">
       <div className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center pb-6 border-none flex flex-col items-center" style={{ position: 'relative', overflow: 'hidden' }}>
-          <img
-            src="/images/gears-bg.png"
-            alt=""
-            aria-hidden
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '358px',
-              height: '184px',
-              objectFit: 'cover',
-              transform: 'scale(3) translate(23px, -91px)',
-              opacity: 0.23,
-              zIndex: 0,
-              pointerEvents: 'none',
-            }}
-          />
-          <h1 className="text-8xl font-light text-white tracking-widest mb-2" style={{ position: 'relative', zIndex: 1 }}>
+        <CardHeader className="space-y-1 text-center pb-6 border-none flex flex-col items-center">
+          <h1 className="text-8xl font-light text-white tracking-widest mb-2">
             TOI
           </h1>
           <h2 className="text-sm font-medium tracking-widest text-[#4A5568] uppercase text-center max-w-[280px] leading-snug mb-6 mx-auto">
