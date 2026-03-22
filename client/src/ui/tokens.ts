@@ -32,7 +32,7 @@ export const tokens = {
   // 3. Cards
   // Global App Card (Dashboard, Settings, etc.) - Rectangular SSOT (v1.0.319)
   card: {
-    base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px]", // Global 4px radius, no margin
+    base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px] opacity-80", // Global 4px radius, no margin
     bg: "bg-transparent hover:bg-secondary", // Transparent base, subtle hover
     bgAccent:
       "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
@@ -390,7 +390,7 @@ export const tokens = {
 
     // Specific Event Card (Agenda) - Rectangular, Tight Stack
     eventCard: {
-      base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px]", // Removed mb-2
+      base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px] opacity-80", // Removed mb-2
       bg: "", // Cleared to allow getEventStyle palette to win and prevent purple tint/hover color change
       interactive: "cursor-pointer active:scale-[0.98]",
       padding: "p-3",
