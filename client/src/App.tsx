@@ -129,7 +129,7 @@ function Router() {
 
   return (
     <div className={`min-h-screen ${shouldShowBottomNav ? "pb-16" : ""}`}>
-      <SplashScreen />
+      {!isPublicFunnel && <SplashScreen />}
       <Switch>
         <Route path="/" component={Login} />
         <Route path="/login" component={Login} />
