@@ -34,7 +34,7 @@ export default function FunnelStepWrapper({
   submitting = false,
 }: FunnelStepWrapperProps) {
   return (
-    <div className="px-6 pb-32" style={{ transform: 'translate(0px, -123px)' }}>
+    <div className="px-6 pb-32">
       {/* Step header */}
       <div className="mb-6">
         {subtitle && <p className="text-muted-foreground mt-1">{subtitle}</p>}
