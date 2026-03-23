@@ -1,68 +1,61 @@
 /**
  * Funnel Contact Step
  * Second step: Contact information (early capture for abandoned funnel recovery)
+ * Uses parent state directly so the parent nav Continue button works.
  */
 
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, Mail, Phone, MapPin } from "lucide-react";
+import { User, Mail, Phone } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { GooglePlacesInput } from "@/components/ui/GooglePlacesInput";
 import FunnelStepWrapper from "../components/FunnelStepWrapper";
-import type { ArtistProfile, FunnelStepData } from "../FunnelWrapper";
+import type { ArtistProfile } from "../FunnelWrapper";
 
 interface FunnelContactStepProps {
   artistProfile: ArtistProfile;
-  stepData: FunnelStepData;
-  onNext: (stepName: string, data: any) => void;
-  onBack: () => void;
-  isFirstStep: boolean;
-  isLastStep: boolean;
-  submitting: boolean;
+  firstName: string;
+  setFirstName: (v: string) => void;
+  lastName: string;
+  setLastName: (v: string) => void;
+  birthdate: string;
+  setBirthdate: (v: string) => void;
+  email: string;
+  setEmail: (v: string) => void;
+  phone: string;
+  setPhone: (v: string) => void;
+  city: string;
+  setCity: (v: string) => void;
+  country: string;
+  setCountry: (v: string) => void;
 }
 
 export default function FunnelContactStep({
   artistProfile,
-  stepData,
-  onNext,
-  onBack,
-  isFirstStep,
-  isLastStep,
-  submitting,
+  firstName,
+  setFirstName,
+  lastName,
+  setLastName,
+  birthdate,
+  setBirthdate,
+  email,
+  setEmail,
+  phone,
+  setPhone,
+  city,
+  setCity,
+  country,
+  setCountry,
 }: FunnelContactStepProps) {
-  const [firstName, setFirstName] = useState(stepData.contact?.firstName || "");
-  const [lastName, setLastName] = useState(stepData.contact?.lastName || "");
-  const [birthdate, setBirthdate] = useState(stepData.contact?.birthdate || "");
-  const [email, setEmail] = useState(stepData.contact?.email || "");
-  const [phone, setPhone] = useState(stepData.contact?.phone || "");
-  const [city, setCity] = useState(stepData.contact?.city || "");
-  const [country, setCountry] = useState(stepData.contact?.country || "");
-
-  const handleNext = () => {
-    onNext("contact", {
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      birthdate,
-      email: email.trim().toLowerCase(),
-      phone: phone.trim() || undefined,
-      city: city.trim() || undefined,
-      country: country.trim() || undefined,
-    });
-  };
-
-  // Basic validation
-  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isValid = firstName.trim().length >= 2 && lastName.trim().length >= 2 && birthdate && isValidEmail && city.trim().length >= 1 && country.trim().length >= 1;
 
   return (
     <FunnelStepWrapper
-      title="How can we reach you?"
-      subtitle="We'll use this to send you updates on your request"
-      onNext={handleNext}
-      onBack={onBack}
-      isFirstStep={isFirstStep}
-      isLastStep={isLastStep}
-      nextDisabled={!isValid}
-      submitting={submitting}
+      title="Your contact details"
+      onNext={() => { }}
+      onBack={() => { }}
+      isFirstStep={false}
+      isLastStep={false}
+      nextDisabled={false}
+      submitting={false}
     >
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -127,7 +120,7 @@ export default function FunnelContactStep({
               className="pl-10"
             />
           </div>
-          {email && !isValidEmail && (
+          {email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (
             <p className="text-xs text-destructive mt-1">
               Please enter a valid email address
             </p>
@@ -155,37 +148,32 @@ export default function FunnelContactStep({
           </p>
         </div>
 
-        {/* Location */}
+        {/* Location - Google Places */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
             Your location *
           </label>
-          <div className="flex gap-3">
-            <div className="flex-1 relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                type="text"
-                value={city}
-                onChange={e => setCity(e.target.value)}
-                placeholder="City"
-                className="pl-10"
-              />
-            </div>
-            <div className="flex-1">
-              <Input
-                type="text"
-                value={country}
-                onChange={e => setCountry(e.target.value)}
-                placeholder="Country"
-              />
-            </div>
-          </div>
+          <GooglePlacesInput
+            placeholder="Search your city..."
+            defaultValue={city ? `${city}${country ? `, ${country}` : ''}` : ''}
+            types={['(cities)']}
+            onPlaceSelected={(place) => {
+              // Extract city and country from address components
+              const cityComponent = place.address_components.find(
+                c => c.types.includes('locality') || c.types.includes('sublocality')
+              );
+              const countryComponent = place.address_components.find(
+                c => c.types.includes('country')
+              );
+              setCity(cityComponent?.long_name || place.name || '');
+              setCountry(countryComponent?.long_name || '');
+            }}
+          />
           <p className="text-xs text-muted-foreground mt-1">
             Helps your artist notify you about sessions in your area
           </p>
         </div>
       </motion.div>
-
     </FunnelStepWrapper>
   );
 }

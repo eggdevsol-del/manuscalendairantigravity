@@ -244,6 +244,8 @@ export function useFunnelController(artistSlug: string) {
     lastName,
     email,
     birthdate,
+    city,
+    country,
     selectedStyles,
     selectedBudget,
     timeframe,

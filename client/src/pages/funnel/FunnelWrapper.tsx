@@ -279,25 +279,20 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
           {currentStep === 1 && (
             <FunnelContactStep
               artistProfile={artistProfile}
-              stepData={{
-                contact: { firstName, lastName, birthdate, email, phone, city, country },
-              }}
-              onNext={(_step: string, data: any) => {
-                if (data) {
-                  setFirstName(data.firstName || "");
-                  setLastName(data.lastName || "");
-                  setBirthdate(data.birthdate || "");
-                  setEmail(data.email || "");
-                  setPhone(data.phone || "");
-                  setCity(data.city || "");
-                  setCountry(data.country || "");
-                }
-                handleNext();
-              }}
-              onBack={handleBack}
-              isFirstStep={false}
-              isLastStep={false}
-              submitting={submitting}
+              firstName={firstName}
+              setFirstName={setFirstName}
+              lastName={lastName}
+              setLastName={setLastName}
+              birthdate={birthdate}
+              setBirthdate={setBirthdate}
+              email={email}
+              setEmail={setEmail}
+              phone={phone}
+              setPhone={setPhone}
+              city={city}
+              setCity={setCity}
+              country={country}
+              setCountry={setCountry}
             />
           )}
 
