@@ -312,7 +312,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                         ? "border-foreground bg-foreground text-background"
                         : "border-border text-foreground hover:border-foreground/30"
                         }`}
-                      style={style === 'Fine Line' ? { borderRadius: '6px' } : undefined}
+                      style={['Fine Line', 'Minimalist', 'Other', 'Blackwork'].includes(style) ? { borderRadius: '6px' } : undefined}
                     >
                       {style}
                     </button>
