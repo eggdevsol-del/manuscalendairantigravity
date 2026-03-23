@@ -78,15 +78,15 @@ export default function Login() {
     <PageShell className="justify-center items-center px-4">
       <div className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center pb-6 border-none flex flex-col items-center">
-          <h1 className="text-8xl font-light text-white tracking-widest mb-2" style={{ width: '326.0625px', transform: 'translateY(-58px)' }}>
-            TOI
+          <h1 className="text-8xl font-light text-white tracking-widest mb-2" style={{ width: '326.0625px', transform: 'translate(2px, 60px)' }}>
+            TATTOI
           </h1>
           <CardDescription className="text-base" style={{ fontSize: '13px', fontWeight: 300 }}>
             Sign in to your account to continue
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <CardContent style={{ transform: 'translate(0px, -2px)' }}>
+          <form onSubmit={handleSubmit} className="space-y-4" style={{ transform: 'translate(1px, 3px)' }}>
             <div className="space-y-2">
               <Label htmlFor="email" style={{ fontWeight: 300 }}>Email</Label>
               <div className="relative">
