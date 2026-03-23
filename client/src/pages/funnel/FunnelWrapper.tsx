@@ -212,7 +212,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
 
         {/* Content */}
         <div className="pt-20 pb-32 px-6 max-w-lg mx-auto relative z-10" style={{ width: '337.453125px', transform: 'translate(0px, 110px)', borderRadius: '6px' }}>
-          <h2 className="text-2xl font-semibold text-foreground mb-6" style={{ transform: currentStep === 1 ? 'translate(32px, -52px)' : 'translate(0px, -52px)' }}>
+          <h2 className="text-2xl font-semibold text-foreground mb-6" style={{ transform: currentStep === 1 ? 'translate(32px, -52px)' : currentStep === 2 ? 'translate(41px, -52px)' : 'translate(0px, -52px)', width: currentStep === 2 ? '207.453125px' : undefined }}>
             {STEP_TITLES[currentStep]}
           </h2>
 
@@ -298,12 +298,12 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
 
           {/* Step 2: Style + Reference Images */}
           {currentStep === 2 && (
-            <div className="space-y-6">
+            <div className="space-y-6" style={{ transform: 'translate(-33px, -58px)', width: '357.453125px' }}>
               <div>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm text-muted-foreground mb-4" style={{ transform: 'translate(60px, 0px)' }}>
                   Select all styles you're interested in
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2" style={{ height: '192px' }}>
                   {STYLE_OPTIONS.map(style => (
                     <button
                       key={style}
@@ -312,6 +312,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                         ? "border-foreground bg-foreground text-background"
                         : "border-border text-foreground hover:border-foreground/30"
                         }`}
+                      style={style === 'Fine Line' ? { borderRadius: '6px' } : undefined}
                     >
                       {style}
                     </button>
@@ -320,9 +321,9 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               </div>
 
               {/* Reference Images Upload Button */}
-              <div>
+              <div style={{ transform: 'translate(0px, 28px)' }}>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Reference images (optional)
+                  Reference images (optional but recommended)
                 </label>
                 <button
                   type="button"
