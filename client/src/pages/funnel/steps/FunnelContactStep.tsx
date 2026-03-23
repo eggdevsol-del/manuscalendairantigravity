@@ -186,19 +186,6 @@ export default function FunnelContactStep({
         </div>
       </motion.div>
 
-      {/* Privacy note */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="mt-6 p-4 rounded-[4px] bg-muted/50"
-      >
-        <p className="text-xs text-muted-foreground">
-          🔒 Your information is secure and will only be used to communicate
-          about your tattoo request. We never share your details with third
-          parties.
-        </p>
-      </motion.div>
     </FunnelStepWrapper>
   );
 }
