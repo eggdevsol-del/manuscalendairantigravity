@@ -78,20 +78,17 @@ export default function Login() {
     <PageShell className="justify-center items-center px-4">
       <div className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center pb-6 border-none flex flex-col items-center">
-          <h1 className="text-8xl font-light text-white tracking-widest mb-2">
+          <h1 className="text-8xl font-light text-white tracking-widest mb-2" style={{ width: '326.0625px', transform: 'translateY(68px)' }}>
             TOI
           </h1>
-          <h2 className="text-sm font-medium tracking-widest text-[#4A5568] uppercase text-center max-w-[280px] leading-snug mb-6 mx-auto">
-            Professional Booking &<br />Revenue Protection
-          </h2>
-          <CardDescription className="text-base font-medium">
+          <CardDescription className="text-base" style={{ fontSize: '13px', fontWeight: 300 }}>
             Sign in to your account to continue
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" style={{ fontWeight: 300 }}>Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
                 <Input
@@ -104,12 +101,13 @@ export default function Login() {
                   className="pl-10"
                   disabled={isLoading}
                   required
+                  style={{ fontWeight: 300 }}
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" style={{ fontWeight: 300 }}>Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -121,6 +119,7 @@ export default function Login() {
                   className="pr-10"
                   disabled={isLoading}
                   required
+                  style={{ fontWeight: 300 }}
                 />
                 <button
                   type="button"
@@ -147,6 +146,7 @@ export default function Login() {
               <label
                 htmlFor="remember"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                style={{ fontWeight: 300 }}
               >
                 Remember me
               </label>
@@ -174,7 +174,7 @@ export default function Login() {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-white/10" />
               </div>
-              <div className="relative flex justify-center text-[10px] font-bold tracking-widest uppercase">
+              <div className="relative flex justify-center text-[10px] tracking-widest uppercase" style={{ fontWeight: 300 }}>
                 <span className="bg-background px-4 text-muted-foreground">
                   Don't have an account?
                 </span>
@@ -210,7 +210,7 @@ export default function Login() {
 
           {/* Version Number */}
           <div className="mt-6 text-center">
-            <span className="text-xs text-muted-foreground font-medium">
+            <span className="text-xs text-muted-foreground" style={{ fontWeight: 300 }}>
               v{APP_VERSION}
             </span>
           </div>
