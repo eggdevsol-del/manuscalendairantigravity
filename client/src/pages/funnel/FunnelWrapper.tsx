@@ -211,8 +211,8 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         </div>
 
         {/* Content */}
-        <div className="pt-20 pb-32 px-6 max-w-lg mx-auto relative z-10" style={{ width: '337.453125px', height: '472px', transform: 'translate(0px, 110px)', borderRadius: '6px' }}>
-          <h2 className="text-2xl font-semibold text-foreground mb-6" style={{ transform: 'translate(0px, -52px)' }}>
+        <div className="pt-20 pb-32 px-6 max-w-lg mx-auto relative z-10" style={{ width: '337.453125px', height: currentStep === 1 ? '208px' : '472px', transform: 'translate(0px, 110px)', borderRadius: '6px' }}>
+          <h2 className="text-2xl font-semibold text-foreground mb-6" style={{ transform: currentStep === 1 ? 'translate(32px, -52px)' : 'translate(0px, -52px)' }}>
             {STEP_TITLES[currentStep]}
           </h2>
 
