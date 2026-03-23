@@ -196,15 +196,10 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         )}
 
         {/* Header Profile Section */}
-        <div className="relative z-10 w-full pt-12 pb-6 px-4 shrink-0 border-b border-border/50">
-          <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-            <div className="h-1 bg-white/5">
-              <div
-                className="h-full bg-foreground transition-all duration-300"
-                style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
-              />
-            </div>
-            <div className="px-4 py-3 flex items-center justify-between">
+        <div className="relative z-10 w-full pt-12 pb-6 px-4 shrink-0 border-b border-border/50" style={{ transform: 'translate(0px, -24px)' }}>
+          <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border" style={{ transform: 'translate(0px, -18px)', height: '89px' }}>
+            <div className="h-1 bg-white/5" />
+            <div className="px-4 py-3 flex items-center justify-between" style={{ transform: 'translate(0px, 39px)' }}>
               <span className="text-sm text-muted-foreground">
                 Step {currentStep + 1} of {totalSteps}
               </span>
@@ -216,14 +211,14 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         </div>
 
         {/* Content */}
-        <div className="pt-20 pb-32 px-6 max-w-lg mx-auto relative z-10">
-          <h2 className="text-2xl font-semibold text-foreground mb-6">
+        <div className="pt-20 pb-32 px-6 max-w-lg mx-auto relative z-10" style={{ width: '337.453125px', height: '472px', transform: 'translate(0px, 110px)', borderRadius: '6px' }}>
+          <h2 className="text-2xl font-semibold text-foreground mb-6" style={{ transform: 'translate(0px, -52px)' }}>
             {STEP_TITLES[currentStep]}
           </h2>
 
           {/* Step 0: Intent */}
           {currentStep === 0 && (
-            <div className="space-y-6">
+            <div className="space-y-6" style={{ transform: 'translate(0px, -61px)' }}>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-3">
                   Select a Service
@@ -234,23 +229,17 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                       <button
                         key={service.id}
                         onClick={() => setProjectType(service.id)}
-                        className={`relative p-4 rounded-[4px] border-2 text-left transition-all flex flex-col gap-1 ${projectType === service.id
+                        className={`relative p-4 rounded-[6px] border-2 text-left transition-all flex flex-col gap-1 ${projectType === service.id
                           ? "border-primary bg-primary/10"
                           : "border-border bg-card hover:border-primary/50"
                           }`}
+                        style={{ height: '56.5px' }}
                       >
                         <div className="flex justify-between items-start w-full pr-8">
                           <span className="font-semibold text-foreground text-sm">
                             {service.label}
                           </span>
-                          <span className="font-bold text-primary text-sm">${service.price}</span>
                         </div>
-                        {(service.duration > 0 || service.sittings > 1) && (
-                          <div className="flex gap-3 text-[11px] text-muted-foreground font-mono mt-1">
-                            {service.duration > 0 && <span>{service.duration / 60}h</span>}
-                            {service.sittings > 1 && <span>Project: {service.sittings} Sittings</span>}
-                          </div>
-                        )}
                         {projectType === service.id && (
                           <div className="absolute top-1/2 -translate-y-1/2 right-4 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                             <Check className="w-3.5 h-3.5 text-primary-foreground" />
