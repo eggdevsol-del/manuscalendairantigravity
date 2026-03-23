@@ -7,7 +7,6 @@
 import { motion } from "framer-motion";
 import { User, Mail, Phone } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { GooglePlacesInput } from "@/components/ui/GooglePlacesInput";
 import FunnelStepWrapper from "../components/FunnelStepWrapper";
 import type { ArtistProfile } from "../FunnelWrapper";
 
@@ -148,27 +147,29 @@ export default function FunnelContactStep({
           </p>
         </div>
 
-        {/* Location - Google Places */}
+        {/* Location */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
             Your location *
           </label>
-          <GooglePlacesInput
-            placeholder="Search your city..."
-            defaultValue={city ? `${city}${country ? `, ${country}` : ''}` : ''}
-            types={['(cities)']}
-            onPlaceSelected={(place) => {
-              // Extract city and country from address components
-              const cityComponent = place.address_components.find(
-                c => c.types.includes('locality') || c.types.includes('sublocality')
-              );
-              const countryComponent = place.address_components.find(
-                c => c.types.includes('country')
-              );
-              setCity(cityComponent?.long_name || place.name || '');
-              setCountry(countryComponent?.long_name || '');
-            }}
-          />
+          <div className="flex gap-3">
+            <div className="flex-1 relative">
+              <Input
+                type="text"
+                value={city}
+                onChange={e => setCity(e.target.value)}
+                placeholder="City"
+              />
+            </div>
+            <div className="flex-1">
+              <Input
+                type="text"
+                value={country}
+                onChange={e => setCountry(e.target.value)}
+                placeholder="Country"
+              />
+            </div>
+          </div>
           <p className="text-xs text-muted-foreground mt-1">
             Helps your artist notify you about sessions in your area
           </p>
