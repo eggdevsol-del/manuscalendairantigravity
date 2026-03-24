@@ -142,6 +142,16 @@ export const artistSettings = mysqlTable(
     appleCalendarUrl: text(), // Secure polling URL
     // Travel Features
     travelDates: text(), // JSON array of { id, location, country, startDate, endDate }
+    // Billing & Subscription
+    subscriptionTier: mysqlEnum(["basic", "pro", "elite"]).default("basic"),
+    stripeCustomerId: varchar({ length: 255 }),
+    stripeSubscriptionId: varchar({ length: 255 }),
+    subscriptionStatus: mysqlEnum([
+      "active",
+      "past_due",
+      "canceled",
+      "trialing",
+    ]).default("active"),
   },
   table => [unique("artistSettings_publicSlug_unique").on(table.publicSlug)]
 );

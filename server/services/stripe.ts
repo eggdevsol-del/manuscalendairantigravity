@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { getDb } from "./core";
 import { eq } from "drizzle-orm";
-import { studios } from "../../drizzle/schema";
+import { studios, artistSettings } from "../../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import type { Request, Response } from "express";
 
@@ -46,6 +46,44 @@ export async function createStudioCheckoutSession(
     subscription_data: {
       metadata: {
         studioId: studioId,
+      },
+    },
+  });
+
+  return session.url;
+}
+
+/**
+ * Creates a Stripe Checkout Session for upgrading Artist Plans.
+ */
+export async function createArtistCheckoutSession(
+  artistId: string,
+  email: string,
+  priceId: string
+) {
+  if (!process.env.VITE_APP_URL) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Missing VITE_APP_URL configuration",
+    });
+  }
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    mode: "subscription",
+    customer_email: email,
+    client_reference_id: artistId,
+    line_items: [
+      {
+        price: priceId,
+        quantity: 1,
+      },
+    ],
+    success_url: `${process.env.VITE_APP_URL}/settings/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.VITE_APP_URL}/settings/billing?canceled=true`,
+    subscription_data: {
+      metadata: {
+        artistId: artistId,
       },
     },
   });
@@ -106,8 +144,10 @@ export async function handleStripeWebhook(req: Request, res: Response) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const studioId = session.client_reference_id;
         const subscriptionId = session.subscription as string;
+
+        // Handle Studio Checkout
+        const studioId = session.metadata?.studioId || (session.subscription && typeof session.subscription !== 'string' ? (session.subscription as any).metadata?.studioId : null);
 
         if (studioId && subscriptionId) {
           await db
@@ -122,12 +162,33 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             `[Stripe] Upgraded Studio ${studioId} to Active Subscription ${subscriptionId}`
           );
         }
+
+        // Handle Artist Checkout
+        const artistId = session.metadata?.artistId || (session.subscription && typeof session.subscription !== 'string' ? (session.subscription as any).metadata?.artistId : null) || session.client_reference_id;
+
+        if (artistId && subscriptionId && !studioId) { // Check !studioId to prevent collision if logic leaks
+          await db
+            .update(artistSettings)
+            .set({
+              stripeSubscriptionId: subscriptionId,
+              subscriptionStatus: "active",
+              // The exact tier (pro vs elite) could be fetched from the subscription item's price ID
+              // But for webhook, we rely on the product ID map, or just fetch it.
+              // For now we'll set it in customer.subscription.updated to be safe
+            })
+            .where(eq(artistSettings.userId, artistId));
+
+          console.log(
+            `[Stripe] Upgraded Artist ${artistId} to Active Subscription ${subscriptionId}`
+          );
+        }
         break;
       }
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
         const studioId = subscription.metadata.studioId;
+        const artistId = subscription.metadata.artistId;
 
         if (studioId) {
           await db
@@ -139,12 +200,24 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             .where(eq(studios.id, studioId));
           console.log(`[Stripe] Canceled Subscription for Studio ${studioId}`);
         }
+
+        if (artistId) {
+          await db
+            .update(artistSettings)
+            .set({
+              subscriptionStatus: "canceled",
+              subscriptionTier: "basic", // Fallback to basic
+            })
+            .where(eq(artistSettings.userId, artistId));
+          console.log(`[Stripe] Canceled Subscription for Artist ${artistId}`);
+        }
         break;
       }
 
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
         const studioId = subscription.metadata.studioId;
+        const artistId = subscription.metadata.artistId;
         const status = subscription.status; // 'active', 'past_due', 'canceled', 'unpaid'
 
         if (studioId) {
@@ -156,6 +229,26 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             .where(eq(studios.id, studioId));
           console.log(
             `[Stripe] Updated Subscription Status to ${status} for Studio ${studioId}`
+          );
+        }
+
+        if (artistId) {
+          // Identify the tier based on the price ID in the subscription
+          const priceId = subscription.items.data[0]?.price.id;
+          let newTier = "basic";
+          // These should ideally match process.env variables, making a rough mapping for safety:
+          if (priceId === process.env.STRIPE_PRO_PRICE_ID) newTier = "pro";
+          if (priceId === process.env.STRIPE_ELITE_PRICE_ID) newTier = "elite";
+
+          await db
+            .update(artistSettings)
+            .set({
+              subscriptionStatus: status as any,
+              subscriptionTier: status === "active" || status === "trialing" ? (newTier as any) : "basic",
+            })
+            .where(eq(artistSettings.userId, artistId));
+          console.log(
+            `[Stripe] Updated Subscription Status to ${status} (Tier: ${newTier}) for Artist ${artistId}`
           );
         }
         break;

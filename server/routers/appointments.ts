@@ -6,8 +6,9 @@ import * as db from "../db";
 import { localToUTC, getBusinessTimezone } from "../../shared/utils/timezone";
 import { notificationOutbox } from "../../drizzle/schema";
 import { getBankDetailLabels } from "../../shared/utils/bankDetails";
-import { eq } from "drizzle-orm";
+import { eq, sql, and, gte, lte } from "drizzle-orm";
 import * as schema from "../../drizzle/schema";
+import { canAccessFeature, getFeatureLimit } from "../_core/tierPermissions";
 
 export const appointmentsRouter = router({
   getArtistCalendar: protectedProcedure
@@ -155,6 +156,46 @@ export const appointmentsRouter = router({
       const startTimeUTC = localToUTC(input.startTime, timezone);
       const endTimeUTC = localToUTC(input.endTime, timezone);
 
+      // --- TIER ENFORCEMENT ---
+      const artistSettings = await db.getArtistSettings(input.artistId);
+      const tier = artistSettings?.subscriptionTier as any;
+
+      // 1. Check max appointments limit for this month
+      const maxAppts = getFeatureLimit(tier, "maxAppointments");
+      if (maxAppts !== Infinity) {
+        const dbRef = await db.getDb();
+        if (dbRef) {
+          const startOfMonth = new Date(new Date(startTimeUTC).getFullYear(), new Date(startTimeUTC).getMonth(), 1).toISOString().slice(0, 19).replace('T', ' ');
+          const endOfMonth = new Date(new Date(startTimeUTC).getFullYear(), new Date(startTimeUTC).getMonth() + 1, 0, 23, 59, 59).toISOString().slice(0, 19).replace('T', ' ');
+
+          const currentMonthAppts = await dbRef.query.appointments.findMany({
+            where: and(
+              eq(schema.appointments.artistId, input.artistId),
+              gte(schema.appointments.startTime, startOfMonth),
+              lte(schema.appointments.startTime, endOfMonth)
+            ),
+          });
+
+          if (currentMonthAppts.length >= maxAppts) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: `You have reached your free tier limit of ${maxAppts} appointments per month. Please upgrade your subscription.`
+            });
+          }
+        }
+      }
+
+      // 2. Check deposit engine access
+      if (input.depositAmount && input.depositAmount > 0) {
+        if (!canAccessFeature(tier, "canUseDepositEngine")) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Your current subscription tier does not support automated deposit collection."
+          });
+        }
+      }
+      // -------------------------
+
       // Check for overlap using UTC times
       const isOverlapping = await db.checkAppointmentOverlap(
         input.artistId,
@@ -170,10 +211,10 @@ export const appointmentsRouter = router({
       }
 
       // Retrieve artist's studio context to link this appointment to the overarching studio calendar
-      const dbRef = await db.getDb();
+      const dbRef2 = await db.getDb();
       let studioId: string | undefined = undefined;
-      if (dbRef) {
-        const member = await dbRef.query.studioMembers.findFirst({
+      if (dbRef2) {
+        const member = await dbRef2.query.studioMembers.findFirst({
           where: (sm, { eq, and }) =>
             and(eq(sm.userId, input.artistId), eq(sm.status, "active")),
         });

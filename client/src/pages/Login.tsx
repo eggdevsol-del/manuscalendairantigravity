@@ -82,7 +82,7 @@ export default function Login() {
             TATTOI
           </h1>
           <CardDescription className="text-base" style={{ fontSize: '13px', fontWeight: 300 }}>
-            Sign in to your account to continue
+            REVENUE PROTECTION - FOR SERIOUS ARTISTS
           </CardDescription>
         </CardHeader>
         <CardContent style={{ transform: 'translate(0px, -2px)' }}>

@@ -16,7 +16,8 @@ import * as schema from "../../drizzle/schema";
 import { eq, and, desc, or, gte, lte, isNull, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { randomBytes } from "crypto";
-import { getDb } from "../db";
+import { getDb, getArtistSettings } from "../db";
+import { canAccessFeature } from "../_core/tierPermissions";
 
 // Input validation schemas
 const promotionTypeEnum = z.enum(["voucher", "discount", "credit"]);
@@ -75,6 +76,14 @@ export const promotionsRouter = router({
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Database connection failed",
+          });
+        }
+
+        const settings = await getArtistSettings(ctx.user.id);
+        if (!canAccessFeature(settings?.subscriptionTier as any, "canUsePromotions")) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Your current subscription tier does not support Promotions.",
           });
         }
 
@@ -346,6 +355,14 @@ export const promotionsRouter = router({
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Database connection failed",
+          });
+        }
+
+        const settings = await getArtistSettings(ctx.user.id);
+        if (!canAccessFeature(settings?.subscriptionTier as any, "canUsePromotions")) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Your current subscription tier does not support Promotions.",
           });
         }
 

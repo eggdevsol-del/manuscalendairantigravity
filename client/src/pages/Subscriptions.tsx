@@ -1,20 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
-import {
-  useBottomNav,
-  useRegisterFABActions,
-} from "@/contexts/BottomNavContext";
 import { PageHeader, PageShell } from "@/components/ui/ssot";
-import { Button, Card, Switch } from "@/components/ui";
+import { Button, Switch } from "@/components/ui";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
-import {
-  Check,
-  Info,
-  Sparkles,
-  User,
-  ArrowRight,
-} from "lucide-react";
+import { Check, ArrowRight, Zap, Building2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
@@ -25,46 +15,35 @@ export default function Subscriptions() {
   const [, setLocation] = useLocation();
   const [isAnnual, setIsAnnual] = useState(false);
 
-  // Fetch the studio data to check current tier
+  // Fetch data
   const { data: currentStudio, isLoading: isLoadingStudio } =
     trpc.studios.getCurrentStudio.useQuery(undefined, {
-      enabled: !!user,
+      enabled: user?.role === "studio" || user?.role === "admin",
     });
 
-  const plans = [
+  const { data: artistSettings, isLoading: isLoadingArtist } =
+    trpc.artistSettings.get.useQuery(undefined, {
+      enabled: user?.role === "artist" || user?.role === "admin",
+    });
+
+  const isArtist = user?.role === "artist";
+  const currentTier = isArtist
+    ? artistSettings?.subscriptionTier || "basic"
+    : currentStudio?.subscriptionTier || "solo";
+
+  // Mutations for Stripe Checkouts (Artist)
+  const createArtistCheckout = trpc.billing.createArtistCheckoutSession.useMutation(
     {
-      id: "solo",
-      name: "Solo Artist",
-      icon: User,
-      tagline: "Everything an independent artist needs to thrive.",
-      priceMonthly: 29,
-      priceAnnual: 24, // $288/yr
-      features: [
-        "Smart Calendar & Booking Link",
-        "Automated Reminders (SMS/Email)",
-        "Client & Portfolio Management",
-        "Digital Intake & Consent Forms",
-        "Waitlist & Flash Tattoo Claims",
-        "Basic Analytics Dashboard",
-      ],
-      isPopular: true,
-      color: "purple",
-    },
-  ];
+      onSuccess: data => {
+        if (data.url) window.location.href = data.url;
+      },
+      onError: err => {
+        toast.error(err.message || "Failed to initiate checkout");
+      },
+    }
+  );
 
-  const currentTier = currentStudio?.subscriptionTier || "solo";
-
-  // Mutations for Stripe Checkouts
-  const createCheckout = trpc.billing.createCheckoutSession.useMutation({
-    onSuccess: data => {
-      if (data.url) window.location.href = data.url;
-    },
-    onError: err => {
-      toast.error(err.message || "Failed to initiate checkout");
-    },
-  });
-
-  const createPortal = trpc.billing.createPortalSession.useMutation({
+  const createArtistPortal = trpc.billing.createArtistPortalSession.useMutation({
     onSuccess: data => {
       if (data.url) window.location.href = data.url;
     },
@@ -73,57 +52,113 @@ export default function Subscriptions() {
     },
   });
 
-  // We also need the createStudio endpoint if they don't even have a studio yet
-  const createStudio = trpc.studios.createStudio.useMutation({
+  // Mutations for Stripe Checkouts (Studio)
+  const createStudioCheckout = trpc.billing.createCheckoutSession.useMutation({
     onSuccess: data => {
-      // Upon creating studio, instantly proceed to billing
-      createCheckout.mutate({ studioId: data.studioId });
+      if (data.url) window.location.href = data.url;
     },
     onError: err => {
-      toast.error(err.message || "Failed to create studio space");
+      toast.error(err.message || "Failed to initiate checkout");
     },
   });
 
-  // STRIPE BYPASS FOR TESTING
-  const utils = trpc.useUtils();
-  const testUpgradeStudio = trpc.studios.testUpgradeStudio.useMutation({
-    onSuccess: () => {
-      toast.success("Testing Bypass: Subscription Plan Activated!");
-      utils.studios.getCurrentStudio.invalidate();
+  const createStudioPortal = trpc.billing.createPortalSession.useMutation({
+    onSuccess: data => {
+      if (data.url) window.location.href = data.url;
     },
     onError: err => {
-      toast.error(err.message || "Failed to bypass upgrade");
+      toast.error(err.message || "Failed to open billing portal");
     },
   });
 
-  const handleAction = (planId: string) => {
-    // BYPASS STRIPE FOR TESTING
-    testUpgradeStudio.mutate({ tier: planId as any });
+  const plans = isArtist
+    ? [
+      {
+        id: "pro",
+        name: "Pro Artist",
+        icon: Zap,
+        tagline: "Everything you need to automate your bookings, deposits, and reminders.",
+        priceMonthly: 29.99,
+        priceAnnual: 24.99, // $299.88/yr
+        features: [
+          "Unlimited Appointments",
+          "Advanced Multi-Step Booking Wizard",
+          "Automated Deposits via Stripe",
+          "Automated Reminders (SMS/Email)",
+          "Promotional Vouchers & Discounts",
+          "Remove Tattoi Branding (White-label)",
+          "Custom Booking Funnel Theme & Colors",
+          "Custom Policy & Form Content",
+        ],
+        isPopular: true,
+        color: "purple",
+        // MOCK STRIPE IDS FOR NOW
+        stripePriceIdMonthly: "price_mock_pro_monthly",
+        stripePriceIdAnnual: "price_mock_pro_annual",
+      },
+    ]
+    : [
+      {
+        id: "studio",
+        name: "Studio Space",
+        icon: Building2,
+        tagline: "Multi-artist management, shared resources, and advanced analytics.",
+        priceMonthly: 99.99,
+        priceAnnual: 79.99, // $959.88/yr
+        features: [
+          "Unlimited Staff & Artists",
+          "Centralized Reception Desk",
+          "Shared Resources & Rooms",
+          "Studio-wide Deposit Collection",
+          "Aggregated P&L Analytics",
+          "Custom Studio Branding",
+        ],
+        isPopular: true,
+        color: "orange",
+        stripePriceIdMonthly: "price_mock_studio_monthly",
+        stripePriceIdAnnual: "price_mock_studio_annual",
+      },
+    ];
+
+  const handleAction = (plan: any) => {
+    // If user is basic or elite, we consider "pro" as the upgrade/manage path 
+    const isCurrentPlan = currentTier === plan.id || (plan.id === "pro" && currentTier === "elite");
+
+    if (isArtist) {
+      if (isCurrentPlan) {
+        createArtistPortal.mutate();
+      } else {
+        const priceId = isAnnual ? plan.stripePriceIdAnnual : plan.stripePriceIdMonthly;
+        createArtistCheckout.mutate({ priceId });
+      }
+    } else {
+      if (isCurrentPlan) {
+        if (!currentStudio?.id) return;
+        createStudioPortal.mutate({ studioId: currentStudio.id });
+      } else {
+        if (!currentStudio?.id) return; // Normally they'd create studio first
+        createStudioCheckout.mutate({ studioId: currentStudio.id });
+      }
+    }
   };
 
   const isPending =
-    createCheckout.isPending ||
-    createPortal.isPending ||
-    createStudio.isPending ||
-    testUpgradeStudio.isPending;
+    createArtistCheckout.isPending ||
+    createArtistPortal.isPending ||
+    createStudioCheckout.isPending ||
+    createStudioPortal.isPending ||
+    isLoadingStudio ||
+    isLoadingArtist;
 
   return (
     <PageShell>
-      <PageHeader
-        title="Subscriptions"
-        onBack={() => setLocation("/settings")}
-      />
+      <PageHeader title="Subscriptions" onBack={() => setLocation("/settings")} />
 
-      <div
-        className={cn(
-          tokens.contentContainer.base,
-          "pb-24 pt-6 overflow-y-auto h-full"
-        )}
-      >
+      <div className={cn(tokens.contentContainer.base, "pb-24 pt-6 overflow-y-auto h-full")}>
         {/* Hero / Header */}
         <div className="text-center mb-8 px-4">
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400">
-            Choose Your Plan
+            {isArtist ? "Unlock Pro Features" : "Choose Your Plan"}
           </h1>
           <p className="text-muted-foreground mt-2 max-w-sm mx-auto">
             Simple, transparent pricing to help you grow your tattoo business.
@@ -159,10 +194,21 @@ export default function Subscriptions() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="space-y-6 px-4">
+        <div className="space-y-6 px-4 max-w-lg mx-auto">
           {plans.map(plan => {
-            const isCurrentPlan = currentTier === plan.id;
+            const isCurrentPlan = currentTier === plan.id || (plan.id === "pro" && currentTier === "elite");
             const price = isAnnual ? plan.priceAnnual : plan.priceMonthly;
+
+            // Simplified styling based on color mapping
+            const colorClasses = {
+              purple: "text-purple-400",
+              orange: "text-orange-400",
+            }[plan.color as "purple" | "orange"] || "text-primary";
+
+            const borderGradient = {
+              purple: "from-purple-500 to-primary",
+              orange: "from-orange-400 to-red-500",
+            }[plan.color as "purple" | "orange"];
 
             return (
               <motion.div
@@ -173,32 +219,23 @@ export default function Subscriptions() {
                 className={cn(
                   "relative rounded-3xl p-6 border overflow-hidden",
                   plan.isPopular
-                    ? "bg-card border-primary/50 shadow-xl shadow-primary/10"
+                    ? "bg-card border-white/20 shadow-xl"
                     : "bg-white/5 border-white/10"
                 )}
               >
-                {plan.isPopular && (
-                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary via-purple-500 to-primary" />
+                {plan.isPopular && borderGradient && (
+                  <div className={`absolute top-0 inset-x-0 h-1 bg-gradient-to-r ${borderGradient}`} />
                 )}
 
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <plan.icon
-                        className={cn(
-                          "w-5 h-5",
-                          plan.color === "blue"
-                            ? "text-blue-400"
-                            : "text-purple-400"
-                        )}
-                      />
+                      <plan.icon className={cn("w-5 h-5", colorClasses)} />
                       <h3 className="text-xl font-bold text-foreground">
                         {plan.name}
                       </h3>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {plan.tagline}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{plan.tagline}</p>
                   </div>
                   {isCurrentPlan && (
                     <span className="bg-white/10 text-white text-xs px-2.5 py-1 rounded-full font-medium shrink-0">
@@ -217,8 +254,8 @@ export default function Subscriptions() {
                 <div className="space-y-3 mb-8">
                   {plan.features.map((feature, i) => (
                     <div key={i} className="flex items-start gap-3">
-                      <div className="mt-0.5 shrink-0 w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">
-                        <Check className="w-2.5 h-2.5 text-primary" />
+                      <div className="mt-0.5 shrink-0 w-4 h-4 rounded-full bg-white/10 flex items-center justify-center">
+                        <Check className={cn("w-2.5 h-2.5", colorClasses)} />
                       </div>
                       <span className="text-sm text-foreground/80 leading-tight">
                         {feature}
@@ -228,21 +265,27 @@ export default function Subscriptions() {
                 </div>
 
                 <Button
-                  onClick={() => handleAction(plan.id)}
-                  disabled={isPending || isLoadingStudio}
+                  onClick={() => handleAction(plan)}
+                  disabled={isPending}
+                  variant={isCurrentPlan ? "outline" : plan.isPopular ? "hero" : "default"}
                   className={cn(
                     "w-full h-12 rounded-xl font-bold text-sm tracking-wide gap-2",
-                    isCurrentPlan
-                      ? "bg-white/10 text-foreground hover:bg-white/20"
-                      : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25"
                   )}
                 >
-                  {isCurrentPlan ? "Manage Subscription" : "Upgrade Plan"}
+                  {isCurrentPlan ? "Manage Subscription" : "Subscribe Now"}
                   {!isCurrentPlan && <ArrowRight className="w-4 h-4" />}
                 </Button>
               </motion.div>
             );
           })}
+
+          {isArtist && currentTier === "basic" && (
+            <div className="text-center mt-6">
+              <p className="text-sm text-muted-foreground font-medium">
+                You do not have an active subscription.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </PageShell>

@@ -6,8 +6,10 @@ import { studios, studioMembers } from "../../drizzle/schema";
 import { getDb } from "../services/core";
 import {
   createStudioCheckoutSession,
+  createArtistCheckoutSession,
   createCustomerPortalSession,
 } from "../services/stripe";
+import { artistSettings } from "../../drizzle/schema";
 
 export const billingRouter = router({
   /**
@@ -127,6 +129,97 @@ export const billingRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: error.message || "Failed to create customer portal session",
+        });
+      }
+    }),
+
+  /**
+   * Creates a checkout session to upgrade an Artist Plan.
+   */
+  createArtistCheckoutSession: protectedProcedure
+    .input(
+      z.object({
+        priceId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database connection failed",
+        });
+
+      if (ctx.user.role !== "artist") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only artists can upgrade artist plans.",
+        });
+      }
+
+      try {
+        const checkoutUrl = await createArtistCheckoutSession(
+          ctx.user.id,
+          ctx.user.email || "",
+          input.priceId
+        );
+        return { url: checkoutUrl };
+      } catch (error: any) {
+        console.error("[Stripe Artist Checkout Error]", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error.message || "Failed to create artist checkout session",
+        });
+      }
+    }),
+
+  /**
+   * Creates a portal session for an Artist.
+   */
+  createArtistPortalSession: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database connection failed",
+        });
+
+      if (ctx.user.role !== "artist") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only artists can manage artist plans.",
+        });
+      }
+
+      const settings = await db.query.artistSettings.findFirst({
+        where: eq(artistSettings.userId, ctx.user.id),
+      });
+
+      if (!settings || !settings.stripeSubscriptionId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You do not have an active billing subscription to manage.",
+        });
+      }
+
+      try {
+        const { stripe } = await import("../services/stripe");
+        const subscription = await stripe.subscriptions.retrieve(
+          settings.stripeSubscriptionId
+        );
+        const customerId =
+          typeof subscription.customer === "string"
+            ? subscription.customer
+            : subscription.customer.id;
+
+        const portalUrl = await createCustomerPortalSession(customerId);
+        return { url: portalUrl };
+      } catch (error: any) {
+        console.error("[Stripe Artist Portal Error]", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error.message || "Failed to create artist customer portal session",
         });
       }
     }),
