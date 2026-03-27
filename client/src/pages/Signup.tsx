@@ -129,7 +129,7 @@ export default function Signup() {
         toast.success("Google account linked! Please complete your profile.");
       } else {
         toast.success("Welcome back!");
-        setLocation("/calendar");
+        window.location.href = "/calendar";
       }
     } catch (err: any) {
       toast.error(err?.message || "Google sign-in failed. Please try again.");

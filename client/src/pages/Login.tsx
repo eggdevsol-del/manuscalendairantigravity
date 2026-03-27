@@ -67,6 +67,7 @@ export default function Login() {
   // --- Google Sign-In ---
   const isGoogleReady = useGoogleAuthReady();
   const googleLoginMutation = trpc.auth.googleLogin.useMutation();
+  const utils = trpc.useUtils();
 
   const handleGoogleSuccess = async (code: string) => {
     setIsLoading(true);
@@ -82,15 +83,18 @@ export default function Login() {
       storage.setItem("authToken", result.token);
       storage.setItem("user", JSON.stringify(result.user));
 
+      // Invalidate the auth.me cache so the new token is used
+      await utils.auth.me.invalidate();
+
       if (result.isNewUser) {
         toast.success("Account created! Please complete your profile.");
-        setLocation("/signup");
+        window.location.href = "/signup";
       } else {
         toast.success("Welcome back!");
         if (result.user.role === "studio") {
-          setLocation("/studio");
+          window.location.href = "/studio";
         } else {
-          setLocation("/calendar");
+          window.location.href = "/calendar";
         }
       }
     } catch (err: any) {
