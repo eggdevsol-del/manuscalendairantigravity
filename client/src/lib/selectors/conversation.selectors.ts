@@ -4,14 +4,15 @@ import { useMemo } from "react";
 /**
  * Selector to get the total unread message count across all conversations
  *
- * IMPORTANT: This reads from the React Query cache, it does NOT create a new query.
- * The cache is populated by useConversations() hook.
+ * Uses a real query so the badge shows immediately after login,
+ * not only after navigating to Messages.
  */
 export const useTotalUnreadCount = () => {
-  const utils = trpc.useUtils();
-
-  // Read from cache (no network request)
-  const conversations = utils.conversations.list.getData();
+  const { data: conversations } = trpc.conversations.list.useQuery(undefined, {
+    staleTime: 30_000, // Re-fetch at most every 30s
+    refetchInterval: 30_000, // Poll every 30s to stay fresh
+    refetchOnWindowFocus: true,
+  });
 
   return useMemo(() => {
     if (!conversations) return 0;
