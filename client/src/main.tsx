@@ -74,17 +74,45 @@ const trpcClient = trpc.createClient({
 });
 
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { useState, useEffect } from "react";
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+// Wrapper that fetches Google Client ID from backend (not baked into bundle)
+function GoogleAuthWrapper({ children }: { children: React.ReactNode }) {
+  const [clientId, setClientId] = useState<string>("");
+
+  useEffect(() => {
+    // Fetch Google client ID from backend at runtime
+    fetch(`${API_BASE_URL}/api/trpc/auth.getGoogleClientId`, {
+      headers: { "Content-Type": "application/json" },
+    })
+      .then(res => res.json())
+      .then(data => {
+        // tRPC batch response: data[0].result.data (superjson)
+        const raw = data?.[0]?.result?.data;
+        // superjson wraps as { json: { clientId: "..." } }
+        const id = raw?.json?.clientId || raw?.clientId || "";
+        if (id) setClientId(id);
+      })
+      .catch(() => {
+        console.warn("[Auth] Could not fetch Google Client ID from backend");
+      });
+  }, []);
+
+  return (
+    <GoogleOAuthProvider clientId={clientId}>
+      {children}
+    </GoogleOAuthProvider>
+  );
+}
 
 createRoot(document.getElementById("root")!).render(
-  <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+  <GoogleAuthWrapper>
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         <App />
       </QueryClientProvider>
     </trpc.Provider>
-  </GoogleOAuthProvider>
+  </GoogleAuthWrapper>
 );
 
 // Current app version (baked in at build time)

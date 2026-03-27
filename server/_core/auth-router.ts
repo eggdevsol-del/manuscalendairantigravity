@@ -543,34 +543,72 @@ export const authRouter = router({
     }),
 
   /**
-   * Google OAuth login/register
-   * Verifies Google ID token, finds or creates user, returns JWT
+   * Return the Google OAuth Client ID so the frontend can init the provider
+   * without baking the credential into the JS bundle.
+   */
+  getGoogleClientId: publicProcedure.query(() => {
+    const { ENV } = require("./env");
+    return { clientId: ENV.googleClientId };
+  }),
+
+  /**
+   * Google OAuth login/register (Authorization Code flow)
+   * Frontend sends the auth code; backend exchanges it for tokens
+   * using the client secret, then finds or creates the user.
    */
   googleLogin: publicProcedure
     .input(
       z.object({
-        credential: z.string(), // Google ID token
+        code: z.string(), // Google authorization code
       })
     )
     .mutation(async ({ input }) => {
-      const { credential } = input;
+      const { ENV } = require("./env");
+      const { code } = input;
 
-      // Verify Google access token via Google's userinfo endpoint
-      const googleRes = await fetch(
-        "https://www.googleapis.com/oauth2/v3/userinfo",
-        {
-          headers: { Authorization: `Bearer ${credential}` },
-        }
-      );
+      // Exchange authorization code for tokens using client secret
+      const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          code,
+          client_id: ENV.googleClientId,
+          client_secret: ENV.googleClientSecret,
+          redirect_uri: "postmessage", // required for popup-based auth-code flow
+          grant_type: "authorization_code",
+        }),
+      });
 
-      if (!googleRes.ok) {
+      if (!tokenRes.ok) {
+        const errBody = await tokenRes.text();
+        console.error("[Auth] Google token exchange failed:", errBody);
         throw new TRPCError({
           code: "UNAUTHORIZED",
-          message: "Invalid Google token",
+          message: "Google authentication failed",
         });
       }
 
-      const googlePayload = (await googleRes.json()) as {
+      const tokens = (await tokenRes.json()) as {
+        access_token: string;
+        id_token?: string;
+      };
+
+      // Fetch user info using the access token
+      const userInfoRes = await fetch(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        {
+          headers: { Authorization: `Bearer ${tokens.access_token}` },
+        }
+      );
+
+      if (!userInfoRes.ok) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Failed to fetch Google user info",
+        });
+      }
+
+      const googlePayload = (await userInfoRes.json()) as {
         email: string;
         name: string;
         picture?: string;

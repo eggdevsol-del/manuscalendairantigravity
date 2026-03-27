@@ -7,7 +7,7 @@ import { sql } from "drizzle-orm";
 // Initialize storage table
 async function ensureStorageTable() {
   const db = await getDb();
-  await db.execute(sql`
+  await db!.execute(sql`
     CREATE TABLE IF NOT EXISTS file_storage (
       file_key VARCHAR(255) PRIMARY KEY,
       file_data LONGTEXT NOT NULL,
@@ -58,7 +58,7 @@ export async function storagePut(
     mimeType,
   });
   const db = await getDb();
-  await db.execute(sql`
+  await db!.execute(sql`
     INSERT INTO file_storage (file_key, file_data, mime_type)
     VALUES (${key}, ${base64Data}, ${mimeType})
     ON DUPLICATE KEY UPDATE 
@@ -88,7 +88,7 @@ export async function storageGetData(
   const db = await getDb();
   console.log(`[Storage] GetData query for key: ${key}`);
 
-  const result: any = await db.execute(sql`
+  const result: any = await db!.execute(sql`
     SELECT file_data, mime_type FROM file_storage WHERE file_key = ${key}
   `);
 

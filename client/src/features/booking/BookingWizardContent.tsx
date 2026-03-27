@@ -297,8 +297,7 @@ export function BookingWizardContent({
       c =>
         c?.name?.toLowerCase().includes(clientSearch.toLowerCase()) ||
         c?.email?.toLowerCase().includes(clientSearch.toLowerCase())
-    )
-    .slice(0, 5);
+    );
 
   const getOrCreateConversation = trpc.conversations.getOrCreate.useMutation();
   const {
@@ -1508,191 +1507,84 @@ export function BookingWizardContent({
 
             {step === "client" && (
               <div className="flex flex-col gap-3 -my-2 w-full pt-1">
-                {!isAddingNewClient ? (
-                  <>
-                    <div
+                <>
+                  <div
+                    className={cn(
+                      card.base,
+                      card.bg,
+                      "px-3 py-2 flex items-center gap-2 rounded-[4px]"
+                    )}
+                  >
+                    <Loader2
                       className={cn(
-                        card.base,
-                        card.bg,
-                        "px-3 py-2 flex items-center gap-2 rounded-[4px]"
+                        "w-3.5 h-3.5 animate-spin text-muted-foreground",
+                        !isLoadingClients && "hidden"
                       )}
-                    >
-                      <Loader2
-                        className={cn(
-                          "w-3.5 h-3.5 animate-spin text-muted-foreground",
-                          !isLoadingClients && "hidden"
-                        )}
-                      />
-                      {!isLoadingClients && (
-                        <CalendarSearch className="w-3.5 h-3.5 text-muted-foreground" />
-                      )}
-                      <input
-                        type="text"
-                        placeholder="Search existing clients..."
-                        className="bg-transparent border-none outline-none text-[11px] placeholder:text-muted-foreground/50 w-full"
-                        value={clientSearch}
-                        onChange={e => setClientSearch(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5 min-h-[140px] max-h-[40vh] overflow-y-auto w-full touch-pan-y mobile-scroll px-1">
-                      {filteredClients.map(client => {
-                        if (!client) return null;
-                        return (
-                          <motion.button
-                            key={client.id}
-                            variants={fab.animation.item}
-                            className={cn(
-                              card.base,
-                              card.bg,
-                              card.interactive,
-                              "p-2.5 flex items-center gap-2.5 w-full text-left"
-                            )}
-                            onClick={() => handleClientSelect(client)}
-                          >
-                            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                              {client.name?.charAt(0) || "?"}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[11px] font-semibold text-foreground truncate">
-                                {client.name}
-                              </p>
-                              <p className="text-[9px] text-muted-foreground truncate">
-                                {client.email || "No email"}
-                              </p>
-                            </div>
-                          </motion.button>
-                        );
-                      })}
-
-                      {clientSearch &&
-                        filteredClients.length === 0 &&
-                        !isLoadingClients && (
-                          <div className="py-8 text-center">
-                            <p className="text-[10px] text-muted-foreground">
-                              No clients found matching "{clientSearch}"
-                            </p>
-                          </div>
-                        )}
-
-                      {!clientSearch &&
-                        filteredClients.length === 0 &&
-                        !isLoadingClients && (
-                          <div className="py-8 text-center">
-                            <p className="text-[10px] text-muted-foreground italic">
-                              Search for a client or add a new one
-                            </p>
-                          </div>
-                        )}
-                    </div>
-
-                    <button
-                      onClick={() => setIsAddingNewClient(true)}
-                      className={cn(
-                        card.base,
-                        card.bgAccent,
-                        card.interactive,
-                        "p-2.5 flex items-center justify-center gap-2 w-full mt-1 border border-primary/20"
-                      )}
-                    >
-                      <div className={cn(fab.itemButtonHighlight, "!w-6 !h-6")}>
-                        <Send className="w-3 h-3" />
-                      </div>
-                      <span className="text-[10px] font-bold text-foreground">
-                        Add New Client
-                      </span>
-                    </button>
-                  </>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <div
-                        className={cn(
-                          card.base,
-                          card.bg,
-                          "px-3 py-2 rounded-[4px]"
-                        )}
-                      >
-                        <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                          Full Name
-                        </p>
-                        <input
-                          type="text"
-                          className="bg-transparent border-none outline-none text-[11px] w-full"
-                          value={newClientData.name}
-                          onChange={e =>
-                            setNewClientData({
-                              ...newClientData,
-                              name: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div
-                        className={cn(
-                          card.base,
-                          card.bg,
-                          "px-3 py-2 rounded-[4px]"
-                        )}
-                      >
-                        <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                          Email Address
-                        </p>
-                        <input
-                          type="email"
-                          className="bg-transparent border-none outline-none text-[11px] w-full"
-                          value={newClientData.email}
-                          onChange={e =>
-                            setNewClientData({
-                              ...newClientData,
-                              email: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div
-                        className={cn(
-                          card.base,
-                          card.bg,
-                          "px-3 py-2 rounded-[4px]"
-                        )}
-                      >
-                        <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                          Phone Number
-                        </p>
-                        <input
-                          type="tel"
-                          className="bg-transparent border-none outline-none text-[11px] w-full"
-                          value={newClientData.phone}
-                          onChange={e =>
-                            setNewClientData({
-                              ...newClientData,
-                              phone: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={handleCreateClientAndConvo}
-                      disabled={isCreatingClient || !newClientData.name}
-                      className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                    >
-                      {isCreatingClient ? (
-                        <Loader2 className="w-4 h-4 animate-spin mx-auto" />
-                      ) : (
-                        "Create Client & Start"
-                      )}
-                    </button>
-                    <button
-                      onClick={() => setIsAddingNewClient(false)}
-                      className="w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      Cancel
-                    </button>
+                    />
+                    {!isLoadingClients && (
+                      <CalendarSearch className="w-3.5 h-3.5 text-muted-foreground" />
+                    )}
+                    <input
+                      type="text"
+                      placeholder="Search existing clients..."
+                      className="bg-transparent border-none outline-none text-[11px] placeholder:text-muted-foreground/50 w-full"
+                      value={clientSearch}
+                      onChange={e => setClientSearch(e.target.value)}
+                    />
                   </div>
-                )}
+
+                  <div className="flex flex-col gap-1.5 min-h-[140px] max-h-[40vh] overflow-y-auto w-full touch-pan-y mobile-scroll px-1">
+                    {filteredClients.map(client => {
+                      if (!client) return null;
+                      return (
+                        <motion.button
+                          key={client.id}
+                          variants={fab.animation.item}
+                          className={cn(
+                            card.base,
+                            card.bg,
+                            card.interactive,
+                            "p-2.5 flex items-center gap-2.5 w-full text-left"
+                          )}
+                          onClick={() => handleClientSelect(client)}
+                        >
+                          <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                            {client.name?.charAt(0) || "?"}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-semibold text-foreground truncate">
+                              {client.name}
+                            </p>
+                            <p className="text-[9px] text-muted-foreground truncate">
+                              {client.email || "No email"}
+                            </p>
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+
+                    {clientSearch &&
+                      filteredClients.length === 0 &&
+                      !isLoadingClients && (
+                        <div className="py-8 text-center">
+                          <p className="text-[10px] text-muted-foreground">
+                            No clients found matching "{clientSearch}"
+                          </p>
+                        </div>
+                      )}
+
+                    {!clientSearch &&
+                      filteredClients.length === 0 &&
+                      !isLoadingClients && (
+                        <div className="py-8 text-center">
+                          <p className="text-[10px] text-muted-foreground italic">
+                            Search for a client or add a new one
+                          </p>
+                        </div>
+                      )}
+                  </div>
+
+                </>
               </div>
             )}
 

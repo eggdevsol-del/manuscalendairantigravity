@@ -26,10 +26,11 @@ export const policiesRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const dbInput = { ...input, enabled: input.enabled ? 1 : 0 };
       return db.upsertPolicy({
         artistId: ctx.user.id,
-        ...input,
-      });
+        ...dbInput,
+      } as any);
     }),
   delete: artistProcedure.input(z.number()).mutation(async ({ input }) => {
     return db.deletePolicy(input);

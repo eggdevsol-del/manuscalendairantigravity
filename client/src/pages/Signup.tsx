@@ -108,26 +108,14 @@ export default function Signup() {
     },
   });
 
-  // --- Google Sign-In ---
+  // --- Google Sign-In (Auth Code flow — secret stays on backend) ---
   const googleLogin = useGoogleLogin({
-    onSuccess: async tokenResponse => {
+    flow: "auth-code",
+    onSuccess: async codeResponse => {
       setIsLoading(true);
       try {
-        // Exchange access token for ID token info
-        const userInfoRes = await fetch(
-          "https://www.googleapis.com/oauth2/v3/userinfo",
-          {
-            headers: {
-              Authorization: `Bearer ${tokenResponse.access_token}`,
-            },
-          }
-        );
-        const userInfo = await userInfoRes.json();
-
-        // Use access token as credential for our backend
-        // Our backend will verify via Google tokeninfo
         const result = await googleLoginMutation.mutateAsync({
-          credential: tokenResponse.access_token,
+          code: codeResponse.code,
         });
 
         // Store auth immediately so profile update works
@@ -136,9 +124,9 @@ export default function Signup() {
         setGoogleToken(result.token);
 
         if (result.isNewUser) {
-          // Pre-fill name from Google
-          setName(userInfo.name || result.user.name || "");
-          setEmail(userInfo.email || result.user.email || "");
+          // Pre-fill name from result
+          setName(result.user.name || "");
+          setEmail(result.user.email || "");
           setStep("complete-profile");
           toast.success("Google account linked! Please complete your profile.");
         } else {
