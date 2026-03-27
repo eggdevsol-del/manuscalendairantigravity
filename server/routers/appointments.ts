@@ -900,41 +900,84 @@ export const appointmentsRouter = router({
     }),
 });
 
-// Helper function to send deposit info
+// Helper function to send deposit info with secure payment link
 async function sendDepositMessage(
   conversationId: number,
   artistId: string,
   artistSettings: any
 ) {
   if (!artistSettings?.autoSendDepositInfo) return;
+  if (!artistSettings?.depositAmount) return;
 
-  // Default message content
-  let content =
-    "To secure your booking, please pay the deposit using the details below:\n\n";
+  const database = await db.getDb();
+  if (!database) return;
 
-  if (artistSettings.businessName)
-    content += `Business: ${artistSettings.businessName}\n`;
-
-  const bankLabels = getBankDetailLabels(artistSettings.businessCountry || 'AU');
-
-  if (artistSettings.bsb && bankLabels.bankCodeLabel) {
-    content += `${bankLabels.bankCodeLabel}: ${artistSettings.bsb}\n`;
-  }
-
-  if (artistSettings.accountNumber)
-    content += `${bankLabels.accountLabel}: ${artistSettings.accountNumber}\n`;
-  if (artistSettings.depositAmount)
-    content += `Amount: $${artistSettings.depositAmount}\n`;
-
-  content +=
-    "\nPlease send a screenshot of the payment receipt once transferred.";
-
-  await db.createMessage({
-    conversationId,
-    senderId: artistId,
-    content,
-    messageType: "text",
+  // Find the lead linked to this conversation
+  const lead = await database.query.leads.findFirst({
+    where: and(
+      eq(schema.leads.artistId, artistId),
+      eq(schema.leads.conversationId, conversationId)
+    ),
   });
+
+  if (lead) {
+    // Set deposit amount on the lead and generate secure link
+    const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+    await database
+      .update(schema.leads)
+      .set({
+        depositAmount: artistSettings.depositAmount * 100, // Convert dollars to cents
+        depositRequestedAt: now,
+        status: "deposit_requested" as any,
+        updatedAt: now,
+      })
+      .where(eq(schema.leads.id, lead.id));
+
+    const { createDepositToken } = await import("../services/depositToken");
+    const token = createDepositToken(lead.id);
+    const baseUrl = process.env.VITE_APP_URL || "http://localhost:3000";
+    const depositUrl = `${baseUrl}/deposit/${token}`;
+
+    const content =
+      `To secure your booking, please pay the deposit of **$${artistSettings.depositAmount}** using the link below:\n\n` +
+      `💳 **Pay Deposit:** ${depositUrl}\n\n` +
+      `This link expires in 48 hours. You can pay by card, bank transfer, or cash.`;
+
+    await db.createMessage({
+      conversationId,
+      senderId: artistId,
+      content,
+      messageType: "deposit_info",
+    });
+  } else {
+    // Fallback: no lead found, send old-style bank details message
+    let content =
+      "To secure your booking, please pay the deposit using the details below:\n\n";
+
+    if (artistSettings.businessName)
+      content += `Business: ${artistSettings.businessName}\n`;
+
+    const bankLabels = getBankDetailLabels(artistSettings.businessCountry || 'AU');
+
+    if (artistSettings.bsb && bankLabels.bankCodeLabel) {
+      content += `${bankLabels.bankCodeLabel}: ${artistSettings.bsb}\n`;
+    }
+
+    if (artistSettings.accountNumber)
+      content += `${bankLabels.accountLabel}: ${artistSettings.accountNumber}\n`;
+    if (artistSettings.depositAmount)
+      content += `Amount: $${artistSettings.depositAmount}\n`;
+
+    content +=
+      "\nPlease send a screenshot of the payment receipt once transferred.";
+
+    await db.createMessage({
+      conversationId,
+      senderId: artistId,
+      content,
+      messageType: "text",
+    });
+  }
 }
 
 // Helper to parse time strings like "14:30" or "02:30 PM"
