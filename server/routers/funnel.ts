@@ -290,6 +290,68 @@ export const funnelRouter = router({
     }),
 
   /**
+   * Get deposit link for the current client
+   * PROTECTED - clients can get their own deposit link
+   */
+  getClientDepositLink: protectedProcedure
+    .input(z.object({ conversationId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+
+      // Get the conversation
+      const conversation = await db.query.conversations.findFirst({
+        where: eq(schema.conversations.id, input.conversationId),
+      });
+
+      if (!conversation) throw new Error("Conversation not found");
+
+      // Verify the caller is the client of this conversation
+      if (conversation.clientId !== ctx.user.id) {
+        throw new Error("Not authorized");
+      }
+
+      // Get the lead from the conversation
+      if (!conversation.leadId) {
+        throw new Error("No deposit information found for this booking");
+      }
+
+      const lead = await db.query.leads.findFirst({
+        where: eq(schema.leads.id, conversation.leadId),
+      });
+
+      if (!lead) throw new Error("Lead not found");
+
+      // If deposit amount isn't set, get it from artist settings
+      if (!lead.depositAmount) {
+        const artistSettingsRow = await db.query.artistSettings.findFirst({
+          where: eq(schema.artistSettings.userId, lead.artistId),
+        });
+        if (artistSettingsRow?.depositAmount) {
+          const now = formatDateForMySQL(new Date());
+          await db
+            .update(schema.leads)
+            .set({
+              depositAmount: (artistSettingsRow.depositAmount as number) * 100,
+              depositRequestedAt: now,
+              updatedAt: now,
+            })
+            .where(eq(schema.leads.id, lead.id));
+        }
+      }
+
+      // Generate token
+      const { createDepositToken } = await import(
+        "../services/depositToken"
+      );
+      const token = createDepositToken(lead.id);
+      const baseUrl = process.env.VITE_APP_URL || "http://localhost:3000";
+      const depositUrl = `${baseUrl}/deposit/${token}`;
+
+      return { url: depositUrl };
+    }),
+
+  /**
    * Get artist profile for public funnel display
    * PUBLIC - no auth required
    */

@@ -18,6 +18,7 @@ import {
   MessageCircle,
   FileSignature,
   Upload,
+  CreditCard,
 } from "lucide-react";
 import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import {
@@ -874,12 +875,40 @@ export function BookingWizardContent({
                 <div className="p-3 bg-indigo-500/10 rounded-[8px] border border-indigo-500/20">
                   <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><Tag className="w-3 h-3" /> Deposit Required</h4>
                   <p className="text-[11px] text-foreground/90 font-medium leading-relaxed">
-                    Please transfer <strong className="text-primary">${proposalMeta.depositAmount || 0}</strong> to secure your calendar dates.
+                    Please pay <strong className="text-primary">${proposalMeta.depositAmount || artistSettings?.depositAmount || 0}</strong> to secure your calendar dates.
                   </p>
-                  <div className="mt-3 p-2.5 bg-background/50 rounded-[4px] font-mono text-[10px] text-muted-foreground border border-white/5 space-y-1">
-                    <p className="flex justify-between"><span>BSB:</span> <span className="text-foreground font-bold">{proposalMeta.bsb || "Not provided"}</span></p>
-                    <p className="flex justify-between"><span>ACC:</span> <span className="text-foreground font-bold">{proposalMeta.accountNumber || "Not provided"}</span></p>
-                  </div>
+                </div>
+
+                <button
+                  onClick={async () => {
+                    try {
+                      const convoId = initialConversationId || conversationId;
+                      if (!convoId) {
+                        toast.error("No conversation found");
+                        return;
+                      }
+                      const result = await utils.client.funnel.getClientDepositLink.mutate({
+                        conversationId: convoId,
+                      });
+                      if (result?.url) {
+                        window.open(result.url, '_blank');
+                      } else {
+                        toast.error("Could not generate deposit link");
+                      }
+                    } catch (err: any) {
+                      toast.error(err.message || "Deposit link unavailable. Check your messages for the payment link.");
+                    }
+                  }}
+                  className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>Pay Deposit</span>
+                </button>
+
+                <div className="flex items-center gap-2 px-2">
+                  <div className="flex-1 h-px bg-white/10" />
+                  <span className="text-[8px] text-muted-foreground uppercase tracking-widest">or</span>
+                  <div className="flex-1 h-px bg-white/10" />
                 </div>
 
                 <label className="w-full relative cursor-pointer group">
@@ -890,9 +919,9 @@ export function BookingWizardContent({
                     onChange={handleReceiptUpload}
                     disabled={uploadMutation.isPending || updateMetadataMutation.isPending}
                   />
-                  <div className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]">
+                  <div className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-white/5 text-muted-foreground hover:bg-white/10 flex items-center justify-center gap-2">
                     {uploadMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                    <span>{uploadMutation.isPending ? "Uploading..." : "Upload Receipt"}</span>
+                    <span>{uploadMutation.isPending ? "Uploading..." : "Upload Bank Receipt"}</span>
                   </div>
                 </label>
               </motion.div>
