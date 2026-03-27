@@ -74,14 +74,19 @@ const trpcClient = trpc.createClient({
 });
 
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
+
+// Context to signal whether Google OAuth is ready (provider is mounted with valid clientId)
+const GoogleAuthReadyContext = createContext(false);
+export function useGoogleAuthReady() {
+  return useContext(GoogleAuthReadyContext);
+}
 
 // Wrapper that fetches Google Client ID from backend (not baked into bundle)
 function GoogleAuthWrapper({ children }: { children: React.ReactNode }) {
   const [clientId, setClientId] = useState<string>("");
 
   useEffect(() => {
-    // Fetch Google client ID from backend at runtime
     fetch(`${API_BASE_URL}/api/google-client-id`)
       .then(res => res.json())
       .then(data => {
@@ -92,9 +97,20 @@ function GoogleAuthWrapper({ children }: { children: React.ReactNode }) {
       });
   }, []);
 
+  // Don't mount GoogleOAuthProvider until we have the client ID (it crashes with empty string)
+  if (!clientId) {
+    return (
+      <GoogleAuthReadyContext.Provider value={false}>
+        {children}
+      </GoogleAuthReadyContext.Provider>
+    );
+  }
+
   return (
     <GoogleOAuthProvider clientId={clientId}>
-      {children}
+      <GoogleAuthReadyContext.Provider value={true}>
+        {children}
+      </GoogleAuthReadyContext.Provider>
     </GoogleOAuthProvider>
   );
 }
