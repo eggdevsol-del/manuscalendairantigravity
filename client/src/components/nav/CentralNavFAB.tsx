@@ -307,7 +307,9 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
         className="!static !bottom-auto !right-auto transition-none"
         portalContainerClassName="bottom-[90px] left-1/2 -translate-x-1/2 items-center"
         panelClassName={cn(
-          "!items-center max-h-[calc(100dvh-130px)] overflow-y-auto mb-[20px] w-[350px] h-[448px]",
+          "!items-center max-h-[calc(100dvh-130px)] overflow-y-auto mb-[20px] w-[350px]",
+          // Auto-size for main menu and settings menu; fixed height only for large panel sub-views
+          (!isLargePanel) ? "h-auto" : "",
           (fabChildren || (activeSettingsView !== "main" && activeSettingsView !== "settings-menu"))
             ? "!items-stretch"
             : "",
