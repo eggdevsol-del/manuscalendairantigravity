@@ -120,25 +120,24 @@ export default function Login() {
   };
 
   return (
-    <PageShell className="justify-center items-center px-4">
-      <div className="w-full max-w-md">
+    <PageShell className="justify-center items-center px-4 py-8 overflow-y-auto mobile-scroll">
+      <div className="w-full max-w-md shrink-0 mt-auto mb-auto">
         <CardHeader className="space-y-1 text-center pb-6 border-none flex flex-col items-center">
-          <h1 className="text-8xl font-light text-white tracking-widest mb-2" style={{ width: '326.0625px', transform: 'translate(2px, 4px)' }}>
+          <h1 className="text-7xl sm:text-8xl font-light text-white tracking-widest mb-2 w-full text-center">
             TATTOI
           </h1>
-          <CardDescription className="text-base" style={{ fontSize: '13px', fontWeight: 300 }}>
+          <CardDescription className="text-[13px] font-light">
             REVENUE PROTECTION - FOR SERIOUS ARTISTS
           </CardDescription>
         </CardHeader>
-        <CardContent style={{ transform: 'translate(0px, -2px)' }}>
+        <CardContent>
           {/* Google Sign-In */}
           <Button
             type="button"
             variant="outline"
-            className="w-full mb-6 h-12 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-foreground font-medium flex items-center justify-center gap-3 transition-all"
+            className="w-full mb-6 h-12 rounded-lg border-white/10 bg-white/5 hover:bg-white/10 text-foreground font-medium flex items-center justify-center gap-3 transition-all"
             onClick={() => googleLogin()}
             disabled={isLoading}
-            style={{ borderRadius: '6px' }}
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
               <path
@@ -172,7 +171,7 @@ export default function Login() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4" style={{ transform: 'translate(1px, 3px)' }}>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" style={{ fontWeight: 300 }}>Email</Label>
               <div className="relative">
@@ -240,9 +239,8 @@ export default function Login() {
 
             <Button
               type="submit"
-              className={cn(tokens.button.hero, "mt-2")}
+              className={cn(tokens.button.hero, "w-full mt-2 h-14 rounded-lg text-base")}
               disabled={isLoading}
-              style={{ borderRadius: '6px', width: '310px', height: '56px' }}
             >
               {isLoading ? (
                 <>
@@ -269,13 +267,12 @@ export default function Login() {
 
             <Button
               type="button"
-              className={cn(
-                tokens.button.secondary,
-                "w-full border border-white/5"
-              )}
               onClick={() => setLocation("/signup")}
               disabled={isLoading}
-              style={{ borderRadius: '6px' }}
+              className={cn(
+                tokens.button.secondary,
+                "w-full border border-white/5 h-14 rounded-lg text-base"
+              )}
             >
               Create Account
             </Button>
@@ -283,12 +280,11 @@ export default function Login() {
             <Button
               type="button"
               className={cn(
-                tokens.button.ghost,
-                "w-full text-muted-foreground"
+                tokens.button.hero,
+                "w-full h-14 rounded-lg text-base"
               )}
               onClick={() => setLocation("/forgot-password")}
               disabled={isLoading}
-              style={{ borderRadius: '6px', color: '#ffffff', zIndex: 999 }}
             >
               Forgot password?
             </Button>
