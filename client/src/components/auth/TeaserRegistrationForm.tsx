@@ -15,8 +15,6 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useLocation } from "wouter";
 import { useTeaser } from "@/contexts/TeaserContext";
 import { tokens } from "@/ui/tokens";
-import { useGoogleAuthReady } from "@/main";
-import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 
 interface TeaserRegistrationFormProps {
   email: string;
@@ -36,7 +34,6 @@ export function TeaserRegistrationForm({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showEmailForm, setShowEmailForm] = useState(false);
 
   // Register mutation
   const registerMutation = trpc.auth.register.useMutation({
@@ -60,22 +57,7 @@ export function TeaserRegistrationForm({
     },
   });
 
-  // Google OAuth
-  const isGoogleReady = useGoogleAuthReady();
-  const googleLoginMutation = trpc.auth.googleLogin.useMutation();
-
-  const handleGoogleSuccess = async (code: string) => {
-    try {
-      setIsLoading(true);
-      const result = await googleLoginMutation.mutateAsync({ code });
-      handleSuccess(result);
-    } catch (err: any) {
-      toast.error(err?.message || "Google sign-in failed. Please try again.");
-      setIsLoading(false);
-    }
-  };
-
-  // Handle successful auth from any method
+  // Handle successful auth
   const handleSuccess = (data: { token: string; user: any }) => {
     // 1. Store auth
     localStorage.setItem("authToken", data.token);
@@ -96,7 +78,7 @@ export function TeaserRegistrationForm({
     }, 500);
   };
 
-  // Check if email exists (Mutation as defined in backend)
+  // Check if email exists
   const checkEmailMutation = trpc.auth.checkEmailExists.useMutation();
   const { data: emailStatus, isPending: isCheckingEmail } = checkEmailMutation;
 
@@ -119,7 +101,6 @@ export function TeaserRegistrationForm({
 
     if (emailStatus?.exists) {
       if (emailStatus.isFunnelClient) {
-        // Determine if we should set password
         setPasswordMutation.mutate({
           email,
           password,
@@ -129,7 +110,6 @@ export function TeaserRegistrationForm({
         setIsLoading(false);
       }
     } else {
-      // New User
       registerMutation.mutate({
         name,
         email,
@@ -150,7 +130,6 @@ export function TeaserRegistrationForm({
         </CardDescription>
       </CardHeader>
       <CardContent className="px-8 pb-8 space-y-6">
-        {/* Email/Password Form — always visible */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-foreground">
@@ -164,7 +143,6 @@ export function TeaserRegistrationForm({
                 disabled
                 className="bg-muted border-border text-muted-foreground rounded-[4px]"
               />
-              {/* Status Indicator */}
               {isCheckingEmail ? (
                 <span className="absolute right-3 top-2.5 text-xs text-muted-foreground animate-pulse">
                   Checking...
@@ -247,28 +225,6 @@ export function TeaserRegistrationForm({
           )}
         </form>
 
-        {/* Google Sign-In — only in real browsers (not in-app browsers like Messenger/Instagram) */}
-        {isGoogleReady && !isEmbeddedBrowser() && (
-          <>
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <GoogleLoginButton
-              onSuccess={handleGoogleSuccess}
-              onError={() => toast.error("Google sign-in was cancelled or failed.")}
-              disabled={isLoading}
-            />
-          </>
-        )}
-
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t border-border" />
@@ -291,11 +247,3 @@ export function TeaserRegistrationForm({
     </Card>
   );
 }
-
-/** Detect in-app/embedded browsers where Google OAuth is blocked */
-function isEmbeddedBrowser(): boolean {
-  const ua = navigator.userAgent || "";
-  // Common in-app browser identifiers
-  return /FBAN|FBAV|Instagram|Messenger|Twitter|Line|Snapchat|GSA|CriOS.*wv|; wv\)/i.test(ua);
-}
-

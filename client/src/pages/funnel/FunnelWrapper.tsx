@@ -18,6 +18,7 @@ import { Camera, Image as ImageIcon, ChevronRight, Check } from "lucide-react";
 import { TeaserRegistrationForm } from "@/components/auth/TeaserRegistrationForm";
 import FunnelContactStep from "./steps/FunnelContactStep";
 
+
 export interface FunnelStepData {
   intent?: {
     projectType: string;
