@@ -42,19 +42,151 @@ export const funnelRouter = router({
 
   /**
    * Get deposit info for client payment page
-   * PUBLIC - no auth required (uses token)
+   * PUBLIC - no auth required (uses HMAC-signed token)
    */
   getDepositInfo: publicProcedure
     .input(z.object({ token: z.string() }))
     .query(async ({ input }) => {
-      // In production, this would decode a JWT or lookup a proposal by token
-      // For now, return mock data structure
-      return null;
+      const { verifyDepositToken } = await import(
+        "../services/depositToken"
+      );
+      const result = verifyDepositToken(input.token);
+      if (!result.valid) {
+        return null;
+      }
+
+      const db = await getDb();
+      if (!db) return null;
+
+      // Get lead with deposit info
+      const lead = await db.query.leads.findFirst({
+        where: eq(schema.leads.id, result.leadId),
+      });
+
+      if (!lead || !lead.depositAmount) {
+        return null;
+      }
+
+      // Already paid?
+      if (lead.depositVerifiedAt) {
+        return null;
+      }
+
+      // Get artist info
+      const artistSettingsRow = await db.query.artistSettings.findFirst({
+        where: eq(schema.artistSettings.userId, lead.artistId),
+      });
+
+      const artist = await db.query.users.findFirst({
+        where: eq(schema.users.id, lead.artistId),
+      });
+
+      // Get payment method settings
+      const paymentSettings = await db
+        .select()
+        .from(schema.paymentMethodSettings)
+        .where(eq(schema.paymentMethodSettings.artistId, lead.artistId))
+        .limit(1);
+
+      const pms = paymentSettings[0];
+
+      return {
+        proposalId: lead.id,
+        artistName:
+          artistSettingsRow?.businessName ||
+          artistSettingsRow?.displayName ||
+          artist?.name ||
+          "Artist",
+        artistImage: artist?.avatar || undefined,
+        businessCountry: artistSettingsRow?.businessCountry || "AU",
+        clientName: lead.clientName || "Client",
+        clientEmail: lead.clientEmail || "",
+        projectType: lead.projectType || undefined,
+        selectedDate: lead.acceptedDate || "TBC",
+        selectedTime: "TBC",
+        depositAmount: lead.depositAmount,
+        status: lead.status,
+        paymentMethods: {
+          stripe: pms?.stripeEnabled === 1,
+          paypal: pms?.paypalEnabled === 1,
+          bank: pms?.bankEnabled === 1,
+          cash: pms?.cashEnabled === 1,
+        },
+        bankDetails:
+          pms?.bankEnabled === 1 && artistSettingsRow
+            ? {
+              bankName: "Artist Bank", // Placeholder — could add to artistSettings
+              accountName:
+                artistSettingsRow.businessName ||
+                artist?.name ||
+                "Account Holder",
+              bsb: artistSettingsRow.bsb || "",
+              accountNumber: artistSettingsRow.accountNumber || "",
+            }
+            : undefined,
+      };
     }),
 
   /**
-   * Confirm deposit payment
-   * PUBLIC - no auth required (uses token)
+   * Create a Stripe Checkout Session for deposit payment
+   * PUBLIC - no auth required (uses HMAC-signed token)
+   */
+  createDepositCheckout: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .mutation(async ({ input }) => {
+      const { verifyDepositToken } = await import(
+        "../services/depositToken"
+      );
+      const result = verifyDepositToken(input.token);
+      if (!result.valid) {
+        throw new Error("Invalid or expired deposit link");
+      }
+
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+
+      const lead = await db.query.leads.findFirst({
+        where: eq(schema.leads.id, result.leadId),
+      });
+
+      if (!lead || !lead.depositAmount) {
+        throw new Error("Deposit information not found");
+      }
+
+      if (lead.depositVerifiedAt) {
+        throw new Error("Deposit has already been paid");
+      }
+
+      // Get artist name for checkout description
+      const artistSettingsRow = await db.query.artistSettings.findFirst({
+        where: eq(schema.artistSettings.userId, lead.artistId),
+      });
+      const artist = await db.query.users.findFirst({
+        where: eq(schema.users.id, lead.artistId),
+      });
+
+      const { createDepositCheckoutSession } = await import(
+        "../services/stripe"
+      );
+
+      const url = await createDepositCheckoutSession({
+        leadId: lead.id,
+        depositAmount: lead.depositAmount,
+        clientEmail: lead.clientEmail || "",
+        artistName:
+          artistSettingsRow?.businessName ||
+          artistSettingsRow?.displayName ||
+          artist?.name ||
+          "Artist",
+        depositToken: input.token,
+      });
+
+      return { url };
+    }),
+
+  /**
+   * Confirm deposit payment (for non-Stripe methods: bank/cash)
+   * PUBLIC - no auth required (uses HMAC-signed token)
    */
   confirmDeposit: publicProcedure
     .input(
@@ -65,8 +197,96 @@ export const funnelRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      // In production, this would update the proposal/booking status
+      const { verifyDepositToken } = await import(
+        "../services/depositToken"
+      );
+      const result = verifyDepositToken(input.token);
+      if (!result.valid) {
+        throw new Error("Invalid or expired deposit link");
+      }
+
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+
+      const now = formatDateForMySQL(new Date());
+
+      if (input.paymentMethod === "bank") {
+        // Bank transfer: mark as pending (artist verifies manually)
+        await db
+          .update(schema.leads)
+          .set({
+            depositMethod: "bank_transfer" as any,
+            depositClaimedAt: now,
+            depositProof: input.proofUrl || null,
+            status: "deposit_pending" as any,
+            updatedAt: now,
+          })
+          .where(eq(schema.leads.id, result.leadId));
+      } else if (input.paymentMethod === "cash") {
+        // Cash: mark as pending (artist confirms in person)
+        await db
+          .update(schema.leads)
+          .set({
+            depositMethod: "cash" as any,
+            depositClaimedAt: now,
+            status: "deposit_pending" as any,
+            updatedAt: now,
+          })
+          .where(eq(schema.leads.id, result.leadId));
+      }
+
       return { success: true };
+    }),
+
+  /**
+   * Generate a secure deposit link for a lead
+   * PROTECTED - only artists can generate deposit links
+   */
+  generateDepositLink: protectedProcedure
+    .input(
+      z.object({
+        leadId: z.number(),
+        depositAmount: z.number().min(100), // Minimum $1.00 in cents
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+
+      // Verify lead belongs to this artist
+      const lead = await db.query.leads.findFirst({
+        where: and(
+          eq(schema.leads.id, input.leadId),
+          eq(schema.leads.artistId, ctx.user.id)
+        ),
+      });
+
+      if (!lead) {
+        throw new Error("Lead not found");
+      }
+
+      // Update deposit amount on lead
+      const now = formatDateForMySQL(new Date());
+      await db
+        .update(schema.leads)
+        .set({
+          depositAmount: input.depositAmount,
+          depositRequestedAt: now,
+          status: "deposit_requested" as any,
+          updatedAt: now,
+        })
+        .where(eq(schema.leads.id, input.leadId));
+
+      // Generate secure token
+      const { createDepositToken } = await import(
+        "../services/depositToken"
+      );
+      const token = createDepositToken(input.leadId);
+
+      const baseUrl = process.env.VITE_APP_URL || "http://localhost:3000";
+      const depositUrl = `${baseUrl}/deposit/${token}`;
+
+      return { url: depositUrl, token };
     }),
 
   /**

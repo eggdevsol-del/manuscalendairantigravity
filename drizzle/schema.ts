@@ -1285,6 +1285,7 @@ export const leads = mysqlTable(
     depositVerifiedAt: timestamp({ mode: "string" }),
     depositMethod: mysqlEnum(["stripe", "paypal", "bank_transfer", "cash"]),
     depositProof: text(), // Screenshot URL for bank transfers
+    stripeCheckoutSessionId: varchar({ length: 255 }), // Stripe Checkout Session ID for deposit payments
 
     // Timestamps
     lastContactedAt: timestamp({ mode: "string" }),

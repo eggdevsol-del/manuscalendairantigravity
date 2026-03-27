@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { getDb } from "./core";
 import { eq } from "drizzle-orm";
-import { studios, artistSettings } from "../../drizzle/schema";
+import { studios, artistSettings, leads } from "../../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import type { Request, Response } from "express";
 
@@ -111,6 +111,56 @@ export async function createCustomerPortalSession(customerId: string) {
 }
 
 /**
+ * Creates a Stripe Checkout Session for a one-time deposit payment.
+ * This is used when clients pay deposits for bookings.
+ */
+export async function createDepositCheckoutSession(opts: {
+  leadId: number;
+  depositAmount: number; // in cents
+  clientEmail: string;
+  artistName: string;
+  depositToken: string;
+}) {
+  if (!process.env.VITE_APP_URL) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Missing VITE_APP_URL configuration",
+    });
+  }
+
+  const baseUrl = process.env.VITE_APP_URL;
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    mode: "payment", // One-time payment, not subscription
+    customer_email: opts.clientEmail,
+    client_reference_id: String(opts.leadId),
+    line_items: [
+      {
+        price_data: {
+          currency: "aud",
+          product_data: {
+            name: `Booking Deposit — ${opts.artistName}`,
+            description: "Deposit to secure your appointment",
+          },
+          unit_amount: opts.depositAmount, // Already in cents
+        },
+        quantity: 1,
+      },
+    ],
+    metadata: {
+      type: "deposit",
+      leadId: String(opts.leadId),
+      depositToken: opts.depositToken,
+    },
+    success_url: `${baseUrl}/deposit/${opts.depositToken}?status=success&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${baseUrl}/deposit/${opts.depositToken}?status=canceled`,
+  });
+
+  return session.url;
+}
+
+/**
  * Express middleware to handle Stripe Webhook events.
  */
 export async function handleStripeWebhook(req: Request, res: Response) {
@@ -144,6 +194,31 @@ export async function handleStripeWebhook(req: Request, res: Response) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
+
+        // ── Deposit Payment (one-time) ──────────────────────────
+        if (session.metadata?.type === "deposit") {
+          const leadId = parseInt(session.metadata.leadId, 10);
+          if (leadId) {
+            const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+            await db
+              .update(leads)
+              .set({
+                depositMethod: "stripe",
+                depositClaimedAt: now,
+                depositVerifiedAt: now,
+                stripeCheckoutSessionId: session.id,
+                status: "deposit_verified" as any,
+                updatedAt: now,
+              })
+              .where(eq(leads.id, leadId));
+            console.log(
+              `[Stripe] Deposit verified for Lead ${leadId} (Session: ${session.id})`
+            );
+          }
+          break;
+        }
+
+        // ── Subscription Checkout ────────────────────────────────
         const subscriptionId = session.subscription as string;
 
         // Handle Studio Checkout
@@ -166,15 +241,12 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         // Handle Artist Checkout
         const artistId = session.metadata?.artistId || (session.subscription && typeof session.subscription !== 'string' ? (session.subscription as any).metadata?.artistId : null) || session.client_reference_id;
 
-        if (artistId && subscriptionId && !studioId) { // Check !studioId to prevent collision if logic leaks
+        if (artistId && subscriptionId && !studioId) {
           await db
             .update(artistSettings)
             .set({
               stripeSubscriptionId: subscriptionId,
               subscriptionStatus: "active",
-              // The exact tier (pro vs elite) could be fetched from the subscription item's price ID
-              // But for webhook, we rely on the product ID map, or just fetch it.
-              // For now we'll set it in customer.subscription.updated to be safe
             })
             .where(eq(artistSettings.userId, artistId));
 

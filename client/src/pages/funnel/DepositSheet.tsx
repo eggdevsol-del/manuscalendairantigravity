@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { useRoute } from "wouter";
+import { useRoute, useSearch } from "wouter";
 import {
   CreditCard,
   Building2,
@@ -58,6 +58,11 @@ export function DepositSheet() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
+  // Detect success/cancel from URL query params (after Stripe redirect)
+  const searchString = useSearch();
+  const urlParams = new URLSearchParams(searchString);
+  const paymentStatus = urlParams.get("status");
+
   // Fetch deposit info
   const { data, isLoading, isError } = trpc.funnel.getDepositInfo.useQuery(
     { token: token || "" },
@@ -65,6 +70,7 @@ export function DepositSheet() {
   );
 
   const confirmDeposit = trpc.funnel.confirmDeposit.useMutation();
+  const createDepositCheckout = trpc.funnel.createDepositCheckout.useMutation();
 
   useEffect(() => {
     if (data) {
@@ -77,12 +83,27 @@ export function DepositSheet() {
     }
   }, [data, isError]);
 
+  // Handle Stripe redirect success
+  useEffect(() => {
+    if (paymentStatus === "success" && data) {
+      setIsComplete(true);
+      setDepositInfo(data as DepositInfo);
+      setLoading(false);
+    }
+  }, [paymentStatus, data]);
+
   const handleStripePayment = async () => {
-    // Redirect to Stripe checkout
+    if (!token) return;
     setIsSubmitting(true);
     try {
-      // This would integrate with Stripe
-      alert("Stripe integration coming soon");
+      const result = await createDepositCheckout.mutateAsync({ token });
+      if (result.url) {
+        window.location.href = result.url;
+      } else {
+        alert("Failed to create checkout session. Please try again.");
+      }
+    } catch (err: any) {
+      alert(err.message || "Payment failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

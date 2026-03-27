@@ -2,6 +2,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function SplashScreen() {
+  // Disabled — splash video turned off
+  return null;
   // Only show on first initialization per session
   const [isVisible, setIsVisible] = useState(
     () => !sessionStorage.getItem("splash_shown")
