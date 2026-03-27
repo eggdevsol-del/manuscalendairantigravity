@@ -386,8 +386,8 @@ export default function Signup() {
 
   // ------- STEP: MAIN SIGNUP FORM -------
   return (
-    <PageShell className="justify-center items-center px-4 py-8 overflow-y-auto mobile-scroll">
-      <div className="w-full max-w-md shrink-0 mt-auto mb-auto">
+    <PageShell className="items-center px-4 py-8 !overflow-y-auto mobile-scroll">
+      <div className="w-full max-w-md shrink-0">
         <CardHeader className="space-y-1 text-center pb-6 border-none">
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]">
             <UserPlus className="w-8 h-8 text-primary" />

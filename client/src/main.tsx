@@ -82,16 +82,10 @@ function GoogleAuthWrapper({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Fetch Google client ID from backend at runtime
-    fetch(`${API_BASE_URL}/api/trpc/auth.getGoogleClientId`, {
-      headers: { "Content-Type": "application/json" },
-    })
+    fetch(`${API_BASE_URL}/api/google-client-id`)
       .then(res => res.json())
       .then(data => {
-        // tRPC batch response: data[0].result.data (superjson)
-        const raw = data?.[0]?.result?.data;
-        // superjson wraps as { json: { clientId: "..." } }
-        const id = raw?.json?.clientId || raw?.clientId || "";
-        if (id) setClientId(id);
+        if (data?.clientId) setClientId(data.clientId);
       })
       .catch(() => {
         console.warn("[Auth] Could not fetch Google Client ID from backend");

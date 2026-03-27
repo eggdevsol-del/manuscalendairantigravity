@@ -97,6 +97,8 @@ async function startServer() {
           "capacitor://localhost",
           "http://artist-booking-app-production.up.railway.app",
           "https://artist-booking-app-production.up.railway.app",
+          "https://tattoi.app",
+          "https://www.tattoi.app",
         ];
 
         // Allow exact matches or any localhost port
@@ -123,12 +125,12 @@ async function startServer() {
       "Content-Security-Policy",
       [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.onesignal.com",
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.onesignal.com https://accounts.google.com https://apis.google.com",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com",
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data: blob: https: http:",
         "connect-src 'self' https: wss:",
-        "frame-src 'self' https://js.stripe.com",
+        "frame-src 'self' https://js.stripe.com https://accounts.google.com",
         "worker-src 'self' blob:",
       ].join("; ")
     );
@@ -175,6 +177,11 @@ async function startServer() {
       version: packageJson.version,
       timestamp: Date.now(),
     });
+  });
+
+  // Google OAuth Client ID endpoint (served from backend so it's not baked into the frontend bundle)
+  app.get("/api/google-client-id", (_req, res) => {
+    res.json({ clientId: process.env.GOOGLE_CLIENT_ID || "" });
   });
 
   // File serving endpoint - handle full paths with subdirectories
