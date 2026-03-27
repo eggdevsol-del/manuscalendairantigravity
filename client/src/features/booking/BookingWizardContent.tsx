@@ -929,7 +929,7 @@ export function BookingWizardContent({
                         </div>
                         <div className="flex justify-between items-center bg-primary/20 px-2 py-1.5 rounded-[4px] border border-primary/20">
                           <span className="text-[9px] text-primary uppercase font-bold">Ref (Important)</span>
-                          <span className="text-[11px] font-bold text-primary">{user?.name || "Your Name"}</span>
+                          <span className="text-[11px] font-bold text-primary">{currentUser?.name || "Your Name"}</span>
                         </div>
                       </div>
                     </div>
@@ -965,9 +965,11 @@ export function BookingWizardContent({
                             toast.error("No conversation found");
                             return;
                           }
+                          const msgId = selectedProposal?.message?.id;
+                          console.log("[Deposit] Card payment flow:", { convoId, msgId });
                           const result = await utils.client.funnel.getClientDepositLink.mutate({
                             conversationId: convoId,
-                            messageId: selectedProposal.message.id,
+                            ...(msgId ? { messageId: msgId } : {}),
                           });
                           if (result?.url) {
                             window.open(result.url, '_blank');
@@ -975,6 +977,7 @@ export function BookingWizardContent({
                             toast.error("Could not generate deposit link");
                           }
                         } catch (err: any) {
+                          console.error("[Deposit] Card payment error:", err);
                           toast.error(err.message || "Deposit link unavailable. Check your messages for the payment link.");
                         }
                       }}
