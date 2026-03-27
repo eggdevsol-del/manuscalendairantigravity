@@ -885,33 +885,79 @@ export function BookingWizardContent({
                   </p>
                 </div>
 
-                {!paymentMethod ? (
-                  <div className="flex flex-col gap-2 relative z-10">
-                    <button
-                      onClick={() => setPaymentMethod("bank")}
-                      className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-background border border-white/20 text-foreground hover:bg-white/5 flex items-center justify-center gap-2"
-                    >
-                      <Upload className="w-4 h-4" />
-                      <span>Pay via Bank Transfer</span>
-                    </button>
+                {/* ── Payment Method Buttons ── */}
+                <div className="flex flex-col gap-2 relative z-10">
+                  <button
+                    onClick={() => setPaymentMethod(paymentMethod === "bank" ? null : "bank")}
+                    className={`w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-2 ${paymentMethod === "bank"
+                        ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30"
+                        : "bg-background border border-white/20 text-foreground hover:bg-white/5"
+                      }`}
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>Pay via Bank Transfer</span>
+                  </button>
 
-                    <button
-                      onClick={() => setPaymentMethod("card")}
-                      className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
-                    >
-                      <CreditCard className="w-4 h-4" />
-                      <span>Pay via Card</span>
-                    </button>
-                  </div>
-                ) : paymentMethod === "bank" ? (
-                  <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 relative z-10">
-                    <button
-                      onClick={() => setPaymentMethod(null)}
-                      className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground self-start flex items-center gap-1 -mb-1"
-                    >
-                      <ArrowLeft className="w-3 h-3" /> Back
-                    </button>
+                  <button
+                    onClick={async () => {
+                      setPaymentMethod("card");
+                      try {
+                        const convoId = initialConversationId || conversationId;
+                        if (!convoId) {
+                          toast.error("No conversation found");
+                          return;
+                        }
+                        toast.info("Connecting to Stripe...");
+                        // Step 1: Ensure lead exists and get deposit token URL
+                        const msgId = selectedProposal?.message?.id;
+                        const linkResult = await utils.client.funnel.getClientDepositLink.mutate({
+                          conversationId: convoId,
+                          ...(msgId ? { messageId: msgId } : {}),
+                        });
+                        if (!linkResult?.url) {
+                          toast.error("Could not generate deposit link");
+                          setPaymentMethod(null);
+                          return;
+                        }
+                        // Step 2: Extract token from URL and create Stripe checkout
+                        const urlParts = linkResult.url.split("/deposit/");
+                        const tokenWithParams = urlParts[1] || "";
+                        const token = tokenWithParams.split("?")[0];
+                        if (!token) {
+                          toast.error("Invalid deposit token");
+                          setPaymentMethod(null);
+                          return;
+                        }
+                        const checkoutResult = await utils.client.funnel.createDepositCheckout.mutate({
+                          token,
+                          ...(msgId ? { messageId: msgId } : {}),
+                        });
+                        if (checkoutResult?.url) {
+                          window.location.href = checkoutResult.url;
+                        } else {
+                          toast.error("Could not create checkout session");
+                          setPaymentMethod(null);
+                        }
+                      } catch (err: any) {
+                        console.error("[Deposit] Stripe checkout error:", err);
+                        toast.error(err.message || "Payment unavailable. Please try bank transfer.");
+                        setPaymentMethod(null);
+                      }
+                    }}
+                    disabled={paymentMethod === "card"}
+                    className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)] disabled:opacity-70"
+                  >
+                    {paymentMethod === "card" ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /><span>Connecting to Stripe...</span></>
+                    ) : (
+                      <><CreditCard className="w-4 h-4" /><span>Pay via Card</span></>
+                    )}
+                  </button>
+                </div>
 
+                {/* ── Bank Transfer Details (extends inline) ── */}
+                {paymentMethod === "bank" && (
+                  <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2">
                     <div className="p-3 bg-indigo-500/20 rounded-[8px] border border-indigo-500/30">
                       <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">Bank Details</h4>
                       <div className="space-y-1.5">
@@ -928,7 +974,7 @@ export function BookingWizardContent({
                           <span className="text-[11px] font-bold text-emerald-400">${proposalMeta.depositAmount || artistSettings?.depositAmount || 0}</span>
                         </div>
                         <div className="flex justify-between items-center bg-primary/20 px-2 py-1.5 rounded-[4px] border border-primary/20">
-                          <span className="text-[9px] text-primary uppercase font-bold">Ref (Important)</span>
+                          <span className="text-[9px] text-primary uppercase font-bold">Reference</span>
                           <span className="text-[11px] font-bold text-primary">{currentUser?.name || "Your Name"}</span>
                         </div>
                       </div>
@@ -947,45 +993,6 @@ export function BookingWizardContent({
                         <span>{uploadMutation.isPending ? "Uploading..." : "Upload Bank Receipt"}</span>
                       </div>
                     </label>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 relative z-10">
-                    <button
-                      onClick={() => setPaymentMethod(null)}
-                      className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground self-start flex items-center gap-1 -mb-1"
-                    >
-                      <ArrowLeft className="w-3 h-3" /> Back
-                    </button>
-
-                    <button
-                      onClick={async () => {
-                        try {
-                          const convoId = initialConversationId || conversationId;
-                          if (!convoId) {
-                            toast.error("No conversation found");
-                            return;
-                          }
-                          const msgId = selectedProposal?.message?.id;
-                          console.log("[Deposit] Card payment flow:", { convoId, msgId });
-                          const result = await utils.client.funnel.getClientDepositLink.mutate({
-                            conversationId: convoId,
-                            ...(msgId ? { messageId: msgId } : {}),
-                          });
-                          if (result?.url) {
-                            window.open(result.url, '_blank');
-                          } else {
-                            toast.error("Could not generate deposit link");
-                          }
-                        } catch (err: any) {
-                          console.error("[Deposit] Card payment error:", err);
-                          toast.error(err.message || "Deposit link unavailable. Check your messages for the payment link.");
-                        }
-                      }}
-                      className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
-                    >
-                      <CreditCard className="w-4 h-4" />
-                      <span>Proceed to Card Payment</span>
-                    </button>
                   </div>
                 )}
               </motion.div>
