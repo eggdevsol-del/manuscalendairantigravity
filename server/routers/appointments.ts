@@ -912,13 +912,16 @@ async function sendDepositMessage(
   const database = await db.getDb();
   if (!database) return;
 
-  // Find the lead linked to this conversation
-  const lead = await database.query.leads.findFirst({
-    where: and(
-      eq(schema.leads.artistId, artistId),
-      eq(schema.leads.conversationId, conversationId)
-    ),
+  // Find the lead linked to this conversation via conversation.leadId
+  const conversation = await database.query.conversations.findFirst({
+    where: eq(schema.conversations.id, conversationId),
   });
+
+  const lead = conversation?.leadId
+    ? await database.query.leads.findFirst({
+      where: eq(schema.leads.id, conversation.leadId),
+    })
+    : null;
 
   if (lead) {
     // Set deposit amount on the lead and generate secure link
@@ -947,7 +950,7 @@ async function sendDepositMessage(
       conversationId,
       senderId: artistId,
       content,
-      messageType: "deposit_info",
+      messageType: "system",
     });
   } else {
     // Fallback: no lead found, send old-style bank details message
