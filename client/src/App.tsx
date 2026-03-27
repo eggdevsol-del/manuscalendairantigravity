@@ -51,7 +51,7 @@ import LeadDetail from "./pages/LeadDetail";
 
 function Router() {
   const [location, setLocation] = useLocation();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const isTabletLandscape = useTabletLandscape();
   const isArtist = user?.role === "artist";
 
@@ -61,6 +61,8 @@ function Router() {
       <Route
         {...rest}
         component={(props: any) => {
+          // Wait for auth to finish loading before making redirect decisions
+          if (authLoading) return null;
           if (!user) {
             setLocation("/login");
             return null;
