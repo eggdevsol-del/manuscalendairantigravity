@@ -252,9 +252,10 @@ export function useChatController(conversationId: number) {
         messageType: "text",
       });
 
-      const newMetadata = JSON.stringify({
+      // We still update the metadata on the server (for discount tracking), 
+      // but NOT the status! Status remains "pending" until deposit paid.
+      const dbMetadata = JSON.stringify({
         ...metadata,
-        status: "accepted",
         discountApplied: !!appliedPromotion,
         discountAmount: appliedPromotion?.discountAmount,
         finalAmount: appliedPromotion?.finalAmount,
@@ -270,7 +271,14 @@ export function useChatController(conversationId: number) {
 
       updateMetadataMutation.mutate({
         messageId: message?.id || selectedProposal?.message?.id,
-        metadata: newMetadata,
+        metadata: dbMetadata,
+      });
+
+      // LOCALLY update the state to "accepted" so the UI immediately shows the deposit flow.
+      // If the user exits before paying, it reverts to "pending" next load.
+      const localMetadata = JSON.stringify({
+        ...JSON.parse(dbMetadata),
+        status: "accepted",
       });
 
       // No longer calling bookProjectMutation because pending appointments are already created on send!
@@ -294,7 +302,7 @@ export function useChatController(conversationId: number) {
       // We manually update the selectedProposal state in-memory so the UI updates instantly:
       setSelectedProposal({
         message: message || selectedProposal?.message,
-        metadata: JSON.parse(newMetadata)
+        metadata: JSON.parse(localMetadata)
       });
     },
     [

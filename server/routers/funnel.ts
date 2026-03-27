@@ -132,7 +132,10 @@ export const funnelRouter = router({
    * PUBLIC - no auth required (uses HMAC-signed token)
    */
   createDepositCheckout: publicProcedure
-    .input(z.object({ token: z.string() }))
+    .input(z.object({
+      token: z.string(),
+      messageId: z.number().optional()
+    }))
     .mutation(async ({ input }) => {
       const { verifyDepositToken } = await import(
         "../services/depositToken"
@@ -179,6 +182,7 @@ export const funnelRouter = router({
           artist?.name ||
           "Artist",
         depositToken: input.token,
+        messageId: input.messageId,
       });
 
       return { url };
@@ -294,7 +298,12 @@ export const funnelRouter = router({
    * PROTECTED - clients can get their own deposit link
    */
   getClientDepositLink: protectedProcedure
-    .input(z.object({ conversationId: z.number() }))
+    .input(
+      z.object({
+        conversationId: z.number(),
+        messageId: z.number().optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
@@ -312,15 +321,52 @@ export const funnelRouter = router({
       }
 
       // Get the lead from the conversation
-      if (!conversation.leadId) {
-        throw new Error("No deposit information found for this booking");
+      let lead = undefined;
+
+      if (conversation.leadId) {
+        const existingLead = await db.query.leads.findFirst({
+          where: eq(schema.leads.id, conversation.leadId),
+        });
+        if (existingLead) {
+          lead = existingLead;
+        }
       }
 
-      const lead = await db.query.leads.findFirst({
-        where: eq(schema.leads.id, conversation.leadId),
-      });
+      // If no lead exists for this conversation, create one on the fly
+      if (!lead) {
+        const clientUser = await db.query.users.findFirst({
+          where: eq(schema.users.id, conversation.clientId!),
+        });
 
-      if (!lead) throw new Error("Lead not found");
+        if (!clientUser) throw new Error("Client user not found");
+
+        const [insertResult] = await db.insert(schema.leads).values({
+          artistId: conversation.artistId,
+          clientId: clientUser.id,
+          clientName: clientUser.name || "Unknown Client",
+          clientEmail: clientUser.email || `client-${clientUser.id}@calendair`,
+          clientFirstName: clientUser.name?.split(" ")[0],
+          clientLastName: clientUser.name?.split(" ").slice(1).join(" "),
+          source: "direct_message",
+          status: "deposit_requested",
+          conversationId: conversation.id,
+        });
+
+        const newLeadId = insertResult.insertId;
+
+        // Update the conversation to link the new lead
+        await db
+          .update(schema.conversations)
+          .set({ leadId: newLeadId })
+          .where(eq(schema.conversations.id, conversation.id));
+
+        const getNewLead = await db.query.leads.findFirst({
+          where: eq(schema.leads.id, newLeadId),
+        });
+
+        if (!getNewLead) throw new Error("Failed to create lead");
+        lead = getNewLead;
+      }
 
       // If deposit amount isn't set, get it from artist settings
       if (!lead.depositAmount) {
@@ -346,7 +392,11 @@ export const funnelRouter = router({
       );
       const token = createDepositToken(lead.id);
       const baseUrl = process.env.VITE_APP_URL || "http://localhost:3000";
-      const depositUrl = `${baseUrl}/deposit/${token}`;
+
+      let depositUrl = `${baseUrl}/deposit/${token}`;
+      if (input.messageId) {
+        depositUrl += `?messageId=${input.messageId}`;
+      }
 
       return { url: depositUrl };
     }),

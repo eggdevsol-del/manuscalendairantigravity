@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { getDb } from "./core";
 import { eq } from "drizzle-orm";
-import { studios, artistSettings, leads } from "../../drizzle/schema";
+import { studios, artistSettings, leads, messages } from "../../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import type { Request, Response } from "express";
 
@@ -120,6 +120,7 @@ export async function createDepositCheckoutSession(opts: {
   clientEmail: string;
   artistName: string;
   depositToken: string;
+  messageId?: number;
 }) {
   if (!process.env.VITE_APP_URL) {
     throw new TRPCError({
@@ -152,6 +153,7 @@ export async function createDepositCheckoutSession(opts: {
       type: "deposit",
       leadId: String(opts.leadId),
       depositToken: opts.depositToken,
+      messageId: opts.messageId ? String(opts.messageId) : "",
     },
     success_url: `${baseUrl}/deposit/${opts.depositToken}?status=success&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/deposit/${opts.depositToken}?status=canceled`,
@@ -198,6 +200,8 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         // ── Deposit Payment (one-time) ──────────────────────────
         if (session.metadata?.type === "deposit") {
           const leadId = parseInt(session.metadata.leadId, 10);
+          const messageId = session.metadata.messageId ? parseInt(session.metadata.messageId, 10) : undefined;
+
           if (leadId) {
             const now = new Date().toISOString().slice(0, 19).replace("T", " ");
             await db
@@ -211,6 +215,32 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 updatedAt: now,
               })
               .where(eq(leads.id, leadId));
+
+            // Update proposal message status to confirmed automatically
+            if (messageId) {
+              const message = await db.query.messages.findFirst({
+                where: eq(messages.id, messageId),
+              });
+
+              if (message && message.metadata) {
+                try {
+                  const meta = typeof message.metadata === 'string'
+                    ? JSON.parse(message.metadata)
+                    : message.metadata;
+
+                  meta.status = "confirmed";
+
+                  await db.update(messages)
+                    .set({ metadata: JSON.stringify(meta) })
+                    .where(eq(messages.id, messageId));
+
+                  console.log(`[Stripe] Proposal message ${messageId} confirmed for Lead ${leadId}`);
+                } catch (e) {
+                  console.error(`[Stripe] Failed to update message ${messageId} metadata`, e);
+                }
+              }
+            }
+
             console.log(
               `[Stripe] Deposit verified for Lead ${leadId} (Session: ${session.id})`
             );

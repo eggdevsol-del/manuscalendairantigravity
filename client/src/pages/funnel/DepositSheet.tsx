@@ -62,6 +62,8 @@ export function DepositSheet() {
   const searchString = useSearch();
   const urlParams = new URLSearchParams(searchString);
   const paymentStatus = urlParams.get("status");
+  const messageIdRaw = urlParams.get("messageId");
+  const messageId = messageIdRaw ? parseInt(messageIdRaw, 10) : undefined;
 
   // Fetch deposit info
   const { data, isLoading, isError } = trpc.funnel.getDepositInfo.useQuery(
@@ -96,7 +98,10 @@ export function DepositSheet() {
     if (!token) return;
     setIsSubmitting(true);
     try {
-      const result = await createDepositCheckout.mutateAsync({ token });
+      const result = await createDepositCheckout.mutateAsync({
+        token,
+        messageId
+      });
       if (result.url) {
         window.location.href = result.url;
       } else {

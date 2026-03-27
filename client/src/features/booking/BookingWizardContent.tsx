@@ -209,6 +209,10 @@ export function BookingWizardContent({
   const [conversationId, setConversationId] = useState<number | undefined>(
     initialConversationId
   );
+
+  const [isClientPaying, setIsClientPaying] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "bank" | null>(null);
+
   const [selectedService, setSelectedService] = useState<any>(null);
   const [requiredSittings, setRequiredSittings] = useState<number>(1);
   const [showVoucherList, setShowVoucherList] = useState(false);
@@ -772,7 +776,7 @@ export function BookingWizardContent({
               </motion.div>
             )}
 
-            {!isArtist && proposalMeta.status === "pending" && (
+            {!isArtist && proposalMeta.status === "pending" && !isClientPaying && (
               <motion.div
                 variants={fab.animation.item}
                 className="space-y-2 pt-1"
@@ -823,7 +827,7 @@ export function BookingWizardContent({
                     Decline
                   </button>
                   <button
-                    onClick={() =>
+                    onClick={() => {
                       onAcceptProposal?.(
                         appliedPromotion
                           ? {
@@ -832,8 +836,10 @@ export function BookingWizardContent({
                             finalAmount: appliedPromotion.finalAmount,
                           }
                           : undefined
-                      )
-                    }
+                      );
+                      setIsClientPaying(true);
+                      setPaymentMethod(null);
+                    }}
                     disabled={isPendingProposalAction}
                     className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90"
                   >
@@ -870,7 +876,7 @@ export function BookingWizardContent({
               </motion.div>
             )}
 
-            {!isArtist && proposalMeta.status === "accepted" && (
+            {(!isArtist && (proposalMeta.status === "accepted" || (proposalMeta.status === "pending" && isClientPaying))) && (
               <motion.div variants={fab.animation.item} className="flex flex-col gap-3 py-2">
                 <div className="p-3 bg-indigo-500/10 rounded-[8px] border border-indigo-500/20">
                   <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><Tag className="w-3 h-3" /> Deposit Required</h4>
@@ -879,51 +885,106 @@ export function BookingWizardContent({
                   </p>
                 </div>
 
-                <button
-                  onClick={async () => {
-                    try {
-                      const convoId = initialConversationId || conversationId;
-                      if (!convoId) {
-                        toast.error("No conversation found");
-                        return;
-                      }
-                      const result = await utils.client.funnel.getClientDepositLink.mutate({
-                        conversationId: convoId,
-                      });
-                      if (result?.url) {
-                        window.open(result.url, '_blank');
-                      } else {
-                        toast.error("Could not generate deposit link");
-                      }
-                    } catch (err: any) {
-                      toast.error(err.message || "Deposit link unavailable. Check your messages for the payment link.");
-                    }
-                  }}
-                  className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
-                >
-                  <CreditCard className="w-4 h-4" />
-                  <span>Pay Deposit</span>
-                </button>
+                {!paymentMethod ? (
+                  <div className="flex flex-col gap-2 relative z-10">
+                    <button
+                      onClick={() => setPaymentMethod("bank")}
+                      className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-background border border-white/20 text-foreground hover:bg-white/5 flex items-center justify-center gap-2"
+                    >
+                      <Upload className="w-4 h-4" />
+                      <span>Pay via Bank Transfer</span>
+                    </button>
 
-                <div className="flex items-center gap-2 px-2">
-                  <div className="flex-1 h-px bg-white/10" />
-                  <span className="text-[8px] text-muted-foreground uppercase tracking-widest">or</span>
-                  <div className="flex-1 h-px bg-white/10" />
-                </div>
-
-                <label className="w-full relative cursor-pointer group">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleReceiptUpload}
-                    disabled={uploadMutation.isPending || updateMetadataMutation.isPending}
-                  />
-                  <div className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-white/5 text-muted-foreground hover:bg-white/10 flex items-center justify-center gap-2">
-                    {uploadMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                    <span>{uploadMutation.isPending ? "Uploading..." : "Upload Bank Receipt"}</span>
+                    <button
+                      onClick={() => setPaymentMethod("card")}
+                      className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      <span>Pay via Card</span>
+                    </button>
                   </div>
-                </label>
+                ) : paymentMethod === "bank" ? (
+                  <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 relative z-10">
+                    <button
+                      onClick={() => setPaymentMethod(null)}
+                      className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground self-start flex items-center gap-1 -mb-1"
+                    >
+                      <ArrowLeft className="w-3 h-3" /> Back
+                    </button>
+
+                    <div className="p-3 bg-indigo-500/20 rounded-[8px] border border-indigo-500/30">
+                      <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">Bank Details</h4>
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-center bg-black/20 px-2 py-1.5 rounded-[4px]">
+                          <span className="text-[9px] text-muted-foreground uppercase">BSB</span>
+                          <span className="text-[11px] font-bold font-mono tracking-widest">{artistSettings?.bsb || "Not provided"}</span>
+                        </div>
+                        <div className="flex justify-between items-center bg-black/20 px-2 py-1.5 rounded-[4px]">
+                          <span className="text-[9px] text-muted-foreground uppercase">Account</span>
+                          <span className="text-[11px] font-bold font-mono tracking-widest">{artistSettings?.accountNumber || "Not provided"}</span>
+                        </div>
+                        <div className="flex justify-between items-center bg-black/20 px-2 py-1.5 rounded-[4px]">
+                          <span className="text-[9px] text-muted-foreground uppercase">Amount</span>
+                          <span className="text-[11px] font-bold text-emerald-400">${proposalMeta.depositAmount || artistSettings?.depositAmount || 0}</span>
+                        </div>
+                        <div className="flex justify-between items-center bg-primary/20 px-2 py-1.5 rounded-[4px] border border-primary/20">
+                          <span className="text-[9px] text-primary uppercase font-bold">Ref (Important)</span>
+                          <span className="text-[11px] font-bold text-primary">{user?.name || "Your Name"}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <label className="w-full relative cursor-pointer group">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleReceiptUpload}
+                        disabled={uploadMutation.isPending || updateMetadataMutation.isPending}
+                      />
+                      <div className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]">
+                        {uploadMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                        <span>{uploadMutation.isPending ? "Uploading..." : "Upload Bank Receipt"}</span>
+                      </div>
+                    </label>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 relative z-10">
+                    <button
+                      onClick={() => setPaymentMethod(null)}
+                      className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground self-start flex items-center gap-1 -mb-1"
+                    >
+                      <ArrowLeft className="w-3 h-3" /> Back
+                    </button>
+
+                    <button
+                      onClick={async () => {
+                        try {
+                          const convoId = initialConversationId || conversationId;
+                          if (!convoId) {
+                            toast.error("No conversation found");
+                            return;
+                          }
+                          const result = await utils.client.funnel.getClientDepositLink.mutate({
+                            conversationId: convoId,
+                            messageId: selectedProposal.message.id,
+                          });
+                          if (result?.url) {
+                            window.open(result.url, '_blank');
+                          } else {
+                            toast.error("Could not generate deposit link");
+                          }
+                        } catch (err: any) {
+                          toast.error(err.message || "Deposit link unavailable. Check your messages for the payment link.");
+                        }
+                      }}
+                      className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      <span>Proceed to Card Payment</span>
+                    </button>
+                  </div>
+                )}
               </motion.div>
             )}
 
