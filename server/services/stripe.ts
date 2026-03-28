@@ -13,6 +13,8 @@ export const stripe = new Stripe(
   }
 );
 
+const getAppUrl = () => process.env.VITE_APP_URL || process.env.APP_URL || "https://www.tattoi.app";
+
 /**
  * Creates a Stripe Checkout Session for upgrading to a Studio Plan.
  */
@@ -20,12 +22,7 @@ export async function createStudioCheckoutSession(
   studioId: string,
   email: string
 ) {
-  if (!process.env.VITE_APP_URL) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Missing VITE_APP_URL configuration",
-    });
-  }
+  const appUrl = getAppUrl();
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
@@ -41,8 +38,8 @@ export async function createStudioCheckoutSession(
         quantity: 1,
       },
     ],
-    success_url: `${process.env.VITE_APP_URL}/studio?success=true&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.VITE_APP_URL}/subscriptions?canceled=true`,
+    success_url: `${appUrl}/studio?success=true&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appUrl}/subscriptions?canceled=true`,
     subscription_data: {
       metadata: {
         studioId: studioId,
@@ -61,12 +58,7 @@ export async function createArtistCheckoutSession(
   email: string,
   priceId: string
 ) {
-  if (!process.env.VITE_APP_URL) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Missing VITE_APP_URL configuration",
-    });
-  }
+  const appUrl = getAppUrl();
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
@@ -79,8 +71,8 @@ export async function createArtistCheckoutSession(
         quantity: 1,
       },
     ],
-    success_url: `${process.env.VITE_APP_URL}/settings/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.VITE_APP_URL}/settings/billing?canceled=true`,
+    success_url: `${appUrl}/settings/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appUrl}/settings/billing?canceled=true`,
     subscription_data: {
       metadata: {
         artistId: artistId,
@@ -95,16 +87,11 @@ export async function createArtistCheckoutSession(
  * Creates a Stripe Customer Portal session for managing billing.
  */
 export async function createCustomerPortalSession(customerId: string) {
-  if (!process.env.VITE_APP_URL) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Missing VITE_APP_URL configuration",
-    });
-  }
+  const appUrl = getAppUrl();
 
   const session = await stripe.billingPortal.sessions.create({
     customer: customerId,
-    return_url: `${process.env.VITE_APP_URL}/studio`,
+    return_url: `${appUrl}/studio`,
   });
 
   return session.url;
@@ -122,14 +109,7 @@ export async function createDepositCheckoutSession(opts: {
   depositToken: string;
   messageId?: number;
 }) {
-  if (!process.env.VITE_APP_URL) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Missing VITE_APP_URL configuration",
-    });
-  }
-
-  const baseUrl = process.env.VITE_APP_URL;
+  const baseUrl = getAppUrl();
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],

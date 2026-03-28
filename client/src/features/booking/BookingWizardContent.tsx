@@ -890,8 +890,8 @@ export function BookingWizardContent({
                   <button
                     onClick={() => setPaymentMethod(paymentMethod === "bank" ? null : "bank")}
                     className={`w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-2 ${paymentMethod === "bank"
-                        ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30"
-                        : "bg-background border border-white/20 text-foreground hover:bg-white/5"
+                      ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30"
+                      : "bg-background border border-white/20 text-foreground hover:bg-white/5"
                       }`}
                   >
                     <Upload className="w-4 h-4" />
@@ -963,15 +963,15 @@ export function BookingWizardContent({
                       <div className="space-y-1.5">
                         <div className="flex justify-between items-center bg-black/20 px-2 py-1.5 rounded-[4px]">
                           <span className="text-[9px] text-muted-foreground uppercase">BSB</span>
-                          <span className="text-[11px] font-bold font-mono tracking-widest">{artistSettings?.bsb || "Not provided"}</span>
+                          <span className="text-[11px] font-bold font-mono tracking-widest">{effectiveSettings?.bsb || "Not provided"}</span>
                         </div>
                         <div className="flex justify-between items-center bg-black/20 px-2 py-1.5 rounded-[4px]">
                           <span className="text-[9px] text-muted-foreground uppercase">Account</span>
-                          <span className="text-[11px] font-bold font-mono tracking-widest">{artistSettings?.accountNumber || "Not provided"}</span>
+                          <span className="text-[11px] font-bold font-mono tracking-widest">{effectiveSettings?.accountNumber || "Not provided"}</span>
                         </div>
                         <div className="flex justify-between items-center bg-black/20 px-2 py-1.5 rounded-[4px]">
                           <span className="text-[9px] text-muted-foreground uppercase">Amount</span>
-                          <span className="text-[11px] font-bold text-emerald-400">${proposalMeta.depositAmount || artistSettings?.depositAmount || 0}</span>
+                          <span className="text-[11px] font-bold text-emerald-400">${proposalMeta.depositAmount || effectiveSettings?.depositAmount || 0}</span>
                         </div>
                         <div className="flex justify-between items-center bg-primary/20 px-2 py-1.5 rounded-[4px] border border-primary/20">
                           <span className="text-[9px] text-primary uppercase font-bold">Reference</span>
