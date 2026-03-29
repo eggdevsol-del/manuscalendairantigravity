@@ -632,10 +632,11 @@ export function AppointmentCheckInModal({
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9, y: 10 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.9, y: 10 }}
-      className="w-full flex flex-col pt-2 pb-4 px-1"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ type: "spring", damping: 25, stiffness: 300 }}
+      className="w-full rounded-[6px] bg-card border border-border shadow-lg px-4 py-3"
     >
       {renderStep()}
     </motion.div>

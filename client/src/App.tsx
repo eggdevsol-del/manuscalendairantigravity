@@ -4,8 +4,6 @@ import { Toaster, TooltipProvider } from "@/components/ui";
 import { UIDebugProvider } from "@/_core/contexts/UIDebugContext";
 import {
   BottomNavProvider,
-  useBottomNav,
-  useRegisterFABActions,
 } from "@/contexts/BottomNavContext";
 import InstallPrompt from "./components/InstallPrompt";
 import IOSInstallPrompt from "./components/IOSInstallPrompt";
@@ -179,13 +177,13 @@ function Router() {
 }
 
 /**
- * Global overlay that shows appointment check-in modals for artists.
- * Now natively hooks into the FAB Menu system for a cleaner UX.
+ * AppointmentCheckInPill — Non-blocking persistent pill at top of page.
+ * Uses SSOT card width, thinner height, 6px radius, no blur.
+ * Stays visible until an action is selected.
  */
 function AppointmentCheckInOverlay() {
   const [dismissed, setDismissed] = React.useState<number | null>(null);
   const { activeCheckIn, updateAppointment } = useAppointmentCheckIn();
-  const { setFABOpen } = useBottomNav();
 
   const activeId = activeCheckIn?.appointment?.id;
 
@@ -193,42 +191,25 @@ function AppointmentCheckInOverlay() {
   React.useEffect(() => {
     if (activeId && activeId !== dismissed) {
       setDismissed(null);
-      // Automatically open the FAB when a check-in event appears
-      setFABOpen(true);
     }
-  }, [activeId, dismissed, setFABOpen]);
+  }, [activeId, dismissed]);
 
-  const fabContent = React.useMemo(() => {
-    if (!activeCheckIn || dismissed === activeCheckIn.appointment.id)
-      return null;
+  if (!activeCheckIn || dismissed === activeCheckIn.appointment.id) return null;
 
-    return (
-      <div className="w-full flex-1 bg-card border border-border/50 rounded-3xl p-4 shadow-2xl backdrop-blur-xl">
+  return (
+    <div className="fixed top-0 left-0 right-0 z-[60] flex justify-center px-4 pt-[env(safe-area-inset-top,12px)] pointer-events-none">
+      <div className="w-full max-w-md pointer-events-auto">
         <AppointmentCheckInModal
-          isOpen={!!activeCheckIn}
+          isOpen={true}
           checkIn={activeCheckIn}
           onDismiss={() => {
             setDismissed(activeCheckIn.appointment.id);
-            setFABOpen(false);
           }}
           updateAppointment={updateAppointment}
         />
       </div>
-    );
-  }, [activeCheckIn, dismissed, updateAppointment, setFABOpen]);
-
-  return fabContent ? (
-    <AppointmentCheckInFABRegistrar content={fabContent} />
-  ) : null;
-}
-
-function AppointmentCheckInFABRegistrar({
-  content,
-}: {
-  content: React.ReactNode;
-}) {
-  useRegisterFABActions("appointment-check-in", content);
-  return null;
+    </div>
+  );
 }
 
 /**
