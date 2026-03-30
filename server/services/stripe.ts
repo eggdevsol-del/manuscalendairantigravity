@@ -522,6 +522,58 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         break;
       }
 
+      // ── Dispute Handling (v2.3 §6) ─────────────────────────
+      case "charge.dispute.created": {
+        const dispute = event.data.object as Stripe.Dispute;
+        const chargeId = typeof dispute.charge === "string" ? dispute.charge : dispute.charge?.id;
+
+        // Write dispute ledger entry
+        await db.insert(paymentLedger).values({
+          transactionType: "dispute",
+          amountCents: dispute.amount, // Disputed amount (positive — held)
+          platformFeeCents: 0,
+          artistFeeCents: 0,
+          stripePaymentId: chargeId || dispute.id,
+          payoutStatus: "held",
+          metadata: JSON.stringify({
+            disputeId: dispute.id,
+            reason: dispute.reason,
+            status: dispute.status,
+          }),
+        });
+
+        console.log(
+          `[Stripe] Dispute created: ${dispute.id}, amount: ${dispute.amount}, charge: ${chargeId}`
+        );
+        break;
+      }
+
+      case "charge.dispute.closed": {
+        const dispute = event.data.object as Stripe.Dispute;
+        const chargeId = typeof dispute.charge === "string" ? dispute.charge : dispute.charge?.id;
+        const won = dispute.status === "won";
+
+        // Update ledger: release payout if won, deduct if lost
+        await db.insert(paymentLedger).values({
+          transactionType: "dispute",
+          amountCents: won ? 0 : -(dispute.amount), // Lost = deduct from artist
+          platformFeeCents: 0,
+          artistFeeCents: 0,
+          stripePaymentId: chargeId || dispute.id,
+          payoutStatus: won ? "paid" : "held",
+          metadata: JSON.stringify({
+            disputeId: dispute.id,
+            outcome: won ? "won" : "lost",
+            status: dispute.status,
+          }),
+        });
+
+        console.log(
+          `[Stripe] Dispute closed: ${dispute.id}, outcome: ${won ? "WON" : "LOST"}`
+        );
+        break;
+      }
+
       default:
         console.log(`Unhandled event type ${event.type}`);
     }

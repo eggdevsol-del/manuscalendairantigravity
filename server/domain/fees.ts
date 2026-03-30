@@ -4,12 +4,16 @@
  * All fee logic for the platform lives here. No fee calculations
  * should exist in route handlers, UI components, or any other layer.
  *
- * Spec: v2.2 §4.2, §4.3, §4.4
- * - Per-transaction fees (not per-booking)
- * - All math in integer cents, round half-up
- * - Uniform 3.4% platform fee (ACCC compliant)
- * - Tier-based artist fee (Free 2%, Pro 1%, Top 0%)
- * - $5 minimum platform fee floor
+ * Spec: v2.3
+ * - Per-transaction fees (not per-booking) — §4.2
+ * - All math in integer cents, round half-up — §4.3
+ * - Uniform 3.4% platform fee (ACCC compliant) — §4.2
+ * - Tier-based artist fee (Free 2%, Pro 1%, Top 0%) — §2
+ * - $5 minimum platform fee floor — §4.4
+ * - Combined application_fee_amount (platform + artist fee) — v2.3 §1
+ * - Deposit % by tier (Free=37% fixed, Pro/Top configurable) — v2.3 §3
+ * - Multi-sitting bundled deposits — v2.3 §4
+ * - Upfront payment (Pro only) — v2.3 §5
  */
 
 // ─── Tier Definitions ───────────────────────────────────────
@@ -17,10 +21,13 @@
 export type PaymentTier = "free" | "pro" | "top";
 
 export interface TierPaymentConfig {
-    platformFeeRate: number;  // Decimal, e.g. 0.034 = 3.4%
-    artistFeeRate: number;    // Decimal, e.g. 0.020 = 2.0%
+    platformFeeRate: number;       // Decimal, e.g. 0.034 = 3.4%
+    artistFeeRate: number;         // Decimal, e.g. 0.020 = 2.0%
     bnplEnabled: boolean;
     subscriptionPriceCents: number; // Monthly, in cents
+    defaultDepositPercent: number;  // v2.3: deposit % (Free=37 fixed)
+    depositCustomisable: boolean;   // v2.3: can artist change deposit %?
+    upfrontPaymentAllowed: boolean; // v2.3: "pay in full" option (Pro only)
     label: string;
 }
 
@@ -34,6 +41,9 @@ export const PAYMENT_TIERS: Record<PaymentTier, TierPaymentConfig> = {
         artistFeeRate: 0.020,
         bnplEnabled: false,
         subscriptionPriceCents: 0,
+        defaultDepositPercent: 37,   // Fixed at 37% per sitting
+        depositCustomisable: false,  // Free cannot change
+        upfrontPaymentAllowed: false,
         label: "Free",
     },
     pro: {
@@ -41,6 +51,9 @@ export const PAYMENT_TIERS: Record<PaymentTier, TierPaymentConfig> = {
         artistFeeRate: 0.010,
         bnplEnabled: true,
         subscriptionPriceCents: 3900, // $39/month
+        defaultDepositPercent: 25,    // Default, configurable
+        depositCustomisable: true,
+        upfrontPaymentAllowed: true,  // Toggle in settings (default off)
         label: "Pro",
     },
     top: {
@@ -48,6 +61,9 @@ export const PAYMENT_TIERS: Record<PaymentTier, TierPaymentConfig> = {
         artistFeeRate: 0.000,
         bnplEnabled: false,
         subscriptionPriceCents: 0,
+        defaultDepositPercent: 25,    // Default, configurable
+        depositCustomisable: true,
+        upfrontPaymentAllowed: false, // Not available
         label: "Top",
     },
 };
@@ -57,7 +73,7 @@ export const MIN_PLATFORM_FEE_CENTS = 500;
 
 // ─── Legacy Tier Mapping ────────────────────────────────────
 
-/** Map legacy DB enum values to v2.2 payment tiers */
+/** Map legacy DB enum values to current payment tiers */
 export function resolvePaymentTier(
     dbTier: string | null | undefined
 ): PaymentTier {
@@ -71,7 +87,7 @@ export function resolvePaymentTier(
         case "elite":
             return "top";
         default:
-            return "free"; // Safe fallback
+            return "free";
     }
 }
 
@@ -80,16 +96,15 @@ export function resolvePaymentTier(
 /**
  * Round half-up to nearest integer cent.
  * This is the ONLY rounding function used for money.
- * Standard rounding: 0.5 → rounds up.
  */
 export function roundCents(value: number): number {
     return Math.round(value);
 }
 
-// ─── Fee Calculation (§4.2, §4.3, §4.4) ─────────────────────
+// ─── Fee Calculation (v2.3 §1 — Combined Application Fee) ───
 
 export interface TransactionFees {
-    /** Original amount in cents (artist's rate portion for this transaction) */
+    /** Original amount in cents (artist's rate for this transaction) */
     baseAmountCents: number;
     /** Platform fee charged to client (3.4%, min $5) */
     platformFeeCents: number;
@@ -99,7 +114,11 @@ export interface TransactionFees {
     clientTotalCents: number;
     /** What the artist receives: baseAmount - artistFee */
     artistPayoutCents: number;
-    /** The application_fee_amount for Stripe Connect (platform fee only) */
+    /**
+     * Combined application_fee_amount for Stripe Connect.
+     * = platformFee + artistFee. Stripe sees ONE number.
+     * Ledger records them separately for reporting.
+     */
     stripeApplicationFeeCents: number;
     /** Tier used for this calculation */
     tier: PaymentTier;
@@ -109,10 +128,8 @@ export interface TransactionFees {
  * Calculate fees for a single transaction (deposit OR balance).
  *
  * @param baseAmountCents - The artist's rate portion for this charge, in cents.
- *                          For deposits: depositAmount. For balance: remainingBalance.
  *                          This comes from artist settings (SSOT), NOT client input.
  * @param tier - The artist's subscription tier.
- * @returns All fee components, all in integer cents.
  */
 export function calculateTransactionFees(
     baseAmountCents: number,
@@ -130,11 +147,15 @@ export function calculateTransactionFees(
     // Artist fee: tier-based percentage of base amount
     const artistFeeCents = roundCents(baseAmountCents * config.artistFeeRate);
 
-    // Client pays: base + platform fee
+    // Client pays: base + platform fee (artist fee is invisible to client)
     const clientTotalCents = baseAmountCents + platformFeeCents;
 
     // Artist receives: base - artist fee
     const artistPayoutCents = baseAmountCents - artistFeeCents;
+
+    // v2.3: Combined application_fee_amount = platform fee + artist fee
+    // Stripe transfers (baseAmount - artistFee) to artist automatically
+    const stripeApplicationFeeCents = platformFeeCents + artistFeeCents;
 
     return {
         baseAmountCents,
@@ -142,55 +163,132 @@ export function calculateTransactionFees(
         artistFeeCents,
         clientTotalCents,
         artistPayoutCents,
-        stripeApplicationFeeCents: platformFeeCents,
+        stripeApplicationFeeCents,
         tier,
     };
 }
 
-// ─── Deposit/Balance Split (§4.1, §4.5) ──────────────────────
+// ─── Deposit Percentage Resolution (v2.3 §3) ────────────────
+
+/**
+ * Resolve the effective deposit percentage for an artist.
+ * Free tier is LOCKED at 37%. Pro/Top use artist setting or default.
+ *
+ * @param tier - Artist's subscription tier.
+ * @param artistDepositPercent - Artist's configured % (from settings), null = use default.
+ */
+export function resolveDepositPercentage(
+    tier: PaymentTier,
+    artistDepositPercent: number | null | undefined
+): number {
+    const config = PAYMENT_TIERS[tier];
+
+    // Free tier: locked at 37%, ignore artist setting
+    if (!config.depositCustomisable) {
+        return config.defaultDepositPercent;
+    }
+
+    // Pro/Top: use artist setting if set, otherwise default
+    return artistDepositPercent ?? config.defaultDepositPercent;
+}
+
+/**
+ * Check if upfront payment ("pay in full") is available.
+ * Pro tier only, and must be enabled by the artist (default off).
+ */
+export function isUpfrontPaymentAvailable(
+    tier: PaymentTier,
+    artistAllowUpfront: boolean | number | null | undefined
+): boolean {
+    const config = PAYMENT_TIERS[tier];
+    if (!config.upfrontPaymentAllowed) return false;
+    return !!artistAllowUpfront;
+}
+
+// ─── Deposit/Balance Split (v2.3 §4 — Multi-Sitting Support) ─
 
 export interface BookingPaymentSplit {
-    totalAmountCents: number;
-    depositAmountCents: number;
-    balanceAmountCents: number;
+    /** Number of sittings in this booking */
+    numberOfSittings: number;
+    /** Day rate per sitting in cents */
+    dayRateCents: number;
+    /** Total project amount: dayRate × sittings */
+    totalProjectCents: number;
+    /** Deposit percentage used */
+    depositPercent: number;
+    /** Deposit per sitting: dayRate × depositPercent */
+    depositPerSittingCents: number;
+    /** Total bundled deposit: depositPerSitting × sittings (ONE transaction) */
+    totalDepositCents: number;
+    /** Balance per sitting: dayRate - depositPerSitting */
+    balancePerSittingCents: number;
+    /** Fees on the bundled deposit transaction */
     depositFees: TransactionFees;
-    balanceFees: TransactionFees;
-    /** Combined client total across both transactions */
+    /** Fees on ONE balance transaction (per-sitting) */
+    balanceFeesPerSitting: TransactionFees;
+    /** Combined client total across all transactions */
     combinedClientTotalCents: number;
-    /** Combined platform fee across both transactions */
+    /** Combined platform fee across all transactions */
     combinedPlatformFeeCents: number;
 }
 
 /**
  * Calculate the full deposit + balance split for a booking.
+ * Supports multi-sitting projects (v2.3 §4).
  *
- * @param totalAmountCents - Artist's full rate for the booking, in cents.
- * @param depositPercentage - Deposit percentage (0-100), e.g. 25 for 25%.
+ * Deposits for ALL sittings are bundled into ONE transaction.
+ * Each sitting then has a separate balance payment (day-of).
+ *
+ * @param dayRateCents - Artist's rate per sitting, in cents (from settings SSOT).
+ * @param depositPercent - Effective deposit % (use resolveDepositPercentage).
  * @param tier - Artist's subscription tier.
+ * @param numberOfSittings - Number of sittings (default 1).
  */
 export function calculateBookingPaymentSplit(
-    totalAmountCents: number,
-    depositPercentage: number,
-    tier: PaymentTier
+    dayRateCents: number,
+    depositPercent: number,
+    tier: PaymentTier,
+    numberOfSittings: number = 1
 ): BookingPaymentSplit {
-    const depositAmountCents = roundCents(
-        totalAmountCents * (depositPercentage / 100)
+    // Per-sitting amounts
+    const depositPerSittingCents = roundCents(
+        dayRateCents * (depositPercent / 100)
     );
-    const balanceAmountCents = totalAmountCents - depositAmountCents;
+    const balancePerSittingCents = dayRateCents - depositPerSittingCents;
 
-    const depositFees = calculateTransactionFees(depositAmountCents, tier);
-    const balanceFees = calculateTransactionFees(balanceAmountCents, tier);
+    // Bundled deposit: all sittings in ONE transaction
+    const totalDepositCents = depositPerSittingCents * numberOfSittings;
+    const totalProjectCents = dayRateCents * numberOfSittings;
+
+    // Fee on the bundled deposit (single transaction)
+    const depositFees = calculateTransactionFees(totalDepositCents, tier);
+
+    // Fee on ONE balance payment (per sitting, paid day-of)
+    const balanceFeesPerSitting = calculateTransactionFees(
+        balancePerSittingCents,
+        tier
+    );
+
+    // Combined totals across ALL transactions
+    const combinedClientTotalCents =
+        depositFees.clientTotalCents +
+        balanceFeesPerSitting.clientTotalCents * numberOfSittings;
+    const combinedPlatformFeeCents =
+        depositFees.platformFeeCents +
+        balanceFeesPerSitting.platformFeeCents * numberOfSittings;
 
     return {
-        totalAmountCents,
-        depositAmountCents,
-        balanceAmountCents,
+        numberOfSittings,
+        dayRateCents,
+        totalProjectCents,
+        depositPercent,
+        depositPerSittingCents,
+        totalDepositCents,
+        balancePerSittingCents,
         depositFees,
-        balanceFees,
-        combinedClientTotalCents:
-            depositFees.clientTotalCents + balanceFees.clientTotalCents,
-        combinedPlatformFeeCents:
-            depositFees.platformFeeCents + balanceFees.platformFeeCents,
+        balanceFeesPerSitting,
+        combinedClientTotalCents,
+        combinedPlatformFeeCents,
     };
 }
 

@@ -182,7 +182,7 @@ export const funnelRouter = router({
       const url = await createDepositCheckoutSession({
         leadId: lead.id,
         depositAmountCents: fees.baseAmountCents,
-        platformFeeCents: fees.platformFeeCents,
+        platformFeeCents: fees.stripeApplicationFeeCents, // Combined: platform + artist fee (v2.3)
         clientTotalCents: fees.clientTotalCents,
         clientEmail: lead.clientEmail || "",
         artistName:

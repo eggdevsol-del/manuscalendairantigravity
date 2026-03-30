@@ -168,6 +168,10 @@ export const artistSettings = mysqlTable(
     stripeConnectAccountId: varchar({ length: 255 }),
     stripeConnectOnboardingComplete: tinyint().default(0),
     stripeConnectPayoutsEnabled: tinyint().default(0),
+    // ── Payment Settings (v2.3 §3) ──
+    depositPercentage: int().default(37), // Free=37 fixed, Pro/Top configurable
+    allowUpfrontPayment: tinyint().default(0), // Pro only, off by default
+    instantPayoutsEnabled: tinyint().default(0), // Opt-in, ~1% fee
   },
   table => [unique("artistSettings_publicSlug_unique").on(table.publicSlug)]
 );
