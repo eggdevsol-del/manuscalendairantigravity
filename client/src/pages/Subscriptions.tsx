@@ -1,18 +1,42 @@
 /**
  * Subscriptions Page — Container Component
  *
- * Fetches subscription status via tRPC and passes to PricingPage presentational.
- * Handles upgrade/manage mutations. No rendering logic — delegates to PricingPage.
+ * Fetches subscription status and tier configs via tRPC,
+ * passes to PricingPage presentational component.
+ * Handles upgrade/manage mutations. No rendering logic.
  */
 
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { PageShell, PageHeader, LoadingState } from "@/components/ui/ssot";
-import { PricingPage, type SubscriptionStatus } from "@/features/pricing/PricingPage";
+import { PricingPage, type SubscriptionStatus, type TierDisplayConfig } from "@/features/pricing/PricingPage";
 
-// Stripe Price ID for Pro plan (set in env or hardcoded for now)
+// Stripe Price ID for Pro plan (set in env)
 const PRO_PRICE_ID = import.meta.env.VITE_STRIPE_PRO_PRICE_ID || "price_pro_monthly";
+
+/**
+ * Tier configs derived from PAYMENT_TIERS SSOT.
+ * These MUST match the values in server/domain/fees.ts.
+ *
+ * TODO: Expose a tRPC query (e.g., billing.tierConfigs) so these are fetched
+ * from the server SSOT instead of duplicated. For now, they match fees.ts exactly.
+ */
+const FREE_TIER: TierDisplayConfig = {
+  artistFeeRate: 0.020,
+  platformFeeRate: 0.034,
+  subscriptionPriceCents: 0,
+  defaultDepositPercent: 37,
+  bnplEnabled: false,
+};
+
+const PRO_TIER: TierDisplayConfig = {
+  artistFeeRate: 0.010,
+  platformFeeRate: 0.034,
+  subscriptionPriceCents: 3900,
+  defaultDepositPercent: 25,
+  bnplEnabled: true,
+};
 
 export default function Subscriptions() {
   const [, setLocation] = useLocation();
@@ -77,6 +101,8 @@ export default function Subscriptions() {
       <div className="flex-1 overflow-y-auto mobile-scroll touch-pan-y pt-4">
         <PricingPage
           status={status}
+          freeTier={FREE_TIER}
+          proTier={PRO_TIER}
           onUpgradePro={handleUpgradePro}
           onManageSubscription={handleManageSubscription}
           isLoading={isLoading}

@@ -117,13 +117,21 @@ export async function createArtistCheckoutSession(
 
 /**
  * Creates a Stripe Customer Portal session for managing billing.
+ * Scoped to: cancel subscription + update payment method only.
+ * No plan changes allowed (only one paid tier).
  */
 export async function createCustomerPortalSession(customerId: string) {
   const appUrl = getAppUrl();
 
   const session = await stripe.billingPortal.sessions.create({
     customer: customerId,
-    return_url: `${appUrl}/studio`,
+    return_url: `${appUrl}/subscriptions`,
+    // Portal is configured in the Stripe Dashboard → Settings → Customer Portal
+    // Ensure only these features are enabled:
+    //   ✅ Cancel subscription
+    //   ✅ Update payment method
+    //   ❌ Switch plans (disabled — only one paid tier)
+    //   ❌ Update quantity (N/A)
   });
 
   return session.url;

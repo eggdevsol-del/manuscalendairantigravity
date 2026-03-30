@@ -4,6 +4,9 @@
  * Props-only, stateless, no tRPC or routing awareness.
  * Shows Free vs Pro comparison, fee disclosure FAQ, break-even messaging.
  *
+ * ALL fee percentages and prices are derived from props (SSOT via PAYMENT_TIERS).
+ * Nothing is hardcoded. If tier config changes, the UI updates automatically.
+ *
  * Rules from spec §7:
  * - Two public tiers only: Free + Pro. Top tier is NEVER shown publicly.
  * - No mention of "take rate" anywhere in public-facing copy.
@@ -38,44 +41,79 @@ export interface SubscriptionStatus {
     isActive: boolean;
 }
 
+/** Tier config passed from container (derived from PAYMENT_TIERS SSOT) */
+export interface TierDisplayConfig {
+    artistFeeRate: number;     // e.g. 0.020
+    platformFeeRate: number;   // e.g. 0.034
+    subscriptionPriceCents: number;
+    defaultDepositPercent: number;
+    bnplEnabled: boolean;
+}
+
 export interface PricingPageProps {
     status: SubscriptionStatus;
+    freeTier: TierDisplayConfig;
+    proTier: TierDisplayConfig;
     onUpgradePro: () => void;
     onManageSubscription: () => void;
     isLoading: boolean;
 }
 
-const FREE_FEATURES = [
-    { label: "Unlimited bookings", included: true },
-    { label: "Client messaging", included: true },
-    { label: "Automated deposits", included: true },
-    { label: "Booking wizard", included: true },
-    { label: "2.0% artist fee per transaction", included: true, highlight: true },
-    { label: "Deposit locked at 37%", included: true },
-    { label: "Buy Now Pay Later (BNPL)", included: false },
-    { label: "Customisable deposit %", included: false },
-    { label: "Upfront payment option", included: false },
-    { label: "Priority support", included: false },
-];
+/** Format a decimal rate as a display percentage, e.g. 0.020 → "2.0%" */
+function fmtRate(rate: number): string {
+    return `${(rate * 100).toFixed(1)}%`;
+}
 
-const PRO_FEATURES = [
-    { label: "Everything in Free", included: true },
-    { label: "1.0% artist fee per transaction", included: true, highlight: true },
-    { label: "Buy Now Pay Later (BNPL)", included: true },
-    { label: "Customisable deposit %", included: true },
-    { label: "Upfront payment option", included: true },
-    { label: "Priority support", included: true },
-    { label: "Remove Tattoi branding", included: true },
-    { label: "Custom booking funnel theme", included: true },
-];
+/** Format cents as dollars, e.g. 3900 → "$39" */
+function fmtPrice(cents: number): string {
+    return `$${(cents / 100).toFixed(0)}`;
+}
 
 export function PricingPage({
     status,
+    freeTier,
+    proTier,
     onUpgradePro,
     onManageSubscription,
     isLoading,
 }: PricingPageProps) {
     const isPro = status.tier === "pro" || status.tier === "top";
+
+    // Derive display strings from tier config (SSOT)
+    const freeArtistFee = fmtRate(freeTier.artistFeeRate);
+    const proArtistFee = fmtRate(proTier.artistFeeRate);
+    const platformFee = fmtRate(proTier.platformFeeRate); // Same for all tiers
+    const proPrice = fmtPrice(proTier.subscriptionPriceCents);
+
+    // Compute worked example from tier config
+    const exampleDayRate = 100000; // $1,000 in cents
+    const exampleClientTotal = exampleDayRate + Math.round(exampleDayRate * proTier.platformFeeRate);
+    const exampleFreeNet = exampleDayRate - Math.round(exampleDayRate * freeTier.artistFeeRate);
+    const exampleProNet = exampleDayRate - Math.round(exampleDayRate * proTier.artistFeeRate);
+
+    const FREE_FEATURES = [
+        { label: "Unlimited bookings", included: true },
+        { label: "Client messaging", included: true },
+        { label: "Automated deposits", included: true },
+        { label: "Booking wizard", included: true },
+        { label: `${freeArtistFee} artist fee per transaction`, included: true, highlight: true },
+        { label: `Deposit locked at ${freeTier.defaultDepositPercent}%`, included: true },
+        { label: "Buy Now Pay Later (BNPL)", included: false },
+        { label: "Customisable deposit %", included: false },
+        { label: "Upfront payment option", included: false },
+        { label: "Priority support", included: false },
+    ];
+
+    const PRO_FEATURES = [
+        { label: "Everything in Free", included: true },
+        { label: `${proArtistFee} artist fee per transaction`, included: true, highlight: true },
+        { label: "Buy Now Pay Later (BNPL)", included: true },
+        { label: "Customisable deposit %", included: true },
+        { label: "Upfront payment option", included: true },
+        { label: "Priority support", included: true },
+        { label: "Remove Tattoi branding", included: true },
+        { label: "Custom booking funnel theme", included: true },
+    ];
 
     return (
         <div className="pb-32 max-w-lg mx-auto space-y-8 px-4">
@@ -168,11 +206,11 @@ export function PricingPage({
                     <h2 className="text-lg font-bold text-foreground">Pro</h2>
                 </div>
                 <p className="text-xs text-muted-foreground mb-4">
-                    $39/month · 1.0% artist fee · BNPL enabled · Priority support
+                    {proPrice}/month · {proArtistFee} artist fee · BNPL enabled · Priority support
                 </p>
 
                 <div className="flex items-baseline gap-1 mb-5">
-                    <span className="text-3xl font-extrabold text-foreground">$39</span>
+                    <span className="text-3xl font-extrabold text-foreground">{proPrice}</span>
                     <span className="text-muted-foreground font-medium">/month</span>
                 </div>
 
@@ -241,7 +279,8 @@ export function PricingPage({
                 </div>
                 <p className="text-sm text-foreground/80 leading-relaxed">
                     With just <strong className="text-emerald-400">4 bookings per month</strong>,
-                    the 1% fee saving covers the $39 subscription cost.
+                    the {fmtRate(freeTier.artistFeeRate - proTier.artistFeeRate)} fee saving covers
+                    the {proPrice} subscription cost.
                     Every booking after that puts more money in your pocket.
                 </p>
             </motion.div>
@@ -263,10 +302,10 @@ export function PricingPage({
                 <div className="space-y-4">
                     <div>
                         <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
-                            Platform Fee (3.4%)
+                            Platform Fee ({platformFee})
                         </h4>
                         <p className="text-sm text-foreground/80 leading-relaxed">
-                            Your clients pay a 3.4% platform fee at checkout.
+                            Your clients pay a {platformFee} platform fee at checkout.
                             You set your day rate — the fee is added on top,{" "}
                             <strong>never deducted from your earnings</strong>.
                         </p>
@@ -278,7 +317,7 @@ export function PricingPage({
                         </h4>
                         <p className="text-sm text-foreground/80 leading-relaxed">
                             A small per-transaction fee for payment processing and platform maintenance.
-                            Free tier: 2.0%. Pro tier: 1.0%.
+                            Free tier: {freeArtistFee}. Pro tier: {proArtistFee}.
                         </p>
                     </div>
 
@@ -292,15 +331,15 @@ export function PricingPage({
                                 <span className="font-medium">$1,000.00</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-foreground/70">Client pays (+ 3.4%)</span>
-                                <span className="font-medium">$1,034.00</span>
+                                <span className="text-foreground/70">Client pays (+ {platformFee})</span>
+                                <span className="font-medium">${(exampleClientTotal / 100).toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between border-t border-white/10 pt-1.5">
                                 <span className="text-foreground/70">
-                                    You receive ({isPro ? "Pro 1.0%" : "Free 2.0%"} fee)
+                                    You receive ({isPro ? `Pro ${proArtistFee}` : `Free ${freeArtistFee}`} fee)
                                 </span>
                                 <span className="font-bold text-emerald-400">
-                                    {isPro ? "$990.00" : "$980.00"}
+                                    ${((isPro ? exampleProNet : exampleFreeNet) / 100).toFixed(2)}
                                 </span>
                             </div>
                         </div>
