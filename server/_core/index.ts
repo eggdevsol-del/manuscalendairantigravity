@@ -280,6 +280,13 @@ async function startServer() {
 
   server.listen(port, "0.0.0.0", () => {
     console.info(`Server running on http://0.0.0.0:${port}/`);
+
+    // Start scheduled tasks (balance reminders, etc.)
+    import("../services/scheduler").then(({ startScheduledTasks }) => {
+      startScheduledTasks();
+    }).catch((err) => {
+      console.error("[Scheduler] Failed to start scheduled tasks:", err);
+    });
   });
 }
 

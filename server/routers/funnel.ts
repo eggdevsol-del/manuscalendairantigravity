@@ -169,10 +169,32 @@ export const funnelRouter = router({
       });
 
       // Fee calculation — per-transaction (§4.2), integer cents (§4.3)
-      const { calculateTransactionFees, resolvePaymentTier } = await import(
+      const { calculateTransactionFees, resolvePaymentTier, resolveDepositPercentage, roundCents } = await import(
         "../domain/fees"
       );
       const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
+
+      // ── Deposit % Enforcement (v2.3 §3) ──────────────────────
+      // Free tier is locked at 37%. If the lead.depositAmount was
+      // set lower (e.g., client-manipulated), reject it.
+      const enforcedDepositPercent = resolveDepositPercentage(
+        tier,
+        artistSettingsRow?.depositPercentage ?? null
+      );
+      // Calculate what the minimum deposit SHOULD be based on tier rules
+      // We need the day rate to validate. Get it from artist settings or lead total.
+      const dayRateCents = (lead as any).totalAmountCents || lead.depositAmount;
+      if (dayRateCents) {
+        const minDepositCents = roundCents(dayRateCents * (enforcedDepositPercent / 100));
+        if (lead.depositAmount < minDepositCents) {
+          throw new Error(
+            `Deposit amount ($${(lead.depositAmount / 100).toFixed(2)}) is below the ` +
+            `minimum required deposit of ${enforcedDepositPercent}% ` +
+            `($${(minDepositCents / 100).toFixed(2)}) for ${tier} tier.`
+          );
+        }
+      }
+
       const fees = calculateTransactionFees(lead.depositAmount, tier);
 
       const { createDepositCheckoutSession } = await import(

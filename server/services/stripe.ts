@@ -5,6 +5,38 @@ import { studios, artistSettings, leads, messages, paymentLedger, appointments }
 import { TRPCError } from "@trpc/server";
 import type { Request, Response } from "express";
 
+/**
+ * REQUIRED_WEBHOOK_EVENTS — Register ALL of these in the Stripe Dashboard.
+ *
+ * Dashboard → Developers → Webhooks → Add endpoint
+ * Endpoint URL: https://your-domain.com/api/stripe/webhook
+ *
+ * If ANY of these are missing, the corresponding handler in
+ * handleStripeWebhook() will never fire, which can cause:
+ * - Missed ledger entries (financial reporting gaps)
+ * - Undisputed chargebacks going unpatched
+ * - Stale Connect account status
+ */
+export const REQUIRED_WEBHOOK_EVENTS = [
+  // ── Payment Events ──
+  "checkout.session.completed",   // Deposit + balance payments → ledger write + status update
+  "payment_intent.succeeded",     // Direct payment confirmation
+
+  // ── Subscription Events ──
+  "customer.subscription.deleted",  // Artist cancels Pro subscription
+  "customer.subscription.updated",  // Subscription status changes
+
+  // ── Connect Events ──
+  "account.updated",              // Artist Connect onboarding/status changes
+
+  // ── Refund Events ──
+  "charge.refunded",              // Refund issued → negative ledger entry
+
+  // ── Dispute Events (v2.3 §6) ──
+  "charge.dispute.created",       // Freeze artist payout, write dispute ledger entry
+  "charge.dispute.closed",        // Release payout (won) or deduct (lost)
+] as const;
+
 // Initialize Stripe with secret key
 export const stripe = new Stripe(
   process.env.STRIPE_SECRET_KEY || "sk_test_fallback_key",
