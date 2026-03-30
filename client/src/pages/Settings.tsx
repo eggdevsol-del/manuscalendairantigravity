@@ -24,12 +24,15 @@ import {
   Zap,
   RefreshCw,
   Scale,
+  CreditCard,
+  Banknote,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useSearch } from "wouter";
 import { toast } from "sonner";
 import { forceUpdate } from "@/lib/pwa";
 import { APP_VERSION } from "@/lib/version";
+import { trpc } from "@/lib/trpc";
 
 type SettingsSection =
   | "main"
@@ -40,6 +43,71 @@ type SettingsSection =
   | "business"
   | "booking-link"
   | "regulation";
+
+/** Stripe Connect onboarding row for artist Settings */
+function PaymentProcessingSettingsRow() {
+  const connectStatus = trpc.artistSettings.getStripeConnectStatus.useQuery();
+  const connectStripe = trpc.artistSettings.connectStripe.useMutation();
+
+  const status = connectStatus.data;
+  const isConnected = status?.connected && status?.onboardingComplete;
+  const isPending = status?.connected && !status?.onboardingComplete;
+
+  const handleClick = async () => {
+    try {
+      if (isConnected) {
+        toast.info("Stripe is connected and active.");
+        return;
+      }
+      toast.info("Connecting to Stripe...");
+      const result = await connectStripe.mutateAsync();
+      if (result.url) {
+        window.location.href = result.url;
+      } else if (result.alreadyConnected) {
+        toast.success("Stripe account is already connected!");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to connect Stripe");
+    }
+  };
+
+  return (
+    <div
+      className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+      onClick={handleClick}
+    >
+      <div className="flex items-center gap-3">
+        <div className={cn(
+          "p-2 rounded-xl",
+          isConnected ? "bg-emerald-500/20 text-emerald-400"
+            : isPending ? "bg-amber-500/20 text-amber-400"
+              : "bg-rose-500/20 text-rose-400"
+        )}>
+          <Banknote className="w-5 h-5" />
+        </div>
+        <div className="text-left">
+          <p className="font-semibold text-foreground">
+            Payment Processing
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {isConnected ? "Stripe Connected ✓"
+              : isPending ? "Complete onboarding →"
+                : "Connect Stripe to receive payments"}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        {isConnected && (
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+        )}
+        {isPending && (
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+        )}
+        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+      </div>
+    </div>
+  );
+}
 
 export default function Settings() {
   const { user, loading, logout } = useAuth();
@@ -331,6 +399,7 @@ export default function Settings() {
                         </div>
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
+                      <PaymentProcessingSettingsRow />
                       <div
                         className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
                         onClick={() => navigateToSection("work-hours")}

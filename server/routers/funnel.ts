@@ -200,6 +200,96 @@ export const funnelRouter = router({
     }),
 
   /**
+   * Create a Stripe Checkout Session for balance payment.
+   * PUBLIC — uses booking ID + token for auth.
+   *
+   * Validates: balance ≤ remaining (§4.5), BNPL by tier (§5.2 backend).
+   * Supports morning-of auto-link and manual payment.
+   */
+  createBalanceCheckout: publicProcedure
+    .input(z.object({
+      bookingId: z.number(),
+      balanceToken: z.string(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+
+      // Verify token
+      const { verifyDepositToken } = await import("../services/depositToken");
+      const tokenResult = verifyDepositToken(input.balanceToken);
+      if (!tokenResult.valid) {
+        throw new Error("Invalid or expired payment link");
+      }
+
+      // Get the booking
+      const booking = await db.query.appointments.findFirst({
+        where: eq(schema.appointments.id, input.bookingId),
+      });
+      if (!booking) throw new Error("Booking not found");
+
+      // Validate booking is in correct state
+      if (booking.paymentStatus === "fully_paid") {
+        throw new Error("This booking has already been fully paid");
+      }
+      if (booking.paymentStatus === "refunded") {
+        throw new Error("This booking has been refunded");
+      }
+
+      const remaining = booking.remainingBalanceCents || 0;
+      if (remaining <= 0) {
+        throw new Error("No balance remaining on this booking");
+      }
+
+      // Get artist settings for tier + Connect
+      const artistSettingsRow = await db.query.artistSettings.findFirst({
+        where: eq(schema.artistSettings.userId, booking.artistId),
+      });
+      const artist = await db.query.users.findFirst({
+        where: eq(schema.users.id, booking.artistId),
+      });
+      const client = await db.query.users.findFirst({
+        where: eq(schema.users.id, booking.clientId),
+      });
+
+      // Fee calculation — per-transaction on balance amount (§4.2)
+      const {
+        calculateTransactionFees,
+        resolvePaymentTier,
+        getAllowedPaymentMethods,
+      } = await import("../domain/fees");
+
+      const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
+      const fees = calculateTransactionFees(remaining, tier);
+
+      // BNPL methods restricted by tier at backend (§5.2)
+      const paymentMethods = getAllowedPaymentMethods(tier, false);
+
+      const { createBalanceCheckoutSession } = await import(
+        "../services/stripe"
+      );
+
+      const url = await createBalanceCheckoutSession({
+        bookingId: booking.id,
+        balanceAmountCents: remaining,
+        platformFeeCents: fees.stripeApplicationFeeCents, // Combined (v2.3)
+        clientTotalCents: fees.clientTotalCents,
+        clientEmail: client?.email || "",
+        artistName:
+          artistSettingsRow?.businessName ||
+          artistSettingsRow?.displayName ||
+          artist?.name ||
+          "Artist",
+        paymentMethods,
+        stripeConnectAccountId: artistSettingsRow?.stripeConnectAccountId,
+        tier,
+        balanceToken: input.balanceToken,
+      });
+
+      return { url, fees, remainingBalanceCents: remaining, paymentMethods };
+    }),
+
+  /**
    * Confirm deposit payment (for non-Stripe methods: bank/cash)
    * PUBLIC - no auth required (uses HMAC-signed token)
    */

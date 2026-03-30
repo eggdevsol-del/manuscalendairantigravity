@@ -268,9 +268,21 @@ export function DepositSheet() {
             </div>
             <div className="border-t border-white/10 pt-2 mt-2">
               <div className="flex justify-between">
-                <span className="text-white font-medium">Deposit Required</span>
-                <span className="text-[#7C5CFC] font-semibold">
+                <span className="text-white/60">Deposit</span>
+                <span className="text-white">
                   ${(depositInfo.depositAmount / 100).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between mt-1">
+                <span className="text-white/60 text-xs">Platform fee (3.4%)</span>
+                <span className="text-white/60 text-xs">
+                  ${(Math.max(Math.round(depositInfo.depositAmount * 0.034), 500) / 100).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between mt-2 pt-2 border-t border-white/10">
+                <span className="text-white font-medium">Total</span>
+                <span className="text-[#7C5CFC] font-semibold">
+                  ${((depositInfo.depositAmount + Math.max(Math.round(depositInfo.depositAmount * 0.034), 500)) / 100).toFixed(2)}
                 </span>
               </div>
             </div>

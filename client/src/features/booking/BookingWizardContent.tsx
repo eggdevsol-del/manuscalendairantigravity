@@ -880,9 +880,28 @@ export function BookingWizardContent({
               <motion.div variants={fab.animation.item} className="flex flex-col gap-3 py-2">
                 <div className="p-3 bg-indigo-500/10 rounded-[8px] border border-indigo-500/20">
                   <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><Tag className="w-3 h-3" /> Deposit Required</h4>
-                  <p className="text-[11px] text-foreground/90 font-medium leading-relaxed">
-                    Please pay <strong className="text-primary">${proposalMeta.depositAmount || artistSettings?.depositAmount || 0}</strong> to secure your calendar dates.
-                  </p>
+                  {(() => {
+                    const depositRaw = proposalMeta.depositAmount || artistSettings?.depositAmount || 0;
+                    const depositCents = typeof depositRaw === "number" && depositRaw > 1000 ? depositRaw : depositRaw * 100;
+                    const feeCents = Math.max(Math.round(depositCents * 0.034), 500);
+                    const totalCents = depositCents + feeCents;
+                    return (
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-foreground/70">Deposit</span>
+                          <span className="font-medium">${(depositCents / 100).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-[10px]">
+                          <span className="text-foreground/50">Platform fee (3.4%)</span>
+                          <span className="text-foreground/50">${(feeCents / 100).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-[11px] pt-1 border-t border-indigo-500/20">
+                          <span className="font-bold text-primary">Total</span>
+                          <span className="font-bold text-primary">${(totalCents / 100).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* ── Payment Method Buttons ── */}
