@@ -46,6 +46,7 @@ import { PublicFunnel } from "./pages/funnel";
 import PublicStudioFunnel from "./pages/funnel/PublicStudioFunnel";
 import { DepositSheet } from "./pages/funnel/DepositSheet";
 import LeadDetail from "./pages/LeadDetail";
+import PayoutHistory from "./pages/PayoutHistory";
 
 function Router() {
   const [location, setLocation] = useLocation();
@@ -166,6 +167,7 @@ function Router() {
         <GuardedRoute path="/quick-actions" component={QuickActionsManagement} />
         <GuardedRoute path="/clients" component={Clients} />
         <GuardedRoute path="/profile" component={ClientProfile} />
+        <GuardedRoute path="/payout-history" component={PayoutHistory} />
 
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />

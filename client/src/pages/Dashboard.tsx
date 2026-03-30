@@ -62,6 +62,7 @@ import { SetupChecklistWidget } from "@/features/onboarding/SetupChecklistWidget
 
 import { type FABMenuItem } from "@/ui/FABMenu";
 import { DashboardFABActions } from "@/features/dashboard/DashboardActions";
+import { PayoutWidgetContainer } from "@/features/payouts/PayoutWidgetContainer";
 
 // SSOT Components
 
@@ -75,14 +76,14 @@ export interface ExtendedTask {
   priority: "high" | "medium" | "low";
   status: "pending" | "completed" | "dismissed" | "snoozed";
   actionType:
-    | "sms"
-    | "email"
-    | "social"
-    | "internal"
-    | "in_app"
-    | "link"
-    | "external"
-    | "none";
+  | "sms"
+  | "email"
+  | "social"
+  | "internal"
+  | "in_app"
+  | "link"
+  | "external"
+  | "none";
   actionPayload?: string;
   domain: "business" | "social" | "personal";
   _serverTask?: ServerBusinessTask;
@@ -411,8 +412,11 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="px-6 w-full -mt-2 z-10 relative">
-           <SetupChecklistWidget />
+        <div className="px-6 w-full -mt-2 z-10 relative space-y-4">
+          <SetupChecklistWidget />
+          {user?.role === "artist" || user?.role === "admin" ? (
+            <PayoutWidgetContainer period="30d" />
+          ) : null}
         </div>
 
         <div

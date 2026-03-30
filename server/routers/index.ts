@@ -27,6 +27,7 @@ import { invitationsRouter } from "./invitations";
 import { billingRouter } from "./billing";
 import { dataImportRouter } from "./dataImport";
 import { placesRouter } from "./places";
+import { payoutsRouter } from "./payouts";
 
 export const appRouter = router({
   appointments: appointmentsRouter,
@@ -56,6 +57,7 @@ export const appRouter = router({
   billing: billingRouter,
   dataImport: dataImportRouter,
   places: placesRouter,
+  payouts: payoutsRouter,
 });
 
 export type AppRouter = typeof appRouter;
