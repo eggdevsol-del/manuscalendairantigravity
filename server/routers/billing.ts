@@ -8,10 +8,55 @@ import {
   createStudioCheckoutSession,
   createArtistCheckoutSession,
   createCustomerPortalSession,
+  stripe,
 } from "../services/stripe";
 import { artistSettings } from "../../drizzle/schema";
 
 export const billingRouter = router({
+  /**
+   * Get current subscription status for the logged-in artist.
+   */
+  subscriptionStatus: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+
+    const settings = await db.query.artistSettings.findFirst({
+      where: eq(artistSettings.userId, ctx.user.id),
+    });
+
+    const rawTier = settings?.subscriptionTier || "basic";
+    const { resolvePaymentTier, PAYMENT_TIERS } = await import("../domain/fees");
+    const tier = resolvePaymentTier(rawTier);
+    const tierConfig = PAYMENT_TIERS[tier];
+
+    let renewalDate: string | null = null;
+    let cancelAtPeriodEnd = false;
+
+    // If active subscription, fetch renewal date from Stripe
+    if (settings?.stripeSubscriptionId) {
+      try {
+        const sub = await stripe.subscriptions.retrieve(settings.stripeSubscriptionId);
+        renewalDate = new Date((sub as any).current_period_end * 1000).toISOString();
+        cancelAtPeriodEnd = (sub as any).cancel_at_period_end;
+      } catch {
+        // Subscription may have been deleted
+      }
+    }
+
+    return {
+      tier,
+      tierLabel: tierConfig.label,
+      artistFeeRate: tierConfig.artistFeeRate,
+      platformFeeRate: tierConfig.platformFeeRate,
+      bnplEnabled: tierConfig.bnplEnabled,
+      subscriptionPriceCents: tierConfig.subscriptionPriceCents,
+      stripeSubscriptionId: settings?.stripeSubscriptionId || null,
+      renewalDate,
+      cancelAtPeriodEnd,
+      isActive: tier !== "free",
+    };
+  }),
+
   /**
    * Creates a checkout session to upgrade a Studio.
    */
