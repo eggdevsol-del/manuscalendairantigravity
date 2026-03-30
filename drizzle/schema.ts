@@ -69,6 +69,18 @@ export const appointments = mysqlTable(
       "bank",
       "cash",
     ]),
+    // ── Payment Linking (§4.5) ──
+    depositPaymentId: varchar({ length: 255 }), // Stripe PaymentIntent ID
+    balancePaymentId: varchar({ length: 255 }), // null until balance paid
+    totalExpectedAmountCents: int(), // Artist day rate from settings (SSOT)
+    totalPaidAmountCents: int().default(0),
+    remainingBalanceCents: int(), // derived: expected - paid
+    paymentStatus: mysqlEnum("payment_status", [
+      "pending_deposit",
+      "deposit_paid",
+      "fully_paid",
+      "refunded",
+    ]).default("pending_deposit"),
     createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
     updatedAt: timestamp({ mode: "string" }).default(sql`(now())`),
   },
@@ -152,6 +164,10 @@ export const artistSettings = mysqlTable(
       "canceled",
       "trialing",
     ]).default("active"),
+    // ── Stripe Connect (§6.1) ──
+    stripeConnectAccountId: varchar({ length: 255 }),
+    stripeConnectOnboardingComplete: tinyint().default(0),
+    stripeConnectPayoutsEnabled: tinyint().default(0),
   },
   table => [unique("artistSettings_publicSlug_unique").on(table.publicSlug)]
 );
@@ -1827,3 +1843,49 @@ export const systemLogs = mysqlTable(
 
 export type InsertSystemLog = InferInsertModel<typeof systemLogs>;
 export type SelectSystemLog = InferSelectModel<typeof systemLogs>;
+
+// ─── Payment Ledger (§12) ─────────────────────────────────────
+// Source of truth for all financial reporting.
+// Every financial event writes a ledger entry.
+export const paymentLedger = mysqlTable(
+  "payment_ledger",
+  {
+    id: int().primaryKey().autoincrement(),
+    bookingId: int().references(() => appointments.id, { onDelete: "set null" }),
+    artistId: varchar({ length: 64 }).references(() => users.id, { onDelete: "cascade" }),
+    clientId: varchar({ length: 64 }).references(() => users.id, { onDelete: "set null" }),
+    transactionType: mysqlEnum("ledger_transaction_type", [
+      "deposit",
+      "balance",
+      "refund",
+      "dispute",
+      "payout",
+    ]).notNull(),
+    amountCents: int().notNull(),
+    platformFeeCents: int().notNull().default(0),
+    artistFeeCents: int().notNull().default(0),
+    processingCostEstimateCents: int().default(0), // Internal margin tracking
+    stripePaymentId: varchar({ length: 255 }), // pi_xxx, re_xxx, po_xxx
+    stripeConnectAccountId: varchar({ length: 255 }),
+    payoutStatus: mysqlEnum("ledger_payout_status", [
+      "pending",
+      "scheduled",
+      "processing",
+      "paid",
+      "held",
+    ]).default("pending"),
+    tier: mysqlEnum("ledger_tier", ["free", "pro", "top"]).default("free"),
+    paymentMethod: varchar({ length: 30 }), // "card", "afterpay_clearpay", "zip"
+    metadata: text(), // JSON for extra context
+    createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
+  },
+  table => [
+    index("ledger_booking_idx").on(table.bookingId),
+    index("ledger_artist_idx").on(table.artistId),
+    index("ledger_type_idx").on(table.transactionType),
+    index("ledger_stripe_idx").on(table.stripePaymentId),
+  ]
+);
+
+export type InsertPaymentLedger = InferInsertModel<typeof paymentLedger>;
+export type SelectPaymentLedger = InferSelectModel<typeof paymentLedger>;

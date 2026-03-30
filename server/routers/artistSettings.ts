@@ -178,4 +178,77 @@ export const artistSettingsRouter = router({
         total: matchedClients.length,
       };
     }),
+
+  // ── Stripe Connect Management ──────────────────────────────
+
+  /**
+   * Create a Stripe Connect account and return the onboarding URL.
+   * Artist-only. Creates a Standard account linked to the artist.
+   */
+  connectStripe: artistProcedure.mutation(async ({ ctx }) => {
+    const existing = await db.getArtistSettings(ctx.user.id);
+
+    // If already connected, just refresh the onboarding link
+    if (existing?.stripeConnectAccountId) {
+      const { createAccountLink, getAccountStatus } = await import(
+        "../services/stripeConnect"
+      );
+      const status = await getAccountStatus(existing.stripeConnectAccountId);
+      if (status.onboardingComplete) {
+        return { alreadyConnected: true, url: null, status };
+      }
+      // Not finished onboarding — generate new link
+      const url = await createAccountLink(
+        existing.stripeConnectAccountId,
+        ctx.user.id
+      );
+      return { alreadyConnected: false, url, status };
+    }
+
+    // Create new Connect account
+    const { createConnectAccount, createAccountLink } = await import(
+      "../services/stripeConnect"
+    );
+    const accountId = await createConnectAccount(
+      ctx.user.id,
+      ctx.user.email || "",
+      existing?.businessName || undefined
+    );
+    const url = await createAccountLink(accountId, ctx.user.id);
+    return { alreadyConnected: false, url, status: null };
+  }),
+
+  /**
+   * Get the current Stripe Connect status for this artist.
+   */
+  getStripeConnectStatus: artistProcedure.query(async ({ ctx }) => {
+    const settings = await db.getArtistSettings(ctx.user.id);
+
+    if (!settings?.stripeConnectAccountId) {
+      return {
+        connected: false,
+        accountId: null,
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        onboardingComplete: false,
+      };
+    }
+
+    const { getAccountStatus } = await import("../services/stripeConnect");
+    const status = await getAccountStatus(settings.stripeConnectAccountId);
+
+    return {
+      connected: true,
+      ...status,
+    };
+  }),
+
+  /**
+   * Disconnect Stripe Connect from this artist.
+   */
+  disconnectStripe: artistProcedure.mutation(async ({ ctx }) => {
+    const { disconnectAccount } = await import("../services/stripeConnect");
+    await disconnectAccount(ctx.user.id);
+    return { success: true };
+  }),
 });

@@ -1,9 +1,40 @@
-export type SubscriptionTier = "basic" | "pro" | "elite"; // Keep elite in type to match DB enum safely
+/**
+ * Tier Permissions — Feature Gates by Subscription Tier
+ *
+ * Controls feature access per tier. The payment-specific tier config
+ * (fee rates, BNPL) lives in server/domain/fees.ts — this file handles
+ * non-payment feature gating only.
+ *
+ * Tier mapping: basic → free, pro → pro, elite → top
+ */
+
+export type SubscriptionTier = "free" | "pro" | "top";
+
+/** Legacy enum values still in the DB */
+export type LegacySubscriptionTier = "basic" | "pro" | "elite";
+
+/** Resolve any tier string (including legacy) to the canonical tier */
+export function resolveSubscriptionTier(
+    tier: string | null | undefined
+): SubscriptionTier {
+    switch (tier) {
+        case "free":
+        case "basic":
+            return "free";
+        case "pro":
+            return "pro";
+        case "top":
+        case "elite":
+            return "top";
+        default:
+            return "free";
+    }
+}
 
 export interface TierConfig {
     maxAppointments: number;
     canUseDepositEngine: boolean;
-    canUseWizard: boolean; // false = simple form only
+    canUseWizard: boolean;
     canUseAutomatedReminders: boolean;
     canUsePromotions: boolean;
     canRemoveBranding: boolean;
@@ -12,11 +43,12 @@ export interface TierConfig {
     canUseWaitlist: boolean;
     canUseAIVoiceNotes: boolean;
     canProcessFinalPayments: boolean;
-    maxStorageGB: number; // 0 for unlimited or large number
+    canUseBnpl: boolean; // §5.1 — Pro only
+    maxStorageGB: number;
 }
 
 export const TIER_CONFIGS: Record<SubscriptionTier, TierConfig> = {
-    basic: {
+    free: {
         maxAppointments: 30,
         canUseDepositEngine: false,
         canUseWizard: false,
@@ -28,24 +60,10 @@ export const TIER_CONFIGS: Record<SubscriptionTier, TierConfig> = {
         canUseWaitlist: false,
         canUseAIVoiceNotes: false,
         canProcessFinalPayments: false,
-        maxStorageGB: 1, // Example: 1GB limit for free tier
+        canUseBnpl: false,
+        maxStorageGB: 1,
     },
     pro: {
-        maxAppointments: Infinity, // Unlimited
-        canUseDepositEngine: true,
-        canUseWizard: true,
-        canUseAutomatedReminders: true,
-        canUsePromotions: true,
-        canRemoveBranding: true, // Pro gets everything now
-        canUseCustomMessaging: true,
-        canUseMarketingBroadcasts: true,
-        canUseWaitlist: true,
-        canUseAIVoiceNotes: true,
-        canProcessFinalPayments: true,
-        maxStorageGB: Infinity,
-    },
-    // We map elite to pro exactly, just in case any legacy data exists
-    elite: {
         maxAppointments: Infinity,
         canUseDepositEngine: true,
         canUseWizard: true,
@@ -57,27 +75,43 @@ export const TIER_CONFIGS: Record<SubscriptionTier, TierConfig> = {
         canUseWaitlist: true,
         canUseAIVoiceNotes: true,
         canProcessFinalPayments: true,
+        canUseBnpl: true,
+        maxStorageGB: Infinity,
+    },
+    top: {
+        maxAppointments: Infinity,
+        canUseDepositEngine: true,
+        canUseWizard: true,
+        canUseAutomatedReminders: true,
+        canUsePromotions: true,
+        canRemoveBranding: true,
+        canUseCustomMessaging: true,
+        canUseMarketingBroadcasts: true,
+        canUseWaitlist: true,
+        canUseAIVoiceNotes: true,
+        canProcessFinalPayments: true,
+        canUseBnpl: false, // Top artists: no BNPL, clients pay in full
         maxStorageGB: Infinity,
     },
 };
 
 export function canAccessFeature<K extends keyof TierConfig>(
-    tier: SubscriptionTier | null | undefined,
+    tier: SubscriptionTier | string | null | undefined,
     feature: K
 ): boolean {
-    const activeTier = tier || "basic";
+    const activeTier = resolveSubscriptionTier(tier as string);
     const featureLimit = TIER_CONFIGS[activeTier][feature];
 
     if (typeof featureLimit === "boolean") {
         return featureLimit;
     }
-    return true; // If it's a number (like maxAppointments), we handle that logic separately
+    return true;
 }
 
 export function getFeatureLimit<K extends keyof TierConfig>(
-    tier: SubscriptionTier | null | undefined,
+    tier: SubscriptionTier | string | null | undefined,
     feature: K
 ): TierConfig[K] {
-    const activeTier = tier || "basic";
+    const activeTier = resolveSubscriptionTier(tier as string);
     return TIER_CONFIGS[activeTier][feature];
 }

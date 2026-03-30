@@ -160,7 +160,7 @@ export const funnelRouter = router({
         throw new Error("Deposit has already been paid");
       }
 
-      // Get artist name for checkout description
+      // Get artist settings for Connect routing and tier (SSOT)
       const artistSettingsRow = await db.query.artistSettings.findFirst({
         where: eq(schema.artistSettings.userId, lead.artistId),
       });
@@ -168,13 +168,22 @@ export const funnelRouter = router({
         where: eq(schema.users.id, lead.artistId),
       });
 
+      // Fee calculation — per-transaction (§4.2), integer cents (§4.3)
+      const { calculateTransactionFees, resolvePaymentTier } = await import(
+        "../domain/fees"
+      );
+      const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
+      const fees = calculateTransactionFees(lead.depositAmount, tier);
+
       const { createDepositCheckoutSession } = await import(
         "../services/stripe"
       );
 
       const url = await createDepositCheckoutSession({
         leadId: lead.id,
-        depositAmount: lead.depositAmount,
+        depositAmountCents: fees.baseAmountCents,
+        platformFeeCents: fees.platformFeeCents,
+        clientTotalCents: fees.clientTotalCents,
         clientEmail: lead.clientEmail || "",
         artistName:
           artistSettingsRow?.businessName ||
@@ -183,9 +192,11 @@ export const funnelRouter = router({
           "Artist",
         depositToken: input.token,
         messageId: input.messageId,
+        stripeConnectAccountId: artistSettingsRow?.stripeConnectAccountId,
+        tier,
       });
 
-      return { url };
+      return { url, fees };
     }),
 
   /**

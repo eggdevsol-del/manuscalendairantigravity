@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { getDb } from "./core";
 import { eq } from "drizzle-orm";
-import { studios, artistSettings, leads, messages } from "../../drizzle/schema";
+import { studios, artistSettings, leads, messages, paymentLedger, appointments } from "../../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import type { Request, Response } from "express";
 
@@ -97,23 +97,31 @@ export async function createCustomerPortalSession(customerId: string) {
   return session.url;
 }
 
+
 /**
  * Creates a Stripe Checkout Session for a one-time deposit payment.
- * This is used when clients pay deposits for bookings.
+ * Now supports Connect routing (§6.1) and per-transaction fees (§4.2).
+ *
+ * Deposits are ALWAYS card-only — no BNPL (§4.1, §5.2).
  */
 export async function createDepositCheckoutSession(opts: {
   leadId: number;
-  depositAmount: number; // in cents
+  depositAmountCents: number;
+  platformFeeCents: number;
+  clientTotalCents: number;
   clientEmail: string;
   artistName: string;
   depositToken: string;
   messageId?: number;
+  stripeConnectAccountId?: string | null;
+  tier: string;
 }) {
   const baseUrl = getAppUrl();
 
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    mode: "payment", // One-time payment, not subscription
+  // Build the session config
+  const sessionConfig: any = {
+    payment_method_types: ["card"], // Deposits: ALWAYS card-only (§4.1)
+    mode: "payment",
     customer_email: opts.clientEmail,
     client_reference_id: String(opts.leadId),
     line_items: [
@@ -124,7 +132,7 @@ export async function createDepositCheckoutSession(opts: {
             name: `Booking Deposit — ${opts.artistName}`,
             description: "Deposit to secure your appointment",
           },
-          unit_amount: opts.depositAmount, // Already in cents
+          unit_amount: opts.clientTotalCents, // Base + platform fee
         },
         quantity: 1,
       },
@@ -134,13 +142,93 @@ export async function createDepositCheckoutSession(opts: {
       leadId: String(opts.leadId),
       depositToken: opts.depositToken,
       messageId: opts.messageId ? String(opts.messageId) : "",
+      platformFeeCents: String(opts.platformFeeCents),
+      baseAmountCents: String(opts.depositAmountCents),
+      tier: opts.tier,
     },
     success_url: `${baseUrl}/deposit/${opts.depositToken}?status=success&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/deposit/${opts.depositToken}?status=canceled`,
-  });
+  };
 
+  // Connect routing — route payment to artist (§6.1)
+  if (opts.stripeConnectAccountId) {
+    sessionConfig.payment_intent_data = {
+      application_fee_amount: opts.platformFeeCents,
+      transfer_data: {
+        destination: opts.stripeConnectAccountId,
+      },
+    };
+  }
+
+  const session = await stripe.checkout.sessions.create(sessionConfig);
   return session.url;
 }
+
+/**
+ * Creates a Stripe Checkout Session for a balance payment.
+ * Supports BNPL for Pro tier artists (§5.1, §5.2).
+ *
+ * IMPORTANT: payment_method_types are enforced at backend level (§5.2).
+ * Frontend gating alone is a security hole.
+ */
+export async function createBalanceCheckoutSession(opts: {
+  bookingId: number;
+  balanceAmountCents: number;
+  platformFeeCents: number;
+  clientTotalCents: number;
+  clientEmail: string;
+  artistName: string;
+  paymentMethods: string[]; // From getAllowedPaymentMethods() in fees.ts
+  stripeConnectAccountId?: string | null;
+  tier: string;
+  balanceToken: string;
+}) {
+  const baseUrl = getAppUrl();
+
+  const sessionConfig: any = {
+    payment_method_types: opts.paymentMethods, // Backend-enforced (§5.2)
+    mode: "payment",
+    customer_email: opts.clientEmail,
+    client_reference_id: String(opts.bookingId),
+    line_items: [
+      {
+        price_data: {
+          currency: "aud",
+          product_data: {
+            name: `Balance Payment — ${opts.artistName}`,
+            description: "Remaining balance for your booking",
+          },
+          unit_amount: opts.clientTotalCents,
+        },
+        quantity: 1,
+      },
+    ],
+    metadata: {
+      type: "balance",
+      bookingId: String(opts.bookingId),
+      platformFeeCents: String(opts.platformFeeCents),
+      baseAmountCents: String(opts.balanceAmountCents),
+      tier: opts.tier,
+      balanceToken: opts.balanceToken,
+    },
+    success_url: `${baseUrl}/booking/${opts.bookingId}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${baseUrl}/booking/${opts.bookingId}?payment=canceled`,
+  };
+
+  // Connect routing
+  if (opts.stripeConnectAccountId) {
+    sessionConfig.payment_intent_data = {
+      application_fee_amount: opts.platformFeeCents,
+      transfer_data: {
+        destination: opts.stripeConnectAccountId,
+      },
+    };
+  }
+
+  const session = await stripe.checkout.sessions.create(sessionConfig);
+  return session.url;
+}
+
 
 /**
  * Express middleware to handle Stripe Webhook events.
@@ -183,6 +271,11 @@ export async function handleStripeWebhook(req: Request, res: Response) {
           const messageId = session.metadata.messageId ? parseInt(session.metadata.messageId, 10) : undefined;
 
           if (leadId) {
+            const lead = await db.query.leads.findFirst({
+              where: eq(leads.id, leadId),
+            });
+            if (!lead) break;
+
             const now = new Date().toISOString().slice(0, 19).replace("T", " ");
             await db
               .update(leads)
@@ -221,9 +314,76 @@ export async function handleStripeWebhook(req: Request, res: Response) {
               }
             }
 
+            // ── Ledger Write (§12) ──
+            const platformFeeCents = session.metadata.platformFeeCents
+              ? parseInt(session.metadata.platformFeeCents, 10)
+              : 0;
+            const baseAmountCents = session.metadata.baseAmountCents
+              ? parseInt(session.metadata.baseAmountCents, 10)
+              : lead.depositAmount || 0;
+
+            await db.insert(paymentLedger).values({
+              bookingId: null, // Deposit is on lead, not yet booked
+              artistId: lead.artistId,
+              clientId: lead.clientId || null,
+              transactionType: "deposit",
+              amountCents: baseAmountCents,
+              platformFeeCents,
+              artistFeeCents: 0, // Calculated at payout, not at charge time
+              stripePaymentId: session.payment_intent as string || session.id,
+              stripeConnectAccountId: null,
+              tier: (session.metadata.tier as any) || "free",
+              paymentMethod: "card", // Deposits are always card
+            });
+
             console.log(
-              `[Stripe] Deposit verified for Lead ${leadId} (Session: ${session.id})`
+              `[Stripe] Deposit verified for Lead ${leadId} (Session: ${session.id}), Ledger entry written`
             );
+          }
+          break;
+        }
+
+        // ── Balance Payment ──────────────────────────────────────
+        if (session.metadata?.type === "balance") {
+          const bookingId = parseInt(session.metadata.bookingId, 10);
+          const platformFeeCents = parseInt(session.metadata.platformFeeCents || "0", 10);
+          const baseAmountCents = parseInt(session.metadata.baseAmountCents || "0", 10);
+
+          if (bookingId) {
+            const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+            const booking = await db.query.appointments.findFirst({
+              where: eq(appointments.id, bookingId),
+            });
+
+            if (booking) {
+              const newPaid = (booking.totalPaidAmountCents || 0) + baseAmountCents;
+              const remaining = (booking.totalExpectedAmountCents || 0) - newPaid;
+
+              await db.update(appointments).set({
+                balancePaymentId: session.payment_intent as string || session.id,
+                totalPaidAmountCents: newPaid,
+                remainingBalanceCents: Math.max(remaining, 0),
+                paymentStatus: remaining <= 0 ? "fully_paid" as any : "deposit_paid" as any,
+                clientPaid: remaining <= 0 ? 1 : 0,
+                updatedAt: now,
+              }).where(eq(appointments.id, bookingId));
+
+              // Ledger write
+              await db.insert(paymentLedger).values({
+                bookingId,
+                artistId: booking.artistId,
+                clientId: booking.clientId,
+                transactionType: "balance",
+                amountCents: baseAmountCents,
+                platformFeeCents,
+                artistFeeCents: 0,
+                stripePaymentId: session.payment_intent as string || session.id,
+                tier: (session.metadata.tier as any) || "free",
+                paymentMethod: session.payment_method_types?.[0] || "card",
+              });
+
+              console.log(`[Stripe] Balance paid for Booking ${bookingId}, remaining: ${remaining}`);
+            }
           }
           break;
         }
@@ -335,6 +495,33 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         }
         break;
       }
+      // ── Stripe Connect: Account Updated ─────────────────────
+      case "account.updated": {
+        const account = event.data.object as Stripe.Account;
+        const { syncAccountStatusToDb } = await import("./stripeConnect");
+        await syncAccountStatusToDb(account.id);
+        break;
+      }
+
+      // ── Refund Ledger Write ─────────────────────────────────
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge;
+        const refundAmount = charge.amount_refunded || 0;
+
+        if (refundAmount > 0) {
+          await db.insert(paymentLedger).values({
+            transactionType: "refund",
+            amountCents: -refundAmount, // Negative for refunds
+            platformFeeCents: 0,
+            artistFeeCents: 0,
+            stripePaymentId: charge.id,
+            metadata: JSON.stringify({ refundReason: charge.metadata?.refundReason || "unknown" }),
+          });
+          console.log(`[Stripe] Refund ledger entry: ${charge.id}, amount: -${refundAmount}`);
+        }
+        break;
+      }
+
       default:
         console.log(`Unhandled event type ${event.type}`);
     }
