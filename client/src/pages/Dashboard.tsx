@@ -20,7 +20,6 @@ import {
 import { useDashboardTasks } from "@/features/dashboard/useDashboardTasks";
 import {
   useBusinessTasks,
-  useWeeklySnapshot,
   useDashboardSettings,
   type BusinessTask as ServerBusinessTask,
 } from "@/features/dashboard/useBusinessTasks";
@@ -31,7 +30,6 @@ import {
   PageHeader,
   GlassSheet,
   FullScreenSheet,
-  WeeklySnapshotModal,
   TaskCard,
   SegmentedHeader,
 } from "@/components/ui/ssot";
@@ -51,7 +49,6 @@ import {
   Monitor,
   ChevronRight,
   Settings,
-  BarChart3,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useTeaser } from "@/contexts/TeaserContext";
@@ -163,13 +160,6 @@ export default function Dashboard() {
     completingTask,
   } = useBusinessTasks();
 
-  // Weekly Snapshot Hook
-  const {
-    shouldShow: showSnapshot,
-    snapshot,
-    dismiss: dismissSnapshot,
-  } = useWeeklySnapshot();
-
   // Teaser Mode
   const { isTeaserClient } = useTeaser();
   const [showInstallModal, setShowInstallModal] = useState(false);
@@ -178,19 +168,7 @@ export default function Dashboard() {
   const [selectedTask, setSelectedTask] = useState<ExtendedTask | null>(null);
   const [showTaskSheet, setShowTaskSheet] = useState(false);
   const [showChallengeSheet, setShowChallengeSheet] = useState(false);
-  const [showSnapshotModal, setShowSnapshotModal] = useState(false);
   const [taskStartTime, setTaskStartTime] = useState<string | null>(null);
-
-  // Track if snapshot was already shown in this session
-  const snapshotShownThisSession = useRef(false);
-
-  // Show weekly snapshot on mount if needed (only once per session)
-  useEffect(() => {
-    if (showSnapshot && !snapshotShownThisSession.current) {
-      snapshotShownThisSession.current = true;
-      setShowSnapshotModal(true);
-    }
-  }, [showSnapshot]);
 
   // Clear selected task when FAB closes
   useEffect(() => {
@@ -338,7 +316,6 @@ export default function Dashboard() {
     [legacyActions, setFABOpen]
   );
 
-  const handleShowSnapshot = useCallback(() => setShowSnapshotModal(true), []);
   const handleShowChallenge = useCallback(
     () => setShowChallengeSheet(true),
     []
@@ -501,7 +478,6 @@ export default function Dashboard() {
       {/* Register FAB Actions */}
       <DashboardFABActions
         activeCategory={activeCategory}
-        onShowSnapshot={handleShowSnapshot}
         onShowChallenge={handleShowChallenge}
         selectedTask={selectedTask}
         onExecuteAction={executeAction}
@@ -546,18 +522,6 @@ export default function Dashboard() {
           ))}
         </div>
       </FullScreenSheet>
-
-      {/* --- WEEKLY SNAPSHOT MODAL --- */}
-      <WeeklySnapshotModal
-        open={showSnapshotModal}
-        onClose={() => {
-          setShowSnapshotModal(false);
-          if (showSnapshot) {
-            dismissSnapshot();
-          }
-        }}
-        data={snapshot}
-      />
     </PageShell>
   );
 }

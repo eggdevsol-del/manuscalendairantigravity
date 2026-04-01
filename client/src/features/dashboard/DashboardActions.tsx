@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { useRegisterFABActions } from "@/contexts/BottomNavContext";
 import {
-  BarChart3,
   Plus,
   Send,
   Mail,
@@ -18,7 +17,6 @@ import type { ExtendedTask } from "@/pages/Dashboard";
 
 interface DashboardFABActionsProps {
   activeCategory: "business" | "social" | "personal";
-  onShowSnapshot: () => void;
   onShowChallenge: () => void;
   selectedTask?: ExtendedTask | null;
   onExecuteAction?: (task: ExtendedTask) => void;
@@ -29,7 +27,6 @@ interface DashboardFABActionsProps {
 
 export function DashboardFABActions({
   activeCategory,
-  onShowSnapshot,
   onShowChallenge,
   selectedTask,
   onExecuteAction,
@@ -135,17 +132,6 @@ export function DashboardFABActions({
       return items;
     }
 
-    // Snapshot only for business
-    if (activeCategory === "business") {
-      items.push({
-        id: "snapshot",
-        label: "Weekly Snapshot",
-        icon: BarChart3,
-        onClick: onShowSnapshot,
-        highlight: true,
-      });
-    }
-
     // New challenge for personal
     if (activeCategory === "personal") {
       items.push({
@@ -160,7 +146,6 @@ export function DashboardFABActions({
     return items;
   }, [
     activeCategory,
-    onShowSnapshot,
     onShowChallenge,
     selectedTask,
     onExecuteAction,

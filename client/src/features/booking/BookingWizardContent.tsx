@@ -705,7 +705,7 @@ export function BookingWizardContent({
                 { label: "Time", value: `${proposalHours}h`, accent: false },
                 {
                   label: "Sittings",
-                  value: String(proposalMeta.sittings),
+                  value: String(proposalMeta.sittings || 1),
                   accent: false,
                 },
               ].map(({ label, value, accent }) => (
@@ -766,8 +766,8 @@ export function BookingWizardContent({
                           {format(new Date(dateStr), "EEE, MMM d")}
                         </p>
                         <p className="text-[8px] text-muted-foreground">
-                          {format(new Date(dateStr), "h:mm a")} ·{" "}
-                          {proposalMeta.serviceDuration}m
+                          {format(new Date(dateStr), "h:mm a")}
+                          {proposalMeta.serviceDuration ? ` · ${proposalMeta.serviceDuration}m` : ""}
                         </p>
                       </div>
                     </div>

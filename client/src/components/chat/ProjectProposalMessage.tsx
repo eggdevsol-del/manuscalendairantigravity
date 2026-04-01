@@ -102,7 +102,7 @@ export function ProjectProposalMessage({
             {serviceName}
           </p>
           <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
-            ${totalCost} · {hours}h · {sittings}s
+            ${totalCost} · {hours}h · {sittings || 1}s
           </p>
         </div>
 
@@ -180,7 +180,7 @@ export function ProjectProposalMessage({
           {[
             { label: "Total", value: `$${totalCost}` },
             { label: "Time", value: `${hours}h` },
-            { label: "Sittings", value: String(sittings) },
+            { label: "Sittings", value: String(sittings || 1) },
           ].map(({ label, value }) => (
             <div key={label} className="p-2 flex flex-col items-center gap-0.5">
               <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">

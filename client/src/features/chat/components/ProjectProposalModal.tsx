@@ -164,7 +164,7 @@ export function ProjectProposalModal({
                 tokens.proposalModal.durationBadge
               )}
             >
-              {serviceDuration}m
+              {serviceDuration ? `${serviceDuration}m` : ""}
             </div>
           </div>
         ))}
@@ -267,10 +267,10 @@ export function ProjectProposalModal({
                 onAccept(
                   appliedPromotion
                     ? {
-                        id: appliedPromotion.id,
-                        discountAmount: appliedPromotion.discountAmount,
-                        finalAmount: appliedPromotion.finalAmount,
-                      }
+                      id: appliedPromotion.id,
+                      discountAmount: appliedPromotion.discountAmount,
+                      finalAmount: appliedPromotion.finalAmount,
+                    }
                     : undefined
                 )
               }
@@ -569,7 +569,7 @@ export function ProjectProposalModal({
                         <div className="w-px h-8 bg-white/10 hidden sm:block" />
                         <div className="flex items-center gap-3">
                           <span className="text-2xl font-bold text-foreground tracking-tight">
-                            {sittings}
+                            {sittings || 1}
                           </span>
                           <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground self-end mb-1.5">
                             Sittings
