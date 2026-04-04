@@ -22,6 +22,7 @@ export const artistSettingsRouter = router({
         accountNumber: null,
         businessCountry: "AU", // Safe fallback
         depositAmount: null,
+        depositPercentage: 37,
         autoSendDepositInfo: false,
         sendAutomatedReminders: true,
         workSchedule: JSON.stringify({}),
@@ -53,6 +54,7 @@ export const artistSettingsRouter = router({
         displayName: settings.displayName,
         businessAddress: settings.businessAddress,
         depositAmount: settings.depositAmount,
+        depositPercentage: settings.depositPercentage ?? 37,
         services: settings.services,
         bsb: settings.bsb,
         accountNumber: settings.accountNumber,

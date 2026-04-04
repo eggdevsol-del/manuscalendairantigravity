@@ -26,6 +26,14 @@ export function useChatState() {
     metadata: any;
   } | null>(null);
 
+  // Native Confirm Toast State (replaces window.confirm)
+  const [confirmDialog, setConfirmDialog] = useState<{
+    title: string;
+    body: string;
+    pendingMessage: any;
+    pendingMetadata: any;
+  } | null>(null);
+
   // Client Confirm Dialog State
   const [showClientConfirmDialog, setShowClientConfirmDialog] = useState(false);
   const [clientConfirmMessageId, setClientConfirmMessageId] = useState<
@@ -121,6 +129,8 @@ export function useChatState() {
       setProjectStartDate,
       selectedProposal,
       setSelectedProposal,
+      confirmDialog,
+      setConfirmDialog,
       showClientConfirmDialog,
       setShowClientConfirmDialog,
       clientConfirmMessageId,
@@ -148,6 +158,7 @@ export function useChatState() {
       showProjectWizard,
       projectStartDate,
       selectedProposal,
+      confirmDialog,
       showClientConfirmDialog,
       clientConfirmMessageId,
       clientConfirmDates,

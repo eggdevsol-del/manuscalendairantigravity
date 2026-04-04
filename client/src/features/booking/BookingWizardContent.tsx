@@ -464,7 +464,9 @@ export function BookingWizardContent({
     const message = `I have found the following dates for your ${selectedService.name} project:\n\n${datesList}\n\nThis project consists of ${finalSittings} sittings.\nFrequency: ${frequency === "single" ? "Custom dates" : frequency}\nPrice per sitting: $${selectedService.price}\n\nPlease confirm these dates.`;
 
     const totalCost = Number(selectedService.price) * finalSittings;
-    const totalDeposit = Number(artistSettings?.depositAmount || 0) * finalSittings;
+    // Use fee-engine percentage (SSOT) instead of legacy flat depositAmount
+    const depositPercent = Number(effectiveSettings?.depositPercentage ?? 37);
+    const totalDeposit = Math.round(totalCost * depositPercent / 100);
 
     const metadata = JSON.stringify({
       type: "project_proposal",
@@ -480,6 +482,7 @@ export function BookingWizardContent({
       bsb: artistSettings?.bsb,
       accountNumber: artistSettings?.accountNumber,
       depositAmount: totalDeposit,
+      depositPercent: depositPercent,
       autoSendDeposit: artistSettings?.autoSendDepositInfo,
     });
 
@@ -881,15 +884,16 @@ export function BookingWizardContent({
                 <div className="p-3 bg-indigo-500/10 rounded-[8px] border border-indigo-500/20">
                   <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><Tag className="w-3 h-3" /> Deposit Required</h4>
                   {(() => {
-                    const depositRaw = proposalMeta.depositAmount || artistSettings?.depositAmount || 0;
-                    const depositCents = typeof depositRaw === "number" && depositRaw > 1000 ? depositRaw : depositRaw * 100;
+                    // depositAmount in metadata is stored in dollars
+                    const depositDollars = Number(proposalMeta.depositAmount || 0);
+                    const depositCents = Math.round(depositDollars * 100);
                     const feeCents = Math.max(Math.round(depositCents * 0.034), 500);
                     const totalCents = depositCents + feeCents;
                     return (
                       <div className="space-y-1">
                         <div className="flex justify-between text-[11px]">
                           <span className="text-foreground/70">Deposit</span>
-                          <span className="font-medium">${(depositCents / 100).toFixed(2)}</span>
+                          <span className="font-medium">${depositDollars.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-[10px]">
                           <span className="text-foreground/50">Platform fee (3.4%)</span>
@@ -990,7 +994,7 @@ export function BookingWizardContent({
                         </div>
                         <div className="flex justify-between items-center bg-black/20 px-2 py-1.5 rounded-[4px]">
                           <span className="text-[9px] text-muted-foreground uppercase">Amount</span>
-                          <span className="text-[11px] font-bold text-emerald-400">${proposalMeta.depositAmount || effectiveSettings?.depositAmount || 0}</span>
+                          <span className="text-[11px] font-bold text-emerald-400">${Number(proposalMeta.depositAmount || effectiveSettings?.depositAmount || 0).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between items-center bg-primary/20 px-2 py-1.5 rounded-[4px] border border-primary/20">
                           <span className="text-[9px] text-primary uppercase font-bold">Reference</span>

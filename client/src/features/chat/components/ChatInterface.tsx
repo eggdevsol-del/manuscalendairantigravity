@@ -45,6 +45,7 @@ import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { LoadingState } from "@/components/ui/ssot";
 import { BookingWizardContent } from "@/features/booking/BookingWizardContent";
+import { NativeConfirmToast } from "@/components/ui/NativeConfirmToast";
 
 interface ChatInterfaceProps {
   conversationId: number;
@@ -119,6 +120,9 @@ export function ChatInterface({
     setSelectedProposal,
     handleViewProposal,
     handleCancelProposal,
+    handleConfirmDialogAccept,
+    handleConfirmDialogCancel,
+    confirmDialog,
   } = useChatController(conversationId);
 
   // Derive pinned proposals: pending + accepted with future dates
@@ -970,6 +974,17 @@ export function ChatInterface({
           />
         </div>
       )}
+      {/* Native Confirm Toast (replaces window.confirm) */}
+      <NativeConfirmToast
+        isOpen={!!confirmDialog}
+        title={confirmDialog?.title || ""}
+        body={confirmDialog?.body || ""}
+        confirmLabel="Revoke"
+        cancelLabel="Cancel"
+        variant="destructive"
+        onConfirm={handleConfirmDialogAccept}
+        onCancel={handleConfirmDialogCancel}
+      />
     </div>
   );
 }

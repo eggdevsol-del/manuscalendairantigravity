@@ -39,6 +39,8 @@ export function useChatController(conversationId: number) {
     nextMonth,
     prevMonth,
     setClientConfirmDates,
+    confirmDialog,
+    setConfirmDialog,
   } = state;
 
   // 2. Initialize Data
@@ -331,25 +333,34 @@ export function useChatController(conversationId: number) {
     (message: any, metadata: any) => {
       if (!message?.id) return;
 
-      if (
-        window.confirm(
-          "Are you sure you want to revoke this proposal? This will cancel the associated appointment."
-        )
-      ) {
-        deleteProposalMutation.mutate(
-          {
-            messageId: message.id,
-          },
-          {
-            onSuccess: () => {
-              setSelectedProposal(null);
-            },
-          }
-        );
-      }
+      setConfirmDialog({
+        title: "Revoke Proposal",
+        body: "Are you sure you want to revoke this proposal? This will cancel the associated appointment.",
+        pendingMessage: message,
+        pendingMetadata: metadata,
+      });
     },
-    [deleteProposalMutation.mutate, setSelectedProposal]
+    [setConfirmDialog]
   );
+
+  const handleConfirmDialogAccept = useCallback(() => {
+    const msg = confirmDialog?.pendingMessage;
+    if (!msg?.id) return;
+
+    deleteProposalMutation.mutate(
+      { messageId: msg.id },
+      {
+        onSuccess: () => {
+          setSelectedProposal(null);
+          setConfirmDialog(null);
+        },
+      }
+    );
+  }, [confirmDialog, deleteProposalMutation.mutate, setSelectedProposal, setConfirmDialog]);
+
+  const handleConfirmDialogCancel = useCallback(() => {
+    setConfirmDialog(null);
+  }, [setConfirmDialog]);
 
   const handleArtistBookProject = useCallback(
     (metadata: any) => {
@@ -441,6 +452,8 @@ export function useChatController(conversationId: number) {
       handleArtistBookProject,
       handleViewProposal,
       handleCancelProposal,
+      handleConfirmDialogAccept,
+      handleConfirmDialogCancel,
 
       // Mutations
       sendMessageMutation,
@@ -479,6 +492,8 @@ export function useChatController(conversationId: number) {
       handleArtistBookProject,
       handleViewProposal,
       handleCancelProposal,
+      handleConfirmDialogAccept,
+      handleConfirmDialogCancel,
 
       // Mutation flags/functions
       sendMessageMutation.mutate,
