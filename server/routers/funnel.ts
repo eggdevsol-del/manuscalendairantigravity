@@ -491,21 +491,63 @@ export const funnelRouter = router({
         lead = getNewLead;
       }
 
-      // If deposit amount isn't set, get it from artist settings
-      if (!lead.depositAmount) {
-        const artistSettingsRow = await db.query.artistSettings.findFirst({
-          where: eq(schema.artistSettings.userId, lead.artistId),
-        });
-        if (artistSettingsRow?.depositAmount) {
+      // Derive deposit amount from proposal metadata (SSOT) → percentage engine → existing lead value → flat fallback
+      {
+        let depositCents: number | null = null;
+
+        // Priority 1: Read from the proposal message metadata (always re-derive when messageId present)
+        if (input.messageId) {
+          const proposalMsg = await db.query.messages.findFirst({
+            where: eq(schema.messages.id, input.messageId),
+          });
+          if (proposalMsg?.metadata) {
+            try {
+              const meta = JSON.parse(proposalMsg.metadata as string);
+              if (meta.depositAmount && Number(meta.depositAmount) > 0) {
+                // metadata.depositAmount is stored in DOLLARS by handleConfirmBooking
+                depositCents = Math.round(Number(meta.depositAmount) * 100);
+              }
+            } catch { /* ignore parse errors */ }
+          }
+        }
+
+        // Priority 2: Percentage-based calculation from fee engine
+        if (!depositCents && !lead.depositAmount) {
+          const artistSettingsRow = await db.query.artistSettings.findFirst({
+            where: eq(schema.artistSettings.userId, lead.artistId),
+          });
+          const { resolvePaymentTier, resolveDepositPercentage, roundCents } = await import(
+            "../domain/fees"
+          );
+          const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
+          const depositPercent = resolveDepositPercentage(
+            tier,
+            artistSettingsRow?.depositPercentage ?? null
+          );
+
+          // If we have a total project cost from the lead, use percentage
+          const totalCents = (lead as any).totalAmountCents;
+          if (totalCents && totalCents > 0) {
+            depositCents = roundCents(totalCents * (depositPercent / 100));
+          } else if (artistSettingsRow?.depositAmount) {
+            // Last resort: legacy flat-rate from artist settings (converted to cents)
+            depositCents = Math.round((artistSettingsRow.depositAmount as number) * 100);
+          }
+        }
+
+        // Update lead if we derived a new deposit amount
+        if (depositCents && depositCents > 0 && depositCents !== lead.depositAmount) {
           const now = formatDateForMySQL(new Date());
           await db
             .update(schema.leads)
             .set({
-              depositAmount: (artistSettingsRow.depositAmount as number) * 100,
+              depositAmount: depositCents,
               depositRequestedAt: now,
               updatedAt: now,
             })
             .where(eq(schema.leads.id, lead.id));
+          // Update local reference so token generation uses correct value
+          (lead as any).depositAmount = depositCents;
         }
       }
 
