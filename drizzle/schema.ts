@@ -169,7 +169,7 @@ export const artistSettings = mysqlTable(
     stripeConnectOnboardingComplete: tinyint().default(0),
     stripeConnectPayoutsEnabled: tinyint().default(0),
     // ── Payment Settings (v2.3 §3) ──
-    depositPercentage: int().default(37), // Free=37 fixed, Pro/Top configurable
+    depositPercentage: int().default(25), // Free=25 fixed, Pro/Top configurable
     allowUpfrontPayment: tinyint().default(0), // Pro only, off by default
     instantPayoutsEnabled: tinyint().default(0), // Opt-in, ~1% fee
   },

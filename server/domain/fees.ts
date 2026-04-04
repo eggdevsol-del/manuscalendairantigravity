@@ -11,7 +11,7 @@
  * - Tier-based artist fee (Free 2%, Pro 1%, Top 0%) — §2
  * - $5 minimum platform fee floor — §4.4
  * - Combined application_fee_amount (platform + artist fee) — v2.3 §1
- * - Deposit % by tier (Free=37% fixed, Pro/Top configurable) — v2.3 §3
+ * - Deposit % by tier (Free=25% fixed, Pro/Top configurable) — v2.3 §3
  * - Multi-sitting bundled deposits — v2.3 §4
  * - Upfront payment (Pro only) — v2.3 §5
  */
@@ -25,7 +25,7 @@ export interface TierPaymentConfig {
     artistFeeRate: number;         // Decimal, e.g. 0.020 = 2.0%
     bnplEnabled: boolean;
     subscriptionPriceCents: number; // Monthly, in cents
-    defaultDepositPercent: number;  // v2.3: deposit % (Free=37 fixed)
+    defaultDepositPercent: number;  // v2.3: deposit % (Free=25 fixed)
     depositCustomisable: boolean;   // v2.3: can artist change deposit %?
     upfrontPaymentAllowed: boolean; // v2.3: "pay in full" option (Pro only)
     label: string;
@@ -41,7 +41,7 @@ export const PAYMENT_TIERS: Record<PaymentTier, TierPaymentConfig> = {
         artistFeeRate: 0.020,
         bnplEnabled: false,
         subscriptionPriceCents: 0,
-        defaultDepositPercent: 37,   // Fixed at 37% per sitting
+        defaultDepositPercent: 25,   // Fixed at 25% per sitting
         depositCustomisable: false,  // Free cannot change
         upfrontPaymentAllowed: false,
         label: "Free",

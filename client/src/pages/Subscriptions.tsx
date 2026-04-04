@@ -26,7 +26,7 @@ const FREE_TIER: TierDisplayConfig = {
   artistFeeRate: 0.020,
   platformFeeRate: 0.034,
   subscriptionPriceCents: 0,
-  defaultDepositPercent: 37,
+  defaultDepositPercent: 25,
   bnplEnabled: false,
 };
 

@@ -465,7 +465,7 @@ export function BookingWizardContent({
 
     const totalCost = Number(selectedService.price) * finalSittings;
     // Use fee-engine percentage (SSOT) instead of legacy flat depositAmount
-    const depositPercent = Number(effectiveSettings?.depositPercentage ?? 37);
+    const depositPercent = Number(effectiveSettings?.depositPercentage ?? 25);
     const totalDeposit = Math.round(totalCost * depositPercent / 100);
 
     const metadata = JSON.stringify({
