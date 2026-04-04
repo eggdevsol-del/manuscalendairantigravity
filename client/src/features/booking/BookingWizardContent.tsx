@@ -884,25 +884,15 @@ export function BookingWizardContent({
                 <div className="p-3 bg-indigo-500/10 rounded-[8px] border border-indigo-500/20">
                   <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><Tag className="w-3 h-3" /> Deposit Required</h4>
                   {(() => {
-                    // depositAmount in metadata is stored in dollars
+                    // depositAmount in metadata is stored in dollars — fee is rolled in for clean client UX
                     const depositDollars = Number(proposalMeta.depositAmount || 0);
                     const depositCents = Math.round(depositDollars * 100);
                     const feeCents = Math.max(Math.round(depositCents * 0.034), 500);
-                    const totalCents = depositCents + feeCents;
+                    const totalDollars = (depositCents + feeCents) / 100;
                     return (
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[11px]">
-                          <span className="text-foreground/70">Deposit</span>
-                          <span className="font-medium">${depositDollars.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-[10px]">
-                          <span className="text-foreground/50">Platform fee (3.4%)</span>
-                          <span className="text-foreground/50">${(feeCents / 100).toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-[11px] pt-1 border-t border-indigo-500/20">
-                          <span className="font-bold text-primary">Total</span>
-                          <span className="font-bold text-primary">${(totalCents / 100).toFixed(2)}</span>
-                        </div>
+                      <div className="flex justify-between text-[11px]">
+                        <span className="font-bold text-primary">Deposit</span>
+                        <span className="font-bold text-primary">${totalDollars.toFixed(2)}</span>
                       </div>
                     );
                   })()}
@@ -910,17 +900,6 @@ export function BookingWizardContent({
 
                 {/* ── Payment Method Buttons ── */}
                 <div className="flex flex-col gap-2 relative z-10">
-                  <button
-                    onClick={() => setPaymentMethod(paymentMethod === "bank" ? null : "bank")}
-                    className={`w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-2 ${paymentMethod === "bank"
-                      ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30"
-                      : "bg-background border border-white/20 text-foreground hover:bg-white/5"
-                      }`}
-                  >
-                    <Upload className="w-4 h-4" />
-                    <span>Pay via Bank Transfer</span>
-                  </button>
-
                   <button
                     onClick={async () => {
                       setPaymentMethod("card");
@@ -930,7 +909,7 @@ export function BookingWizardContent({
                           toast.error("No conversation found");
                           return;
                         }
-                        toast.info("Connecting to Stripe...");
+                        toast.info("Preparing secure checkout...");
                         // Step 1: Ensure lead exists and get deposit token URL
                         const msgId = selectedProposal?.message?.id;
                         const linkResult = await utils.client.funnel.getClientDepositLink.mutate({
@@ -963,7 +942,7 @@ export function BookingWizardContent({
                         }
                       } catch (err: any) {
                         console.error("[Deposit] Stripe checkout error:", err);
-                        toast.error(err.message || "Payment unavailable. Please try bank transfer.");
+                        toast.error(err.message || "Payment temporarily unavailable. Please try again.");
                         setPaymentMethod(null);
                       }
                     }}
@@ -971,53 +950,14 @@ export function BookingWizardContent({
                     className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)] disabled:opacity-70"
                   >
                     {paymentMethod === "card" ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /><span>Connecting to Stripe...</span></>
+                      <><Loader2 className="w-4 h-4 animate-spin" /><span>Preparing Secure Checkout...</span></>
                     ) : (
-                      <><CreditCard className="w-4 h-4" /><span>Pay via Card</span></>
+                      <><CreditCard className="w-4 h-4" /><span>Secure with Card</span></>
                     )}
                   </button>
                 </div>
 
-                {/* ── Bank Transfer Details (extends inline) ── */}
-                {paymentMethod === "bank" && (
-                  <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2">
-                    <div className="p-3 bg-indigo-500/20 rounded-[8px] border border-indigo-500/30">
-                      <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">Bank Details</h4>
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center bg-black/20 px-2 py-1.5 rounded-[4px]">
-                          <span className="text-[9px] text-muted-foreground uppercase">BSB</span>
-                          <span className="text-[11px] font-bold font-mono tracking-widest">{effectiveSettings?.bsb || "Not provided"}</span>
-                        </div>
-                        <div className="flex justify-between items-center bg-black/20 px-2 py-1.5 rounded-[4px]">
-                          <span className="text-[9px] text-muted-foreground uppercase">Account</span>
-                          <span className="text-[11px] font-bold font-mono tracking-widest">{effectiveSettings?.accountNumber || "Not provided"}</span>
-                        </div>
-                        <div className="flex justify-between items-center bg-black/20 px-2 py-1.5 rounded-[4px]">
-                          <span className="text-[9px] text-muted-foreground uppercase">Amount</span>
-                          <span className="text-[11px] font-bold text-emerald-400">${Number(proposalMeta.depositAmount || effectiveSettings?.depositAmount || 0).toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between items-center bg-primary/20 px-2 py-1.5 rounded-[4px] border border-primary/20">
-                          <span className="text-[9px] text-primary uppercase font-bold">Reference</span>
-                          <span className="text-[11px] font-bold text-primary">{currentUser?.name || "Your Name"}</span>
-                        </div>
-                      </div>
-                    </div>
 
-                    <label className="w-full relative cursor-pointer group">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleReceiptUpload}
-                        disabled={uploadMutation.isPending || updateMetadataMutation.isPending}
-                      />
-                      <div className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]">
-                        {uploadMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                        <span>{uploadMutation.isPending ? "Uploading..." : "Upload Bank Receipt"}</span>
-                      </div>
-                    </label>
-                  </div>
-                )}
               </motion.div>
             )}
 
