@@ -16,6 +16,7 @@ import { useLocation } from "wouter";
 import { Camera, RefreshCw, Settings as SettingsIcon, MapPin, Building2, CreditCard, Scissors, Bell, Star, Calendar as CalendarIcon, Link as LinkIcon, Wallet as WalletIcon, Database } from "lucide-react";
 import { DataImportSettings } from "@/components/settings/DataImportSettings";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { StripeExpressOnboarding } from "@/features/stripe/StripeExpressOnboarding";
 
 interface OnboardingArtistFlowProps {
     onComplete: () => Promise<void>;
@@ -65,6 +66,8 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
 
     const updateProfileMutation = trpc.auth.updateProfile.useMutation();
     const updateSettingsMutation = trpc.artistSettings.upsert.useMutation();
+    const settingsQuery = trpc.artistSettings.get.useQuery();
+    const expressOnboardingEnabled = settingsQuery.data?.expressOnboardingEnabled ?? false;
 
     const handleAddService = () => {
         if (!newServiceTitle || !newServicePrice) {
@@ -449,13 +452,27 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                 />
                             </div>
 
-                            <div className="p-3 mt-4 rounded-xl border border-white/5 bg-white/5 opacity-50 flex flex-col">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs font-bold">Stripe / PayPal Gateways</span>
-                                    <Switch disabled checked={false} />
+                            {/* Express Onboarding: show embedded Stripe form when flag is enabled */}
+                            {expressOnboardingEnabled ? (
+                                <div className="pt-4 border-t border-white/10 mt-4">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-xs font-bold uppercase tracking-wider text-primary">Stripe Connect (Automated Payments)</span>
+                                    </div>
+                                    <StripeExpressOnboarding
+                                        onComplete={() => {
+                                            toast.success("Stripe Connect setup complete!");
+                                        }}
+                                    />
                                 </div>
-                                <p className="text-[10px] text-muted-foreground">Automated charge rails are available inside the operational dashboard post-setup.</p>
-                            </div>
+                            ) : (
+                                <div className="p-3 mt-4 rounded-xl border border-white/5 bg-white/5 opacity-50 flex flex-col">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-xs font-bold">Stripe / PayPal Gateways</span>
+                                        <Switch disabled checked={false} />
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground">Automated charge rails are available inside the operational dashboard post-setup.</p>
+                                </div>
+                            )}
 
                             <p className="text-[10px] text-muted-foreground mt-2 italic text-center">
                                 Note: Cash point-of-sale deposits are intentionally excluded from automation and are added contextually inside appointments via the Dashboard natively.

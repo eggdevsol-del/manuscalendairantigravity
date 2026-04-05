@@ -23,16 +23,24 @@ export function PayoutWidgetContainer({
     // Fetch payout data
     const nextPayoutQuery = trpc.payouts.nextPayout.useQuery();
     const earningsQuery = trpc.payouts.earningsBreakdown.useQuery({ period });
+    const connectStatusQuery = trpc.artistSettings.getStripeConnectStatus.useQuery();
 
     // Connect Stripe mutation
     const connectStripe = trpc.artistSettings.connectStripe.useMutation();
+
+    const accountType = connectStatusQuery.data?.accountType || "standard";
 
     const handleConnectStripe = async () => {
         try {
             toast.info("Connecting to Stripe...");
             const result = await connectStripe.mutateAsync();
+
+            // Standard → redirect
             if (result.url) {
                 window.location.href = result.url;
+            } else if (result.accountType === "express") {
+                // Express → redirect to settings for embedded onboarding
+                setLocation("/settings");
             } else if (result.alreadyConnected) {
                 toast.success("Stripe is already connected!");
             }
@@ -61,12 +69,17 @@ export function PayoutWidgetContainer({
         currency: "aud",
     };
 
+    // Express connected → no connect button (managed via Settings)
+    // Standard connected → show Dashboard link via onConnectStripe={undefined}
+    const showConnectButton = !payoutData.connected;
+
     return (
         <PayoutWidget
             {...payoutData}
             earnings={earningsQuery.data || undefined}
             onViewHistory={handleViewHistory}
-            onConnectStripe={handleConnectStripe}
+            onConnectStripe={showConnectButton ? handleConnectStripe : undefined}
         />
     );
 }
+

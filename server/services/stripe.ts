@@ -29,6 +29,10 @@ export const REQUIRED_WEBHOOK_EVENTS = [
   // ── Connect Events ──
   "account.updated",              // Artist Connect onboarding/status changes
 
+  // ── Payout Events (Express Connect) ──
+  "payout.paid",                  // Express artist payout deposited → email notification
+  "payout.failed",                // Express artist payout failed → email notification
+
   // ── Refund Events ──
   "charge.refunded",              // Refund issued → negative ledger entry
 
@@ -610,6 +614,70 @@ export async function handleStripeWebhook(req: Request, res: Response) {
 
         console.log(
           `[Stripe] Dispute closed: ${dispute.id}, outcome: ${won ? "WON" : "LOST"}`
+        );
+        break;
+      }
+
+      // ── Payout Notifications (Express only) ─────────────────
+      case "payout.paid": {
+        const payout = event.data.object as Stripe.Payout;
+        const connectAccountId = event.account;
+        if (!connectAccountId) break;
+
+        // Only send email for Express accounts (Standard gets Stripe native emails)
+        const payoutArtist = await db
+          .select({
+            userId: artistSettings.userId,
+            businessEmail: artistSettings.businessEmail,
+            stripeConnectAccountType: artistSettings.stripeConnectAccountType,
+          })
+          .from(artistSettings)
+          .where(eq(artistSettings.stripeConnectAccountId, connectAccountId))
+          .then((rows: any[]) => rows[0]);
+
+        if (payoutArtist?.stripeConnectAccountType === "express") {
+          const { sendEmail } = await import("./email");
+          const amountFormatted = `$${((payout.amount || 0) / 100).toFixed(2)}`;
+          await sendEmail({
+            to: payoutArtist.businessEmail || "",
+            subject: `Payout of ${amountFormatted} has been deposited`,
+            body: `Your payout of ${amountFormatted} ${(payout.currency || "aud").toUpperCase()} has been deposited to your bank account.`,
+          });
+        }
+
+        console.log(
+          `[Stripe] Payout paid: ${payout.id}, amount: ${payout.amount}, account: ${connectAccountId}`
+        );
+        break;
+      }
+
+      case "payout.failed": {
+        const payout = event.data.object as Stripe.Payout;
+        const connectAccountId = event.account;
+        if (!connectAccountId) break;
+
+        const payoutArtist = await db
+          .select({
+            userId: artistSettings.userId,
+            businessEmail: artistSettings.businessEmail,
+            stripeConnectAccountType: artistSettings.stripeConnectAccountType,
+          })
+          .from(artistSettings)
+          .where(eq(artistSettings.stripeConnectAccountId, connectAccountId))
+          .then((rows: any[]) => rows[0]);
+
+        if (payoutArtist?.stripeConnectAccountType === "express") {
+          const { sendEmail } = await import("./email");
+          const amountFormatted = `$${((payout.amount || 0) / 100).toFixed(2)}`;
+          await sendEmail({
+            to: payoutArtist.businessEmail || "",
+            subject: `Payout of ${amountFormatted} failed`,
+            body: `Your payout of ${amountFormatted} ${(payout.currency || "aud").toUpperCase()} has failed. Failure reason: ${payout.failure_message || "unknown"}. Please check your bank details in the app.`,
+          });
+        }
+
+        console.log(
+          `[Stripe] Payout failed: ${payout.id}, reason: ${payout.failure_message}, account: ${connectAccountId}`
         );
         break;
       }

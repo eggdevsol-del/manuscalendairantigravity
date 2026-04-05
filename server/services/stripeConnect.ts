@@ -2,9 +2,12 @@
  * Stripe Connect Service — Artist Account Management
  *
  * Manages connected Stripe accounts for individual artists.
- * Tattoi is the platform; each artist is a Standard Connected Account.
+ * Tattoi is the platform; each artist is either a Standard or Express Connected Account.
  *
- * Spec: v2.2 §6.1
+ * Standard accounts: redirect-based onboarding (legacy)
+ * Express accounts: embedded in-app onboarding (new, feature-flagged)
+ *
+ * Spec: v2.2 §6.1 + Express Migration v3
  */
 
 import { stripe } from "./stripe";
@@ -12,7 +15,13 @@ import { getDb } from "./core";
 import { eq } from "drizzle-orm";
 import { artistSettings } from "../../drizzle/schema";
 
-// ─── Account Creation ─────────────────────────────────────────
+// ─── Feature Flag ─────────────────────────────────────────────
+
+export function isExpressEnabled(): boolean {
+    return process.env.STRIPE_EXPRESS_ENABLED === "true";
+}
+
+// ─── Standard Account Creation ────────────────────────────────
 
 /**
  * Create a new Stripe Connect Standard account for an artist.
@@ -41,14 +50,95 @@ export async function createConnectAccount(
     if (db) {
         await db
             .update(artistSettings)
-            .set({ stripeConnectAccountId: account.id })
+            .set({
+                stripeConnectAccountId: account.id,
+                stripeConnectAccountType: "standard",
+            })
             .where(eq(artistSettings.userId, artistId));
     }
 
     return account.id;
 }
 
-// ─── Onboarding Link ──────────────────────────────────────────
+// ─── Express Account Creation ─────────────────────────────────
+
+/**
+ * Create a new Stripe Connect Express account for an artist.
+ * Uses businessCountry for locale, sets daily payouts with 2-day delay.
+ * Returns the account ID (acct_xxx).
+ */
+export async function createExpressConnectAccount(
+    artistId: string,
+    email: string,
+    businessCountry: string = "AU",
+    businessName?: string
+): Promise<string> {
+    const account = await stripe.accounts.create({
+        type: "express",
+        country: businessCountry,
+        email,
+        business_profile: {
+            name: businessName || undefined,
+            mcc: "7299",
+        },
+        capabilities: {
+            card_payments: { requested: true },
+            transfers: { requested: true },
+        },
+        settings: {
+            payouts: {
+                schedule: {
+                    interval: "daily" as const,
+                    delay_days: 2,
+                },
+            },
+        },
+        metadata: {
+            artistId,
+            platform: "tattoi",
+        },
+    });
+
+    // Save to DB
+    const db = await getDb();
+    if (db) {
+        await db
+            .update(artistSettings)
+            .set({
+                stripeConnectAccountId: account.id,
+                stripeConnectAccountType: "express",
+            })
+            .where(eq(artistSettings.userId, artistId));
+    }
+
+    console.log(
+        `[Stripe Connect] Created Express account ${account.id} for artist ${artistId} (country=${businessCountry})`
+    );
+
+    return account.id;
+}
+
+// ─── Account Session (Express Embedded Onboarding) ────────────
+
+/**
+ * Create an AccountSession for embedded Connect onboarding.
+ * Returns the client_secret needed by the frontend @stripe/connect-js.
+ * Guard: must be called only for Express accounts.
+ */
+export async function createAccountSession(
+    accountId: string
+): Promise<string> {
+    const session = await stripe.accountSessions.create({
+        account: accountId,
+        components: {
+            account_onboarding: { enabled: true },
+        },
+    });
+
+    return session.client_secret;
+}
+
+// ─── Onboarding Link (Standard only) ─────────────────────────
 
 const getAppUrl = () =>
     process.env.VITE_APP_URL ||
@@ -56,7 +146,7 @@ const getAppUrl = () =>
     "https://www.tattoi.app";
 
 /**
- * Generate a Stripe-hosted onboarding link for an artist.
+ * Generate a Stripe-hosted onboarding link for a Standard artist.
  * Redirects back to Settings after completion.
  */
 export async function createAccountLink(
@@ -108,6 +198,8 @@ export async function getAccountStatus(
 /**
  * Sync Stripe account status back to the database.
  * Called from the `account.updated` webhook.
+ *
+ * Defensively heals account type if Stripe reports Express but DB says Standard.
  */
 export async function syncAccountStatusToDb(
     accountId: string
@@ -117,16 +209,23 @@ export async function syncAccountStatusToDb(
     const db = await getDb();
     if (!db) return;
 
+    // Retrieve the actual Stripe account to check its type
+    const account = await stripe.accounts.retrieve(accountId);
+    const stripeType = account.type === "express" ? "express" : "standard";
+
     await db
         .update(artistSettings)
         .set({
             stripeConnectOnboardingComplete: status.onboardingComplete ? 1 : 0,
             stripeConnectPayoutsEnabled: status.payoutsEnabled ? 1 : 0,
+            stripeConnectDetailsSubmitted: status.detailsSubmitted ? 1 : 0,
+            // Defensive type heal: trust Stripe as SSOT
+            stripeConnectAccountType: stripeType,
         })
         .where(eq(artistSettings.stripeConnectAccountId, accountId));
 
     console.log(
-        `[Stripe Connect] Synced account ${accountId}: charges=${status.chargesEnabled}, payouts=${status.payoutsEnabled}`
+        `[Stripe Connect] Synced account ${accountId}: type=${stripeType}, charges=${status.chargesEnabled}, payouts=${status.payoutsEnabled}, details=${status.detailsSubmitted}`
     );
 }
 
@@ -146,8 +245,11 @@ export async function disconnectAccount(artistId: string): Promise<void> {
             stripeConnectAccountId: null,
             stripeConnectOnboardingComplete: 0,
             stripeConnectPayoutsEnabled: 0,
+            stripeConnectDetailsSubmitted: 0,
+            stripeConnectAccountType: "standard",
         })
         .where(eq(artistSettings.userId, artistId));
 
     console.log(`[Stripe Connect] Disconnected artist ${artistId}`);
 }
+

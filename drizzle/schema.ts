@@ -168,6 +168,11 @@ export const artistSettings = mysqlTable(
     stripeConnectAccountId: varchar({ length: 255 }),
     stripeConnectOnboardingComplete: tinyint().default(0),
     stripeConnectPayoutsEnabled: tinyint().default(0),
+    stripeConnectAccountType: mysqlEnum("stripe_connect_account_type", [
+      "standard",
+      "express",
+    ]).default("standard"),
+    stripeConnectDetailsSubmitted: tinyint().default(0),
     // ── Payment Settings (v2.3 §3) ──
     depositPercentage: int().default(25), // Free=25 fixed, Pro/Top configurable
     allowUpfrontPayment: tinyint().default(0), // Pro only, off by default

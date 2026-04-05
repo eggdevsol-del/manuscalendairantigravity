@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import { forceUpdate } from "@/lib/pwa";
 import { APP_VERSION } from "@/lib/version";
 import { trpc } from "@/lib/trpc";
+import { StripeExpressOnboarding } from "@/features/stripe/StripeExpressOnboarding";
 
 type SettingsSection =
   | "main"
@@ -44,23 +45,54 @@ type SettingsSection =
   | "booking-link"
   | "regulation";
 
-/** Stripe Connect onboarding row for artist Settings */
+/** Stripe Connect onboarding row for artist Settings — Five-Way Branch */
 function PaymentProcessingSettingsRow() {
   const connectStatus = trpc.artistSettings.getStripeConnectStatus.useQuery();
+  const settingsQuery = trpc.artistSettings.get.useQuery();
   const connectStripe = trpc.artistSettings.connectStripe.useMutation();
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const status = connectStatus.data;
+  const accountType = status?.accountType || "standard";
+  const expressEnabled = settingsQuery.data?.expressOnboardingEnabled ?? false;
   const isConnected = status?.connected && status?.onboardingComplete;
   const isPending = status?.connected && !status?.onboardingComplete;
 
   const handleClick = async () => {
     try {
+      // Branch 5: Express + complete → show toast
       if (isConnected) {
         toast.info("Stripe is connected and active.");
         return;
       }
+
+      // Branch 4: Express + incomplete → show embedded onboarding
+      if (isPending && accountType === "express") {
+        setShowOnboarding(true);
+        return;
+      }
+
+      // Branch 3: Standard account (pending) → redirect
+      if (isPending && accountType === "standard") {
+        toast.info("Redirecting to Stripe...");
+        const result = await connectStripe.mutateAsync();
+        if (result.url) {
+          window.location.href = result.url;
+        }
+        return;
+      }
+
+      // No account yet
       toast.info("Connecting to Stripe...");
       const result = await connectStripe.mutateAsync();
+
+      // Branch 1: Express → show embedded onboarding
+      if (result.accountType === "express") {
+        setShowOnboarding(true);
+        return;
+      }
+
+      // Branch 2: Standard → redirect
       if (result.url) {
         window.location.href = result.url;
       } else if (result.alreadyConnected) {
@@ -70,6 +102,21 @@ function PaymentProcessingSettingsRow() {
       toast.error(err.message || "Failed to connect Stripe");
     }
   };
+
+  // Render embedded onboarding inline
+  if (showOnboarding) {
+    return (
+      <div className="p-4">
+        <StripeExpressOnboarding
+          isResuming={isPending}
+          onComplete={() => {
+            setShowOnboarding(false);
+            connectStatus.refetch();
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -91,8 +138,10 @@ function PaymentProcessingSettingsRow() {
           </p>
           <p className="text-xs text-muted-foreground">
             {isConnected ? "Stripe Connected ✓"
-              : isPending ? "Complete onboarding →"
-                : "Connect Stripe to receive payments"}
+              : isPending && accountType === "express"
+                ? "Complete onboarding →"
+                : isPending ? "Complete onboarding →"
+                  : "Connect Stripe to receive payments"}
           </p>
         </div>
       </div>
