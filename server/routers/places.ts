@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 
 /**
  * Server-side proxy for Google Places Autocomplete.
  * The API key NEVER leaves the backend — the frontend only receives results.
  */
 export const placesRouter = router({
-    autocomplete: protectedProcedure
+    autocomplete: publicProcedure
         .input(
             z.object({
                 query: z.string().min(1).max(256),
@@ -44,7 +44,7 @@ export const placesRouter = router({
             };
         }),
 
-    getPlaceDetails: protectedProcedure
+    getPlaceDetails: publicProcedure
         .input(z.object({ placeId: z.string() }))
         .query(async ({ input }) => {
             const apiKey = process.env.GOOGLE_MAPS_API_KEY;
