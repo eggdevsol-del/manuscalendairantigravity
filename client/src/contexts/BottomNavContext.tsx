@@ -49,6 +49,9 @@ interface BottomNavContextType {
   // Larger FAB panel (e.g. for forms)
   isLargePanel: boolean;
   setLargePanel: (large: boolean) => void;
+  // Deep-link: allows external components to request a specific FAB settings panel
+  requestedSettingsView: string | null;
+  requestSettingsView: (view: string | null) => void;
 }
 
 const BottomNavContext = createContext<BottomNavContextType | undefined>(
@@ -173,6 +176,17 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
   const rowIndex = isContextualVisible && contextualRow ? 1 : 0;
 
   const [isFABOpen, setFABOpen] = useState(false);
+  const [requestedSettingsView, setRequestedSettingsView] = useState<string | null>(null);
+
+  // Deep-link: accept string | null directly — no empty string ambiguity
+  const requestSettingsView = useCallback((view: string | null) => {
+    if (view) {
+      setRequestedSettingsView(view);
+      setFABOpen(true);
+    } else {
+      setRequestedSettingsView(null);
+    }
+  }, []);
 
   // Auto-close FAB on route change
   useEffect(() => {
@@ -198,6 +212,8 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
       setFABOpen,
       isLargePanel,
       setLargePanel,
+      requestedSettingsView,
+      requestSettingsView,
     }),
     [
       contextualRow,
@@ -212,6 +228,8 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
       fabChildren,
       isFABOpen,
       isLargePanel,
+      requestedSettingsView,
+      requestSettingsView,
     ]
   );
 

@@ -40,7 +40,8 @@ interface CentralNavFABProps {
 export function CentralNavFAB({ className }: CentralNavFABProps) {
   const [, setLocation] = useLocation();
   const { theme, toggleTheme } = useTheme();
-  const { fabActions, fabChildren, isFABOpen, setFABOpen, isLargePanel, setLargePanel } =
+  const { fabActions, fabChildren, isFABOpen, setFABOpen, isLargePanel, setLargePanel,
+    requestedSettingsView, requestSettingsView } =
     useBottomNav();
 
   const { user, logout } = useAuth();
@@ -285,6 +286,18 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
       }, 300); // Wait for close animation
     }
   }, [isFABOpen, activeSettingsView, setLargePanel]);
+
+  // Deep-link: when a settings view is requested externally, navigate to it.
+  // setTimeout ensures the FAB panel has rendered before switching views.
+  React.useEffect(() => {
+    if (requestedSettingsView && isFABOpen) {
+      const timer = setTimeout(() => {
+        handleViewChange(requestedSettingsView as SettingsView);
+        requestSettingsView(null); // Clear the request
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [requestedSettingsView, isFABOpen]);
 
   return (
     <div

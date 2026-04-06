@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 export function SetupChecklistWidget() {
     const { user, refresh } = useAuth();
-    const { setFABOpen, fabActions } = useBottomNav();
+    const { requestSettingsView } = useBottomNav();
     const updateOnboardingMutation = trpc.auth.completeOnboarding.useMutation();
 
     const { data: artistSettings, isLoading } = trpc.artistSettings.get.useQuery(undefined, {
@@ -24,7 +24,7 @@ export function SetupChecklistWidget() {
     // Evaluate Checklist State
     const hasProfileImage = !!user.avatar && user.avatar.length > 0;
     const hasBusinessAddress = !!artistSettings?.businessAddress && artistSettings.businessAddress.length > 0;
-    
+
     // Check if WorkSchedule JSON has valid keys
     let hasWorkHours = false;
     try {
@@ -46,7 +46,7 @@ export function SetupChecklistWidget() {
             description: "Help clients recognize you.",
             isComplete: hasProfileImage,
             icon: User,
-            onClick: () => triggerFABNavigation("profile"),
+            onClick: () => requestSettingsView("profile"),
         },
         {
             id: "business",
@@ -54,7 +54,7 @@ export function SetupChecklistWidget() {
             description: "Tell clients where to find you.",
             isComplete: hasBusinessAddress,
             icon: MapPin,
-            onClick: () => triggerFABNavigation("business"),
+            onClick: () => requestSettingsView("business"),
         },
         {
             id: "hours",
@@ -62,7 +62,7 @@ export function SetupChecklistWidget() {
             description: "Define your weekly availability.",
             isComplete: hasWorkHours,
             icon: Clock,
-            onClick: () => triggerFABNavigation("work-hours"),
+            onClick: () => requestSettingsView("work-hours"),
         },
         {
             id: "services",
@@ -70,29 +70,13 @@ export function SetupChecklistWidget() {
             description: "What tattoos do you offer?",
             isComplete: hasServices,
             icon: Briefcase,
-            onClick: () => triggerFABNavigation("work-hours"), // Shared panel
+            onClick: () => requestSettingsView("work-hours"), // Shared panel
         }
     ];
 
     const completedTasks = tasks.filter(t => t.isComplete).length;
     const progressPercentage = Math.round((completedTasks / tasks.length) * 100);
     const isReadyToComplete = completedTasks === tasks.length;
-
-    // Advanced deep linking to trigger CentralNavFAB's internal activeSettingsView
-    // Since we don't expose that state globally, we simulate a click on the 'Settings' button 
-    // to open the FAB, but we also ideally just trigger the specific Settings panel.
-    // However, the cleanest architecture without refactoring CentralNavFAB is to just open the Settings FAB Menu.
-    const triggerFABNavigation = (targetViewId: string) => {
-        // Find the "Settings" menu toggle logically injected by FAB actions
-        const settingsAction = fabActions.find(a => a.id === "settings-menu");
-        if (settingsAction) {
-            settingsAction.onClick();
-            setFABOpen(true);
-            toast.info("Select the appropriate panel from your Settings menu to configure this task.");
-        } else {
-            setFABOpen(true);
-        }
-    };
 
     const handleFinalizeSetup = async () => {
         try {

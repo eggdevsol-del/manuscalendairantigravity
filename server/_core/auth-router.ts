@@ -560,11 +560,12 @@ export const authRouter = router({
     .input(
       z.object({
         code: z.string(), // Google authorization code
+        role: z.enum(["client", "artist", "studio"]).optional(),
       })
     )
     .mutation(async ({ input }) => {
       const { ENV } = require("./env");
-      const { code } = input;
+      const { code, role } = input;
 
       // Exchange authorization code for tokens using client secret
       const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
@@ -635,7 +636,7 @@ export const authRouter = router({
           id: userId,
           email: googlePayload.email,
           name: googlePayload.name || "User",
-          role: "client",
+          role: role || "client",
           loginMethod: "google",
           avatar: googlePayload.picture || undefined,
           hasCompletedOnboarding: 0,

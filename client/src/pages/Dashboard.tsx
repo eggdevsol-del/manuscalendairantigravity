@@ -389,87 +389,90 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="px-6 w-full -mt-2 z-10 relative space-y-4">
-          <SetupChecklistWidget />
-          {user?.role === "artist" || user?.role === "admin" ? (
-            <PayoutWidgetContainer period="30d" />
-          ) : null}
-        </div>
-
-        <div
-          className={cn(
-            "flex-1 flex flex-col overflow-hidden",
-            isTeaserClient && "filter blur-sm pointer-events-none select-none"
-          )}
-        >
-          <div className="px-6 pb-2 shrink-0">
-            <SegmentedHeader
-              options={TITLES}
-              activeIndex={activeIndex}
-              onChange={index => {
-                const dir = index > activeIndex ? 1 : -1;
-                setPage([index, dir]);
-                setActiveIndex(index);
-              }}
-            />
+        {/* Scrollable wrapper — contains widgets AND tab content */}
+        <div className="flex-1 overflow-y-auto mobile-scroll">
+          <div className="px-6 w-full -mt-2 z-10 relative space-y-4">
+            <SetupChecklistWidget />
+            {user?.role === "artist" || user?.role === "admin" ? (
+              <PayoutWidgetContainer period="30d" />
+            ) : null}
           </div>
 
-          <div className={cn(tokens.contentContainer.base, "relative")}>
-            <div className="flex-1 relative w-full overflow-hidden">
-              <AnimatePresence initial={false} custom={direction}>
-                <motion.div
-                  key={page}
-                  custom={direction}
-                  variants={variants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={{
-                    x: { type: "spring", stiffness: 300, damping: 30 },
-                    opacity: { duration: 0.2 },
-                  }}
-                  drag="x"
-                  dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={0.2}
-                  onDragEnd={(e, { offset, velocity }) => {
-                    const swipe = swipePower(offset.x, velocity.x);
-                    if (swipe < -swipeConfidenceThreshold) paginate(1);
-                    else if (swipe > swipeConfidenceThreshold) paginate(-1);
-                  }}
-                  dragDirectionLock
-                  className="absolute top-0 left-0 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y"
-                >
-                  <div className="space-y-1 pb-32 max-w-lg mx-auto">
-                    {/* Loading state for business tasks */}
-                    {activeCategory === "business" && businessLoading ? (
-                      <LoadingState />
-                    ) : currentTasks.length > 0 ? (
-                      currentTasks.map(task => (
-                        <TaskCard
-                          key={task.id}
-                          title={task.title}
-                          context={task.context}
-                          priority={task.priority}
-                          status={task.status}
-                          actionType={task.actionType as any}
-                          onClick={() => handleTaskClick(task)}
-                        />
-                      ))
-                    ) : (
-                      <EmptyState
-                        category={TITLES[activeIndex]}
-                        onAction={
-                          activeCategory === "personal"
-                            ? () => setShowChallengeSheet(true)
-                            : undefined
-                        }
-                      />
-                    )}
+          <div
+            className={cn(
+              "flex flex-col",
+              isTeaserClient && "filter blur-sm pointer-events-none select-none"
+            )}
+          >
+            <div className="px-6 pb-2 shrink-0">
+              <SegmentedHeader
+                options={TITLES}
+                activeIndex={activeIndex}
+                onChange={index => {
+                  const dir = index > activeIndex ? 1 : -1;
+                  setPage([index, dir]);
+                  setActiveIndex(index);
+                }}
+              />
+            </div>
 
-                    {/* Removed inline settings buttons - moved to Central FAB */}
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+            <div className="relative" style={{ minHeight: "60vh" }}>
+              <div className="relative w-full" style={{ minHeight: "60vh" }}>
+                <AnimatePresence initial={false} custom={direction}>
+                  <motion.div
+                    key={page}
+                    custom={direction}
+                    variants={variants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{
+                      x: { type: "spring", stiffness: 300, damping: 30 },
+                      opacity: { duration: 0.2 },
+                    }}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.2}
+                    onDragEnd={(e, { offset, velocity }) => {
+                      const swipe = swipePower(offset.x, velocity.x);
+                      if (swipe < -swipeConfidenceThreshold) paginate(1);
+                      else if (swipe > swipeConfidenceThreshold) paginate(-1);
+                    }}
+                    dragDirectionLock
+                    className="absolute top-0 left-0 w-full px-4 pt-4 touch-pan-y"
+                  >
+                    <div className="space-y-1 pb-32 max-w-lg mx-auto">
+                      {/* Loading state for business tasks */}
+                      {activeCategory === "business" && businessLoading ? (
+                        <LoadingState />
+                      ) : currentTasks.length > 0 ? (
+                        currentTasks.map(task => (
+                          <TaskCard
+                            key={task.id}
+                            title={task.title}
+                            context={task.context}
+                            priority={task.priority}
+                            status={task.status}
+                            actionType={task.actionType as any}
+                            onClick={() => handleTaskClick(task)}
+                          />
+                        ))
+                      ) : (
+                        <EmptyState
+                          category={TITLES[activeIndex]}
+                          onAction={
+                            activeCategory === "personal"
+                              ? () => setShowChallengeSheet(true)
+                              : undefined
+                          }
+                        />
+                      )}
+
+                      {/* Removed inline settings buttons - moved to Central FAB */}
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </div>
           </div>
         </div>

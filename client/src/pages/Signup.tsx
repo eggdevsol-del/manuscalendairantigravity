@@ -115,7 +115,13 @@ export default function Signup() {
   const handleGoogleSuccess = async (code: string) => {
     setIsLoading(true);
     try {
-      const result = await googleLoginMutation.mutateAsync({ code });
+      const result = await googleLoginMutation.mutateAsync({
+        code,
+        // Role logic: if the user arrived via a referral link from an
+        // artist (?ref=user_xxx), they're a client being onboarded by that artist.
+        // Otherwise, they're signing up as an artist (the default Signup page flow).
+        role: referralArtistId ? "client" : "artist",
+      });
 
       // Store auth immediately so profile update works
       localStorage.setItem("authToken", result.token);
