@@ -183,91 +183,25 @@ export function PayoutWidget({
                 )}
             </div>
 
-            {/* Next Payout */}
-            <div className="bg-white/5 rounded-xl p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider font-bold">
-                        Next Payout
-                    </span>
-                    {nextPayoutStatus && <StatusBadge status={nextPayoutStatus} />}
+            {/* Balance Summary */}
+            <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/5 rounded-xl p-4">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-1">
+                        Available for Withdrawal
+                    </p>
+                    <p className="text-xl font-bold text-emerald-400 tabular-nums">
+                        {formatCents(availableAmountCents ?? 0)}
+                    </p>
                 </div>
-                <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-foreground tabular-nums">
-                        {nextPayoutAmountCents !== null
-                            ? formatCents(nextPayoutAmountCents)
-                            : formatCents(pendingAmountCents)}
-                    </span>
-                    {nextPayoutArrivalDate && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {formatDate(nextPayoutArrivalDate)}
-                        </span>
-                    )}
+                <div className="bg-white/5 rounded-xl p-4">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-1">
+                        Pending
+                    </p>
+                    <p className="text-xl font-bold text-foreground tabular-nums">
+                        {formatCents(pendingAmountCents)}
+                    </p>
                 </div>
-                {availableAmountCents !== undefined &&
-                    availableAmountCents !== pendingAmountCents && (
-                        <div className="text-xs text-muted-foreground">
-                            Available balance: {formatCents(availableAmountCents)}
-                        </div>
-                    )}
             </div>
-
-            {/* Earnings Summary */}
-            {earnings && (
-                <div className="space-y-2">
-                    <div className="flex items-center gap-1.5">
-                        <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className="text-xs text-muted-foreground uppercase tracking-wider font-bold">
-                            {earnings.period === "all"
-                                ? "All Time"
-                                : `Last ${earnings.period}`}
-                        </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-white/5 rounded-lg p-3">
-                            <p className="text-[10px] text-muted-foreground uppercase">
-                                Gross
-                            </p>
-                            <p className="text-sm font-bold text-foreground tabular-nums">
-                                {formatCents(earnings.grossCents)}
-                            </p>
-                        </div>
-                        <div className="bg-white/5 rounded-lg p-3">
-                            <p className="text-[10px] text-muted-foreground uppercase">
-                                Net Earnings
-                            </p>
-                            <p className="text-sm font-bold text-emerald-400 tabular-nums">
-                                {formatCents(earnings.netCents)}
-                            </p>
-                        </div>
-                        <div className="bg-white/5 rounded-lg p-3">
-                            <p className="text-[10px] text-muted-foreground uppercase">
-                                Platform Fee
-                            </p>
-                            <p className="text-sm font-medium text-muted-foreground tabular-nums">
-                                -{formatCents(earnings.platformFeeCents)}
-                            </p>
-                        </div>
-                        <div className="bg-white/5 rounded-lg p-3">
-                            <p className="text-[10px] text-muted-foreground uppercase">
-                                Artist Fee
-                            </p>
-                            <p className="text-sm font-medium text-muted-foreground tabular-nums">
-                                -{formatCents(earnings.artistFeeCents)}
-                            </p>
-                        </div>
-                    </div>
-                    {earnings.refundsCents > 0 && (
-                        <div className="text-xs text-red-400">
-                            Refunds: -{formatCents(earnings.refundsCents)}
-                        </div>
-                    )}
-                    <div className="text-[10px] text-muted-foreground text-right">
-                        {earnings.transactionCount} transaction
-                        {earnings.transactionCount !== 1 ? "s" : ""}
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

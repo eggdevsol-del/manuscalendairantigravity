@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Settings, Plus, Sun, Moon, Crown, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane } from "lucide-react";
 import { useLocation } from "wouter";
 import { FABMenu, FABMenuItem } from "@/ui/FABMenu";
@@ -51,10 +51,10 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
   const isArtist = user?.role === "artist" || user?.role === "admin";
   const isStudio = user?.role === "studio" || user?.role === "admin";
 
-  const handleViewChange = (view: SettingsView) => {
+  const handleViewChange = useCallback((view: SettingsView) => {
     setActiveSettingsView(view);
     setLargePanel(view !== "main" && view !== "settings-menu");
-  };
+  }, [setLargePanel]);
 
   // Dynamically build settingsMenuItems based on user role
   const settingsMenuItems = useMemo(() => {
@@ -228,7 +228,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const handleCopyLink = () => {
+  const handleCopyLink = useCallback(() => {
     if (isArtist) {
       // Artist: copy booking link
       if (!artistSettings?.publicSlug) {
@@ -245,9 +245,9 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
       navigator.clipboard.writeText(url);
       toast.success("Referral link copied to clipboard!");
     }
-  };
+  }, [isArtist, artistSettings?.publicSlug, user?.id, handleViewChange]);
 
-  const permanentItems: FABMenuItem[] = [
+  const permanentItems: FABMenuItem[] = useMemo(() => [
     {
       id: "theme",
       label: theme === "dark" ? "Light Mode" : theme === "light" ? "Noir" : "Dark Mode",
@@ -268,7 +268,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
       onClick: () => handleViewChange("settings-menu"),
       closeOnClick: false,
     }
-  ];
+  ], [theme, toggleTheme, isArtist, handleCopyLink, handleViewChange]);
 
 
 
@@ -288,7 +288,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
   }, [isFABOpen, activeSettingsView, setLargePanel]);
 
   // Deep-link: when a settings view is requested externally, navigate to it.
-  // setTimeout ensures the FAB panel has rendered before switching views.
+  // Delay to ensure FAB panel has rendered before navigating. Do not remove.
   React.useEffect(() => {
     if (requestedSettingsView && isFABOpen) {
       const timer = setTimeout(() => {
@@ -297,7 +297,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [requestedSettingsView, isFABOpen]);
+  }, [requestedSettingsView, isFABOpen, handleViewChange, requestSettingsView]);
 
   return (
     <div
