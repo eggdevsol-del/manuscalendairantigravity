@@ -2,6 +2,7 @@ import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
 import { useCallback, useEffect, useMemo } from "react";
+import { setErrorUser } from "@/lib/errorReporter";
 
 type UseAuthOptions = {
   redirectOnUnauthenticated?: boolean;
@@ -61,6 +62,9 @@ export function useAuth(options?: UseAuthOptions) {
         "manus-runtime-user-info",
         JSON.stringify(meQuery.data)
       );
+      setErrorUser({ id: meQuery.data.id, role: meQuery.data.role });
+    } else {
+      setErrorUser(null);
     }
   }, [meQuery.data]);
 

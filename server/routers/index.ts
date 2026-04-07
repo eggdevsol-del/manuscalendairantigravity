@@ -28,6 +28,7 @@ import { billingRouter } from "./billing";
 import { dataImportRouter } from "./dataImport";
 import { placesRouter } from "./places";
 import { payoutsRouter } from "./payouts";
+import { errorLogRouter } from "./errorLog";
 
 export const appRouter = router({
   appointments: appointmentsRouter,
@@ -39,6 +40,7 @@ export const appRouter = router({
   conversations: conversationsRouter,
   dashboard: dashboardRouter,
   dashboardTasks: dashboardTasksRouter,
+  errorLog: errorLogRouter,
   funnel: funnelRouter,
   messages: messagesRouter,
   notifications: notificationTemplatesRouter,

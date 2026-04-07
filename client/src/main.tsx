@@ -11,6 +11,10 @@ import { getLoginUrl, API_BASE_URL } from "./const";
 import "./index.css";
 import { registerServiceWorker } from "./lib/pwa";
 import { initializeOneSignal } from "./lib/onesignal";
+import { initGlobalErrorListeners } from "./lib/errorReporter";
+
+// Initialize global error listeners before anything else
+initGlobalErrorListeners();
 
 const queryClient = new QueryClient();
 

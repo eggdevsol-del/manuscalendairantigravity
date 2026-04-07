@@ -47,6 +47,7 @@ import PublicStudioFunnel from "./pages/funnel/PublicStudioFunnel";
 import { DepositSheet } from "./pages/funnel/DepositSheet";
 import LeadDetail from "./pages/LeadDetail";
 import PayoutHistory from "./pages/PayoutHistory";
+import ErrorDashboard from "./pages/admin/ErrorDashboard";
 
 function Router() {
   const [location, setLocation] = useLocation();
@@ -168,11 +169,16 @@ function Router() {
         <GuardedRoute path="/clients" component={Clients} />
         <GuardedRoute path="/profile" component={ClientProfile} />
         <GuardedRoute path="/payout-history" component={PayoutHistory} />
+        <GuardedRoute path="/admin/errors" component={ErrorDashboard} />
 
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
-      {shouldShowBottomNav && <BottomNav />}
+      {shouldShowBottomNav && (
+        <ErrorBoundary boundary="fab">
+          <BottomNav />
+        </ErrorBoundary>
+      )}
       {isArtist && <AppointmentCheckInOverlay />}
     </div>
   );
@@ -241,7 +247,7 @@ function App() {
               <Toaster />
               <InstallPrompt />
               <ConditionalIOSInstallPrompt />
-              <ErrorBoundary>
+              <ErrorBoundary boundary="app-root">
                 <Router />
               </ErrorBoundary>
             </TooltipProvider>

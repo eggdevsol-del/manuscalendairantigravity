@@ -1898,3 +1898,23 @@ export const paymentLedger = mysqlTable(
 
 export type InsertPaymentLedger = InferInsertModel<typeof paymentLedger>;
 export type SelectPaymentLedger = InferSelectModel<typeof paymentLedger>;
+
+// ── Error Monitoring ──
+export const errorLog = mysqlTable("error_log", {
+  id: int().autoincrement().primaryKey(),
+  createdAt: timestamp().notNull().defaultNow(),
+  message: varchar({ length: 2000 }).notNull(),
+  stack: text(),
+  componentStack: text(),
+  boundary: varchar({ length: 100 }),
+  url: varchar({ length: 500 }),
+  userId: int(),
+  userRole: varchar({ length: 50 }),
+  userAgent: varchar({ length: 500 }),
+  appVersion: varchar({ length: 50 }),
+  metadata: text(),
+  resolved: tinyint().notNull().default(0),
+});
+
+export type InsertErrorLog = InferInsertModel<typeof errorLog>;
+export type SelectErrorLog = InferSelectModel<typeof errorLog>;

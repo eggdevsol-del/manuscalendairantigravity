@@ -1,9 +1,10 @@
-import { cn } from "@/lib/utils";
-import { AlertTriangle, RotateCcw } from "lucide-react";
-import { Component, ReactNode } from "react";
+import { Component, type ReactNode } from "react";
+import { reportError } from "@/lib/errorReporter";
 
 interface Props {
   children: ReactNode;
+  fallback?: ReactNode;
+  boundary?: string;
 }
 
 interface State {
@@ -11,50 +12,78 @@ interface State {
   error: Error | null;
 }
 
+/**
+ * ErrorBoundary — catches React render errors, reports to server, shows fallback.
+ *
+ * Inline styles are intentional: design tokens/CSS may be the thing that broke.
+ * This is a documented exception to the design-tokens-only rule.
+ */
 class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+  state: State = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    reportError(error, {
+      boundary: this.props.boundary || "unknown",
+      componentStack: info.componentStack || undefined,
+    });
+  }
+
+  handleRetry = () => this.setState({ hasError: false, error: null });
+
   render() {
     if (this.state.hasError) {
+      if (this.props.fallback) return this.props.fallback;
+      // Inline styles: design tokens may not be available during error
       return (
-        <div className="flex items-center justify-center min-h-screen p-8">
-          <div className="flex flex-col items-center w-full max-w-2xl p-8">
-            <AlertTriangle
-              size={48}
-              className="text-destructive mb-6 flex-shrink-0"
-            />
-
-            <h2 className="text-xl mb-4">An unexpected error occurred.</h2>
-
-            <div className="p-4 w-full rounded bg-muted overflow-auto mb-6">
-              <pre className="text-sm text-muted-foreground whitespace-break-spaces">
-                {this.state.error?.stack}
-              </pre>
-            </div>
-
-            <button
-              onClick={() => window.location.reload()}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg",
-                "bg-primary text-primary-foreground",
-                "hover:opacity-90 cursor-pointer"
-              )}
-            >
-              <RotateCcw size={16} />
-              Reload Page
-            </button>
-          </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "48px 24px",
+            textAlign: "center",
+            minHeight: "200px",
+            gap: "16px",
+          }}
+        >
+          <div style={{ fontSize: "32px" }}>😵</div>
+          <h3
+            style={{ fontSize: "16px", fontWeight: 700, color: "#e8e6f0" }}
+          >
+            Something went wrong
+          </h3>
+          <p
+            style={{
+              fontSize: "13px",
+              color: "#9896a8",
+              maxWidth: "320px",
+            }}
+          >
+            This error has been logged automatically.
+          </p>
+          <button
+            onClick={this.handleRetry}
+            style={{
+              padding: "8px 20px",
+              borderRadius: "8px",
+              border: "1px solid rgba(120,100,255,0.3)",
+              background: "rgba(124,106,255,0.15)",
+              color: "#9b8aff",
+              fontWeight: 600,
+              fontSize: "13px",
+              cursor: "pointer",
+            }}
+          >
+            Try Again
+          </button>
         </div>
       );
     }
-
     return this.props.children;
   }
 }
