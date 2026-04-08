@@ -60,8 +60,8 @@ export default function InstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 z-50 md:left-auto md:right-4 md:w-96">
-      <Card className="shadow-lg border-2">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+      <Card className="w-full max-w-sm shadow-2xl border border-white/10" style={{ background: '#0e1732' }}>
         <CardHeader className="relative pb-3">
           <Button
             variant="ghost"
