@@ -52,11 +52,7 @@ export default function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Referral artist ID from SMS invite link (?ref=user_xxx)
-  const [referralArtistId] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("ref") || undefined;
-  });
+
 
   // Google OAuth state — stored so we can update profile after completion
   const [googleToken, setGoogleToken] = useState<string | null>(null);
@@ -117,10 +113,8 @@ export default function Signup() {
     try {
       const result = await googleLoginMutation.mutateAsync({
         code,
-        // Role logic: if the user arrived via a referral link from an
-        // artist (?ref=user_xxx), they're a client being onboarded by that artist.
-        // Otherwise, they're signing up as an artist (the default Signup page flow).
-        role: referralArtistId ? "client" : "artist",
+        // Signup page is artist-only. Clients are created via booking funnel.
+        role: "artist",
       });
 
       // Store auth immediately so profile update works
@@ -187,13 +181,13 @@ export default function Signup() {
               name,
               email,
               password,
-              role: referralArtistId ? "client" : "artist",
+              role: "artist",
               ...(phone ? { phone } : {}),
               ...(birthday ? { birthday } : {}),
               ...(gender ? { gender: gender as any } : {}),
               ...(city ? { city } : {}),
               ...(country ? { country } : {}),
-              ...(referralArtistId ? { referralArtistId } : {}),
+
             });
           }
         },
@@ -202,7 +196,7 @@ export default function Signup() {
             name,
             email,
             password,
-            role: referralArtistId ? "client" : "artist",
+            role: "artist",
             ...(phone ? { phone } : {}),
             ...(birthday ? { birthday } : {}),
             ...(gender ? { gender: gender as any } : {}),
@@ -392,12 +386,10 @@ export default function Signup() {
             <UserPlus className="w-8 h-8 text-primary" />
           </div>
           <CardTitle className="text-3xl font-bold tracking-tight text-foreground">
-            {referralArtistId ? "Create Account" : "Create Artist Account"}
+            Create Artist Account
           </CardTitle>
           <CardDescription className="text-base font-medium">
-            {referralArtistId
-              ? "Sign up to book appointments and stay connected with your artist"
-              : "Set up your booking link and start managing clients"}
+            Set up your booking link and start managing clients
           </CardDescription>
         </CardHeader>
         <CardContent>
