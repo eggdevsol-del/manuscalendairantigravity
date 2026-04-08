@@ -39,11 +39,12 @@ export async function reportError(
                     componentStack: extra?.componentStack?.substring(0, 10000),
                     boundary: extra?.boundary,
                     url: window.location.href,
-                    userId: currentUser?.id,
+                    userId: typeof currentUser?.id === "number" ? currentUser.id : undefined,
                     userRole: currentUser?.role,
                     userAgent: navigator.userAgent.substring(0, 500),
                     appVersion: import.meta.env.VITE_APP_VERSION || "dev",
                 },
+                meta: { values: {} }, // Required by superjson transformer
             }),
         });
     } catch {
