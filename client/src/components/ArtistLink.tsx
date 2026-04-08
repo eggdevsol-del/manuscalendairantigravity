@@ -64,12 +64,15 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
 
   const initializedRef = useRef(false);
 
-  // Initialize state from settings once
-  if (settings && !initializedRef.current) {
-    setSlug(settings.publicSlug || "");
-    setIsEnabled(Boolean(settings.funnelEnabled));
-    initializedRef.current = true;
-  }
+  // Initialize state from settings once, inside useEffect
+  // to avoid setState-during-render which causes React error #185.
+  useEffect(() => {
+    if (settings && !initializedRef.current) {
+      initializedRef.current = true;
+      setSlug(settings.publicSlug || "");
+      setIsEnabled(Boolean(settings.funnelEnabled));
+    }
+  }, [settings]);
 
   // Generate the booking link
   const baseUrl = window.location.origin;

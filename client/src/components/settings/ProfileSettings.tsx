@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { getAssetUrl } from "@/lib/assets";
@@ -56,17 +56,20 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
 
     const initializedProfileRef = useRef(false);
 
-    // Initialize Profile state from user once
-    if (user && !initializedProfileRef.current) {
-        setProfileName(user.name || "");
-        setProfilePhone(user.phone || "");
-        setProfileBio(user.bio || "");
-        setProfileAvatar(user.avatar || "");
-        setProfileBirthday(user.birthday || "");
-        setProfileAddress(user.address || "");
-        setProfileCity(user.city || "");
-        initializedProfileRef.current = true;
-    }
+    // Initialize Profile state once, inside useEffect (not render body)
+    // to avoid setState-during-render which causes React error #185.
+    useEffect(() => {
+        if (user && !initializedProfileRef.current) {
+            initializedProfileRef.current = true;
+            setProfileName(user.name || "");
+            setProfilePhone(user.phone || "");
+            setProfileBio(user.bio || "");
+            setProfileAvatar(user.avatar || "");
+            setProfileBirthday(user.birthday || "");
+            setProfileAddress(user.address || "");
+            setProfileCity(user.city || "");
+        }
+    }, [user]);
 
     const handleSaveProfile = () => {
         updateProfileMutation.mutate({

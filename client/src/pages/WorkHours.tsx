@@ -122,31 +122,34 @@ export default function WorkHours() {
 
   const initializedRef = useRef(false);
 
-  // Initialize schedule and services from settings once
-  if (settings && !initializedRef.current) {
-    if (settings.workSchedule) {
-      try {
-        const parsed = JSON.parse(settings.workSchedule);
-        if (Array.isArray(parsed)) {
-          setSchedule(parsed);
+  // Initialize schedule and services from settings once, inside useEffect
+  // to avoid setState-during-render which causes React error #185.
+  useEffect(() => {
+    if (settings && !initializedRef.current) {
+      initializedRef.current = true;
+      if (settings.workSchedule) {
+        try {
+          const parsed = JSON.parse(settings.workSchedule);
+          if (Array.isArray(parsed)) {
+            setSchedule(parsed);
+          }
+        } catch (e) {
+          console.error("Failed to parse work hours");
         }
-      } catch (e) {
-        console.error("Failed to parse work hours");
       }
-    }
 
-    if (settings.services) {
-      try {
-        const parsed = JSON.parse(settings.services);
-        if (Array.isArray(parsed)) {
-          setServices(parsed);
+      if (settings.services) {
+        try {
+          const parsed = JSON.parse(settings.services);
+          if (Array.isArray(parsed)) {
+            setServices(parsed);
+          }
+        } catch (e) {
+          console.error("Failed to parse services");
         }
-      } catch (e) {
-        console.error("Failed to parse services");
       }
     }
-    initializedRef.current = true;
-  }
+  }, [settings]);
 
   // Project Builder Logic
   useEffect(() => {
