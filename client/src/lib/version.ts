@@ -11,7 +11,7 @@
  * - import.meta.env.VITE_APP_VERSION (environment variable, may not be set)
  * - Hardcoded version strings
  *
- * @version 1.0.563
+ * @version 1.0.564
  */
 
 // __APP_VERSION__ is defined in vite.config.ts from package.json

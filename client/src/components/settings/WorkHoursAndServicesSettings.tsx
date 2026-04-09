@@ -108,8 +108,11 @@ export function WorkHoursAndServicesSettings({
         },
     });
 
+    const initializedSettingsRef = useRef(false);
+
     useEffect(() => {
-        if (artistSettings) {
+        if (artistSettings && !initializedSettingsRef.current) {
+            initializedSettingsRef.current = true;
             if (artistSettings.workSchedule) {
                 try {
                     const parsedSchedule = JSON.parse(artistSettings.workSchedule);
