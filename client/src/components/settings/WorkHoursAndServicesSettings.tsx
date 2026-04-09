@@ -19,7 +19,7 @@ import {
     ChevronLeft,
     Globe,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
     Select,
