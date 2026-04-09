@@ -72,7 +72,12 @@ export default function Login() {
   const handleGoogleSuccess = async (code: string) => {
     setIsLoading(true);
     try {
-      const result = await googleLoginMutation.mutateAsync({ code });
+      const result = await googleLoginMutation.mutateAsync({
+        code,
+        // Any new user created here is assumed to be an artist.
+        // Existing users (clients or artists) will simply log in, ignoring this flag.
+        role: "artist",
+      });
 
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
