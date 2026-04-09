@@ -58,6 +58,9 @@ const BottomNavContext = createContext<BottomNavContextType | undefined>(
   undefined
 );
 
+// Stable empty array to avoid referential instability in context value
+const EMPTY_FAB_ACTIONS: FABMenuItem[] = [];
+
 export function BottomNavProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [location] = useLocation();
@@ -97,9 +100,18 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
   const contextualRow = activeId ? registry[scope][activeId] || null : null;
 
   // Derived FAB actions
+  // CRITICAL: fabActions must be referentially stable to prevent the context
+  // value useMemo from producing a new object on every render, which would
+  // trigger infinite re-renders across ALL context consumers (React #185).
   const fabContent = activeFabId ? fabRegistry[activeFabId] : null;
-  const fabActions = Array.isArray(fabContent) ? fabContent : [];
-  const fabChildren = !Array.isArray(fabContent) ? fabContent : null;
+  const fabActions = useMemo(
+    () => (Array.isArray(fabContent) ? fabContent : EMPTY_FAB_ACTIONS),
+    [fabContent]
+  );
+  const fabChildren = useMemo(
+    () => (!Array.isArray(fabContent) ? fabContent : null),
+    [fabContent]
+  );
 
   // Derived nav items
   const navItems =
