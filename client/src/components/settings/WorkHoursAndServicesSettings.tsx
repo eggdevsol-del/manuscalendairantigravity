@@ -4,9 +4,9 @@ import {
     Card,
     Input,
     Label,
-    Switch,
     Textarea,
 } from "@/components/ui";
+import { SafeSwitch as Switch } from "@/components/ui/safe-switch";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
 import { tokens } from "@/ui/tokens";
 import { trpc } from "@/lib/trpc";

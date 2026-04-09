@@ -5,7 +5,8 @@ import {
   useRegisterFABActions,
 } from "@/contexts/BottomNavContext";
 import { PageHeader, PageShell } from "@/components/ui/ssot";
-import { Button, Switch } from "@/components/ui";
+import { Button } from "@/components/ui";
+import { SafeSwitch as Switch } from "@/components/ui/safe-switch";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import {

@@ -13,9 +13,9 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-    Switch,
     Textarea,
 } from "@/components/ui";
+import { SafeSwitch as Switch } from "@/components/ui/safe-switch";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
 import { LoadingState } from "@/components/ui/ssot";
 import { trpc } from "@/lib/trpc";
