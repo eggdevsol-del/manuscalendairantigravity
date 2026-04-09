@@ -48,6 +48,21 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
   const { showDebugLabels, setShowDebugLabels } = useUIDebug();
   const [activeSettingsView, setActiveSettingsView] = useState<SettingsView>("main");
 
+  // Delayed-mount guard: prevents settings panels with Radix Switch components
+  // from mounting during the FABMenu's AnimatePresence animation, which causes
+  // React Error #185 (Maximum update depth exceeded) due to Switch's
+  // useControllableState calling setState during render.
+  const [panelReady, setPanelReady] = useState(false);
+
+  React.useEffect(() => {
+    if (isFABOpen && activeSettingsView !== "main" && activeSettingsView !== "settings-menu") {
+      const timer = setTimeout(() => setPanelReady(true), 150);
+      return () => clearTimeout(timer);
+    } else {
+      setPanelReady(false);
+    }
+  }, [isFABOpen, activeSettingsView]);
+
   const isArtist = user?.role === "artist" || user?.role === "admin";
   const isStudio = user?.role === "studio" || user?.role === "admin";
 
@@ -329,77 +344,79 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           isLargePanel && "max-h-[calc(100dvh-130px)] h-[calc(100dvh-130px)] w-[calc(100vw-40px)] md:w-[600px] overflow-hidden rounded-[32px] relative shadow-2xl bg-background/35 backdrop-blur-3xl border border-white/10"
         )}
       >
+        {/* Settings panels: panelReady gate prevents mounting during FABMenu animation
+           to avoid React #185 from Radix Switch's useControllableState */}
         {activeSettingsView === "profile" && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <ProfileSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
-        {activeSettingsView === "consultations" && (
+        {activeSettingsView === "consultations" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <ConsultationSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
-        {activeSettingsView === "policies" && (
+        {activeSettingsView === "policies" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <PolicySettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
-        {activeSettingsView === "clients" && (
+        {activeSettingsView === "clients" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <ClientSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
-        {activeSettingsView === "travel" && (
+        {activeSettingsView === "travel" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <TravelSettings onBack={() => handleViewChange("settings-menu")} onNavigateToClients={() => handleViewChange("clients")} />
           </div>
         )}
-        {activeSettingsView === "studio" && (
+        {activeSettingsView === "studio" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <StudioDashboardSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
-        {activeSettingsView === "subscriptions" && (
+        {activeSettingsView === "subscriptions" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <SubscriptionSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
-        {activeSettingsView === "quick-actions" && (
+        {activeSettingsView === "quick-actions" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <QuickActionsSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
-        {activeSettingsView === "business" && (
+        {activeSettingsView === "business" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <BusinessSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
-        {activeSettingsView === "work-hours" && (
+        {activeSettingsView === "work-hours" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <WorkHoursAndServicesSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
-        {activeSettingsView === "notifications" && (
+        {activeSettingsView === "notifications" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <NotificationSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
-        {activeSettingsView === "data-import" && (
+        {activeSettingsView === "data-import" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <DataImportSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
-        {activeSettingsView === "booking-link" && (
+        {activeSettingsView === "booking-link" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <FunnelSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
-        {activeSettingsView === "regulation" && (
+        {activeSettingsView === "regulation" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <RegulationSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
-        {activeSettingsView === "danger-zone" && (
+        {activeSettingsView === "danger-zone" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <DangerZoneSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
