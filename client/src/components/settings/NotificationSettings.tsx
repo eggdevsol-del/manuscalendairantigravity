@@ -8,13 +8,9 @@ import {
     CardTitle,
     Input,
     Label,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
     Textarea,
 } from "@/components/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/safe-select";
 import { SafeSwitch as Switch } from "@/components/ui/safe-switch";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
 import { LoadingState } from "@/components/ui/ssot";

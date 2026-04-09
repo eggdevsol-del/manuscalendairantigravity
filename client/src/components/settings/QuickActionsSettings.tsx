@@ -8,14 +8,10 @@ import {
   CardTitle,
   Input,
   Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Switch,
   Textarea,
 } from "@/components/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/safe-select";
+import { SafeSwitch as Switch } from "@/components/ui/safe-switch";
 import { trpc } from "@/lib/trpc";
 import { ChevronLeft, Plus, Save, Trash2, Zap } from "lucide-react";
 import { PageHeader, LoadingState } from "@/components/ui/ssot";

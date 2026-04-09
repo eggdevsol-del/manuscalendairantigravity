@@ -6,7 +6,7 @@ import Papa from "papaparse";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { z } from "zod";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/safe-select";
 import { Label } from "@/components/ui/label";
 
 interface DataImportSettingsProps {

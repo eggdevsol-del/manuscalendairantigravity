@@ -27,7 +27,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/safe-select";
 import { cn } from "@/lib/utils";
 
 interface WorkHoursAndServicesProps {

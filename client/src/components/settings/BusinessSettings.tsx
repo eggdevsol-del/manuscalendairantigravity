@@ -7,7 +7,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { getBankDetailLabels } from "@shared/utils/bankDetails";
 import { Button, Input, Label, Textarea } from "@/components/ui";
 import { SafeSwitch as Switch } from "@/components/ui/safe-switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/safe-select";
 import { ChevronLeft } from "lucide-react";
 
 export function BusinessSettings({ onBack }: { onBack: () => void }) {

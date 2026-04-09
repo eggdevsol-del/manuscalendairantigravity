@@ -48,7 +48,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/safe-select";
 import { Textarea } from "@/components/ui/textarea";
 
 interface ClientSettingsProps {
