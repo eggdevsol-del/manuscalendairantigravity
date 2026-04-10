@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronLeft, Banknote } from "lucide-react";
+import { ChevronLeft, Banknote, Loader2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { StripeExpressOnboarding } from "@/features/stripe/StripeExpressOnboarding";
@@ -14,6 +14,7 @@ export function PaymentSettings({ onBack }: PaymentSettingsProps) {
   const connectStripe = trpc.artistSettings.connectStripe.useMutation();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [autoStarted, setAutoStarted] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
   
   const status = connectStatus.data;
   const accountType = status?.accountType || "standard";
@@ -26,6 +27,7 @@ export function PaymentSettings({ onBack }: PaymentSettingsProps) {
         toast.info("Stripe is already connected.");
         return;
       }
+      // If we already know there's a pending Express account, skip creation
       if (isPending && accountType === "express") {
         setShowOnboarding(true);
         return;
@@ -37,26 +39,31 @@ export function PaymentSettings({ onBack }: PaymentSettingsProps) {
         return;
       }
 
-      toast.info("Connecting to Stripe...");
+      setIsInitializing(true);
       const result = await connectStripe.mutateAsync();
       
       if (result.accountType === "express") {
+        // Small delay to ensure the account is fully created on Stripe's end
+        // before the embedded component tries to create a session
+        await new Promise(resolve => setTimeout(resolve, 1000));
         setShowOnboarding(true);
       } else if (result.url) {
         window.location.href = result.url;
       }
     } catch (err: any) {
       toast.error(err.message || "Failed to connect Stripe");
+    } finally {
+      setIsInitializing(false);
     }
   };
 
   // Auto-start on mount if not connected
   useEffect(() => {
-    if (status && !isConnected && !showOnboarding && !connectStripe.isPending && !autoStarted) {
-        setAutoStarted(true);
-        handleStart();
+    if (status && !isConnected && !showOnboarding && !connectStripe.isPending && !autoStarted && !isInitializing) {
+      setAutoStarted(true);
+      handleStart();
     }
-  }, [status, isConnected, showOnboarding, connectStripe.isPending, autoStarted]);
+  }, [status, isConnected, showOnboarding, connectStripe.isPending, autoStarted, isInitializing]);
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative">
@@ -83,11 +90,21 @@ export function PaymentSettings({ onBack }: PaymentSettingsProps) {
               connectStatus.refetch();
             }} 
           />
+        ) : (isInitializing || connectStripe.isPending) ? (
+          <div className="flex flex-col items-center justify-center p-8 mt-10 space-y-4">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Setting up your Stripe account...</p>
+          </div>
         ) : (
-          <div className="text-center p-6 mt-10">
-             <Button onClick={handleStart} disabled={connectStripe.isPending} className="w-full bg-[#E09F3E]/75 text-white hover:bg-[#E09F3E]">
-               {connectStripe.isPending ? "Connecting..." : "Setup Bank Account"}
-             </Button>
+          <div className="text-center p-6 mt-10 space-y-4">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 border border-primary/20">
+              <Banknote className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="text-lg font-bold">Connect Your Bank</h3>
+            <p className="text-sm text-muted-foreground">Link a bank account via Stripe to start receiving booking deposits directly.</p>
+            <Button onClick={handleStart} disabled={connectStripe.isPending} className="w-full mt-4 bg-[#E09F3E]/75 text-white hover:bg-[#E09F3E]">
+              Setup Bank Account
+            </Button>
           </div>
         )}
       </div>
