@@ -65,6 +65,9 @@ export default defineConfig(({ mode }) => {
       "import.meta.env.VITE_ONESIGNAL_APP_ID": JSON.stringify(
         env.VITE_ONESIGNAL_APP_ID
       ),
+      "import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY": JSON.stringify(
+        env.VITE_STRIPE_PUBLISHABLE_KEY
+      ),
     },
     plugins: [
       ...plugins,
