@@ -18,7 +18,7 @@ import { artistSettings } from "../../drizzle/schema";
 // ─── Feature Flag ─────────────────────────────────────────────
 
 export function isExpressEnabled(): boolean {
-    return process.env.STRIPE_EXPRESS_ENABLED === "true";
+    return process.env.STRIPE_EXPRESS_ENABLED !== "false";
 }
 
 // ─── Standard Account Creation ────────────────────────────────
