@@ -26,8 +26,9 @@ import { DataImportSettings } from "../settings/DataImportSettings";
 import { FunnelSettings } from "../FunnelSettings";
 import { DangerZoneSettings } from "../settings/DangerZoneSettings";
 import { TravelSettings } from "../settings/TravelSettings";
+import { PaymentSettings } from "../settings/PaymentSettings";
 
-type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions" | "data-import" | "booking-link" | "travel" | "danger-zone";
+type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions" | "data-import" | "booking-link" | "travel" | "danger-zone" | "payments";
 
 interface CentralNavFABProps {
   className?: string;
@@ -419,6 +420,11 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
         {activeSettingsView === "danger-zone" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <DangerZoneSettings onBack={() => handleViewChange("settings-menu")} />
+          </div>
+        )}
+        {activeSettingsView === "payments" && panelReady && (
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
+            <PaymentSettings onBack={() => handleViewChange("main")} />
           </div>
         )}
         {fabChildren && activeSettingsView === "main" && fabChildren}
