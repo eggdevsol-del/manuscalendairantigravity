@@ -10,7 +10,7 @@ export const artistSettingsRouter = router({
   get: artistProcedure.query(async ({ ctx }) => {
     const settings = await db.getArtistSettings(ctx.user.id);
     const expressEnabled =
-      process.env.STRIPE_EXPRESS_ENABLED === "true";
+      process.env.STRIPE_EXPRESS_ENABLED !== "false";
 
     // Return default settings if none exist
     return (
