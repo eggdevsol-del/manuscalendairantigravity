@@ -43,14 +43,17 @@ type SettingsSection =
   | "notifications"
   | "business"
   | "booking-link"
-  | "regulation";
+  | "regulation"
+  | "payments";
 
 /** Stripe Connect onboarding row for artist Settings — Five-Way Branch */
 function PaymentProcessingSettingsRow() {
+  const search = useSearch();
   const connectStatus = trpc.artistSettings.getStripeConnectStatus.useQuery();
   const settingsQuery = trpc.artistSettings.get.useQuery();
   const connectStripe = trpc.artistSettings.connectStripe.useMutation();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [autoTriggered, setAutoTriggered] = useState(false);
 
   const status = connectStatus.data;
   const accountType = status?.accountType || "standard";
@@ -102,6 +105,16 @@ function PaymentProcessingSettingsRow() {
       toast.error(err.message || "Failed to connect Stripe");
     }
   };
+
+  useEffect(() => {
+    const params = new URLSearchParams(search);
+    const isPaymentsActive = params.get("section") === "payments";
+    
+    if (isPaymentsActive && !autoTriggered && !isConnected) {
+      setAutoTriggered(true);
+      handleClick();
+    }
+  }, [search, isConnected, autoTriggered]);
 
   // Render embedded onboarding inline
   if (showOnboarding) {

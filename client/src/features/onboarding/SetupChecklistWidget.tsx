@@ -4,7 +4,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useBottomNav } from "@/contexts/BottomNavContext";
 import { Button } from "@/components/ui";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Circle, ChevronRight, User, MapPin, Clock, Briefcase } from "lucide-react";
+import { CheckCircle2, Circle, ChevronRight, User, MapPin, Clock, Briefcase, Banknote } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -71,6 +71,14 @@ export function SetupChecklistWidget() {
             isComplete: hasServices,
             icon: Briefcase,
             onClick: () => requestSettingsView("work-hours"), // Shared panel
+        },
+        {
+            id: "payments",
+            title: "Set up Bank Payouts",
+            description: "Connect Stripe to receive booking deposits.",
+            isComplete: artistSettings?.stripeConnectPayoutsEnabled === 1,
+            icon: Banknote,
+            onClick: () => requestSettingsView("payments"),
         }
     ];
 
