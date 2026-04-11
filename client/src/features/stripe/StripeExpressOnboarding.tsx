@@ -43,30 +43,29 @@ export function StripeExpressOnboarding({
     // Publishable key from env — must be VITE_ prefixed for client exposure
     const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "";
 
+    const [stripeConnectInstance, setStripeConnectInstance] = useState<any>(null);
+
     /**
-     * Initialize the Stripe Connect instance using useState lazy initialization.
-     * This prevents React 18/19 Strict Mode from double-invoking it and destroying the singleton.
+     * Initialize the Stripe Connect instance inside useEffect.
+     * Prevents React 18/19 side-effect violations that corrupt Stripe's script injection 
+     * when executed inside a useState lazy-initializer.
      */
-    const [stripeConnectInstance] = useState(() => {
+    useEffect(() => {
         if (!publishableKey) {
             console.error(
                 "[StripeExpressOnboarding] VITE_STRIPE_PUBLISHABLE_KEY is not set"
             );
-            return null;
+            return;
         }
 
-        return loadConnectAndInitialize({
+        const instance = loadConnectAndInitialize({
             publishableKey,
             fetchClientSecret: async () => {
                 try {
-                    const result =
-                        await trpcVanilla.artistSettings.createStripeAccountSession.mutate();
+                    const result = await trpcVanilla.artistSettings.createStripeAccountSession.mutate();
                     return result.clientSecret;
                 } catch (err: any) {
-                    console.error(
-                        "[StripeExpressOnboarding] fetchClientSecret error:",
-                        err
-                    );
+                    console.error("[StripeExpressOnboarding] fetchClientSecret error:", err);
                     setFetchError(err.message || "Failed to initialize Stripe securely.");
                     return "";
                 }
@@ -75,14 +74,16 @@ export function StripeExpressOnboarding({
                 overlays: "dialog",
                 variables: {
                     colorPrimary: "#E09F3E",
-                    colorBackground: "#0b1120", // Changed to match Tattoi dark theme exactly
+                    colorBackground: "#0b1120",
                     colorText: "#ffffff",
                     colorDanger: "#ef4444",
                     borderRadius: "12px",
                 },
             },
         });
-    });
+        
+        setStripeConnectInstance(instance);
+    }, [publishableKey]);
 
     const handleExit = () => {
         setCompleted(true);
@@ -133,8 +134,11 @@ export function StripeExpressOnboarding({
 
     if (!stripeConnectInstance) {
         return (
-            <div className="flex items-center justify-center p-8">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <div className="flex flex-col items-center justify-center p-8 mt-4 space-y-4">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <p className="text-xs text-muted-foreground animate-pulse">
+                    Securing payment environment...
+                </p>
             </div>
         );
     }
@@ -175,7 +179,7 @@ export function StripeExpressOnboarding({
                 <ConnectComponentsProvider
                     connectInstance={stripeConnectInstance}
                 >
-                    <div className="w-full flex-1 h-full pt-2">
+                    <div className="w-full flex-1 h-full min-h-[500px] pt-2">
                         <ConnectAccountOnboarding onExit={handleExit} />
                     </div>
                 </ConnectComponentsProvider>
