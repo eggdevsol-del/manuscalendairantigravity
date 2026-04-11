@@ -23,6 +23,12 @@ export const trpcVanilla = createTRPCClient<AppRouter>({
                     sessionStorage.getItem("authToken");
                 return token ? { Authorization: `Bearer ${token}` } : {};
             },
+            fetch(input, init) {
+                return globalThis.fetch(input, {
+                    ...(init ?? {}),
+                    credentials: "include",
+                });
+            },
         }),
     ],
 });

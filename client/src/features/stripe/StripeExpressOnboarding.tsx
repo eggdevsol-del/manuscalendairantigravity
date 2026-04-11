@@ -37,6 +37,7 @@ export function StripeExpressOnboarding({
 }: StripeExpressOnboardingProps) {
     const [completed, setCompleted] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [fetchError, setFetchError] = useState<string | null>(null);
     const utils = trpc.useUtils();
 
     // Publishable key from env — must be VITE_ prefixed for client exposure
@@ -62,11 +63,12 @@ export function StripeExpressOnboarding({
                     const result =
                         await trpcVanilla.artistSettings.createStripeAccountSession.mutate();
                     return result.clientSecret;
-                } catch (err) {
+                } catch (err: any) {
                     console.error(
                         "[StripeExpressOnboarding] fetchClientSecret error:",
                         err
                     );
+                    setFetchError(err.message || "Failed to initialize Stripe securely.");
                     return "";
                 }
             },
@@ -134,6 +136,21 @@ export function StripeExpressOnboarding({
         return (
             <div className="flex items-center justify-center p-8">
                 <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    if (fetchError) {
+        return (
+            <div
+                className={cn(
+                    tokens.card.base,
+                    tokens.card.bg,
+                    "border-0 p-5 text-center mt-10"
+                )}
+            >
+                <p className="text-sm text-red-500 font-semibold mb-2">Connection Error</p>
+                <p className="text-xs text-muted-foreground">{fetchError}</p>
             </div>
         );
     }
