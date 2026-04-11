@@ -44,11 +44,10 @@ export function StripeExpressOnboarding({
     const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "";
 
     /**
-     * Initialize the Stripe Connect instance.
-     * Memoized to prevent re-creation on re-render.
-     * fetchClientSecret returns "" on error (does not throw).
+     * Initialize the Stripe Connect instance using useState lazy initialization.
+     * This prevents React 18/19 Strict Mode from double-invoking it and destroying the singleton.
      */
-    const stripeConnectInstance = useMemo(() => {
+    const [stripeConnectInstance] = useState(() => {
         if (!publishableKey) {
             console.error(
                 "[StripeExpressOnboarding] VITE_STRIPE_PUBLISHABLE_KEY is not set"
@@ -76,14 +75,14 @@ export function StripeExpressOnboarding({
                 overlays: "dialog",
                 variables: {
                     colorPrimary: "#E09F3E",
-                    colorBackground: "#1a1a2e",
+                    colorBackground: "#0b1120", // Changed to match Tattoi dark theme exactly
                     colorText: "#ffffff",
                     colorDanger: "#ef4444",
                     borderRadius: "12px",
                 },
             },
         });
-    }, [publishableKey]);
+    });
 
     const handleExit = () => {
         setCompleted(true);
