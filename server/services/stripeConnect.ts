@@ -14,7 +14,6 @@ import { stripe } from "./stripe";
 import { getDb } from "./core";
 import { eq } from "drizzle-orm";
 import { artistSettings } from "../../drizzle/schema";
-import { upsertArtistSettings } from "./artistService";
 
 // ─── Feature Flag ─────────────────────────────────────────────
 
@@ -47,11 +46,32 @@ export async function createConnectAccount(
     });
 
     // Save to DB
-    await upsertArtistSettings({
-        userId: artistId,
-        stripeConnectAccountId: account.id,
-        stripeConnectAccountType: "standard",
-    } as any);
+    const db = await getDb();
+    if (db) {
+        const existing = await db
+            .select({ id: artistSettings.id })
+            .from(artistSettings)
+            .where(eq(artistSettings.userId, artistId))
+            .limit(1);
+
+        if (existing.length > 0) {
+            await db
+                .update(artistSettings)
+                .set({
+                    stripeConnectAccountId: account.id,
+                    stripeConnectAccountType: "standard",
+                })
+                .where(eq(artistSettings.userId, artistId));
+        } else {
+            await db.insert(artistSettings).values({
+                userId: artistId,
+                stripeConnectAccountId: account.id,
+                stripeConnectAccountType: "standard",
+                workSchedule: JSON.stringify({}),
+                services: JSON.stringify([]),
+            });
+        }
+    }
 
     return account.id;
 }
@@ -96,11 +116,32 @@ export async function createExpressConnectAccount(
     });
 
     // Save to DB
-    await upsertArtistSettings({
-        userId: artistId,
-        stripeConnectAccountId: account.id,
-        stripeConnectAccountType: "express",
-    } as any);
+    const db = await getDb();
+    if (db) {
+        const existing = await db
+            .select({ id: artistSettings.id })
+            .from(artistSettings)
+            .where(eq(artistSettings.userId, artistId))
+            .limit(1);
+
+        if (existing.length > 0) {
+            await db
+                .update(artistSettings)
+                .set({
+                    stripeConnectAccountId: account.id,
+                    stripeConnectAccountType: "express",
+                })
+                .where(eq(artistSettings.userId, artistId));
+        } else {
+            await db.insert(artistSettings).values({
+                userId: artistId,
+                stripeConnectAccountId: account.id,
+                stripeConnectAccountType: "express",
+                workSchedule: JSON.stringify({}),
+                services: JSON.stringify([]),
+            });
+        }
+    }
 
     console.log(
         `[Stripe Connect] Created Express account ${account.id} for artist ${artistId} (country=${businessCountry})`
