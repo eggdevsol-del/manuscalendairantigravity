@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Settings, Plus, Sun, Moon, Crown, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane } from "lucide-react";
+import { Settings, Plus, Sun, Moon, Crown, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane, Banknote } from "lucide-react";
 import { useLocation } from "wouter";
 import { FABMenu, FABMenuItem } from "@/ui/FABMenu";
 import { cn } from "@/lib/utils";
@@ -173,6 +173,13 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           label: "Subscription & Billing",
           icon: Zap,
           onClick: () => handleViewChange("subscriptions"),
+          closeOnClick: false,
+        },
+        {
+          id: "payments",
+          label: "Bank Payouts",
+          icon: Banknote,
+          onClick: () => handleViewChange("payments"),
           closeOnClick: false,
         },
         {

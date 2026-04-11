@@ -153,7 +153,7 @@ export function StripeExpressOnboarding({
                 className={cn(
                     tokens.card.base,
                     tokens.card.bg,
-                    "border-0 p-4 overflow-hidden"
+                    "border-0 p-4 overflow-hidden min-h-[600px] w-full"
                 )}
             >
                 <ConnectComponentsProvider
