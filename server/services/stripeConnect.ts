@@ -14,6 +14,7 @@ import { stripe } from "./stripe";
 import { getDb } from "./core";
 import { eq } from "drizzle-orm";
 import { artistSettings } from "../../drizzle/schema";
+import { upsertArtistSettings } from "./artistService";
 
 // ─── Feature Flag ─────────────────────────────────────────────
 
@@ -46,16 +47,11 @@ export async function createConnectAccount(
     });
 
     // Save to DB
-    const db = await getDb();
-    if (db) {
-        await db
-            .update(artistSettings)
-            .set({
-                stripeConnectAccountId: account.id,
-                stripeConnectAccountType: "standard",
-            })
-            .where(eq(artistSettings.userId, artistId));
-    }
+    await upsertArtistSettings({
+        userId: artistId,
+        stripeConnectAccountId: account.id,
+        stripeConnectAccountType: "standard",
+    } as any);
 
     return account.id;
 }
@@ -100,16 +96,11 @@ export async function createExpressConnectAccount(
     });
 
     // Save to DB
-    const db = await getDb();
-    if (db) {
-        await db
-            .update(artistSettings)
-            .set({
-                stripeConnectAccountId: account.id,
-                stripeConnectAccountType: "express",
-            })
-            .where(eq(artistSettings.userId, artistId));
-    }
+    await upsertArtistSettings({
+        userId: artistId,
+        stripeConnectAccountId: account.id,
+        stripeConnectAccountType: "express",
+    } as any);
 
     console.log(
         `[Stripe Connect] Created Express account ${account.id} for artist ${artistId} (country=${businessCountry})`
