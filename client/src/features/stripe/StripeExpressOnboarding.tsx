@@ -43,22 +43,20 @@ export function StripeExpressOnboarding({
     // Publishable key from env — must be VITE_ prefixed for client exposure
     const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "";
 
-    const [stripeConnectInstance, setStripeConnectInstance] = useState<any>(null);
-
     /**
-     * Initialize the Stripe Connect instance inside useEffect.
-     * Prevents React 18/19 side-effect violations that corrupt Stripe's script injection 
-     * when executed inside a useState lazy-initializer.
+     * Initialize the Stripe Connect instance strictly inside a useState lazy initializer.
+     * This protects loadConnectAndInitialize from React Strict Mode double-invocations
+     * that otherwise throw synchronous terminal errors during useEffect remounts.
      */
-    useEffect(() => {
+    const [stripeConnectInstance] = useState(() => {
         if (!publishableKey) {
             console.error(
                 "[StripeExpressOnboarding] VITE_STRIPE_PUBLISHABLE_KEY is not set"
             );
-            return;
+            return null;
         }
 
-        const instance = loadConnectAndInitialize({
+        return loadConnectAndInitialize({
             publishableKey,
             fetchClientSecret: async () => {
                 try {
@@ -74,16 +72,14 @@ export function StripeExpressOnboarding({
                 overlays: "dialog",
                 variables: {
                     colorPrimary: "#E09F3E",
-                    colorBackground: "#0b1120",
+                    colorBackground: "#0b1120", // Matches Tattoi dark theme
                     colorText: "#ffffff",
                     colorDanger: "#ef4444",
                     borderRadius: "12px",
                 },
             },
         });
-        
-        setStripeConnectInstance(instance);
-    }, [publishableKey]);
+    });
 
     const handleExit = () => {
         setCompleted(true);
@@ -137,7 +133,7 @@ export function StripeExpressOnboarding({
             <div className="flex flex-col items-center justify-center p-8 mt-4 space-y-4">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 <p className="text-xs text-muted-foreground animate-pulse">
-                    Securing payment environment...
+                    Connecting to Stripe...
                 </p>
             </div>
         );
