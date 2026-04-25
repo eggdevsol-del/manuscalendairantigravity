@@ -23,7 +23,6 @@ export type PaymentTier = "free" | "pro" | "top";
 export interface TierPaymentConfig {
     platformFeeRate: number;       // Decimal, e.g. 0.034 = 3.4%
     artistFeeRate: number;         // Decimal, e.g. 0.020 = 2.0%
-    bnplEnabled: boolean;
     subscriptionPriceCents: number; // Monthly, in cents
     defaultDepositPercent: number;  // v2.3: deposit % (Free=25 fixed)
     depositCustomisable: boolean;   // v2.3: can artist change deposit %?
@@ -39,7 +38,6 @@ export const PAYMENT_TIERS: Record<PaymentTier, TierPaymentConfig> = {
     free: {
         platformFeeRate: 0.034,
         artistFeeRate: 0.020,
-        bnplEnabled: false,
         subscriptionPriceCents: 0,
         defaultDepositPercent: 25,   // Fixed at 25% per sitting
         depositCustomisable: false,  // Free cannot change
@@ -49,7 +47,6 @@ export const PAYMENT_TIERS: Record<PaymentTier, TierPaymentConfig> = {
     pro: {
         platformFeeRate: 0.034,
         artistFeeRate: 0.010,
-        bnplEnabled: true,
         subscriptionPriceCents: 3900, // $39/month
         defaultDepositPercent: 25,    // Default, configurable
         depositCustomisable: true,
@@ -59,7 +56,6 @@ export const PAYMENT_TIERS: Record<PaymentTier, TierPaymentConfig> = {
     top: {
         platformFeeRate: 0.034,
         artistFeeRate: 0.000,
-        bnplEnabled: false,
         subscriptionPriceCents: 0,
         defaultDepositPercent: 25,    // Default, configurable
         depositCustomisable: true,
@@ -292,31 +288,16 @@ export function calculateBookingPaymentSplit(
     };
 }
 
-// ─── Payment Method Resolution (§5.2) ────────────────────────
+// ─── Payment Method Resolution ───────────────────────────────
 
 /**
  * Returns allowed Stripe payment_method_types for a checkout session.
- * BNPL enforcement happens HERE, at the backend level.
- * Frontend gating alone is a security hole (§5.2).
- *
- * @param tier - Artist's subscription tier.
- * @param isDeposit - Whether this is a deposit (always card-only).
+ * All transactions are card-only.
  */
 export function getAllowedPaymentMethods(
-    tier: PaymentTier,
-    isDeposit: boolean
+    _tier: PaymentTier,
+    _isDeposit: boolean
 ): string[] {
-    // Deposits are ALWAYS card-only (§4.1)
-    if (isDeposit) {
-        return ["card"];
-    }
-
-    // Balance/upfront: BNPL only for Pro tier (§5.1, §5.2)
-    const config = PAYMENT_TIERS[tier];
-    if (config.bnplEnabled) {
-        return ["card", "afterpay_clearpay", "zip"];
-    }
-
     return ["card"];
 }
 
@@ -326,9 +307,4 @@ export function getAllowedPaymentMethods(
 export function formatCents(cents: number): string {
     const dollars = (cents / 100).toFixed(2);
     return `$${dollars}`;
-}
-
-/** Check if BNPL is available for a given tier */
-export function isBnplAvailable(tier: PaymentTier): boolean {
-    return PAYMENT_TIERS[tier].bnplEnabled;
 }

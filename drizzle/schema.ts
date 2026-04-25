@@ -527,6 +527,7 @@ export const users = mysqlTable(
     country: varchar({ length: 100 }), // ISO or full string
     gender: mysqlEnum(["male", "female", "other", "prefer_not_to_say"]),
     savedSignature: longtext(),
+    googleSub: varchar({ length: 255 }), // Google OAuth subject ID for stable identity matching
   },
   table => []
 );

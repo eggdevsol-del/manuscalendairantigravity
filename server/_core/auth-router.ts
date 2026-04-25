@@ -623,14 +623,50 @@ export const authRouter = router({
         });
       }
 
-      // Check if user exists
+      // ── Diagnostic logging ──
+      console.log("[Auth/Google] OAuth payload:", {
+        email: googlePayload.email,
+        name: googlePayload.name,
+        sub: googlePayload.sub,
+      });
+
+      // Check if user exists by email
       let user = await getUserByEmail(googlePayload.email);
+
+      // If no match by email, try matching by Google sub (handles email alias mismatches)
+      if (!user) {
+        const dbInstance = await (await import("../services/core")).getDb();
+        if (dbInstance) {
+          const { users: usersTable } = await import("../../drizzle/schema");
+          const { eq } = await import("drizzle-orm");
+          const byGoogleSub = await dbInstance
+            .select()
+            .from(usersTable)
+            .where(eq(usersTable.googleSub, googlePayload.sub))
+            .limit(1);
+          if (byGoogleSub.length > 0) {
+            user = byGoogleSub[0];
+            console.log("[Auth/Google] Matched by googleSub instead of email:", {
+              googleEmail: googlePayload.email,
+              userEmail: user.email,
+              userId: user.id,
+            });
+          }
+        }
+      }
+
       let isNewUser = false;
 
       if (!user) {
         // Create new user
         isNewUser = true;
         const userId = `user_${randomBytes(16).toString("hex")}`;
+
+        console.log("[Auth/Google] Creating NEW user:", {
+          userId,
+          email: googlePayload.email,
+          role: role || "client",
+        });
 
         user = await createUser({
           id: userId,
@@ -650,7 +686,29 @@ export const authRouter = router({
         }
       } else {
         // Existing user — update last signed in
+        console.log("[Auth/Google] EXISTING user matched:", {
+          userId: user.id,
+          userEmail: user.email,
+          googleEmail: googlePayload.email,
+          loginMethod: user.loginMethod,
+          role: user.role,
+        });
         await updateUserLastSignedIn(user.id);
+      }
+
+      // Persist the Google sub on the user so future logins match even if the email changes
+      try {
+        const dbInstance = await (await import("../services/core")).getDb();
+        if (dbInstance && googlePayload.sub) {
+          const { users: usersTable } = await import("../../drizzle/schema");
+          const { eq } = await import("drizzle-orm");
+          await dbInstance
+            .update(usersTable)
+            .set({ googleSub: googlePayload.sub, loginMethod: user.loginMethod === "email" ? "email" : "google" })
+            .where(eq(usersTable.id, user.id));
+        }
+      } catch (e) {
+        console.warn("[Auth/Google] Failed to persist googleSub (column may not exist yet):", (e as any)?.message);
       }
 
       // Generate JWT token

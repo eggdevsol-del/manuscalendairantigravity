@@ -225,7 +225,7 @@ export const funnelRouter = router({
    * Create a Stripe Checkout Session for balance payment.
    * PUBLIC — uses booking ID + token for auth.
    *
-   * Validates: balance ≤ remaining (§4.5), BNPL by tier (§5.2 backend).
+   * Validates: balance ≤ remaining (§4.5).
    * Supports morning-of auto-link and manual payment.
    */
   createBalanceCheckout: publicProcedure
@@ -284,7 +284,7 @@ export const funnelRouter = router({
       const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
       const fees = calculateTransactionFees(remaining, tier);
 
-      // BNPL methods restricted by tier at backend (§5.2)
+      // Payment methods enforced at backend (card-only)
       const paymentMethods = getAllowedPaymentMethods(tier, false);
 
       const { createBalanceCheckoutSession } = await import(

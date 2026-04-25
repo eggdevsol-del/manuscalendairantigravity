@@ -47,7 +47,7 @@ export function useCalendarAgendaController() {
   const { data: currentStudio, isLoading: isLoadingStudio } = trpc.studios.getCurrentStudio.useQuery(
     undefined,
     {
-      enabled: !!user && user.role === "artist",
+      enabled: !!user && (user.role === "artist" || user.role === "admin"),
     }
   );
 
@@ -58,6 +58,7 @@ export function useCalendarAgendaController() {
 
   // 1. Studio Context
   const isStudioView = !!currentStudio && (user?.role === "artist" || user?.role === "studio" || user?.role === "admin");
+  const isArtistLike = user?.role === "artist" || user?.role === "admin";
   const {
     data: studioAppointments,
     isLoading: isLoadingStudioAppts,
@@ -68,7 +69,7 @@ export function useCalendarAgendaController() {
   );
 
   // 2. Artist Context (Solo)
-  const isSoloArtistView = !isStudioView && user?.role === "artist";
+  const isSoloArtistView = !isStudioView && isArtistLike;
   const {
     data: soloAppointments,
     isLoading: isLoadingSoloAppts,

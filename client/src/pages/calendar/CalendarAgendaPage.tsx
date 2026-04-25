@@ -38,7 +38,7 @@ export default function CalendarAgendaPage() {
           conversationId={controller.selectedAppointment?.conversationId}
           artistServices={controller.artistServices}
           artistSettings={controller.artistSettings}
-          isArtist={controller.user?.role === "artist"}
+          isArtist={controller.user?.role === "artist" || controller.user?.role === "admin"}
           onBookingSuccess={() => {
             controller.refetch();
           }}
@@ -73,7 +73,7 @@ export default function CalendarAgendaPage() {
       },
     ];
 
-    if (controller.user?.role === "artist") {
+    if (controller.user?.role === "artist" || controller.user?.role === "admin") {
       // Match Chat's "Book Project" button
       items.push({
         id: "book",

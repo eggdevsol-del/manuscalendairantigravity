@@ -15,7 +15,7 @@ export const conversationsRouter = router({
     const enriched = await Promise.all(
       convos.map(async conv => {
         const otherUserId =
-          ((ctx.user.role === "artist" ? conv.clientId : conv.artistId) || "") as string;
+          (((ctx.user.role === "artist" || ctx.user.role === "admin") ? conv.clientId : conv.artistId) || "") as string;
         const otherUser = await db.resolveIdentity(otherUserId, "user");
 
         if (ctx.user.role === "client" && otherUser) {
@@ -108,7 +108,7 @@ export const conversationsRouter = router({
     .input(z.number())
     .mutation(async ({ input, ctx }) => {
       await db.markMessagesAsRead(input, ctx.user.id);
-      if (ctx.user.role === "artist") {
+      if (ctx.user.role === "artist" || ctx.user.role === "admin") {
         await db.markConsultationAsViewed(input);
       }
       return { success: true };

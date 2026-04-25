@@ -57,7 +57,7 @@ export async function getConversationsForUser(userId: string, role: string) {
   if (!db) return [];
 
   const condition =
-    role === "artist"
+    role === "artist" || role === "admin"
       ? eq(conversations.artistId, userId)
       : eq(conversations.clientId, userId);
 

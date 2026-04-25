@@ -2,7 +2,7 @@
  * Tier Permissions — Feature Gates by Subscription Tier
  *
  * Controls feature access per tier. The payment-specific tier config
- * (fee rates, BNPL) lives in server/domain/fees.ts — this file handles
+ * (fee rates) lives in server/domain/fees.ts — this file handles
  * non-payment feature gating only.
  *
  * Tier mapping: basic → free, pro → pro, elite → top
@@ -43,7 +43,7 @@ export interface TierConfig {
     canUseWaitlist: boolean;
     canUseAIVoiceNotes: boolean;
     canProcessFinalPayments: boolean;
-    canUseBnpl: boolean; // §5.1 — Pro only
+
     maxStorageGB: number;
 }
 
@@ -60,7 +60,7 @@ export const TIER_CONFIGS: Record<SubscriptionTier, TierConfig> = {
         canUseWaitlist: false,
         canUseAIVoiceNotes: false,
         canProcessFinalPayments: false,
-        canUseBnpl: false,
+
         maxStorageGB: 1,
     },
     pro: {
@@ -75,7 +75,7 @@ export const TIER_CONFIGS: Record<SubscriptionTier, TierConfig> = {
         canUseWaitlist: true,
         canUseAIVoiceNotes: true,
         canProcessFinalPayments: true,
-        canUseBnpl: true,
+
         maxStorageGB: Infinity,
     },
     top: {
@@ -90,7 +90,7 @@ export const TIER_CONFIGS: Record<SubscriptionTier, TierConfig> = {
         canUseWaitlist: true,
         canUseAIVoiceNotes: true,
         canProcessFinalPayments: true,
-        canUseBnpl: false, // Top artists: no BNPL, clients pay in full
+
         maxStorageGB: Infinity,
     },
 };

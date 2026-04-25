@@ -48,7 +48,7 @@ export const billingRouter = router({
       tierLabel: tierConfig.label,
       artistFeeRate: tierConfig.artistFeeRate,
       platformFeeRate: tierConfig.platformFeeRate,
-      bnplEnabled: tierConfig.bnplEnabled,
+
       subscriptionPriceCents: tierConfig.subscriptionPriceCents,
       stripeSubscriptionId: settings?.stripeSubscriptionId || null,
       renewalDate,

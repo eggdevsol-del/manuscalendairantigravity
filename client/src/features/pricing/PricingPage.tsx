@@ -33,7 +33,6 @@ export interface SubscriptionStatus {
     tierLabel: string;
     artistFeeRate: number;
     platformFeeRate: number;
-    bnplEnabled: boolean;
     subscriptionPriceCents: number;
     stripeSubscriptionId: string | null;
     renewalDate: string | null;
@@ -47,7 +46,6 @@ export interface TierDisplayConfig {
     platformFeeRate: number;   // e.g. 0.034
     subscriptionPriceCents: number;
     defaultDepositPercent: number;
-    bnplEnabled: boolean;
 }
 
 export interface PricingPageProps {
@@ -98,7 +96,6 @@ export function PricingPage({
         { label: "Booking wizard", included: true },
         { label: `${freeArtistFee} artist fee per transaction`, included: true, highlight: true },
         { label: `Deposit locked at ${freeTier.defaultDepositPercent}%`, included: true },
-        { label: "Buy Now Pay Later (BNPL)", included: false },
         { label: "Customisable deposit %", included: false },
         { label: "Upfront payment option", included: false },
         { label: "Priority support", included: false },
@@ -107,7 +104,6 @@ export function PricingPage({
     const PRO_FEATURES = [
         { label: "Everything in Free", included: true },
         { label: `${proArtistFee} artist fee per transaction`, included: true, highlight: true },
-        { label: "Buy Now Pay Later (BNPL)", included: true },
         { label: "Customisable deposit %", included: true },
         { label: "Upfront payment option", included: true },
         { label: "Priority support", included: true },
@@ -206,7 +202,7 @@ export function PricingPage({
                     <h2 className="text-lg font-bold text-foreground">Pro</h2>
                 </div>
                 <p className="text-xs text-muted-foreground mb-4">
-                    {proPrice}/month · {proArtistFee} artist fee · BNPL enabled · Priority support
+                    {proPrice}/month · {proArtistFee} artist fee · Priority support
                 </p>
 
                 <div className="flex items-baseline gap-1 mb-5">
@@ -345,16 +341,7 @@ export function PricingPage({
                         </div>
                     </div>
 
-                    <div className="border-t border-white/5 pt-3">
-                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                            <CreditCard className="w-3.5 h-3.5" />
-                            Buy Now Pay Later
-                        </h4>
-                        <p className="text-sm text-foreground/80 leading-relaxed">
-                            BNPL options (Afterpay, Zip) are available exclusively on the Pro plan.
-                            This lets your clients split payments into interest-free instalments.
-                        </p>
-                    </div>
+
                 </div>
             </motion.div>
         </div>

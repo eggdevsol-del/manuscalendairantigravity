@@ -64,8 +64,7 @@ Register **all 8 events** at:
 ## 7. Verification Steps
 
 - [ ] Free tier artist: submit a deposit below 37% → should be rejected
-- [ ] Free tier artist: confirm BNPL options are NOT shown at checkout
-- [ ] Pro tier artist: confirm BNPL options ARE shown at checkout
+
 - [ ] Create a Pro subscription → verify tier changes to `pro` in DB
 - [ ] Cancel Pro subscription → verify tier stays `pro` until period ends
 - [ ] Period ends → verify `customer.subscription.deleted` fires and tier reverts to `free`

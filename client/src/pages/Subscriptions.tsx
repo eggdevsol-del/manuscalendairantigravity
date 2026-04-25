@@ -27,7 +27,6 @@ const FREE_TIER: TierDisplayConfig = {
   platformFeeRate: 0.034,
   subscriptionPriceCents: 0,
   defaultDepositPercent: 25,
-  bnplEnabled: false,
 };
 
 const PRO_TIER: TierDisplayConfig = {
@@ -35,7 +34,6 @@ const PRO_TIER: TierDisplayConfig = {
   platformFeeRate: 0.034,
   subscriptionPriceCents: 3900,
   defaultDepositPercent: 25,
-  bnplEnabled: true,
 };
 
 export default function Subscriptions() {
@@ -77,7 +75,6 @@ export default function Subscriptions() {
     tierLabel: "Free",
     artistFeeRate: 0.02,
     platformFeeRate: 0.034,
-    bnplEnabled: false,
     subscriptionPriceCents: 0,
     stripeSubscriptionId: null,
     renewalDate: null,

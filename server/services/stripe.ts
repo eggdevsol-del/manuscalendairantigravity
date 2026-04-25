@@ -146,7 +146,7 @@ export async function createCustomerPortalSession(customerId: string) {
  * Creates a Stripe Checkout Session for a one-time deposit payment.
  * Now supports Connect routing (§6.1) and per-transaction fees (§4.2).
  *
- * Deposits are ALWAYS card-only — no BNPL (§4.1, §5.2).
+ * All payments are card-only.
  */
 export async function createDepositCheckoutSession(opts: {
   leadId: number;
@@ -164,7 +164,7 @@ export async function createDepositCheckoutSession(opts: {
 
   // Build the session config
   const sessionConfig: any = {
-    payment_method_types: ["card"], // Deposits: ALWAYS card-only (§4.1)
+    payment_method_types: ["card"],
     mode: "payment",
     customer_email: opts.clientEmail,
     client_reference_id: String(opts.leadId),
@@ -210,10 +210,7 @@ export async function createDepositCheckoutSession(opts: {
 
 /**
  * Creates a Stripe Checkout Session for a balance payment.
- * Supports BNPL for Pro tier artists (§5.1, §5.2).
- *
- * IMPORTANT: payment_method_types are enforced at backend level (§5.2).
- * Frontend gating alone is a security hole.
+ * All payments are card-only.
  */
 export async function createBalanceCheckoutSession(opts: {
   bookingId: number;
@@ -222,7 +219,7 @@ export async function createBalanceCheckoutSession(opts: {
   clientTotalCents: number;
   clientEmail: string;
   artistName: string;
-  paymentMethods: string[]; // From getAllowedPaymentMethods() in fees.ts
+  paymentMethods: string[]; // Card-only, from getAllowedPaymentMethods()
   stripeConnectAccountId?: string | null;
   tier: string;
   balanceToken: string;
@@ -230,7 +227,7 @@ export async function createBalanceCheckoutSession(opts: {
   const baseUrl = getAppUrl();
 
   const sessionConfig: any = {
-    payment_method_types: opts.paymentMethods, // Backend-enforced (§5.2)
+    payment_method_types: opts.paymentMethods, // Card-only
     mode: "payment",
     customer_email: opts.clientEmail,
     client_reference_id: String(opts.bookingId),
