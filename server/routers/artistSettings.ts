@@ -244,7 +244,23 @@ export const artistSettingsRouter = router({
         };
       }
 
-      // Standard incomplete → generate new onboarding link
+      // Standard incomplete → migrate to Express or generate new link
+      if (isExpressEnabled()) {
+        const accountId = await createExpressConnectAccount(
+          ctx.user.id,
+          ctx.user.email || "",
+          existing?.businessCountry || "AU",
+          existing?.businessName || undefined
+        );
+        return {
+          alreadyConnected: false,
+          url: null,
+          accountId,
+          accountType: "express" as const,
+          status: null,
+        };
+      }
+
       const url = await createAccountLink(
         existing.stripeConnectAccountId,
         ctx.user.id
