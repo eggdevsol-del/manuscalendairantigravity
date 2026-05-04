@@ -98,17 +98,18 @@ export function PricingPage({
         { label: `Deposit locked at ${freeTier.defaultDepositPercent}%`, included: true },
         { label: "Customisable deposit %", included: false },
         { label: "Upfront payment option", included: false },
-        { label: "Priority support", included: false },
+        { label: "Remove Tattoi branding", included: false },
     ];
 
     const PRO_FEATURES = [
         { label: "Everything in Free", included: true },
-        { label: `${proArtistFee} artist fee per transaction`, included: true, highlight: true },
+        { label: "0% artist fee — keep 100%", included: true, highlight: true },
         { label: "Customisable deposit %", included: true },
         { label: "Upfront payment option", included: true },
-        { label: "Priority support", included: true },
+        { label: "Automated reminders", included: true },
         { label: "Remove Tattoi branding", included: true },
         { label: "Custom booking funnel theme", included: true },
+        { label: "Priority support", included: true },
     ];
 
     return (
@@ -202,7 +203,7 @@ export function PricingPage({
                     <h2 className="text-lg font-bold text-foreground">Pro</h2>
                 </div>
                 <p className="text-xs text-muted-foreground mb-4">
-                    {proPrice}/month · {proArtistFee} artist fee · Priority support
+                    {proPrice}/month · 0% artist fee · Keep 100% of your earnings
                 </p>
 
                 <div className="flex items-baseline gap-1 mb-5">
@@ -274,10 +275,10 @@ export function PricingPage({
                     </h3>
                 </div>
                 <p className="text-sm text-foreground/80 leading-relaxed">
-                    With just <strong className="text-emerald-400">4 bookings per month</strong>,
-                    the {fmtRate(freeTier.artistFeeRate - proTier.artistFeeRate)} fee saving covers
-                    the {proPrice} subscription cost.
-                    Every booking after that puts more money in your pocket.
+                    At just <strong className="text-emerald-400">$3,000/month in bookings</strong>,
+                    the {fmtRate(freeTier.artistFeeRate)} fee saving covers
+                    the {proPrice}/month subscription.
+                    After that, you keep every dollar.
                 </p>
             </motion.div>
 

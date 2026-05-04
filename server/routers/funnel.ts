@@ -90,6 +90,13 @@ export const funnelRouter = router({
 
       const pms = paymentSettings[0];
 
+      // Compute fee breakdown server-side (SSOT — fee engine is the authority)
+      const { calculateTransactionFees, resolvePaymentTier } = await import(
+        "../domain/fees"
+      );
+      const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
+      const fees = calculateTransactionFees(lead.depositAmount, tier);
+
       return {
         proposalId: lead.id,
         artistName:
@@ -105,6 +112,8 @@ export const funnelRouter = router({
         selectedDate: lead.acceptedDate || "TBC",
         selectedTime: "TBC",
         depositAmount: lead.depositAmount,
+        clientTotalCents: fees.clientTotalCents,
+        platformFeeCents: fees.platformFeeCents,
         status: lead.status,
         paymentMethods: {
           stripe: pms?.stripeEnabled === 1,
@@ -204,7 +213,8 @@ export const funnelRouter = router({
       const url = await createDepositCheckoutSession({
         leadId: lead.id,
         depositAmountCents: fees.baseAmountCents,
-        platformFeeCents: fees.stripeApplicationFeeCents, // Combined: platform + artist fee (v2.3)
+        platformFeeCents: fees.platformFeeCents,
+        artistFeeCents: fees.artistFeeCents,
         clientTotalCents: fees.clientTotalCents,
         clientEmail: lead.clientEmail || "",
         artistName:
@@ -294,7 +304,8 @@ export const funnelRouter = router({
       const url = await createBalanceCheckoutSession({
         bookingId: booking.id,
         balanceAmountCents: remaining,
-        platformFeeCents: fees.stripeApplicationFeeCents, // Combined (v2.3)
+        platformFeeCents: fees.platformFeeCents,
+        artistFeeCents: fees.artistFeeCents,
         clientTotalCents: fees.clientTotalCents,
         clientEmail: client?.email || "",
         artistName:

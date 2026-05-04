@@ -80,8 +80,8 @@ export async function sendMorningBalanceReminders(): Promise<
             const paymentMethods = getAllowedPaymentMethods(tier, false);
 
             // Generate balance payment token (secure, time-limited)
-            const { generateDepositToken } = await import("./depositToken");
-            const balanceToken = generateDepositToken(booking.id);
+            const { createDepositToken } = await import("./depositToken");
+            const balanceToken = createDepositToken(booking.id);
 
             // TODO: Create the actual balance checkout session and send via:
             // - Push notification (if app installed)

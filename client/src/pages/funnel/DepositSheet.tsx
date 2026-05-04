@@ -30,6 +30,8 @@ interface DepositInfo {
   selectedDate: string;
   selectedTime: string;
   depositAmount: number;
+  clientTotalCents: number;
+  platformFeeCents: number;
   paymentMethods: {
     stripe: boolean;
     paypal: boolean;
@@ -270,7 +272,7 @@ export function DepositSheet() {
               <div className="flex justify-between">
                 <span className="text-white font-medium">Deposit</span>
                 <span className="text-[#7C5CFC] font-semibold">
-                  ${((depositInfo.depositAmount + Math.max(Math.round(depositInfo.depositAmount * 0.034), 500)) / 100).toFixed(2)}
+                  ${(depositInfo.clientTotalCents / 100).toFixed(2)}
                 </span>
               </div>
             </div>
@@ -385,7 +387,7 @@ export function DepositSheet() {
               <div className="flex justify-between">
                 <span className="text-white/60">Amount</span>
                 <span className="text-[#7C5CFC] font-semibold">
-                  ${((depositInfo.depositAmount + Math.max(Math.round(depositInfo.depositAmount * 0.034), 500)) / 100).toFixed(2)}
+                  ${(depositInfo.clientTotalCents / 100).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -439,7 +441,7 @@ export function DepositSheet() {
               By selecting cash payment, you confirm that you will pay the
               deposit of{" "}
               <span className="text-[#7C5CFC] font-semibold">
-                ${((depositInfo.depositAmount + Math.max(Math.round(depositInfo.depositAmount * 0.034), 500)) / 100).toFixed(2)}
+                ${(depositInfo.clientTotalCents / 100).toFixed(2)}
               </span>{" "}
               in person before your appointment.
             </p>
@@ -464,7 +466,7 @@ export function DepositSheet() {
               {isSubmitting
                 ? "Processing..."
                 : selectedMethod === "stripe" || selectedMethod === "paypal"
-                  ? `Pay $${((depositInfo.depositAmount + Math.max(Math.round(depositInfo.depositAmount * 0.034), 500)) / 100).toFixed(2)}`
+                  ? `Pay $${(depositInfo.clientTotalCents / 100).toFixed(2)}`
                   : "Confirm Deposit"}
             </button>
           </div>

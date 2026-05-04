@@ -8,7 +8,7 @@
  * - Per-transaction fees (not per-booking) — §4.2
  * - All math in integer cents, round half-up — §4.3
  * - Uniform 3.4% platform fee (ACCC compliant) — §4.2
- * - Tier-based artist fee (Free 2%, Pro 1%, Top 0%) — §2
+ * - Tier-based artist fee (Free 2%, Pro 0%, Top 0%) — §2
  * - $5 minimum platform fee floor — §4.4
  * - Combined application_fee_amount (platform + artist fee) — v2.3 §1
  * - Deposit % by tier (Free=25% fixed, Pro/Top configurable) — v2.3 §3
@@ -46,8 +46,8 @@ export const PAYMENT_TIERS: Record<PaymentTier, TierPaymentConfig> = {
     },
     pro: {
         platformFeeRate: 0.034,
-        artistFeeRate: 0.010,
-        subscriptionPriceCents: 3900, // $39/month
+        artistFeeRate: 0.000,
+        subscriptionPriceCents: 6000, // $60/month
         defaultDepositPercent: 25,    // Default, configurable
         depositCustomisable: true,
         upfrontPaymentAllowed: true,  // Toggle in settings (default off)

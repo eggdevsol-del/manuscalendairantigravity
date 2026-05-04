@@ -30,9 +30,9 @@ const FREE_TIER: TierDisplayConfig = {
 };
 
 const PRO_TIER: TierDisplayConfig = {
-  artistFeeRate: 0.010,
+  artistFeeRate: 0.000,
   platformFeeRate: 0.034,
-  subscriptionPriceCents: 3900,
+  subscriptionPriceCents: 6000,
   defaultDepositPercent: 25,
 };
 

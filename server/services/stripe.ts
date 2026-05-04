@@ -152,6 +152,7 @@ export async function createDepositCheckoutSession(opts: {
   leadId: number;
   depositAmountCents: number;
   platformFeeCents: number;
+  artistFeeCents: number;
   clientTotalCents: number;
   clientEmail: string;
   artistName: string;
@@ -161,6 +162,9 @@ export async function createDepositCheckoutSession(opts: {
   tier: string;
 }) {
   const baseUrl = getAppUrl();
+
+  // Combined application fee = platform fee + artist fee (v2.3 §1)
+  const applicationFeeCents = opts.platformFeeCents + opts.artistFeeCents;
 
   // Build the session config
   const sessionConfig: any = {
@@ -187,7 +191,9 @@ export async function createDepositCheckoutSession(opts: {
       depositToken: opts.depositToken,
       messageId: opts.messageId ? String(opts.messageId) : "",
       platformFeeCents: String(opts.platformFeeCents),
+      artistFeeCents: String(opts.artistFeeCents),
       baseAmountCents: String(opts.depositAmountCents),
+      stripeConnectAccountId: opts.stripeConnectAccountId || "",
       tier: opts.tier,
     },
     success_url: `${baseUrl}/deposit/${opts.depositToken}?status=success&session_id={CHECKOUT_SESSION_ID}`,
@@ -197,7 +203,7 @@ export async function createDepositCheckoutSession(opts: {
   // Connect routing — route payment to artist (§6.1)
   if (opts.stripeConnectAccountId) {
     sessionConfig.payment_intent_data = {
-      application_fee_amount: opts.platformFeeCents,
+      application_fee_amount: applicationFeeCents,
       transfer_data: {
         destination: opts.stripeConnectAccountId,
       },
@@ -216,6 +222,7 @@ export async function createBalanceCheckoutSession(opts: {
   bookingId: number;
   balanceAmountCents: number;
   platformFeeCents: number;
+  artistFeeCents: number;
   clientTotalCents: number;
   clientEmail: string;
   artistName: string;
@@ -225,6 +232,9 @@ export async function createBalanceCheckoutSession(opts: {
   balanceToken: string;
 }) {
   const baseUrl = getAppUrl();
+
+  // Combined application fee = platform fee + artist fee (v2.3 §1)
+  const applicationFeeCents = opts.platformFeeCents + opts.artistFeeCents;
 
   const sessionConfig: any = {
     payment_method_types: opts.paymentMethods, // Card-only
@@ -248,7 +258,9 @@ export async function createBalanceCheckoutSession(opts: {
       type: "balance",
       bookingId: String(opts.bookingId),
       platformFeeCents: String(opts.platformFeeCents),
+      artistFeeCents: String(opts.artistFeeCents),
       baseAmountCents: String(opts.balanceAmountCents),
+      stripeConnectAccountId: opts.stripeConnectAccountId || "",
       tier: opts.tier,
       balanceToken: opts.balanceToken,
     },
@@ -259,7 +271,7 @@ export async function createBalanceCheckoutSession(opts: {
   // Connect routing
   if (opts.stripeConnectAccountId) {
     sessionConfig.payment_intent_data = {
-      application_fee_amount: opts.platformFeeCents,
+      application_fee_amount: applicationFeeCents,
       transfer_data: {
         destination: opts.stripeConnectAccountId,
       },
@@ -359,9 +371,13 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             const platformFeeCents = session.metadata.platformFeeCents
               ? parseInt(session.metadata.platformFeeCents, 10)
               : 0;
+            const artistFeeCents = session.metadata.artistFeeCents
+              ? parseInt(session.metadata.artistFeeCents, 10)
+              : 0;
             const baseAmountCents = session.metadata.baseAmountCents
               ? parseInt(session.metadata.baseAmountCents, 10)
               : lead.depositAmount || 0;
+            const connectAccountId = session.metadata.stripeConnectAccountId || null;
 
             await db.insert(paymentLedger).values({
               bookingId: null, // Deposit is on lead, not yet booked
@@ -370,9 +386,9 @@ export async function handleStripeWebhook(req: Request, res: Response) {
               transactionType: "deposit",
               amountCents: baseAmountCents,
               platformFeeCents,
-              artistFeeCents: 0, // Calculated at payout, not at charge time
+              artistFeeCents,
               stripePaymentId: session.payment_intent as string || session.id,
-              stripeConnectAccountId: null,
+              stripeConnectAccountId: connectAccountId,
               tier: (session.metadata.tier as any) || "free",
               paymentMethod: "card", // Deposits are always card
             });
@@ -410,6 +426,11 @@ export async function handleStripeWebhook(req: Request, res: Response) {
               }).where(eq(appointments.id, bookingId));
 
               // Ledger write
+              const balanceArtistFeeCents = session.metadata.artistFeeCents
+                ? parseInt(session.metadata.artistFeeCents, 10)
+                : 0;
+              const balanceConnectAccountId = session.metadata.stripeConnectAccountId || null;
+
               await db.insert(paymentLedger).values({
                 bookingId,
                 artistId: booking.artistId,
@@ -417,8 +438,9 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 transactionType: "balance",
                 amountCents: baseAmountCents,
                 platformFeeCents,
-                artistFeeCents: 0,
+                artistFeeCents: balanceArtistFeeCents,
                 stripePaymentId: session.payment_intent as string || session.id,
+                stripeConnectAccountId: balanceConnectAccountId,
                 tier: (session.metadata.tier as any) || "free",
                 paymentMethod: session.payment_method_types?.[0] || "card",
               });
