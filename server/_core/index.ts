@@ -82,6 +82,7 @@ async function startServer() {
   }
 
   const app = express();
+  app.set("trust proxy", true); // Railway runs behind a reverse proxy
   const server = createServer(app);
 
   // 1. Move CORS to the very top to handle preflight requests first
