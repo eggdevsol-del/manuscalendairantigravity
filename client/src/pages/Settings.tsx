@@ -3,6 +3,7 @@ import { useUIDebug } from "@/_core/contexts/UIDebugContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import PushNotificationSettings from "@/components/PushNotificationSettings";
 import { getAssetUrl } from "@/lib/assets";
+import { useBottomNav } from "@/contexts/BottomNavContext";
 
 import { Card, Switch } from "@/components/ui";
 import { LoadingState, PageShell, PageHeader } from "@/components/ui/ssot";
@@ -24,16 +25,14 @@ import {
   Zap,
   RefreshCw,
   Scale,
-  CreditCard,
   Banknote,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation, useSearch } from "wouter";
 import { toast } from "sonner";
 import { forceUpdate } from "@/lib/pwa";
 import { APP_VERSION } from "@/lib/version";
 import { trpc } from "@/lib/trpc";
-import { StripeExpressOnboarding } from "@/features/stripe/StripeExpressOnboarding";
 
 type SettingsSection =
   | "main"
@@ -46,90 +45,21 @@ type SettingsSection =
   | "regulation"
   | "payments";
 
-/** Stripe Connect onboarding row for artist Settings — Five-Way Branch */
+/** Stripe Connect onboarding row for artist Settings — navigates to FAB payments panel */
 function PaymentProcessingSettingsRow() {
-  const search = useSearch();
   const connectStatus = trpc.artistSettings.getStripeConnectStatus.useQuery();
-  const settingsQuery = trpc.artistSettings.get.useQuery();
-  const connectStripe = trpc.artistSettings.connectStripe.useMutation();
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [autoTriggered, setAutoTriggered] = useState(false);
+  const { setFABOpen, requestSettingsView } = useBottomNav();
 
   const status = connectStatus.data;
   const accountType = status?.accountType || "standard";
-  const expressEnabled = settingsQuery.data?.expressOnboardingEnabled ?? false;
   const isConnected = status?.connected && status?.onboardingComplete;
   const isPending = status?.connected && !status?.onboardingComplete;
 
-  const handleClick = async () => {
-    try {
-      // Branch 5: Express + complete → show toast
-      if (isConnected) {
-        toast.info("Stripe is connected and active.");
-        return;
-      }
-
-      // Branch 4: Express + incomplete → show embedded onboarding
-      if (isPending && accountType === "express") {
-        setShowOnboarding(true);
-        return;
-      }
-
-      // Branch 3: Standard account (pending) → redirect
-      if (isPending && accountType === "standard") {
-        toast.info("Redirecting to Stripe...");
-        const result = await connectStripe.mutateAsync();
-        if (result.url) {
-          window.location.href = result.url;
-        }
-        return;
-      }
-
-      // No account yet
-      toast.info("Connecting to Stripe...");
-      const result = await connectStripe.mutateAsync();
-
-      // Branch 1: Express → show embedded onboarding
-      if (result.accountType === "express") {
-        setShowOnboarding(true);
-        return;
-      }
-
-      // Branch 2: Standard → redirect
-      if (result.url) {
-        window.location.href = result.url;
-      } else if (result.alreadyConnected) {
-        toast.success("Stripe account is already connected!");
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to connect Stripe");
-    }
+  const handleClick = () => {
+    // Open the FAB and navigate to the payments panel
+    setFABOpen(true);
+    requestSettingsView("payments");
   };
-
-  useEffect(() => {
-    const params = new URLSearchParams(search);
-    const isPaymentsActive = params.get("section") === "payments";
-    
-    if (isPaymentsActive && !autoTriggered && !isConnected) {
-      setAutoTriggered(true);
-      handleClick();
-    }
-  }, [search, isConnected, autoTriggered]);
-
-  // Render embedded onboarding inline
-  if (showOnboarding) {
-    return (
-      <div className="p-4">
-        <StripeExpressOnboarding
-          isResuming={isPending}
-          onComplete={() => {
-            setShowOnboarding(false);
-            connectStatus.refetch();
-          }}
-        />
-      </div>
-    );
-  }
 
   return (
     <div
