@@ -115,7 +115,7 @@ export function PaymentSettings({ onBack }: PaymentSettingsProps) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 w-full overflow-y-auto p-4 mobile-scroll touch-pan-y relative z-10">
+      <div className="flex-1 w-full overflow-y-auto px-2 py-4 mobile-scroll touch-pan-y relative z-10">
 
         {/* 1. Loading */}
         {phase === "loading" && (

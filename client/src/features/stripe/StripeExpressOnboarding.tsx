@@ -167,16 +167,12 @@ export function StripeExpressOnboarding({
             )}
 
             <div
-                className={cn(
-                    tokens.card.base,
-                    tokens.card.bg,
-                    "border-0 overflow-hidden min-h-[500px] w-full flex flex-col relative"
-                )}
+                className="w-full min-h-[500px] flex flex-col relative"
             >
                 <ConnectComponentsProvider
                     connectInstance={stripeConnectInstance}
                 >
-                    <div className="w-full flex-1 h-full min-h-[500px] pt-2">
+                    <div className="w-full flex-1 h-full min-h-[500px]">
                         <ConnectAccountOnboarding onExit={handleExit} />
                     </div>
                 </ConnectComponentsProvider>
