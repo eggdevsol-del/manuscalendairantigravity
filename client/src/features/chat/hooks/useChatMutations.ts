@@ -107,6 +107,7 @@ export function useChatMutations(
     onSuccess: () => {
       toast.success("Proposal revoked");
       utils.messages.list.invalidate({ conversationId });
+      utils.appointments.getByConversation.invalidate(conversationId);
     },
     onError: err => {
       toast.error("Failed to revoke proposal: " + err.message);
