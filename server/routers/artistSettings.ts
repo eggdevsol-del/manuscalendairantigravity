@@ -442,5 +442,122 @@ export const artistSettingsRouter = router({
 
     return { url };
   }),
+
+  /**
+   * Submit native onboarding form data to Stripe.
+   */
+  submitStripeOnboarding: artistProcedure
+    .input(
+      z.object({
+        firstName: z.string().min(1),
+        lastName: z.string().min(1),
+        email: z.string().email(),
+        phone: z.string().min(8),
+        dobDay: z.number().min(1).max(31),
+        dobMonth: z.number().min(1).max(12),
+        dobYear: z.number().min(1900).max(2010),
+        country: z.enum(["AU", "NZ"]).default("AU"),
+        addressLine1: z.string().min(1),
+        addressCity: z.string().min(1),
+        addressState: z.string().min(1),
+        addressPostalCode: z.string().min(4),
+        bankBsb: z.string().min(6).max(7),
+        bankAccountNumber: z.string().min(5).max(10),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const settings = await db.getArtistSettings(ctx.user.id);
+      if (!settings?.stripeConnectAccountId) {
+        throw new Error("No Stripe Connect account found. Create one first.");
+      }
+
+      const { submitOnboardingData, syncAccountStatusToDb } = await import(
+        "../services/stripeConnect"
+      );
+
+      const result = await submitOnboardingData(
+        settings.stripeConnectAccountId,
+        { ...input, publicSlug: settings.publicSlug || undefined },
+        ctx.req.ip || "127.0.0.1"
+      );
+
+      await syncAccountStatusToDb(settings.stripeConnectAccountId);
+      return result;
+    }),
+
+  /**
+   * Upload ID verification document (base64-encoded).
+   */
+  uploadStripeDocument: artistProcedure
+    .input(
+      z.object({
+        fileBase64: z.string(),
+        fileName: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const settings = await db.getArtistSettings(ctx.user.id);
+      if (!settings?.stripeConnectAccountId) {
+        throw new Error("No Stripe Connect account found.");
+      }
+
+      const { uploadIdentityDocument, syncAccountStatusToDb } = await import(
+        "../services/stripeConnect"
+      );
+
+      const fileBuffer = Buffer.from(input.fileBase64, "base64");
+      const isTestMode = process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_");
+
+      const result = await uploadIdentityDocument(
+        settings.stripeConnectAccountId,
+        fileBuffer,
+        input.fileName,
+        isTestMode ?? false
+      );
+
+      await syncAccountStatusToDb(settings.stripeConnectAccountId);
+      return result;
+    }),
+
+  /**
+   * Get payout schedule, bank info, and balance.
+   */
+  getPayoutSchedule: artistProcedure.query(async ({ ctx }) => {
+    const settings = await db.getArtistSettings(ctx.user.id);
+    if (!settings?.stripeConnectAccountId) return null;
+
+    const { getPayoutSchedule } = await import("../services/stripeConnect");
+    return getPayoutSchedule(settings.stripeConnectAccountId);
+  }),
+
+  /**
+   * Update payout schedule (daily, weekly, monthly).
+   */
+  updatePayoutSchedule: artistProcedure
+    .input(
+      z.object({
+        interval: z.enum(["daily", "weekly", "monthly", "manual"]),
+        weeklyAnchor: z.string().optional(),
+        monthlyAnchor: z.number().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const settings = await db.getArtistSettings(ctx.user.id);
+      if (!settings?.stripeConnectAccountId) {
+        throw new Error("No Stripe Connect account found.");
+      }
+
+      const { updatePayoutSchedule } = await import(
+        "../services/stripeConnect"
+      );
+      await updatePayoutSchedule(
+        settings.stripeConnectAccountId,
+        input.interval,
+        input.weeklyAnchor,
+        input.monthlyAnchor
+      );
+
+      return { success: true };
+    }),
 });
 

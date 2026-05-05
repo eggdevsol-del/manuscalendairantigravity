@@ -332,3 +332,252 @@ export async function disconnectAccount(artistId: string): Promise<void> {
 
     console.log(`[Stripe Connect] Disconnected artist ${artistId}`);
 }
+
+// ─── Native Onboarding ────────────────────────────────────────
+
+export interface OnboardingFormData {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    dobDay: number;
+    dobMonth: number;
+    dobYear: number;
+    country: "AU" | "NZ";
+    addressLine1: string;
+    addressCity: string;
+    addressState: string;
+    addressPostalCode: string;
+    bankBsb: string;
+    bankAccountNumber: string;
+    publicSlug?: string;
+}
+
+/**
+ * Submit all onboarding data to Stripe for a Custom account.
+ * Called after the artist completes the native 5-step wizard.
+ *
+ * Auto-sets:
+ *   - business_profile.mcc = 7299 (Personal Services / Tattoo)
+ *   - business_profile.url = tattoi.app/start/{slug}
+ *   - tos_acceptance (timestamp + IP from request)
+ */
+export async function submitOnboardingData(
+    accountId: string,
+    data: OnboardingFormData,
+    ipAddress: string
+): Promise<{ chargesEnabled: boolean; requiresDocument: boolean }> {
+    const appUrl = getAppUrl();
+
+    const country = data.country || "AU";
+    const currency = country === "NZ" ? "nzd" : "aud";
+
+    const updated = await stripe.accounts.update(accountId, {
+        business_profile: {
+            mcc: "7299",
+            url: data.publicSlug
+                ? `${appUrl}/start/${data.publicSlug}`
+                : appUrl,
+        },
+        individual: {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            email: data.email,
+            phone: data.phone,
+            dob: {
+                day: data.dobDay,
+                month: data.dobMonth,
+                year: data.dobYear,
+            },
+            address: {
+                line1: data.addressLine1,
+                city: data.addressCity,
+                state: data.addressState,
+                postal_code: data.addressPostalCode,
+                country,
+            },
+        },
+        external_account: {
+            object: "bank_account",
+            country,
+            currency,
+            routing_number: data.bankBsb,
+            account_number: data.bankAccountNumber,
+        } as any,
+        tos_acceptance: {
+            date: Math.floor(Date.now() / 1000),
+            ip: ipAddress,
+        },
+    });
+
+    // Check if document verification is still pending
+    const requiresDocument =
+        updated.requirements?.pending_verification?.includes(
+            "individual.verification.document"
+        ) ||
+        updated.requirements?.currently_due?.includes(
+            "individual.verification.document"
+        ) ||
+        false;
+
+    console.log(
+        `[Stripe Connect] Onboarding submitted for ${accountId}: charges=${updated.charges_enabled}, payouts=${updated.payouts_enabled}, requiresDoc=${requiresDocument}`
+    );
+
+    return {
+        chargesEnabled: updated.charges_enabled ?? false,
+        requiresDocument,
+    };
+}
+
+/**
+ * Upload an identity document (driver's licence / passport) to Stripe
+ * and attach it to the connected account's individual verification.
+ *
+ * In test mode, passing `useTestToken: true` skips the real upload
+ * and uses `file_identity_document_success` for instant verification.
+ */
+export async function uploadIdentityDocument(
+    accountId: string,
+    fileBuffer: Buffer,
+    fileName: string,
+    useTestToken: boolean = false
+): Promise<{ pending: boolean }> {
+    let fileId: string;
+
+    if (useTestToken) {
+        // Test mode: use Stripe's auto-pass token
+        fileId = "file_identity_document_success";
+    } else {
+        // Production: upload the actual file
+        const file = await stripe.files.create(
+            {
+                purpose: "identity_document",
+                file: {
+                    data: fileBuffer,
+                    name: fileName,
+                    type: "application/octet-stream",
+                },
+            },
+            { stripeAccount: accountId }
+        );
+        fileId = file.id;
+    }
+
+    // Attach to the individual's verification
+    await stripe.accounts.update(accountId, {
+        individual: {
+            verification: {
+                document: {
+                    front: fileId,
+                },
+            },
+        },
+    });
+
+    // Check updated status
+    const account = await stripe.accounts.retrieve(accountId);
+    const pending =
+        account.requirements?.pending_verification?.includes(
+            "individual.verification.document"
+        ) ?? false;
+
+    console.log(
+        `[Stripe Connect] ID document uploaded for ${accountId}: pending=${pending}`
+    );
+
+    return { pending };
+}
+
+// ─── Payout Management ────────────────────────────────────────
+
+export interface PayoutScheduleInfo {
+    interval: "daily" | "weekly" | "monthly" | "manual";
+    weeklyAnchor?: string;
+    monthlyAnchor?: number;
+    delayDays: number;
+    bankLast4?: string;
+    bankName?: string;
+    payoutsEnabled: boolean;
+    pendingVerification: boolean;
+    availableBalance: number;
+    pendingBalance: number;
+}
+
+/**
+ * Get the current payout schedule, bank info, and balance for a connected account.
+ */
+export async function getPayoutSchedule(
+    accountId: string
+): Promise<PayoutScheduleInfo> {
+    const account = await stripe.accounts.retrieve(accountId);
+    const schedule = account.settings?.payouts?.schedule;
+
+    // Get balance
+    const balance = await stripe.balance.retrieve({
+        stripeAccount: accountId,
+    });
+
+    const available =
+        balance.available?.find((b) => b.currency === "aud")?.amount ?? 0;
+    const pending =
+        balance.pending?.find((b) => b.currency === "aud")?.amount ?? 0;
+
+    // Get bank account last4
+    let bankLast4: string | undefined;
+    let bankName: string | undefined;
+    const externalAccounts = account.external_accounts;
+    if (externalAccounts?.data?.[0]) {
+        const bank = externalAccounts.data[0] as any;
+        bankLast4 = bank.last4;
+        bankName = bank.bank_name;
+    }
+
+    const pendingVerification =
+        account.requirements?.pending_verification?.includes(
+            "individual.verification.document"
+        ) ?? false;
+
+    return {
+        interval: (schedule?.interval as any) ?? "daily",
+        weeklyAnchor: schedule?.weekly_anchor,
+        monthlyAnchor: schedule?.monthly_anchor,
+        delayDays: schedule?.delay_days ?? 2,
+        bankLast4,
+        bankName,
+        payoutsEnabled: account.payouts_enabled ?? false,
+        pendingVerification,
+        availableBalance: available,
+        pendingBalance: pending,
+    };
+}
+
+/**
+ * Update the payout schedule for a connected account.
+ */
+export async function updatePayoutSchedule(
+    accountId: string,
+    interval: "daily" | "weekly" | "monthly" | "manual",
+    weeklyAnchor?: string,
+    monthlyAnchor?: number
+): Promise<void> {
+    const schedule: any = { interval };
+
+    if (interval === "weekly" && weeklyAnchor) {
+        schedule.weekly_anchor = weeklyAnchor;
+    }
+    if (interval === "monthly" && monthlyAnchor) {
+        schedule.monthly_anchor = monthlyAnchor;
+    }
+
+    await stripe.accounts.update(accountId, {
+        settings: {
+            payouts: { schedule },
+        },
+    });
+
+    console.log(
+        `[Stripe Connect] Payout schedule updated for ${accountId}: ${interval}`
+    );
+}
+
