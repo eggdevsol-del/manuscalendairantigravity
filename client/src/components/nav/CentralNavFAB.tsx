@@ -26,7 +26,7 @@ import { DataImportSettings } from "../settings/DataImportSettings";
 import { FunnelSettings } from "../FunnelSettings";
 import { DangerZoneSettings } from "../settings/DangerZoneSettings";
 import { TravelSettings } from "../settings/TravelSettings";
-import { PaymentSettings } from "../settings/PaymentSettings";
+// PaymentSettings moved to dedicated /bank-payouts page
 
 type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions" | "data-import" | "booking-link" | "travel" | "danger-zone" | "payments";
 
@@ -179,8 +179,11 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           id: "payments",
           label: "Bank Payouts",
           icon: Banknote,
-          onClick: () => handleViewChange("payments"),
-          closeOnClick: false,
+          onClick: () => {
+            setFABOpen(false);
+            setLocation("/bank-payouts");
+          },
+          closeOnClick: true,
         },
         {
           id: "work-hours",
@@ -429,11 +432,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
             <DangerZoneSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
-        {activeSettingsView === "payments" && panelReady && (
-          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
-            <PaymentSettings onBack={() => handleViewChange("main")} />
-          </div>
-        )}
+        {/* Bank Payouts moved to dedicated /bank-payouts page */}
         {fabChildren && activeSettingsView === "main" && fabChildren}
       </FABMenu>
     </div>

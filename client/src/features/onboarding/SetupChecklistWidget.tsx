@@ -78,7 +78,10 @@ export function SetupChecklistWidget() {
             description: "Connect Stripe to receive booking deposits.",
             isComplete: artistSettings?.stripeConnectPayoutsEnabled === 1,
             icon: Banknote,
-            onClick: () => requestSettingsView("payments"),
+            onClick: () => {
+                // Navigate to dedicated page (Stripe iframe needs full viewport)
+                window.location.href = "/bank-payouts";
+            },
         }
     ];
 

@@ -47,6 +47,7 @@ import PublicStudioFunnel from "./pages/funnel/PublicStudioFunnel";
 import { DepositSheet } from "./pages/funnel/DepositSheet";
 import LeadDetail from "./pages/LeadDetail";
 import PayoutHistory from "./pages/PayoutHistory";
+import BankPayoutsPage from "./pages/BankPayoutsPage";
 import ErrorDashboard from "./pages/admin/ErrorDashboard";
 
 function Router() {
@@ -169,6 +170,7 @@ function Router() {
         <GuardedRoute path="/clients" component={Clients} />
         <GuardedRoute path="/profile" component={ClientProfile} />
         <GuardedRoute path="/payout-history" component={PayoutHistory} />
+        <GuardedRoute path="/bank-payouts" component={BankPayoutsPage} />
         <GuardedRoute path="/admin/errors" component={ErrorDashboard} />
 
         <Route path="/404" component={NotFound} />

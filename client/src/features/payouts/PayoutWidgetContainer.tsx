@@ -39,8 +39,8 @@ export function PayoutWidgetContainer({
             if (result.url) {
                 window.location.href = result.url;
             } else if (result.accountType === "custom") {
-                // Custom → redirect to settings for embedded onboarding
-                setLocation("/settings");
+                // Custom → redirect to bank payouts page for embedded onboarding
+                setLocation("/bank-payouts");
             } else if (result.alreadyConnected) {
                 toast.success("Stripe is already connected!");
             }
