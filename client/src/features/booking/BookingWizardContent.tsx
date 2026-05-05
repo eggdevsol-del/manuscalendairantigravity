@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
 import { tokens } from "@/ui/tokens";
 import { InlineFormSigning } from "./components/InlineFormSigning";
+import { EmbeddedStripeCheckout } from "@/features/stripe/EmbeddedStripeCheckout";
 
 type BookingStep =
   | "artist"
@@ -212,6 +213,7 @@ export function BookingWizardContent({
 
   const [isClientPaying, setIsClientPaying] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"card" | "bank" | null>(null);
+  const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null);
 
   const [selectedService, setSelectedService] = useState<any>(null);
   const [requiredSittings, setRequiredSittings] = useState<number>(1);
@@ -899,7 +901,8 @@ export function BookingWizardContent({
                 </div>
 
                 {/* ── Payment Method Buttons ── */}
-                <div className="flex flex-col gap-2 relative z-10">
+                {!checkoutClientSecret && (
+                  <div className="flex flex-col gap-2 relative z-10">
                   <button
                     onClick={async () => {
                       setPaymentMethod("card");
@@ -933,8 +936,12 @@ export function BookingWizardContent({
                         const checkoutResult = await utils.client.funnel.createDepositCheckout.mutate({
                           token,
                           ...(msgId ? { messageId: msgId } : {}),
+                          returnUrl: window.location.href,
                         });
-                        if (checkoutResult?.url) {
+                        if (checkoutResult?.clientSecret) {
+                          setCheckoutClientSecret(checkoutResult.clientSecret);
+                        } else if (checkoutResult?.url) {
+                          // Fallback
                           window.location.href = checkoutResult.url;
                         } else {
                           toast.error("Could not create checkout session");
@@ -956,8 +963,14 @@ export function BookingWizardContent({
                     )}
                   </button>
                 </div>
+                )}
 
-
+                {/* ── Embedded Checkout Component ── */}
+                {checkoutClientSecret && (
+                  <div className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <EmbeddedStripeCheckout clientSecret={checkoutClientSecret} />
+                  </div>
+                )}
               </motion.div>
             )}
 

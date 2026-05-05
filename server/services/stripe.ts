@@ -160,6 +160,7 @@ export async function createDepositCheckoutSession(opts: {
   messageId?: number;
   stripeConnectAccountId?: string | null;
   tier: string;
+  successUrl?: string;
 }) {
   const baseUrl = getAppUrl();
 
@@ -168,6 +169,7 @@ export async function createDepositCheckoutSession(opts: {
 
   // Build the session config
   const sessionConfig: any = {
+    ui_mode: "embedded",
     payment_method_types: ["card"],
     mode: "payment",
     customer_email: opts.clientEmail,
@@ -196,8 +198,9 @@ export async function createDepositCheckoutSession(opts: {
       stripeConnectAccountId: opts.stripeConnectAccountId || "",
       tier: opts.tier,
     },
-    success_url: `${baseUrl}/deposit/${opts.depositToken}?status=success&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${baseUrl}/deposit/${opts.depositToken}?status=canceled`,
+    return_url: opts.successUrl 
+      ? `${opts.successUrl}${opts.successUrl.includes('?') ? '&' : '?'}status=success&session_id={CHECKOUT_SESSION_ID}`
+      : `${baseUrl}/deposit/${opts.depositToken}?status=success&session_id={CHECKOUT_SESSION_ID}`,
   };
 
   // Connect routing — route payment to artist (§6.1)
@@ -211,7 +214,10 @@ export async function createDepositCheckoutSession(opts: {
   }
 
   const session = await stripe.checkout.sessions.create(sessionConfig);
-  return session.url;
+  return {
+    url: session.url,
+    clientSecret: session.client_secret
+  };
 }
 
 /**
@@ -365,6 +371,17 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                   console.error(`[Stripe] Failed to update message ${messageId} metadata`, e);
                 }
               }
+            }
+
+            // Confirm all pending appointments for this conversation
+            const { confirmAppointments } = await import("./appointmentService");
+            try {
+              if (lead.conversationId) {
+                await confirmAppointments(lead.conversationId);
+                console.log(`[Stripe] Confirmed appointments for conversation ${lead.conversationId}`);
+              }
+            } catch (e) {
+              console.error(`[Stripe] Failed to confirm appointments for conversation ${lead.conversationId}`, e);
             }
 
             // ── Ledger Write (§12) ──

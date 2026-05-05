@@ -29,7 +29,9 @@ const loggingMiddleware = t.middleware(async opts => {
         type,
         durationMs,
         ok: result.ok,
-        error: !result.ok ? result.error : undefined,
+        error: !result.ok 
+          ? { message: result.error?.message, code: result.error?.code } 
+          : undefined,
         input: type === "mutation" && input ? input : undefined,
       }),
       userId: ctx.user?.id,

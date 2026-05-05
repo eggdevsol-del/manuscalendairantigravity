@@ -129,8 +129,8 @@ export function ProjectProposalMessage({
           </span>
         </div>
 
-        {/* Cancel button (artist) */}
-        {isArtist && onCancel && (
+        {/* Cancel button (artist only, pending only) */}
+        {isArtist && isPending && onCancel && (
           <button
             className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center bg-white/5 hover:bg-red-500/20 text-muted-foreground hover:text-red-500 transition-colors"
             onClick={e => {

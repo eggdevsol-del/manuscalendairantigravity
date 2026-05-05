@@ -143,7 +143,8 @@ export const funnelRouter = router({
   createDepositCheckout: publicProcedure
     .input(z.object({
       token: z.string(),
-      messageId: z.number().optional()
+      messageId: z.number().optional(),
+      returnUrl: z.string().optional()
     }))
     .mutation(async ({ input }) => {
       const { verifyDepositToken } = await import(
@@ -184,7 +185,7 @@ export const funnelRouter = router({
       const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
 
       // ── Deposit % Enforcement (v2.3 §3) ──────────────────────
-      // Free tier is locked at 37%. If the lead.depositAmount was
+      // Free tier is locked at 25%. If the lead.depositAmount was
       // set lower (e.g., client-manipulated), reject it.
       const enforcedDepositPercent = resolveDepositPercentage(
         tier,
@@ -210,7 +211,7 @@ export const funnelRouter = router({
         "../services/stripe"
       );
 
-      const url = await createDepositCheckoutSession({
+      const checkoutResult = await createDepositCheckoutSession({
         leadId: lead.id,
         depositAmountCents: fees.baseAmountCents,
         platformFeeCents: fees.platformFeeCents,
@@ -226,9 +227,10 @@ export const funnelRouter = router({
         messageId: input.messageId,
         stripeConnectAccountId: artistSettingsRow?.stripeConnectAccountId,
         tier,
+        successUrl: input.returnUrl,
       });
 
-      return { url, fees };
+      return { url: checkoutResult.url, clientSecret: checkoutResult.clientSecret, fees };
     }),
 
   /**
