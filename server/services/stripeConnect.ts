@@ -165,7 +165,7 @@ export async function createCustomConnectAccount(
     }
 
     console.log(
-        `[Stripe Connect] Created Custom account ${account.id} for artist ${artistId} (country=${businessCountry})`
+        `[Stripe Connect] Created Custom account ${account.id} for artist ${artistId} (country=${businessCountry}, type=${(account as any).type}, controller=${JSON.stringify((account as any).controller)})`
     );
 
     return account.id;
@@ -188,6 +188,12 @@ export const createExpressConnectAccount = createCustomConnectAccount;
 export async function createAccountSession(
     accountId: string
 ): Promise<string> {
+    // Verify the account has proper controller settings before creating session
+    const account = await stripe.accounts.retrieve(accountId);
+    console.log(
+        `[Stripe Connect] Creating session for account ${accountId}: type=${account.type}, controller=${JSON.stringify((account as any).controller)}`
+    );
+
     const session = await stripe.accountSessions.create({
         account: accountId,
         components: {

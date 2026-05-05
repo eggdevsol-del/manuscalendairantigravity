@@ -233,8 +233,32 @@ export const artistSettingsRouter = router({
         };
       }
 
-      // Custom incomplete → return accountId only (no URL needed)
+      // Custom incomplete → verify it's actually a Custom account on Stripe's side
       if (accountType === "custom") {
+        // Self-heal: verify the account has proper controller settings
+        const stripeAccount = await (await import("../services/stripe")).stripe.accounts.retrieve(existing.stripeConnectAccountId);
+        const isRealCustom = stripeAccount.type === "custom" || (stripeAccount as any).controller?.requirement_collection === "application";
+
+        if (!isRealCustom) {
+          // Account was created without proper controller (from a failed deploy) — recreate
+          console.log(`[Stripe Connect] Account ${existing.stripeConnectAccountId} is marked as custom but Stripe says type=${stripeAccount.type}. Recreating...`);
+          const { disconnectAccount } = await import("../services/stripeConnect");
+          await disconnectAccount(ctx.user.id);
+          const accountId = await createCustomConnectAccount(
+            ctx.user.id,
+            ctx.user.email || "",
+            existing?.businessCountry || "AU",
+            existing?.businessName || undefined
+          );
+          return {
+            alreadyConnected: false,
+            url: null,
+            accountId,
+            accountType: "custom" as const,
+            status: null,
+          };
+        }
+
         return {
           alreadyConnected: false,
           url: null,
