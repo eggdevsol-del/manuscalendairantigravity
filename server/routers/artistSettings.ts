@@ -244,6 +244,27 @@ export const artistSettingsRouter = router({
         };
       }
 
+      // Express account incomplete → auto-migrate to Custom
+      // (Express accounts don't support disable_stripe_user_authentication)
+      if (accountType === "express" && isCustomEnabled()) {
+        const { disconnectAccount } = await import("../services/stripeConnect");
+        await disconnectAccount(ctx.user.id);
+        console.log(`[Stripe Connect] Auto-migrating Express → Custom for artist ${ctx.user.id}`);
+        const accountId = await createCustomConnectAccount(
+          ctx.user.id,
+          ctx.user.email || "",
+          existing?.businessCountry || "AU",
+          existing?.businessName || undefined
+        );
+        return {
+          alreadyConnected: false,
+          url: null,
+          accountId,
+          accountType: "custom" as const,
+          status: null,
+        };
+      }
+
       // Standard incomplete → migrate to Custom or generate new link
       if (isCustomEnabled()) {
         const accountId = await createCustomConnectAccount(
