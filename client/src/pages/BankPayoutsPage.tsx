@@ -99,7 +99,7 @@ export default function BankPayoutsPage() {
 
         {phase === "wizard" && <OnboardingWizard onComplete={handleWizardComplete} />}
 
-        {phase === "dashboard" && <PayoutDashboard />}
+        {phase === "dashboard" && <PayoutDashboard onDisconnect={() => { connectStatus.refetch(); setPhase("idle"); }} />}
 
         {phase === "error" && (
           <div className="text-center p-6 mt-10 space-y-4">

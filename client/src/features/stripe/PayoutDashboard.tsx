@@ -1,17 +1,19 @@
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Banknote, Clock, AlertCircle, ChevronRight } from "lucide-react";
+import { Loader2, Banknote, Clock, AlertCircle, ChevronRight, Unlink } from "lucide-react";
 import { Button } from "@/components/ui";
 import { useState } from "react";
 import { useLocation } from "wouter";
 
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 
-export function PayoutDashboard() {
+export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void }) {
   const [, setLocation] = useLocation();
   const { data, isLoading, refetch } = trpc.artistSettings.getPayoutSchedule.useQuery();
   const updateSchedule = trpc.artistSettings.updatePayoutSchedule.useMutation();
+  const disconnectStripe = trpc.artistSettings.disconnectStripe.useMutation();
   const [editing, setEditing] = useState(false);
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false);
   const [interval, setInterval] = useState<string>("daily");
   const [anchor, setAnchor] = useState<string>("monday");
 
@@ -146,6 +148,45 @@ export function PayoutDashboard() {
         <span className="text-sm font-medium text-foreground">Payout History</span>
         <ChevronRight className="w-4 h-4 text-muted-foreground" />
       </button>
+
+      {/* Disconnect Account */}
+      <div className="pt-4 border-t border-white/5">
+        {!confirmDisconnect ? (
+          <button
+            onClick={() => setConfirmDisconnect(true)}
+            className="w-full flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground/60 hover:text-red-400 transition-colors"
+          >
+            <Unlink className="w-3.5 h-3.5" />
+            Disconnect Bank Account
+          </button>
+        ) : (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 space-y-3">
+            <p className="text-xs text-red-400 font-semibold">Are you sure?</p>
+            <p className="text-[10px] text-muted-foreground">This will disconnect your bank account. You'll need to go through setup again to receive payouts.</p>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setConfirmDisconnect(false)} className="flex-1 text-xs">
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={disconnectStripe.isPending}
+                onClick={async () => {
+                  try {
+                    await disconnectStripe.mutateAsync();
+                    toast.success("Account disconnected.");
+                    onDisconnect?.();
+                  } catch (err: any) {
+                    toast.error(err.message || "Failed to disconnect.");
+                  }
+                }}
+                className="flex-1 text-xs bg-red-500/80 text-white hover:bg-red-500"
+              >
+                {disconnectStripe.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Disconnect"}
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
