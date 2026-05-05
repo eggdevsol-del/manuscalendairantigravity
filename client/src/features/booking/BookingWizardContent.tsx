@@ -466,8 +466,12 @@ export function BookingWizardContent({
     const message = `I have found the following dates for your ${selectedService.name} project:\n\n${datesList}\n\nThis project consists of ${finalSittings} sittings.\nFrequency: ${frequency === "single" ? "Custom dates" : frequency}\nPrice per sitting: $${selectedService.price}\n\nPlease confirm these dates.`;
 
     const totalCost = Number(selectedService.price) * finalSittings;
-    // Use fee-engine percentage (SSOT) instead of legacy flat depositAmount
-    const depositPercent = Number(effectiveSettings?.depositPercentage ?? 25);
+    // Enforce 25% for Free tier (SSOT alignment)
+    const rawPercent = Number(effectiveSettings?.depositPercentage ?? 25);
+    const dbTier = effectiveSettings?.subscriptionTier?.toLowerCase();
+    const isFreeTier = dbTier === "free" || dbTier === "basic" || !dbTier;
+    const depositPercent = isFreeTier ? 25 : rawPercent;
+    
     const totalDeposit = Math.round(totalCost * depositPercent / 100);
 
     const metadata = JSON.stringify({

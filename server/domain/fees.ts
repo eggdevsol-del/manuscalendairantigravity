@@ -168,7 +168,7 @@ export function calculateTransactionFees(
 
 /**
  * Resolve the effective deposit percentage for an artist.
- * Free tier is LOCKED at 37%. Pro/Top use artist setting or default.
+ * Free tier is LOCKED at 25%. Pro/Top use artist setting or default.
  *
  * @param tier - Artist's subscription tier.
  * @param artistDepositPercent - Artist's configured % (from settings), null = use default.
@@ -179,7 +179,7 @@ export function resolveDepositPercentage(
 ): number {
     const config = PAYMENT_TIERS[tier];
 
-    // Free tier: locked at 37%, ignore artist setting
+    // Free tier: locked at default (25%), ignore artist setting
     if (!config.depositCustomisable) {
         return config.defaultDepositPercent;
     }
