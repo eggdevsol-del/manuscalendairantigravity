@@ -246,7 +246,7 @@ export function useChatController(conversationId: number) {
       // Send plain text message indicating acceptance
       const acceptMessage = appliedPromotion
         ? `I accept the project proposal for ${metadata.serviceName}. (Promotion applied: -$${(appliedPromotion.discountAmount / 100).toFixed(2)})`
-        : `I accept the project proposal for ${metadata.serviceName}. I am ready to upload my deposit remittance.`;
+        : `I accept the project proposal for ${metadata.serviceName}. I am ready to secure the dates.`;
 
       sendMessageMutation.mutate({
         conversationId,
