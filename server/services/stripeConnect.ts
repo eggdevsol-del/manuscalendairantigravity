@@ -105,7 +105,6 @@ export async function createCustomConnectAccount(
     businessName?: string
 ): Promise<string> {
     const account = await stripe.accounts.create({
-        type: "custom",
         country: businessCountry,
         email,
         business_type: "individual",
