@@ -68,7 +68,10 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   // Initialize database tables if they don't exist
   try {
-    await verifyAndFixDatabase();
+    // Skip automatic migrations in production to prevent Railway health check timeouts
+    if (process.env.NODE_ENV !== "production") {
+      await verifyAndFixDatabase();
+    }
   } catch (error) {
     console.error("[Server] Database initialization failed:", error);
     // Continue anyway - the app might work in read-only mode or with existing tables
