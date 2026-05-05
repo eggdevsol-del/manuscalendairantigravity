@@ -126,12 +126,12 @@ async function startServer() {
       "Content-Security-Policy",
       [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.onesignal.com https://accounts.google.com https://apis.google.com https://js.stripe.com https://connect.stripe.com",
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com",
-        "font-src 'self' https://fonts.gstatic.com",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.onesignal.com https://accounts.google.com https://apis.google.com https://js.stripe.com https://connect.stripe.com https://b.stripecdn.com",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com https://b.stripecdn.com",
+        "font-src 'self' https://fonts.gstatic.com https://b.stripecdn.com",
         "img-src 'self' data: blob: https: http:",
-        "connect-src 'self' https: wss: https://api.stripe.com",
-        "frame-src 'self' https://js.stripe.com https://connect.stripe.com https://accounts.google.com",
+        "connect-src 'self' https: wss: https://api.stripe.com https://connect.stripe.com https://b.stripecdn.com",
+        "frame-src 'self' https://js.stripe.com https://connect.stripe.com https://connect-js.stripe.com https://b.stripecdn.com https://accounts.google.com",
         "worker-src 'self' blob:",
       ].join("; ")
     );
@@ -139,6 +139,8 @@ async function startServer() {
     // accounts with disable_stripe_user_authentication should not trigger popups,
     // but this protects against edge cases and future SDK updates)
     res.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
+    // Allow third-party iframes (Stripe Connect) to access storage in PWA standalone mode
+    res.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
     next();
   });
 
