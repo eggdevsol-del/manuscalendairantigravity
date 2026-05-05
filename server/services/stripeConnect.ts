@@ -248,20 +248,31 @@ export interface ConnectAccountStatus {
 
 /**
  * Get the current status of a connected Stripe account.
+ * Returns safe fallback if the account doesn't exist on Stripe.
  */
 export async function getAccountStatus(
     accountId: string
 ): Promise<ConnectAccountStatus> {
-    const account = await stripe.accounts.retrieve(accountId);
-
-    return {
-        accountId: account.id,
-        chargesEnabled: account.charges_enabled ?? false,
-        payoutsEnabled: account.payouts_enabled ?? false,
-        onboardingComplete:
-            (account.charges_enabled && account.details_submitted) ?? false,
-        detailsSubmitted: account.details_submitted ?? false,
-    };
+    try {
+        const account = await stripe.accounts.retrieve(accountId);
+        return {
+            accountId: account.id,
+            chargesEnabled: account.charges_enabled ?? false,
+            payoutsEnabled: account.payouts_enabled ?? false,
+            onboardingComplete:
+                (account.charges_enabled && account.details_submitted) ?? false,
+            detailsSubmitted: account.details_submitted ?? false,
+        };
+    } catch (err: any) {
+        console.error(`[Stripe Connect] Failed to retrieve account ${accountId}:`, err.message);
+        return {
+            accountId,
+            chargesEnabled: false,
+            payoutsEnabled: false,
+            onboardingComplete: false,
+            detailsSubmitted: false,
+        };
+    }
 }
 
 // ─── Sync Status to DB ───────────────────────────────────────
@@ -275,38 +286,41 @@ export async function getAccountStatus(
 export async function syncAccountStatusToDb(
     accountId: string
 ): Promise<void> {
-    const status = await getAccountStatus(accountId);
+    try {
+        const status = await getAccountStatus(accountId);
 
-    const db = await getDb();
-    if (!db) return;
+        const db = await getDb();
+        if (!db) return;
 
-    // Retrieve the actual Stripe account to check its type
-    const account = await stripe.accounts.retrieve(accountId);
+        // Retrieve the actual Stripe account to check its type
+        const account = await stripe.accounts.retrieve(accountId);
 
-    // Map Stripe account type to our DB enum
-    let stripeType: "standard" | "express" | "custom";
-    if (account.type === "custom") {
-        stripeType = "custom";
-    } else if (account.type === "express") {
-        stripeType = "express";
-    } else {
-        stripeType = "standard";
+        // Map Stripe account type to our DB enum
+        let stripeType: "standard" | "express" | "custom";
+        if (account.type === "custom") {
+            stripeType = "custom";
+        } else if (account.type === "express") {
+            stripeType = "express";
+        } else {
+            stripeType = "standard";
+        }
+
+        await db
+            .update(artistSettings)
+            .set({
+                stripeConnectOnboardingComplete: status.onboardingComplete ? 1 : 0,
+                stripeConnectPayoutsEnabled: status.payoutsEnabled ? 1 : 0,
+                stripeConnectDetailsSubmitted: status.detailsSubmitted ? 1 : 0,
+                stripeConnectAccountType: stripeType,
+            })
+            .where(eq(artistSettings.stripeConnectAccountId, accountId));
+
+        console.log(
+            `[Stripe Connect] Synced account ${accountId}: type=${stripeType}, charges=${status.chargesEnabled}, payouts=${status.payoutsEnabled}, details=${status.detailsSubmitted}`
+        );
+    } catch (err: any) {
+        console.error(`[Stripe Connect] Failed to sync account ${accountId}:`, err.message);
     }
-
-    await db
-        .update(artistSettings)
-        .set({
-            stripeConnectOnboardingComplete: status.onboardingComplete ? 1 : 0,
-            stripeConnectPayoutsEnabled: status.payoutsEnabled ? 1 : 0,
-            stripeConnectDetailsSubmitted: status.detailsSubmitted ? 1 : 0,
-            // Defensive type heal: trust Stripe as SSOT
-            stripeConnectAccountType: stripeType,
-        })
-        .where(eq(artistSettings.stripeConnectAccountId, accountId));
-
-    console.log(
-        `[Stripe Connect] Synced account ${accountId}: type=${stripeType}, charges=${status.chargesEnabled}, payouts=${status.payoutsEnabled}, details=${status.detailsSubmitted}`
-    );
 }
 
 // ─── Disconnect ───────────────────────────────────────────────
