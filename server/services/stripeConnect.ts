@@ -93,7 +93,7 @@ export async function createConnectAccount(
  * - controller.requirement_collection: "application" → enables disable_stripe_user_authentication
  * - controller.stripe_dashboard.type: "none" → artist never sees Stripe UI
  * - controller.losses.payments: "application" → Tattoi absorbs negative balances
- * - controller.fees.payer: "account" → artist pays Stripe processing fees (matches Express behavior)
+ * - controller.fees.payer: "application" → Tattoi pays Stripe processing fees (recouped via platform fee)
  * - business_type: "individual" → artists are sole traders
  *
  * Returns the account ID (acct_xxx).
@@ -112,7 +112,7 @@ export async function createCustomConnectAccount(
             requirement_collection: "application",
             stripe_dashboard: { type: "none" },
             losses: { payments: "application" },
-            fees: { payer: "account" },
+            fees: { payer: "application" },
         },
         business_profile: {
             name: businessName || undefined,
