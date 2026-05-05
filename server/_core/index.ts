@@ -26,6 +26,7 @@ const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please try again later." },
+  validate: { trustProxy: false },
 });
 
 // Strict limiter for public funnel submit: 10 per 15 minutes per IP
@@ -35,6 +36,7 @@ const funnelSubmitLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many submissions, please try again later." },
+  validate: { trustProxy: false },
 });
 
 // Upload limiter: 20 per minute per IP
@@ -44,6 +46,7 @@ const uploadLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many uploads, please try again later." },
+  validate: { trustProxy: false },
 });
 
 function isPortAvailable(port: number): Promise<boolean> {
