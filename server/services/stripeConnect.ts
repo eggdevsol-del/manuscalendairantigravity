@@ -228,8 +228,8 @@ export async function createAccountLink(
 
     const link = await stripe.accountLinks.create({
         account: accountId,
-        refresh_url: `${appUrl}/settings?stripe_refresh=true`,
-        return_url: `${appUrl}/settings?stripe_connected=true`,
+        refresh_url: `${appUrl}/bank-payouts?stripe_refresh=true`,
+        return_url: `${appUrl}/bank-payouts?stripe_connected=true`,
         type: "account_onboarding",
     });
 

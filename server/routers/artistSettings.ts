@@ -421,5 +421,26 @@ export const artistSettingsRouter = router({
     await disconnectAccount(ctx.user.id);
     return { success: true };
   }),
+
+  /**
+   * Get a Stripe Account Link URL for redirect-based onboarding.
+   * Fallback for environments where the embedded iframe doesn't render
+   * (e.g., Android PWA standalone webview).
+   */
+  getStripeAccountLink: artistProcedure.mutation(async ({ ctx }) => {
+    const settings = await db.getArtistSettings(ctx.user.id);
+
+    if (!settings?.stripeConnectAccountId) {
+      throw new Error("No Stripe Connect account found. Create one first.");
+    }
+
+    const { createAccountLink } = await import("../services/stripeConnect");
+    const url = await createAccountLink(
+      settings.stripeConnectAccountId,
+      ctx.user.id
+    );
+
+    return { url };
+  }),
 });
 
