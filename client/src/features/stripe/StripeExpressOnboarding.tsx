@@ -1,16 +1,15 @@
 /**
- * StripeExpressOnboarding — Embedded Connect Onboarding
+ * StripeExpressOnboarding — Embedded Connect Onboarding (Desktop Only)
  *
  * Renders the Stripe Connect embedded onboarding component for Custom accounts.
  * Uses @stripe/connect-js + @stripe/react-connect-js.
- * Custom accounts use disable_stripe_user_authentication for popup-free onboarding.
  *
- * On Android PWA, the Stripe iframe may fail to render inside the standalone
- * webview. After a timeout, a fallback button is shown to open onboarding
- * via Stripe Account Links (redirect-based) in the system browser.
+ * This component is only rendered on desktop browsers where the embedded iframe
+ * works reliably. Mobile/PWA uses redirect-based Account Links instead
+ * (handled by BankPayoutsPage).
  */
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import {
     ConnectComponentsProvider,
     ConnectAccountOnboarding,
@@ -18,7 +17,7 @@ import {
 import { loadConnectAndInitialize } from "@stripe/connect-js";
 import { trpcVanilla } from "@/lib/trpcVanilla";
 import { trpc } from "@/lib/trpc";
-import { Loader2, CheckCircle2, ExternalLink } from "lucide-react";
+import { Loader2, CheckCircle2 } from "lucide-react";
 
 interface StripeExpressOnboardingProps {
     onComplete?: () => void;
@@ -31,8 +30,6 @@ export function StripeExpressOnboarding({
 }: StripeExpressOnboardingProps) {
     const [completed, setCompleted] = useState(false);
     const [fetchError, setFetchError] = useState<string | null>(null);
-    const [showFallback, setShowFallback] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
     const utils = trpc.useUtils();
 
     const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "";
@@ -65,29 +62,6 @@ export function StripeExpressOnboarding({
         });
     });
 
-    /**
-     * Fallback timer: if the Stripe iframe hasn't rendered any visible content
-     * after 12 seconds, show a fallback "Open in browser" button.
-     * This handles Android PWA where the embedded iframe silently fails.
-     */
-    useEffect(() => {
-        if (!stripeConnectInstance || fetchError || completed) return;
-
-        const timer = setTimeout(() => {
-            // Check if the Stripe element has rendered visible content
-            const el = containerRef.current?.querySelector(
-                "stripe-connect-account-onboarding"
-            ) as HTMLElement | null;
-
-            if (!el || el.offsetHeight < 50) {
-                console.warn("[StripeExpressOnboarding] Stripe iframe not visible after timeout, showing fallback");
-                setShowFallback(true);
-            }
-        }, 12000);
-
-        return () => clearTimeout(timer);
-    }, [stripeConnectInstance, fetchError, completed]);
-
     const handleExit = () => {
         setCompleted(true);
         utils.artistSettings.get.invalidate();
@@ -95,18 +69,6 @@ export function StripeExpressOnboarding({
         onComplete?.();
     };
 
-    const handleOpenInBrowser = async () => {
-        try {
-            const result = await trpcVanilla.artistSettings.getStripeAccountLink.mutate();
-            if (result.url) {
-                window.open(result.url, "_blank");
-            }
-        } catch (err: any) {
-            setFetchError(err.message || "Failed to open onboarding.");
-        }
-    };
-
-    // Missing publishable key
     if (!publishableKey) {
         return (
             <div className="text-center p-6">
@@ -117,7 +79,6 @@ export function StripeExpressOnboarding({
         );
     }
 
-    // Completed state
     if (completed) {
         return (
             <div className="text-center p-6 space-y-3">
@@ -151,7 +112,7 @@ export function StripeExpressOnboarding({
     }
 
     return (
-        <div className="space-y-3 w-full" ref={containerRef}>
+        <div className="space-y-3 w-full">
             {isResuming && (
                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
                     <p className="text-xs text-amber-400 font-semibold">
@@ -161,36 +122,13 @@ export function StripeExpressOnboarding({
                 </div>
             )}
 
-            {/* Stripe embedded component — full width, no overflow constraints */}
-            <div
-                style={{ width: "100%", minHeight: "600px" }}
-            >
+            <div style={{ width: "100%", minHeight: "600px" }}>
                 <ConnectComponentsProvider connectInstance={stripeConnectInstance}>
                     <div style={{ width: "100%", minHeight: "600px" }}>
                         <ConnectAccountOnboarding onExit={handleExit} />
                     </div>
                 </ConnectComponentsProvider>
             </div>
-
-            {/* Fallback for Android PWA: shown after timeout if iframe doesn't render */}
-            {showFallback && (
-                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-center space-y-3">
-                    <p className="text-sm text-amber-400 font-semibold">
-                        Having trouble loading?
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                        The onboarding form may not work in this browser.
-                        You can complete setup in your system browser instead.
-                    </p>
-                    <button
-                        onClick={handleOpenInBrowser}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#E09F3E]/80 hover:bg-[#E09F3E] text-white text-sm font-medium rounded-lg transition-colors"
-                    >
-                        <ExternalLink className="w-4 h-4" />
-                        Open in Browser
-                    </button>
-                </div>
-            )}
         </div>
     );
 }
