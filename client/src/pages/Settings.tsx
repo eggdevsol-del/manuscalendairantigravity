@@ -81,7 +81,7 @@ function PaymentProcessingSettingsRow() {
           </p>
           <p className="text-xs text-muted-foreground">
             {isConnected ? "Stripe Connected ✓"
-              : isPending && accountType === "express"
+              : isPending && accountType === "custom"
                 ? "Complete onboarding →"
                 : isPending ? "Complete onboarding →"
                   : "Connect Stripe to receive payments"}

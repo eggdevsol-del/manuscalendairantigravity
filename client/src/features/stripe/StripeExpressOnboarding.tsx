@@ -1,8 +1,9 @@
 /**
  * StripeExpressOnboarding — Embedded Connect Onboarding
  *
- * Renders the Stripe Connect embedded onboarding component for Express accounts.
+ * Renders the Stripe Connect embedded onboarding component for Custom accounts.
  * Uses @stripe/connect-js + @stripe/react-connect-js.
+ * Custom accounts use disable_stripe_user_authentication for popup-free onboarding.
  *
  * Props:
  *   - onComplete: called when onboarding finishes successfully
@@ -169,7 +170,7 @@ export function StripeExpressOnboarding({
                 className={cn(
                     tokens.card.base,
                     tokens.card.bg,
-                    "border-0 overflow-hidden h-[650px] w-full flex flex-col relative"
+                    "border-0 overflow-hidden min-h-[500px] w-full flex flex-col relative"
                 )}
             >
                 <ConnectComponentsProvider

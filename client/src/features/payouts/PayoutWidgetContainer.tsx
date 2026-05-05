@@ -38,8 +38,8 @@ export function PayoutWidgetContainer({
             // Standard → redirect
             if (result.url) {
                 window.location.href = result.url;
-            } else if (result.accountType === "express") {
-                // Express → redirect to settings for embedded onboarding
+            } else if (result.accountType === "custom") {
+                // Custom → redirect to settings for embedded onboarding
                 setLocation("/settings");
             } else if (result.alreadyConnected) {
                 toast.success("Stripe is already connected!");

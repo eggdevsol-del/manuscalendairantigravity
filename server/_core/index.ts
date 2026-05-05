@@ -135,6 +135,10 @@ async function startServer() {
         "worker-src 'self' blob:",
       ].join("; ")
     );
+    // Cross-Origin-Opener-Policy: allow Stripe auth popups (defensive — Custom
+    // accounts with disable_stripe_user_authentication should not trigger popups,
+    // but this protects against edge cases and future SDK updates)
+    res.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
     next();
   });
 

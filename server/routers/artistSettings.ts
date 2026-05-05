@@ -10,7 +10,7 @@ export const artistSettingsRouter = router({
   get: artistProcedure.query(async ({ ctx }) => {
     const settings = await db.getArtistSettings(ctx.user.id);
     const expressEnabled =
-      process.env.STRIPE_EXPRESS_ENABLED !== "false";
+      process.env.STRIPE_CUSTOM_ENABLED !== "false";
 
     // Return default settings if none exist
     return (
@@ -211,9 +211,9 @@ export const artistSettingsRouter = router({
   connectStripe: artistProcedure.mutation(async ({ ctx }) => {
     const existing = await db.getArtistSettings(ctx.user.id);
     const {
-      isExpressEnabled,
+      isCustomEnabled,
       createConnectAccount,
-      createExpressConnectAccount,
+      createCustomConnectAccount,
       createAccountLink,
       getAccountStatus,
     } = await import("../services/stripeConnect");
@@ -233,20 +233,20 @@ export const artistSettingsRouter = router({
         };
       }
 
-      // Express incomplete → return accountId only (no URL needed)
-      if (accountType === "express") {
+      // Custom incomplete → return accountId only (no URL needed)
+      if (accountType === "custom") {
         return {
           alreadyConnected: false,
           url: null,
           accountId: existing.stripeConnectAccountId,
-          accountType: "express" as const,
+          accountType: "custom" as const,
           status,
         };
       }
 
-      // Standard incomplete → migrate to Express or generate new link
-      if (isExpressEnabled()) {
-        const accountId = await createExpressConnectAccount(
+      // Standard incomplete → migrate to Custom or generate new link
+      if (isCustomEnabled()) {
+        const accountId = await createCustomConnectAccount(
           ctx.user.id,
           ctx.user.email || "",
           existing?.businessCountry || "AU",
@@ -256,7 +256,7 @@ export const artistSettingsRouter = router({
           alreadyConnected: false,
           url: null,
           accountId,
-          accountType: "express" as const,
+          accountType: "custom" as const,
           status: null,
         };
       }
@@ -275,9 +275,9 @@ export const artistSettingsRouter = router({
     }
 
     // ── Create new account ──
-    if (isExpressEnabled()) {
-      // Express: embedded in-app onboarding
-      const accountId = await createExpressConnectAccount(
+    if (isCustomEnabled()) {
+      // Custom: embedded in-app onboarding (no popup)
+      const accountId = await createCustomConnectAccount(
         ctx.user.id,
         ctx.user.email || "",
         existing?.businessCountry || "AU",
@@ -287,7 +287,7 @@ export const artistSettingsRouter = router({
         alreadyConnected: false,
         url: null,
         accountId,
-        accountType: "express" as const,
+        accountType: "custom" as const,
         status: null,
       };
     }
@@ -313,7 +313,7 @@ export const artistSettingsRouter = router({
    * Returns { clientSecret } — used by @stripe/connect-js on the frontend.
    *
    * This is a MUTATION (not a query) to prevent TanStack Query caching.
-   * Guard: only valid for Express accounts.
+   * Guard: only valid for Custom accounts.
    */
   createStripeAccountSession: artistProcedure.mutation(async ({ ctx }) => {
     const settings = await db.getArtistSettings(ctx.user.id);
@@ -322,9 +322,9 @@ export const artistSettingsRouter = router({
       throw new Error("No Stripe Connect account found. Create one first.");
     }
 
-    if (settings.stripeConnectAccountType !== "express") {
+    if (settings.stripeConnectAccountType !== "custom") {
       throw new Error(
-        "Account sessions are only available for Express accounts."
+        "Account sessions are only available for Custom accounts."
       );
     }
 
@@ -362,7 +362,8 @@ export const artistSettingsRouter = router({
       connected: true,
       accountType: (settings.stripeConnectAccountType || "standard") as
         | "standard"
-        | "express",
+        | "express"
+        | "custom",
       ...status,
     };
   }),

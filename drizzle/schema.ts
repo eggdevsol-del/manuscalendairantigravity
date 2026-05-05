@@ -171,6 +171,7 @@ export const artistSettings = mysqlTable(
     stripeConnectAccountType: mysqlEnum("stripe_connect_account_type", [
       "standard",
       "express",
+      "custom",
     ]).default("standard"),
     stripeConnectDetailsSubmitted: tinyint().default(0),
     // ── Payment Settings (v2.3 §3) ──

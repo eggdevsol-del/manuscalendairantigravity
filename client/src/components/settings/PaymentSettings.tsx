@@ -16,7 +16,7 @@ interface PaymentSettingsProps {
  *  1. User taps "Bank Payouts" in FAB menu
  *  2. We check getStripeConnectStatus
  *  3. If no account → show "Connect Your Bank" with a manual button
- *  4. If Express account exists (complete or incomplete) → show embedded onboarding
+ *  4. If Custom account exists (complete or incomplete) → show embedded onboarding
  *  5. If connected → show "Payouts Enabled"
  *
  * The embedded Stripe component handles the entire KYC/bank-linking process
@@ -50,8 +50,8 @@ export function PaymentSettings({ onBack }: PaymentSettingsProps) {
 
     if (isConnected) {
       setPhase("connected");
-    } else if (isPending && status.accountType === "express") {
-      // Express account exists but onboarding incomplete → show embedded
+    } else if (isPending && status.accountType === "custom") {
+      // Custom account exists but onboarding incomplete → show embedded
       setPhase("onboarding");
     } else if (isPending && status.accountType === "standard") {
       // Standard account incomplete — shouldn't happen with Express enabled
@@ -75,13 +75,13 @@ export function PaymentSettings({ onBack }: PaymentSettingsProps) {
         return;
       }
 
-      if (result.accountType === "express") {
+      if (result.accountType === "custom") {
         // Account created on Stripe — wait a moment for propagation
         // then show the embedded onboarding
         await new Promise(resolve => setTimeout(resolve, 1500));
         setPhase("onboarding");
       } else if (result.url) {
-        // Standard fallback — shouldn't happen with STRIPE_EXPRESS_ENABLED=true
+        // Standard fallback — shouldn't happen with STRIPE_CUSTOM_ENABLED=true
         // but handle it
         window.location.href = result.url;
       }

@@ -29,9 +29,9 @@ export const REQUIRED_WEBHOOK_EVENTS = [
   // ── Connect Events ──
   "account.updated",              // Artist Connect onboarding/status changes
 
-  // ── Payout Events (Express Connect) ──
-  "payout.paid",                  // Express artist payout deposited → email notification
-  "payout.failed",                // Express artist payout failed → email notification
+  // ── Payout Events (Custom Connect) ──
+  "payout.paid",                  // Custom artist payout deposited → email notification
+  "payout.failed",                // Custom artist payout failed → email notification
 
   // ── Refund Events ──
   "charge.refunded",              // Refund issued → negative ledger entry
@@ -637,13 +637,13 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         break;
       }
 
-      // ── Payout Notifications (Express only) ─────────────────
+      // ── Payout Notifications (Custom accounts) ──────────────
       case "payout.paid": {
         const payout = event.data.object as Stripe.Payout;
         const connectAccountId = event.account;
         if (!connectAccountId) break;
 
-        // Only send email for Express accounts (Standard gets Stripe native emails)
+        // Send email for Custom accounts (they have no Stripe dashboard)
         const payoutArtist = await db
           .select({
             userId: artistSettings.userId,
@@ -654,7 +654,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
           .where(eq(artistSettings.stripeConnectAccountId, connectAccountId))
           .then((rows: any[]) => rows[0]);
 
-        if (payoutArtist?.stripeConnectAccountType === "express") {
+        if (payoutArtist?.stripeConnectAccountType === "custom") {
           const { sendEmail } = await import("./email");
           const amountFormatted = `$${((payout.amount || 0) / 100).toFixed(2)}`;
           await sendEmail({
@@ -685,7 +685,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
           .where(eq(artistSettings.stripeConnectAccountId, connectAccountId))
           .then((rows: any[]) => rows[0]);
 
-        if (payoutArtist?.stripeConnectAccountType === "express") {
+        if (payoutArtist?.stripeConnectAccountType === "custom") {
           const { sendEmail } = await import("./email");
           const amountFormatted = `$${((payout.amount || 0) / 100).toFixed(2)}`;
           await sendEmail({
