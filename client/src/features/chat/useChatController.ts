@@ -243,16 +243,6 @@ export function useChatController(conversationId: number) {
         return;
       }
 
-      // Send plain text message indicating acceptance
-      const acceptMessage = appliedPromotion
-        ? `I accept the project proposal for ${metadata.serviceName}. (Promotion applied: -$${(appliedPromotion.discountAmount / 100).toFixed(2)})`
-        : `I accept the project proposal for ${metadata.serviceName}. I am ready to secure the dates.`;
-
-      sendMessageMutation.mutate({
-        conversationId,
-        content: acceptMessage,
-        messageType: "text",
-      });
 
       // We still update the metadata on the server (for discount tracking), 
       // but NOT the status! Status remains "pending" until deposit paid.
