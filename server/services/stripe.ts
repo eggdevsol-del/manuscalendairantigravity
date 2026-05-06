@@ -169,7 +169,7 @@ export async function createDepositCheckoutSession(opts: {
 
   // Build the session config
   const sessionConfig: any = {
-    ui_mode: "custom",
+    ui_mode: "embedded",
     payment_method_types: ["card"],
     mode: "payment",
     customer_email: opts.clientEmail,
