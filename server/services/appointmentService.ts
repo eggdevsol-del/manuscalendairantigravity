@@ -485,8 +485,8 @@ export async function confirmAppointments(
 
   const updateData: any = {
     status: "confirmed",
-    depositPaid: true,
-    confirmationSent: false, // Will be set to true after notification is sent
+    depositPaid: 1,
+    confirmationSent: 0, // Will be set to 1 after notification is sent
     updatedAt: new Date(),
   };
 
