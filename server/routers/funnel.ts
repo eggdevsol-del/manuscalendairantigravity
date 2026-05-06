@@ -463,7 +463,9 @@ export const funnelRouter = router({
         const existingLead = await db.query.leads.findFirst({
           where: eq(schema.leads.id, conversation.leadId),
         });
-        if (existingLead) {
+        // Only reuse the lead if a deposit hasn't already been paid on it.
+        // If a deposit was paid, this is a new project proposal in the same chat.
+        if (existingLead && !existingLead.depositVerifiedAt) {
           lead = existingLead;
         }
       }
