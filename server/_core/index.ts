@@ -22,7 +22,7 @@ import "../services/notificationOrchestrator";
 // General API limiter: 100 requests per 15 minutes per IP
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 3000, // Increased to allow chat polling (which polls every 3 seconds)
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please try again later." },
