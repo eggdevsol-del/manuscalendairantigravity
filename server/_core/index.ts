@@ -91,40 +91,41 @@ async function startServer() {
   app.set("trust proxy", true); // Railway runs behind a reverse proxy
   const server = createServer(app);
 
+  const corsOptions = {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // Allow requests with no origin (mobile apps often have no origin header)
+      if (!origin) return callback(null, true);
+
+      const allowedOrigins = [
+        "http://localhost",
+        "https://localhost",
+        "capacitor://localhost",
+        "http://artist-booking-app-production.up.railway.app",
+        "https://artist-booking-app-production.up.railway.app",
+        "https://tattoi.app",
+        "https://www.tattoi.app",
+        "https://vidabiz.butterfly-effect.dev"
+      ];
+
+      // Allow exact matches or any localhost port
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.startsWith("http://localhost:")
+      ) {
+        callback(null, true);
+      } else {
+        // Log unauthorized origins for debugging in server logs
+        callback(null, false);
+      }
+    },
+    credentials: true,
+  };
+
   // 1. Move CORS to the very top to handle preflight requests first
-  app.use(
-    cors({
-      origin: (origin, callback) => {
-        // Allow requests with no origin (mobile apps often have no origin header)
-        if (!origin) return callback(null, true);
+  app.use(cors(corsOptions));
 
-        const allowedOrigins = [
-          "http://localhost",
-          "https://localhost",
-          "capacitor://localhost",
-          "http://artist-booking-app-production.up.railway.app",
-          "https://artist-booking-app-production.up.railway.app",
-          "https://tattoi.app",
-          "https://www.tattoi.app",
-        ];
-
-        // Allow exact matches or any localhost port
-        if (
-          allowedOrigins.includes(origin) ||
-          origin.startsWith("http://localhost:")
-        ) {
-          callback(null, true);
-        } else {
-          // Log unauthorized origins for debugging in server logs
-          callback(null, false);
-        }
-      },
-      credentials: true,
-    })
-  );
-
-  // Handle preflight for all routes
-  app.options("*", cors());
+  // Handle preflight for all routes with the exact same options
+  app.options("*", cors(corsOptions));
 
   // Content Security Policy headers
   app.use((_req, res, next) => {
