@@ -1793,6 +1793,14 @@ export function BookingWizardContent({
                       }}
                       onMonthChange={setCalendarMonth}
                       dateIndicators={dateIndicators}
+                      disabled={[
+                        { before: new Date(new Date().setHours(0, 0, 0, 0)) },
+                        ...(dateIndicators 
+                          ? Object.entries(dateIndicators)
+                              .filter(([_, indicators]) => indicators.some(ind => ind.percentage >= 100))
+                              .map(([dateStr]) => new Date(dateStr))
+                          : [])
+                      ]}
                       className="rounded-md border-0 pointer-events-auto"
                     />
                   </div>

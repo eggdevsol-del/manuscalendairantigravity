@@ -84,6 +84,43 @@ export const messagesRouter = router({
         } catch (e) { }
 
         if (metaObj && metaObj.status === "pending" && Array.isArray(metaObj.dates) && metaObj.dates.length > 0) {
+          // --- BEGIN VALIDATION ---
+          const searchStart = new Date();
+          searchStart.setHours(0, 0, 0, 0);
+
+          const rawAppointments = await db.getArtistCalendar(
+            conversation.artistId,
+            searchStart
+          );
+
+          const existingAppointments = rawAppointments
+            .filter((a) => a.status !== "cancelled" && a.status !== "rejected")
+            .map((a) => ({
+              ...a,
+              startTime: new Date(a.startTime),
+              endTime: new Date(a.endTime),
+            }));
+
+          for (const dateStr of metaObj.dates) {
+            const startTime = new Date(dateStr);
+            const duration = metaObj.serviceDuration || 60;
+            const endTime = new Date(startTime.getTime() + duration * 60 * 1000);
+
+            const hasCollision = existingAppointments.some(appt => {
+              const apptStart = new Date(appt.startTime);
+              const apptEnd = new Date(appt.endTime);
+              return startTime < apptEnd && endTime > apptStart;
+            });
+
+            if (hasCollision) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "One or more selected dates conflict with existing appointments.",
+              });
+            }
+          }
+          // --- END VALIDATION ---
+
           const appointmentIds: number[] = [];
           for (const dateStr of metaObj.dates) {
             const startTime = new Date(dateStr);

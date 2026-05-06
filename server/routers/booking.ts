@@ -243,11 +243,35 @@ export const bookingRouter = router({
         }
       }
 
-      // Check if this is a new client (no prior appointments)
-      // We check BEFORE creating the new ones to see if they had 0 count
-      const distinctAppointments = await db.getArtistCalendar(
+      // Check for collisions
+      const rawAppointments = await db.getArtistCalendar(
         conversation.artistId
       );
+
+      const existingAppointments = rawAppointments
+        .filter((a) => a.status !== "cancelled" && a.status !== "rejected")
+        .map((a) => ({
+          ...a,
+          startTime: new Date(a.startTime),
+          endTime: new Date(a.endTime),
+        }));
+
+      for (const appt of input.appointments) {
+        const hasCollision = existingAppointments.some(existing => {
+          const existingStart = new Date(existing.startTime);
+          const existingEnd = new Date(existing.endTime);
+          return appt.startTime < existingEnd && appt.endTime > existingStart;
+        });
+
+        if (hasCollision) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "One or more selected dates conflict with existing appointments.",
+          });
+        }
+      }
+
+      // Check if this is a new client (no prior appointments)
       // db.getAppointmentsForUser might not filter by specific client if querying as artist.
       // Let's use getAppointmentsForUser(conversation.clientId, "client")
 
