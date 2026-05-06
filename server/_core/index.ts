@@ -153,7 +153,7 @@ async function startServer() {
 
   // MUST BE BEFORE express.json() to capture raw payload for signature verification
   app.post(
-    "/api/webhooks/stripe",
+    ["/api/webhooks/stripe", "/api/stripe/webhook"],
     express.raw({ type: "application/json" }),
     handleStripeWebhook
   );
