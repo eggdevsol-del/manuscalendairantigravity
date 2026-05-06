@@ -1,7 +1,7 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { Capacitor } from "@capacitor/core";
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || "https://vidabiz.butterfly-effect.dev";
+export const API_BASE_URL = "https://www.tattoi.app";
 
 export const APP_TITLE = import.meta.env.VITE_APP_TITLE || "TOI";
 
