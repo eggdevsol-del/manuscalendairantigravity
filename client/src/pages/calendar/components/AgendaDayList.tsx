@@ -117,7 +117,7 @@ export function AgendaDayList({
                   <div className="flex gap-2 w-full">
                     {activeArtists.map((artist: any) => {
                       const artistEvents = dayEvents.filter(
-                        (apt: any) => apt.artistId === artist.userId
+                        (apt: any) => apt.artistId === artist.userId || apt.clientId === artist.userId
                       );
                       return (
                         <div

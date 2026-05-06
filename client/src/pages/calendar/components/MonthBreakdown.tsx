@@ -151,7 +151,7 @@ export function MonthBreakdown({
                   const backgrounds = hasEvents
                     ? activeArtists.map(artist => {
                         const artistEvents = dayEvents.filter(
-                          apt => apt.artistId === artist.userId
+                          apt => apt.artistId === artist.userId || apt.clientId === artist.userId
                         );
                         if (artistEvents.length > 0) {
                           const style = getEventStyle(artistEvents[0]);
