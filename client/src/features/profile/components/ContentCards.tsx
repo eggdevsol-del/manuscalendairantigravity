@@ -7,8 +7,10 @@ import {
   Check,
   AlertCircle,
   FileText,
+  DollarSign,
 } from "lucide-react";
 import { Button } from "@/components/ui";
+import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useState, useMemo, useCallback } from "react";
 import {
@@ -164,6 +166,8 @@ export function HistoryCard({ history }: { history: any[] }) {
 }
 
 export function UpcomingCard({ upcoming }: { upcoming: any[] }) {
+  const [, setLocation] = useLocation();
+
   return (
     <div className="px-1">
       {upcoming?.length === 0 ? (
@@ -221,6 +225,17 @@ export function UpcomingCard({ upcoming }: { upcoming: any[] }) {
                       </span>
                     </div>
                   </div>
+
+                  {item.remainingBalanceCents > 0 && item.paymentStatus !== "fully_paid" && (
+                    <Button 
+                      onClick={() => setLocation(`/balance/${item.id}`)}
+                      className="w-full mt-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold tracking-wide"
+                      size="sm"
+                    >
+                      <DollarSign className="w-3.5 h-3.5 mr-1.5" />
+                      Pay Balance (${(item.remainingBalanceCents / 100).toFixed(2)})
+                    </Button>
+                  )}
                 </div>
               </div>
             );

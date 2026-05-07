@@ -6,18 +6,23 @@ import {
   Card,
   CardContent,
 } from "@/components/ui";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { Calendar, Clock, MapPin, DollarSign } from "lucide-react";
 import { format } from "date-fns";
+import { useLocation } from "wouter";
 
 interface ClientUpcomingProps {
   appointment: any;
 }
 
 export function ClientUpcoming({ appointment }: ClientUpcomingProps) {
+  const [, setLocation] = useLocation();
+
   if (!appointment) return null;
 
   const startTime = new Date(appointment.startTime);
   const artist = appointment.artist;
+
+  const needsBalancePayment = appointment.remainingBalanceCents > 0 && appointment.paymentStatus !== "fully_paid";
 
   return (
     <div className="mb-6">
@@ -58,7 +63,18 @@ export function ClientUpcoming({ appointment }: ClientUpcomingProps) {
             </div>
           </div>
 
-          <Button className="w-full shadow-lg">View Details</Button>
+          <div className="flex gap-2 w-full mt-2">
+            <Button className="flex-1 shadow-lg" variant={needsBalancePayment ? "outline" : "default"}>View Details</Button>
+            {needsBalancePayment && (
+              <Button 
+                onClick={() => setLocation(`/balance/${appointment.id}`)}
+                className="flex-1 shadow-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold tracking-wide"
+              >
+                <DollarSign className="w-4 h-4 mr-1.5" />
+                Pay Balance
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

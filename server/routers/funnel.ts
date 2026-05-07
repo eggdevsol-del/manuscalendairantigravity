@@ -234,16 +234,8 @@ export const funnelRouter = router({
     }),
 
   getBalanceInfo: publicProcedure
-    .input(z.object({ bookingId: z.number(), token: z.string() }))
-    .query(async ({ input }) => {
-      const { verifyDepositToken } = await import(
-        "../services/depositToken"
-      );
-      const result = verifyDepositToken(input.token);
-      if (!result.valid) {
-        return null;
-      }
-
+    .input(z.object({ bookingId: z.number(), token: z.string().optional() }))
+    .query(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) return null;
 
@@ -251,12 +243,22 @@ export const funnelRouter = router({
         where: eq(schema.appointments.id, input.bookingId),
       });
 
-      if (!booking || !booking.remainingBalanceCents) {
+      if (!booking || !booking.remainingBalanceCents || booking.remainingBalanceCents <= 0 || booking.status === "cancelled") {
         return null;
       }
 
-      if (booking.status === "cancelled" || booking.remainingBalanceCents <= 0) {
-        return null;
+      // If token provided, verify it
+      if (input.token) {
+        const { verifyDepositToken } = await import(
+          "../services/depositToken"
+        );
+        const result = verifyDepositToken(input.token);
+        if (!result.valid) return null;
+      } else {
+        // If no token, verify they are the client
+        if (!ctx.user || ctx.user.id !== booking.clientId) {
+          return null;
+        }
       }
 
       const artistSettingsRow = await db.query.artistSettings.findFirst({
@@ -333,24 +335,30 @@ export const funnelRouter = router({
   createBalanceCheckout: publicProcedure
     .input(z.object({
       bookingId: z.number(),
-      balanceToken: z.string(),
+      balanceToken: z.string().optional(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
-
-      // Verify token
-      const { verifyDepositToken } = await import("../services/depositToken");
-      const tokenResult = verifyDepositToken(input.balanceToken);
-      if (!tokenResult.valid) {
-        throw new Error("Invalid or expired payment link");
-      }
 
       // Get the booking
       const booking = await db.query.appointments.findFirst({
         where: eq(schema.appointments.id, input.bookingId),
       });
       if (!booking) throw new Error("Booking not found");
+
+      // Verify token or auth
+      if (input.balanceToken) {
+        const { verifyDepositToken } = await import("../services/depositToken");
+        const tokenResult = verifyDepositToken(input.balanceToken);
+        if (!tokenResult.valid) {
+          throw new Error("Invalid or expired payment link");
+        }
+      } else {
+        if (!ctx.user || ctx.user.id !== booking.clientId) {
+          throw new Error("Not authorized");
+        }
+      }
 
       // Validate booking is in correct state
       if (booking.paymentStatus === "fully_paid") {
