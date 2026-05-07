@@ -1,23 +1,50 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Store,
-  Package,
   Upload,
-  ArrowRight,
-  ArrowLeft,
   Check,
   Loader2,
   Truck,
-  MapPin,
-  Globe
+  Globe,
+  ChevronLeft,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { fileToBase64 } from "@/pages/funnel/funnelImage";
+
+/**
+ * Compress an image file client-side before uploading.
+ * Resizes to max 1200px on the longest edge and outputs as JPEG at 0.8 quality.
+ * This keeps payloads well under the 5MB server limit.
+ */
+function compressImage(file: File, maxDim = 1200, quality = 0.8): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          const ratio = Math.min(maxDim / width, maxDim / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("Canvas context unavailable"));
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function StorefrontSetupWizard({ onClose }: { onClose: () => void }) {
-  const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Product Form State
@@ -45,9 +72,6 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
     }
   };
 
-  const handleNext = () => setStep(prev => prev + 1);
-  const handleBack = () => setStep(prev => prev - 1);
-
   const handleSubmit = async () => {
     if (!title || !price || !inventory) {
       toast.error("Please fill in all required fields.");
@@ -58,12 +82,12 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
     try {
       let imageUrl = "";
       if (imageFile) {
-        const base64 = await fileToBase64(imageFile);
+        // Compress image client-side to stay under 5MB payload limit
+        const compressedBase64 = await compressImage(imageFile);
         const uploadRes = await uploadMutation.mutateAsync({
-          file: base64,
-          filename: imageFile.name,
-          contentType: imageFile.type,
-          context: "product",
+          base64: compressedBase64,
+          filename: imageFile.name.replace(/\.[^.]+$/, ".jpg"),
+          folder: "products",
         });
         imageUrl = uploadRes.url;
       }
@@ -77,7 +101,7 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
         imageUrl,
       });
 
-      toast.success("Storefront activated and product added!");
+      toast.success("Product published!");
       utils.storefront.getProducts.invalidate();
       onClose();
     } catch (err: any) {
@@ -87,186 +111,146 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
     }
   };
 
+  const fulfillmentOptions = [
+    { key: "pickup" as const, label: "In-Studio Pickup", icon: Store },
+    { key: "delivery" as const, label: "Delivery", icon: Truck },
+    { key: "both" as const, label: "Both (Client Chooses)", icon: Globe, span: true },
+  ];
+
   return (
-    <div className="flex flex-col h-full bg-[#0a0a0a] text-white">
-      <div className="flex items-center p-4 border-b border-white/10">
-        {step > 1 && (
-          <button onClick={handleBack} className="p-2 -ml-2 rounded-full hover:bg-white/5 transition-colors">
-            <ArrowLeft className="w-5 h-5 text-white/70" />
-          </button>
-        )}
-        <h2 className="text-lg font-bold ml-2">Setup Storefront</h2>
+    <div className="w-full h-full flex flex-col overflow-hidden relative">
+      {/* Header — matches ProfileSettings pattern */}
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+        <button
+          onClick={onClose}
+          className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5 text-foreground" />
+        </button>
+        <h2 className="text-xl font-semibold text-foreground">Add Product</h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6">
-        <AnimatePresence mode="wait">
-          {step === 1 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col gap-6"
-            >
-              <div className="w-16 h-16 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30 mx-auto mt-8 mb-4">
-                <Store className="w-8 h-8 text-indigo-400" />
-              </div>
-              <div className="text-center">
-                <h3 className="text-2xl font-bold mb-2">Open Your Shop</h3>
-                <p className="text-white/60 leading-relaxed text-sm">
-                  Start selling merch, aftercare, and digital products directly from your profile. We handle the payments and inventory for you.
-                </p>
-              </div>
+      {/* Scroll Container */}
+      <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
+        <div className="pb-[180px] max-w-lg mx-auto space-y-5 px-5 pt-5">
+          {/* Image Upload */}
+          <div
+            className="w-full aspect-[4/3] max-h-48 rounded-xl border-2 border-dashed border-white/15 bg-white/[0.03] flex flex-col items-center justify-center relative overflow-hidden cursor-pointer hover:bg-white/[0.06] transition-colors"
+            onClick={() => document.getElementById("sf-product-image")?.click()}
+          >
+            {imagePreview ? (
+              <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+            ) : (
+              <>
+                <Upload className="w-7 h-7 text-white/30 mb-2" />
+                <span className="text-xs text-white/40 font-medium">Tap to upload photo</span>
+              </>
+            )}
+            <input
+              id="sf-product-image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+          </div>
 
-              <div className="bg-white/5 rounded-xl p-4 border border-white/10 mt-4">
-                <h4 className="font-semibold mb-3 flex items-center gap-2 text-sm">
-                  <Check className="w-4 h-4 text-emerald-500" /> What you'll need
-                </h4>
-                <ul className="text-sm text-white/60 space-y-2">
-                  <li>• A product photo</li>
-                  <li>• Price and inventory count</li>
-                  <li>• Shipping or pickup details</li>
-                </ul>
-              </div>
+          {/* Title */}
+          <div>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">
+              Title
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              placeholder="e.g. Tattoi Aftercare Cream"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm"
+            />
+          </div>
 
-              <button
-                onClick={handleNext}
-                className="w-full mt-auto py-3.5 bg-indigo-500 hover:bg-indigo-600 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2"
-              >
-                Let's Go <ArrowRight className="w-4 h-4" />
-              </button>
-            </motion.div>
-          )}
+          {/* Description */}
+          <div>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">
+              Description
+            </label>
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Describe your product..."
+              rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 resize-none text-sm"
+            />
+          </div>
 
-          {step === 2 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col gap-5"
-            >
-              <h3 className="text-xl font-bold">Add First Product</h3>
-              
-              <div className="space-y-4">
-                <div 
-                  className="w-full aspect-square max-h-48 rounded-xl border-2 border-dashed border-white/20 bg-white/5 flex flex-col items-center justify-center relative overflow-hidden cursor-pointer hover:bg-white/10 transition-colors"
-                  onClick={() => document.getElementById('product-image')?.click()}
-                >
-                  {imagePreview ? (
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                  ) : (
-                    <>
-                      <Upload className="w-8 h-8 text-white/40 mb-2" />
-                      <span className="text-sm text-white/50 font-medium">Upload Product Photo</span>
-                    </>
-                  )}
-                  <input 
-                    id="product-image"
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handleImageChange}
-                    className="hidden" 
-                  />
-                </div>
+          {/* Price & Stock */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">
+                Price ($)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                value={price}
+                onChange={e => setPrice(e.target.value)}
+                placeholder="25.00"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">
+                Stock Count
+              </label>
+              <input
+                type="number"
+                value={inventory}
+                onChange={e => setInventory(e.target.value)}
+                placeholder="50"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm"
+              />
+            </div>
+          </div>
 
-                <div>
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/50 mb-1.5 block">Title</label>
-                  <input
-                    type="text"
-                    value={title}
-                    onChange={e => setTitle(e.target.value)}
-                    placeholder="e.g. Tattoi Aftercare Cream"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
+          {/* Fulfillment Method */}
+          <div>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-2 block">
+              Fulfillment Method
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {fulfillmentOptions.map(opt => {
+                const Icon = opt.icon;
+                const isActive = fulfillmentType === opt.key;
+                return (
+                  <button
+                    key={opt.key}
+                    onClick={() => setFulfillmentType(opt.key)}
+                    className={`${opt.span ? "col-span-2" : ""} p-3 rounded-xl border flex items-center gap-3 transition-all ${
+                      isActive
+                        ? "bg-primary/15 border-primary/50"
+                        : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-white/40"}`} />
+                    <span className={`text-xs font-semibold ${isActive ? "text-foreground" : "text-white/60"}`}>
+                      {opt.label}
+                    </span>
+                    {isActive && <Check className="w-3.5 h-3.5 text-primary ml-auto" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-                <div>
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/50 mb-1.5 block">Description</label>
-                  <textarea
-                    value={description}
-                    onChange={e => setDescription(e.target.value)}
-                    placeholder="Describe your product..."
-                    rows={3}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-indigo-500 resize-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-white/50 mb-1.5 block">Price ($)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={price}
-                      onChange={e => setPrice(e.target.value)}
-                      placeholder="25.00"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-white/50 mb-1.5 block">Stock Count</label>
-                    <input
-                      type="number"
-                      value={inventory}
-                      onChange={e => setInventory(e.target.value)}
-                      placeholder="50"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-white/50 mb-2 block">Fulfillment Method</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      onClick={() => setFulfillmentType("pickup")}
-                      className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition-all ${
-                        fulfillmentType === "pickup" 
-                          ? "bg-indigo-500/20 border-indigo-500" 
-                          : "bg-white/5 border-white/10 hover:bg-white/10"
-                      }`}
-                    >
-                      <Store className={`w-5 h-5 ${fulfillmentType === "pickup" ? "text-indigo-400" : "text-white/50"}`} />
-                      <span className="text-xs font-semibold">In-Studio Pickup</span>
-                    </button>
-                    <button
-                      onClick={() => setFulfillmentType("delivery")}
-                      className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition-all ${
-                        fulfillmentType === "delivery" 
-                          ? "bg-indigo-500/20 border-indigo-500" 
-                          : "bg-white/5 border-white/10 hover:bg-white/10"
-                      }`}
-                    >
-                      <Truck className={`w-5 h-5 ${fulfillmentType === "delivery" ? "text-indigo-400" : "text-white/50"}`} />
-                      <span className="text-xs font-semibold">Delivery</span>
-                    </button>
-                    <button
-                      onClick={() => setFulfillmentType("both")}
-                      className={`col-span-2 p-3 rounded-xl border flex flex-col items-center gap-2 transition-all ${
-                        fulfillmentType === "both" 
-                          ? "bg-indigo-500/20 border-indigo-500" 
-                          : "bg-white/5 border-white/10 hover:bg-white/10"
-                      }`}
-                    >
-                      <Globe className={`w-5 h-5 ${fulfillmentType === "both" ? "text-indigo-400" : "text-white/50"}`} />
-                      <span className="text-xs font-semibold">Both (Client Chooses)</span>
-                    </button>
-                  </div>
-                </div>
-
-              </div>
-
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="w-full mt-6 py-3.5 bg-indigo-500 hover:bg-indigo-600 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Publish Product"}
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          {/* Submit */}
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitting || !title || !price || !inventory}
+            className="w-full mt-2 py-3.5 bg-primary hover:bg-primary/90 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-40 text-primary-foreground text-sm shadow-lg shadow-primary/20"
+          >
+            {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Publish Product"}
+          </button>
+        </div>
       </div>
     </div>
   );

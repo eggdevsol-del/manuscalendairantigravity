@@ -441,8 +441,8 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           </div>
         )}
         {activeSettingsView === "storefront" && panelReady && (
-          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden bg-[#0a0a0a]">
-            <StorefrontSetupWizard onClose={() => handleViewChange("main")} />
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
+            <StorefrontSetupWizard onClose={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {/* Bank Payouts moved to dedicated /bank-payouts page */}

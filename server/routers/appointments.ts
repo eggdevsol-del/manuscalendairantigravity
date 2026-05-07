@@ -938,7 +938,7 @@ async function sendDepositMessage(
 
     const { createDepositToken } = await import("../services/depositToken");
     const token = createDepositToken(lead.id);
-    const baseUrl = process.env.VITE_APP_URL || "http://localhost:3000";
+    const baseUrl = process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
     const depositUrl = `${baseUrl}/deposit/${token}`;
 
     const content =

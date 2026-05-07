@@ -45,7 +45,7 @@ export const invitationsRouter = router({
       const inviteCode = crypto.randomUUID();
 
       // For now, we simulate sending the email
-      const inviteLink = `${process.env.VITE_APP_URL || "http://localhost:3000"}/studio/join?code=${inviteCode}&studio=${input.studioId}`;
+      const inviteLink = `${process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app"}/studio/join?code=${inviteCode}&studio=${input.studioId}`;
 
       return {
         success: true,

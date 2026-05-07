@@ -367,14 +367,21 @@ export const messagesRouter = router({
       const { createDepositToken } = await import("../services/depositToken");
       const token = createDepositToken(nextSitting.id);
       
-      const appUrl = process.env.VITE_APP_URL || "http://localhost:5173";
+      const appUrl = process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
       const checkoutLink = `${appUrl}/balance/${nextSitting.id}?token=${token}`;
 
       await db.createMessage({
         conversationId: input.conversationId,
         senderId: ctx.user.id,
-        content: `Payment Request: Please pay your final balance for your upcoming sitting here: ${checkoutLink}`,
+        content: `Payment Request: Final balance of $${(nextSitting.remainingBalanceCents / 100).toFixed(2)} for ${nextSitting.title || "your sitting"}.`,
         messageType: "system",
+        metadata: JSON.stringify({
+          type: "payment_request",
+          amountCents: nextSitting.remainingBalanceCents,
+          bookingId: nextSitting.id,
+          sittingTitle: nextSitting.title || "Final Balance",
+          checkoutUrl: checkoutLink,
+        }),
       });
 
       return { success: true };

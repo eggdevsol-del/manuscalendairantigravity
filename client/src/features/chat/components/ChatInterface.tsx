@@ -5,6 +5,7 @@ import { BottomSheet } from "@/components/ui/ssot";
 import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
 // ProposalSheet removed - not needed
 import { ProjectProposalMessage } from "@/components/chat/ProjectProposalMessage";
+import { PaymentRequestCard } from "@/components/chat/PaymentRequestCard";
 import {
   StudioInviteMessage,
   StudioInviteMetadata,
@@ -717,15 +718,23 @@ export function ChatInterface({
                 const isProjectProposal = metadata?.type === "project_proposal";
                 const isClientConfirmation =
                   metadata?.type === "project_client_confirmation";
+                const isPaymentRequest = metadata?.type === "payment_request";
                 const isStudioInvite = message.messageType === "studio_invite";
 
                 return (
                   <div
                     key={message.id}
                     id={`message-${message.id}`}
-                    className={`flex ${isProjectProposal ? "justify-center w-full" : isOwn ? "justify-end" : "justify-start"}`}
+                    className={`flex ${(isProjectProposal || isPaymentRequest) ? "justify-center w-full" : isOwn ? "justify-end" : "justify-start"}`}
                   >
-                    {isStudioInvite ? (
+                    {isPaymentRequest ? (
+                      <div className="w-full flex justify-center">
+                        <PaymentRequestCard
+                          metadata={metadata}
+                          isArtist={isArtist}
+                        />
+                      </div>
+                    ) : isStudioInvite ? (
                       <div className="w-full flex justify-center">
                         <StudioInviteMessage
                           metadata={metadata}

@@ -521,7 +521,7 @@ export const funnelRouter = router({
       );
       const token = createDepositToken(input.leadId);
 
-      const baseUrl = process.env.VITE_APP_URL || "http://localhost:3000";
+      const baseUrl = process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
       const depositUrl = `${baseUrl}/deposit/${token}`;
 
       return { url: depositUrl, token };
@@ -669,7 +669,7 @@ export const funnelRouter = router({
         "../services/depositToken"
       );
       const token = createDepositToken(lead.id);
-      const baseUrl = process.env.VITE_APP_URL || "http://localhost:3000";
+      const baseUrl = process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
 
       let depositUrl = `${baseUrl}/deposit/${token}`;
       if (input.messageId) {
