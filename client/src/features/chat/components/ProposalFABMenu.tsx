@@ -54,6 +54,7 @@ interface ProposalFABMenuProps {
   onCancel: () => void;
   isPendingAction: boolean;
   artistId?: string;
+  onRequestBalance?: () => void;
 }
 
 export function ProposalFABMenu({
@@ -66,6 +67,7 @@ export function ProposalFABMenu({
   onCancel,
   isPendingAction,
   artistId,
+  onRequestBalance,
 }: ProposalFABMenuProps) {
   const [showVoucherList, setShowVoucherList] = useState(false);
   const [appliedPromotion, setAppliedPromotion] = useState<{
@@ -415,12 +417,32 @@ export function ProposalFABMenu({
             {status === "accepted" && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-emerald-500/10"
+                className="flex flex-col gap-2 w-full pt-1"
               >
-                <Check className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="text-[10px] font-bold text-emerald-500">
-                  Accepted
-                </span>
+                <div className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-emerald-500/10">
+                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-[10px] font-bold text-emerald-500">
+                    Accepted
+                  </span>
+                </div>
+                {isArtist && onRequestBalance && (
+                  <button
+                    onClick={onRequestBalance}
+                    disabled={isPendingAction}
+                    className={cn(
+                      "w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95",
+                      "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/20 flex items-center justify-center gap-1.5"
+                    )}
+                  >
+                    {isPendingAction ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto" />
+                    ) : (
+                      <>
+                        <DollarSign className="w-3.5 h-3.5" /> Request Final Balance
+                      </>
+                    )}
+                  </button>
+                )}
               </motion.div>
             )}
 

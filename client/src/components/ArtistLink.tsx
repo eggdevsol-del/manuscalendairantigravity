@@ -76,7 +76,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
 
   // Generate the booking link
   const baseUrl = window.location.origin;
-  const bookingLink = slug ? `${baseUrl}/start/${slug}` : null;
+  const bookingLink = slug ? `${baseUrl}/${slug}` : null;
 
   const handleCopy = async () => {
     if (!bookingLink) return;

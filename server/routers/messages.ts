@@ -122,13 +122,18 @@ export const messagesRouter = router({
           // --- END VALIDATION ---
 
           const appointmentIds: number[] = [];
-          for (const dateStr of metaObj.dates) {
+          for (let i = 0; i < metaObj.dates.length; i++) {
+            const dateStr = metaObj.dates[i];
+            const isLast = i === metaObj.dates.length - 1;
             const startTime = new Date(dateStr);
             const duration = metaObj.serviceDuration || 60;
             const endTime = new Date(startTime.getTime() + duration * 60 * 1000);
 
             const safePrice = typeof metaObj.price === "number" ? metaObj.price : 0;
-            const safeDeposit = typeof metaObj.depositAmount === "number" ? metaObj.depositAmount : 0;
+            const projectDeposit = typeof metaObj.depositAmount === "number" ? metaObj.depositAmount : 0;
+            const safeDeposit = isLast ? projectDeposit : 0; // Apply deposit to the final sitting
+            
+            const expectedCents = Math.round(safePrice * 100);
 
             const inserted = await db.createAppointment({
               conversationId: input.conversationId,
@@ -141,6 +146,9 @@ export const messagesRouter = router({
               serviceName: metaObj.serviceName || "Project Proposal",
               price: safePrice,
               depositAmount: safeDeposit,
+              totalExpectedAmountCents: expectedCents,
+              remainingBalanceCents: expectedCents,
+              totalPaidAmountCents: 0,
               status: "pending",
             });
 
@@ -318,6 +326,55 @@ export const messagesRouter = router({
 
       // Update the message metadata
       await db.updateMessageMetadata(input.messageId, input.metadata);
+
+      return { success: true };
+    }),
+
+  requestBalance: protectedProcedure
+    .input(
+      z.object({
+        conversationId: z.number(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const conversation = await db.getConversationById(input.conversationId);
+      if (!conversation) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Conversation not found" });
+      }
+
+      if (conversation.artistId !== ctx.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can request balance" });
+      }
+
+      const dbInst = await getDb();
+      if (!dbInst) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const pendingSittings = await dbInst.query.appointments.findMany({
+        where: and(
+          eq(appointments.conversationId, input.conversationId),
+          gt(appointments.remainingBalanceCents, 0),
+          ne(appointments.status, "cancelled")
+        ),
+        orderBy: [appointments.startTime],
+      });
+
+      if (pendingSittings.length === 0) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "No sittings have a remaining balance." });
+      }
+
+      const nextSitting = pendingSittings[0];
+      const { createDepositToken } = await import("../services/depositToken");
+      const token = createDepositToken(nextSitting.id);
+      
+      const appUrl = process.env.VITE_APP_URL || "http://localhost:5173";
+      const checkoutLink = `${appUrl}/balance/${nextSitting.id}?token=${token}`;
+
+      await db.createMessage({
+        conversationId: input.conversationId,
+        senderId: ctx.user.id,
+        content: `Payment Request: Please pay your final balance for your upcoming sitting here: ${checkoutLink}`,
+        messageType: "system",
+      });
 
       return { success: true };
     }),

@@ -233,6 +233,96 @@ export const funnelRouter = router({
       return { url: checkoutResult.url, clientSecret: checkoutResult.clientSecret, fees };
     }),
 
+  getBalanceInfo: publicProcedure
+    .input(z.object({ bookingId: z.number(), token: z.string() }))
+    .query(async ({ input }) => {
+      const { verifyDepositToken } = await import(
+        "../services/depositToken"
+      );
+      const result = verifyDepositToken(input.token);
+      if (!result.valid) {
+        return null;
+      }
+
+      const db = await getDb();
+      if (!db) return null;
+
+      const booking = await db.query.appointments.findFirst({
+        where: eq(schema.appointments.id, input.bookingId),
+      });
+
+      if (!booking || !booking.remainingBalanceCents) {
+        return null;
+      }
+
+      if (booking.status === "cancelled" || booking.remainingBalanceCents <= 0) {
+        return null;
+      }
+
+      const artistSettingsRow = await db.query.artistSettings.findFirst({
+        where: eq(schema.artistSettings.userId, booking.artistId),
+      });
+
+      const artist = await db.query.users.findFirst({
+        where: eq(schema.users.id, booking.artistId),
+      });
+
+      const client = await db.query.users.findFirst({
+        where: eq(schema.users.id, booking.clientId),
+      });
+
+      const paymentSettings = await db
+        .select()
+        .from(schema.paymentMethodSettings)
+        .where(eq(schema.paymentMethodSettings.artistId, booking.artistId))
+        .limit(1);
+
+      const pms = paymentSettings[0];
+
+      const { calculateTransactionFees, resolvePaymentTier } = await import(
+        "../domain/fees"
+      );
+      const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
+      const fees = calculateTransactionFees(booking.remainingBalanceCents, tier);
+
+      return {
+        bookingId: booking.id,
+        artistName:
+          artistSettingsRow?.businessName ||
+          artistSettingsRow?.displayName ||
+          artist?.name ||
+          "Artist",
+        artistImage: artist?.avatar || undefined,
+        businessCountry: artistSettingsRow?.businessCountry || "AU",
+        clientName: client?.name || "Client",
+        clientEmail: client?.email || "",
+        projectType: booking.title || undefined,
+        selectedDate: booking.startTime ? new Date(booking.startTime).toISOString() : "TBC",
+        selectedTime: booking.startTime ? new Date(booking.startTime).toISOString() : "TBC",
+        remainingBalanceCents: booking.remainingBalanceCents,
+        clientTotalCents: fees.clientTotalCents,
+        platformFeeCents: fees.platformFeeCents,
+        paymentMethods: {
+          stripe: pms?.stripeEnabled === 1,
+          paypal: pms?.paypalEnabled === 1,
+          bank: pms?.bankEnabled === 1,
+          cash: pms?.cashEnabled === 1,
+        },
+        bankDetails:
+          pms?.bankEnabled === 1 && artistSettingsRow
+            ? {
+                bankName: "Artist Bank",
+                accountName:
+                  artistSettingsRow.businessName ||
+                  artist?.name ||
+                  "Account Holder",
+                bsb: artistSettingsRow.bsb || "",
+                accountNumber: artistSettingsRow.accountNumber || "",
+              }
+            : undefined,
+      };
+    }),
+
   /**
    * Create a Stripe Checkout Session for balance payment.
    * PUBLIC — uses booking ID + token for auth.
@@ -609,11 +699,35 @@ export const funnelRouter = router({
         return null;
       }
 
+      // Check for active products and seminars
+      const activeProducts = await db.query.products.findMany({
+        where: and(
+          eq(schema.products.artistId, artist.id),
+          eq(schema.products.isActive, 1)
+        ),
+        columns: { id: true },
+        limit: 1,
+      });
+
+      const activeSeminars = await db.query.seminars.findMany({
+        where: and(
+          eq(schema.seminars.artistId, artist.id),
+          eq(schema.seminars.isActive, 1)
+        ),
+        columns: { id: true },
+        limit: 1,
+      });
+
       return {
         id: artist.id,
         displayName: settings.businessName || settings.displayName || artist.name || "Artist",
         profileImage: artist.avatar || null,
+        bio: artist.bio || settings.funnelWelcomeMessage || "Tattoo Artist",
+        instagramUsername: artist.instagramUsername || null,
+        facebookName: artist.facebookName || null,
         slug: settings.publicSlug,
+        hasProducts: activeProducts.length > 0,
+        hasSeminars: activeSeminars.length > 0,
         funnelTheme: settings.funnelTheme || "light",
         funnelBannerUrl: settings.funnelBannerUrl || null,
         styleOptions: settings.styleOptions

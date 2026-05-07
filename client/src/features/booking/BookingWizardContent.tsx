@@ -343,6 +343,18 @@ export function BookingWizardContent({
     },
   });
 
+  const requestBalanceMutation = trpc.messages.requestBalance.useMutation({
+    onSuccess: () => {
+      toast.success("Final balance request sent!");
+      if (conversationId) {
+        utils.messages.list.invalidate({ conversationId });
+      }
+    },
+    onError: err => {
+      toast.error(err.message || "Failed to send balance request");
+    }
+  });
+
   const createClientMutation = trpc.conversations.createClient.useMutation();
 
   const uploadMutation = trpc.upload.uploadImage.useMutation();
@@ -1085,12 +1097,38 @@ export function BookingWizardContent({
             {proposalMeta.status === "confirmed" && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-3 py-2.5 rounded-[4px] bg-emerald-500/10 border border-emerald-500/20"
+                className="flex flex-col gap-2 pt-1"
               >
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
-                  Deposit Paid & Project Booked!
-                </span>
+                <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-[4px] bg-emerald-500/10 border border-emerald-500/20">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+                    Deposit Paid & Project Booked!
+                  </span>
+                </div>
+                {isArtist && (
+                  <button
+                    onClick={() => {
+                      if (!selectedProposal || !selectedProposal.message.conversationId) return;
+                      // TODO: Add logic for request additional if fully paid
+                      if (selectedAppointmentRaw?.paymentStatus !== "fully_paid") {
+                        requestBalanceMutation.mutate({
+                          conversationId: selectedProposal.message.conversationId,
+                        });
+                      }
+                    }}
+                    disabled={requestBalanceMutation.isPending}
+                    className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/20 flex items-center justify-center gap-2"
+                  >
+                    {requestBalanceMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <DollarSign className="w-4 h-4" /> 
+                        {selectedAppointmentRaw?.paymentStatus === "fully_paid" ? "Request Additional" : "Request Final Balance"}
+                      </>
+                    )}
+                  </button>
+                )}
               </motion.div>
             )}
 

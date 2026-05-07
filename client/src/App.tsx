@@ -45,6 +45,9 @@ import ClientProfile from "./pages/ClientProfile";
 import { PublicFunnel } from "./pages/funnel";
 import PublicStudioFunnel from "./pages/funnel/PublicStudioFunnel";
 import { DepositSheet } from "./pages/funnel/DepositSheet";
+import { BalanceSheet } from "./pages/funnel/BalanceSheet";
+import ArtistHub from "./pages/public/ArtistHub";
+import PublicStorefront from "./pages/public/PublicStorefront";
 import LeadDetail from "./pages/LeadDetail";
 import PayoutHistory from "./pages/PayoutHistory";
 import BankPayoutsPage from "./pages/BankPayoutsPage";
@@ -121,10 +124,24 @@ function Router() {
     "/set-password",
     "/complete-profile",
   ];
+  
+  const knownAppRoutes = [
+    "/login", "/signup", "/set-password", "/complete-profile",
+    "/conversations", "/calendar", "/settings", "/dashboard",
+    "/promotions", "/consultations", "/policies", "/policy-management",
+    "/notifications-management", "/work-hours", "/subscriptions",
+    "/studio", "/quick-actions", "/clients", "/profile",
+    "/payout-history", "/bank-payouts", "/admin/errors", "/404"
+  ];
+  const isAppRoute = location === "/" || knownAppRoutes.some(route => location.startsWith(route));
+
   const isPublicFunnel =
     location.startsWith("/start/") ||
     location.startsWith("/deposit/") ||
-    location.startsWith("/studio/");
+    location.startsWith("/balance/") ||
+    location.startsWith("/studio/") ||
+    !isAppRoute;
+
   const shouldShowBottomNav =
     !hideBottomNavPaths.includes(location) &&
     !location.startsWith("/404") &&
@@ -144,6 +161,7 @@ function Router() {
         <Route path="/studio/:slug" component={PublicStudioFunnel} />
         <Route path="/start/:slug" component={PublicFunnel} />
         <Route path="/deposit/:token" component={DepositSheet} />
+        <Route path="/balance/:id" component={BalanceSheet} />
 
         {/* Protected Routes */}
         <GuardedRoute path="/conversations" component={Conversations} />
@@ -174,6 +192,9 @@ function Router() {
         <GuardedRoute path="/admin/errors" component={ErrorDashboard} />
 
         <Route path="/404" component={NotFound} />
+        {/* Dynamic Slug Route for Artist Hub */}
+        <Route path="/shop/:slug" component={PublicStorefront} />
+        <Route path="/:slug" component={ArtistHub} />
         <Route component={NotFound} />
       </Switch>
       {shouldShowBottomNav && (

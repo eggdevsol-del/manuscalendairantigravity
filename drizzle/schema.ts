@@ -1871,6 +1871,7 @@ export const paymentLedger = mysqlTable(
       "refund",
       "dispute",
       "payout",
+      "store_order",
     ]).notNull(),
     amountCents: int().notNull(),
     platformFeeCents: int().notNull().default(0),
@@ -1920,3 +1921,79 @@ export const errorLog = mysqlTable("error_log", {
 
 export type InsertErrorLog = InferInsertModel<typeof errorLog>;
 export type SelectErrorLog = InferSelectModel<typeof errorLog>;
+
+// ── Storefront & E-Commerce ──
+export const products = mysqlTable("products", {
+  id: int().autoincrement().primaryKey(),
+  artistId: varchar({ length: 64 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: varchar({ length: 255 }).notNull(),
+  description: text().notNull(),
+  priceCents: int().notNull(),
+  inventoryCount: int().default(0).notNull(),
+  fulfillmentType: mysqlEnum(["pickup", "delivery", "both", "digital"]).default("pickup").notNull(),
+  imageUrl: text(),
+  isActive: tinyint().default(1).notNull(),
+  createdAt: timestamp().notNull().defaultNow(),
+  updatedAt: timestamp().notNull().defaultNow(),
+});
+
+export const seminars = mysqlTable("seminars", {
+  id: int().autoincrement().primaryKey(),
+  artistId: varchar({ length: 64 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: varchar({ length: 255 }).notNull(),
+  description: text().notNull(),
+  type: mysqlEnum(["in_person", "virtual"]).default("in_person").notNull(),
+  date: datetime().notNull(),
+  locationUrl: text(), // physical address or zoom link
+  capacity: int().notNull(),
+  priceCents: int().notNull(),
+  ticketsSold: int().default(0).notNull(),
+  isActive: tinyint().default(1).notNull(),
+  createdAt: timestamp().notNull().defaultNow(),
+  updatedAt: timestamp().notNull().defaultNow(),
+});
+
+export const orders = mysqlTable("orders", {
+  id: int().autoincrement().primaryKey(),
+  artistId: varchar({ length: 64 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  clientId: varchar({ length: 64 })
+    .references(() => users.id, { onDelete: "set null" }),
+  totalAmountCents: int().notNull(),
+  platformFeeCents: int().notNull(),
+  artistFeeCents: int().notNull(),
+  status: mysqlEnum(["pending", "paid", "fulfilled", "cancelled"]).default("pending").notNull(),
+  fulfillmentMethod: mysqlEnum(["pickup", "delivery", "digital"]).default("pickup").notNull(),
+  shippingAddress: text(), // JSON storing the Stripe shipping address
+  stripeCheckoutSessionId: varchar({ length: 255 }),
+  stripePaymentIntentId: varchar({ length: 255 }),
+  createdAt: timestamp().notNull().defaultNow(),
+  updatedAt: timestamp().notNull().defaultNow(),
+});
+
+export const orderItems = mysqlTable("orderItems", {
+  id: int().autoincrement().primaryKey(),
+  orderId: int()
+    .notNull()
+    .references(() => orders.id, { onDelete: "cascade" }),
+  productId: int()
+    .references(() => products.id, { onDelete: "set null" }),
+  seminarId: int()
+    .references(() => seminars.id, { onDelete: "set null" }),
+  quantity: int().notNull().default(1),
+  priceAtPurchaseCents: int().notNull(),
+});
+
+export type InsertProduct = InferInsertModel<typeof products>;
+export type SelectProduct = InferSelectModel<typeof products>;
+export type InsertSeminar = InferInsertModel<typeof seminars>;
+export type SelectSeminar = InferSelectModel<typeof seminars>;
+export type InsertOrder = InferInsertModel<typeof orders>;
+export type SelectOrder = InferSelectModel<typeof orders>;
+export type InsertOrderItem = InferInsertModel<typeof orderItems>;
+export type SelectOrderItem = InferSelectModel<typeof orderItems>;

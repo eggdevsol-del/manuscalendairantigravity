@@ -488,6 +488,8 @@ export async function confirmAppointments(
     depositPaid: 1,
     confirmationSent: 0, // Will be set to 1 after notification is sent
     updatedAt: new Date(),
+    totalPaidAmountCents: sql`COALESCE(totalPaidAmountCents, 0) + COALESCE(depositAmount, 0)`,
+    remainingBalanceCents: sql`GREATEST(0, COALESCE(totalExpectedAmountCents, 0) - (COALESCE(totalPaidAmountCents, 0) + COALESCE(depositAmount, 0)))`
   };
 
   if (paymentProof) {

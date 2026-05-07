@@ -54,6 +54,7 @@ interface ProjectProposalModalProps {
   isPendingAction: boolean;
   artistId?: string;
   onRevoke?: () => void;
+  onRequestBalance?: () => void;
 }
 
 export function ProjectProposalModal({
@@ -66,6 +67,7 @@ export function ProjectProposalModal({
   isPendingAction,
   artistId,
   onRevoke,
+  onRequestBalance,
 }: ProjectProposalModalProps) {
   const [showVoucherList, setShowVoucherList] = useState(false);
   const [appliedPromotion, setAppliedPromotion] = useState<{
@@ -346,7 +348,7 @@ export function ProjectProposalModal({
           )}
           <div
             className={cn(
-              "border text-center",
+              "border text-center flex flex-col gap-3",
               tokens.proposalModal.statusPaddingLarge,
               tokens.proposalModal.statusRadius,
               tokens.proposalModal.successBg,
@@ -356,6 +358,21 @@ export function ProjectProposalModal({
             <p className="text-green-500 font-bold flex items-center justify-center gap-2">
               <Check className="w-5 h-5" /> Proposal Accepted
             </p>
+            {isArtist && onRequestBalance && (
+              <Button
+                variant="outline"
+                className="w-full bg-background/50 border-green-500/20 text-green-500 hover:bg-green-500/10 hover:text-green-400"
+                onClick={onRequestBalance}
+                disabled={isPendingAction}
+              >
+                {isPendingAction ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <DollarSign className="w-4 h-4 mr-2" />
+                )}
+                Request Final Balance
+              </Button>
+            )}
           </div>
         </div>
       )}

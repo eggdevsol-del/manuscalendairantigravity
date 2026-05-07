@@ -282,7 +282,13 @@ export const bookingRouter = router({
 
       let createdCount = 0;
       const appointmentIds: number[] = [];
-      for (const appt of input.appointments) {
+      for (let i = 0; i < input.appointments.length; i++) {
+        const appt = input.appointments[i];
+        const isLast = i === input.appointments.length - 1;
+        const projectDeposit = appt.depositAmount || 0;
+        const safeDeposit = isLast ? projectDeposit : 0;
+        const expectedCents = Math.round((appt.price || 0) * 100);
+
         const created = await db.createAppointment({
           conversationId: input.conversationId,
           artistId: conversation.artistId,
@@ -296,7 +302,10 @@ export const bookingRouter = router({
           endTime: appt.endTime.toISOString().slice(0, 19).replace("T", " "),
           serviceName: appt.serviceName,
           price: appt.price,
-          depositAmount: appt.depositAmount,
+          depositAmount: safeDeposit,
+          totalExpectedAmountCents: expectedCents,
+          remainingBalanceCents: expectedCents,
+          totalPaidAmountCents: 0,
           status: "pending",
         });
         if (created) {

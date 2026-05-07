@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { getDb } from "./core";
 import { eq } from "drizzle-orm";
-import { studios, artistSettings, leads, messages, paymentLedger, appointments } from "../../drizzle/schema";
+import { studios, artistSettings, leads, messages, paymentLedger, appointments, orders, products } from "../../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import type { Request, Response } from "express";
 
@@ -270,9 +270,73 @@ export async function createBalanceCheckoutSession(opts: {
       tier: opts.tier,
       balanceToken: opts.balanceToken,
     },
-    success_url: `${baseUrl}/booking/${opts.bookingId}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${baseUrl}/booking/${opts.bookingId}?payment=canceled`,
+    success_url: `${baseUrl}/balance/${opts.bookingId}?status=success&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${baseUrl}/balance/${opts.bookingId}?status=canceled`,
   };
+
+  // Connect routing
+  if (opts.stripeConnectAccountId) {
+    sessionConfig.payment_intent_data = {
+      application_fee_amount: applicationFeeCents,
+      transfer_data: {
+        destination: opts.stripeConnectAccountId,
+      },
+    };
+  }
+
+  const session = await stripe.checkout.sessions.create(sessionConfig);
+  return session.url;
+}
+
+export async function createStorefrontCheckoutSession(opts: {
+  orderId: number;
+  productId: number;
+  productName: string;
+  artistName: string;
+  clientTotalCents: number;
+  platformFeeCents: number;
+  artistFeeCents: number;
+  fulfillmentMethod: "pickup" | "delivery" | "digital";
+  stripeConnectAccountId?: string;
+  slug: string;
+}): Promise<string | null> {
+  const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+
+  // If using connect, GST/platform fee goes to platform account
+  const applicationFeeCents = opts.platformFeeCents;
+
+  const sessionConfig: Stripe.Checkout.SessionCreateParams = {
+    payment_method_types: ["card", "apple_pay", "google_pay"],
+    mode: "payment",
+    line_items: [
+      {
+        price_data: {
+          currency: "aud",
+          product_data: {
+            name: `${opts.productName} — ${opts.artistName}`,
+          },
+          unit_amount: opts.clientTotalCents,
+        },
+        quantity: 1,
+      },
+    ],
+    metadata: {
+      type: "store_order",
+      orderId: String(opts.orderId),
+      productId: String(opts.productId),
+      platformFeeCents: String(opts.platformFeeCents),
+      artistFeeCents: String(opts.artistFeeCents),
+      stripeConnectAccountId: opts.stripeConnectAccountId || "",
+    },
+    success_url: `${baseUrl}/shop/${opts.slug}?status=success&order_id=${opts.orderId}`,
+    cancel_url: `${baseUrl}/shop/${opts.slug}?status=canceled`,
+  };
+
+  if (opts.fulfillmentMethod === "delivery") {
+    sessionConfig.shipping_address_collection = {
+      allowed_countries: ["AU", "NZ", "US", "GB", "CA"],
+    };
+  }
 
   // Connect routing
   if (opts.stripeConnectAccountId) {
@@ -463,6 +527,69 @@ export async function handleStripeWebhook(req: Request, res: Response) {
               });
 
               console.log(`[Stripe] Balance paid for Booking ${bookingId}, remaining: ${remaining}`);
+            }
+          }
+          break;
+        }
+
+        // ── Store Order ──────────────────────────────────────────
+        if (session.metadata?.type === "store_order") {
+          const orderId = parseInt(session.metadata.orderId, 10);
+          const productId = parseInt(session.metadata.productId, 10);
+          const platformFeeCents = parseInt(session.metadata.platformFeeCents || "0", 10);
+          const artistFeeCents = parseInt(session.metadata.artistFeeCents || "0", 10);
+          const connectAccountId = session.metadata.stripeConnectAccountId || null;
+
+          if (orderId && productId) {
+            const order = await db.query.orders.findFirst({
+              where: eq(orders.id, orderId),
+            });
+            const product = await db.query.products.findFirst({
+              where: eq(products.id, productId),
+            });
+
+            if (order && product) {
+              const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+              
+              // 1. Update Order Status and Shipping Address
+              const shippingDetails = session.shipping_details;
+              let addressJson = null;
+              if (shippingDetails && shippingDetails.address) {
+                addressJson = JSON.stringify({
+                  name: shippingDetails.name,
+                  ...shippingDetails.address
+                });
+              }
+
+              await db.update(orders).set({
+                status: "paid",
+                shippingAddress: addressJson,
+                stripeCheckoutSessionId: session.id,
+                stripePaymentIntentId: session.payment_intent as string || null,
+                updatedAt: now,
+              }).where(eq(orders.id, orderId));
+
+              // 2. Decrement Inventory
+              if (product.inventoryCount > 0) {
+                await db.update(products).set({
+                  inventoryCount: product.inventoryCount - 1,
+                  updatedAt: now,
+                }).where(eq(products.id, productId));
+              }
+
+              // 3. Write to Payment Ledger
+              await db.insert(paymentLedger).values({
+                artistId: order.artistId,
+                transactionType: "store_order",
+                amountCents: order.totalAmountCents,
+                platformFeeCents,
+                artistFeeCents,
+                stripePaymentId: session.payment_intent as string || session.id,
+                stripeConnectAccountId: connectAccountId,
+                paymentMethod: session.payment_method_types?.[0] || "card",
+              });
+
+              console.log(`[Stripe] Store Order ${orderId} completed successfully`);
             }
           }
           break;

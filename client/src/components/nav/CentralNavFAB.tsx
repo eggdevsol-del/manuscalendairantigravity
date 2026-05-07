@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Settings, Plus, Sun, Moon, Crown, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane, Banknote } from "lucide-react";
+import { Settings, Plus, Sun, Moon, Crown, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane, Banknote, Store } from "lucide-react";
 import { useLocation } from "wouter";
 import { FABMenu, FABMenuItem } from "@/ui/FABMenu";
 import { cn } from "@/lib/utils";
@@ -26,9 +26,10 @@ import { DataImportSettings } from "../settings/DataImportSettings";
 import { FunnelSettings } from "../FunnelSettings";
 import { DangerZoneSettings } from "../settings/DangerZoneSettings";
 import { TravelSettings } from "../settings/TravelSettings";
+import StorefrontSetupWizard from "@/features/storefront/StorefrontSetupWizard";
 // PaymentSettings moved to dedicated /bank-payouts page
 
-type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions" | "data-import" | "booking-link" | "travel" | "danger-zone" | "payments";
+type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions" | "data-import" | "booking-link" | "travel" | "danger-zone" | "payments" | "storefront";
 
 interface CentralNavFABProps {
   className?: string;
@@ -112,6 +113,13 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
 
     if (isArtist) {
       items.push(
+        {
+          id: "storefront",
+          label: "Storefront",
+          icon: Store,
+          onClick: () => handleViewChange("storefront"),
+          closeOnClick: false,
+        },
         {
           id: "clients",
           label: "Clients",
@@ -430,6 +438,11 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
         {activeSettingsView === "danger-zone" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <DangerZoneSettings onBack={() => handleViewChange("settings-menu")} />
+          </div>
+        )}
+        {activeSettingsView === "storefront" && panelReady && (
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden bg-[#0a0a0a]">
+            <StorefrontSetupWizard onClose={() => handleViewChange("main")} />
           </div>
         )}
         {/* Bank Payouts moved to dedicated /bank-payouts page */}
