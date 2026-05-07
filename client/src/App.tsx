@@ -127,11 +127,11 @@ function Router() {
   
   const knownAppRoutes = [
     "/login", "/signup", "/set-password", "/complete-profile",
-    "/conversations", "/calendar", "/settings", "/dashboard",
+    "/conversations", "/chat", "/lead", "/calendar", "/settings", "/dashboard",
     "/promotions", "/consultations", "/policies", "/policy-management",
     "/notifications-management", "/work-hours", "/subscriptions",
     "/studio", "/quick-actions", "/clients", "/profile",
-    "/payout-history", "/bank-payouts", "/admin/errors", "/404"
+    "/payout-history", "/bank-payouts", "/admin/errors", "/events", "/404"
   ];
   const isAppRoute = location === "/" || knownAppRoutes.some(route => location.startsWith(route));
 

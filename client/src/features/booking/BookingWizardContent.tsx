@@ -19,6 +19,7 @@ import {
   FileSignature,
   Upload,
   CreditCard,
+  DollarSign,
 } from "lucide-react";
 import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import {
