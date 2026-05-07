@@ -3,7 +3,8 @@ import { z } from "zod";
 import { eventBus } from "../_core/eventBus";
 import { protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
-import { notificationOutbox } from "../../drizzle/schema";
+import { notificationOutbox, appointments } from "../../drizzle/schema";
+import { and, eq, gt, ne } from "drizzle-orm";
 
 export const messagesRouter = router({
   list: protectedProcedure
@@ -346,7 +347,7 @@ export const messagesRouter = router({
         throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can request balance" });
       }
 
-      const dbInst = await getDb();
+      const dbInst = await db.getDb();
       if (!dbInst) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
       const pendingSittings = await dbInst.query.appointments.findMany({
