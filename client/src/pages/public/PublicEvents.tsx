@@ -1,17 +1,37 @@
+import { useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Loader2, ArrowLeft, CalendarDays, MapPin, Video, Users, Clock } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 export default function PublicEvents() {
   const [, params] = useRoute("/events/:slug");
   const [, setLocation] = useLocation();
   const slug = params?.slug;
+  const [checkingOutId, setCheckingOutId] = useState<number | null>(null);
 
   const { data: seminars, isLoading, error } = trpc.storefront.getPublicSeminars.useQuery(
     { slug: slug || "" },
     { enabled: !!slug, retry: false }
   );
+
+  const checkoutMutation = trpc.storefront.createSeminarCheckout.useMutation({
+    onSuccess: (data) => {
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to start checkout");
+      setCheckingOutId(null);
+    },
+  });
+
+  const handleRegister = (seminarId: number) => {
+    setCheckingOutId(seminarId);
+    checkoutMutation.mutate({ seminarId });
+  };
 
   if (isLoading) {
     return (
@@ -66,6 +86,7 @@ export default function PublicEvents() {
               const isVirtual = seminar.type === "virtual";
               const spotsLeft = seminar.capacity - (seminar.ticketsSold || 0);
               const isSoldOut = spotsLeft <= 0;
+              const isCheckingOut = checkingOutId === seminar.id;
 
               return (
                 <motion.div
@@ -115,9 +136,15 @@ export default function PublicEvents() {
                         </span>
                       ) : (
                         <button
-                          className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-full transition-all active:scale-95 text-sm"
+                          onClick={() => handleRegister(seminar.id)}
+                          disabled={isCheckingOut}
+                          className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-full transition-all active:scale-95 text-sm flex items-center gap-2 disabled:opacity-50"
                         >
-                          Register
+                          {isCheckingOut ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            "Register"
+                          )}
                         </button>
                       )}
                     </div>

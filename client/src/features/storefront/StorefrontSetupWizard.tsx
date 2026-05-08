@@ -9,8 +9,11 @@ import {
   ChevronLeft,
   Package,
   AlertTriangle,
-  Trash2,
   Plus,
+  CalendarDays,
+  Video,
+  MapPin,
+  Users,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -49,9 +52,11 @@ function compressImage(file: File, maxDim = 1200, quality = 0.8): Promise<string
   });
 }
 
+type WizardView = "dashboard" | "add_product" | "add_seminar";
+
 export default function StorefrontSetupWizard({ onClose }: { onClose: () => void }) {
   const [, setLocation] = useLocation();
-  const [view, setView] = useState<"dashboard" | "add">("dashboard");
+  const [view, setView] = useState<WizardView>("dashboard");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Product Form State
@@ -63,13 +68,24 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // Seminar Form State
+  const [semTitle, setSemTitle] = useState("");
+  const [semDescription, setSemDescription] = useState("");
+  const [semPrice, setSemPrice] = useState("");
+  const [semCapacity, setSemCapacity] = useState("");
+  const [semDate, setSemDate] = useState("");
+  const [semType, setSemType] = useState<"in_person" | "virtual">("in_person");
+  const [semLocation, setSemLocation] = useState("");
+
   const uploadMutation = trpc.upload.uploadImage.useMutation();
   const createProductMutation = trpc.storefront.createProduct.useMutation();
+  const createSeminarMutation = trpc.storefront.createSeminar.useMutation();
   const { data: products, isLoading: productsLoading } = trpc.storefront.getProducts.useQuery();
-  const { data: paymentSettings } = trpc.paymentMethodSettings.get.useQuery();
+  const { data: seminars, isLoading: seminarsLoading } = trpc.storefront.getSeminars.useQuery();
+  const { data: artistSettings } = trpc.artistSettings.get.useQuery();
   const utils = trpc.useUtils();
 
-  const hasStripeConnect = !!(paymentSettings as any)?.stripeConnectAccountId;
+  const hasStripeConnect = !!(artistSettings as any)?.stripeConnectAccountId;
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -83,22 +99,21 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
     }
   };
 
-  const resetForm = () => {
-    setTitle("");
-    setDescription("");
-    setPrice("");
-    setInventory("");
-    setFulfillmentType("pickup");
-    setImageFile(null);
-    setImagePreview(null);
+  const resetProductForm = () => {
+    setTitle(""); setDescription(""); setPrice(""); setInventory("");
+    setFulfillmentType("pickup"); setImageFile(null); setImagePreview(null);
   };
 
-  const handleSubmit = async () => {
+  const resetSeminarForm = () => {
+    setSemTitle(""); setSemDescription(""); setSemPrice(""); setSemCapacity("");
+    setSemDate(""); setSemType("in_person"); setSemLocation("");
+  };
+
+  const handleProductSubmit = async () => {
     if (!title || !price || !inventory) {
       toast.error("Please fill in all required fields.");
       return;
     }
-
     setIsSubmitting(true);
     try {
       let imageUrl = "";
@@ -111,7 +126,6 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
         });
         imageUrl = uploadRes.url;
       }
-
       await createProductMutation.mutateAsync({
         title,
         description,
@@ -120,13 +134,39 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
         fulfillmentType,
         imageUrl,
       });
-
       toast.success("Product published!");
       utils.storefront.getProducts.invalidate();
-      resetForm();
+      resetProductForm();
       setView("dashboard");
     } catch (err: any) {
       toast.error(err.message || "Failed to create product");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSeminarSubmit = async () => {
+    if (!semTitle || !semPrice || !semCapacity || !semDate) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await createSeminarMutation.mutateAsync({
+        title: semTitle,
+        description: semDescription,
+        type: semType,
+        date: new Date(semDate).toISOString(),
+        locationUrl: semLocation || undefined,
+        capacity: parseInt(semCapacity, 10),
+        priceCents: Math.round(parseFloat(semPrice) * 100),
+      });
+      toast.success("Seminar created!");
+      utils.storefront.getSeminars.invalidate();
+      resetSeminarForm();
+      setView("dashboard");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create seminar");
     } finally {
       setIsSubmitting(false);
     }
@@ -138,16 +178,78 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
     { key: "both" as const, label: "Both (Client Chooses)", icon: Globe, span: true },
   ];
 
-  // ── ADD PRODUCT VIEW ──
-  if (view === "add") {
+  // ── Shared header component ──
+  const Header = ({ title: headerTitle, onBack }: { title: string; onBack: () => void }) => (
+    <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+      <button onClick={onBack} className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+        <ChevronLeft className="w-5 h-5 text-foreground" />
+      </button>
+      <h2 className="text-xl font-semibold text-foreground">{headerTitle}</h2>
+    </div>
+  );
+
+  // ── ADD SEMINAR VIEW ──
+  if (view === "add_seminar") {
     return (
       <div className="w-full h-full flex flex-col overflow-hidden relative">
-        <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
-          <button onClick={() => setView("dashboard")} className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
-            <ChevronLeft className="w-5 h-5 text-foreground" />
-          </button>
-          <h2 className="text-xl font-semibold text-foreground">Add Product</h2>
+        <Header title="Add Seminar" onBack={() => setView("dashboard")} />
+        <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
+          <div className="pb-[180px] max-w-lg mx-auto space-y-5 px-5 pt-5">
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Title</label>
+              <input type="text" value={semTitle} onChange={e => setSemTitle(e.target.value)} placeholder="e.g. Mastering Realism Shading" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Description</label>
+              <textarea value={semDescription} onChange={e => setSemDescription(e.target.value)} placeholder="What attendees will learn..." rows={3} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 resize-none text-sm" />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-2 block">Type</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => setSemType("in_person")} className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${semType === "in_person" ? "bg-primary/15 border-primary/50" : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"}`}>
+                  <MapPin className={`w-4 h-4 ${semType === "in_person" ? "text-primary" : "text-white/40"}`} />
+                  <span className={`text-xs font-semibold ${semType === "in_person" ? "text-foreground" : "text-white/60"}`}>In Person</span>
+                  {semType === "in_person" && <Check className="w-3.5 h-3.5 text-primary ml-auto" />}
+                </button>
+                <button onClick={() => setSemType("virtual")} className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${semType === "virtual" ? "bg-primary/15 border-primary/50" : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"}`}>
+                  <Video className={`w-4 h-4 ${semType === "virtual" ? "text-primary" : "text-white/40"}`} />
+                  <span className={`text-xs font-semibold ${semType === "virtual" ? "text-foreground" : "text-white/60"}`}>Virtual</span>
+                  {semType === "virtual" && <Check className="w-3.5 h-3.5 text-primary ml-auto" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Date & Time</label>
+              <input type="datetime-local" value={semDate} onChange={e => setSemDate(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 text-sm" />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">{semType === "virtual" ? "Meeting Link" : "Venue Address"}</label>
+              <input type="text" value={semLocation} onChange={e => setSemLocation(e.target.value)} placeholder={semType === "virtual" ? "https://zoom.us/j/..." : "123 Ink Street, Melbourne"} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Price ($)</label>
+                <input type="number" step="0.01" value={semPrice} onChange={e => setSemPrice(e.target.value)} placeholder="150.00" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Capacity</label>
+                <input type="number" value={semCapacity} onChange={e => setSemCapacity(e.target.value)} placeholder="20" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
+              </div>
+            </div>
+            <button onClick={handleSeminarSubmit} disabled={isSubmitting || !semTitle || !semPrice || !semCapacity || !semDate} className="w-full mt-2 py-3.5 bg-primary hover:bg-primary/90 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-40 text-primary-foreground text-sm shadow-lg shadow-primary/20">
+              {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Publish Seminar"}
+            </button>
+          </div>
         </div>
+      </div>
+    );
+  }
+
+  // ── ADD PRODUCT VIEW ──
+  if (view === "add_product") {
+    return (
+      <div className="w-full h-full flex flex-col overflow-hidden relative">
+        <Header title="Add Product" onBack={() => setView("dashboard")} />
         <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
           <div className="pb-[180px] max-w-lg mx-auto space-y-5 px-5 pt-5">
             <div
@@ -198,7 +300,7 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
                 })}
               </div>
             </div>
-            <button onClick={handleSubmit} disabled={isSubmitting || !title || !price || !inventory} className="w-full mt-2 py-3.5 bg-primary hover:bg-primary/90 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-40 text-primary-foreground text-sm shadow-lg shadow-primary/20">
+            <button onClick={handleProductSubmit} disabled={isSubmitting || !title || !price || !inventory} className="w-full mt-2 py-3.5 bg-primary hover:bg-primary/90 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-40 text-primary-foreground text-sm shadow-lg shadow-primary/20">
               {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Publish Product"}
             </button>
           </div>
@@ -215,9 +317,6 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
         <h2 className="text-xl font-semibold text-foreground flex-1">Storefront</h2>
-        <button onClick={() => setView("add")} className="p-2 rounded-full bg-primary/15 hover:bg-primary/25 transition-colors">
-          <Plus className="w-5 h-5 text-primary" />
-        </button>
       </div>
 
       <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
@@ -236,20 +335,25 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
             </div>
           )}
 
-          {/* Products List */}
+          {/* Products Section */}
           <div>
-            <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-3">
-              Products ({products?.length || 0})
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                Products ({products?.length || 0})
+              </h3>
+              <button onClick={() => setView("add_product")} className="p-1.5 rounded-full bg-primary/15 hover:bg-primary/25 transition-colors">
+                <Plus className="w-4 h-4 text-primary" />
+              </button>
+            </div>
             {productsLoading ? (
-              <div className="flex items-center justify-center py-10">
+              <div className="flex items-center justify-center py-8">
                 <Loader2 className="w-5 h-5 animate-spin text-white/20" />
               </div>
             ) : !products || products.length === 0 ? (
-              <div className="text-center py-10 bg-white/[0.02] rounded-xl border border-white/5">
-                <Package className="w-10 h-10 text-white/10 mx-auto mb-3" />
+              <div className="text-center py-8 bg-white/[0.02] rounded-xl border border-white/5">
+                <Package className="w-8 h-8 text-white/10 mx-auto mb-2" />
                 <p className="text-sm text-white/40 font-medium">No products yet</p>
-                <button onClick={() => setView("add")} className="mt-3 text-xs font-bold text-primary underline underline-offset-2">
+                <button onClick={() => setView("add_product")} className="mt-2 text-xs font-bold text-primary underline underline-offset-2">
                   Add your first product
                 </button>
               </div>
@@ -277,6 +381,58 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
                     </span>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* Seminars Section */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                Seminars ({seminars?.length || 0})
+              </h3>
+              <button onClick={() => setView("add_seminar")} className="p-1.5 rounded-full bg-primary/15 hover:bg-primary/25 transition-colors">
+                <Plus className="w-4 h-4 text-primary" />
+              </button>
+            </div>
+            {seminarsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-5 h-5 animate-spin text-white/20" />
+              </div>
+            ) : !seminars || seminars.length === 0 ? (
+              <div className="text-center py-8 bg-white/[0.02] rounded-xl border border-white/5">
+                <CalendarDays className="w-8 h-8 text-white/10 mx-auto mb-2" />
+                <p className="text-sm text-white/40 font-medium">No seminars yet</p>
+                <button onClick={() => setView("add_seminar")} className="mt-2 text-xs font-bold text-primary underline underline-offset-2">
+                  Create your first seminar
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {(seminars as any[]).map((seminar: any) => {
+                  const spotsLeft = seminar.capacity - (seminar.ticketsSold || 0);
+                  const eventDate = new Date(seminar.date);
+                  return (
+                    <div key={seminar.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors">
+                      <div className="w-12 h-12 rounded-lg bg-white/5 overflow-hidden shrink-0 flex items-center justify-center">
+                        {seminar.type === "virtual" ? (
+                          <Video className="w-5 h-5 text-purple-400/50" />
+                        ) : (
+                          <MapPin className="w-5 h-5 text-blue-400/50" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">{seminar.title}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {eventDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })} · ${(seminar.priceCents / 100).toFixed(2)} · {spotsLeft} spots
+                        </p>
+                      </div>
+                      <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${spotsLeft > 0 ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"}`}>
+                        {spotsLeft > 0 ? "Live" : "Full"}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

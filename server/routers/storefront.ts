@@ -322,5 +322,101 @@ export const storefrontRouter = router({
       // Filter to upcoming only
       return seminars.filter(s => new Date(s.date) > now);
     }),
+
+  /**
+   * Create a Stripe checkout session for a seminar registration
+   */
+  createSeminarCheckout: publicProcedure
+    .input(
+      z.object({
+        seminarId: z.number(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+
+      const seminar = await db.query.seminars.findFirst({
+        where: eq(schema.seminars.id, input.seminarId),
+      });
+
+      if (!seminar || !seminar.isActive) {
+        throw new Error("Seminar is unavailable.");
+      }
+
+      const spotsLeft = seminar.capacity - (seminar.ticketsSold || 0);
+      if (spotsLeft <= 0) {
+        throw new Error("This event is sold out.");
+      }
+
+      const settings = await db.query.artistSettings.findFirst({
+        where: eq(schema.artistSettings.userId, seminar.artistId),
+      });
+
+      const artistUser = await db.query.users.findFirst({
+        where: eq(schema.users.id, seminar.artistId),
+      });
+
+      if (!settings || !artistUser) {
+        throw new Error("Artist configuration error");
+      }
+
+      const fees = calculateTransactionFees({
+        transactionAmountCents: seminar.priceCents,
+        tier: "free",
+      });
+
+      // Create order record for the seminar
+      const [orderResult] = await db.insert(schema.orders).values({
+        artistId: seminar.artistId,
+        totalAmountCents: seminar.priceCents,
+        platformFeeCents: fees.platformFeeCents,
+        artistFeeCents: fees.artistFeeCents,
+        status: "pending",
+        fulfillmentMethod: seminar.type === "virtual" ? "digital" : "pickup",
+      });
+
+      const orderId = orderResult.insertId;
+
+      // Create order item linked to seminar
+      await db.insert(schema.orderItems).values({
+        orderId,
+        seminarId: seminar.id,
+        quantity: 1,
+        priceAtPurchaseCents: seminar.priceCents,
+      });
+
+      // Get Stripe Connect Account
+      const paymentSettings = await db.query.paymentMethodSettings.findFirst({
+        where: eq(schema.paymentMethodSettings.userId, seminar.artistId),
+      });
+
+      const connectAccountId = paymentSettings?.stripeConnectAccountId || undefined;
+      const slug = settings.publicSlug || "events";
+
+      const sessionUrl = await createStorefrontCheckoutSession({
+        orderId,
+        productId: seminar.id,
+        productName: `${seminar.title} (${seminar.type === "virtual" ? "Virtual" : "In-Person"} Seminar)`,
+        artistName: settings.displayName || artistUser.name || "Artist",
+        clientTotalCents: seminar.priceCents,
+        platformFeeCents: fees.platformFeeCents,
+        artistFeeCents: fees.artistFeeCents,
+        fulfillmentMethod: seminar.type === "virtual" ? "digital" : "pickup",
+        stripeConnectAccountId: connectAccountId,
+        slug,
+      });
+
+      if (!sessionUrl) {
+        throw new Error("Failed to generate checkout session");
+      }
+
+      // Increment tickets sold
+      await db.update(schema.seminars).set({
+        ticketsSold: (seminar.ticketsSold || 0) + 1,
+      }).where(eq(schema.seminars.id, seminar.id));
+
+      return { url: sessionUrl };
+    }),
 });
 
