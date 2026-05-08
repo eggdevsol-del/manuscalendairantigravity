@@ -48,6 +48,7 @@ import { DepositSheet } from "./pages/funnel/DepositSheet";
 import { BalanceSheet } from "./pages/funnel/BalanceSheet";
 import ArtistHub from "./pages/public/ArtistHub";
 import PublicStorefront from "./pages/public/PublicStorefront";
+import PublicEvents from "./pages/public/PublicEvents";
 import LeadDetail from "./pages/LeadDetail";
 import PayoutHistory from "./pages/PayoutHistory";
 import BankPayoutsPage from "./pages/BankPayoutsPage";
@@ -194,6 +195,7 @@ function Router() {
         <Route path="/404" component={NotFound} />
         {/* Dynamic Slug Route for Artist Hub */}
         <Route path="/shop/:slug" component={PublicStorefront} />
+        <Route path="/events/:slug" component={PublicEvents} />
         <Route path="/:slug" component={ArtistHub} />
         <Route component={NotFound} />
       </Switch>

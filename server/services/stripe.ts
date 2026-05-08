@@ -300,7 +300,7 @@ export async function createStorefrontCheckoutSession(opts: {
   stripeConnectAccountId?: string;
   slug: string;
 }): Promise<string | null> {
-  const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+  const baseUrl = process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
 
   // If using connect, GST/platform fee goes to platform account
   const applicationFeeCents = opts.platformFeeCents;

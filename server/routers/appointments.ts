@@ -649,6 +649,9 @@ export const appointmentsRouter = router({
           });
         }
 
+        const sittingPriceCents = Math.round(appt.price * 100);
+        const sittingDepositCents = appt.depositAmount ? Math.round(appt.depositAmount * 100) : 0;
+
         const created = await db.createAppointment({
           conversationId: input.conversationId,
           artistId: conversation.artistId,
@@ -664,6 +667,11 @@ export const appointmentsRouter = router({
           serviceName: appt.serviceName,
           price: appt.price,
           depositAmount: appt.depositAmount,
+          // Per-sitting balance fields
+          totalExpectedAmountCents: sittingPriceCents,
+          totalPaidAmountCents: 0,
+          remainingBalanceCents: sittingPriceCents - sittingDepositCents,
+          paymentStatus: "pending_deposit",
           status: "pending",
         });
 

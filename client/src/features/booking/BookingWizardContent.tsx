@@ -35,6 +35,7 @@ import { trpc } from "@/lib/trpc";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
+import { useLocation } from "wouter";
 import { tokens } from "@/ui/tokens";
 import { InlineFormSigning } from "./components/InlineFormSigning";
 import { EmbeddedStripeCheckout } from "@/features/stripe/EmbeddedStripeCheckout";
@@ -160,6 +161,7 @@ export function BookingWizardContent({
   onGoToChat,
   initialDate,
 }: BookingWizardContentProps) {
+  const [, setLocation] = useLocation();
   const { data: currentUser } = trpc.auth.me.useQuery();
 
   // 1. Get current studio for the user
@@ -353,6 +355,18 @@ export function BookingWizardContent({
     },
     onError: err => {
       toast.error(err.message || "Failed to send balance request");
+    }
+  });
+
+  const requestAdditionalMutation = trpc.messages.requestAdditional.useMutation({
+    onSuccess: () => {
+      toast.success("Additional charge request sent!");
+      if (conversationId) {
+        utils.messages.list.invalidate({ conversationId });
+      }
+    },
+    onError: err => {
+      toast.error(err.message || "Failed to send additional request");
     }
   });
 
@@ -1110,17 +1124,30 @@ export function BookingWizardContent({
                   <button
                     onClick={() => {
                       if (!selectedProposal || !selectedProposal.message.conversationId) return;
-                      // TODO: Add logic for request additional if fully paid
-                      if (selectedAppointmentRaw?.paymentStatus !== "fully_paid") {
+                      if (selectedAppointmentRaw?.paymentStatus === "fully_paid") {
+                        const amountStr = window.prompt("Enter additional charge amount ($):");
+                        if (!amountStr) return;
+                        const amount = parseFloat(amountStr);
+                        if (isNaN(amount) || amount <= 0) {
+                          toast.error("Please enter a valid amount.");
+                          return;
+                        }
+                        const desc = window.prompt("Describe the charge (e.g. 'Extra 2hrs shading'):") || "Additional charge";
+                        requestAdditionalMutation.mutate({
+                          conversationId: selectedProposal.message.conversationId,
+                          amountDollars: amount,
+                          description: desc,
+                        });
+                      } else {
                         requestBalanceMutation.mutate({
                           conversationId: selectedProposal.message.conversationId,
                         });
                       }
                     }}
-                    disabled={requestBalanceMutation.isPending}
+                    disabled={requestBalanceMutation.isPending || requestAdditionalMutation.isPending}
                     className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/20 flex items-center justify-center gap-2"
                   >
-                    {requestBalanceMutation.isPending ? (
+                    {(requestBalanceMutation.isPending || requestAdditionalMutation.isPending) ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <>
@@ -1132,6 +1159,22 @@ export function BookingWizardContent({
                 )}
               </motion.div>
             )}
+
+            {/* Client Pay Balance Button — Calendar SSOT */}
+            {!isArtist &&
+              proposalMeta.status === "confirmed" &&
+              selectedAppointmentRaw?.remainingBalanceCents > 0 &&
+              selectedAppointmentRaw?.paymentStatus !== "fully_paid" && (
+                <motion.div variants={fab.animation.item}>
+                  <button
+                    onClick={() => setLocation(`/balance/${selectedAppointmentRaw.id}`)}
+                    className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/20 flex items-center justify-center gap-2"
+                  >
+                    <DollarSign className="w-4 h-4" />
+                    Pay Balance (${(selectedAppointmentRaw.remainingBalanceCents / 100).toFixed(2)})
+                  </button>
+                </motion.div>
+              )}
 
             {!isArtist &&
               proposalMeta.status === "accepted" &&

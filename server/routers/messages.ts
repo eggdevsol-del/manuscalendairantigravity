@@ -384,6 +384,109 @@ export const messagesRouter = router({
         }),
       });
 
+      // Push notification via outbox
+      try {
+        await dbInst.insert(notificationOutbox).values({
+          eventType: "balance.requested",
+          payloadJson: JSON.stringify({
+            clientId: conversation.clientId,
+            artistId: ctx.user.id,
+            conversationId: input.conversationId,
+            appointmentId: nextSitting.id,
+            amountCents: nextSitting.remainingBalanceCents,
+          }),
+          status: "pending",
+        });
+      } catch (err) {
+        console.error("[Outbox] Failed to insert balance.requested event:", err);
+      }
+
+      return { success: true };
+    }),
+
+  requestAdditional: protectedProcedure
+    .input(
+      z.object({
+        conversationId: z.number(),
+        amountDollars: z.number().positive("Amount must be positive"),
+        description: z.string().min(1, "Description is required"),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const conversation = await db.getConversationById(input.conversationId);
+      if (!conversation) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Conversation not found" });
+      }
+
+      if (conversation.artistId !== ctx.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can request additional payment" });
+      }
+
+      const dbInst = await db.getDb();
+      if (!dbInst) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      // Find the fully-paid appointment for this conversation
+      const fullyPaidAppointment = await dbInst.query.appointments.findFirst({
+        where: and(
+          eq(appointments.conversationId, input.conversationId),
+          eq(appointments.paymentStatus, "fully_paid"),
+          ne(appointments.status, "cancelled")
+        ),
+        orderBy: [appointments.startTime],
+      });
+
+      if (!fullyPaidAppointment) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "No fully-paid appointment found." });
+      }
+
+      const amountCents = Math.round(input.amountDollars * 100);
+
+      // Update the appointment to reflect the new additional charges
+      await dbInst.update(appointments).set({
+        totalExpectedAmountCents: (fullyPaidAppointment.totalExpectedAmountCents || 0) + amountCents,
+        remainingBalanceCents: amountCents,
+        paymentStatus: "deposit_paid" as any, // Flip back from fully_paid
+      }).where(eq(appointments.id, fullyPaidAppointment.id));
+
+      const { createDepositToken } = await import("../services/depositToken");
+      const token = createDepositToken(fullyPaidAppointment.id);
+
+      const appUrl = process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
+      const checkoutLink = `${appUrl}/balance/${fullyPaidAppointment.id}?token=${token}`;
+
+      await db.createMessage({
+        conversationId: input.conversationId,
+        senderId: ctx.user.id,
+        content: `Additional Charge: $${input.amountDollars.toFixed(2)} for ${input.description}.`,
+        messageType: "system",
+        metadata: JSON.stringify({
+          type: "payment_request",
+          amountCents,
+          bookingId: fullyPaidAppointment.id,
+          sittingTitle: input.description,
+          checkoutUrl: checkoutLink,
+        }),
+      });
+
+      // Push notification via outbox
+      try {
+        await dbInst.insert(notificationOutbox).values({
+          eventType: "additional.requested",
+          payloadJson: JSON.stringify({
+            clientId: conversation.clientId,
+            artistId: ctx.user.id,
+            conversationId: input.conversationId,
+            appointmentId: fullyPaidAppointment.id,
+            amountCents,
+            description: input.description,
+          }),
+          status: "pending",
+        });
+      } catch (err) {
+        console.error("[Outbox] Failed to insert additional.requested event:", err);
+      }
+
       return { success: true };
     }),
 });
+

@@ -225,7 +225,7 @@ export const authRouter = router({
 
       // Generate magic link token
       const token = generateMagicLinkToken(email);
-      const magicLink = `${process.env.VITE_APP_URL || "http://localhost:3000"}/auth/magic?token=${token}`;
+      const magicLink = `${process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app"}/auth/magic?token=${token}`;
 
       // TODO: Send email with magic link
       // For now, just log it (in production, integrate with email service)
@@ -486,7 +486,7 @@ export const authRouter = router({
 
       // Generate reset token (similar to magic link)
       const token = generateMagicLinkToken(email);
-      const resetLink = `${process.env.VITE_APP_URL || "http://localhost:3000"}/auth/reset-password?token=${token}`;
+      const resetLink = `${process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app"}/auth/reset-password?token=${token}`;
 
       // TODO: Send email with reset link
       console.log(`[Auth] Password reset link for ${email}: ${resetLink}`);

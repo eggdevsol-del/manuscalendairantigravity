@@ -203,4 +203,124 @@ export const storefrontRouter = router({
 
       return { url: sessionUrl };
     }),
+
+  /**
+   * Create a new seminar
+   */
+  createSeminar: protectedProcedure
+    .input(
+      z.object({
+        title: z.string().min(1),
+        description: z.string(),
+        type: z.enum(["in_person", "virtual"]),
+        date: z.string(), // ISO date string
+        locationUrl: z.string().optional(),
+        capacity: z.number().min(1),
+        priceCents: z.number().positive(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+
+      const [result] = await db.insert(schema.seminars).values({
+        artistId: ctx.user.id,
+        title: input.title,
+        description: input.description,
+        type: input.type,
+        date: new Date(input.date),
+        locationUrl: input.locationUrl,
+        capacity: input.capacity,
+        priceCents: input.priceCents,
+        isActive: 1,
+      });
+
+      return { success: true, id: result.insertId };
+    }),
+
+  /**
+   * Fetch orders for the logged-in artist (for fulfillment dashboard)
+   */
+  getOrders: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+
+    const orders = await db.query.orders.findMany({
+      where: eq(schema.orders.artistId, ctx.user.id),
+      orderBy: [desc(schema.orders.createdAt)],
+    });
+
+    // Fetch order items for each order
+    const ordersWithItems = await Promise.all(
+      orders.map(async (order) => {
+        const items = await db.query.orderItems.findMany({
+          where: eq(schema.orderItems.orderId, order.id),
+        });
+        return { ...order, items };
+      })
+    );
+
+    return ordersWithItems;
+  }),
+
+  /**
+   * Update order fulfillment status
+   */
+  updateOrderStatus: protectedProcedure
+    .input(
+      z.object({
+        orderId: z.number(),
+        status: z.enum(["fulfilled", "cancelled"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+
+      const order = await db.query.orders.findFirst({
+        where: and(
+          eq(schema.orders.id, input.orderId),
+          eq(schema.orders.artistId, ctx.user.id)
+        ),
+      });
+
+      if (!order) throw new Error("Order not found");
+
+      const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+      await db.update(schema.orders).set({
+        status: input.status,
+        updatedAt: now,
+      }).where(eq(schema.orders.id, input.orderId));
+
+      return { success: true };
+    }),
+
+  /**
+   * Public endpoint to get seminars for artist hub
+   */
+  getPublicSeminars: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
+
+      const settings = await db.query.artistSettings.findFirst({
+        where: eq(schema.artistSettings.publicSlug, input.slug.toLowerCase()),
+      });
+
+      if (!settings) return [];
+
+      const now = new Date();
+      const seminars = await db.query.seminars.findMany({
+        where: and(
+          eq(schema.seminars.artistId, settings.userId),
+          eq(schema.seminars.isActive, 1),
+        ),
+        orderBy: [schema.seminars.date],
+      });
+
+      // Filter to upcoming only
+      return seminars.filter(s => new Date(s.date) > now);
+    }),
 });
+
