@@ -215,8 +215,10 @@ export function BookingWizardContent({
   );
 
   const [isClientPaying, setIsClientPaying] = useState(false);
+  const [isClientPayingBalance, setIsClientPayingBalance] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"card" | "bank" | null>(null);
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null);
+  const [checkoutBalanceClientSecret, setCheckoutBalanceClientSecret] = useState<string | null>(null);
 
   const [selectedService, setSelectedService] = useState<any>(null);
   const [requiredSittings, setRequiredSittings] = useState<number>(1);
@@ -1114,12 +1116,55 @@ export function BookingWizardContent({
                 variants={fab.animation.item}
                 className="flex flex-col gap-2 pt-1"
               >
-                <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-[4px] bg-emerald-500/10 border border-emerald-500/20">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
-                    Deposit Paid & Project Booked!
-                  </span>
-                </div>
+                {!isArtist && selectedAppointmentRaw?.remainingBalanceCents > 0 && selectedAppointmentRaw?.paymentStatus !== "fully_paid" ? (
+                  // Client view: Balance is due, show Pay Balance button directly instead of "Deposit Paid"
+                  <div className="flex flex-col w-full">
+                    {!checkoutBalanceClientSecret ? (
+                      <button
+                        onClick={async () => {
+                          setIsClientPayingBalance(true);
+                          try {
+                            toast.info("Preparing secure checkout...");
+                            const checkoutResult = await utils.client.funnel.createBalanceCheckout.mutate({
+                              bookingId: selectedAppointmentRaw.id,
+                              returnUrl: window.location.href,
+                            });
+                            if (checkoutResult?.clientSecret) {
+                              setCheckoutBalanceClientSecret(checkoutResult.clientSecret);
+                            } else if (checkoutResult?.url) {
+                              window.location.href = checkoutResult.url;
+                            } else {
+                              toast.error("Could not create checkout session");
+                              setIsClientPayingBalance(false);
+                            }
+                          } catch (err: any) {
+                            console.error("[Balance] Stripe checkout error:", err);
+                            toast.error(err.message || "Payment temporarily unavailable.");
+                            setIsClientPayingBalance(false);
+                          }
+                        }}
+                        disabled={isClientPayingBalance}
+                        className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500 text-white hover:bg-emerald-600 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:opacity-70"
+                      >
+                        {isClientPayingBalance ? <Loader2 className="w-4 h-4 animate-spin" /> : <DollarSign className="w-4 h-4" />}
+                        {isClientPayingBalance ? "Preparing..." : `Pay Balance ($${(selectedAppointmentRaw.remainingBalanceCents / 100).toFixed(2)})`}
+                      </button>
+                    ) : (
+                      <div className="mt-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <EmbeddedStripeCheckout clientSecret={checkoutBalanceClientSecret} />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  // Normal "Deposit Paid" block (for artists, or fully paid clients)
+                  <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-[4px] bg-emerald-500/10 border border-emerald-500/20">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+                      {selectedAppointmentRaw?.paymentStatus === "fully_paid" ? "Project Fully Paid!" : "Deposit Paid & Project Booked!"}
+                    </span>
+                  </div>
+                )}
+
                 {isArtist && (
                   <button
                     onClick={() => {
@@ -1159,22 +1204,6 @@ export function BookingWizardContent({
                 )}
               </motion.div>
             )}
-
-            {/* Client Pay Balance Button — Calendar SSOT */}
-            {!isArtist &&
-              proposalMeta.status === "confirmed" &&
-              selectedAppointmentRaw?.remainingBalanceCents > 0 &&
-              selectedAppointmentRaw?.paymentStatus !== "fully_paid" && (
-                <motion.div variants={fab.animation.item}>
-                  <button
-                    onClick={() => setLocation(`/balance/${selectedAppointmentRaw.id}`)}
-                    className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/20 flex items-center justify-center gap-2"
-                  >
-                    <DollarSign className="w-4 h-4" />
-                    Pay Balance (${(selectedAppointmentRaw.remainingBalanceCents / 100).toFixed(2)})
-                  </button>
-                </motion.div>
-              )}
 
             {!isArtist &&
               proposalMeta.status === "accepted" &&

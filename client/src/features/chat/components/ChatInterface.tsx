@@ -207,6 +207,11 @@ export function ChatInterface({
     }
   );
 
+  const { data: proposalData } = trpc.appointments.getProposalForAppointment.useQuery(
+    selectedAppointment?.id,
+    { enabled: !!selectedAppointment?.id }
+  );
+
   // Register FAB Actions
   const fabContent = useMemo(() => {
     // If loading or no conversation, return empty items to keep hooks stable
@@ -214,7 +219,10 @@ export function ChatInterface({
       return [];
     }
 
-    if (showBookingWizard || !!selectedProposal || !!selectedAppointment) {
+    // Check if we have either an explicit proposal or an appointment with an implicit proposal
+    const effectiveProposal = selectedProposal || proposalData;
+
+    if (showBookingWizard || !!effectiveProposal || !!selectedAppointment) {
       return (
         <BookingWizardContent
           conversationId={conversationId}
@@ -231,24 +239,26 @@ export function ChatInterface({
             setSelectedAppointment(null);
             // By not calling setFABOpen(false), we revert to the items list
           }}
-          selectedProposal={selectedProposal}
+          selectedProposal={effectiveProposal}
           selectedAppointmentRaw={selectedAppointment}
           onAcceptProposal={promo =>
-            handleClientAcceptProposal(selectedProposal?.message, promo)
+            handleClientAcceptProposal(effectiveProposal?.message, promo)
           }
           onRejectProposal={() => {
             setSelectedProposal(null);
           }}
           onUpdateProposalState={(newMeta) => {
-            if (selectedProposal) {
-              setSelectedProposal({ message: selectedProposal.message, metadata: newMeta });
+            if (effectiveProposal) {
+              // Note: this only updates state if we had an explicit selectedProposal,
+              // but that's fine for accepting/rejecting from the chat interface directly.
+              setSelectedProposal({ message: effectiveProposal.message, metadata: newMeta });
             }
           }}
           onCancelProposal={() => {
-            if (selectedProposal)
+            if (effectiveProposal)
               handleCancelProposal(
-                selectedProposal.message,
-                selectedProposal.metadata
+                effectiveProposal.message,
+                effectiveProposal.metadata
               );
             setSelectedProposal(null);
           }}
