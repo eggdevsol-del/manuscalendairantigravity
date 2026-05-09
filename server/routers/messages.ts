@@ -366,10 +366,19 @@ export const messagesRouter = router({
       const nextSitting = pendingSittings[0];
 
       // Self-heal: if deposit was paid but remainingBalanceCents was never recalculated
-      // (pre-v1.0.623 appointments), fix the stored value now.
+      // (pre-v1.0.623 appointments) or totalPaidAmountCents was stored in dollars (pre-v1.0.626), fix the stored value now.
       let effectiveBalance = nextSitting.remainingBalanceCents;
-      const totalPaid = nextSitting.totalPaidAmountCents || 0;
+      let totalPaid = nextSitting.totalPaidAmountCents || 0;
       const totalExpected = nextSitting.totalExpectedAmountCents || 0;
+      const depositDollars = nextSitting.depositAmount || 0;
+      
+      // If totalPaid exactly equals depositDollars, it means it missed the * 100 multiplier!
+      if (totalPaid > 0 && totalPaid === depositDollars) {
+          totalPaid = depositDollars * 100;
+          await dbInst.update(appointments).set({
+            totalPaidAmountCents: totalPaid
+          }).where(eq(appointments.id, nextSitting.id));
+      }
 
       if (totalPaid > 0 && totalExpected > 0) {
         // Recalculate: what the client still owes = expected - already paid
@@ -381,9 +390,9 @@ export const messagesRouter = router({
             remainingBalanceCents: effectiveBalance,
           }).where(eq(appointments.id, nextSitting.id));
         }
-      } else if (totalExpected > 0 && nextSitting.depositAmount) {
+      } else if (totalExpected > 0 && depositDollars > 0) {
         // Fallback: use depositAmount field (dollars) if totalPaidAmountCents was never set
-        const depositCents = Math.round(nextSitting.depositAmount * 100);
+        const depositCents = Math.round(depositDollars * 100);
         const recalculated = totalExpected - depositCents;
         if (recalculated > 0 && recalculated < effectiveBalance) {
           effectiveBalance = recalculated;

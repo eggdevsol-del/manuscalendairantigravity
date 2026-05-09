@@ -191,11 +191,11 @@ export function ChatInterface({
   const [isProposalsExpanded, setIsProposalsExpanded] = useState(false);
   const [inviteDismissed, setInviteDismissed] = useState(false);
 
-  // Add state for selected studio invite
   const [selectedInvite, setSelectedInvite] = useState<{
     message: any;
     metadata: StudioInviteMetadata;
   } | null>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<any | null>(null);
 
   // Fetch client media (Conditionally enabled, but hook is always called)
   const clientId = conversation?.otherUser?.id?.toString();
@@ -214,7 +214,7 @@ export function ChatInterface({
       return [];
     }
 
-    if (showBookingWizard || !!selectedProposal) {
+    if (showBookingWizard || !!selectedProposal || !!selectedAppointment) {
       return (
         <BookingWizardContent
           conversationId={conversationId}
@@ -228,9 +228,11 @@ export function ChatInterface({
           onClose={() => {
             setShowBookingWizard(false);
             setSelectedProposal(null);
+            setSelectedAppointment(null);
             // By not calling setFABOpen(false), we revert to the items list
           }}
           selectedProposal={selectedProposal}
+          selectedAppointmentRaw={selectedAppointment}
           onAcceptProposal={promo =>
             handleClientAcceptProposal(selectedProposal?.message, promo)
           }
@@ -732,6 +734,16 @@ export function ChatInterface({
                         <PaymentRequestCard
                           metadata={metadata}
                           isArtist={isArtist}
+                          onPress={() => {
+                            const appt = conversationAppointments?.find((a: any) => a.id === metadata.bookingId);
+                            if (appt) {
+                               setSelectedAppointment(appt);
+                               setFABOpen(true);
+                            } else {
+                               // Fallback if not found in cache (though it should be for clients in this conversation)
+                               setLocation(`/balance/${metadata.bookingId}`);
+                            }
+                          }}
                         />
                       </div>
                     ) : isStudioInvite ? (

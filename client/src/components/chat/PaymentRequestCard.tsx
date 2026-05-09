@@ -25,16 +25,19 @@ interface PaymentRequestMetadata {
 interface PaymentRequestCardProps {
   metadata: PaymentRequestMetadata;
   isArtist: boolean;
+  onPress?: () => void;
 }
 
-export function PaymentRequestCard({ metadata, isArtist }: PaymentRequestCardProps) {
+export function PaymentRequestCard({ metadata, isArtist, onPress }: PaymentRequestCardProps) {
   const [, setLocation] = useLocation();
   const card = tokens.card;
   const amountDollars = (metadata.amountCents / 100).toFixed(2);
 
   const handleClick = () => {
-    if (!isArtist && metadata.bookingId) {
-      // Client can navigate directly to the balance checkout
+    if (onPress) {
+      onPress();
+    } else if (!isArtist && metadata.bookingId) {
+      // Fallback: Client can navigate directly to the balance checkout
       setLocation(`/balance/${metadata.bookingId}`);
     }
   };
@@ -43,7 +46,7 @@ export function PaymentRequestCard({ metadata, isArtist }: PaymentRequestCardPro
     <div
       className={cn(
         card.base,
-        !isArtist ? card.interactive : "",
+        (onPress || !isArtist) ? card.interactive : "",
         "bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 hover:from-emerald-500/15 hover:to-emerald-500/10",
         "w-[85vw] max-w-[340px] p-0 self-center"
       )}
