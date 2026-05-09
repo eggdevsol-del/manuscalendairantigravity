@@ -4,9 +4,10 @@
  * Renders a rich payment request card in the chat stream,
  * matching the ProjectProposalMessage design language.
  * Uses tokens.card SSOT for consistent styling.
+ * Shows sitting date/time details so the client knows which appointment it's for.
  */
 
-import { DollarSign, ArrowRight } from "lucide-react";
+import { DollarSign, ArrowRight, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tokens } from "@/ui/tokens";
 import { useLocation } from "wouter";
@@ -16,6 +17,8 @@ interface PaymentRequestMetadata {
   amountCents: number;
   bookingId: number;
   sittingTitle?: string;
+  sittingDate?: string;
+  sittingTime?: string;
   checkoutUrl?: string;
 }
 
@@ -59,6 +62,17 @@ export function PaymentRequestCard({ metadata, isArtist }: PaymentRequestCardPro
             {metadata.sittingTitle || "Final Balance"}
           </h3>
         </div>
+
+        {/* Sitting Date/Time Detail */}
+        {metadata.sittingDate && (
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] bg-white/[0.03] border border-white/5">
+            <CalendarDays className="w-3.5 h-3.5 text-white/40 shrink-0" />
+            <span className="text-[11px] text-white/60 font-medium">
+              {metadata.sittingDate}
+              {metadata.sittingTime ? ` · ${metadata.sittingTime}` : ""}
+            </span>
+          </div>
+        )}
 
         {/* Amount Display */}
         <div

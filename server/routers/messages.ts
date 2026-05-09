@@ -364,22 +364,62 @@ export const messagesRouter = router({
       }
 
       const nextSitting = pendingSittings[0];
+
+      // Self-heal: if deposit was paid but remainingBalanceCents was never recalculated
+      // (pre-v1.0.623 appointments), fix the stored value now.
+      let effectiveBalance = nextSitting.remainingBalanceCents;
+      const totalPaid = nextSitting.totalPaidAmountCents || 0;
+      const totalExpected = nextSitting.totalExpectedAmountCents || 0;
+
+      if (totalPaid > 0 && totalExpected > 0) {
+        // Recalculate: what the client still owes = expected - already paid
+        const recalculated = totalExpected - totalPaid;
+        if (recalculated > 0 && recalculated !== effectiveBalance) {
+          effectiveBalance = recalculated;
+          // Persist the corrected value
+          await dbInst.update(appointments).set({
+            remainingBalanceCents: effectiveBalance,
+          }).where(eq(appointments.id, nextSitting.id));
+        }
+      } else if (totalExpected > 0 && nextSitting.depositAmount) {
+        // Fallback: use depositAmount field (dollars) if totalPaidAmountCents was never set
+        const depositCents = Math.round(nextSitting.depositAmount * 100);
+        const recalculated = totalExpected - depositCents;
+        if (recalculated > 0 && recalculated < effectiveBalance) {
+          effectiveBalance = recalculated;
+          await dbInst.update(appointments).set({
+            remainingBalanceCents: effectiveBalance,
+            totalPaidAmountCents: depositCents,
+          }).where(eq(appointments.id, nextSitting.id));
+        }
+      }
+
       const { createDepositToken } = await import("../services/depositToken");
       const token = createDepositToken(nextSitting.id);
       
       const appUrl = process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
       const checkoutLink = `${appUrl}/balance/${nextSitting.id}?token=${token}`;
 
+      // Format sitting date for the card
+      const sittingDate = nextSitting.startTime
+        ? new Date(nextSitting.startTime).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
+        : undefined;
+      const sittingTime = nextSitting.startTime
+        ? new Date(nextSitting.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+        : undefined;
+
       await db.createMessage({
         conversationId: input.conversationId,
         senderId: ctx.user.id,
-        content: `Payment Request: Final balance of $${(nextSitting.remainingBalanceCents / 100).toFixed(2)} for ${nextSitting.title || "your sitting"}.`,
+        content: `Payment Request: Final balance of $${(effectiveBalance / 100).toFixed(2)} for ${nextSitting.title || "your sitting"}.`,
         messageType: "system",
         metadata: JSON.stringify({
           type: "payment_request",
-          amountCents: nextSitting.remainingBalanceCents,
+          amountCents: effectiveBalance,
           bookingId: nextSitting.id,
           sittingTitle: nextSitting.title || "Final Balance",
+          sittingDate,
+          sittingTime,
           checkoutUrl: checkoutLink,
         }),
       });
@@ -393,7 +433,7 @@ export const messagesRouter = router({
             artistId: ctx.user.id,
             conversationId: input.conversationId,
             appointmentId: nextSitting.id,
-            amountCents: nextSitting.remainingBalanceCents,
+            amountCents: effectiveBalance,
           }),
           status: "pending",
         });

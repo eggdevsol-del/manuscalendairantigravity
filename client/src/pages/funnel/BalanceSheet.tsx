@@ -67,10 +67,10 @@ export function BalanceSheet() {
   const messageIdRaw = urlParams.get("messageId");
   const messageId = messageIdRaw ? parseInt(messageIdRaw, 10) : undefined;
 
-  // Fetch balance info
+  // Fetch balance info (token is optional — logged-in clients can access without it)
   const { data, isLoading, isError } = trpc.funnel.getBalanceInfo.useQuery(
-    { bookingId: parseInt(params?.id || "0", 10), token },
-    { enabled: !!params?.id && !!token }
+    { bookingId: parseInt(params?.id || "0", 10), token: token || undefined },
+    { enabled: !!params?.id }
   );
 
   // We don't have a confirmBalance endpoint yet, but maybe not needed if Stripe webhook handles it.
