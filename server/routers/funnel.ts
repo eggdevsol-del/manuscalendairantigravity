@@ -336,6 +336,7 @@ export const funnelRouter = router({
     .input(z.object({
       bookingId: z.number(),
       balanceToken: z.string().optional(),
+      returnUrl: z.string().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
@@ -401,7 +402,7 @@ export const funnelRouter = router({
         "../services/stripe"
       );
 
-      const url = await createBalanceCheckoutSession({
+      const checkoutResult = await createBalanceCheckoutSession({
         bookingId: booking.id,
         balanceAmountCents: remaining,
         platformFeeCents: fees.platformFeeCents,
@@ -417,9 +418,10 @@ export const funnelRouter = router({
         stripeConnectAccountId: artistSettingsRow?.stripeConnectAccountId,
         tier,
         balanceToken: input.balanceToken,
+        returnUrl: input.returnUrl,
       });
 
-      return { url, fees, remainingBalanceCents: remaining, paymentMethods };
+      return { url: checkoutResult.url, clientSecret: checkoutResult.clientSecret, fees, remainingBalanceCents: remaining, paymentMethods };
     }),
 
   /**

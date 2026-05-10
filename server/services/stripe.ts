@@ -235,7 +235,8 @@ export async function createBalanceCheckoutSession(opts: {
   paymentMethods: string[]; // Card-only, from getAllowedPaymentMethods()
   stripeConnectAccountId?: string | null;
   tier: string;
-  balanceToken: string;
+  balanceToken?: string;
+  returnUrl?: string;
 }) {
   const baseUrl = getAppUrl();
 
@@ -268,10 +269,12 @@ export async function createBalanceCheckoutSession(opts: {
       baseAmountCents: String(opts.balanceAmountCents),
       stripeConnectAccountId: opts.stripeConnectAccountId || "",
       tier: opts.tier,
-      balanceToken: opts.balanceToken,
+      balanceToken: opts.balanceToken || "",
     },
-    success_url: `${baseUrl}/balance/${opts.bookingId}?status=success&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${baseUrl}/balance/${opts.bookingId}?status=canceled`,
+    ui_mode: "embedded",
+    return_url: opts.returnUrl
+      ? `${opts.returnUrl}${opts.returnUrl.includes('?') ? '&' : '?'}status=success&session_id={CHECKOUT_SESSION_ID}`
+      : `${baseUrl}/balance/${opts.bookingId}?status=success&session_id={CHECKOUT_SESSION_ID}`,
   };
 
   // Connect routing
@@ -285,7 +288,10 @@ export async function createBalanceCheckoutSession(opts: {
   }
 
   const session = await stripe.checkout.sessions.create(sessionConfig);
-  return session.url;
+  return {
+    url: session.url,
+    clientSecret: session.client_secret
+  };
 }
 
 export async function createStorefrontCheckoutSession(opts: {
