@@ -348,6 +348,7 @@ export function ChatInterface({
     handleClientAcceptProposal,
     handleCancelProposal,
     setSelectedProposal,
+    selectedAppointment,
   ]);
 
   useRegisterFABActions("chat-" + conversationId, fabContent);
@@ -404,6 +405,7 @@ export function ChatInterface({
       setSelectedProposal(null);
       setShowBookingWizard(false);
       setSelectedInvite(null);
+      setSelectedAppointment(null);
     }
   }, [isFABOpen, setSelectedProposal]);
 
