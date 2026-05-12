@@ -207,7 +207,7 @@ export function ChatInterface({
     }
   );
 
-  const { data: proposalData } = trpc.appointments.getProposalForAppointment.useQuery(
+  const { data: proposalData, isLoading: isLoadingProposalData } = trpc.appointments.getProposalForAppointment.useQuery(
     selectedAppointment?.id,
     { enabled: !!selectedAppointment?.id }
   );
@@ -264,6 +264,7 @@ export function ChatInterface({
           }}
           isPendingProposalAction={bookProjectMutation.isPending}
           artistId={conversation?.artistId}
+          isLoadingProposal={isLoadingProposalData}
         />
       );
     }
@@ -349,6 +350,8 @@ export function ChatInterface({
     handleCancelProposal,
     setSelectedProposal,
     selectedAppointment,
+    proposalData,
+    isLoadingProposalData,
   ]);
 
   useRegisterFABActions("chat-" + conversationId, fabContent);
