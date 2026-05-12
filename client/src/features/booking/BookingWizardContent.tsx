@@ -1118,7 +1118,13 @@ export function BookingWizardContent({
               >
                 {!isArtist && selectedAppointmentRaw?.remainingBalanceCents > 0 && selectedAppointmentRaw?.paymentStatus !== "fully_paid" ? (
                   // Client view: Balance is due, show Pay Balance button directly instead of "Deposit Paid"
-                  <div className="flex flex-col w-full">
+                  <div className="flex flex-col w-full gap-2">
+                    <div className="flex items-center gap-1.5 justify-center pb-1">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+                        Deposit Paid & Project Booked!
+                      </span>
+                    </div>
                     {!checkoutBalanceClientSecret ? (
                       <button
                         onClick={async () => {
