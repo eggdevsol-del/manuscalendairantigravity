@@ -276,7 +276,7 @@ export const storefrontRouter = router({
         slug: settings.publicSlug || "shop",
       });
 
-      if (!sessionResult.url) {
+      if (!sessionResult.url && !sessionResult.clientSecret) {
         throw new Error("Failed to generate checkout session");
       }
 
@@ -475,20 +475,25 @@ export const storefrontRouter = router({
       const connectAccountId = paymentSettings?.stripeConnectAccountId || undefined;
       const slug = settings.publicSlug || "events";
 
-      const sessionUrl = await createStorefrontCheckoutSession({
+      const sessionResult = await createStorefrontCheckoutSession({
         orderId,
-        productId: seminar.id,
-        productName: `${seminar.title} (${seminar.type === "virtual" ? "Virtual" : "In-Person"} Seminar)`,
+        items: [{
+          productId: seminar.id,
+          productName: `${seminar.title} (${seminar.type === "virtual" ? "Virtual" : "In-Person"} Seminar)`,
+          priceCents: seminar.priceCents,
+          quantity: 1,
+        }],
         artistName: settings.displayName || artistUser.name || "Artist",
         clientTotalCents: seminar.priceCents,
         platformFeeCents: fees.platformFeeCents,
         artistFeeCents: fees.artistFeeCents,
+        shippingCostCents: 0,
         fulfillmentMethod: seminar.type === "virtual" ? "digital" : "pickup",
         stripeConnectAccountId: connectAccountId,
         slug,
       });
 
-      if (!sessionUrl) {
+      if (!sessionResult.url && !sessionResult.clientSecret) {
         throw new Error("Failed to generate checkout session");
       }
 
@@ -497,7 +502,7 @@ export const storefrontRouter = router({
         ticketsSold: (seminar.ticketsSold || 0) + 1,
       }).where(eq(schema.seminars.id, seminar.id));
 
-      return { url: sessionUrl };
+      return sessionResult;
     }),
 });
 
