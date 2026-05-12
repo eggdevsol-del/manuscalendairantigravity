@@ -1111,12 +1111,31 @@ export function BookingWizardContent({
               </motion.div>
             )}
 
-            {proposalMeta.status === "confirmed" && (
+            {proposalMeta.status === "confirmed" && (() => {
+              // Self-healing balance calculation for older appointments that pre-date remainingBalanceCents
+              let calculatedBalanceCents = 0;
+              if (selectedAppointmentRaw) {
+                if (typeof selectedAppointmentRaw.remainingBalanceCents === "number" && selectedAppointmentRaw.remainingBalanceCents > 0) {
+                  calculatedBalanceCents = selectedAppointmentRaw.remainingBalanceCents;
+                } else if (selectedAppointmentRaw.paymentStatus !== "fully_paid") {
+                  const expected = typeof selectedAppointmentRaw.totalExpectedAmountCents === "number" && selectedAppointmentRaw.totalExpectedAmountCents > 0
+                    ? selectedAppointmentRaw.totalExpectedAmountCents 
+                    : (selectedAppointmentRaw.price ? selectedAppointmentRaw.price * 100 : 0);
+                    
+                  const paid = typeof selectedAppointmentRaw.totalPaidAmountCents === "number" && selectedAppointmentRaw.totalPaidAmountCents > 0
+                    ? selectedAppointmentRaw.totalPaidAmountCents
+                    : (selectedAppointmentRaw.depositPaid ? (selectedAppointmentRaw.depositAmount || 0) * 100 : 0);
+                    
+                  calculatedBalanceCents = Math.max(0, expected - paid);
+                }
+              }
+
+              return (
               <motion.div
                 variants={fab.animation.item}
                 className="flex flex-col gap-2 pt-1"
               >
-                {!isArtist && selectedAppointmentRaw?.remainingBalanceCents > 0 && selectedAppointmentRaw?.paymentStatus !== "fully_paid" ? (
+                {!isArtist && calculatedBalanceCents > 0 && selectedAppointmentRaw?.paymentStatus !== "fully_paid" ? (
                   // Client view: Balance is due, show Pay Balance button directly instead of "Deposit Paid"
                   <div className="flex flex-col w-full">
                     {!checkoutBalanceClientSecret ? (
@@ -1147,7 +1166,7 @@ export function BookingWizardContent({
                         className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500 text-white hover:bg-emerald-600 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:opacity-70"
                       >
                         {isClientPayingBalance ? <Loader2 className="w-4 h-4 animate-spin" /> : <DollarSign className="w-4 h-4" />}
-                        {isClientPayingBalance ? "Preparing..." : `Pay Balance ($${(selectedAppointmentRaw.remainingBalanceCents / 100).toFixed(2)})`}
+                        {isClientPayingBalance ? "Preparing..." : `Pay Balance ($${(calculatedBalanceCents / 100).toFixed(2)})`}
                       </button>
                     ) : (
                       <div className="mt-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -1203,7 +1222,8 @@ export function BookingWizardContent({
                   </button>
                 )}
               </motion.div>
-            )}
+              );
+            })}
 
             {!isArtist &&
               proposalMeta.status === "accepted" &&
