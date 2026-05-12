@@ -130,7 +130,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
   };
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-  const funnelUrl = `${baseUrl}/start/${slug}`;
+  const funnelUrl = `${baseUrl}/${slug}`;
 
   const handleCopy = async () => {
     try {
@@ -236,7 +236,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
                 <div className="flex gap-2">
                   <div className="flex-1 flex items-center bg-white/10 rounded-xl overflow-hidden">
                     <span className="text-white/40 text-sm pl-3 pr-1">
-                      /start/
+                      /
                     </span>
                     <input
                       type="text"

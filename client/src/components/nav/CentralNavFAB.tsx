@@ -270,7 +270,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
         handleViewChange("booking-link");
         return;
       }
-      const url = `${window.location.origin}/start/${artistSettings.publicSlug}`;
+      const url = `${window.location.origin}/${artistSettings.publicSlug}`;
       navigator.clipboard.writeText(url);
       toast.success("Booking link copied to clipboard!");
     } else {

@@ -369,7 +369,30 @@ export const funnelRouter = router({
         throw new Error("This booking has been refunded");
       }
 
-      const remaining = booking.remainingBalanceCents || 0;
+      // Self-healing: backfill remainingBalanceCents for legacy appointments
+      let remaining = booking.remainingBalanceCents;
+      if (remaining === null || remaining === undefined) {
+        // Legacy appointment — derive from price and deposit
+        const expected = booking.totalExpectedAmountCents || (booking.price ? booking.price * 100 : 0);
+        const paid = booking.totalPaidAmountCents || (booking.depositPaid ? (booking.depositAmount || 0) * 100 : 0);
+        remaining = Math.max(0, expected - paid);
+
+        // Persist the backfill so future calls don't need to recompute
+        if (remaining > 0) {
+          await db
+            .update(schema.appointments)
+            .set({
+              remainingBalanceCents: remaining,
+              totalExpectedAmountCents: expected || undefined,
+              totalPaidAmountCents: paid || undefined,
+              paymentStatus: booking.depositPaid ? "deposit_paid" as any : booking.paymentStatus,
+            })
+            .where(eq(schema.appointments.id, booking.id));
+        }
+      } else {
+        remaining = remaining || 0;
+      }
+
       if (remaining <= 0) {
         throw new Error("No balance remaining on this booking");
       }
