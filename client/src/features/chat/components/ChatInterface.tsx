@@ -608,6 +608,11 @@ export function ChatInterface({
                 variant="pinned"
                 onPress={() => {
                   handleViewProposal(msg, meta);
+                  const apptId = meta.appointmentIds?.[0] || meta.bookingId;
+                  if (apptId) {
+                    const appt = conversationAppointments?.find((a: any) => a.id === apptId);
+                    if (appt) setSelectedAppointment(appt);
+                  }
                   setFABOpen(true);
                 }}
                 onCancel={() => handleCancelProposal(msg, meta)}
@@ -786,6 +791,11 @@ export function ChatInterface({
                             variant="inline"
                             onPress={() => {
                               handleViewProposal(message, metadata);
+                              const apptId = metadata.appointmentIds?.[0] || metadata.bookingId;
+                              if (apptId) {
+                                const appt = conversationAppointments?.find((a: any) => a.id === apptId);
+                                if (appt) setSelectedAppointment(appt);
+                              }
                               setFABOpen(true);
                             }}
                             onCancel={() =>
