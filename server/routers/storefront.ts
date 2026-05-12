@@ -48,6 +48,7 @@ export const storefrontRouter = router({
         title: z.string().min(1, "Title is required"),
         description: z.string(),
         priceCents: z.number().positive(),
+        shippingCents: z.number().min(0).optional(),
         inventoryCount: z.number().min(0),
         fulfillmentType: z.enum(["pickup", "delivery", "both", "digital"]),
         imageUrl: z.string().optional(),
@@ -62,6 +63,7 @@ export const storefrontRouter = router({
         title: input.title,
         description: input.description,
         priceCents: input.priceCents,
+        shippingCents: input.shippingCents || 0,
         inventoryCount: input.inventoryCount,
         fulfillmentType: input.fulfillmentType,
         imageUrl: input.imageUrl,
@@ -69,6 +71,51 @@ export const storefrontRouter = router({
       });
 
       return { success: true, id: result.insertId };
+    }),
+
+  /**
+   * Update an existing product
+   */
+  updateProduct: protectedProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        title: z.string().min(1, "Title is required"),
+        description: z.string(),
+        priceCents: z.number().positive(),
+        shippingCents: z.number().min(0).optional(),
+        inventoryCount: z.number().min(0),
+        fulfillmentType: z.enum(["pickup", "delivery", "both", "digital"]),
+        imageUrl: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+
+      // Verify ownership
+      const existingProduct = await db.query.products.findFirst({
+        where: eq(schema.products.id, input.id),
+      });
+
+      if (!existingProduct || existingProduct.artistId !== ctx.user.id) {
+        throw new Error("Product not found or unauthorized");
+      }
+
+      await db.update(schema.products)
+        .set({
+          title: input.title,
+          description: input.description,
+          priceCents: input.priceCents,
+          shippingCents: input.shippingCents || 0,
+          inventoryCount: input.inventoryCount,
+          fulfillmentType: input.fulfillmentType,
+          ...(input.imageUrl !== undefined ? { imageUrl: input.imageUrl } : {}),
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.products.id, input.id));
+
+      return { success: true };
     }),
 
   /**

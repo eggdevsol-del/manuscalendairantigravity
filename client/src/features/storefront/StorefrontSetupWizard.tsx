@@ -52,17 +52,19 @@ function compressImage(file: File, maxDim = 1200, quality = 0.8): Promise<string
   });
 }
 
-type WizardView = "dashboard" | "add_product" | "add_seminar";
+type WizardView = "dashboard" | "add_product" | "edit_product" | "add_seminar";
 
 export default function StorefrontSetupWizard({ onClose }: { onClose: () => void }) {
   const [, setLocation] = useLocation();
   const [view, setView] = useState<WizardView>("dashboard");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
 
   // Product Form State
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [shippingCost, setShippingCost] = useState("");
   const [inventory, setInventory] = useState("");
   const [fulfillmentType, setFulfillmentType] = useState<"pickup" | "delivery" | "both" | "digital">("pickup");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -79,6 +81,7 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
 
   const uploadMutation = trpc.upload.uploadImage.useMutation();
   const createProductMutation = trpc.storefront.createProduct.useMutation();
+  const updateProductMutation = trpc.storefront.updateProduct.useMutation();
   const createSeminarMutation = trpc.storefront.createSeminar.useMutation();
   const { data: products, isLoading: productsLoading } = trpc.storefront.getProducts.useQuery();
   const { data: seminars, isLoading: seminarsLoading } = trpc.storefront.getSeminars.useQuery();
@@ -100,8 +103,8 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
   };
 
   const resetProductForm = () => {
-    setTitle(""); setDescription(""); setPrice(""); setInventory("");
-    setFulfillmentType("pickup"); setImageFile(null); setImagePreview(null);
+    setTitle(""); setDescription(""); setPrice(""); setShippingCost(""); setInventory("");
+    setFulfillmentType("pickup"); setImageFile(null); setImagePreview(null); setSelectedProductId(null);
   };
 
   const resetSeminarForm = () => {
@@ -126,20 +129,33 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
         });
         imageUrl = uploadRes.url;
       }
-      await createProductMutation.mutateAsync({
+      
+      const payload = {
         title,
         description,
         priceCents: Math.round(parseFloat(price) * 100),
+        shippingCents: shippingCost ? Math.round(parseFloat(shippingCost) * 100) : 0,
         inventoryCount: parseInt(inventory, 10),
         fulfillmentType,
-        imageUrl,
-      });
-      toast.success("Product published!");
+        ...(imageUrl ? { imageUrl } : {}),
+      };
+
+      if (view === "edit_product" && selectedProductId) {
+        await updateProductMutation.mutateAsync({
+          id: selectedProductId,
+          ...payload
+        });
+        toast.success("Product updated!");
+      } else {
+        await createProductMutation.mutateAsync(payload);
+        toast.success("Product published!");
+      }
+
       utils.storefront.getProducts.invalidate();
       resetProductForm();
       setView("dashboard");
     } catch (err: any) {
-      toast.error(err.message || "Failed to create product");
+      toast.error(err.message || "Failed to save product");
     } finally {
       setIsSubmitting(false);
     }
@@ -245,11 +261,11 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
     );
   }
 
-  // ── ADD PRODUCT VIEW ──
-  if (view === "add_product") {
+  // ── ADD / EDIT PRODUCT VIEW ──
+  if (view === "add_product" || view === "edit_product") {
     return (
       <div className="w-full h-full flex flex-col overflow-hidden relative">
-        <Header title="Add Product" onBack={() => setView("dashboard")} />
+        <Header title={view === "edit_product" ? "Edit Product" : "Add Product"} onBack={() => { resetProductForm(); setView("dashboard"); }} />
         <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
           <div className="pb-[180px] max-w-lg mx-auto space-y-5 px-5 pt-5">
             <div
@@ -274,13 +290,17 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
               <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Description</label>
               <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe your product..." rows={3} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 resize-none text-sm" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Price ($)</label>
                 <input type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} placeholder="25.00" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
               </div>
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Stock Count</label>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Shipping ($)</label>
+                <input type="number" step="0.01" value={shippingCost} onChange={e => setShippingCost(e.target.value)} placeholder="0.00" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Stock</label>
                 <input type="number" value={inventory} onChange={e => setInventory(e.target.value)} placeholder="50" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
               </div>
             </div>
@@ -301,7 +321,7 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
               </div>
             </div>
             <button onClick={handleProductSubmit} disabled={isSubmitting || !title || !price || !inventory} className="w-full mt-2 py-3.5 bg-primary hover:bg-primary/90 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-40 text-primary-foreground text-sm shadow-lg shadow-primary/20">
-              {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Publish Product"}
+              {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : view === "edit_product" ? "Save Changes" : "Publish Product"}
             </button>
           </div>
         </div>
@@ -360,7 +380,21 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
             ) : (
               <div className="space-y-2">
                 {products.map((product: any) => (
-                  <div key={product.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors">
+                  <div 
+                    key={product.id} 
+                    onClick={() => {
+                      setSelectedProductId(product.id);
+                      setTitle(product.title);
+                      setDescription(product.description || "");
+                      setPrice((product.priceCents / 100).toString());
+                      setShippingCost(product.shippingCents ? (product.shippingCents / 100).toString() : "0");
+                      setInventory(product.inventoryCount.toString());
+                      setFulfillmentType(product.fulfillmentType);
+                      setImagePreview(product.imageUrl || null);
+                      setView("edit_product");
+                    }}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors cursor-pointer"
+                  >
                     <div className="w-12 h-12 rounded-lg bg-white/5 overflow-hidden shrink-0">
                       {product.imageUrl ? (
                         <img src={product.imageUrl} alt={product.title} className="w-full h-full object-cover" />
