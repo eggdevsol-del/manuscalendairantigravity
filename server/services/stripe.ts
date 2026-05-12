@@ -423,6 +423,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             if (!lead) break;
 
             const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+            const nowDate = new Date();
             await db
               .update(leads)
               .set({
@@ -431,7 +432,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 depositVerifiedAt: now,
                 stripeCheckoutSessionId: session.id,
                 status: "deposit_verified" as any,
-                updatedAt: now,
+                updatedAt: nowDate,
               })
               .where(eq(leads.id, leadId));
 
@@ -512,6 +513,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
 
           if (bookingId) {
             const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+            const nowDate = new Date();
             const booking = await db.query.appointments.findFirst({
               where: eq(appointments.id, bookingId),
             });
@@ -526,7 +528,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 remainingBalanceCents: Math.max(remaining, 0),
                 paymentStatus: remaining <= 0 ? "fully_paid" as any : "deposit_paid" as any,
                 clientPaid: remaining <= 0 ? 1 : 0,
-                updatedAt: now,
+                updatedAt: nowDate,
               }).where(eq(appointments.id, bookingId));
 
               // Ledger write
@@ -567,7 +569,8 @@ export async function handleStripeWebhook(req: Request, res: Response) {
               where: eq(orders.id, orderId),
             });
             if (order) {
-              const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+              const nowStr = new Date().toISOString().slice(0, 19).replace("T", " ");
+              const nowDate = new Date();
               
               // 1. Update Order Status, Shipping Address, and Buyer Details
               const shippingDetails = session.shipping_details;
@@ -592,7 +595,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 buyerPhone,
                 stripeCheckoutSessionId: session.id,
                 stripePaymentIntentId: session.payment_intent as string || null,
-                updatedAt: now,
+                updatedAt: nowDate,
               }).where(eq(orders.id, orderId));
 
               // 2. Decrement Inventory for all order items
@@ -601,13 +604,14 @@ export async function handleStripeWebhook(req: Request, res: Response) {
               });
 
               for (const item of items) {
+                if (!item.productId) continue;
                 const product = await db.query.products.findFirst({
                   where: eq(products.id, item.productId),
                 });
                 if (product && product.inventoryCount >= item.quantity) {
                   await db.update(products).set({
                     inventoryCount: product.inventoryCount - item.quantity,
-                    updatedAt: now,
+                    updatedAt: nowDate,
                   }).where(eq(products.id, product.id));
                 }
               }
