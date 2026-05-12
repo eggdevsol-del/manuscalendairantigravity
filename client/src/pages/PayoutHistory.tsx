@@ -294,7 +294,6 @@ export default function PayoutHistory() {
                                     ))}
                                 </div>
                             </div>
-                        </div>
                         )}
 
                         {/* Empty state */}
