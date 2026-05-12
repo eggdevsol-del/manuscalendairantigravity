@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import { getDb } from "./core";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { studios, artistSettings, leads, messages, paymentLedger, appointments, orders, products, orderItems, users, conversations } from "../../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import type { Request, Response } from "express";
@@ -620,8 +620,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 if (existingUser) {
                   // update order with clientId
                   await db.update(orders).set({ clientId: existingUser.id }).where(eq(orders.id, orderId));
-                  // Check if conversation exists (import and from drizzle-orm)
-                  const { and } = await import("drizzle-orm");
+                  // Check if conversation exists
                   const existingConv = await db.query.conversations.findFirst({
                     where: and(
                       eq(conversations.artistId, order.artistId),
