@@ -631,7 +631,6 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                     await db.insert(conversations).values({
                       artistId: order.artistId,
                       clientId: existingUser.id,
-                      status: "active",
                     });
                   }
                 }

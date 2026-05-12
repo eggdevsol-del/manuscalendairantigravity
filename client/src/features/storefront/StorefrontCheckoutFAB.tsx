@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ShoppingCart, Plus, Minus, ChevronRight, Loader2, Package, CheckCircle2 } from "lucide-react";
 import { useCart } from "./CartContext";
@@ -20,6 +20,19 @@ export function StorefrontCheckoutFAB({
   const [step, setStep] = useState<CheckoutStep>("review");
   const [isGenerating, setIsGenerating] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("status") === "success") {
+      setStep("success");
+      setIsCartOpen(true);
+      clearCart();
+      
+      // Clean up the URL so it doesn't trigger again on refresh
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, []);
 
   const checkoutMutation = trpc.storefront.createStorefrontCheckout.useMutation();
 
