@@ -3,6 +3,7 @@
  *
  * Props-only, stateless, unaware of tRPC or routing.
  * Shows next payout amount, status badge, arrival date, and earnings summary.
+ * Optionally renders an inline scrollable transaction list.
  */
 
 import {
@@ -10,10 +11,24 @@ import {
     TrendingUp,
     Clock,
     ArrowUpRight,
+    ArrowDownLeft,
     AlertCircle,
+    ChevronDown,
+    ChevronUp,
+    Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tokens } from "@/ui/tokens";
+import { AnimatePresence, motion } from "framer-motion";
+
+export interface TransactionEntry {
+    id: number;
+    type: string;
+    amountCents: number;
+    netCents: number;
+    createdAt: string;
+    paymentMethod?: string;
+}
 
 export interface PayoutWidgetProps {
     connected: boolean;
@@ -34,65 +49,33 @@ export interface PayoutWidgetProps {
         refundsCents: number;
         transactionCount: number;
     };
+    // Inline transaction list
+    showTransactions?: boolean;
+    transactions?: TransactionEntry[];
+    isLoadingTransactions?: boolean;
+    onToggleTransactions?: () => void;
     onViewHistory?: () => void;
     onConnectStripe?: () => void;
 }
 
 function formatCents(cents: number): string {
-    return `$${(cents / 100).toFixed(2)}`;
+    return `$${(Math.abs(cents) / 100).toFixed(2)}`;
 }
 
 function formatDate(iso: string): string {
     const d = new Date(iso);
     return d.toLocaleDateString("en-AU", {
-        weekday: "short",
         day: "numeric",
         month: "short",
     });
 }
 
-function StatusBadge({ status }: { status: string }) {
-    const map: Record<string, { bg: string; text: string; label: string }> = {
-        pending: {
-            bg: "bg-amber-500/20",
-            text: "text-amber-400",
-            label: "Pending",
-        },
-        in_transit: {
-            bg: "bg-blue-500/20",
-            text: "text-blue-400",
-            label: "In Transit",
-        },
-        paid: {
-            bg: "bg-emerald-500/20",
-            text: "text-emerald-400",
-            label: "Paid",
-        },
-        failed: {
-            bg: "bg-red-500/20",
-            text: "text-red-400",
-            label: "Failed",
-        },
-        canceled: {
-            bg: "bg-gray-500/20",
-            text: "text-gray-400",
-            label: "Cancelled",
-        },
-    };
-
-    const style = map[status] || map.pending;
-
-    return (
-        <span
-            className={cn(
-                "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest",
-                style.bg,
-                style.text
-            )}
-        >
-            {style.label}
-        </span>
-    );
+function formatTime(iso: string): string {
+    const d = new Date(iso);
+    return d.toLocaleTimeString("en-AU", {
+        hour: "2-digit",
+        minute: "2-digit",
+    });
 }
 
 export function PayoutWidget({
@@ -104,6 +87,10 @@ export function PayoutWidget({
     nextPayoutStatus,
     error,
     earnings,
+    showTransactions,
+    transactions,
+    isLoadingTransactions,
+    onToggleTransactions,
     onViewHistory,
     onConnectStripe,
 }: PayoutWidgetProps) {
@@ -173,12 +160,17 @@ export function PayoutWidget({
                     </div>
                     <h3 className="font-semibold text-foreground">Payouts</h3>
                 </div>
-                {onViewHistory && (
+                {onToggleTransactions && (
                     <button
-                        onClick={onViewHistory}
-                        className="text-xs text-primary flex items-center gap-1 hover:underline"
+                        onClick={onToggleTransactions}
+                        className="text-xs text-primary flex items-center gap-1 hover:underline transition-colors"
                     >
-                        History <ArrowUpRight className="w-3 h-3" />
+                        History
+                        {showTransactions ? (
+                            <ChevronUp className="w-3 h-3" />
+                        ) : (
+                            <ChevronDown className="w-3 h-3" />
+                        )}
                     </button>
                 )}
             </div>
@@ -202,6 +194,111 @@ export function PayoutWidget({
                     </p>
                 </div>
             </div>
+
+            {/* Inline Transaction List */}
+            <AnimatePresence>
+                {showTransactions && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                    >
+                        <div className="border-t border-white/5 pt-3">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">
+                                Recent Transactions
+                            </p>
+
+                            {isLoadingTransactions && (
+                                <div className="flex items-center justify-center py-6">
+                                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                                </div>
+                            )}
+
+                            {!isLoadingTransactions && transactions && transactions.length === 0 && (
+                                <div className="flex flex-col items-center py-6 text-center">
+                                    <Banknote className="w-8 h-8 text-muted-foreground/20 mb-2" />
+                                    <p className="text-xs text-muted-foreground/50">
+                                        No transactions yet
+                                    </p>
+                                </div>
+                            )}
+
+                            {!isLoadingTransactions && transactions && transactions.length > 0 && (
+                                <div className="max-h-[240px] overflow-y-auto no-scrollbar divide-y divide-white/5 rounded-lg bg-white/[0.02]">
+                                    {transactions.map((entry) => {
+                                        const isIncome =
+                                            entry.type === "deposit" || entry.type === "balance";
+                                        return (
+                                            <div
+                                                key={entry.id}
+                                                className="flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors"
+                                            >
+                                                <div className="flex items-center gap-2.5">
+                                                    <div
+                                                        className={cn(
+                                                            "p-1.5 rounded-lg",
+                                                            isIncome
+                                                                ? "bg-emerald-500/20 text-emerald-400"
+                                                                : entry.type === "refund"
+                                                                    ? "bg-red-500/20 text-red-400"
+                                                                    : "bg-amber-500/20 text-amber-400"
+                                                        )}
+                                                    >
+                                                        {isIncome ? (
+                                                            <ArrowDownLeft className="w-3 h-3" />
+                                                        ) : (
+                                                            <ArrowUpRight className="w-3 h-3" />
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-medium text-foreground capitalize">
+                                                            {entry.type}
+                                                        </p>
+                                                        <p className="text-[9px] text-muted-foreground">
+                                                            {entry.createdAt
+                                                                ? `${formatDate(entry.createdAt)} · ${formatTime(entry.createdAt)}`
+                                                                : ""}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p
+                                                        className={cn(
+                                                            "text-xs font-bold tabular-nums",
+                                                            isIncome
+                                                                ? "text-emerald-400"
+                                                                : "text-red-400"
+                                                        )}
+                                                    >
+                                                        {isIncome ? "+" : "-"}
+                                                        {formatCents(entry.amountCents)}
+                                                    </p>
+                                                    <p className="text-[9px] text-muted-foreground tabular-nums">
+                                                        Net: {formatCents(entry.netCents)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {/* View Full History link */}
+                            {onViewHistory && transactions && transactions.length > 0 && (
+                                <button
+                                    onClick={onViewHistory}
+                                    className="w-full mt-2 py-2 text-[10px] font-bold text-primary uppercase tracking-widest hover:underline flex items-center justify-center gap-1 transition-colors"
+                                >
+                                    View Full History
+                                    <ArrowUpRight className="w-3 h-3" />
+                                </button>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

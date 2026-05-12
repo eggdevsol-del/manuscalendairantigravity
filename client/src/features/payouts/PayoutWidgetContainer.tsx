@@ -6,6 +6,7 @@
  * and pass results to presentational components (per user rules).
  */
 
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { PayoutWidget } from "./PayoutWidget";
 import { useLocation } from "wouter";
@@ -19,11 +20,18 @@ export function PayoutWidgetContainer({
     period = "30d",
 }: PayoutWidgetContainerProps) {
     const [, setLocation] = useLocation();
+    const [showTransactions, setShowTransactions] = useState(false);
 
     // Fetch payout data
     const nextPayoutQuery = trpc.payouts.nextPayout.useQuery();
     const earningsQuery = trpc.payouts.earningsBreakdown.useQuery({ period });
     const connectStatusQuery = trpc.artistSettings.getStripeConnectStatus.useQuery();
+
+    // Fetch transaction history only when expanded
+    const historyQuery = trpc.payouts.payoutHistory.useQuery(
+        { limit: 20 },
+        { enabled: showTransactions }
+    );
 
     // Connect Stripe mutation
     const connectStripe = trpc.artistSettings.connectStripe.useMutation();
@@ -47,6 +55,10 @@ export function PayoutWidgetContainer({
         } catch (err: any) {
             toast.error(err.message || "Failed to connect Stripe");
         }
+    };
+
+    const handleToggleTransactions = () => {
+        setShowTransactions((prev) => !prev);
     };
 
     const handleViewHistory = () => {
@@ -73,13 +85,19 @@ export function PayoutWidgetContainer({
     // Standard connected → show Dashboard link via onConnectStripe={undefined}
     const showConnectButton = !payoutData.connected;
 
+    // Derive transaction entries from history query
+    const transactions = historyQuery.data?.entries || [];
+
     return (
         <PayoutWidget
             {...payoutData}
             earnings={earningsQuery.data || undefined}
+            showTransactions={showTransactions}
+            transactions={transactions}
+            isLoadingTransactions={historyQuery.isLoading}
+            onToggleTransactions={handleToggleTransactions}
             onViewHistory={handleViewHistory}
             onConnectStripe={showConnectButton ? handleConnectStripe : undefined}
         />
     );
 }
-
