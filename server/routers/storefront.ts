@@ -369,10 +369,9 @@ export const storefrontRouter = router({
 
       if (!order) throw new Error("Order not found");
 
-      const now = new Date().toISOString().slice(0, 19).replace("T", " ");
       await db.update(schema.orders).set({
         status: input.status,
-        updatedAt: now,
+        updatedAt: new Date(),
       }).where(eq(schema.orders.id, input.orderId));
 
       return { success: true };
