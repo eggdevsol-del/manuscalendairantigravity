@@ -335,6 +335,9 @@ export async function createStorefrontCheckoutSession(opts: {
       artistFeeCents: String(opts.artistFeeCents),
       stripeConnectAccountId: opts.stripeConnectAccountId || "",
     },
+    phone_number_collection: {
+      enabled: true,
+    },
     ui_mode: "embedded",
     return_url: `${baseUrl}/shop/${opts.slug}?status=success&session_id={CHECKOUT_SESSION_ID}&order_id=${opts.orderId}`,
   };
@@ -574,18 +577,21 @@ export async function handleStripeWebhook(req: Request, res: Response) {
               
               // 1. Update Order Status, Shipping Address, and Buyer Details
               const shippingDetails = session.shipping_details;
+              const customerDetails = session.customer_details;
+              
+              const buyerName = shippingDetails?.name || customerDetails?.name || null;
+              const buyerEmail = customerDetails?.email || null;
+              const buyerPhone = customerDetails?.phone || shippingDetails?.phone || null;
+
               let addressJson = null;
-              if (shippingDetails && shippingDetails.address) {
+              // Aggressively capture address, preferring explicit shipping_details
+              const addressToUse = shippingDetails?.address || customerDetails?.address;
+              if (addressToUse) {
                 addressJson = JSON.stringify({
-                  name: shippingDetails.name,
-                  ...shippingDetails.address
+                  name: buyerName,
+                  ...addressToUse
                 });
               }
-
-              const customerDetails = session.customer_details;
-              const buyerName = customerDetails?.name || null;
-              const buyerEmail = customerDetails?.email || null;
-              const buyerPhone = customerDetails?.phone || null;
 
               await db.update(orders).set({
                 status: "paid",
