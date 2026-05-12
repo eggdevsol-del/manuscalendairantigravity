@@ -291,15 +291,28 @@ export const payoutsRouter = router({
 
                 return {
                     connected: true,
-                    payouts: payouts.data.map((p) => ({
-                        id: p.id,
-                        amountCents: p.amount,
-                        currency: p.currency,
-                        status: p.status,
-                        arrivalDate: new Date(p.arrival_date * 1000).toISOString(),
-                        createdAt: new Date(p.created * 1000).toISOString(),
-                        method: p.type,
-                        description: p.description,
+                    payouts: await Promise.all(payouts.data.map(async (p) => {
+                        let bankLast4: string | null = null;
+                        try {
+                            if (p.destination && typeof p.destination === 'string') {
+                                const bankAccount = await stripe.accounts.retrieveExternalAccount(
+                                    settings.stripeConnectAccountId!,
+                                    p.destination
+                                ) as any;
+                                bankLast4 = bankAccount?.last4 || null;
+                            }
+                        } catch {}
+                        return {
+                            id: p.id,
+                            amountCents: p.amount,
+                            currency: p.currency,
+                            status: p.status,
+                            arrivalDate: new Date(p.arrival_date * 1000).toISOString(),
+                            createdAt: new Date(p.created * 1000).toISOString(),
+                            method: p.type,
+                            description: p.description,
+                            bankLast4,
+                        };
                     })),
                     entries: ledgerEntries.map((e) => ({
                         id: e.id,

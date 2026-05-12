@@ -71,7 +71,7 @@ export default function PayoutHistory() {
                     <div className="pb-32 max-w-2xl mx-auto space-y-6">
                         {/* Back button */}
                         <button
-                            onClick={() => setLocation("/")}
+                            onClick={() => setLocation("/dashboard")}
                             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4" />
@@ -285,7 +285,7 @@ export default function PayoutHistory() {
                                                         {formatCents(payout.amountCents)}
                                                     </p>
                                                     <p className="text-[10px] text-muted-foreground">
-                                                        {formatDate(payout.arrivalDate)}
+                                                        {formatDate(payout.arrivalDate)}{payout.bankLast4 ? ` · ****${payout.bankLast4}` : ""}
                                                     </p>
                                                 </div>
                                             </div>
