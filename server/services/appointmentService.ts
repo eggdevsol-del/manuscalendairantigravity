@@ -48,8 +48,18 @@ function toMySQL(date: any): string | any {
 
 function normalizeAppointment(appt: any) {
   if (!appt) return appt;
+  
+  // Backfill remainingBalanceCents for legacy appointments
+  let computedBalance = appt.remainingBalanceCents;
+  if (!computedBalance && computedBalance !== 0 && appt.paymentStatus !== "fully_paid") {
+    const expected = appt.totalExpectedAmountCents || (appt.price ? appt.price * 100 : 0);
+    const paid = appt.totalPaidAmountCents || (appt.depositPaid ? (appt.depositAmount || 0) * 100 : 0);
+    computedBalance = Math.max(0, expected - paid);
+  }
+
   return {
     ...appt,
+    remainingBalanceCents: computedBalance,
     startTime: toISO(appt.startTime),
     endTime: toISO(appt.endTime),
     actualStartTime: toISO(appt.actualStartTime),
@@ -261,6 +271,10 @@ export async function getArtistCalendar(artistId: string, startDate?: Date, endD
       clientPaid: appointments.clientPaid,
       amountPaid: appointments.amountPaid,
       paymentMethod: appointments.paymentMethod,
+      totalExpectedAmountCents: appointments.totalExpectedAmountCents,
+      totalPaidAmountCents: appointments.totalPaidAmountCents,
+      remainingBalanceCents: appointments.remainingBalanceCents,
+      paymentStatus: appointments.paymentStatus,
       createdAt: appointments.createdAt,
       updatedAt: appointments.updatedAt,
       clientName: users.name,
@@ -361,6 +375,10 @@ export async function getClientCalendar(clientId: string, startDate?: Date, endD
       clientPaid: appointments.clientPaid,
       amountPaid: appointments.amountPaid,
       paymentMethod: appointments.paymentMethod,
+      totalExpectedAmountCents: appointments.totalExpectedAmountCents,
+      totalPaidAmountCents: appointments.totalPaidAmountCents,
+      remainingBalanceCents: appointments.remainingBalanceCents,
+      paymentStatus: appointments.paymentStatus,
       createdAt: appointments.createdAt,
       updatedAt: appointments.updatedAt,
       clientName: users.name,
@@ -429,6 +447,10 @@ export async function getStudioCalendar(studioId: string, startDate?: Date, endD
       clientPaid: appointments.clientPaid,
       amountPaid: appointments.amountPaid,
       paymentMethod: appointments.paymentMethod,
+      totalExpectedAmountCents: appointments.totalExpectedAmountCents,
+      totalPaidAmountCents: appointments.totalPaidAmountCents,
+      remainingBalanceCents: appointments.remainingBalanceCents,
+      paymentStatus: appointments.paymentStatus,
       createdAt: appointments.createdAt,
       updatedAt: appointments.updatedAt,
       clientName: users.name,
