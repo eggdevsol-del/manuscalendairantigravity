@@ -242,7 +242,7 @@ export const payoutsRouter = router({
                 };
             }
 
-            // Connected — use Stripe Payouts API
+            // Connected — use Stripe Payouts API + ledger entries for full transaction history
             try {
                 const params: any = {
                     limit: input.limit,
@@ -251,9 +251,17 @@ export const payoutsRouter = router({
                     params.starting_after = input.cursor;
                 }
 
-                const payouts = await stripe.payouts.list(params, {
-                    stripeAccount: settings.stripeConnectAccountId,
-                });
+                const [payouts, ledgerEntries] = await Promise.all([
+                    stripe.payouts.list(params, {
+                        stripeAccount: settings.stripeConnectAccountId,
+                    }),
+                    db
+                        .select()
+                        .from(paymentLedger)
+                        .where(eq(paymentLedger.artistId, ctx.user.id))
+                        .orderBy(desc(paymentLedger.createdAt))
+                        .limit(input.limit),
+                ]);
 
                 return {
                     connected: true,
@@ -267,7 +275,18 @@ export const payoutsRouter = router({
                         method: p.type, // "bank_account" or "card"
                         description: p.description,
                     })),
-                    entries: [],
+                    entries: ledgerEntries.map((e) => ({
+                        id: e.id,
+                        type: e.transactionType,
+                        amountCents: e.amountCents,
+                        platformFeeCents: e.platformFeeCents,
+                        artistFeeCents: e.artistFeeCents,
+                        netCents: e.amountCents - e.artistFeeCents,
+                        payoutStatus: e.payoutStatus,
+                        paymentMethod: e.paymentMethod,
+                        createdAt: e.createdAt,
+                        stripePaymentId: e.stripePaymentId,
+                    })),
                     hasMore: payouts.has_more,
                     nextCursor: payouts.data.length
                         ? payouts.data[payouts.data.length - 1].id

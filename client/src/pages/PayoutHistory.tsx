@@ -63,7 +63,7 @@ export default function PayoutHistory() {
 
     return (
         <PageShell>
-            <PageHeader title="Payout History" />
+            <PageHeader title="Transaction History" />
 
             <div className={tokens.contentContainer.base}>
                 <div className="flex-1 w-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y">
@@ -156,6 +156,80 @@ export default function PayoutHistory() {
                             )}
                         </div>
 
+                        {/* Transaction History (primary) */}
+                        {hasLedgerEntries && (
+                            <div
+                                className={cn(
+                                    tokens.card.base,
+                                    tokens.card.bg,
+                                    "border-0 overflow-hidden"
+                                )}
+                            >
+                                <div className="p-4 border-b border-white/5">
+                                    <h3 className="font-semibold text-foreground text-sm">
+                                        Recent Transactions
+                                    </h3>
+                                </div>
+                                <div className="divide-y divide-white/5">
+                                    {history!.entries.map((entry: any) => {
+                                        const isIncome =
+                                            entry.type === "deposit" || entry.type === "balance";
+                                        return (
+                                            <div
+                                                key={entry.id}
+                                                className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div
+                                                        className={cn(
+                                                            "p-1.5 rounded-lg",
+                                                            isIncome
+                                                                ? "bg-emerald-500/20 text-emerald-400"
+                                                                : entry.type === "refund"
+                                                                    ? "bg-red-500/20 text-red-400"
+                                                                    : "bg-amber-500/20 text-amber-400"
+                                                        )}
+                                                    >
+                                                        {isIncome ? (
+                                                            <ArrowDownLeft className="w-3.5 h-3.5" />
+                                                        ) : (
+                                                            <ArrowUpRight className="w-3.5 h-3.5" />
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-foreground capitalize">
+                                                            {entry.type}
+                                                        </p>
+                                                        <p className="text-[10px] text-muted-foreground">
+                                                            {entry.createdAt
+                                                                ? `${formatDate(entry.createdAt)} · ${formatTime(entry.createdAt)}`
+                                                                : ""}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p
+                                                        className={cn(
+                                                            "text-sm font-bold tabular-nums",
+                                                            isIncome
+                                                                ? "text-emerald-400"
+                                                                : "text-red-400"
+                                                        )}
+                                                    >
+                                                        {isIncome ? "+" : "-"}
+                                                        {formatCents(entry.amountCents)}
+                                                    </p>
+                                                    <p className="text-[10px] text-muted-foreground">
+                                                        Net: {formatCents(entry.netCents)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Stripe Payouts List */}
                         {hasStripePayouts && (
                             <div
@@ -220,80 +294,7 @@ export default function PayoutHistory() {
                                     ))}
                                 </div>
                             </div>
-                        )}
-
-                        {/* Ledger Entries (fallback or supplementary) */}
-                        {hasLedgerEntries && (
-                            <div
-                                className={cn(
-                                    tokens.card.base,
-                                    tokens.card.bg,
-                                    "border-0 overflow-hidden"
-                                )}
-                            >
-                                <div className="p-4 border-b border-white/5">
-                                    <h3 className="font-semibold text-foreground text-sm">
-                                        Transaction History
-                                    </h3>
-                                </div>
-                                <div className="divide-y divide-white/5">
-                                    {history!.entries.map((entry: any) => {
-                                        const isIncome =
-                                            entry.type === "deposit" || entry.type === "balance";
-                                        return (
-                                            <div
-                                                key={entry.id}
-                                                className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div
-                                                        className={cn(
-                                                            "p-1.5 rounded-lg",
-                                                            isIncome
-                                                                ? "bg-emerald-500/20 text-emerald-400"
-                                                                : entry.type === "refund"
-                                                                    ? "bg-red-500/20 text-red-400"
-                                                                    : "bg-amber-500/20 text-amber-400"
-                                                        )}
-                                                    >
-                                                        {isIncome ? (
-                                                            <ArrowDownLeft className="w-3.5 h-3.5" />
-                                                        ) : (
-                                                            <ArrowUpRight className="w-3.5 h-3.5" />
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-foreground capitalize">
-                                                            {entry.type}
-                                                        </p>
-                                                        <p className="text-[10px] text-muted-foreground">
-                                                            {entry.createdAt
-                                                                ? `${formatDate(entry.createdAt)} · ${formatTime(entry.createdAt)}`
-                                                                : ""}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p
-                                                        className={cn(
-                                                            "text-sm font-bold tabular-nums",
-                                                            isIncome
-                                                                ? "text-emerald-400"
-                                                                : "text-red-400"
-                                                        )}
-                                                    >
-                                                        {isIncome ? "+" : "-"}
-                                                        {formatCents(entry.amountCents)}
-                                                    </p>
-                                                    <p className="text-[10px] text-muted-foreground">
-                                                        Net: {formatCents(entry.netCents)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
+                        </div>
                         )}
 
                         {/* Empty state */}
