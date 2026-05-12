@@ -1933,6 +1933,7 @@ export const products = mysqlTable("products", {
   priceCents: int().notNull(),
   inventoryCount: int().default(0).notNull(),
   fulfillmentType: mysqlEnum(["pickup", "delivery", "both", "digital"]).default("pickup").notNull(),
+  shippingCents: int().default(0).notNull(),
   imageUrl: text(),
   isActive: tinyint().default(1).notNull(),
   createdAt: timestamp().notNull().defaultNow(),
@@ -1970,6 +1971,10 @@ export const orders = mysqlTable("orders", {
   status: mysqlEnum(["pending", "paid", "fulfilled", "cancelled"]).default("pending").notNull(),
   fulfillmentMethod: mysqlEnum(["pickup", "delivery", "digital"]).default("pickup").notNull(),
   shippingAddress: text(), // JSON storing the Stripe shipping address
+  shippingCostCents: int().default(0).notNull(),
+  buyerName: varchar({ length: 255 }),
+  buyerEmail: varchar({ length: 255 }),
+  buyerPhone: varchar({ length: 255 }),
   stripeCheckoutSessionId: varchar({ length: 255 }),
   stripePaymentIntentId: varchar({ length: 255 }),
   createdAt: timestamp().notNull().defaultNow(),
@@ -1988,6 +1993,43 @@ export const orderItems = mysqlTable("orderItems", {
   quantity: int().notNull().default(1),
   priceAtPurchaseCents: int().notNull(),
 });
+
+export const productsRelations = relations(products, ({ many }) => ({
+  orderItems: many(orderItems),
+}));
+
+export const seminarsRelations = relations(seminars, ({ many }) => ({
+  orderItems: many(orderItems),
+}));
+
+export const ordersRelations = relations(orders, ({ one, many }) => ({
+  artist: one(users, {
+    fields: [orders.artistId],
+    references: [users.id],
+    relationName: "artistOrders",
+  }),
+  client: one(users, {
+    fields: [orders.clientId],
+    references: [users.id],
+    relationName: "clientOrders",
+  }),
+  items: many(orderItems),
+}));
+
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id],
+  }),
+  product: one(products, {
+    fields: [orderItems.productId],
+    references: [products.id],
+  }),
+  seminar: one(seminars, {
+    fields: [orderItems.seminarId],
+    references: [seminars.id],
+  }),
+}));
 
 export type InsertProduct = InferInsertModel<typeof products>;
 export type SelectProduct = InferSelectModel<typeof products>;

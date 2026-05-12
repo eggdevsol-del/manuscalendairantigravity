@@ -118,8 +118,12 @@ export const storefrontRouter = router({
   createStorefrontCheckout: publicProcedure
     .input(
       z.object({
-        productId: z.number(),
-        quantity: z.number().min(1),
+        items: z.array(
+          z.object({
+            productId: z.number(),
+            quantity: z.number().min(1),
+          })
+        ).min(1),
         fulfillmentMethod: z.enum(["pickup", "delivery", "digital"]),
       })
     )
@@ -127,81 +131,108 @@ export const storefrontRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
 
-      const product = await db.query.products.findFirst({
-        where: eq(schema.products.id, input.productId),
+      // Verify all products
+      const productIds = input.items.map(i => i.productId);
+      const products = await db.query.products.findMany({
+        where: (products, { inArray }) => inArray(products.id, productIds),
       });
 
-      if (!product || !product.isActive || product.inventoryCount < input.quantity) {
-        throw new Error("Product is unavailable or out of stock.");
+      if (products.length !== input.items.length) {
+        throw new Error("One or more products could not be found.");
       }
 
+      let totalAmountCents = 0;
+      let totalShippingCents = 0;
+      const artistId = products[0].artistId;
+      
+      const enrichedItems = input.items.map(item => {
+        const product = products.find(p => p.id === item.productId)!;
+        
+        if (product.artistId !== artistId) {
+          throw new Error("Cannot checkout items from multiple artists at once.");
+        }
+        
+        if (!product.isActive || product.inventoryCount < item.quantity) {
+          throw new Error(`Product '${product.title}' is unavailable or out of stock.`);
+        }
+
+        totalAmountCents += product.priceCents * item.quantity;
+        
+        if (input.fulfillmentMethod === "delivery") {
+          totalShippingCents += (product.shippingCents || 0) * item.quantity;
+        }
+
+        return {
+          productId: product.id,
+          productName: product.title,
+          priceCents: product.priceCents,
+          quantity: item.quantity,
+        };
+      });
+
       const settings = await db.query.artistSettings.findFirst({
-        where: eq(schema.artistSettings.userId, product.artistId),
+        where: eq(schema.artistSettings.userId, artistId),
       });
 
       const artistUser = await db.query.users.findFirst({
-        where: eq(schema.users.id, product.artistId),
+        where: eq(schema.users.id, artistId),
       });
 
       if (!settings || !artistUser) {
         throw new Error("Artist configuration error");
       }
 
-      const totalAmountCents = product.priceCents * input.quantity;
-
-      // Fees - we assume "free" tier for store orders unless artist has subscriptions setup
-      // For MVP, we will treat store orders with the standard fee engine
+      // Fees
       const fees = calculateTransactionFees({
-        transactionAmountCents: totalAmountCents,
-        tier: "free", // You can expand this if artists have a Storefront tier
+        transactionAmountCents: totalAmountCents + totalShippingCents,
+        tier: "free",
       });
 
       // 1. Create Order Record
       const [orderResult] = await db.insert(schema.orders).values({
-        artistId: product.artistId,
-        totalAmountCents,
+        artistId,
+        totalAmountCents: totalAmountCents + totalShippingCents,
         platformFeeCents: fees.platformFeeCents,
         artistFeeCents: fees.artistFeeCents,
+        shippingCostCents: totalShippingCents,
         status: "pending",
         fulfillmentMethod: input.fulfillmentMethod,
       });
 
       const orderId = orderResult.insertId;
 
-      // 2. Create Order Item
-      await db.insert(schema.orderItems).values({
-        orderId,
-        productId: product.id,
-        quantity: input.quantity,
-        priceAtPurchaseCents: product.priceCents,
-      });
+      // 2. Create Order Items
+      for (const item of enrichedItems) {
+        await db.insert(schema.orderItems).values({
+          orderId,
+          productId: item.productId,
+          quantity: item.quantity,
+          priceAtPurchaseCents: item.priceCents,
+        });
+      }
 
-      // 3. Get Stripe Account
-      const paymentSettings = await db.query.paymentMethodSettings.findFirst({
-        where: eq(schema.paymentMethodSettings.userId, product.artistId),
-      });
-
-      const connectAccountId = paymentSettings?.stripeConnectAccountId || undefined;
+      // 3. Get Stripe Account (Fix: from artistSettings)
+      const connectAccountId = settings.stripeConnectAccountId || undefined;
 
       // 4. Generate Session
-      const sessionUrl = await createStorefrontCheckoutSession({
+      const sessionResult = await createStorefrontCheckoutSession({
         orderId,
-        productId: product.id,
-        productName: product.title,
+        items: enrichedItems,
         artistName: settings.displayName || artistUser.name || "Artist",
-        clientTotalCents: totalAmountCents,
+        clientTotalCents: totalAmountCents + totalShippingCents,
         platformFeeCents: fees.platformFeeCents,
         artistFeeCents: fees.artistFeeCents,
+        shippingCostCents: totalShippingCents,
         fulfillmentMethod: input.fulfillmentMethod,
         stripeConnectAccountId: connectAccountId,
         slug: settings.publicSlug || "shop",
       });
 
-      if (!sessionUrl) {
+      if (!sessionResult.url) {
         throw new Error("Failed to generate checkout session");
       }
 
-      return { url: sessionUrl };
+      return sessionResult;
     }),
 
   /**
@@ -255,6 +286,7 @@ export const storefrontRouter = router({
       orders.map(async (order) => {
         const items = await db.query.orderItems.findMany({
           where: eq(schema.orderItems.orderId, order.id),
+          with: { product: true },
         });
         return { ...order, items };
       })

@@ -7,6 +7,7 @@ import {
   users,
   consentForms,
   appointments,
+  orders,
 } from "../../drizzle/schema";
 import { eq, desc, and, gte } from "drizzle-orm";
 import { z } from "zod";
@@ -181,6 +182,34 @@ export const clientProfileRouter = router({
             appointmentId: form.appointmentId,
           });
         }
+      });
+
+      const clientOrders = await database.query.orders.findMany({
+        where: eq(orders.clientId, targetId),
+        with: {
+          items: {
+            with: { product: true }
+          }
+        },
+        orderBy: desc(orders.createdAt),
+      });
+
+      clientOrders.forEach(order => {
+        historyItems.push({
+          id: `order-${order.id}`,
+          type: "store_order",
+          date: order.createdAt,
+          title: "Storefront Purchase",
+          description: `Ordered ${order.items.length} item(s)`,
+          price: order.totalAmountCents / 100,
+          status: order.status,
+          shippingMethod: order.fulfillmentMethod,
+          items: order.items.map((i: any) => ({
+            name: i.product?.title || "Deleted Product",
+            quantity: i.quantity,
+            price: i.priceAtPurchaseCents / 100
+          }))
+        });
       });
 
       return historyItems.sort(

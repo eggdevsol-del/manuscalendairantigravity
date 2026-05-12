@@ -7,6 +7,7 @@ import {
   Compass,
   User,
   Users,
+  Home,
 } from "lucide-react";
 import { BottomNavButton } from "./types";
 
@@ -29,7 +30,7 @@ export const ARTIST_NAV_ITEMS: BottomNavButton[] = [
 ];
 
 export const CLIENT_NAV_ITEMS: BottomNavButton[] = [
-  { id: "profile", path: "/profile", label: "Profile", icon: User },
+  { id: "profile", path: "/profile", label: "Home", icon: Home },
   {
     id: "messages",
     path: "/conversations",

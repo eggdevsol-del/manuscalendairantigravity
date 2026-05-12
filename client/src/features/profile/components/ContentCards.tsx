@@ -8,6 +8,7 @@ import {
   AlertCircle,
   FileText,
   DollarSign,
+  Package,
 } from "lucide-react";
 import { Button } from "@/components/ui";
 import { useLocation } from "wouter";
@@ -39,11 +40,12 @@ export function HistoryCard({ history }: { history: any[] }) {
             const isLog = item.type === "log";
             const isForm = item.type === "form";
             const isAppt = item.type === "appointment";
+            const isOrder = item.type === "store_order";
 
             // Map actions to icons/colors
             const getIcon = () => {
-              if (isForm)
-                return <FileText className="w-3 h-3 text-orange-500" />;
+              if (isOrder) return <Package className="w-3 h-3 text-indigo-400" />;
+              if (isForm) return <FileText className="w-3 h-3 text-orange-500" />;
               if (isAppt) return <Check className="w-3 h-3 text-emerald-500" />;
               switch (item.action) {
                 case "created":
@@ -51,7 +53,6 @@ export function HistoryCard({ history }: { history: any[] }) {
                 case "rescheduled":
                   return <Clock className="w-3 h-3 text-orange-400" />;
                 case "cancelled":
-                  return <AlertCircle className="w-3 h-3 text-red-500" />;
                 case "proposal_revoked":
                   return <AlertCircle className="w-3 h-3 text-red-500" />;
                 case "confirmed":
@@ -64,10 +65,9 @@ export function HistoryCard({ history }: { history: any[] }) {
             };
 
             const getStatusColor = () => {
-              if (isForm)
-                return "bg-orange-500/10 text-orange-500 border-orange-500/20";
-              if (isAppt)
-                return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+              if (isOrder) return "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
+              if (isForm) return "bg-orange-500/10 text-orange-500 border-orange-500/20";
+              if (isAppt) return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
               switch (item.action) {
                 case "cancelled":
                 case "proposal_revoked":
@@ -88,8 +88,10 @@ export function HistoryCard({ history }: { history: any[] }) {
                 <span
                   className={cn(
                     "absolute -left-[30px] top-1.5 h-3 w-3 rounded-full ring-4 ring-transparent flex items-center justify-center bg-transparent border",
-                    !isLog && !isForm
+                    (!isLog && !isForm && !isOrder)
                       ? "border-emerald-500"
+                      : isOrder
+                        ? "border-indigo-400"
                       : isForm
                         ? "border-orange-500"
                         : "border-white/20"
@@ -98,8 +100,10 @@ export function HistoryCard({ history }: { history: any[] }) {
                   <div
                     className={cn(
                       "w-1.5 h-1.5 rounded-full",
-                      !isLog && !isForm
+                      (!isLog && !isForm && !isOrder)
                         ? "bg-emerald-500"
+                        : isOrder
+                          ? "bg-indigo-400"
                         : isForm
                           ? "bg-orange-500"
                           : "bg-muted-foreground"
@@ -124,11 +128,16 @@ export function HistoryCard({ history }: { history: any[] }) {
                         Legal Record
                       </span>
                     )}
+                    {isOrder && (
+                      <span className="text-[10px] text-indigo-400/80 italic">
+                        Store Order
+                      </span>
+                    )}
                   </div>
                   <h4
                     className={cn(
                       "text-sm font-semibold flex items-center gap-2",
-                      isAppt ? "text-foreground" : "text-foreground/80"
+                      (isAppt || isOrder) ? "text-foreground" : "text-foreground/80"
                     )}
                   >
                     {item.title}
@@ -137,6 +146,17 @@ export function HistoryCard({ history }: { history: any[] }) {
                   <p className="text-xs text-muted-foreground/70 mt-0.5 leading-relaxed">
                     {item.description}
                   </p>
+                  
+                  {isOrder && item.items && item.items.length > 0 && (
+                    <div className="mt-1.5 space-y-1">
+                      {item.items.map((prod: any, idx: number) => (
+                        <div key={idx} className="text-xs text-white/50 flex justify-between bg-black/20 px-2 py-1 rounded">
+                          <span>{prod.quantity}x {prod.name}</span>
+                          <span>${prod.price.toFixed(2)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   <div className="mt-2 flex items-center gap-2">
                     <span
@@ -149,9 +169,9 @@ export function HistoryCard({ history }: { history: any[] }) {
                         ? item.action.replace("_", " ")
                         : item.status || "Signed"}
                     </span>
-                    {isAppt && item.price > 0 && (
+                    {(isAppt || isOrder) && item.price > 0 && (
                       <span className="text-[10px] text-muted-foreground font-medium">
-                        ${item.price} Total
+                        ${item.price.toFixed(2)} Total
                       </span>
                     )}
                   </div>

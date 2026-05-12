@@ -60,6 +60,7 @@ import { SetupChecklistWidget } from "@/features/onboarding/SetupChecklistWidget
 import { type FABMenuItem } from "@/ui/FABMenu";
 import { DashboardFABActions } from "@/features/dashboard/DashboardActions";
 import { PayoutWidgetContainer } from "@/features/payouts/PayoutWidgetContainer";
+import { OrdersTab } from "@/features/dashboard/OrdersTab";
 
 // SSOT Components
 
@@ -127,7 +128,7 @@ function LoadingState() {
   );
 }
 
-const TITLES = ["Business", "Social", "Personal"];
+const TITLES = ["Business", "Orders", "Personal"];
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -180,7 +181,7 @@ export default function Dashboard() {
   // Derived State
   const activeCategory = TITLES[activeIndex].toLowerCase() as
     | "business"
-    | "social"
+    | "orders"
     | "personal";
 
   // Transform legacy task to ExtendedTask
@@ -213,8 +214,8 @@ export default function Dashboard() {
           }) as ExtendedTask
       );
     }
-    // Use legacy tasks for social and personal
-    const tasks = legacyTasks[activeCategory] || [];
+    // Use legacy tasks for personal
+    const tasks = legacyTasks[activeCategory as "personal"] || [];
     return tasks.map(transformLegacyTask);
   };
 
@@ -272,8 +273,6 @@ export default function Dashboard() {
           return legacyActions.handleComms.email(actionPayload);
         if (actionType === "sms" && actionPayload)
           return legacyActions.handleComms.sms(actionPayload);
-        if (actionType === "social" && actionPayload)
-          return window.open(actionPayload, "_blank");
         if (actionPayload) console.log("Internal Nav:", actionPayload);
       }
     },
@@ -442,8 +441,10 @@ export default function Dashboard() {
                     className="absolute top-0 left-0 w-full px-4 pt-4 touch-pan-y"
                   >
                     <div className="space-y-1 pb-32 max-w-lg mx-auto">
-                      {/* Loading state for business tasks */}
-                      {activeCategory === "business" && businessLoading ? (
+                      {/* Render Content Based on Active Category */}
+                      {activeCategory === "orders" ? (
+                        <OrdersTab />
+                      ) : activeCategory === "business" && businessLoading ? (
                         <LoadingState />
                       ) : currentTasks.length > 0 ? (
                         currentTasks.map(task => (

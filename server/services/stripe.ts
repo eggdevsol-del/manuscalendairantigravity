@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { getDb } from "./core";
 import { eq } from "drizzle-orm";
-import { studios, artistSettings, leads, messages, paymentLedger, appointments, orders, products } from "../../drizzle/schema";
+import { studios, artistSettings, leads, messages, paymentLedger, appointments, orders, products, orderItems, users, conversations } from "../../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import type { Request, Response } from "express";
 
@@ -296,52 +296,66 @@ export async function createBalanceCheckoutSession(opts: {
 
 export async function createStorefrontCheckoutSession(opts: {
   orderId: number;
-  productId: number;
-  productName: string;
+  items: { productId: number; productName: string; priceCents: number; quantity: number }[];
   artistName: string;
   clientTotalCents: number;
   platformFeeCents: number;
   artistFeeCents: number;
+  shippingCostCents: number;
   fulfillmentMethod: "pickup" | "delivery" | "digital";
   stripeConnectAccountId?: string;
   slug: string;
-}): Promise<string | null> {
+}): Promise<{ url: string | null; clientSecret: string | null }> {
   const baseUrl = process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
 
   // If using connect, GST/platform fee goes to platform account
   const applicationFeeCents = opts.platformFeeCents;
 
-  const sessionConfig: Stripe.Checkout.SessionCreateParams = {
-    payment_method_types: ["card", "apple_pay", "google_pay"],
-    mode: "payment",
-    line_items: [
-      {
-        price_data: {
-          currency: "aud",
-          product_data: {
-            name: `${opts.productName} — ${opts.artistName}`,
-          },
-          unit_amount: opts.clientTotalCents,
-        },
-        quantity: 1,
+  const line_items = opts.items.map(item => ({
+    price_data: {
+      currency: "aud",
+      product_data: {
+        name: `${item.productName} — ${opts.artistName}`,
       },
-    ],
+      unit_amount: item.priceCents,
+    },
+    quantity: item.quantity,
+  }));
+
+  const sessionConfig: Stripe.Checkout.SessionCreateParams = {
+    payment_method_types: ["card"], // 'apple_pay' and 'google_pay' are auto-handled by Stripe in embedded mode if available
+    mode: "payment",
+    line_items,
     metadata: {
       type: "store_order",
       orderId: String(opts.orderId),
-      productId: String(opts.productId),
       platformFeeCents: String(opts.platformFeeCents),
       artistFeeCents: String(opts.artistFeeCents),
       stripeConnectAccountId: opts.stripeConnectAccountId || "",
     },
-    success_url: `${baseUrl}/shop/${opts.slug}?status=success&order_id=${opts.orderId}`,
-    cancel_url: `${baseUrl}/shop/${opts.slug}?status=canceled`,
+    ui_mode: "embedded",
+    return_url: `${baseUrl}/shop/${opts.slug}?status=success&session_id={CHECKOUT_SESSION_ID}&order_id=${opts.orderId}`,
   };
 
   if (opts.fulfillmentMethod === "delivery") {
     sessionConfig.shipping_address_collection = {
       allowed_countries: ["AU", "NZ", "US", "GB", "CA"],
     };
+    
+    if (opts.shippingCostCents >= 0) {
+      sessionConfig.shipping_options = [
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: {
+              amount: opts.shippingCostCents,
+              currency: "aud",
+            },
+            display_name: opts.shippingCostCents === 0 ? "Free Shipping" : "Standard Shipping",
+          },
+        },
+      ];
+    }
   }
 
   // Connect routing
@@ -355,7 +369,7 @@ export async function createStorefrontCheckoutSession(opts: {
   }
 
   const session = await stripe.checkout.sessions.create(sessionConfig);
-  return session.url;
+  return { url: session.url, clientSecret: session.client_secret };
 }
 
 
@@ -541,23 +555,18 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         // ── Store Order ──────────────────────────────────────────
         if (session.metadata?.type === "store_order") {
           const orderId = parseInt(session.metadata.orderId, 10);
-          const productId = parseInt(session.metadata.productId, 10);
           const platformFeeCents = parseInt(session.metadata.platformFeeCents || "0", 10);
           const artistFeeCents = parseInt(session.metadata.artistFeeCents || "0", 10);
           const connectAccountId = session.metadata.stripeConnectAccountId || null;
 
-          if (orderId && productId) {
+          if (orderId) {
             const order = await db.query.orders.findFirst({
               where: eq(orders.id, orderId),
             });
-            const product = await db.query.products.findFirst({
-              where: eq(products.id, productId),
-            });
-
-            if (order && product) {
+            if (order) {
               const now = new Date().toISOString().slice(0, 19).replace("T", " ");
               
-              // 1. Update Order Status and Shipping Address
+              // 1. Update Order Status, Shipping Address, and Buyer Details
               const shippingDetails = session.shipping_details;
               let addressJson = null;
               if (shippingDetails && shippingDetails.address) {
@@ -567,23 +576,66 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 });
               }
 
+              const customerDetails = session.customer_details;
+              const buyerName = customerDetails?.name || null;
+              const buyerEmail = customerDetails?.email || null;
+              const buyerPhone = customerDetails?.phone || null;
+
               await db.update(orders).set({
                 status: "paid",
                 shippingAddress: addressJson,
+                buyerName,
+                buyerEmail,
+                buyerPhone,
                 stripeCheckoutSessionId: session.id,
                 stripePaymentIntentId: session.payment_intent as string || null,
                 updatedAt: now,
               }).where(eq(orders.id, orderId));
 
-              // 2. Decrement Inventory
-              if (product.inventoryCount > 0) {
-                await db.update(products).set({
-                  inventoryCount: product.inventoryCount - 1,
-                  updatedAt: now,
-                }).where(eq(products.id, productId));
+              // 2. Decrement Inventory for all order items
+              const items = await db.query.orderItems.findMany({
+                where: (orderItems, { eq }) => eq(orderItems.orderId, orderId),
+              });
+
+              for (const item of items) {
+                const product = await db.query.products.findFirst({
+                  where: eq(products.id, item.productId),
+                });
+                if (product && product.inventoryCount >= item.quantity) {
+                  await db.update(products).set({
+                    inventoryCount: product.inventoryCount - item.quantity,
+                    updatedAt: now,
+                  }).where(eq(products.id, product.id));
+                }
               }
 
-              // 3. Write to Payment Ledger
+              // 3. Auto-link client if user exists with this email
+              if (buyerEmail) {
+                const existingUser = await db.query.users.findFirst({
+                  where: eq(users.email, buyerEmail),
+                });
+                if (existingUser) {
+                  // update order with clientId
+                  await db.update(orders).set({ clientId: existingUser.id }).where(eq(orders.id, orderId));
+                  // Check if conversation exists (import and from drizzle-orm)
+                  const { and } = await import("drizzle-orm");
+                  const existingConv = await db.query.conversations.findFirst({
+                    where: and(
+                      eq(conversations.artistId, order.artistId),
+                      eq(conversations.clientId, existingUser.id)
+                    )
+                  });
+                  if (!existingConv) {
+                    await db.insert(conversations).values({
+                      artistId: order.artistId,
+                      clientId: existingUser.id,
+                      status: "active",
+                    });
+                  }
+                }
+              }
+
+              // 4. Write to Payment Ledger
               await db.insert(paymentLedger).values({
                 artistId: order.artistId,
                 transactionType: "store_order",
