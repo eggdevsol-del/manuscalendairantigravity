@@ -3,7 +3,7 @@ import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { getDb } from "../db";
 import { eq, desc, and } from "drizzle-orm";
 import * as schema from "../../drizzle/schema";
-import { calculateTransactionFees } from "../domain/fees";
+import { calculateTransactionFees, resolvePaymentTier } from "../domain/fees";
 import { createStorefrontCheckoutSession } from "../services/stripe";
 
 export const storefrontRouter = router({
@@ -230,10 +230,11 @@ export const storefrontRouter = router({
       }
 
       // Fees
-      const fees = calculateTransactionFees({
-        transactionAmountCents: totalAmountCents + totalShippingCents,
-        tier: "free",
-      });
+      const tier = resolvePaymentTier(settings.subscriptionTier);
+      const fees = calculateTransactionFees(
+        totalAmountCents + totalShippingCents,
+        tier
+      );
 
       // 1. Create Order Record
       const [orderResult] = await db.insert(schema.orders).values({
@@ -440,10 +441,11 @@ export const storefrontRouter = router({
         throw new Error("Artist configuration error");
       }
 
-      const fees = calculateTransactionFees({
-        transactionAmountCents: seminar.priceCents,
-        tier: "free",
-      });
+      const tier = resolvePaymentTier(settings.subscriptionTier);
+      const fees = calculateTransactionFees(
+        seminar.priceCents,
+        tier
+      );
 
       // Create order record for the seminar
       const [orderResult] = await db.insert(schema.orders).values({
