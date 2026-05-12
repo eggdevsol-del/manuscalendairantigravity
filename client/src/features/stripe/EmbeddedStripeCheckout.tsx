@@ -22,7 +22,7 @@ export function EmbeddedStripeCheckout({ clientSecret, onComplete }: EmbeddedStr
     <div className="w-full bg-white/5 rounded-xl border border-white/10 overflow-hidden relative" style={{ minHeight: "500px" }}>
       <EmbeddedCheckoutProvider
         stripe={stripePromise}
-        options={{ clientSecret }}
+        options={{ clientSecret, onComplete }}
       >
         <EmbeddedCheckout className="w-full h-full" />
       </EmbeddedCheckoutProvider>
