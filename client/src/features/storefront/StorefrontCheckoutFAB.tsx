@@ -164,7 +164,10 @@ export function StorefrontCheckoutFAB({
               <div className="p-4 max-w-xl mx-auto h-full min-h-[500px]">
                 <EmbeddedStripeCheckout
                   clientSecret={clientSecret}
-                  onComplete={() => setStep("success")}
+                  onComplete={() => {
+                    setStep("success");
+                    clearCart();
+                  }}
                 />
               </div>
             )}

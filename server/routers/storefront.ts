@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { getDb } from "../db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, ne } from "drizzle-orm";
 import * as schema from "../../drizzle/schema";
 import { calculateTransactionFees, resolvePaymentTier } from "../domain/fees";
 import { createStorefrontCheckoutSession } from "../services/stripe";
@@ -325,7 +325,10 @@ export const storefrontRouter = router({
     if (!db) throw new Error("Database connection failed");
 
     const orders = await db.query.orders.findMany({
-      where: eq(schema.orders.artistId, ctx.user.id),
+      where: and(
+        eq(schema.orders.artistId, ctx.user.id),
+        ne(schema.orders.status, "pending")
+      ),
       orderBy: [desc(schema.orders.createdAt)],
     });
 
