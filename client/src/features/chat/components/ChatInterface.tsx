@@ -603,24 +603,27 @@ export function ChatInterface({
             {(isProposalsExpanded
               ? pinnedProposals
               : pinnedProposals.slice(0, 2)
-            ).map(({ message: msg, metadata: meta }: any) => (
-              <ProjectProposalMessage
-                key={msg.id}
-                metadata={meta}
-                isArtist={isArtist}
-                variant="pinned"
-                onPress={() => {
-                  handleViewProposal(msg, meta);
-                  const apptId = meta.appointmentIds?.[0] || meta.bookingId;
-                  if (apptId) {
-                    const appt = conversationAppointments?.find((a: any) => a.id === apptId);
+            ).map(({ message: msg, metadata: meta }: any) => {
+              const apptId = meta.appointmentIds?.[0] || meta.bookingId;
+              const appt = apptId ? conversationAppointments?.find((a: any) => a.id === apptId) : null;
+              const isFullyPaid = appt?.paymentStatus === "fully_paid";
+
+              return (
+                <ProjectProposalMessage
+                  key={msg.id}
+                  metadata={meta}
+                  isArtist={isArtist}
+                  variant="pinned"
+                  isFullyPaid={isFullyPaid}
+                  onPress={() => {
+                    handleViewProposal(msg, meta);
                     if (appt) setSelectedAppointment(appt);
-                  }
-                  setFABOpen(true);
-                }}
-                onCancel={() => handleCancelProposal(msg, meta)}
-              />
-            ))}
+                    setFABOpen(true);
+                  }}
+                  onCancel={() => handleCancelProposal(msg, meta)}
+                />
+              );
+            })}
 
             {pinnedProposals.length > 2 && (
               <Button

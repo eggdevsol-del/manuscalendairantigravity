@@ -16,7 +16,7 @@ function StorefrontContent({ slug, storefront }: { slug: string; storefront: any
   const { items, addItem, totalItems, setIsCartOpen } = useCart();
 
   return (
-    <div className="min-h-[100dvh] bg-[#050505] text-white overflow-x-hidden font-sans pb-32">
+    <div className="h-[100dvh] overflow-y-auto overflow-x-hidden bg-[#050505] text-white font-sans pb-32">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5 px-4 py-4 flex items-center justify-between">
         <button 

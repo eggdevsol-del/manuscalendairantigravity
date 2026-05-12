@@ -32,6 +32,8 @@ interface ProjectProposalMessageProps {
   isArtist: boolean;
   /** 'pinned' = compact under header, 'inline' = in chat stream */
   variant?: "pinned" | "inline";
+  /** Is the associated appointment fully paid? */
+  isFullyPaid?: boolean;
   /** Open the proposal details */
   onPress?: () => void;
   /** Cancel / delete proposal (artist only) */
@@ -47,7 +49,8 @@ function getGlow(status: string) {
 }
 
 /** Short status label */
-function getStatusLabel(status: string) {
+function getStatusLabel(status: string, isFullyPaid?: boolean) {
+  if (isFullyPaid) return "PAID IN FULL";
   if (status === "accepted") return "Accepted";
   if (status === "remittance_uploaded") return "Deposit Pending";
   if (status === "confirmed") return "Confirmed";
@@ -59,6 +62,7 @@ export function ProjectProposalMessage({
   metadata,
   isArtist,
   variant = "inline",
+  isFullyPaid,
   onPress,
   onCancel,
 }: ProjectProposalMessageProps) {
@@ -74,7 +78,7 @@ export function ProjectProposalMessage({
   const totalMinutes = (sittings || 1) * (serviceDuration || 60);
   const hours = Math.floor(totalMinutes / 60);
 
-  const statusLabel = getStatusLabel(effectiveStatus);
+  const statusLabel = getStatusLabel(effectiveStatus, isFullyPaid);
   const isPending = effectiveStatus === "pending";
   const isSuccessState = ["accepted", "remittance_uploaded", "confirmed"].includes(effectiveStatus);
 
@@ -108,17 +112,23 @@ export function ProjectProposalMessage({
 
         {/* Status Dot + Label */}
         <div className="flex flex-col items-end gap-1 shrink-0">
-          <div
-            className={cn(
-              "w-2 h-2 rounded-full",
-              isPending && "animate-pulse",
-              glow.line
-            )}
-          />
+          {isFullyPaid ? (
+            <div className="w-2 h-2 rounded-full bg-emerald-500 flex items-center justify-center">
+              <Check className="w-1.5 h-1.5 text-white" strokeWidth={4} />
+            </div>
+          ) : (
+            <div
+              className={cn(
+                "w-2 h-2 rounded-full",
+                isPending && "animate-pulse",
+                glow.line
+              )}
+            />
+          )}
           <span
             className={cn(
               "text-[8px] font-bold uppercase tracking-wider",
-              isSuccessState
+              isSuccessState || isFullyPaid
                 ? "text-emerald-500"
                 : status === "rejected"
                   ? "text-red-500"
