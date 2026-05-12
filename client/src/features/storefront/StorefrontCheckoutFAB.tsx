@@ -199,14 +199,14 @@ export function StorefrontCheckoutFAB({
                   <p className="text-white/60">Your order has been placed. You will receive an email receipt shortly.</p>
                 </div>
                 <div className="p-6 bg-white/5 rounded-[24px] border border-white/10 w-full max-w-sm mt-8">
-                  <p className="text-sm text-white/70 mb-4">Want to track your order and chat directly with the artist?</p>
+                  <p className="text-sm text-white/70 mb-4">You will receive a receipt via email shortly. Your artist will contact you if they need any further details.</p>
                   <button 
                     onClick={() => {
-                      window.location.href = "/register";
+                      window.location.href = `/${artistSlug}`;
                     }}
-                    className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 rounded-full font-bold transition-colors"
+                    className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-full font-bold transition-colors"
                   >
-                    Create Tattoi Account
+                    Return to Artist Hub
                   </button>
                 </div>
               </div>
