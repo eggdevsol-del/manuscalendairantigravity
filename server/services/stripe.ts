@@ -207,6 +207,7 @@ export async function createDepositCheckoutSession(opts: {
   if (opts.stripeConnectAccountId) {
     sessionConfig.payment_intent_data = {
       application_fee_amount: applicationFeeCents,
+      on_behalf_of: opts.stripeConnectAccountId,
       transfer_data: {
         destination: opts.stripeConnectAccountId,
       },
@@ -281,6 +282,7 @@ export async function createBalanceCheckoutSession(opts: {
   if (opts.stripeConnectAccountId) {
     sessionConfig.payment_intent_data = {
       application_fee_amount: applicationFeeCents,
+      on_behalf_of: opts.stripeConnectAccountId,
       transfer_data: {
         destination: opts.stripeConnectAccountId,
       },
@@ -362,6 +364,7 @@ export async function createStorefrontCheckoutSession(opts: {
   if (opts.stripeConnectAccountId) {
     sessionConfig.payment_intent_data = {
       application_fee_amount: applicationFeeCents,
+      on_behalf_of: opts.stripeConnectAccountId,
       transfer_data: {
         destination: opts.stripeConnectAccountId,
       },
