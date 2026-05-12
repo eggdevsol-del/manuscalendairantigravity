@@ -16,6 +16,7 @@ import { eq, and, sql, gte, desc } from "drizzle-orm";
 import {
     paymentLedger,
     artistSettings,
+    users,
 } from "../../drizzle/schema";
 import { stripe } from "../services/stripe";
 
@@ -217,8 +218,20 @@ export const payoutsRouter = router({
             // If no Connect account, return ledger-based history
             if (!settings?.stripeConnectAccountId) {
                 const entries = await db
-                    .select()
+                    .select({
+                        id: paymentLedger.id,
+                        transactionType: paymentLedger.transactionType,
+                        amountCents: paymentLedger.amountCents,
+                        platformFeeCents: paymentLedger.platformFeeCents,
+                        artistFeeCents: paymentLedger.artistFeeCents,
+                        payoutStatus: paymentLedger.payoutStatus,
+                        paymentMethod: paymentLedger.paymentMethod,
+                        createdAt: paymentLedger.createdAt,
+                        stripePaymentId: paymentLedger.stripePaymentId,
+                        clientName: users.name,
+                    })
                     .from(paymentLedger)
+                    .leftJoin(users, eq(paymentLedger.clientId, users.id))
                     .where(eq(paymentLedger.artistId, ctx.user.id))
                     .orderBy(desc(paymentLedger.createdAt))
                     .limit(input.limit);
@@ -237,6 +250,7 @@ export const payoutsRouter = router({
                         paymentMethod: e.paymentMethod,
                         createdAt: e.createdAt,
                         stripePaymentId: e.stripePaymentId,
+                        clientName: e.clientName || null,
                     })),
                     hasMore: entries.length === input.limit,
                 };
@@ -256,8 +270,20 @@ export const payoutsRouter = router({
                         stripeAccount: settings.stripeConnectAccountId,
                     }),
                     db
-                        .select()
+                        .select({
+                            id: paymentLedger.id,
+                            transactionType: paymentLedger.transactionType,
+                            amountCents: paymentLedger.amountCents,
+                            platformFeeCents: paymentLedger.platformFeeCents,
+                            artistFeeCents: paymentLedger.artistFeeCents,
+                            payoutStatus: paymentLedger.payoutStatus,
+                            paymentMethod: paymentLedger.paymentMethod,
+                            createdAt: paymentLedger.createdAt,
+                            stripePaymentId: paymentLedger.stripePaymentId,
+                            clientName: users.name,
+                        })
                         .from(paymentLedger)
+                        .leftJoin(users, eq(paymentLedger.clientId, users.id))
                         .where(eq(paymentLedger.artistId, ctx.user.id))
                         .orderBy(desc(paymentLedger.createdAt))
                         .limit(input.limit),
@@ -272,7 +298,7 @@ export const payoutsRouter = router({
                         status: p.status,
                         arrivalDate: new Date(p.arrival_date * 1000).toISOString(),
                         createdAt: new Date(p.created * 1000).toISOString(),
-                        method: p.type, // "bank_account" or "card"
+                        method: p.type,
                         description: p.description,
                     })),
                     entries: ledgerEntries.map((e) => ({
@@ -286,6 +312,7 @@ export const payoutsRouter = router({
                         paymentMethod: e.paymentMethod,
                         createdAt: e.createdAt,
                         stripePaymentId: e.stripePaymentId,
+                        clientName: e.clientName || null,
                     })),
                     hasMore: payouts.has_more,
                     nextCursor: payouts.data.length

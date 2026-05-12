@@ -12,6 +12,7 @@ import {
     Clock,
     CheckCircle2,
     Loader2,
+    Sparkles,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -70,11 +71,11 @@ export default function PayoutHistory() {
                     <div className="pb-32 max-w-2xl mx-auto space-y-6">
                         {/* Back button */}
                         <button
-                            onClick={() => setLocation("/settings")}
+                            onClick={() => setLocation("/")}
                             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4" />
-                            Back to Settings
+                            Back to Dashboard
                         </button>
 
                         {/* Period Selector + Earnings Summary */}
@@ -133,6 +134,9 @@ export default function PayoutHistory() {
                                         <p className="text-sm font-medium text-muted-foreground tabular-nums">
                                             -{formatCents(earnings.platformFeeCents)}
                                         </p>
+                                        <p className="text-[9px] text-muted-foreground/60 mt-1">
+                                            Paid by clients at checkout
+                                        </p>
                                     </div>
                                     <div className="bg-white/5 rounded-lg p-3">
                                         <p className="text-[10px] text-muted-foreground uppercase">
@@ -141,6 +145,13 @@ export default function PayoutHistory() {
                                         <p className="text-sm font-medium text-muted-foreground tabular-nums">
                                             -{formatCents(earnings.artistFeeCents)}
                                         </p>
+                                        <button
+                                            onClick={() => { /* Future: navigate to subscription page */ }}
+                                            className="mt-1.5 flex items-center gap-1 text-[9px] font-bold text-primary hover:underline transition-colors"
+                                        >
+                                            <Sparkles className="w-3 h-3" />
+                                            Upgrade to Pro — Save {formatCents(earnings.artistFeeCents)}
+                                        </button>
                                     </div>
                                     {earnings.refundsCents > 0 && (
                                         <div className="col-span-2 bg-red-500/10 rounded-lg p-3 border border-red-500/20">
@@ -198,7 +209,7 @@ export default function PayoutHistory() {
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-medium text-foreground capitalize">
-                                                            {entry.type}
+                                                            {entry.type}{entry.clientName ? ` · ${entry.clientName}` : ""}
                                                         </p>
                                                         <p className="text-[10px] text-muted-foreground">
                                                             {entry.createdAt

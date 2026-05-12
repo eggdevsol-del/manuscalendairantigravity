@@ -28,6 +28,7 @@ export interface TransactionEntry {
     netCents: number;
     createdAt: string;
     paymentMethod?: string;
+    clientName?: string | null;
 }
 
 export interface PayoutWidgetProps {
@@ -254,7 +255,7 @@ export function PayoutWidget({
                                                     </div>
                                                     <div>
                                                         <p className="text-xs font-medium text-foreground capitalize">
-                                                            {entry.type}
+                                                            {entry.type}{entry.clientName ? ` · ${entry.clientName}` : ""}
                                                         </p>
                                                         <p className="text-[9px] text-muted-foreground">
                                                             {entry.createdAt
