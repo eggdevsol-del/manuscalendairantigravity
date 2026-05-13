@@ -152,8 +152,13 @@ export const storefrontRouter = router({
         ),
       });
 
+      const artist = await db.query.users.findFirst({
+        where: eq(schema.users.id, artistId),
+      });
+
       return {
         artistId,
+        artistName: settings.businessName || settings.displayName || artist?.name || "Artist",
         products,
         seminars,
       };

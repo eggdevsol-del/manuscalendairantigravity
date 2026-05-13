@@ -25,7 +25,7 @@ function StorefrontContent({ slug, storefront }: { slug: string; storefront: any
         >
           <ArrowLeft className="w-5 h-5 text-white/70" />
         </button>
-        <span className="font-bold tracking-wider uppercase text-sm">Storefront</span>
+        <span className="font-bold tracking-wider uppercase text-sm truncate max-w-[200px]">{storefront.artistName} Storefront</span>
         <button 
           onClick={() => setIsCartOpen(true)}
           className="relative p-2 rounded-full hover:bg-white/10 transition-colors"
