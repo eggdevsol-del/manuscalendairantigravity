@@ -165,6 +165,52 @@ export const storefrontRouter = router({
     }),
 
   /**
+   * Protected endpoint to fetch an artist's storefront by their ID
+   * Used by ClientArtistCard.tsx for the embedded shop view
+   */
+  getStorefrontByArtistId: protectedProcedure
+    .input(z.object({ artistId: z.string() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return null;
+
+      // Verify the artist exists
+      const settings = await db.query.artistSettings.findFirst({
+        where: eq(schema.artistSettings.userId, input.artistId),
+      });
+
+      if (!settings) return null;
+
+      // Fetch active products
+      const products = await db.query.products.findMany({
+        where: and(
+          eq(schema.products.artistId, input.artistId),
+          eq(schema.products.isActive, 1)
+        ),
+      });
+
+      // Fetch active seminars
+      const seminars = await db.query.seminars.findMany({
+        where: and(
+          eq(schema.seminars.artistId, input.artistId),
+          eq(schema.seminars.isActive, 1)
+        ),
+      });
+
+      const artist = await db.query.users.findFirst({
+        where: eq(schema.users.id, input.artistId),
+      });
+
+      return {
+        artistId: input.artistId,
+        artistName: settings.businessName || settings.displayName || artist?.name || "Artist",
+        artistSlug: settings.publicSlug || "",
+        products,
+        seminars,
+      };
+    }),
+
+  /**
    * Create a Stripe checkout session for a product
    */
   createStorefrontCheckout: publicProcedure

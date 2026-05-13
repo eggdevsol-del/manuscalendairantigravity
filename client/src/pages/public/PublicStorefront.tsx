@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { loadStripe } from "@stripe/stripe-js";
 import { CartProvider, useCart } from "@/features/storefront/CartContext";
 import { StorefrontCheckoutFAB } from "@/features/storefront/StorefrontCheckoutFAB";
+import { StorefrontProductCard } from "@/features/storefront/StorefrontProductCard";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "");
 
@@ -50,82 +51,9 @@ function StorefrontContent({ slug, storefront }: { slug: string; storefront: any
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {products.map((product: any) => {
-              const inCart = items.find(i => i.productId === product.id)?.quantity || 0;
-              const isMaxed = inCart >= product.inventoryCount;
-
-              return (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-white/5 rounded-[24px] border border-white/10 overflow-hidden flex flex-col hover:border-white/20 transition-colors"
-                >
-                  {/* Product Image */}
-                  <div className="aspect-square bg-black/50 relative overflow-hidden group">
-                    {product.imageUrl ? (
-                      <img 
-                        src={product.imageUrl} 
-                        alt={product.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Package className="w-12 h-12 text-white/10" />
-                      </div>
-                    )}
-                    {/* Fulfillment Badge */}
-                    <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-white/10">
-                      {product.fulfillmentType === "pickup" && <Store className="w-3.5 h-3.5 text-white/70" />}
-                      {product.fulfillmentType === "delivery" && <Truck className="w-3.5 h-3.5 text-white/70" />}
-                      {product.fulfillmentType === "both" && <Globe className="w-3.5 h-3.5 text-white/70" />}
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-white/80">
-                        {product.fulfillmentType === "both" ? "Delivery / Pickup" : product.fulfillmentType}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-5 flex flex-col flex-1">
-                    <h3 className="text-lg font-bold mb-1 leading-tight">{product.title}</h3>
-                    <p className="text-white/50 text-sm line-clamp-2 mb-4 leading-relaxed flex-1">
-                      {product.description}
-                    </p>
-                    
-                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
-                      <span className="text-xl font-bold tracking-tight">
-                        ${(product.priceCents / 100).toFixed(2)}
-                      </span>
-                      
-                      {product.inventoryCount <= 0 ? (
-                        <span className="text-red-400 font-semibold text-sm bg-red-500/10 px-4 py-2 rounded-full">
-                          Out of Stock
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => {
-                            addItem({
-                              productId: product.id,
-                              title: product.title,
-                              priceCents: product.priceCents,
-                              shippingCents: product.shippingCents || 0,
-                              imageUrl: product.imageUrl,
-                              fulfillmentType: product.fulfillmentType,
-                              maxInventory: product.inventoryCount,
-                              artistId: product.artistId
-                            });
-                            toast.success(`Added ${product.title} to cart`);
-                          }}
-                          disabled={isMaxed}
-                          className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2.5 px-5 rounded-full transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
-                        >
-                          {isMaxed ? "Max Limit" : "Add to Cart"}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+            {products.map((product: any) => (
+              <StorefrontProductCard key={product.id} product={product} />
+            ))}
           </div>
         )}
       </div>

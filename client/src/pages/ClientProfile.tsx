@@ -11,6 +11,7 @@ import {
 } from "@/features/profile/components/ContentCards";
 import { EditBioModal } from "@/features/profile/components/EditBioModal";
 import { useRegisterBottomNavRow } from "@/contexts/BottomNavContext";
+import { ClientArtistCard } from "@/features/client-profile/ClientArtistCard";
 import {
   Edit3,
   User,
@@ -132,78 +133,11 @@ export default function ClientProfile() {
           const artistName = artist.name || artist.firstName || "Artist";
           const avatarUrl = artist.avatar || null;
 
-          return (
-            <button
-              key={conv.id}
-              onClick={() => setLocation(`/chat/${conv.id}`)}
-              className="w-full relative rounded-2xl overflow-hidden group active:scale-[0.98] transition-all duration-200"
-              style={{ minHeight: "140px" }}
-            >
-              {/* Banner Background */}
-              {bannerUrl ? (
-                <img
-                  src={bannerUrl}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/20 to-primary/10" />
-              )}
-
-              {/* Overlay gradient for text readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
-
-              {/* Content */}
-              <div className="relative z-10 flex items-end p-4 h-full" style={{ minHeight: "140px" }}>
-                <div className="flex items-center gap-3 w-full">
-                  {/* Artist Avatar */}
-                  <div className="w-12 h-12 rounded-full bg-white/10 border-2 border-white/20 overflow-hidden shrink-0 shadow-lg">
-                    {avatarUrl ? (
-                      <img
-                        src={avatarUrl}
-                        alt={artistName}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary to-accent">
-                        <span className="text-white font-bold text-lg">
-                          {artistName.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Artist Info */}
-                  <div className="flex-1 min-w-0 text-left">
-                    <p className="text-white font-bold text-lg leading-tight truncate drop-shadow-md">
-                      {artistName}
-                    </p>
-                    {conv.unreadCount > 0 && (
-                      <p className="text-primary text-xs font-medium mt-0.5">
-                        {conv.unreadCount} unread message{conv.unreadCount > 1 ? "s" : ""}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Chat Arrow */}
-                  <div className="shrink-0 w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                    <MessageCircle className="w-5 h-5 text-white" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Unread badge overlay */}
-              {conv.unreadCount > 0 && (
-                <div className="absolute top-3 right-3 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold shadow-lg ring-2 ring-black/20">
-                  {conv.unreadCount > 9 ? "9+" : conv.unreadCount}
-                </div>
-              )}
-            </button>
-          );
+          return <ClientArtistCard key={conv.id} conv={conv} />;
         })}
       </div>
     );
-  }, [conversations, setLocation]);
+  }, [conversations]);
 
   const tabs = useMemo(
     () => [
