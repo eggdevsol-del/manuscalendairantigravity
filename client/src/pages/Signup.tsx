@@ -388,6 +388,9 @@ export default function Signup() {
   }
 
   // ------- STEP: MAIN SIGNUP FORM -------
+  const currentParams = new URLSearchParams(window.location.search);
+  const isClientRole = currentParams.get("role") === "client";
+
   return (
     <PageShell className="items-center px-4 py-8 !overflow-y-auto mobile-scroll">
       <div className="w-full max-w-md shrink-0">
@@ -396,10 +399,12 @@ export default function Signup() {
             <UserPlus className="w-8 h-8 text-primary" />
           </div>
           <CardTitle className="text-3xl font-bold tracking-tight text-foreground">
-            Create Artist Account
+            {isClientRole ? "Create Tattoi Account" : "Create Artist Account"}
           </CardTitle>
           <CardDescription className="text-base font-medium">
-            Set up your booking link and start managing clients
+            {isClientRole 
+              ? "Sign up to track your orders and chat with your artist"
+              : "Set up your booking link and start managing clients"}
           </CardDescription>
         </CardHeader>
         <CardContent>

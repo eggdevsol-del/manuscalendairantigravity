@@ -19,6 +19,7 @@ import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { tokens } from "@/ui/tokens";
 import { PageShell, PageHeader, LoadingState } from "@/components/ui/ssot";
+import { RefundConfirmationFAB } from "@/features/payouts/RefundConfirmationFAB";
 
 function formatCents(cents: number): string {
     return `$${(Math.abs(cents) / 100).toFixed(2)}`;
@@ -46,6 +47,7 @@ type Period = "7d" | "30d" | "90d" | "all";
 export default function PayoutHistory() {
     const [, setLocation] = useLocation();
     const [period, setPeriod] = useState<Period>("30d");
+    const [selectedRefundTransaction, setSelectedRefundTransaction] = useState<any | null>(null);
 
     const historyQuery = trpc.payouts.payoutHistory.useQuery({ limit: 50 });
     const earningsQuery = trpc.payouts.earningsBreakdown.useQuery({ period });
@@ -233,6 +235,17 @@ export default function PayoutHistory() {
                                                     <p className="text-[10px] text-muted-foreground">
                                                         Net: {formatCents(entry.netCents)}
                                                     </p>
+                                                    {isIncome && entry.stripePaymentId && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setSelectedRefundTransaction(entry);
+                                                            }}
+                                                            className="text-[10px] font-medium text-red-400 hover:text-red-300 hover:underline transition-colors mt-0.5"
+                                                        >
+                                                            Refund
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         );
@@ -322,6 +335,13 @@ export default function PayoutHistory() {
                     </div>
                 </div>
             </div>
+
+            <RefundConfirmationFAB
+                isOpen={!!selectedRefundTransaction}
+                onClose={() => setSelectedRefundTransaction(null)}
+                transaction={selectedRefundTransaction}
+                onSuccess={() => historyQuery.refetch()}
+            />
         </PageShell>
     );
 }

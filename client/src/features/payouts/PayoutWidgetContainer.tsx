@@ -11,6 +11,7 @@ import { trpc } from "@/lib/trpc";
 import { PayoutWidget } from "./PayoutWidget";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { RefundConfirmationFAB } from "./RefundConfirmationFAB";
 
 interface PayoutWidgetContainerProps {
     period?: "7d" | "30d" | "90d" | "all";
@@ -88,16 +89,32 @@ export function PayoutWidgetContainer({
     // Derive transaction entries from history query
     const transactions = historyQuery.data?.entries || [];
 
+    const [selectedRefundTransaction, setSelectedRefundTransaction] = useState<any | null>(null);
+
     return (
-        <PayoutWidget
-            {...payoutData}
-            earnings={earningsQuery.data || undefined}
-            showTransactions={showTransactions}
-            transactions={transactions}
-            isLoadingTransactions={historyQuery.isLoading}
-            onToggleTransactions={handleToggleTransactions}
-            onViewHistory={handleViewHistory}
-            onConnectStripe={showConnectButton ? handleConnectStripe : undefined}
-        />
+        <>
+            <PayoutWidget
+                {...payoutData}
+                earnings={earningsQuery.data || undefined}
+                showTransactions={showTransactions}
+                transactions={transactions}
+                isLoadingTransactions={historyQuery.isLoading}
+                onToggleTransactions={handleToggleTransactions}
+                onViewHistory={handleViewHistory}
+                onConnectStripe={showConnectButton ? handleConnectStripe : undefined}
+                onRefundRequest={(tx) => setSelectedRefundTransaction(tx)}
+            />
+
+            <RefundConfirmationFAB
+                isOpen={!!selectedRefundTransaction}
+                onClose={() => setSelectedRefundTransaction(null)}
+                transaction={selectedRefundTransaction}
+                onSuccess={() => {
+                    historyQuery.refetch();
+                    nextPayoutQuery.refetch();
+                    earningsQuery.refetch();
+                }}
+            />
+        </>
     );
 }

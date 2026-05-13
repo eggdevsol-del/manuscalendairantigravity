@@ -135,7 +135,7 @@ export default function ClientProfile() {
           return (
             <button
               key={conv.id}
-              onClick={() => setLocation(`/conversations/${conv.id}`)}
+              onClick={() => setLocation(`/chat/${conv.id}`)}
               className="w-full relative rounded-2xl overflow-hidden group active:scale-[0.98] transition-all duration-200"
               style={{ minHeight: "140px" }}
             >

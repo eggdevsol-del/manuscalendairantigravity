@@ -22,6 +22,90 @@ import { stripe } from "../services/stripe";
 
 export const payoutsRouter = router({
     /**
+     * Refund Transaction — Reverses a Stripe payment and logs it
+     */
+    refundTransaction: artistProcedure
+        .input(z.object({ ledgerId: z.number() }))
+        .mutation(async ({ ctx, input }) => {
+            const db = await getDb();
+            if (!db) throw new Error("Database connection failed");
+
+            // 1. Get ledger entry
+            const entry = await db.query.paymentLedger.findFirst({
+                where: and(
+                    eq(paymentLedger.id, input.ledgerId),
+                    eq(paymentLedger.artistId, ctx.user.id)
+                )
+            });
+
+            if (!entry) {
+                throw new Error("Transaction not found");
+            }
+            if (!entry.stripePaymentId) {
+                throw new Error("Transaction cannot be refunded automatically (No Stripe ID)");
+            }
+            
+            if (["refund", "dispute", "payout"].includes(entry.transactionType)) {
+                throw new Error(`Cannot refund a ${entry.transactionType}`);
+            }
+
+            // Check if already refunded
+            const existingRefund = await db.query.paymentLedger.findFirst({
+                where: and(
+                    eq(paymentLedger.stripePaymentId, entry.stripePaymentId),
+                    eq(paymentLedger.transactionType, "refund")
+                )
+            });
+            if (existingRefund) {
+                throw new Error("This transaction has already been refunded");
+            }
+
+            // 2. Execute Stripe Refund
+            try {
+                await stripe.refunds.create({
+                    payment_intent: entry.stripePaymentId.startsWith('pi_') ? entry.stripePaymentId : undefined,
+                    charge: entry.stripePaymentId.startsWith('ch_') ? entry.stripePaymentId : undefined,
+                    refund_application_fee: true,
+                    reverse_transfer: true,
+                });
+            } catch (err: any) {
+                console.error("[Payouts] Refund failed:", err.message);
+                throw new Error(`Refund failed: ${err.message}`);
+            }
+
+            // 3. Log the refund in ledger
+            await db.insert(paymentLedger).values({
+                artistId: entry.artistId,
+                clientId: entry.clientId,
+                bookingId: entry.bookingId,
+                transactionType: "refund",
+                amountCents: entry.amountCents, // Log positive amount for refund
+                platformFeeCents: entry.platformFeeCents,
+                artistFeeCents: entry.artistFeeCents,
+                stripePaymentId: entry.stripePaymentId,
+                stripeConnectAccountId: entry.stripeConnectAccountId,
+                payoutStatus: "paid", // refunds don't get paid out
+                tier: entry.tier,
+                paymentMethod: entry.paymentMethod,
+            });
+
+            // 4. Update orders / appointments
+            if (entry.transactionType === "store_order") {
+                const { orders } = await import("../../drizzle/schema");
+                await db.update(orders)
+                    .set({ status: "cancelled" }) // Or 'refunded' if it exists, cancelled handles this
+                    .where(eq(orders.stripePaymentIntentId, entry.stripePaymentId));
+            } else if (entry.transactionType === "deposit" || entry.transactionType === "balance") {
+                const { appointments } = await import("../../drizzle/schema");
+                await db.update(appointments)
+                    .set({ paymentStatus: "refunded" })
+                    .where(eq(appointments.id, entry.bookingId || 0));
+            }
+
+            return { success: true };
+        }),
+
+    /**
      * Next Payout — Shows the artist's upcoming payout from Stripe.
      * Uses Stripe's Balance + Payouts API for the Connected Account.
      * Falls back to ledger aggregation if no Connect account.

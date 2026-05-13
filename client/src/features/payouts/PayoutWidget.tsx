@@ -57,6 +57,7 @@ export interface PayoutWidgetProps {
     onToggleTransactions?: () => void;
     onViewHistory?: () => void;
     onConnectStripe?: () => void;
+    onRefundRequest?: (transaction: TransactionEntry) => void;
 }
 
 function formatCents(cents: number): string {
@@ -94,6 +95,7 @@ export function PayoutWidget({
     onToggleTransactions,
     onViewHistory,
     onConnectStripe,
+    onRefundRequest,
 }: PayoutWidgetProps) {
     // Not connected state
     if (!connected) {
@@ -279,6 +281,17 @@ export function PayoutWidget({
                                                     <p className="text-[9px] text-muted-foreground tabular-nums">
                                                         Net: {formatCents(entry.netCents)}
                                                     </p>
+                                                    {isIncome && (entry as any).stripePaymentId && onRefundRequest && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onRefundRequest(entry);
+                                                            }}
+                                                            className="text-[9px] font-medium text-red-400 hover:text-red-300 hover:underline transition-colors mt-0.5"
+                                                        >
+                                                            Refund
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         );
