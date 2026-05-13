@@ -61,7 +61,7 @@ function ClientArtistCardExpanded({ artistId }: { artistId: string }) {
           onPointerDown={(e) => e.stopPropagation()}
         >
           {storefront.products.map((product: any) => (
-            <div key={product.id} className="min-w-[280px] max-w-[280px] snap-start shrink-0">
+            <div key={product.id} className="min-w-[220px] max-w-[220px] snap-start shrink-0">
               <StorefrontProductCard product={product} />
             </div>
           ))}

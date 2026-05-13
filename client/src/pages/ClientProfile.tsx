@@ -210,7 +210,7 @@ export default function ClientProfile() {
         )}
       >
         {/* Header */}
-        <motion.div layout className="shrink-0">
+        <motion.div className="shrink-0 transition-all duration-300 ease-in-out">
           <ProfileHeader
             user={profile}
             trustBadges={trustBadges}
@@ -221,7 +221,7 @@ export default function ClientProfile() {
         </motion.div>
 
         {/* Swipeable Cards */}
-        <motion.div layout className="flex-1 min-h-0 relative">
+        <motion.div className="flex-1 min-h-0 relative transition-all duration-300 ease-in-out">
           <ProfileSwipeCarousel
             tabs={tabs}
             defaultTab={activeTabId}

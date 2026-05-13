@@ -209,13 +209,6 @@ export function ProfileSwipeCarousel({
                 width: trackWidthPx,
               }}
               animate={controls}
-              drag={canDrag ? "x" : false}
-              dragDirectionLock
-              dragConstraints={dragConstraints}
-              dragElastic={0.02}
-              dragMomentum={false}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
             >
               {tabs.map(tab => (
                 <div
