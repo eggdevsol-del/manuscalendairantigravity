@@ -230,7 +230,7 @@ export function PayoutWidget({
                                 <div className="max-h-[240px] overflow-y-auto no-scrollbar divide-y divide-white/5 rounded-lg bg-white/[0.02]">
                                     {transactions.map((entry) => {
                                         const isIncome =
-                                            entry.type === "deposit" || entry.type === "balance";
+                                            ["deposit", "balance", "store_order"].includes(entry.type);
                                         return (
                                             <div
                                                 key={entry.id}
