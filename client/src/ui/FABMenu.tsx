@@ -52,6 +52,8 @@ interface FABMenuProps {
   items?: FABMenuItem[];
   /** Custom panel content (for complex flows like the Booking wizard) */
   children?: ReactNode;
+  /** Whether to hide the toggle button completely (useful for programmatically controlled menus) */
+  hideToggle?: boolean;
 }
 
 export function FABMenu(props: FABMenuProps) {
@@ -163,24 +165,26 @@ export function FABMenu(props: FABMenuProps) {
     <div className={cn(fab.container, props.className)}>
       {mounted && createPortal(portalContent, document.body)}
 
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={toggle}
-        className={cn(fab.toggle, isOpen ? fab.toggleOpen : fab.toggleClosed)}
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={isOpen ? "close" : "open"}
-            initial={{ rotate: -90, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            exit={{ rotate: 90, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            {isOpen ? <X className={fab.toggleIconSize} /> : props.toggleIcon}
-          </motion.div>
-        </AnimatePresence>
-      </motion.button>
+      {!props.hideToggle && (
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={toggle}
+          className={cn(fab.toggle, isOpen ? fab.toggleOpen : fab.toggleClosed)}
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={isOpen ? "close" : "open"}
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {isOpen ? <X className={fab.toggleIconSize} /> : props.toggleIcon}
+            </motion.div>
+          </AnimatePresence>
+        </motion.button>
+      )}
     </div>
   );
 }

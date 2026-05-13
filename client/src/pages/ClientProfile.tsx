@@ -19,7 +19,7 @@ import {
   ToggleRight,
   MessageCircle,
 } from "lucide-react";
-import { NavActionButton } from "@/components/ui/ssot";
+import { NavActionButton, PageShell } from "@/components/ui/ssot";
 
 import { useTeaser } from "@/contexts/TeaserContext";
 import { Lock } from "lucide-react";
@@ -171,7 +171,7 @@ export default function ClientProfile() {
   );
 
   return (
-    <div className="flex flex-col h-full bg-transparent relative overflow-hidden">
+    <PageShell className="bg-transparent">
       <InstallAppModal
         isOpen={showInstallModal}
         onClose={() => setShowInstallModal(false)}
@@ -228,6 +228,6 @@ export default function ClientProfile() {
           onSave={async bio => updateBio.mutate({ bio })}
         />
       </div>
-    </div>
+    </PageShell>
   );
 }
