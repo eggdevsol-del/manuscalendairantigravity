@@ -153,7 +153,7 @@ function StorefrontContent({ slug, storefront }: { slug: string; storefront: any
         )}
       </AnimatePresence>
 
-      <StorefrontCheckoutFAB artistSlug={slug} onClose={() => {}} />
+      <StorefrontCheckoutFAB artistSlug={slug} artistId={storefront.artistId} onClose={() => {}} />
     </div>
   );
 }

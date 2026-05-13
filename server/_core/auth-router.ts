@@ -561,11 +561,12 @@ export const authRouter = router({
       z.object({
         code: z.string(), // Google authorization code
         role: z.enum(["client", "artist", "studio"]).optional(),
+        referralArtistId: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
       const { ENV } = require("./env");
-      const { code, role } = input;
+      const { code, role, referralArtistId } = input;
 
       // Exchange authorization code for tokens using client secret
       const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
@@ -709,6 +710,19 @@ export const authRouter = router({
         }
       } catch (e) {
         console.warn("[Auth/Google] Failed to persist googleSub (column may not exist yet):", (e as any)?.message);
+      }
+
+      // Auto-connect with referring artist (creates conversation)
+      if (referralArtistId && (role === "client" || user.role === "client")) {
+        try {
+          await createConversation({
+            artistId: referralArtistId,
+            clientId: user.id,
+          });
+        } catch (e) {
+          // Non-fatal: conversation may already exist
+          console.log("[Auth/Google] Referral conversation creation:", (e as any)?.message || e);
+        }
       }
 
       // Generate JWT token

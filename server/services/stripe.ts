@@ -198,7 +198,7 @@ export async function createDepositCheckoutSession(opts: {
       stripeConnectAccountId: opts.stripeConnectAccountId || "",
       tier: opts.tier,
     },
-    return_url: opts.successUrl 
+    return_url: opts.successUrl
       ? `${opts.successUrl}${opts.successUrl.includes('?') ? '&' : '?'}status=success&session_id={CHECKOUT_SESSION_ID}`
       : `${baseUrl}/deposit/${opts.depositToken}?status=success&session_id={CHECKOUT_SESSION_ID}`,
   };
@@ -346,7 +346,7 @@ export async function createStorefrontCheckoutSession(opts: {
     sessionConfig.shipping_address_collection = {
       allowed_countries: ["AU", "NZ", "US", "GB", "CA"],
     };
-    
+
     if (opts.shippingCostCents >= 0) {
       sessionConfig.shipping_options = [
         {
@@ -574,11 +574,11 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             if (order) {
               const nowStr = new Date().toISOString().slice(0, 19).replace("T", " ");
               const nowDate = new Date();
-              
+
               // 1. Update Order Status, Shipping Address, and Buyer Details
               const shippingDetails = session.shipping_details;
               const customerDetails = session.customer_details;
-              
+
               const buyerName = shippingDetails?.name || customerDetails?.name || null;
               const buyerEmail = customerDetails?.email || null;
               const buyerPhone = customerDetails?.phone || shippingDetails?.phone || null;

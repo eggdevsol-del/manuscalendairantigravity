@@ -111,10 +111,14 @@ export default function Signup() {
   const handleGoogleSuccess = async (code: string) => {
     setIsLoading(true);
     try {
+      const params = new URLSearchParams(window.location.search);
+      const urlRole = params.get("role") as "artist" | "client" | null;
+      const referralArtistId = params.get("referralArtistId") || undefined;
+      
       const result = await googleLoginMutation.mutateAsync({
         code,
-        // Signup page is artist-only. Clients are created via booking funnel.
-        role: "artist",
+        role: urlRole || "artist",
+        referralArtistId,
       });
 
       // Store auth immediately so profile update works
@@ -159,6 +163,10 @@ export default function Signup() {
 
     setIsLoading(true);
 
+    const params = new URLSearchParams(window.location.search);
+    const urlRole = params.get("role") as "artist" | "client" | null;
+    const referralArtistId = params.get("referralArtistId") || undefined;
+
     checkEmailMutation.mutate(
       { email },
       {
@@ -181,7 +189,8 @@ export default function Signup() {
               name,
               email,
               password,
-              role: "artist",
+              role: urlRole || "artist",
+              ...(referralArtistId ? { referralArtistId } : {}),
               ...(phone ? { phone } : {}),
               ...(birthday ? { birthday } : {}),
               ...(gender ? { gender: gender as any } : {}),
@@ -196,7 +205,8 @@ export default function Signup() {
             name,
             email,
             password,
-            role: "artist",
+            role: urlRole || "artist",
+            ...(referralArtistId ? { referralArtistId } : {}),
             ...(phone ? { phone } : {}),
             ...(birthday ? { birthday } : {}),
             ...(gender ? { gender: gender as any } : {}),

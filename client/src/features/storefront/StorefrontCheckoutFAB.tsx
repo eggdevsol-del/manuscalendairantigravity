@@ -6,16 +6,20 @@ import { trpc } from "@/lib/trpc";
 import { EmbeddedStripeCheckout } from "@/features/stripe/EmbeddedStripeCheckout";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 type CheckoutStep = "review" | "details" | "payment" | "success";
 
 export function StorefrontCheckoutFAB({
   onClose,
   artistSlug,
+  artistId,
 }: {
   onClose: () => void;
   artistSlug: string;
+  artistId: string;
 }) {
+  const { user } = useAuth();
   const { items, subtotalCents, totalItems, updateQuantity, removeItem, clearCart, isCartOpen, setIsCartOpen } = useCart();
   const [step, setStep] = useState<CheckoutStep>("review");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -198,8 +202,23 @@ export function StorefrontCheckoutFAB({
                   <h2 className="text-3xl font-black">Order Confirmed!</h2>
                   <p className="text-white/60">Your order has been placed. You will receive an email receipt shortly.</p>
                 </div>
-                <div className="p-6 bg-white/5 rounded-[24px] border border-white/10 w-full max-w-sm mt-8">
-                  <p className="text-sm text-white/70 mb-4">You will receive a receipt via email shortly. Your artist will contact you if they need any further details.</p>
+                <div className="p-6 bg-white/5 rounded-[24px] border border-white/10 w-full max-w-sm mt-8 space-y-4">
+                  <p className="text-sm text-white/70">You will receive a receipt via email shortly. Your artist will contact you if they need any further details.</p>
+                  
+                  {!user && (
+                    <div className="pt-4 border-t border-white/10 space-y-4">
+                      <p className="text-sm font-medium text-white">Want to track your order easily? Save your details by creating an account!</p>
+                      <button 
+                        onClick={() => {
+                          window.location.href = `/signup?role=client&referralArtistId=${artistId}`;
+                        }}
+                        className="w-full py-3 bg-white text-black hover:bg-white/90 rounded-full font-bold transition-colors"
+                      >
+                        Create Account
+                      </button>
+                    </div>
+                  )}
+
                   <button 
                     onClick={() => {
                       window.location.href = `/${artistSlug}`;
