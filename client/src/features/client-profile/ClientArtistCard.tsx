@@ -9,6 +9,7 @@ import { StorefrontCheckoutFAB } from "@/features/storefront/StorefrontCheckoutF
 
 interface ClientArtistCardProps {
   conv: any;
+  onShopToggle?: (expanded: boolean) => void;
 }
 
 // Inner component wrapped in CartProvider so it can access cart state
@@ -55,7 +56,10 @@ function ClientArtistCardExpanded({ artistId }: { artistId: string }) {
         </div>
         
         {/* Scrollable area inside the card */}
-        <div className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 mobile-scroll snap-x">
+        <div 
+          className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 mobile-scroll snap-x"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
           {storefront.products.map((product: any) => (
             <div key={product.id} className="min-w-[280px] max-w-[280px] snap-start shrink-0">
               <StorefrontProductCard product={product} />
@@ -73,7 +77,7 @@ function ClientArtistCardExpanded({ artistId }: { artistId: string }) {
   );
 }
 
-export function ClientArtistCard({ conv }: ClientArtistCardProps) {
+export function ClientArtistCard({ conv, onShopToggle }: ClientArtistCardProps) {
   const [, setLocation] = useLocation();
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -141,7 +145,11 @@ export function ClientArtistCard({ conv }: ClientArtistCardProps) {
           {/* Actions */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={() => {
+                const newState = !isExpanded;
+                setIsExpanded(newState);
+                if (onShopToggle) onShopToggle(newState);
+              }}
               className={`shrink-0 w-10 h-10 rounded-full backdrop-blur-xl border flex items-center justify-center transition-all ${
                 isExpanded 
                   ? "bg-white text-black border-white" 

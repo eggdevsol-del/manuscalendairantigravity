@@ -3,6 +3,7 @@ import { useClientProfileController } from "@/features/profile/useClientProfileC
 import { ProfileHeader } from "@/features/profile/components/ProfileHeader";
 import { ProfileSwipeCarousel } from "@/features/profile/components/ProfileSwipeCarousel";
 
+import { motion } from "framer-motion";
 import {
   PhotosCard,
   HistoryCard,
@@ -48,6 +49,7 @@ export default function ClientProfile() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isBioModalOpen, setIsBioModalOpen] = useState(false);
   const [activeTabId, setActiveTabId] = useState("artists");
+  const [isShopExpanded, setIsShopExpanded] = useState(false);
 
   // Deep-linking to tabs via query param
   useEffect(() => {
@@ -133,11 +135,17 @@ export default function ClientProfile() {
           const artistName = artist.name || artist.firstName || "Artist";
           const avatarUrl = artist.avatar || null;
 
-          return <ClientArtistCard key={conv.id} conv={conv} />;
+          return (
+            <ClientArtistCard 
+              key={conv.id} 
+              conv={conv} 
+              onShopToggle={setIsShopExpanded}
+            />
+          );
         })}
       </div>
     );
-  }, [conversations]);
+  }, [conversations, setIsShopExpanded]);
 
   const tabs = useMemo(
     () => [
@@ -202,23 +210,24 @@ export default function ClientProfile() {
         )}
       >
         {/* Header */}
-        <div className="shrink-0">
+        <motion.div layout className="shrink-0">
           <ProfileHeader
             user={profile}
             trustBadges={trustBadges}
             isEditMode={isEditMode}
             onEditAvatar={handleProfilePicUpload}
+            isCompact={isShopExpanded}
           />
-        </div>
+        </motion.div>
 
         {/* Swipeable Cards */}
-        <div className="flex-1 min-h-0 relative">
+        <motion.div layout className="flex-1 min-h-0 relative">
           <ProfileSwipeCarousel
             tabs={tabs}
             defaultTab={activeTabId}
             onTabChange={setActiveTabId}
           />
-        </div>
+        </motion.div>
 
         {/* Modals */}
         <EditBioModal
