@@ -4,7 +4,7 @@ import { X, AlertTriangle, Loader2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { tokens } from "@/_core/theme";
+import { tokens } from "@/ui/tokens";
 
 interface RefundConfirmationFABProps {
   isOpen: boolean;
