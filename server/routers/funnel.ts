@@ -756,6 +756,7 @@ export const funnelRouter = router({
         displayName: settings.businessName || settings.displayName || artist.name || "Artist",
         profileImage: artist.avatar || null,
         bio: artist.bio || settings.funnelWelcomeMessage || "Tattoo Artist",
+        city: artist.city || null,
         instagramUsername: artist.instagramUsername || null,
         facebookName: artist.facebookName || null,
         slug: settings.publicSlug,

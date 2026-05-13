@@ -100,14 +100,14 @@ export default function ArtistHub() {
           {artist.displayName}
         </motion.h1>
         
-        {artist.bio && (
+        {(artist.city || artist.bio) && (
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-white/60 text-center text-sm leading-relaxed max-w-[280px] mb-8 font-medium"
+            className="text-white/60 text-center text-sm leading-relaxed max-w-[280px] mb-8 font-medium flex items-center justify-center gap-1.5"
           >
-            {artist.bio}
+            {artist.city || artist.bio}
           </motion.p>
         )}
 
