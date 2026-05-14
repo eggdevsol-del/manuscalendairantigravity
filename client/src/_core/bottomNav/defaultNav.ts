@@ -15,8 +15,8 @@ export const ARTIST_NAV_ITEMS: BottomNavButton[] = [
   {
     id: "dashboard",
     path: "/dashboard",
-    label: "Dashboard",
-    icon: LayoutDashboard,
+    label: "Home",
+    icon: Home,
   },
   {
     id: "messages",

@@ -191,7 +191,7 @@ export default function ClientProfile() {
           className="absolute inset-0 z-50 bg-background/60 backdrop-blur-[2px] flex items-center justify-center cursor-pointer transition-all hover:bg-background/70"
           onClick={() => setShowInstallModal(true)}
         >
-          <div className="flex flex-col items-center gap-3 p-8 rounded-[2rem] bg-card/90 border border-white/10 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in duration-300">
+          <div className="flex flex-col items-center gap-3 p-8 rounded-[2rem] bg-card/90 border border-border shadow-2xl backdrop-blur-md animate-in fade-in zoom-in duration-300">
             <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-2">
               <Lock className="w-8 h-8 text-primary" />
             </div>

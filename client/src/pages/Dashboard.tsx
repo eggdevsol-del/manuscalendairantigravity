@@ -353,7 +353,7 @@ export default function Dashboard() {
   return (
     <PageShell>
       {/* 1. Page Header - Left aligned, no icons */}
-      <PageHeader title="Dashboard" />
+      <PageHeader title="Home" />
 
       {/* 2. Top Context Area (Date) */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
@@ -376,7 +376,7 @@ export default function Dashboard() {
             className="absolute inset-0 z-50 bg-background/60 backdrop-blur-[2px] flex items-center justify-center cursor-pointer transition-all hover:bg-background/70"
             onClick={() => setShowInstallModal(true)}
           >
-            <div className="flex flex-col items-center gap-3 p-8 rounded-[2rem] bg-card/90 border border-white/10 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in duration-300">
+            <div className="flex flex-col items-center gap-3 p-8 rounded-[2rem] bg-card border border-border shadow-2xl backdrop-blur-md animate-in fade-in zoom-in duration-300">
               <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-2">
                 <Lock className="w-8 h-8 text-primary" />
               </div>
@@ -506,7 +506,7 @@ export default function Dashboard() {
                 legacyActions.startChallenge(template);
                 setShowChallengeSheet(false);
               }}
-              className="p-4 border-white/10 bg-white/5 hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer rounded-2xl flex items-center justify-between group"
+              className="p-4 border-border bg-secondary/50 hover:bg-secondary active:scale-[0.98] transition-all cursor-pointer rounded-2xl flex items-center justify-between group"
             >
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -519,7 +519,7 @@ export default function Dashboard() {
                   {template.description}
                 </p>
               </div>
-              <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-muted-foreground group-hover:border-primary group-hover:text-primary transition-colors">
+              <div className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground group-hover:border-primary group-hover:text-primary transition-colors">
                 <ChevronRight className="w-4 h-4" />
               </div>
             </Card>

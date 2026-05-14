@@ -133,14 +133,14 @@ export default function StudioDashboard() {
 
       {/* Desktop Horizontal Layout Optimized Tabs */}
       <div className="sticky top-0 z-10 px-4 pt-4 pb-2 bg-background/80 backdrop-blur-md border-b border-border/10">
-        <div className="flex justify-between items-center w-full max-w-4xl mx-auto bg-white/5 rounded-xl p-1 relative border border-white/10 overflow-x-auto no-scrollbar">
+        <div className="flex justify-between items-center w-full max-w-4xl mx-auto bg-secondary/50 rounded-xl p-1 relative border border-border overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab("team")}
             className={cn(
               "flex-1 min-w-[100px] relative z-10 py-2.5 text-sm font-semibold transition-colors flex items-center justify-center gap-2",
               activeTab === "team"
                 ? "text-primary-foreground"
-                : "text-muted-foreground hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Users className="w-4 h-4 hidden sm:block" />
@@ -160,7 +160,7 @@ export default function StudioDashboard() {
               "flex-1 min-w-[100px] relative z-10 py-2.5 text-sm font-semibold transition-colors flex items-center justify-center gap-2",
               activeTab === "invite"
                 ? "text-primary-foreground"
-                : "text-muted-foreground hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             <UserPlus className="w-4 h-4 hidden sm:block" />
@@ -180,7 +180,7 @@ export default function StudioDashboard() {
               "flex-1 min-w-[100px] relative z-10 py-2.5 text-sm font-semibold transition-colors flex items-center justify-center gap-2",
               activeTab === "analytics"
                 ? "text-primary-foreground"
-                : "text-muted-foreground hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             <BarChart3 className="w-4 h-4 hidden sm:block" />
@@ -200,7 +200,7 @@ export default function StudioDashboard() {
               "flex-1 min-w-[100px] relative z-10 py-2.5 text-sm font-semibold transition-colors flex items-center justify-center gap-2",
               activeTab === "settings"
                 ? "text-primary-foreground"
-                : "text-muted-foreground hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             <SettingsIcon className="w-4 h-4 hidden sm:block" />
@@ -261,10 +261,10 @@ export default function StudioDashboard() {
                     {activeMembers.map((member: any) => (
                       <div
                         key={member.id}
-                        className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between hover:bg-white/10 transition-colors"
+                        className="p-4 rounded-xl bg-secondary/50 border border-border flex items-center justify-between hover:bg-secondary/50 transition-colors"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-full bg-white/10 overflow-hidden flex items-center justify-center border border-white/20">
+                          <div className="w-12 h-12 rounded-full bg-secondary/50 overflow-hidden flex items-center justify-center border border-border">
                             {member.user.avatar ? (
                               <img
                                 src={member.user.avatar}
@@ -328,10 +328,10 @@ export default function StudioDashboard() {
                       {pendingMembers.map((member: any) => (
                         <div
                           key={member.id}
-                          className="p-4 rounded-xl bg-white/5 border border-white/5 border-dashed flex items-center justify-between opacity-70"
+                          className="p-4 rounded-xl bg-secondary/50 border border-border border-dashed flex items-center justify-between opacity-70"
                         >
                           <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-white/5 border-2 border-dashed border-white/20 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-full bg-secondary/50 border-2 border-dashed border-border flex items-center justify-center">
                               <Mail className="w-5 h-5 text-muted-foreground" />
                             </div>
                             <div>
@@ -373,7 +373,7 @@ export default function StudioDashboard() {
               transition={{ duration: 0.3 }}
               className="max-w-2xl mx-auto space-y-6"
             >
-              <Card className="p-8 bg-gradient-to-br from-white/10 to-transparent border-white/20 shadow-xl">
+              <Card className="p-8 bg-card border-border shadow-xl">
                 <div className="mb-8 text-center">
                   <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
                     <UserPlus className="w-8 h-8 text-primary" />
@@ -394,7 +394,7 @@ export default function StudioDashboard() {
                         placeholder="artist@example.com"
                         value={inviteEmail}
                         onChange={e => setInviteEmail(e.target.value)}
-                        className="w-full bg-black/30 border-white/20 py-6 text-lg"
+                        className="w-full bg-background/80 border-border py-6 text-lg"
                         type="email"
                         required
                       />
@@ -404,7 +404,7 @@ export default function StudioDashboard() {
                         Role
                       </label>
                       <select
-                        className="w-full bg-black/30 border border-white/20 rounded-xl px-4 py-3 text-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full bg-background/80 border border-border rounded-xl px-4 py-3 text-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         value={inviteRole}
                         onChange={e => setInviteRole(e.target.value as any)}
                       >
@@ -442,8 +442,8 @@ export default function StudioDashboard() {
               transition={{ duration: 0.3 }}
               className="space-y-6"
             >
-              <Card className="p-12 bg-gradient-to-br from-white/10 to-transparent border-white/20 text-center flex flex-col items-center justify-center min-h-[400px]">
-                <div className="p-6 rounded-full bg-white/5 border border-white/10 mb-6">
+              <Card className="p-12 bg-card border-border text-center flex flex-col items-center justify-center min-h-[400px]">
+                <div className="p-6 rounded-full bg-secondary/50 border border-border mb-6">
                   <BarChart3 className="w-16 h-16 text-muted-foreground opacity-70" />
                 </div>
                 <h3 className="text-3xl font-bold mb-4 tracking-tight">
@@ -469,8 +469,8 @@ export default function StudioDashboard() {
               transition={{ duration: 0.3 }}
               className="space-y-6"
             >
-              <Card className="p-8 bg-gradient-to-br from-white/10 to-transparent border-white/20 flex flex-col items-center justify-center min-h-[400px] text-center">
-                <div className="p-6 rounded-full bg-white/5 border border-white/10 mb-6">
+              <Card className="p-8 bg-card border-border flex flex-col items-center justify-center min-h-[400px] text-center">
+                <div className="p-6 rounded-full bg-secondary/50 border border-border mb-6">
                   <SettingsIcon className="w-16 h-16 text-muted-foreground opacity-70" />
                 </div>
                 <h3 className="text-3xl font-bold mb-4 tracking-tight">
