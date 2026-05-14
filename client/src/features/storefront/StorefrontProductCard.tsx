@@ -1,6 +1,6 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { Package, Store, Truck, Globe, Plus, Minus, ShoppingCart } from "lucide-react";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Package, Store, Truck, Globe, Plus, Minus, ShoppingCart, X, ChevronUp } from "lucide-react";
 import { useCart } from "./CartContext";
 
 interface StorefrontProductCardProps {
@@ -9,6 +9,7 @@ interface StorefrontProductCardProps {
 
 export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
   const { items, addItem, removeItem } = useCart();
+  const [isExpanded, setIsExpanded] = useState(false);
   
   const inCart = items.find(i => i.productId === product.id)?.quantity || 0;
   const isMaxed = inCart >= product.inventoryCount;
@@ -17,7 +18,7 @@ export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 rounded-[24px] border border-white/10 overflow-hidden flex flex-col hover:border-white/20 transition-colors"
+      className="bg-white/5 rounded-[24px] border border-white/10 overflow-hidden flex flex-col hover:border-white/20 transition-colors relative"
     >
       {/* Product Image */}
       <div className="aspect-square bg-black/50 relative overflow-hidden group">
@@ -44,10 +45,21 @@ export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
       </div>
 
       <div className="p-5 flex flex-col flex-1">
-        <h3 className="text-lg font-bold mb-1 leading-tight">{product.title}</h3>
-        <p className="text-white/50 text-sm line-clamp-2 mb-4 leading-relaxed flex-1">
-          {product.description}
-        </p>
+        <h3 className="text-lg font-bold mb-1 truncate h-[28px]">{product.title}</h3>
+        
+        <div className="relative h-[64px] mb-4 flex flex-col justify-start">
+          <p className="text-white/50 text-sm line-clamp-2 leading-relaxed">
+            {product.description}
+          </p>
+          {product.description && product.description.length > 60 && (
+            <button 
+              onClick={() => setIsExpanded(true)}
+              className="text-xs text-indigo-400 font-bold mt-auto self-start hover:text-indigo-300 transition-colors flex items-center gap-1"
+            >
+              Read more <ChevronUp className="w-3 h-3" />
+            </button>
+          )}
+        </div>
         
         <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
           <span className="text-xl font-bold tracking-tight">
@@ -110,6 +122,34 @@ export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
           )}
         </div>
       </div>
+
+      {/* Expanded Description Overlay */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0, y: "100%" }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="absolute inset-0 z-30 bg-[#111]/95 backdrop-blur-xl flex flex-col"
+          >
+            <div className="p-5 flex items-center justify-between border-b border-white/10 bg-black/20 shrink-0">
+              <h3 className="font-bold text-lg text-white">Description</h3>
+              <button 
+                onClick={() => setIsExpanded(false)}
+                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 text-white shrink-0 transition-colors shadow-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-5 overflow-y-auto mobile-scroll flex-1">
+              <p className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">
+                {product.description}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
