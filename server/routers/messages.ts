@@ -123,18 +123,27 @@ export const messagesRouter = router({
           // --- END VALIDATION ---
 
           const appointmentIds: number[] = [];
+          
+          // Even Spread Deposit Allocation
+          const projectDeposit = typeof metaObj.depositAmount === "number" ? metaObj.depositAmount : 0;
+          const totalDepositCents = Math.round(projectDeposit * 100);
+          const numSittings = metaObj.dates.length;
+          const baseAllocCents = Math.floor(totalDepositCents / numSittings);
+          const remainderCents = totalDepositCents % numSittings;
+
           for (let i = 0; i < metaObj.dates.length; i++) {
             const dateStr = metaObj.dates[i];
-            const isLast = i === metaObj.dates.length - 1;
             const startTime = new Date(dateStr);
             const duration = metaObj.serviceDuration || 60;
             const endTime = new Date(startTime.getTime() + duration * 60 * 1000);
 
             const safePrice = typeof metaObj.price === "number" ? metaObj.price : 0;
-            const projectDeposit = typeof metaObj.depositAmount === "number" ? metaObj.depositAmount : 0;
-            const safeDeposit = isLast ? projectDeposit : 0; // Apply deposit to the final sitting
-            
             const expectedCents = Math.round(safePrice * 100);
+            
+            // Allocate cents (add 1 cent to early sittings if there's a remainder)
+            const allocatedDepositCents = baseAllocCents + (i < remainderCents ? 1 : 0);
+            const allocatedDepositDollars = allocatedDepositCents / 100;
+            const balanceCents = expectedCents - allocatedDepositCents;
 
             const inserted = await db.createAppointment({
               conversationId: input.conversationId,
@@ -146,9 +155,9 @@ export const messagesRouter = router({
               endTime: endTime.toISOString().slice(0, 19).replace("T", " "),
               serviceName: metaObj.serviceName || "Project Proposal",
               price: safePrice,
-              depositAmount: safeDeposit,
+              depositAmount: allocatedDepositDollars,
               totalExpectedAmountCents: expectedCents,
-              remainingBalanceCents: expectedCents,
+              remainingBalanceCents: balanceCents,
               totalPaidAmountCents: 0,
               status: "pending",
             });
