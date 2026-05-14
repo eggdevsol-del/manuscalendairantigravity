@@ -292,7 +292,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                             <div className="space-y-1.5">
                                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Platform Booking Handle</Label>
                                 <div className="flex rounded-md overflow-hidden bg-accent/5 focus-within:ring-2 focus-within:ring-primary/50 transition-all border border-input">
-                                    <div className="px-3 py-2 bg-black/40 text-muted-foreground text-sm border-r border-input flex items-center shrink-0">
+                                    <div className="px-3 py-2 bg-background/80 text-muted-foreground text-sm border-r border-input flex items-center shrink-0">
                                         calendair.net/
                                     </div>
                                     <input
@@ -318,7 +318,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                             </div>
 
                             {isQLD && (
-                                <div className="space-y-1.5 pt-4 border-t border-white/10 mt-4">
+                                <div className="space-y-1.5 pt-4 border-t border-border mt-4">
                                     <Label className="text-xs font-bold text-red-400 uppercase tracking-wider flex items-center gap-1.5">
                                         ⚠️ QLD Legislative Compliance
                                     </Label>
@@ -334,7 +334,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                 </div>
                             )}
 
-                            <div className="space-y-1.5 pt-6 border-t border-white/10 mt-6">
+                            <div className="space-y-1.5 pt-6 border-t border-border mt-6">
                                 <div className="mb-4 space-y-1">
                                     <h3 className="text-sm font-bold tracking-tight text-foreground flex items-center gap-2 uppercase">
                                         <Scissors className="w-4 h-4 text-primary" /> Base Services
@@ -346,7 +346,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
 
                                 <div className="flex flex-col gap-2 mb-4">
                                     {services.map((s, i) => (
-                                        <div key={i} className="flex flex-col bg-white/5 border border-white/10 rounded-lg p-3">
+                                        <div key={i} className="flex flex-col bg-secondary/50 border border-border rounded-lg p-3">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-sm font-semibold">{s.title}</span>
                                                 <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => handleRemoveService(s.id)}>Remove</Button>
@@ -454,7 +454,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
 
                             {/* Express Onboarding: show embedded Stripe form when flag is enabled */}
                             {expressOnboardingEnabled ? (
-                                <div className="pt-4 border-t border-white/10 mt-4">
+                                <div className="pt-4 border-t border-border mt-4">
                                     <div className="flex items-center justify-between mb-3">
                                         <span className="text-xs font-bold uppercase tracking-wider text-primary">Stripe Connect (Automated Payments)</span>
                                     </div>
@@ -465,7 +465,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                     />
                                 </div>
                             ) : (
-                                <div className="p-3 mt-4 rounded-xl border border-white/5 bg-white/5 opacity-50 flex flex-col">
+                                <div className="p-3 mt-4 rounded-xl border border-border bg-secondary/50 opacity-50 flex flex-col">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-xs font-bold">Stripe / PayPal Gateways</span>
                                         <Switch disabled checked={false} />
@@ -550,7 +550,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                             </div>
 
                             <div
-                                className={cn("p-4 rounded-xl border flex flex-col gap-2 cursor-pointer transition-colors", sendAutomatedReminders ? 'bg-primary/10 border-primary/50' : 'bg-accent/5 border-input hover:border-white/20')}
+                                className={cn("p-4 rounded-xl border flex flex-col gap-2 cursor-pointer transition-colors", sendAutomatedReminders ? 'bg-primary/10 border-primary/50' : 'bg-accent/5 border-input hover:border-border')}
                                 onClick={() => setSendAutomatedReminders(true)}
                             >
                                 <span className="font-bold text-sm text-foreground">Automated Reminders</span>
@@ -558,7 +558,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                             </div>
 
                             <div
-                                className={cn("p-4 rounded-xl border flex flex-col gap-2 cursor-pointer transition-colors", !sendAutomatedReminders ? 'bg-primary/10 border-primary/50' : 'bg-accent/5 border-input hover:border-white/20')}
+                                className={cn("p-4 rounded-xl border flex flex-col gap-2 cursor-pointer transition-colors", !sendAutomatedReminders ? 'bg-primary/10 border-primary/50' : 'bg-accent/5 border-input hover:border-border')}
                                 onClick={() => setSendAutomatedReminders(false)}
                             >
                                 <span className="font-bold text-sm text-foreground">Manual Reminders</span>
@@ -588,12 +588,12 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                             <div className="space-y-3">
                                 {/* Free Tier */}
                                 <div
-                                    className={cn("p-4 rounded-xl border cursor-pointer transition-all", subscriptionTier === 'free' ? 'bg-primary/10 border-primary shadow-lg shadow-primary/10' : 'bg-card border-white/5 opacity-80')}
+                                    className={cn("p-4 rounded-xl border cursor-pointer transition-all", subscriptionTier === 'free' ? 'bg-primary/10 border-primary shadow-lg shadow-primary/10' : 'bg-card border-border opacity-80')}
                                     onClick={() => setSubscriptionTier('free')}
                                 >
                                     <div className="flex justify-between items-center mb-1">
                                         <h3 className="font-bold text-lg">Free Tier</h3>
-                                        <span className="text-xs font-bold px-2 py-0.5 bg-white/10 rounded-full">$0/mo</span>
+                                        <span className="text-xs font-bold px-2 py-0.5 bg-secondary/50 rounded-full">$0/mo</span>
                                     </div>
                                     <ul className="text-[10px] space-y-1 mt-3">
                                         <li className="flex justify-between"><span className="text-muted-foreground">Tri-app proprietary booking app</span> <span className="text-emerald-500 font-bold">✓</span></li>
@@ -620,7 +620,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
 
                                 {/* Pro Tier */}
                                 <div
-                                    className={cn("p-4 rounded-xl border relative cursor-pointer transition-all", subscriptionTier === 'pro' ? 'bg-primary/10 border-primary shadow-lg shadow-primary/10' : 'bg-card border-white/5 opacity-80')}
+                                    className={cn("p-4 rounded-xl border relative cursor-pointer transition-all", subscriptionTier === 'pro' ? 'bg-primary/10 border-primary shadow-lg shadow-primary/10' : 'bg-card border-border opacity-80')}
                                     onClick={() => setSubscriptionTier('pro')}
                                 >
                                     <div className="absolute -top-2.5 right-4 bg-primary text-primary-foreground text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-md z-10">Popular</div>
@@ -653,12 +653,12 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
 
                                 {/* Pro Plus Tier */}
                                 <div
-                                    className={cn("p-4 rounded-xl border cursor-pointer transition-all", subscriptionTier === 'pro_plus' ? 'bg-primary/10 border-primary shadow-lg shadow-primary/10' : 'bg-card border-white/5 opacity-80')}
+                                    className={cn("p-4 rounded-xl border cursor-pointer transition-all", subscriptionTier === 'pro_plus' ? 'bg-primary/10 border-primary shadow-lg shadow-primary/10' : 'bg-card border-border opacity-80')}
                                     onClick={() => setSubscriptionTier('pro_plus')}
                                 >
                                     <div className="flex justify-between items-center mb-1">
                                         <h3 className="font-bold text-lg">Pro Plus</h3>
-                                        <span className="text-xs font-bold px-2 py-0.5 bg-white/10 rounded-full">$49/mo</span>
+                                        <span className="text-xs font-bold px-2 py-0.5 bg-secondary/50 rounded-full">$49/mo</span>
                                     </div>
                                     <ul className="text-[10px] space-y-1 mt-3">
                                         <li className="flex justify-between"><span className="text-muted-foreground">Tri-app proprietary booking app</span> <span className="text-emerald-500 font-bold">✓</span></li>
@@ -706,7 +706,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                             </div>
 
                             <div className="space-y-4">
-                                <div className="flex gap-4 p-4 rounded-xl bg-card border border-white/5">
+                                <div className="flex gap-4 p-4 rounded-xl bg-card border border-border">
                                     <div className="shrink-0 pt-1">
                                         <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                                             <CalendarIcon className="w-4 h-4 text-primary" />
@@ -720,7 +720,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                     </div>
                                 </div>
 
-                                <div className="flex gap-4 p-4 rounded-xl bg-card border border-white/5">
+                                <div className="flex gap-4 p-4 rounded-xl bg-card border border-border">
                                     <div className="shrink-0 pt-1">
                                         <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                                             <LinkIcon className="w-4 h-4 text-primary" />
@@ -734,7 +734,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                     </div>
                                 </div>
 
-                                <div className="flex gap-4 p-4 rounded-xl bg-card border border-white/5">
+                                <div className="flex gap-4 p-4 rounded-xl bg-card border border-border">
                                     <div className="shrink-0 pt-1">
                                         <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                                             <WalletIcon className="w-4 h-4 text-primary" />

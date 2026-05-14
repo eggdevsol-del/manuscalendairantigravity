@@ -107,7 +107,7 @@ function PolicyDropdown({
         : "Contact the artist for deposit requirements.";
 
   return (
-    <div className="rounded-[4px] border border-white/5 overflow-hidden">
+    <div className="rounded-[4px] border border-border overflow-hidden">
       <button
         type="button"
         className="flex items-center justify-between w-full px-2.5 py-2 text-[10px] font-semibold text-foreground/80 hover:bg-white/[0.02] transition-colors"
@@ -796,7 +796,7 @@ export function BookingWizardContent({
                         "flex items-center gap-2 p-1.5 rounded-[4px]"
                       )}
                     >
-                      <span className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
+                      <span className="w-4 h-4 rounded-full bg-secondary/50 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
                         {i + 1}
                       </span>
                       <div className="flex-1 min-w-0">
@@ -860,7 +860,7 @@ export function BookingWizardContent({
                   <button
                     onClick={onRejectProposal}
                     disabled={isPendingProposalAction}
-                    className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-white/5 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                    className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
                   >
                     Decline
                   </button>
@@ -907,7 +907,7 @@ export function BookingWizardContent({
                 </div>
                 <button
                   onClick={onCancelProposal}
-                  className="w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-white/5 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                  className="w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
                 >
                   Cancel Proposal
                 </button>
@@ -1034,14 +1034,14 @@ export function BookingWizardContent({
                       href={proposalMeta.receiptUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="relative block w-full h-32 rounded-[4px] overflow-hidden border border-white/10 group bg-black/40 flex items-center justify-center cursor-pointer"
+                      className="relative block w-full h-32 rounded-[4px] overflow-hidden border border-border group bg-background/80 flex items-center justify-center cursor-pointer"
                     >
                       <img
                         src={proposalMeta.receiptUrl}
                         alt="Deposit Receipt"
                         className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                       />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity">
                         <span className="text-white text-[10px] font-bold uppercase tracking-wider">Tap to View</span>
                       </div>
                     </a>
@@ -1347,7 +1347,7 @@ export function BookingWizardContent({
                     card.base,
                     card.bg,
                     card.interactive,
-                    "flex justify-center items-center gap-2 py-2.5 w-full rounded-[4px] border border-white/5"
+                    "flex justify-center items-center gap-2 py-2.5 w-full rounded-[4px] border border-border"
                   )}
                 >
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
@@ -1499,7 +1499,7 @@ export function BookingWizardContent({
 
           {/* Mystery String Resolver */}
           {isArtist && selectedAppointmentRaw.serviceName && effectiveServices && !effectiveServices.some((s: any) => s.name === selectedAppointmentRaw.serviceName) && (
-            <motion.div variants={fab.animation.item} className="mt-2 pt-2 border-t border-white/5 space-y-2">
+            <motion.div variants={fab.animation.item} className="mt-2 pt-2 border-t border-border space-y-2">
               <div className="flex items-start gap-2 px-2 py-1.5 bg-yellow-500/10 rounded-[4px]">
                 <AlertCircle className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
@@ -1516,7 +1516,7 @@ export function BookingWizardContent({
                 <select
                   value={mysteryMapSelectedServiceId}
                   onChange={e => setMysteryMapSelectedServiceId(e.target.value)}
-                  className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-[4px] px-2 py-2 text-[11px] text-zinc-900 dark:text-foreground w-full outline-none"
+                  className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-border rounded-[4px] px-2 py-2 text-[11px] text-zinc-900 dark:text-foreground w-full outline-none"
                 >
                   <option value="">Select Service to Map...</option>
                   {effectiveServices.map((s: any, idx: number) => (
@@ -1612,7 +1612,7 @@ export function BookingWizardContent({
                   card.base,
                   card.bg,
                   card.interactive,
-                  "flex justify-center items-center gap-2 py-2.5 w-full rounded-[4px] border border-white/5"
+                  "flex justify-center items-center gap-2 py-2.5 w-full rounded-[4px] border border-border"
                 )}
               >
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
@@ -1967,9 +1967,9 @@ export function BookingWizardContent({
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center py-2 border-y border-white/5">
+                  <div className="flex justify-between items-center py-2 border-y border-border">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full bg-secondary/50 flex items-center justify-center">
                         <Repeat className="w-3 h-3 text-muted-foreground" />
                       </div>
                       <span className="text-[10px] font-semibold text-foreground uppercase tracking-wider">
@@ -2088,7 +2088,7 @@ export function BookingWizardContent({
                             </p>
                           </div>
 
-                          <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 mt-4 space-y-4 shadow-xl">
+                          <div className="w-full bg-secondary/50 border border-border rounded-2xl p-5 mt-4 space-y-4 shadow-xl">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                                 <CalendarDays className="w-4 h-4 text-primary" />
@@ -2104,7 +2104,7 @@ export function BookingWizardContent({
 
                             {/* Fallback for MessageSquare since it might not be imported */}
                             {false && (
-                              <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+                              <div className="flex items-center gap-3 pt-4 border-t border-border">
                                 <div className="text-left">
                                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Contact</p>
                                 </div>
@@ -2149,7 +2149,7 @@ export function BookingWizardContent({
                     </div>
                     <button
                       onClick={onClose}
-                      className="mt-2 w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider bg-white/5 text-foreground hover:bg-white/10"
+                      className="mt-2 w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider bg-secondary/50 text-foreground hover:bg-secondary/50"
                     >
                       Dismiss
                     </button>

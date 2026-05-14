@@ -84,7 +84,7 @@ function PolicyDropdown({
         : "Contact the artist for deposit requirements.";
 
   return (
-    <div className="rounded-[4px] border border-white/5 overflow-hidden">
+    <div className="rounded-[4px] border border-border overflow-hidden">
       <button
         type="button"
         className="flex items-center justify-between w-full px-2.5 py-2 text-[10px] font-semibold text-foreground/80 hover:bg-white/[0.02] transition-colors"
@@ -513,7 +513,7 @@ export function BookingFABMenu({
                       "flex items-center gap-2 p-1.5 rounded-[4px]"
                     )}
                   >
-                    <span className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
+                    <span className="w-4 h-4 rounded-full bg-secondary/50 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
                       {i + 1}
                     </span>
                     <div className="flex-1 min-w-0">
@@ -579,7 +579,7 @@ export function BookingFABMenu({
                   <button
                     onClick={onRejectProposal}
                     disabled={isPendingProposalAction}
-                    className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-white/5 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                    className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
                   >
                     Decline
                   </button>
@@ -625,7 +625,7 @@ export function BookingFABMenu({
                 </div>
                 <button
                   onClick={onCancelProposal}
-                  className="w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-white/5 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                  className="w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
                 >
                   Cancel Proposal
                 </button>

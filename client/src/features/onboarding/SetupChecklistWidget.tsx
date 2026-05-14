@@ -100,8 +100,8 @@ export function SetupChecklistWidget() {
     };
 
     return (
-        <div className="dashboard-setup-widget w-full rounded-2xl bg-card border border-white/10 shadow-xl overflow-hidden mb-6 relative">
-            <div className="p-5 border-b border-white/5 relative bg-black/20">
+        <div className="dashboard-setup-widget w-full rounded-2xl bg-card border border-border shadow-xl overflow-hidden mb-6 relative">
+            <div className="p-5 border-b border-border relative bg-background/80">
                 <div className="flex justify-between items-start mb-4">
                     <div>
                         <h3 className="text-lg font-bold text-foreground tracking-tight">Studio Setup Checklist</h3>
@@ -113,7 +113,7 @@ export function SetupChecklistWidget() {
                 </div>
 
                 {/* Progress Bar */}
-                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-secondary/50 rounded-full overflow-hidden">
                     <motion.div
                         className="h-full bg-accent"
                         initial={{ width: 0 }}
@@ -136,7 +136,7 @@ export function SetupChecklistWidget() {
                         >
                             <div className={cn(
                                 "flex items-center justify-center w-8 h-8 rounded-full shrink-0 transition-colors",
-                                task.isComplete ? "text-emerald-500 bg-emerald-500/10" : "text-muted-foreground bg-white/5 group-hover:bg-white/10 group-hover:text-foreground"
+                                task.isComplete ? "text-emerald-500 bg-emerald-500/10" : "text-muted-foreground bg-secondary/50 group-hover:bg-secondary/50 group-hover:text-foreground"
                             )}>
                                 {task.isComplete ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
                             </div>

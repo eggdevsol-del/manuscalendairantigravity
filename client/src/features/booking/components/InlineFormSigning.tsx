@@ -117,7 +117,7 @@ export function InlineFormSigning({
               className={cn(
                 card.base,
                 card.bg,
-                "flex-1 overflow-auto rounded-[4px] p-4 border-white/5"
+                "flex-1 overflow-auto rounded-[4px] p-4 border-border"
               )}
             >
               {activeForm.formType === "medical_release" ? (
@@ -135,7 +135,7 @@ export function InlineFormSigning({
                             className={cn(
                               card.base,
                               card.bg,
-                              "flex flex-col gap-3 p-3 rounded-[4px] border border-white/5"
+                              "flex flex-col gap-3 p-3 rounded-[4px] border border-border"
                             )}
                           >
                             <label className="text-[11px] font-medium leading-normal text-foreground/90">
@@ -153,7 +153,7 @@ export function InlineFormSigning({
                                   "flex-1 py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-widest border transition-all",
                                   checkedItems[itemNumber] === "yes"
                                     ? "bg-orange-500/20 text-orange-500 border-orange-500/50"
-                                    : "bg-transparent text-muted-foreground border-white/10 hover:border-white/20 hover:bg-white/5"
+                                    : "bg-transparent text-muted-foreground border-border hover:border-border hover:bg-secondary/50"
                                 )}
                               >
                                 Yes
@@ -169,7 +169,7 @@ export function InlineFormSigning({
                                   "flex-1 py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-widest border transition-all",
                                   checkedItems[itemNumber] === "no"
                                     ? "bg-emerald-500/20 text-emerald-500 border-emerald-500/50"
-                                    : "bg-transparent text-muted-foreground border-white/10 hover:border-white/20 hover:bg-white/5"
+                                    : "bg-transparent text-muted-foreground border-border hover:border-border hover:bg-secondary/50"
                                 )}
                               >
                                 No
@@ -245,7 +245,7 @@ export function InlineFormSigning({
 
               {user?.savedSignature ? (
                 <div className="w-full space-y-3 flex flex-col items-center">
-                  <div className="bg-white/5 rounded-[4px] border border-white/10 p-4 flex justify-center w-full">
+                  <div className="bg-secondary/50 rounded-[4px] border border-border p-4 flex justify-center w-full">
                     <img
                       src={user.savedSignature}
                       alt="Saved Signature"
@@ -266,11 +266,11 @@ export function InlineFormSigning({
                   </button>
 
                   <div className="relative flex py-1 items-center w-full">
-                    <div className="flex-grow border-t border-white/10"></div>
+                    <div className="flex-grow border-t border-border"></div>
                     <span className="flex-shrink-0 mx-4 text-muted-foreground text-[9px] uppercase tracking-widest font-bold">
                       Or
                     </span>
-                    <div className="flex-grow border-t border-white/10"></div>
+                    <div className="flex-grow border-t border-border"></div>
                   </div>
 
                   <div className="w-full min-h-[140px] flex-1">

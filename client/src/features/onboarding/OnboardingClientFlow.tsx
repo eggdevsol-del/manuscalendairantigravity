@@ -107,10 +107,10 @@ export function OnboardingClientFlow({ onComplete }: OnboardingClientFlowProps) 
                                 />
                             </div>
 
-                            <div className="space-y-1.5 pt-2 border-t border-white/5">
+                            <div className="space-y-1.5 pt-2 border-t border-border">
                                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Instagram Handle (Optional)</Label>
                                 <div className="flex rounded-md overflow-hidden bg-accent/5 focus-within:ring-2 focus-within:ring-primary/50 transition-all border border-input">
-                                    <div className="px-3 py-2 bg-black/40 text-muted-foreground text-sm border-r border-input flex items-center shrink-0">
+                                    <div className="px-3 py-2 bg-background/80 text-muted-foreground text-sm border-r border-input flex items-center shrink-0">
                                         @
                                     </div>
                                     <input

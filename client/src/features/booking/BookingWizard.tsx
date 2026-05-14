@@ -195,7 +195,7 @@ export function BookingWizard({
             <p className="text-lg font-bold text-white">
               {selectedService?.name}
             </p>
-            <p className="text-sm text-white/70">
+            <p className="text-sm text-muted-foreground">
               {selectedService?.duration}min • ${selectedService?.price}
             </p>
           </div>
@@ -349,7 +349,7 @@ export function BookingWizard({
         {/* STEP: CUSTOM DATES */}
         {step === "custom_dates" && (
           <div className="space-y-6 flex flex-col items-center">
-            <Card className="p-4 w-full flex justify-center border-0 bg-white/5">
+            <Card className="p-4 w-full flex justify-center border-0 bg-secondary/50">
               <CalendarPicker
                 mode="multiple"
                 selected={customDates}
@@ -413,7 +413,7 @@ export function BookingWizard({
                         ${availability.totalCost}
                       </span>
                     </div>
-                    <div className="h-8 w-px bg-white/10 mx-4" />
+                    <div className="h-8 w-px bg-secondary/50 mx-4" />
                     <div className="flex flex-col">
                       <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
                         Sittings
@@ -424,7 +424,7 @@ export function BookingWizard({
                           : selectedService?.sittings || 1}
                       </span>
                     </div>
-                    <div className="h-8 w-px bg-white/10 mx-4" />
+                    <div className="h-8 w-px bg-secondary/50 mx-4" />
                     <div className="flex flex-col">
                       <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
                         Duration
@@ -437,7 +437,7 @@ export function BookingWizard({
                 </div>
 
                 {frequency === "single" ? (
-                  <Card className="bg-white/5 border-0 rounded-2xl overflow-hidden p-4">
+                  <Card className="bg-secondary/50 border-0 rounded-2xl overflow-hidden p-4">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                         SELECTED DATES
@@ -451,7 +451,7 @@ export function BookingWizard({
                         .sort((a, b) => a.getTime() - b.getTime())
                         .map((dateValue: Date, i: number) => (
                           <div key={i} className="flex items-center gap-4">
-                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-muted-foreground font-bold text-xs">
+                            <div className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center text-muted-foreground font-bold text-xs">
                               {i + 1}
                             </div>
                             <div className="flex-1">
@@ -470,7 +470,7 @@ export function BookingWizard({
                     </div>
                   </Card>
                 ) : (
-                  <Card className="bg-white/5 border-0 rounded-2xl overflow-hidden p-4">
+                  <Card className="bg-secondary/50 border-0 rounded-2xl overflow-hidden p-4">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                         PROPOSED SCHEDULE
@@ -483,7 +483,7 @@ export function BookingWizard({
                       {availability.dates.map(
                         (date: string | Date, i: number) => (
                           <div key={i} className="flex items-center gap-4">
-                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-muted-foreground font-bold text-xs">
+                            <div className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center text-muted-foreground font-bold text-xs">
                               {i + 1}
                             </div>
                             <div className="flex-1">
