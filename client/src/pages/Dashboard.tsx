@@ -200,7 +200,7 @@ export default function Dashboard() {
   const getCurrentTasks = (): ExtendedTask[] => {
     if (activeCategory === "business") {
       // Use server-generated business tasks
-      return businessTasks.map(
+      return (businessTasks || []).map(
         task =>
           ({
             id: task.id,
@@ -215,8 +215,8 @@ export default function Dashboard() {
       );
     }
     // Use legacy tasks for personal
-    const tasks = legacyTasks[activeCategory as "personal"] || [];
-    return tasks.map(transformLegacyTask);
+    const tasks = legacyTasks?.[activeCategory as "personal"] || [];
+    return (tasks || []).map(transformLegacyTask);
   };
 
   const currentTasks = getCurrentTasks();
@@ -446,8 +446,8 @@ export default function Dashboard() {
                         <OrdersTab />
                       ) : activeCategory === "business" && businessLoading ? (
                         <LoadingState />
-                      ) : currentTasks.length > 0 ? (
-                        currentTasks.map(task => (
+                      ) : (currentTasks || []).length > 0 ? (
+                        (currentTasks || []).map(task => (
                           <TaskCard
                             key={task.id}
                             title={task.title}
@@ -499,7 +499,7 @@ export default function Dashboard() {
         contextSubtitle="Commit to a new personal growth goal."
       >
         <div className="space-y-3">
-          {CHALLENGE_TEMPLATES.map((template: ChallengeTemplate) => (
+          {(CHALLENGE_TEMPLATES || []).map((template: ChallengeTemplate) => (
             <Card
               key={template.id}
               onClick={() => {
