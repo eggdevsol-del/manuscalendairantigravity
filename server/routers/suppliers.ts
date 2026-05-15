@@ -38,7 +38,17 @@ export const suppliersRouter = router({
           throw new Error("Could not fetch products. Make sure this is a valid Shopify store.");
         }
 
-        const data = await response.json();
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("The store URL did not return valid JSON data. Please ensure the URL points to a standard Shopify storefront.");
+        }
+
+        let data;
+        try {
+          data = await response.json();
+        } catch (e) {
+          throw new Error("Failed to parse store data. The URL might not be a standard Shopify store.");
+        }
         
         if (!data || !data.products || !Array.isArray(data.products)) {
           throw new Error("Invalid response format. Not a recognized Shopify catalog.");
