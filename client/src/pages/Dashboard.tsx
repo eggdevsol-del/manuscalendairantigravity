@@ -61,6 +61,7 @@ import { type FABMenuItem } from "@/ui/FABMenu";
 import { DashboardFABActions } from "@/features/dashboard/DashboardActions";
 import { PayoutWidgetContainer } from "@/features/payouts/PayoutWidgetContainer";
 import { OrdersTab } from "@/features/dashboard/OrdersTab";
+import { ContactsTab } from "@/features/dashboard/ContactsTab";
 
 // SSOT Components
 
@@ -128,7 +129,7 @@ function LoadingState() {
   );
 }
 
-const TITLES = ["Business", "Orders", "Personal"];
+const TITLES = ["Business", "Orders", "Contacts"];
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -182,7 +183,7 @@ export default function Dashboard() {
   const activeCategory = TITLES[activeIndex].toLowerCase() as
     | "business"
     | "orders"
-    | "personal";
+    | "contacts";
 
   // Transform legacy task to ExtendedTask
   const transformLegacyTask = (task: DashboardTask): ExtendedTask => ({
@@ -214,8 +215,11 @@ export default function Dashboard() {
           }) as ExtendedTask
       );
     }
-    // Use legacy tasks for personal
-    const tasks = legacyTasks?.[activeCategory as "personal"] || [];
+    if (activeCategory === "contacts" || activeCategory === "orders") {
+      return [];
+    }
+    // Use legacy tasks for personal (if any remaining)
+    const tasks = legacyTasks?.["personal"] || [];
     return (tasks || []).map(transformLegacyTask);
   };
 
@@ -358,17 +362,29 @@ export default function Dashboard() {
       <PageHeader title="Home" />
 
       {/* 2. Top Context Area (Date) */}
-      <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
+      <motion.div 
+        animate={{
+          height: activeCategory === "contacts" ? "8vh" : "20vh",
+          opacity: activeCategory === "contacts" ? 0.3 : 0.8,
+          scale: activeCategory === "contacts" ? 0.95 : 1,
+          transformOrigin: "left center"
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="px-6 pt-4 z-10 shrink-0 flex flex-col justify-center"
+      >
         <p className="text-4xl font-light text-foreground/90 tracking-tight">
           {selectedDate.toLocaleDateString("en-US", { weekday: "long" })}
         </p>
-        <p className="text-muted-foreground text-lg font-medium mt-1">
+        <motion.p 
+          animate={{ height: activeCategory === "contacts" ? 0 : "auto", opacity: activeCategory === "contacts" ? 0 : 1 }}
+          className="text-muted-foreground text-lg font-medium mt-1 overflow-hidden"
+        >
           {selectedDate.toLocaleDateString("en-US", {
             month: "long",
             day: "numeric",
           })}
-        </p>
-      </div>
+        </motion.p>
+      </motion.div>
 
       {/* 3. Sheet Container (Matched to Calendar.tsx) */}
       <div className={cn(tokens.contentContainer.base, "relative")}>
@@ -395,7 +411,18 @@ export default function Dashboard() {
           <div className="px-6 w-full -mt-2 z-10 relative space-y-4">
             <SetupChecklistWidget />
             {user?.role === "artist" || user?.role === "admin" ? (
-              <PayoutWidgetContainer period="30d" />
+              <motion.div
+                animate={{
+                  height: activeCategory === "contacts" ? 0 : "auto",
+                  opacity: activeCategory === "contacts" ? 0 : 1,
+                  scale: activeCategory === "contacts" ? 0.95 : 1,
+                  marginBottom: activeCategory === "contacts" ? -16 : 0
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="overflow-hidden"
+              >
+                <PayoutWidgetContainer period="30d" />
+              </motion.div>
             ) : null}
           </div>
 
@@ -444,7 +471,9 @@ export default function Dashboard() {
                   >
                     <div className="space-y-1 pb-32 max-w-lg mx-auto">
                       {/* Render Content Based on Active Category */}
-                      {activeCategory === "orders" ? (
+                      {activeCategory === "contacts" ? (
+                        <ContactsTab />
+                      ) : activeCategory === "orders" ? (
                         <OrdersTab />
                       ) : activeCategory === "business" && businessLoading ? (
                         <LoadingState />
@@ -464,7 +493,7 @@ export default function Dashboard() {
                         <EmptyState
                           category={TITLES[activeIndex]}
                           onAction={
-                            activeCategory === "personal"
+                            activeCategory === "contacts"
                               ? () => setShowChallengeSheet(true)
                               : undefined
                           }
