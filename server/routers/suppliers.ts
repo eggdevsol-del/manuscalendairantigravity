@@ -9,20 +9,25 @@ export const suppliersRouter = router({
    * Scrapes a Shopify store and adds its products to the suppliers directory.
    */
   scrapeShopifyStore: protectedProcedure
-    .input(z.object({ storeUrl: z.string().url() }))
+    .input(z.object({ storeUrl: z.string().min(1, "Store URL is required") }))
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
 
-      // Normalize URL (remove trailing slash)
+      // Clean up the URL input robustly
       let baseUrl = input.storeUrl.trim();
-      if (baseUrl.endsWith('/')) {
-        baseUrl = baseUrl.slice(0, -1);
-      }
-
-      // Add protocol if missing
+      
+      // Add protocol if missing so URL constructor doesn't fail
       if (!baseUrl.startsWith('http')) {
         baseUrl = `https://${baseUrl}`;
+      }
+
+      try {
+        // Extract just the origin/hostname, ignoring any paths like /products.json they might have pasted
+        const urlObj = new URL(baseUrl);
+        baseUrl = urlObj.origin;
+      } catch (e) {
+        throw new Error("Invalid URL format provided.");
       }
 
       const productsUrl = `${baseUrl}/products.json`;
