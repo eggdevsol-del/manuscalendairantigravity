@@ -8,11 +8,21 @@ interface StorefrontProductCardProps {
 }
 
 export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
-  const { items, addItem, removeItem } = useCart();
+  const { items, addItem, removeItem, updateQuantity } = useCart();
   const [isExpanded, setIsExpanded] = useState(false);
   
-  const inCart = items.find(i => i.productId === product.id)?.quantity || 0;
-  const isMaxed = inCart >= product.inventoryCount;
+  const hasVariants = product.variants && product.variants.length > 0;
+  const [selectedVariantId, setSelectedVariantId] = useState<number | null>(
+    hasVariants ? product.variants[0].id : null
+  );
+
+  const activeVariant = hasVariants ? product.variants.find((v: any) => v.id === selectedVariantId) : null;
+  const displayPrice = activeVariant ? activeVariant.priceCents : product.priceCents;
+  const displayInventory = activeVariant ? activeVariant.inventoryCount : product.inventoryCount;
+
+  const cartItemId = `${product.id}-${selectedVariantId || 'base'}`;
+  const inCart = items.find(i => i.cartItemId === cartItemId)?.quantity || 0;
+  const isMaxed = inCart >= displayInventory;
 
   return (
     <motion.div
@@ -47,7 +57,7 @@ export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
       <div className="p-5 flex flex-col flex-1">
         <h3 className="text-lg font-bold mb-1 truncate h-[28px]">{product.title}</h3>
         
-        <div className="relative h-[64px] mb-4 flex flex-col justify-start">
+        <div className="relative h-[64px] flex flex-col justify-start">
           <p className="text-muted-foreground text-sm line-clamp-2 leading-relaxed">
             {product.description}
           </p>
@@ -61,39 +71,42 @@ export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
           )}
         </div>
         
+        {hasVariants && (
+          <div className="mt-3">
+            <select
+              value={selectedVariantId || ''}
+              onChange={(e) => setSelectedVariantId(Number(e.target.value))}
+              className="w-full bg-background border border-border text-foreground text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              {product.variants.map((v: any) => (
+                <option key={v.id} value={v.id}>
+                  {v.name} - ${(v.priceCents / 100).toFixed(2)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        
         <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
           <span className="text-xl font-bold tracking-tight">
-            ${(product.priceCents / 100).toFixed(2)}
+            ${(displayPrice / 100).toFixed(2)}
           </span>
           
-          {product.inventoryCount <= 0 ? (
+          {displayInventory <= 0 ? (
             <span className="text-red-400 font-semibold text-sm bg-red-500/10 px-4 py-2 rounded-full">
               Sold Out
             </span>
           ) : inCart > 0 ? (
             <div className="flex items-center gap-3 bg-secondary/50 rounded-full p-1 border border-border">
               <button
-                onClick={() => removeItem(product.id)}
+                onClick={() => removeItem(cartItemId)}
                 className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center hover:bg-secondary/50 transition-colors"
               >
                 <Minus className="w-4 h-4 text-white" />
               </button>
               <span className="font-bold w-4 text-center">{inCart}</span>
               <button
-                onClick={() => {
-                  if (!isMaxed) {
-                    addItem({
-                      productId: product.id,
-                      title: product.title,
-                      priceCents: product.priceCents,
-                      shippingCents: product.shippingCents || 0,
-                      imageUrl: product.imageUrl,
-                      fulfillmentType: product.fulfillmentType,
-                      maxInventory: product.inventoryCount,
-                      artistId: product.artistId
-                    });
-                  }
-                }}
+                onClick={() => updateQuantity(cartItemId, 1)}
                 disabled={isMaxed}
                 className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center hover:bg-indigo-400 transition-colors disabled:opacity-50 disabled:hover:bg-indigo-500"
               >
@@ -105,16 +118,19 @@ export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
               onClick={() => {
                 addItem({
                   productId: product.id,
+                  variantId: activeVariant?.id,
+                  variantName: activeVariant?.name,
                   title: product.title,
-                  priceCents: product.priceCents,
+                  priceCents: displayPrice,
                   shippingCents: product.shippingCents || 0,
                   imageUrl: product.imageUrl,
                   fulfillmentType: product.fulfillmentType,
-                  maxInventory: product.inventoryCount,
+                  maxInventory: displayInventory,
                   artistId: product.artistId
                 });
               }}
-              className="flex items-center gap-2 bg-foreground text-background px-5 py-2.5 rounded-full font-bold hover:bg-secondary/50 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)]"
+              disabled={displayInventory <= 0}
+              className="flex items-center gap-2 bg-foreground text-background px-5 py-2.5 rounded-full font-bold hover:bg-secondary/50 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)] disabled:opacity-50"
             >
               <ShoppingCart className="w-4 h-4" />
               Add

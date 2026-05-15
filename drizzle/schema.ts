@@ -1996,6 +1996,7 @@ export const orderItems = mysqlTable("orderItems", {
 
 export const productsRelations = relations(products, ({ many }) => ({
   orderItems: many(orderItems),
+  variants: many(productVariants),
 }));
 
 export const seminarsRelations = relations(seminars, ({ many }) => ({
@@ -2030,6 +2031,81 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
     references: [seminars.id],
   }),
 }));
+
+export const productVariants = mysqlTable('productVariants', {
+  id: int().autoincrement().primaryKey(),
+  productId: int().notNull().references(() => products.id, { onDelete: 'cascade' }),
+  name: varchar({ length: 255 }).notNull(),
+  priceCents: int().notNull(),
+  inventoryCount: int().default(0).notNull(),
+  sku: varchar({ length: 100 }),
+});
+
+export const productVariantsRelations = relations(productVariants, ({ one }) => ({
+  product: one(products, {
+    fields: [productVariants.productId],
+    references: [products.id],
+  }),
+}));
+
+export const suppliers = mysqlTable('suppliers', {
+  id: int().autoincrement().primaryKey(),
+  name: varchar({ length: 255 }).notNull(),
+  websiteUrl: text(),
+  logoUrl: text(),
+  contactEmail: varchar({ length: 255 }),
+  createdAt: timestamp().notNull().defaultNow(),
+});
+
+export const supplierProducts = mysqlTable('supplierProducts', {
+  id: int().autoincrement().primaryKey(),
+  supplierId: int().notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
+  title: varchar({ length: 255 }).notNull(),
+  description: text(),
+  priceCents: int(),
+  imageUrl: text(),
+  shopifyProductId: varchar({ length: 255 }),
+  category: varchar({ length: 255 }),
+  createdAt: timestamp().notNull().defaultNow(),
+});
+
+export const supplierProductVariants = mysqlTable('supplierProductVariants', {
+  id: int().autoincrement().primaryKey(),
+  supplierProductId: int().notNull().references(() => supplierProducts.id, { onDelete: 'cascade' }),
+  title: varchar({ length: 255 }).notNull(),
+  priceCents: int().notNull(),
+  sku: varchar({ length: 100 }),
+  inventoryCount: int().default(0).notNull(),
+  shopifyVariantId: varchar({ length: 255 }),
+});
+
+export const suppliersRelations = relations(suppliers, ({ many }) => ({
+  products: many(supplierProducts),
+}));
+
+export const supplierProductsRelations = relations(supplierProducts, ({ one, many }) => ({
+  supplier: one(suppliers, {
+    fields: [supplierProducts.supplierId],
+    references: [suppliers.id],
+  }),
+  variants: many(supplierProductVariants),
+}));
+
+export const supplierProductVariantsRelations = relations(supplierProductVariants, ({ one }) => ({
+  product: one(supplierProducts, {
+    fields: [supplierProductVariants.supplierProductId],
+    references: [supplierProducts.id],
+  }),
+}));
+
+export type InsertProductVariant = InferInsertModel<typeof productVariants>;
+export type SelectProductVariant = InferSelectModel<typeof productVariants>;
+export type InsertSupplier = InferInsertModel<typeof suppliers>;
+export type SelectSupplier = InferSelectModel<typeof suppliers>;
+export type InsertSupplierProduct = InferInsertModel<typeof supplierProducts>;
+export type SelectSupplierProduct = InferSelectModel<typeof supplierProducts>;
+export type InsertSupplierProductVariant = InferInsertModel<typeof supplierProductVariants>;
+export type SelectSupplierProductVariant = InferSelectModel<typeof supplierProductVariants>;
 
 export type InsertProduct = InferInsertModel<typeof products>;
 export type SelectProduct = InferSelectModel<typeof products>;

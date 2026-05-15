@@ -19,6 +19,7 @@ export const storefrontRouter = router({
         eq(schema.products.artistId, ctx.user.id),
         eq(schema.products.isActive, 1)
       ),
+      with: { variants: true },
       orderBy: [desc(schema.products.createdAt)],
     });
   }),
@@ -143,6 +144,7 @@ export const storefrontRouter = router({
           eq(schema.products.artistId, artistId),
           eq(schema.products.isActive, 1)
         ),
+        with: { variants: true },
       });
 
       const seminars = await db.query.seminars.findMany({
@@ -187,6 +189,7 @@ export const storefrontRouter = router({
           eq(schema.products.artistId, input.artistId),
           eq(schema.products.isActive, 1)
         ),
+        with: { variants: true },
       });
 
       // Fetch active seminars
@@ -219,6 +222,7 @@ export const storefrontRouter = router({
         items: z.array(
           z.object({
             productId: z.number(),
+            variantId: z.number().optional(),
             quantity: z.number().min(1),
           })
         ).min(1),
@@ -233,6 +237,7 @@ export const storefrontRouter = router({
       const productIds = input.items.map(i => i.productId);
       const products = await db.query.products.findMany({
         where: (products, { inArray }) => inArray(products.id, productIds),
+        with: { variants: true },
       });
 
       if (products.length !== input.items.length) {
@@ -245,16 +250,23 @@ export const storefrontRouter = router({
       
       const enrichedItems = input.items.map(item => {
         const product = products.find(p => p.id === item.productId)!;
+        const variant = item.variantId 
+          ? product.variants.find(v => v.id === item.variantId) 
+          : null;
         
         if (product.artistId !== artistId) {
           throw new Error("Cannot checkout items from multiple artists at once.");
         }
         
-        if (!product.isActive || product.inventoryCount < item.quantity) {
+        const checkInventory = variant ? variant.inventoryCount : product.inventoryCount;
+        if (!product.isActive || checkInventory < item.quantity) {
           throw new Error(`Product '${product.title}' is unavailable or out of stock.`);
         }
 
-        totalAmountCents += product.priceCents * item.quantity;
+        const priceCents = variant ? variant.priceCents : product.priceCents;
+        const productName = variant ? `${product.title} - ${variant.name}` : product.title;
+
+        totalAmountCents += priceCents * item.quantity;
         
         if (input.fulfillmentMethod === "delivery") {
           totalShippingCents += (product.shippingCents || 0) * item.quantity;
@@ -262,8 +274,9 @@ export const storefrontRouter = router({
 
         return {
           productId: product.id,
-          productName: product.title,
-          priceCents: product.priceCents,
+          variantId: variant?.id,
+          productName: productName,
+          priceCents: priceCents,
           quantity: item.quantity,
         };
       });

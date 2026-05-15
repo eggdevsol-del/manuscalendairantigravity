@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 export interface CartItem {
+  cartItemId: string; // usually `${productId}-${variantId || 'base'}`
   productId: number;
+  variantId?: number;
+  variantName?: string;
   title: string;
   priceCents: number;
   shippingCents: number;
@@ -14,9 +17,9 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (item: Omit<CartItem, "quantity">) => void;
-  removeItem: (productId: number) => void;
-  updateQuantity: (productId: number, delta: number) => void;
+  addItem: (item: Omit<CartItem, "quantity" | "cartItemId">) => void;
+  removeItem: (cartItemId: string) => void;
+  updateQuantity: (cartItemId: string, delta: number) => void;
   clearCart: () => void;
   totalItems: number;
   subtotalCents: number;
@@ -43,7 +46,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("tattoi_cart", JSON.stringify(items));
   }, [items]);
 
-  const addItem = (newItem: Omit<CartItem, "quantity">) => {
+  const addItem = (newItem: Omit<CartItem, "quantity" | "cartItemId">) => {
+    const cartItemId = `${newItem.productId}-${newItem.variantId || 'base'}`;
     setItems((prev) => {
       // If adding from a different artist, we must clear the cart first
       // because our checkout flow assumes single-artist orders
@@ -52,27 +56,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         currentCart = [];
       }
 
-      const existing = currentCart.find((i) => i.productId === newItem.productId);
+      const existing = currentCart.find((i) => i.cartItemId === cartItemId);
       if (existing) {
         return currentCart.map((i) =>
-          i.productId === newItem.productId
+          i.cartItemId === cartItemId
             ? { ...i, quantity: Math.min(i.quantity + 1, i.maxInventory) }
             : i
         );
       }
-      return [...currentCart, { ...newItem, quantity: 1 }];
+      return [...currentCart, { ...newItem, quantity: 1, cartItemId }];
     });
     setIsCartOpen(true);
   };
 
-  const removeItem = (productId: number) => {
-    setItems((prev) => prev.filter((i) => i.productId !== productId));
+  const removeItem = (cartItemId: string) => {
+    setItems((prev) => prev.filter((i) => i.cartItemId !== cartItemId));
   };
 
-  const updateQuantity = (productId: number, delta: number) => {
+  const updateQuantity = (cartItemId: string, delta: number) => {
     setItems((prev) =>
       prev.map((i) => {
-        if (i.productId === productId) {
+        if (i.cartItemId === cartItemId) {
           const newQ = Math.max(0, Math.min(i.quantity + delta, i.maxInventory));
           return { ...i, quantity: newQ };
         }
