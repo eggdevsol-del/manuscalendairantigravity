@@ -103,14 +103,26 @@ export const suppliersRouter = router({
           }
         }
 
-        // Save Supplier
-        const [supplierResult] = await db.insert(schema.suppliers).values({
-          name: storeName,
-          websiteUrl: baseUrl,
-          logoUrl,
+        // Save or Update Supplier
+        const existingSupplier = await db.query.suppliers.findFirst({
+          where: eq(schema.suppliers.websiteUrl, baseUrl)
         });
 
-        const supplierId = supplierResult.insertId;
+        let supplierId;
+
+        if (existingSupplier) {
+          supplierId = existingSupplier.id;
+          await db.update(schema.suppliers).set({ name: storeName, logoUrl }).where(eq(schema.suppliers.id, supplierId));
+          // Clear old products to insert fresh
+          await db.delete(schema.supplierProducts).where(eq(schema.supplierProducts.supplierId, supplierId));
+        } else {
+          const [supplierResult] = await db.insert(schema.suppliers).values({
+            name: storeName,
+            websiteUrl: baseUrl,
+            logoUrl,
+          });
+          supplierId = supplierResult.insertId;
+        }
 
         // Save Products
         const productsToInsert = allProducts.map((p: any) => {
@@ -152,7 +164,7 @@ export const suppliersRouter = router({
                 title: v.title || "Default",
                 priceCents: Math.round(priceVal * 100),
                 sku: v.sku || null,
-                inventoryCount: v.inventory_quantity || 0,
+                inventoryCount: v.inventory_quantity !== undefined ? v.inventory_quantity : (v.available ? 1 : 0),
                 shopifyVariantId: v.id.toString(),
               });
             }
