@@ -271,12 +271,12 @@ export function ContactsTab() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-md flex flex-col justify-end p-4"
+            className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-md flex flex-col justify-center items-center p-4"
           >
             <motion.div 
-              initial={{ y: 300, opacity: 0 }}
+              initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 300, opacity: 0 }}
+              exit={{ y: 50, opacity: 0 }}
               className="bg-card border border-border rounded-[32px] p-6 w-full max-w-md mx-auto relative overflow-hidden"
             >
               <button 
