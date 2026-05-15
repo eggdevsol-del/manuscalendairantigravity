@@ -120,7 +120,7 @@ export function OrdersTab() {
                         <div>
                           <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Items</h4>
                           <div className="space-y-2">
-                            {order.items.map((item: any) => (
+                            {order.items && order.items.map((item: any) => (
                               <div key={item.id} className="flex justify-between items-center text-sm">
                                 <span className="font-medium">{item.quantity}x {item.product?.title || "Deleted Product"}</span>
                                 <span className="text-muted-foreground">${((item.priceAtPurchaseCents * item.quantity) / 100).toFixed(2)}</span>
