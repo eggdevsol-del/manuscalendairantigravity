@@ -68,9 +68,9 @@ export function PaymentRequestCard({ metadata, isArtist, onPress }: PaymentReque
 
         {/* Sitting Date/Time Detail */}
         {metadata.sittingDate && (
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] bg-white/[0.03] border border-white/5">
-            <CalendarDays className="w-3.5 h-3.5 text-white/40 shrink-0" />
-            <span className="text-[11px] text-white/60 font-medium">
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] bg-secondary/50 border border-border">
+            <CalendarDays className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            <span className="text-[11px] text-muted-foreground font-medium">
               {metadata.sittingDate}
               {metadata.sittingTime ? ` · ${metadata.sittingTime}` : ""}
             </span>
@@ -81,7 +81,7 @@ export function PaymentRequestCard({ metadata, isArtist, onPress }: PaymentReque
         <div
           className={cn(
             card.base,
-            "flex items-center justify-center gap-3 rounded-[4px] bg-white/[0.03] py-3"
+            "flex items-center justify-center gap-3 rounded-[4px] bg-secondary/50 py-3"
           )}
         >
           <DollarSign className="w-5 h-5 text-emerald-500" />

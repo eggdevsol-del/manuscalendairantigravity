@@ -122,7 +122,7 @@ export default function ImageUploadSheet({
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
         onClick={onClose}
       />
 
@@ -160,7 +160,7 @@ export default function ImageUploadSheet({
               onDragOver={handleDrag}
               onDrop={handleDrop}
               className={`relative border-2 border-dashed rounded-[4px] p-8 text-center transition-colors mb-6 ${dragActive
-                  ? "border-foreground bg-white/10"
+                  ? "border-foreground bg-secondary/50"
                   : "border-border hover:border-foreground/30"
                 }`}
             >
@@ -185,7 +185,7 @@ export default function ImageUploadSheet({
                   <button
                     type="button"
                     onClick={openCamera}
-                    className="flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-[4px] text-sm font-medium hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-[4px] text-sm font-medium hover:bg-secondary/50 transition-colors"
                   >
                     <Camera className="w-4 h-4" />
                     Take Photo
@@ -246,7 +246,7 @@ export default function ImageUploadSheet({
 
                     {/* Loading overlay */}
                     {image.uploading && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
                         <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       </div>
                     )}
@@ -264,7 +264,7 @@ export default function ImageUploadSheet({
                     <button
                       type="button"
                       onClick={() => removeImage(image.id)}
-                      className="absolute top-1 right-1 p-1.5 bg-black/60 rounded-full text-white hover:bg-black/80 transition-colors"
+                      className="absolute top-1 right-1 p-1.5 bg-background/80 rounded-full text-white hover:bg-background/80 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

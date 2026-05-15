@@ -27,22 +27,22 @@ export function VoucherCarousel({ vouchers }: VoucherCarouselProps) {
                   <h3 className="font-bold text-lg">
                     {voucher.template?.name}
                   </h3>
-                  <p className="text-white/70 text-xs">
+                  <p className="text-muted-foreground text-xs">
                     From {voucher.artist?.name}
                   </p>
                 </div>
-                <Ticket className="text-white/20 w-8 h-8" />
+                <Ticket className="text-muted-foreground w-8 h-8" />
               </div>
               <div className="flex justify-between items-end">
                 <div>
-                  <p className="text-[10px] text-white/50 uppercase tracking-wider">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                     Value
                   </p>
                   <p className="text-xl font-bold">
                     ${(voucher.template?.value / 100).toFixed(2)}
                   </p>
                 </div>
-                <div className="bg-white/20 px-2 py-1 rounded text-xs font-mono tracking-widest">
+                <div className="bg-secondary/50 px-2 py-1 rounded text-xs font-mono tracking-widest">
                   {voucher.code}
                 </div>
               </div>

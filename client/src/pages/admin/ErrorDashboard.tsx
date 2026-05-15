@@ -75,12 +75,12 @@ export default function ErrorDashboard() {
     return (
         <div className="min-h-screen bg-background text-foreground">
             {/* Header */}
-            <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-white/5">
+            <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
                 <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setLocation("/dashboard")}
-                            className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                            className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
                         >
                             <ChevronLeft className="w-5 h-5" />
                         </button>
@@ -106,7 +106,7 @@ export default function ErrorDashboard() {
                         <button
                             onClick={() => purgeOldMutation.mutate()}
                             disabled={purgeOldMutation.isPending}
-                            className="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-muted-foreground hover:bg-white/10 transition-colors"
+                            className="text-xs px-3 py-1.5 rounded-lg bg-secondary/50 text-muted-foreground hover:bg-secondary/50 transition-colors"
                         >
                             Purge 30d+
                         </button>
@@ -126,7 +126,7 @@ export default function ErrorDashboard() {
                                 "text-xs px-3 py-1.5 rounded-full transition-colors capitalize",
                                 filter === f
                                     ? "bg-primary/20 text-primary font-semibold"
-                                    : "bg-white/5 text-muted-foreground hover:bg-white/10"
+                                    : "bg-secondary/50 text-muted-foreground hover:bg-secondary/50"
                             )}
                         >
                             <Filter className="w-3 h-3 inline mr-1" />
@@ -165,7 +165,7 @@ export default function ErrorDashboard() {
                                 onClick={() =>
                                     setExpandedId(expandedId === err.id ? null : err.id)
                                 }
-                                className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-white/5 transition-colors"
+                                className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-secondary/50 transition-colors"
                             >
                                 <AlertCircle
                                     className={cn(
@@ -183,7 +183,7 @@ export default function ErrorDashboard() {
                                             {formatTime(err.createdAt)}
                                         </span>
                                         {err.boundary && (
-                                            <span className="px-1.5 py-0.5 rounded bg-white/5">
+                                            <span className="px-1.5 py-0.5 rounded bg-secondary/50">
                                                 {err.boundary}
                                             </span>
                                         )}
@@ -206,7 +206,7 @@ export default function ErrorDashboard() {
 
                             {/* Expanded details */}
                             {expandedId === err.id && (
-                                <div className="px-4 pb-4 space-y-3 border-t border-white/5">
+                                <div className="px-4 pb-4 space-y-3 border-t border-border">
                                     <div className="grid grid-cols-2 gap-2 pt-3 text-xs">
                                         <div>
                                             <span className="text-muted-foreground">URL: </span>
@@ -235,7 +235,7 @@ export default function ErrorDashboard() {
                                             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-1">
                                                 Stack Trace
                                             </p>
-                                            <pre className="text-[11px] text-red-300/80 bg-black/30 rounded-lg p-3 overflow-x-auto max-h-48 whitespace-pre-wrap break-all">
+                                            <pre className="text-[11px] text-red-300/80 bg-background/80 rounded-lg p-3 overflow-x-auto max-h-48 whitespace-pre-wrap break-all">
                                                 {err.stack}
                                             </pre>
                                         </div>
@@ -246,7 +246,7 @@ export default function ErrorDashboard() {
                                             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-1">
                                                 Component Stack
                                             </p>
-                                            <pre className="text-[11px] text-amber-300/80 bg-black/30 rounded-lg p-3 overflow-x-auto max-h-32 whitespace-pre-wrap break-all">
+                                            <pre className="text-[11px] text-amber-300/80 bg-background/80 rounded-lg p-3 overflow-x-auto max-h-32 whitespace-pre-wrap break-all">
                                                 {err.componentStack}
                                             </pre>
                                         </div>
@@ -274,7 +274,7 @@ export default function ErrorDashboard() {
                         <button
                             onClick={() => setPage(Math.max(0, page - 1))}
                             disabled={page === 0}
-                            className="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-muted-foreground hover:bg-white/10 disabled:opacity-40 transition-colors"
+                            className="text-xs px-3 py-1.5 rounded-lg bg-secondary/50 text-muted-foreground hover:bg-secondary/50 disabled:opacity-40 transition-colors"
                         >
                             ← Prev
                         </button>
@@ -284,7 +284,7 @@ export default function ErrorDashboard() {
                         <button
                             onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
                             disabled={page >= totalPages - 1}
-                            className="text-xs px-3 py-1.5 rounded-lg bg-white/5 text-muted-foreground hover:bg-white/10 disabled:opacity-40 transition-colors"
+                            className="text-xs px-3 py-1.5 rounded-lg bg-secondary/50 text-muted-foreground hover:bg-secondary/50 disabled:opacity-40 transition-colors"
                         >
                             Next →
                         </button>

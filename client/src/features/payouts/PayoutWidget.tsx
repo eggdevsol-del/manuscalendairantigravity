@@ -180,7 +180,7 @@ export function PayoutWidget({
 
             {/* Balance Summary */}
             <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white/5 rounded-xl p-4">
+                <div className="bg-secondary/50 rounded-xl p-4">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-1">
                         Available for Withdrawal
                     </p>
@@ -188,7 +188,7 @@ export function PayoutWidget({
                         {formatCents(availableAmountCents ?? 0)}
                     </p>
                 </div>
-                <div className="bg-white/5 rounded-xl p-4">
+                <div className="bg-secondary/50 rounded-xl p-4">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-1">
                         Pending
                     </p>
@@ -208,7 +208,7 @@ export function PayoutWidget({
                         transition={{ duration: 0.25, ease: "easeInOut" }}
                         className="overflow-hidden"
                     >
-                        <div className="border-t border-white/5 pt-3">
+                        <div className="border-t border-border pt-3">
                             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">
                                 Recent Transactions
                             </p>
@@ -229,14 +229,14 @@ export function PayoutWidget({
                             )}
 
                             {!isLoadingTransactions && transactions && transactions.length > 0 && (
-                                <div className="max-h-[240px] overflow-y-auto no-scrollbar divide-y divide-white/5 rounded-lg bg-white/[0.02]">
+                                <div className="max-h-[240px] overflow-y-auto no-scrollbar divide-y divide-white/5 rounded-lg bg-secondary/50">
                                     {transactions.map((entry) => {
                                         const isIncome =
                                             ["deposit", "balance", "store_order"].includes(entry.type);
                                         return (
                                             <div
                                                 key={entry.id}
-                                                className="flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors"
+                                                className="flex items-center justify-between px-3 py-2.5 hover:bg-secondary/50 transition-colors"
                                             >
                                                 <div className="flex items-center gap-2.5">
                                                     <div

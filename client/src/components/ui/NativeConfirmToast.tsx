@@ -47,7 +47,7 @@ export function NativeConfirmToast({
                 <>
                     {/* Backdrop — subtle, dismissible */}
                     <motion.div
-                        className="fixed inset-0 z-[9998] bg-black/20"
+                        className="fixed inset-0 z-[9998] bg-background/80"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -72,7 +72,7 @@ export function NativeConfirmToast({
                             className={cn(
                                 "rounded-[22px] overflow-hidden",
                                 "bg-[#1c1c1e]/90 backdrop-blur-2xl",
-                                "border border-white/[0.08]",
+                                "border border-border",
                                 "shadow-[0_8px_40px_rgba(0,0,0,0.55)]"
                             )}
                         >
@@ -84,10 +84,10 @@ export function NativeConfirmToast({
                                         T
                                     </span>
                                 </div>
-                                <span className="text-[12px] font-semibold text-white/50 uppercase tracking-wide leading-none">
+                                <span className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide leading-none">
                                     tattoi
                                 </span>
-                                <span className="text-[11px] text-white/30 ml-auto leading-none">
+                                <span className="text-[11px] text-muted-foreground ml-auto leading-none">
                                     now
                                 </span>
                             </div>
@@ -97,13 +97,13 @@ export function NativeConfirmToast({
                                 <p className="text-[15px] font-semibold text-white leading-snug">
                                     {title}
                                 </p>
-                                <p className="text-[13px] text-white/60 leading-snug mt-0.5">
+                                <p className="text-[13px] text-muted-foreground leading-snug mt-0.5">
                                     {body}
                                 </p>
                             </div>
 
                             {/* Divider */}
-                            <div className="h-px bg-white/[0.08]" />
+                            <div className="h-px bg-secondary/50" />
 
                             {/* Action buttons — stacked, full-width like iOS notification actions */}
                             <div className="flex">
@@ -112,21 +112,21 @@ export function NativeConfirmToast({
                                     disabled={isPending}
                                     className={cn(
                                         "flex-1 py-3 text-[15px] font-normal text-[#0a84ff] transition-colors",
-                                        "active:bg-white/[0.06]",
+                                        "active:bg-secondary/50",
                                         "disabled:opacity-40"
                                     )}
                                 >
                                     {cancelLabel}
                                 </button>
 
-                                <div className="w-px bg-white/[0.08]" />
+                                <div className="w-px bg-secondary/50" />
 
                                 <button
                                     onClick={onConfirm}
                                     disabled={isPending}
                                     className={cn(
                                         "flex-1 py-3 text-[15px] font-semibold transition-colors",
-                                        "active:bg-white/[0.06]",
+                                        "active:bg-secondary/50",
                                         "disabled:opacity-40",
                                         variant === "destructive"
                                             ? "text-red-500"

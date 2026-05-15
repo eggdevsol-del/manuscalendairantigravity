@@ -32,11 +32,11 @@ export default function ArtistSelectionGrid({
       {artists.map(artist => (
         <Card
           key={artist.id}
-          className="p-4 bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer group"
+          className="p-4 bg-secondary/50 border-border hover:bg-secondary/50 transition-colors cursor-pointer group"
           onClick={() => onSelectArtist(artist.id)}
         >
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-black/40 border border-white/10 overflow-hidden flex items-center justify-center shrink-0">
+            <div className="w-16 h-16 rounded-full bg-background/80 border border-border overflow-hidden flex items-center justify-center shrink-0">
               {artist.avatar ? (
                 <img
                   src={artist.avatar}
@@ -44,7 +44,7 @@ export default function ArtistSelectionGrid({
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                 />
               ) : (
-                <User className="w-8 h-8 text-white/50" />
+                <User className="w-8 h-8 text-muted-foreground" />
               )}
             </div>
             <div>

@@ -134,10 +134,10 @@ export function SubscriptionSettings({ onBack }: SubscriptionSettingsProps) {
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative">
-      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
         <button
           onClick={onBack}
-          className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+          className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
         >
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
@@ -200,7 +200,7 @@ export function SubscriptionSettings({ onBack }: SubscriptionSettingsProps) {
                     "relative rounded-[4px] p-6 border overflow-hidden",
                     plan.isPopular
                       ? "bg-primary/5 border-primary/50"
-                      : "bg-white/5 border-white/5"
+                      : "bg-secondary/50 border-border"
                   )}
                 >
                   {plan.isPopular && (
@@ -227,7 +227,7 @@ export function SubscriptionSettings({ onBack }: SubscriptionSettingsProps) {
                       </p>
                     </div>
                     {isCurrentPlan && (
-                      <span className="bg-white/10 text-white text-xs px-2.5 py-1 rounded-full font-medium shrink-0">
+                      <span className="bg-secondary/50 text-white text-xs px-2.5 py-1 rounded-full font-medium shrink-0">
                         Current Plan
                       </span>
                     )}
@@ -259,7 +259,7 @@ export function SubscriptionSettings({ onBack }: SubscriptionSettingsProps) {
                     className={cn(
                       "w-full h-12 rounded-xl font-bold text-sm tracking-wide gap-2",
                       isCurrentPlan
-                        ? "bg-white/10 text-foreground hover:bg-white/20"
+                        ? "bg-secondary/50 text-foreground hover:bg-secondary/50"
                         : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25"
                     )}
                   >

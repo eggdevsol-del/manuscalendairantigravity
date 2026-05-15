@@ -39,12 +39,12 @@ export function ModalShell({
     <Dialog open={isOpen} onOpenChange={v => !v && onClose()}>
       <DialogContent
         className={cn(
-          "sm:max-w-[480px] max-h-[90vh] flex flex-col p-0 gap-0 border border-white/10 bg-background/95 backdrop-blur-[20px] shadow-2xl rounded-[2.5rem] overflow-hidden text-foreground outline-none",
+          "sm:max-w-[480px] max-h-[90vh] flex flex-col p-0 gap-0 border border-border bg-background/95 backdrop-blur-[20px] shadow-2xl rounded-[2.5rem] overflow-hidden text-foreground outline-none",
           className
         )}
         data-overlay-id={overlayId}
       >
-        <DialogHeader className="p-8 pb-4 shrink-0 border-b border-white/5 space-y-2">
+        <DialogHeader className="p-8 pb-4 shrink-0 border-b border-border space-y-2">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-2xl font-bold tracking-tight text-center flex-1">
               {title}
@@ -72,7 +72,7 @@ export function ModalShell({
         </div>
 
         {footer && (
-          <DialogFooter className="p-8 pt-4 shrink-0 border-t border-white/5">
+          <DialogFooter className="p-8 pt-4 shrink-0 border-t border-border">
             {footer}
           </DialogFooter>
         )}

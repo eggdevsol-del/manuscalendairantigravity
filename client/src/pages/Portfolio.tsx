@@ -83,7 +83,7 @@ export default function Portfolio() {
       {/* 3. Sheet Container */}
       <div className={tokens.contentContainer.base}>
         {/* Optional Sheet Header / Actions Area */}
-        <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5 flex justify-end">
+        <div className="shrink-0 pt-6 pb-2 px-6 border-b border-border flex justify-end">
           {isArtist && (
             <Button
               size="sm"
@@ -109,7 +109,7 @@ export default function Portfolio() {
                   alt={item.description || "Portfolio item"}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                   {isArtist ? (
                     <Button
                       size="icon"
@@ -122,7 +122,7 @@ export default function Portfolio() {
                     <Button
                       size="icon"
                       variant="ghost"
-                      className={`rounded-full h-9 w-9 bg-white/10 hover:bg-white/20 ${item.isLiked ? "text-red-500" : "text-white"}`}
+                      className={`rounded-full h-9 w-9 bg-secondary/50 hover:bg-secondary/50 ${item.isLiked ? "text-red-500" : "text-white"}`}
                     >
                       <Heart
                         className={`w-5 h-5 ${item.isLiked ? "fill-current" : ""}`}
@@ -139,7 +139,7 @@ export default function Portfolio() {
                   <EmptyHeader>
                     <EmptyMedia
                       variant="icon"
-                      className="w-16 h-16 rounded-full bg-white/5"
+                      className="w-16 h-16 rounded-full bg-secondary/50"
                     >
                       <Image className="w-8 h-8" />
                     </EmptyMedia>

@@ -182,12 +182,12 @@ export function BalanceSheet() {
   if (error || !balanceInfo) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1a] flex items-center justify-center p-4">
-        <div className="bg-white/5 rounded-[4px] p-6 text-center max-w-md">
+        <div className="bg-secondary/50 rounded-[4px] p-6 text-center max-w-md">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <h1 className="text-white text-xl font-semibold mb-2">
             Link Invalid
           </h1>
-          <p className="text-white/60">
+          <p className="text-muted-foreground">
             {error || "This balance link is no longer valid."}
           </p>
         </div>
@@ -198,20 +198,20 @@ export function BalanceSheet() {
   if (isComplete) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1a] flex items-center justify-center p-4">
-        <div className="bg-white/5 rounded-[4px] p-6 text-center max-w-md">
+        <div className="bg-secondary/50 rounded-[4px] p-6 text-center max-w-md">
           <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="w-8 h-8 text-green-400" />
           </div>
           <h1 className="text-white text-xl font-semibold mb-2">
             Balance Confirmed!
           </h1>
-          <p className="text-white/60 mb-4">
+          <p className="text-muted-foreground mb-4">
             Your booking with {balanceInfo.artistName} is now confirmed.
           </p>
-          <div className="bg-white/5 rounded-[4px] p-4 text-left">
-            <p className="text-white/60 text-sm">Appointment</p>
+          <div className="bg-secondary/50 rounded-[4px] p-4 text-left">
+            <p className="text-muted-foreground text-sm">Appointment</p>
             <p className="text-white font-medium">{balanceInfo.selectedDate}</p>
-            <p className="text-white/80">{balanceInfo.selectedTime}</p>
+            <p className="text-muted-foreground">{balanceInfo.selectedTime}</p>
           </div>
         </div>
       </div>
@@ -240,35 +240,35 @@ export function BalanceSheet() {
             <h1 className="text-white font-semibold">
               {balanceInfo.artistName}
             </h1>
-            <p className="text-white/60 text-sm">Booking Balance</p>
+            <p className="text-muted-foreground text-sm">Booking Balance</p>
           </div>
         </div>
 
         {/* Booking Summary */}
-        <div className="bg-white/5 rounded-[4px] p-4 mb-6">
+        <div className="bg-secondary/50 rounded-[4px] p-4 mb-6">
           <h2 className="text-white font-medium mb-3">Booking Summary</h2>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-white/60">Client</span>
+              <span className="text-muted-foreground">Client</span>
               <span className="text-white">{balanceInfo.clientName}</span>
             </div>
             {balanceInfo.projectType && (
               <div className="flex justify-between">
-                <span className="text-white/60">Project</span>
+                <span className="text-muted-foreground">Project</span>
                 <span className="text-white">
                   {balanceInfo.projectType.replace(/-/g, " ")}
                 </span>
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-white/60">Date</span>
+              <span className="text-muted-foreground">Date</span>
               <span className="text-white">{balanceInfo.selectedDate}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-white/60">Time</span>
+              <span className="text-muted-foreground">Time</span>
               <span className="text-white">{balanceInfo.selectedTime}</span>
             </div>
-            <div className="border-t border-white/10 pt-2 mt-2">
+            <div className="border-t border-border pt-2 mt-2">
               <div className="flex justify-between">
                 <span className="text-white font-medium">Balance</span>
                 <span className="text-[#7C5CFC] font-semibold">
@@ -287,13 +287,13 @@ export function BalanceSheet() {
               onClick={() => setSelectedMethod("stripe")}
               className={`w-full p-4 rounded-[4px] flex items-center gap-3 transition-colors ${selectedMethod === "stripe"
                 ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
-                : "bg-white/5 border-2 border-transparent"
+                : "bg-secondary/50 border-2 border-transparent"
                 }`}
             >
               <CreditCard className="w-5 h-5 text-[#7C5CFC]" />
               <div className="text-left">
                 <p className="text-white font-medium">Card Payment</p>
-                <p className="text-white/60 text-sm">
+                <p className="text-muted-foreground text-sm">
                   Pay securely with Stripe
                 </p>
               </div>
@@ -305,13 +305,13 @@ export function BalanceSheet() {
               onClick={() => setSelectedMethod("paypal")}
               className={`w-full p-4 rounded-[4px] flex items-center gap-3 transition-colors ${selectedMethod === "paypal"
                 ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
-                : "bg-white/5 border-2 border-transparent"
+                : "bg-secondary/50 border-2 border-transparent"
                 }`}
             >
               <Smartphone className="w-5 h-5 text-[#7C5CFC]" />
               <div className="text-left">
                 <p className="text-white font-medium">PayPal</p>
-                <p className="text-white/60 text-sm">Pay with PayPal account</p>
+                <p className="text-muted-foreground text-sm">Pay with PayPal account</p>
               </div>
             </button>
           )}
@@ -321,13 +321,13 @@ export function BalanceSheet() {
               onClick={() => setSelectedMethod("bank")}
               className={`w-full p-4 rounded-[4px] flex items-center gap-3 transition-colors ${selectedMethod === "bank"
                 ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
-                : "bg-white/5 border-2 border-transparent"
+                : "bg-secondary/50 border-2 border-transparent"
                 }`}
             >
               <Building2 className="w-5 h-5 text-[#7C5CFC]" />
               <div className="text-left">
                 <p className="text-white font-medium">Bank Transfer</p>
-                <p className="text-white/60 text-sm">Direct bank transfer</p>
+                <p className="text-muted-foreground text-sm">Direct bank transfer</p>
               </div>
             </button>
           )}
@@ -337,13 +337,13 @@ export function BalanceSheet() {
               onClick={() => setSelectedMethod("cash")}
               className={`w-full p-4 rounded-[4px] flex items-center gap-3 transition-colors ${selectedMethod === "cash"
                 ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
-                : "bg-white/5 border-2 border-transparent"
+                : "bg-secondary/50 border-2 border-transparent"
                 }`}
             >
               <span className="w-5 h-5 text-[#7C5CFC] font-bold">$</span>
               <div className="text-left">
                 <p className="text-white font-medium">Cash</p>
-                <p className="text-white/60 text-sm">Pay in person</p>
+                <p className="text-muted-foreground text-sm">Pay in person</p>
               </div>
             </button>
           )}
@@ -351,24 +351,24 @@ export function BalanceSheet() {
 
         {/* Payment Details */}
         {selectedMethod === "bank" && balanceInfo.bankDetails && (
-          <div className="mt-6 bg-white/5 rounded-[4px] p-4">
+          <div className="mt-6 bg-secondary/50 rounded-[4px] p-4">
             <h3 className="text-white font-medium mb-3">Bank Details</h3>
             <div className="space-y-2 text-sm mb-4">
               <div className="flex justify-between">
-                <span className="text-white/60">Bank</span>
+                <span className="text-muted-foreground">Bank</span>
                 <span className="text-white">
                   {balanceInfo.bankDetails.bankName}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/60">Account Name</span>
+                <span className="text-muted-foreground">Account Name</span>
                 <span className="text-white">
                   {balanceInfo.bankDetails.accountName}
                 </span>
               </div>
               {balanceInfo.bankDetails.bsb && getBankDetailLabels(balanceInfo.businessCountry || "AU").bankCodeLabel && (
                 <div className="flex justify-between">
-                  <span className="text-white/60">
+                  <span className="text-muted-foreground">
                     {getBankDetailLabels(balanceInfo.businessCountry || "AU").bankCodeLabel}
                   </span>
                   <span className="text-white font-mono">
@@ -377,7 +377,7 @@ export function BalanceSheet() {
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-white/60">
+                <span className="text-muted-foreground">
                   {getBankDetailLabels(balanceInfo.businessCountry || "AU").accountLabel}
                 </span>
                 <span className="text-white font-mono">
@@ -385,13 +385,13 @@ export function BalanceSheet() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/60">Amount</span>
+                <span className="text-muted-foreground">Amount</span>
                 <span className="text-[#7C5CFC] font-semibold">
                   ${(balanceInfo.clientTotalCents / 100).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/60">Reference</span>
+                <span className="text-muted-foreground">Reference</span>
                 <span className="text-white font-mono">
                   {balanceInfo.clientName
                     .replace(/\s/g, "")
@@ -401,15 +401,15 @@ export function BalanceSheet() {
               </div>
             </div>
 
-            <div className="border-t border-white/10 pt-4">
-              <p className="text-white/60 text-sm mb-3">
+            <div className="border-t border-border pt-4">
+              <p className="text-muted-foreground text-sm mb-3">
                 After transferring, upload a screenshot of your receipt:
               </p>
               <label className="block">
                 <div
                   className={`border-2 border-dashed rounded-[4px] p-4 text-center cursor-pointer transition-colors ${screenshotFile
                     ? "border-green-500 bg-green-500/10"
-                    : "border-white/20 hover:border-white/40"
+                    : "border-border hover:border-border"
                     }`}
                 >
                   {screenshotFile ? (
@@ -418,7 +418,7 @@ export function BalanceSheet() {
                       <span>{screenshotFile.name}</span>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center gap-2 text-white/60">
+                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
                       <Upload className="w-5 h-5" />
                       <span>Upload Screenshot</span>
                     </div>
@@ -436,8 +436,8 @@ export function BalanceSheet() {
         )}
 
         {selectedMethod === "cash" && (
-          <div className="mt-6 bg-white/5 rounded-[4px] p-4">
-            <p className="text-white/80 text-sm">
+          <div className="mt-6 bg-secondary/50 rounded-[4px] p-4">
+            <p className="text-muted-foreground text-sm">
               By selecting cash payment, you confirm that you will pay the
               balance of{" "}
               <span className="text-[#7C5CFC] font-semibold">

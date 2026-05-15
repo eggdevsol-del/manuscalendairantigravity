@@ -31,7 +31,7 @@ export function ProfileHeader({
           className="flex flex-row items-center gap-4 px-6 pt-6 pb-2 text-left"
         >
           <div className="relative w-12 h-12 shrink-0">
-            <Avatar className="w-full h-full border-2 border-white/5 shadow-xl">
+            <Avatar className="w-full h-full border-2 border-border shadow-xl">
               <AvatarImage src={user.avatar} className="object-cover" />
               <AvatarFallback className="text-lg bg-primary/20 text-primary font-bold">
                 {user.name?.charAt(0) || "C"}
@@ -63,7 +63,7 @@ export function ProfileHeader({
             className="relative mb-4 group cursor-pointer"
             onClick={isEditMode ? onEditAvatar : undefined}
           >
-            <Avatar className="w-24 h-24 border-4 border-white/5 shadow-xl transition-transform active:scale-95">
+            <Avatar className="w-24 h-24 border-4 border-border shadow-xl transition-transform active:scale-95">
               <AvatarImage src={user.avatar} className="object-cover" />
               <AvatarFallback className="text-2xl bg-primary/20 text-primary font-bold">
                 {user.name?.charAt(0) || "C"}
@@ -72,7 +72,7 @@ export function ProfileHeader({
 
             {/* Edit Overlay */}
             {isEditMode && (
-              <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 animate-in fade-in zoom-in duration-200 opacity-100">
+              <div className="absolute inset-0 bg-background/80 rounded-full flex items-center justify-center opacity-0 animate-in fade-in zoom-in duration-200 opacity-100">
                 <Camera className="w-8 h-8 text-white" />
               </div>
             )}

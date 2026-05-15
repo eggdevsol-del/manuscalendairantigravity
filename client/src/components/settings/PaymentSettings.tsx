@@ -107,8 +107,8 @@ export function PaymentSettings({ onBack }: PaymentSettingsProps) {
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative">
       {/* Header */}
-      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
-        <button onClick={onBack} className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
+        <button onClick={onBack} className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors">
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
         <h2 className="text-xl font-semibold text-foreground">Bank Payouts</h2>

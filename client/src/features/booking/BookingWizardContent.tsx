@@ -110,7 +110,7 @@ function PolicyDropdown({
     <div className="rounded-[4px] border border-border overflow-hidden">
       <button
         type="button"
-        className="flex items-center justify-between w-full px-2.5 py-2 text-[10px] font-semibold text-foreground/80 hover:bg-white/[0.02] transition-colors"
+        className="flex items-center justify-between w-full px-2.5 py-2 text-[10px] font-semibold text-foreground/80 hover:bg-secondary/50 transition-colors"
         onClick={() => setOpen(!open)}
       >
         {label}
@@ -729,7 +729,7 @@ export function BookingWizardContent({
               variants={fab.animation.item}
               className={cn(
                 card.base,
-                "grid grid-cols-3 gap-px rounded-[4px] overflow-hidden bg-white/[0.03]"
+                "grid grid-cols-3 gap-px rounded-[4px] overflow-hidden bg-secondary/50"
               )}
             >
               {[

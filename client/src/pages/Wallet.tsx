@@ -30,7 +30,7 @@ export default function Wallet() {
       {/* 3. Sheet Container */}
       <div className={tokens.contentContainer.base}>
         {/* Sheet Title */}
-        <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5">
+        <div className="shrink-0 pt-6 pb-2 px-6 border-b border-border">
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
             {isArtist ? "Sales History" : "Recent Transactions"}
           </h2>
@@ -40,7 +40,7 @@ export default function Wallet() {
         <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y">
           <div className="space-y-3 pb-32 max-w-lg mx-auto">
             {/* Placeholder Card */}
-            <Card className="p-4 bg-white/5 border-white/5 shadow-none">
+            <Card className="p-4 bg-secondary/50 border-border shadow-none">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium text-foreground">Account Created</p>

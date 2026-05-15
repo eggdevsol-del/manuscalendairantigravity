@@ -102,7 +102,7 @@ export function ClientProfileSheet({
         onClose={onClose}
         title="Client Profile"
         side="right"
-        className="w-[400px] sm:w-[540px] border-l border-white/10"
+        className="w-[400px] sm:w-[540px] border-l border-border"
         overlayName="Client Profile"
         overlayId="chat.client_profile"
       >
@@ -175,7 +175,7 @@ export function ClientProfileSheet({
               className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-500"
             >
               <div className="grid gap-4">
-                <div className="p-4 rounded-2xl bg-muted/30 border border-white/5 space-y-1">
+                <div className="p-4 rounded-2xl bg-muted/30 border border-border space-y-1">
                   <div className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-2">
                     <Mail className="w-3 h-3" /> Contact Email
                   </div>
@@ -184,7 +184,7 @@ export function ClientProfileSheet({
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-muted/30 border border-white/5 space-y-1">
+                <div className="p-4 rounded-2xl bg-muted/30 border border-border space-y-1">
                   <div className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-2">
                     <Phone className="w-3 h-3" /> Phone Number
                   </div>
@@ -193,7 +193,7 @@ export function ClientProfileSheet({
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-muted/30 border border-white/5 space-y-1">
+                <div className="p-4 rounded-2xl bg-muted/30 border border-border space-y-1">
                   <div className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-2">
                     <Cake className="w-3 h-3" /> Birthday
                   </div>
@@ -236,7 +236,7 @@ export function ClientProfileSheet({
                     return (
                       <div
                         key={promo.id}
-                        className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3"
+                        className="p-4 rounded-xl bg-secondary/50 border border-border space-y-3"
                       >
                         <div className="flex justify-between items-start">
                           <div>
@@ -265,7 +265,7 @@ export function ClientProfileSheet({
                           </div>
                         </div>
 
-                        <div className="pt-3 border-t border-white/5 flex items-center justify-between">
+                        <div className="pt-3 border-t border-border flex items-center justify-between">
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Calendar className="w-4 h-4" />
                             {isEditing ? (
@@ -378,7 +378,7 @@ export function ClientProfileSheet({
                           <button
                             key={`ref-${index}`}
                             onClick={() => setSelectedImage(img.url)}
-                            className="aspect-square rounded-lg overflow-hidden bg-muted/30 border border-white/5 hover:border-primary/50 transition-colors"
+                            className="aspect-square rounded-lg overflow-hidden bg-muted/30 border border-border hover:border-primary/50 transition-colors"
                           >
                             <img
                               src={getAssetUrl(img.url)}
@@ -402,7 +402,7 @@ export function ClientProfileSheet({
                           <button
                             key={`body-${index}`}
                             onClick={() => setSelectedImage(img.url)}
-                            className="aspect-square rounded-lg overflow-hidden bg-muted/30 border border-white/5 hover:border-primary/50 transition-colors"
+                            className="aspect-square rounded-lg overflow-hidden bg-muted/30 border border-border hover:border-primary/50 transition-colors"
                           >
                             <img
                               src={getAssetUrl(img.url)}
@@ -449,11 +449,11 @@ export function ClientProfileSheet({
       {selectedImage &&
         createPortal(
           <div
-            className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4"
+            className="fixed inset-0 z-[9999] bg-background/80 flex items-center justify-center p-4"
             onClick={() => setSelectedImage(null)}
           >
             <button
-              className="absolute top-4 right-4 text-white/70 hover:text-white text-sm px-3 py-1.5 rounded-lg bg-white/10 backdrop-blur-sm z-10"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-white text-sm px-3 py-1.5 rounded-lg bg-secondary/50 backdrop-blur-sm z-10"
               onClick={() => setSelectedImage(null)}
             >
               Close

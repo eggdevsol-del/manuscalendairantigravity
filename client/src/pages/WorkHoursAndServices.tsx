@@ -337,7 +337,7 @@ export default function WorkHoursAndServices({
                 "border-0 overflow-hidden"
               )}
             >
-              <div className="p-4 border-b border-white/5">
+              <div className="p-4 border-b border-border">
                 <h3 className="font-semibold text-foreground">
                   Start / Finish Times
                 </h3>
@@ -380,7 +380,7 @@ export default function WorkHoursAndServices({
                               handleTypeChange(key, val)
                             }
                           >
-                            <SelectTrigger className="h-8 bg-white/5 border-white/10 text-xs w-full mb-1">
+                            <SelectTrigger className="h-8 bg-secondary/50 border-border text-xs w-full mb-1">
                               <SelectValue placeholder="Select type" />
                             </SelectTrigger>
                             <SelectContent>
@@ -398,7 +398,7 @@ export default function WorkHoursAndServices({
                                 onChange={e =>
                                   handleTimeChange(key, "start", e.target.value)
                                 }
-                                className="bg-white/5 border-white/10"
+                                className="bg-secondary/50 border-border"
                               />
                             </div>
                             <span className="flex items-center text-muted-foreground text-xs">
@@ -411,7 +411,7 @@ export default function WorkHoursAndServices({
                                 onChange={e =>
                                   handleTimeChange(key, "end", e.target.value)
                                 }
-                                className="bg-white/5 border-white/10"
+                                className="bg-secondary/50 border-border"
                               />
                             </div>
                           </div>
@@ -431,7 +431,7 @@ export default function WorkHoursAndServices({
                 "border-0 overflow-hidden"
               )}
             >
-              <div className="p-4 border-b border-white/5 flex items-center justify-between">
+              <div className="p-4 border-b border-border flex items-center justify-between">
                 <div>
                   <h3 className="font-semibold text-foreground">
                     Service Menu
@@ -444,7 +444,7 @@ export default function WorkHoursAndServices({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="bg-transparent border-white/10 hover:bg-white/5 h-8"
+                    className="bg-transparent border-border hover:bg-secondary/50 h-8"
                     onClick={() => setShowProjectBuilder(true)}
                   >
                     <Layers className="w-3.5 h-3.5 mr-1" />
@@ -467,7 +467,7 @@ export default function WorkHoursAndServices({
                 {services.map((service, index) => (
                   <div
                     key={index}
-                    className="p-4 border border-white/10 rounded-[4px] bg-white/5"
+                    className="p-4 border border-border rounded-[4px] bg-secondary/50"
                   >
                     {editingIndex === index && editingService ? (
                       // Edit Mode
@@ -482,7 +482,7 @@ export default function WorkHoursAndServices({
                                 name: e.target.value,
                               })
                             }
-                            className="bg-white/5 border-white/10"
+                            className="bg-secondary/50 border-border"
                           />
                         </div>
 
@@ -498,7 +498,7 @@ export default function WorkHoursAndServices({
                                   duration: parseInt(e.target.value) || 0,
                                 })
                               }
-                              className="bg-white/5 border-white/10"
+                              className="bg-secondary/50 border-border"
                             />
                           </div>
                           <div className="space-y-2">
@@ -512,7 +512,7 @@ export default function WorkHoursAndServices({
                                   price: parseInt(e.target.value) || 0,
                                 })
                               }
-                              className="bg-white/5 border-white/10"
+                              className="bg-secondary/50 border-border"
                             />
                           </div>
                         </div>
@@ -529,7 +529,7 @@ export default function WorkHoursAndServices({
                                   color: e.target.value,
                                 })
                               }
-                              className="w-12 h-10 p-1 bg-white/5 border-white/10 cursor-pointer"
+                              className="w-12 h-10 p-1 bg-secondary/50 border-border cursor-pointer"
                             />
                             <Input
                               type="text"
@@ -540,7 +540,7 @@ export default function WorkHoursAndServices({
                                   color: e.target.value,
                                 })
                               }
-                              className="flex-1 bg-white/5 border-white/10"
+                              className="flex-1 bg-secondary/50 border-border"
                               placeholder="#3b82f6"
                             />
                           </div>
@@ -601,7 +601,7 @@ export default function WorkHoursAndServices({
                 ))}
 
                 {showAddForm && (
-                  <div className="p-4 border border-dashed border-white/20 rounded-[4px] space-y-3 bg-white/5">
+                  <div className="p-4 border border-dashed border-border rounded-[4px] space-y-3 bg-secondary/50">
                     <h3 className="font-semibold text-sm">
                       New Service Details
                     </h3>
@@ -611,7 +611,7 @@ export default function WorkHoursAndServices({
                       onChange={e =>
                         setNewService({ ...newService, name: e.target.value })
                       }
-                      className="bg-white/5 border-white/10"
+                      className="bg-secondary/50 border-border"
                     />
                     <div className="flex gap-2">
                       <Input
@@ -624,7 +624,7 @@ export default function WorkHoursAndServices({
                             duration: parseInt(e.target.value),
                           })
                         }
-                        className="bg-white/5 border-white/10"
+                        className="bg-secondary/50 border-border"
                       />
                       <Input
                         type="number"
@@ -636,7 +636,7 @@ export default function WorkHoursAndServices({
                             price: parseInt(e.target.value),
                           })
                         }
-                        className="bg-white/5 border-white/10"
+                        className="bg-secondary/50 border-border"
                       />
                       <div className="w-16">
                         <Input
@@ -649,7 +649,7 @@ export default function WorkHoursAndServices({
                               color: e.target.value,
                             })
                           }
-                          className="h-10 p-1 bg-white/5 border-white/10 w-full cursor-pointer"
+                          className="h-10 p-1 bg-secondary/50 border-border w-full cursor-pointer"
                         />
                       </div>
                     </div>
@@ -694,7 +694,7 @@ export default function WorkHoursAndServices({
           <div className="flex w-full gap-2">
             <Button
               variant="outline"
-              className="flex-1 bg-transparent border-white/10 hover:bg-white/5"
+              className="flex-1 bg-transparent border-border hover:bg-secondary/50"
               onClick={() => setShowProjectBuilder(false)}
             >
               Cancel
@@ -718,7 +718,7 @@ export default function WorkHoursAndServices({
                   name: e.target.value,
                 })
               }
-              className="bg-white/5 border-white/10"
+              className="bg-secondary/50 border-border"
             />
 
             <Label>Base Service</Label>
@@ -726,7 +726,7 @@ export default function WorkHoursAndServices({
               value={projectBaseServiceId}
               onValueChange={setProjectBaseServiceId}
             >
-              <SelectTrigger className="bg-white/5 border-white/10">
+              <SelectTrigger className="bg-secondary/50 border-border">
                 <SelectValue placeholder="Select..." />
               </SelectTrigger>
               <SelectContent>
@@ -745,7 +745,7 @@ export default function WorkHoursAndServices({
                   type="number"
                   value={projectSittings}
                   onChange={e => setProjectSittings(parseInt(e.target.value))}
-                  className="bg-white/5 border-white/10"
+                  className="bg-secondary/50 border-border"
                 />
               </div>
               <div>
@@ -759,7 +759,7 @@ export default function WorkHoursAndServices({
                       price: parseFloat(e.target.value),
                     })
                   }
-                  className="bg-white/5 border-white/10"
+                  className="bg-secondary/50 border-border"
                 />
               </div>
             </div>

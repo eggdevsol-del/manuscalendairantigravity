@@ -37,7 +37,7 @@ export function CalendarMonthHeader({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-white/5"
+          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
           onClick={() => {
             onDateChange(startOfMonth(subMonths(activeDate, 1)));
           }}
@@ -54,7 +54,7 @@ export function CalendarMonthHeader({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-white/5"
+          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
           onClick={() => {
             onDateChange(startOfMonth(addMonths(activeDate, 1)));
           }}

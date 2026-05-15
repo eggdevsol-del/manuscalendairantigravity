@@ -135,7 +135,7 @@ const MethodGrid = ({
           "flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all",
           selectedMethod === m.id
             ? "border-primary bg-primary/10 text-primary"
-            : "border-white/10 bg-white/5 text-foreground/70 hover:bg-white/10"
+            : "border-border bg-secondary/50 text-foreground/70 hover:bg-secondary/50"
         )}
       >
         <m.icon className="w-5 h-5" />
@@ -506,7 +506,7 @@ export function AppointmentCheckInModal({
               Specify Payment Link
             </h3>
             <div className="w-full space-y-4">
-              <div className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
+              <div className="flex items-center justify-between bg-secondary/50 p-3 rounded-xl">
                 <span className="text-xs font-medium">Use Custom Amount?</span>
                 <input
                   type="checkbox"
@@ -521,7 +521,7 @@ export function AppointmentCheckInModal({
                   value={customAmount}
                   onChange={e => setCustomAmount(e.target.value)}
                   placeholder="Enter amount ($)"
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-foreground"
+                  className="w-full rounded-xl border border-border bg-secondary/50 px-3 py-2.5 text-sm text-foreground"
                 />
               ) : (
                 <p className="text-xs text-muted-foreground">
@@ -579,7 +579,7 @@ export function AppointmentCheckInModal({
                   type="datetime-local"
                   value={manualEndTime}
                   onChange={e => setManualEndTime(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-foreground"
+                  className="w-full rounded-xl border border-border bg-secondary/50 px-3 py-2.5 text-sm text-foreground"
                 />
               </div>
               <div>
@@ -591,7 +591,7 @@ export function AppointmentCheckInModal({
                   value={manualAmount}
                   onChange={e => setManualAmount(e.target.value)}
                   placeholder="0"
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-foreground"
+                  className="w-full rounded-xl border border-border bg-secondary/50 px-3 py-2.5 text-sm text-foreground"
                 />
               </div>
               <div>

@@ -116,10 +116,10 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative">
       {/* 1. Page Header - Floating style */}
-      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
         <button
           onClick={onBack}
-          className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+          className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
         >
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
@@ -134,7 +134,7 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
             </p>
           </div>
           {/* List Header */}
-          <div className="shrink-0 pb-2 border-b border-white/5">
+          <div className="shrink-0 pb-2 border-b border-border">
             <h2 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">
               Your History ({consultations?.length || 0})
             </h2>
@@ -150,7 +150,7 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
             consultations.map(consultation => (
               <div
                 key={consultation.id}
-                className="group bg-transparent hover:bg-white/5 transition-colors cursor-pointer border-b border-white/5 pb-4 pt-4 last:border-0 relative overflow-hidden"
+                className="group bg-transparent hover:bg-secondary/50 transition-colors cursor-pointer border-b border-border pb-4 pt-4 last:border-0 relative overflow-hidden"
                 onClick={() => {
                   if (consultation.conversationId) {
                     setLocation(`/chat/${consultation.conversationId}`);
@@ -182,13 +182,13 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
                     />
                   </div>
 
-                  <p className="text-sm text-white/60 line-clamp-2 leading-relaxed mb-4">
+                  <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed mb-4">
                     {consultation.description}
                   </p>
 
-                  <div className="flex items-center gap-4 text-xs font-medium text-white/40 group-hover:text-white/60 transition-colors">
+                  <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground group-hover:text-muted-foreground transition-colors">
                     {consultation.preferredDate && (
-                      <div className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-md">
+                      <div className="flex items-center gap-1.5 bg-secondary/50 px-2 py-1 rounded-md">
                         <Calendar className="w-3.5 h-3.5" />
                         <span>
                           {new Date(
@@ -213,7 +213,7 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
             ))
           ) : (
             <div className="text-center py-12 px-6">
-              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mx-auto mb-4">
                 <Calendar className="w-8 h-8 text-muted-foreground opacity-50" />
               </div>
               <h3 className="text-lg font-semibold mb-2">
@@ -247,7 +247,7 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
           <div className="flex w-full gap-2">
             <Button
               variant="outline"
-              className="flex-1 bg-transparent border-white/10 hover:bg-white/5"
+              className="flex-1 bg-transparent border-border hover:bg-secondary/50"
               onClick={() => setShowNewDialog(false)}
             >
               Cancel
@@ -271,7 +271,7 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
               value={selectedArtistId}
               onValueChange={setSelectedArtistId}
             >
-              <SelectTrigger className="bg-white/5 border-white/10 h-11">
+              <SelectTrigger className="bg-secondary/50 border-border h-11">
                 <SelectValue placeholder="Choose an artist" />
               </SelectTrigger>
               <SelectContent>
@@ -293,7 +293,7 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
               value={subject}
               onChange={e => setSubject(e.target.value)}
               placeholder="e.g., Custom tattoo design"
-              className="bg-white/5 border-white/10 h-11"
+              className="bg-secondary/50 border-border h-11"
             />
           </div>
 
@@ -305,7 +305,7 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
               onChange={e => setDescription(e.target.value)}
               placeholder="Describe what you'd like to discuss..."
               rows={5}
-              className="bg-white/5 border-white/10 min-h-[120px]"
+              className="bg-secondary/50 border-border min-h-[120px]"
             />
           </div>
 
@@ -316,7 +316,7 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
               type="date"
               value={preferredDate}
               onChange={e => setPreferredDate(e.target.value)}
-              className="bg-white/5 border-white/10 h-11"
+              className="bg-secondary/50 border-border h-11"
             />
           </div>
         </div>

@@ -410,7 +410,7 @@ export function CreatePromotionWizard({
               key={s}
               className={cn(
                 "w-2 h-2 rounded-full transition-all",
-                step === s ? "bg-white w-6" : "bg-white/30"
+                step === s ? "bg-white w-6" : "bg-secondary/50"
               )}
             />
           ))}
@@ -505,7 +505,7 @@ export function CreatePromotionWizard({
       </AnimatePresence>
 
       {/* Footer */}
-      <div className="p-4 border-t border-white/10 flex justify-between items-center bg-card/50 backdrop-blur-xl">
+      <div className="p-4 border-t border-border flex justify-between items-center bg-card/50 backdrop-blur-xl">
         <Button variant="ghost" onClick={step === "type" ? onClose : goBack}>
           {step === "type" ? "Cancel" : "Back"}
         </Button>
@@ -561,7 +561,7 @@ function RulesConfigStep({
           Validity Period
         </h3>
 
-        <div className="space-y-4 bg-white/5 p-4 rounded-xl border border-white/10">
+        <div className="space-y-4 bg-secondary/50 p-4 rounded-xl border border-border">
           <div className="flex items-center justify-between">
             <Label htmlFor="no-expiry" className="cursor-pointer">
               No Expiry Date
@@ -615,7 +615,7 @@ function RulesConfigStep({
                 "p-4 rounded-xl border text-left transition-all",
                 autoApplyTrigger === "none"
                   ? "bg-primary/10 border-primary/50"
-                  : "bg-white/5 border-white/10 hover:bg-white/10"
+                  : "bg-secondary/50 border-border hover:bg-secondary/50"
               )}
             >
               <div className="font-semibold">Manual Issue Only</div>
@@ -630,7 +630,7 @@ function RulesConfigStep({
                 "p-4 rounded-xl border text-left transition-all",
                 autoApplyTrigger === "new_client"
                   ? "bg-primary/10 border-primary/50"
-                  : "bg-white/5 border-white/10 hover:bg-white/10"
+                  : "bg-secondary/50 border-border hover:bg-secondary/50"
               )}
             >
               <div className="font-semibold">New Clients</div>
@@ -646,7 +646,7 @@ function RulesConfigStep({
                 "p-4 rounded-xl border text-left transition-all",
                 autoApplyTrigger === "birthday"
                   ? "bg-primary/10 border-primary/50"
-                  : "bg-white/5 border-white/10 hover:bg-white/10"
+                  : "bg-secondary/50 border-border hover:bg-secondary/50"
               )}
             >
               <div className="font-semibold">Birthday</div>
@@ -776,7 +776,7 @@ function ValueConfigStep({
                 "flex-1 py-3 rounded-xl border transition-all",
                 valueType === "percentage"
                   ? "bg-primary/10 border-primary/50 text-primary"
-                  : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10"
+                  : "bg-background/80 dark:bg-secondary/50 border-black/10 dark:border-border"
               )}
             >
               Percentage (%)
@@ -787,7 +787,7 @@ function ValueConfigStep({
                 "flex-1 py-3 rounded-xl border transition-all",
                 valueType === "fixed"
                   ? "bg-primary/10 border-primary/50 text-primary"
-                  : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10"
+                  : "bg-background/80 dark:bg-secondary/50 border-black/10 dark:border-border"
               )}
             >
               Fixed ($)
@@ -928,7 +928,7 @@ function DesignCustomizationStep({
                 "flex-1 py-3 px-2 rounded-xl border transition-all text-sm",
                 templateDesign === t.id
                   ? "bg-primary/10 border-primary/50 text-primary"
-                  : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10"
+                  : "bg-background/80 dark:bg-secondary/50 border-black/10 dark:border-border"
               )}
             >
               {t.name}
@@ -947,7 +947,7 @@ function DesignCustomizationStep({
               "flex-1 py-3 rounded-xl border transition-all text-sm",
               colorMode === "gradient"
                 ? "bg-primary/10 border-primary/50 text-primary"
-                : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10"
+                : "bg-background/80 dark:bg-secondary/50 border-black/10 dark:border-border"
             )}
           >
             Gradient
@@ -958,7 +958,7 @@ function DesignCustomizationStep({
               "flex-1 py-3 rounded-xl border transition-all text-sm",
               colorMode === "solid"
                 ? "bg-primary/10 border-primary/50 text-primary"
-                : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10"
+                : "bg-background/80 dark:bg-secondary/50 border-black/10 dark:border-border"
             )}
           >
             Solid
@@ -969,7 +969,7 @@ function DesignCustomizationStep({
               "flex-1 py-3 rounded-xl border transition-all text-sm flex items-center justify-center gap-1",
               colorMode === "custom"
                 ? "bg-primary/10 border-primary/50 text-primary"
-                : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10"
+                : "bg-background/80 dark:bg-secondary/50 border-black/10 dark:border-border"
             )}
           >
             <Palette className="w-4 h-4" />
@@ -994,7 +994,7 @@ function DesignCustomizationStep({
               type="color"
               value={customColor}
               onChange={e => setCustomColor(e.target.value)}
-              className="w-16 h-16 rounded-xl cursor-pointer border-2 border-white/20"
+              className="w-16 h-16 rounded-xl cursor-pointer border-2 border-border"
             />
             <div className="flex-1">
               <Input
@@ -1059,7 +1059,7 @@ function DesignCustomizationStep({
           className="hidden"
         />
         {logoUrl ? (
-          <div className="flex items-center gap-3 p-3 bg-black/5 dark:bg-white/5 rounded-xl">
+          <div className="flex items-center gap-3 p-3 bg-background/80 dark:bg-secondary/50 rounded-xl">
             <img
               src={logoUrl}
               alt="Logo"
@@ -1114,7 +1114,7 @@ function DesignCustomizationStep({
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            className="p-4 bg-black/5 dark:bg-white/5 rounded-xl space-y-4 mb-4 border border-white/10"
+            className="p-4 bg-background/80 dark:bg-secondary/50 rounded-xl space-y-4 mb-4 border border-border"
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -1180,7 +1180,7 @@ function DesignCustomizationStep({
         />
         {backgroundImageUrl ? (
           <div className="space-y-4">
-            <div className="flex items-center gap-3 p-3 bg-black/5 dark:bg-white/5 rounded-xl">
+            <div className="flex items-center gap-3 p-3 bg-background/80 dark:bg-secondary/50 rounded-xl">
               <img
                 src={backgroundImageUrl}
                 alt="Background"
@@ -1200,7 +1200,7 @@ function DesignCustomizationStep({
             </div>
 
             {/* Background Resize Controls */}
-            <div className="space-y-4 p-4 bg-black/5 dark:bg-white/5 rounded-xl">
+            <div className="space-y-4 p-4 bg-background/80 dark:bg-secondary/50 rounded-xl">
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-sm">
                   <ZoomIn className="w-4 h-4" />
@@ -1289,7 +1289,7 @@ function PreviewStep({
       </div>
 
       {/* Summary */}
-      <div className="bg-black/5 dark:bg-white/5 rounded-xl p-4 space-y-3">
+      <div className="bg-background/80 dark:bg-secondary/50 rounded-xl p-4 space-y-3">
         <h3 className="font-semibold text-foreground">Summary</h3>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">

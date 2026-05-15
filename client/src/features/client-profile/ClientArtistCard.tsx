@@ -23,16 +23,16 @@ function ClientArtistCardExpanded({ artistId }: { artistId: string }) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-6 h-6 animate-spin text-white/50" />
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (!storefront || storefront.products.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center bg-black/20 rounded-xl mx-4 mb-4 border border-white/5">
-        <Package className="w-8 h-8 text-white/20 mb-2" />
-        <p className="text-white/50 text-sm">No products available</p>
+      <div className="flex flex-col items-center justify-center p-8 text-center bg-background/80 rounded-xl mx-4 mb-4 border border-border">
+        <Package className="w-8 h-8 text-muted-foreground mb-2" />
+        <p className="text-muted-foreground text-sm">No products available</p>
       </div>
     );
   }
@@ -89,7 +89,7 @@ export function ClientArtistCard({ conv, onShopToggle }: ClientArtistCardProps) 
   const avatarUrl = artist.avatar || null;
 
   return (
-    <div className="w-full relative rounded-2xl overflow-hidden group bg-[#111] transition-all duration-300 shadow-xl border border-white/5">
+    <div className="w-full relative rounded-2xl overflow-hidden group bg-[#111] transition-all duration-300 shadow-xl border border-border">
       {/* Banner Background */}
       {bannerUrl ? (
         <img
@@ -110,7 +110,7 @@ export function ClientArtistCard({ conv, onShopToggle }: ClientArtistCardProps) 
           {/* Artist Avatar */}
           <div 
             onClick={() => setLocation(`/chat/${conv.id}`)}
-            className="cursor-pointer w-12 h-12 rounded-full bg-white/10 border-2 border-white/20 overflow-hidden shrink-0 shadow-lg active:scale-95 transition-transform"
+            className="cursor-pointer w-12 h-12 rounded-full bg-secondary/50 border-2 border-border overflow-hidden shrink-0 shadow-lg active:scale-95 transition-transform"
           >
             {avatarUrl ? (
               <img
@@ -152,8 +152,8 @@ export function ClientArtistCard({ conv, onShopToggle }: ClientArtistCardProps) 
               }}
               className={`shrink-0 w-10 h-10 rounded-full backdrop-blur-xl border flex items-center justify-center transition-all ${
                 isExpanded 
-                  ? "bg-white text-black border-white" 
-                  : "bg-white/10 text-white border-white/20 hover:bg-white/20"
+                  ? "bg-foreground text-background border-white" 
+                  : "bg-secondary/50 text-white border-border hover:bg-secondary/50"
               }`}
             >
               <ShoppingBag className="w-4 h-4" />
@@ -161,7 +161,7 @@ export function ClientArtistCard({ conv, onShopToggle }: ClientArtistCardProps) 
             
             <button
               onClick={() => setLocation(`/chat/${conv.id}`)}
-              className="relative shrink-0 w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
+              className="relative shrink-0 w-10 h-10 rounded-full bg-secondary/50 backdrop-blur-xl border border-border flex items-center justify-center hover:bg-secondary/50 transition-colors"
             >
               <MessageCircle className="w-4 h-4 text-white" />
               {conv.unreadCount > 0 && (
@@ -183,7 +183,7 @@ export function ClientArtistCard({ conv, onShopToggle }: ClientArtistCardProps) 
             exit={{ height: 0, opacity: 0 }}
             className="relative z-10 bg-[#111]"
           >
-            <div className="pt-2 border-t border-white/5">
+            <div className="pt-2 border-t border-border">
               <CartProvider>
                 <ClientArtistCardExpanded artistId={artist.id} />
               </CartProvider>

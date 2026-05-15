@@ -70,10 +70,10 @@ export function PolicySettings({ onBack }: PolicySettingsProps) {
   if (selectedType) {
     return (
       <div className="w-full h-full flex flex-col overflow-hidden relative">
-        <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+        <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
           <button
             onClick={() => setSelectedType(null)}
-            className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+            className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
           >
             <ChevronLeft className="w-5 h-5 text-foreground" />
           </button>
@@ -89,7 +89,7 @@ export function PolicySettings({ onBack }: PolicySettingsProps) {
                 <LoadingState message="Loading policy..." />
               </div>
             ) : !policy || !policy.enabled ? (
-              <div className="p-8 text-center bg-white/5 border border-white/5 rounded-[4px] flex flex-col items-center justify-center">
+              <div className="p-8 text-center bg-secondary/50 border border-border rounded-[4px] flex flex-col items-center justify-center">
                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                   <FileText className="w-8 h-8 text-muted-foreground" />
                 </div>
@@ -127,10 +127,10 @@ export function PolicySettings({ onBack }: PolicySettingsProps) {
   // Policy list view
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative">
-      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
         <button
           onClick={onBack}
-          className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+          className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
         >
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
@@ -140,7 +140,7 @@ export function PolicySettings({ onBack }: PolicySettingsProps) {
       <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
         <div className="pb-[180px] max-w-lg mx-auto space-y-4 px-4 pt-6">
           {!artistId ? (
-            <div className="p-8 text-center bg-white/5 border border-white/5 rounded-[4px] flex flex-col items-center justify-center">
+            <div className="p-8 text-center bg-secondary/50 border border-border rounded-[4px] flex flex-col items-center justify-center">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-muted-foreground" />
               </div>
@@ -157,7 +157,7 @@ export function PolicySettings({ onBack }: PolicySettingsProps) {
               {policyTypes.map(({ type, label, icon: Icon }) => (
                 <div
                   key={type}
-                  className="bg-transparent hover:bg-white/5 transition-colors cursor-pointer border-b border-white/5 pb-4 pt-4 last:border-0"
+                  className="bg-transparent hover:bg-secondary/50 transition-colors cursor-pointer border-b border-border pb-4 pt-4 last:border-0"
                   onClick={() => setSelectedType(type)}
                 >
                   <div className="flex items-center justify-between px-2">

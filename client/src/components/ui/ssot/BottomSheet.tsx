@@ -38,8 +38,8 @@ interface BottomSheetProps {
   className?: string;
   /**
    * Overlay variant:
-   * - "default": Semi-transparent black overlay (bg-black/30)
-   * - "dark": Darker overlay for more focus (bg-black/60)
+   * - "default": Semi-transparent black overlay (bg-background/80)
+   * - "dark": Darker overlay for more focus (bg-background/80)
    */
   overlayVariant?: "default" | "dark";
 }
@@ -70,7 +70,7 @@ export function BottomSheet({
         <DialogPrimitive.Overlay
           className={cn(
             tokens.sheetSecondary.overlay,
-            overlayVariant === "dark" && "bg-black/60"
+            overlayVariant === "dark" && "bg-background/80"
           )}
         />
         <DialogPrimitive.Content asChild>

@@ -182,12 +182,12 @@ export function DepositSheet() {
   if (error || !depositInfo) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1a] flex items-center justify-center p-4">
-        <div className="bg-white/5 rounded-[4px] p-6 text-center max-w-md">
+        <div className="bg-secondary/50 rounded-[4px] p-6 text-center max-w-md">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <h1 className="text-white text-xl font-semibold mb-2">
             Link Invalid
           </h1>
-          <p className="text-white/60">
+          <p className="text-muted-foreground">
             {error || "This deposit link is no longer valid."}
           </p>
         </div>
@@ -198,20 +198,20 @@ export function DepositSheet() {
   if (isComplete) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1a] flex items-center justify-center p-4">
-        <div className="bg-white/5 rounded-[4px] p-6 text-center max-w-md">
+        <div className="bg-secondary/50 rounded-[4px] p-6 text-center max-w-md">
           <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="w-8 h-8 text-green-400" />
           </div>
           <h1 className="text-white text-xl font-semibold mb-2">
             Deposit Confirmed!
           </h1>
-          <p className="text-white/60 mb-4">
+          <p className="text-muted-foreground mb-4">
             Your booking with {depositInfo.artistName} is now confirmed.
           </p>
-          <div className="bg-white/5 rounded-[4px] p-4 text-left">
-            <p className="text-white/60 text-sm">Appointment</p>
+          <div className="bg-secondary/50 rounded-[4px] p-4 text-left">
+            <p className="text-muted-foreground text-sm">Appointment</p>
             <p className="text-white font-medium">{depositInfo.selectedDate}</p>
-            <p className="text-white/80">{depositInfo.selectedTime}</p>
+            <p className="text-muted-foreground">{depositInfo.selectedTime}</p>
           </div>
         </div>
       </div>
@@ -240,35 +240,35 @@ export function DepositSheet() {
             <h1 className="text-white font-semibold">
               {depositInfo.artistName}
             </h1>
-            <p className="text-white/60 text-sm">Booking Deposit</p>
+            <p className="text-muted-foreground text-sm">Booking Deposit</p>
           </div>
         </div>
 
         {/* Booking Summary */}
-        <div className="bg-white/5 rounded-[4px] p-4 mb-6">
+        <div className="bg-secondary/50 rounded-[4px] p-4 mb-6">
           <h2 className="text-white font-medium mb-3">Booking Summary</h2>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-white/60">Client</span>
+              <span className="text-muted-foreground">Client</span>
               <span className="text-white">{depositInfo.clientName}</span>
             </div>
             {depositInfo.projectType && (
               <div className="flex justify-between">
-                <span className="text-white/60">Project</span>
+                <span className="text-muted-foreground">Project</span>
                 <span className="text-white">
                   {depositInfo.projectType.replace(/-/g, " ")}
                 </span>
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-white/60">Date</span>
+              <span className="text-muted-foreground">Date</span>
               <span className="text-white">{depositInfo.selectedDate}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-white/60">Time</span>
+              <span className="text-muted-foreground">Time</span>
               <span className="text-white">{depositInfo.selectedTime}</span>
             </div>
-            <div className="border-t border-white/10 pt-2 mt-2">
+            <div className="border-t border-border pt-2 mt-2">
               <div className="flex justify-between">
                 <span className="text-white font-medium">Deposit</span>
                 <span className="text-[#7C5CFC] font-semibold">
@@ -287,13 +287,13 @@ export function DepositSheet() {
               onClick={() => setSelectedMethod("stripe")}
               className={`w-full p-4 rounded-[4px] flex items-center gap-3 transition-colors ${selectedMethod === "stripe"
                 ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
-                : "bg-white/5 border-2 border-transparent"
+                : "bg-secondary/50 border-2 border-transparent"
                 }`}
             >
               <CreditCard className="w-5 h-5 text-[#7C5CFC]" />
               <div className="text-left">
                 <p className="text-white font-medium">Card Payment</p>
-                <p className="text-white/60 text-sm">
+                <p className="text-muted-foreground text-sm">
                   Pay securely with Stripe
                 </p>
               </div>
@@ -305,13 +305,13 @@ export function DepositSheet() {
               onClick={() => setSelectedMethod("paypal")}
               className={`w-full p-4 rounded-[4px] flex items-center gap-3 transition-colors ${selectedMethod === "paypal"
                 ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
-                : "bg-white/5 border-2 border-transparent"
+                : "bg-secondary/50 border-2 border-transparent"
                 }`}
             >
               <Smartphone className="w-5 h-5 text-[#7C5CFC]" />
               <div className="text-left">
                 <p className="text-white font-medium">PayPal</p>
-                <p className="text-white/60 text-sm">Pay with PayPal account</p>
+                <p className="text-muted-foreground text-sm">Pay with PayPal account</p>
               </div>
             </button>
           )}
@@ -321,13 +321,13 @@ export function DepositSheet() {
               onClick={() => setSelectedMethod("bank")}
               className={`w-full p-4 rounded-[4px] flex items-center gap-3 transition-colors ${selectedMethod === "bank"
                 ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
-                : "bg-white/5 border-2 border-transparent"
+                : "bg-secondary/50 border-2 border-transparent"
                 }`}
             >
               <Building2 className="w-5 h-5 text-[#7C5CFC]" />
               <div className="text-left">
                 <p className="text-white font-medium">Bank Transfer</p>
-                <p className="text-white/60 text-sm">Direct bank transfer</p>
+                <p className="text-muted-foreground text-sm">Direct bank transfer</p>
               </div>
             </button>
           )}
@@ -337,13 +337,13 @@ export function DepositSheet() {
               onClick={() => setSelectedMethod("cash")}
               className={`w-full p-4 rounded-[4px] flex items-center gap-3 transition-colors ${selectedMethod === "cash"
                 ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
-                : "bg-white/5 border-2 border-transparent"
+                : "bg-secondary/50 border-2 border-transparent"
                 }`}
             >
               <span className="w-5 h-5 text-[#7C5CFC] font-bold">$</span>
               <div className="text-left">
                 <p className="text-white font-medium">Cash</p>
-                <p className="text-white/60 text-sm">Pay in person</p>
+                <p className="text-muted-foreground text-sm">Pay in person</p>
               </div>
             </button>
           )}
@@ -351,24 +351,24 @@ export function DepositSheet() {
 
         {/* Payment Details */}
         {selectedMethod === "bank" && depositInfo.bankDetails && (
-          <div className="mt-6 bg-white/5 rounded-[4px] p-4">
+          <div className="mt-6 bg-secondary/50 rounded-[4px] p-4">
             <h3 className="text-white font-medium mb-3">Bank Details</h3>
             <div className="space-y-2 text-sm mb-4">
               <div className="flex justify-between">
-                <span className="text-white/60">Bank</span>
+                <span className="text-muted-foreground">Bank</span>
                 <span className="text-white">
                   {depositInfo.bankDetails.bankName}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/60">Account Name</span>
+                <span className="text-muted-foreground">Account Name</span>
                 <span className="text-white">
                   {depositInfo.bankDetails.accountName}
                 </span>
               </div>
               {depositInfo.bankDetails.bsb && getBankDetailLabels(depositInfo.businessCountry || "AU").bankCodeLabel && (
                 <div className="flex justify-between">
-                  <span className="text-white/60">
+                  <span className="text-muted-foreground">
                     {getBankDetailLabels(depositInfo.businessCountry || "AU").bankCodeLabel}
                   </span>
                   <span className="text-white font-mono">
@@ -377,7 +377,7 @@ export function DepositSheet() {
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-white/60">
+                <span className="text-muted-foreground">
                   {getBankDetailLabels(depositInfo.businessCountry || "AU").accountLabel}
                 </span>
                 <span className="text-white font-mono">
@@ -385,13 +385,13 @@ export function DepositSheet() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/60">Amount</span>
+                <span className="text-muted-foreground">Amount</span>
                 <span className="text-[#7C5CFC] font-semibold">
                   ${(depositInfo.clientTotalCents / 100).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/60">Reference</span>
+                <span className="text-muted-foreground">Reference</span>
                 <span className="text-white font-mono">
                   {depositInfo.clientName
                     .replace(/\s/g, "")
@@ -401,15 +401,15 @@ export function DepositSheet() {
               </div>
             </div>
 
-            <div className="border-t border-white/10 pt-4">
-              <p className="text-white/60 text-sm mb-3">
+            <div className="border-t border-border pt-4">
+              <p className="text-muted-foreground text-sm mb-3">
                 After transferring, upload a screenshot of your receipt:
               </p>
               <label className="block">
                 <div
                   className={`border-2 border-dashed rounded-[4px] p-4 text-center cursor-pointer transition-colors ${screenshotFile
                     ? "border-green-500 bg-green-500/10"
-                    : "border-white/20 hover:border-white/40"
+                    : "border-border hover:border-border"
                     }`}
                 >
                   {screenshotFile ? (
@@ -418,7 +418,7 @@ export function DepositSheet() {
                       <span>{screenshotFile.name}</span>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center gap-2 text-white/60">
+                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
                       <Upload className="w-5 h-5" />
                       <span>Upload Screenshot</span>
                     </div>
@@ -436,8 +436,8 @@ export function DepositSheet() {
         )}
 
         {selectedMethod === "cash" && (
-          <div className="mt-6 bg-white/5 rounded-[4px] p-4">
-            <p className="text-white/80 text-sm">
+          <div className="mt-6 bg-secondary/50 rounded-[4px] p-4">
+            <p className="text-muted-foreground text-sm">
               By selecting cash payment, you confirm that you will pay the
               deposit of{" "}
               <span className="text-[#7C5CFC] font-semibold">

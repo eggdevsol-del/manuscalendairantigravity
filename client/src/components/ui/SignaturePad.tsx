@@ -87,7 +87,7 @@ export function SignaturePad({
 
   return (
     <div className={cn("flex flex-col gap-4", className)}>
-      <div className="relative aspect-[3/2] w-full bg-slate-900 border border-white/10 rounded-2xl overflow-hidden touch-none">
+      <div className="relative aspect-[3/2] w-full bg-slate-900 border border-border rounded-2xl overflow-hidden touch-none">
         <canvas
           ref={canvasRef}
           onPointerDown={startDrawing}
@@ -107,7 +107,7 @@ export function SignaturePad({
         <Button
           variant="outline"
           onClick={clear}
-          className="shrink-0 aspect-square p-0 border-white/10 shrink-0"
+          className="shrink-0 aspect-square p-0 border-border shrink-0"
           title="Clear Signature"
         >
           <Eraser className="w-5 h-5 mx-auto" />

@@ -184,7 +184,7 @@ export default function CalendarAgendaPage() {
       <div
         className={cn(
           "fixed inset-0 flex flex-col transition-transform duration-500 ease-in-out z-10",
-          "md:relative md:inset-auto md:w-1/2 md:translate-y-0 md:bg-transparent md:border-l md:border-white/10 md:pt-5",
+          "md:relative md:inset-auto md:w-1/2 md:translate-y-0 md:bg-transparent md:border-l md:border-border md:pt-5",
           controller.isBreakdownOpen
             ? "translate-y-[55vh] rounded-t-[2.5rem] bg-background/95 backdrop-blur-sm shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.5)] overflow-hidden"
             : "translate-y-0 bg-transparent"
@@ -230,7 +230,7 @@ export default function CalendarAgendaPage() {
                    Typically BottomNav is in PageShell. This Page IS the content. 
                    If we transform this div, the income bar moves with it. Correct. */}
         {!isClient && (
-          <div className="absolute bottom-16 left-0 right-0 h-10 bg-white/5 backdrop-blur-md border-t border-white/10 flex items-center justify-between px-4 z-40">
+          <div className="absolute bottom-16 left-0 right-0 h-10 bg-secondary/50 backdrop-blur-md border-t border-border flex items-center justify-between px-4 z-40">
             <span className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
               This week's income
             </span>

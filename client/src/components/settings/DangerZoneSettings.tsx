@@ -59,9 +59,9 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
     };
 
     return (
-        <div className="w-full h-full flex flex-col overflow-hidden relative bg-black/50">
-            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
-                <button onClick={onBack} className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+        <div className="w-full h-full flex flex-col overflow-hidden relative bg-background/80">
+            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
+                <button onClick={onBack} className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors">
                     <ChevronLeft className="w-5 h-5 text-foreground" />
                 </button>
                 <h2 className="text-xl font-semibold text-red-500 flex items-center gap-2">
@@ -84,7 +84,7 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                     <div className="space-y-4">
 
                         {/* Delete Appointments */}
-                        <div className="p-4 bg-white/5 border border-white/10 rounded-[4px]">
+                        <div className="p-4 bg-secondary/50 border border-border rounded-[4px]">
                             <div className="flex items-center justify-between mb-2">
                                 <div>
                                     <h3 className="text-foreground font-semibold text-sm">Delete All Appointments</h3>
@@ -98,7 +98,7 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                                 </button>
                             </div>
                             {activeAction === "appointments" && (
-                                <div className="mt-4 pt-4 border-t border-white/10 animate-in fade-in slide-in-from-top-2">
+                                <div className="mt-4 pt-4 border-t border-border animate-in fade-in slide-in-from-top-2">
                                     <p className="text-xs text-zinc-300 mb-2">Type <strong>DELETE</strong> below to confirm wiping all appointments.</p>
                                     <div className="flex gap-2">
                                         <input
@@ -121,7 +121,7 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                         </div>
 
                         {/* Delete Clients */}
-                        <div className="p-4 bg-white/5 border border-white/10 rounded-[4px]">
+                        <div className="p-4 bg-secondary/50 border border-border rounded-[4px]">
                             <div className="flex items-center justify-between mb-2">
                                 <div>
                                     <h3 className="text-foreground font-semibold text-sm">Delete All Clients</h3>
@@ -135,7 +135,7 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                                 </button>
                             </div>
                             {activeAction === "clients" && (
-                                <div className="mt-4 pt-4 border-t border-white/10 animate-in fade-in slide-in-from-top-2">
+                                <div className="mt-4 pt-4 border-t border-border animate-in fade-in slide-in-from-top-2">
                                     <p className="text-xs text-zinc-300 mb-2">Type <strong>DELETE</strong> below to confirm wiping all clients.</p>
                                     <div className="flex gap-2">
                                         <input

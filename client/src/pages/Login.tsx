@@ -144,7 +144,7 @@ export default function Login() {
 
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-white/10" />
+              <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-[10px] font-bold tracking-widest uppercase">
               <span className="bg-background px-4 text-muted-foreground">
@@ -238,7 +238,7 @@ export default function Login() {
           <div className="mt-8 space-y-4">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-white/10" />
+                <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-[10px] tracking-widest uppercase" style={{ fontWeight: 300 }}>
                 <span className="bg-background px-4 text-muted-foreground">
@@ -253,7 +253,7 @@ export default function Login() {
               disabled={isLoading}
               className={cn(
                 tokens.button.secondary,
-                "w-full border border-white/5 h-14 rounded-lg text-base"
+                "w-full border border-border h-14 rounded-lg text-base"
               )}
             >
               Create Account

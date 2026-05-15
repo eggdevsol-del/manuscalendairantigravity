@@ -196,8 +196,8 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
 
   // ── Shared header component ──
   const Header = ({ title: headerTitle, onBack }: { title: string; onBack: () => void }) => (
-    <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
-      <button onClick={onBack} className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+    <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
+      <button onClick={onBack} className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors">
         <ChevronLeft className="w-5 h-5 text-foreground" />
       </button>
       <h2 className="text-xl font-semibold text-foreground">{headerTitle}</h2>
@@ -213,43 +213,43 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
           <div className="pb-[180px] max-w-lg mx-auto space-y-5 px-5 pt-5">
             <div>
               <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Title</label>
-              <input type="text" value={semTitle} onChange={e => setSemTitle(e.target.value)} placeholder="e.g. Mastering Realism Shading" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
+              <input type="text" value={semTitle} onChange={e => setSemTitle(e.target.value)} placeholder="e.g. Mastering Realism Shading" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
             </div>
             <div>
               <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Description</label>
-              <textarea value={semDescription} onChange={e => setSemDescription(e.target.value)} placeholder="What attendees will learn..." rows={3} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 resize-none text-sm" />
+              <textarea value={semDescription} onChange={e => setSemDescription(e.target.value)} placeholder="What attendees will learn..." rows={3} className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 resize-none text-sm" />
             </div>
             <div>
               <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-2 block">Type</label>
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => setSemType("in_person")} className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${semType === "in_person" ? "bg-primary/15 border-primary/50" : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"}`}>
-                  <MapPin className={`w-4 h-4 ${semType === "in_person" ? "text-primary" : "text-white/40"}`} />
-                  <span className={`text-xs font-semibold ${semType === "in_person" ? "text-foreground" : "text-white/60"}`}>In Person</span>
+                <button onClick={() => setSemType("in_person")} className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${semType === "in_person" ? "bg-primary/15 border-primary/50" : "bg-secondary/50 border-border hover:bg-secondary/50"}`}>
+                  <MapPin className={`w-4 h-4 ${semType === "in_person" ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className={`text-xs font-semibold ${semType === "in_person" ? "text-foreground" : "text-muted-foreground"}`}>In Person</span>
                   {semType === "in_person" && <Check className="w-3.5 h-3.5 text-primary ml-auto" />}
                 </button>
-                <button onClick={() => setSemType("virtual")} className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${semType === "virtual" ? "bg-primary/15 border-primary/50" : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"}`}>
-                  <Video className={`w-4 h-4 ${semType === "virtual" ? "text-primary" : "text-white/40"}`} />
-                  <span className={`text-xs font-semibold ${semType === "virtual" ? "text-foreground" : "text-white/60"}`}>Virtual</span>
+                <button onClick={() => setSemType("virtual")} className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${semType === "virtual" ? "bg-primary/15 border-primary/50" : "bg-secondary/50 border-border hover:bg-secondary/50"}`}>
+                  <Video className={`w-4 h-4 ${semType === "virtual" ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className={`text-xs font-semibold ${semType === "virtual" ? "text-foreground" : "text-muted-foreground"}`}>Virtual</span>
                   {semType === "virtual" && <Check className="w-3.5 h-3.5 text-primary ml-auto" />}
                 </button>
               </div>
             </div>
             <div>
               <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Date & Time</label>
-              <input type="datetime-local" value={semDate} onChange={e => setSemDate(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 text-sm" />
+              <input type="datetime-local" value={semDate} onChange={e => setSemDate(e.target.value)} className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 text-sm" />
             </div>
             <div>
               <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">{semType === "virtual" ? "Meeting Link" : "Venue Address"}</label>
-              <input type="text" value={semLocation} onChange={e => setSemLocation(e.target.value)} placeholder={semType === "virtual" ? "https://zoom.us/j/..." : "123 Ink Street, Melbourne"} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
+              <input type="text" value={semLocation} onChange={e => setSemLocation(e.target.value)} placeholder={semType === "virtual" ? "https://zoom.us/j/..." : "123 Ink Street, Melbourne"} className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Price ($)</label>
-                <input type="number" step="0.01" value={semPrice} onChange={e => setSemPrice(e.target.value)} placeholder="150.00" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
+                <input type="number" step="0.01" value={semPrice} onChange={e => setSemPrice(e.target.value)} placeholder="150.00" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
               </div>
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Capacity</label>
-                <input type="number" value={semCapacity} onChange={e => setSemCapacity(e.target.value)} placeholder="20" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
+                <input type="number" value={semCapacity} onChange={e => setSemCapacity(e.target.value)} placeholder="20" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
               </div>
             </div>
             <button onClick={handleSeminarSubmit} disabled={isSubmitting || !semTitle || !semPrice || !semCapacity || !semDate} className="w-full mt-2 py-3.5 bg-primary hover:bg-primary/90 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-40 text-primary-foreground text-sm shadow-lg shadow-primary/20">
@@ -269,39 +269,39 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
         <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
           <div className="pb-[180px] max-w-lg mx-auto space-y-5 px-5 pt-5">
             <div
-              className="w-full aspect-[4/3] max-h-48 rounded-xl border-2 border-dashed border-white/15 bg-white/[0.03] flex flex-col items-center justify-center relative overflow-hidden cursor-pointer hover:bg-white/[0.06] transition-colors"
+              className="w-full aspect-[4/3] max-h-48 rounded-xl border-2 border-dashed border-border bg-secondary/50 flex flex-col items-center justify-center relative overflow-hidden cursor-pointer hover:bg-secondary/50 transition-colors"
               onClick={() => document.getElementById("sf-product-image")?.click()}
             >
               {imagePreview ? (
                 <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
               ) : (
                 <>
-                  <Upload className="w-7 h-7 text-white/30 mb-2" />
-                  <span className="text-xs text-white/40 font-medium">Tap to upload photo</span>
+                  <Upload className="w-7 h-7 text-muted-foreground mb-2" />
+                  <span className="text-xs text-muted-foreground font-medium">Tap to upload photo</span>
                 </>
               )}
               <input id="sf-product-image" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
             </div>
             <div>
               <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Title</label>
-              <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Tattoi Aftercare Cream" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
+              <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Tattoi Aftercare Cream" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
             </div>
             <div>
               <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Description</label>
-              <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe your product..." rows={3} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 resize-none text-sm" />
+              <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe your product..." rows={3} className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 resize-none text-sm" />
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Price ($)</label>
-                <input type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} placeholder="25.00" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
+                <input type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} placeholder="25.00" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
               </div>
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Shipping ($)</label>
-                <input type="number" step="0.01" value={shippingCost} onChange={e => setShippingCost(e.target.value)} placeholder="0.00" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
+                <input type="number" step="0.01" value={shippingCost} onChange={e => setShippingCost(e.target.value)} placeholder="0.00" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
               </div>
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Stock</label>
-                <input type="number" value={inventory} onChange={e => setInventory(e.target.value)} placeholder="50" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-foreground placeholder:text-white/20 focus:outline-none focus:border-primary/50 text-sm" />
+                <input type="number" value={inventory} onChange={e => setInventory(e.target.value)} placeholder="50" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
               </div>
             </div>
             <div>
@@ -311,9 +311,9 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
                   const Icon = opt.icon;
                   const isActive = fulfillmentType === opt.key;
                   return (
-                    <button key={opt.key} onClick={() => setFulfillmentType(opt.key)} className={`${opt.span ? "col-span-2" : ""} p-3 rounded-xl border flex items-center gap-3 transition-all ${isActive ? "bg-primary/15 border-primary/50" : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06]"}`}>
-                      <Icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-white/40"}`} />
-                      <span className={`text-xs font-semibold ${isActive ? "text-foreground" : "text-white/60"}`}>{opt.label}</span>
+                    <button key={opt.key} onClick={() => setFulfillmentType(opt.key)} className={`${opt.span ? "col-span-2" : ""} p-3 rounded-xl border flex items-center gap-3 transition-all ${isActive ? "bg-primary/15 border-primary/50" : "bg-secondary/50 border-border hover:bg-secondary/50"}`}>
+                      <Icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                      <span className={`text-xs font-semibold ${isActive ? "text-foreground" : "text-muted-foreground"}`}>{opt.label}</span>
                       {isActive && <Check className="w-3.5 h-3.5 text-primary ml-auto" />}
                     </button>
                   );
@@ -332,8 +332,8 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
   // ── DASHBOARD VIEW ──
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative">
-      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
-        <button onClick={onClose} className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
+        <button onClick={onClose} className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors">
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
         <h2 className="text-xl font-semibold text-foreground flex-1">Storefront</h2>
@@ -347,7 +347,7 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
               <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-amber-500">Payouts Not Connected</p>
-                <p className="text-xs text-white/50 mt-1">Set up Stripe Connect in Bank Payouts to receive store payments.</p>
+                <p className="text-xs text-muted-foreground mt-1">Set up Stripe Connect in Bank Payouts to receive store payments.</p>
                 <button onClick={() => { onClose(); setLocation("/bank-payouts"); }} className="mt-2 text-xs font-bold text-amber-500 underline underline-offset-2">
                   Set Up Now →
                 </button>
@@ -367,12 +367,12 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
             </div>
             {productsLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-5 h-5 animate-spin text-white/20" />
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
               </div>
             ) : !products || products.length === 0 ? (
-              <div className="text-center py-8 bg-white/[0.02] rounded-xl border border-white/5">
-                <Package className="w-8 h-8 text-white/10 mx-auto mb-2" />
-                <p className="text-sm text-white/40 font-medium">No products yet</p>
+              <div className="text-center py-8 bg-secondary/50 rounded-xl border border-border">
+                <Package className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground font-medium">No products yet</p>
                 <button onClick={() => setView("add_product")} className="mt-2 text-xs font-bold text-primary underline underline-offset-2">
                   Add your first product
                 </button>
@@ -393,14 +393,14 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
                       setImagePreview(product.imageUrl || null);
                       setView("edit_product");
                     }}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors cursor-pointer"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-border hover:bg-secondary/50 transition-colors cursor-pointer"
                   >
-                    <div className="w-12 h-12 rounded-lg bg-white/5 overflow-hidden shrink-0">
+                    <div className="w-12 h-12 rounded-lg bg-secondary/50 overflow-hidden shrink-0">
                       {product.imageUrl ? (
                         <img src={product.imageUrl} alt={product.title} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-5 h-5 text-white/15" />
+                          <Package className="w-5 h-5 text-muted-foreground" />
                         </div>
                       )}
                     </div>
@@ -431,12 +431,12 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
             </div>
             {seminarsLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-5 h-5 animate-spin text-white/20" />
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
               </div>
             ) : !seminars || seminars.length === 0 ? (
-              <div className="text-center py-8 bg-white/[0.02] rounded-xl border border-white/5">
-                <CalendarDays className="w-8 h-8 text-white/10 mx-auto mb-2" />
-                <p className="text-sm text-white/40 font-medium">No seminars yet</p>
+              <div className="text-center py-8 bg-secondary/50 rounded-xl border border-border">
+                <CalendarDays className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground font-medium">No seminars yet</p>
                 <button onClick={() => setView("add_seminar")} className="mt-2 text-xs font-bold text-primary underline underline-offset-2">
                   Create your first seminar
                 </button>
@@ -447,8 +447,8 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
                   const spotsLeft = seminar.capacity - (seminar.ticketsSold || 0);
                   const eventDate = new Date(seminar.date);
                   return (
-                    <div key={seminar.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors">
-                      <div className="w-12 h-12 rounded-lg bg-white/5 overflow-hidden shrink-0 flex items-center justify-center">
+                    <div key={seminar.id} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-border hover:bg-secondary/50 transition-colors">
+                      <div className="w-12 h-12 rounded-lg bg-secondary/50 overflow-hidden shrink-0 flex items-center justify-center">
                         {seminar.type === "virtual" ? (
                           <Video className="w-5 h-5 text-purple-400/50" />
                         ) : (

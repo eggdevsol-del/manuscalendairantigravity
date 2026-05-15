@@ -238,7 +238,7 @@ export function ProposalFABMenu({
               variants={fab.animation.item}
               className={cn(
                 card.base,
-                "grid grid-cols-3 gap-px rounded-[4px] overflow-hidden bg-white/[0.03]"
+                "grid grid-cols-3 gap-px rounded-[4px] overflow-hidden bg-secondary/50"
               )}
             >
               {[
@@ -305,7 +305,7 @@ export function ProposalFABMenu({
                         "flex items-center gap-2 p-1.5 rounded-[4px]"
                       )}
                     >
-                      <span className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
+                      <span className="w-4 h-4 rounded-full bg-secondary/50 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
                         {i + 1}
                       </span>
                       <div className="flex-1 min-w-0">
@@ -357,7 +357,7 @@ export function ProposalFABMenu({
                     disabled={isPendingAction}
                     className={cn(
                       "py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95",
-                      "bg-white/5 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                      "bg-secondary/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
                     )}
                   >
                     Decline
@@ -405,7 +405,7 @@ export function ProposalFABMenu({
                   onClick={onCancel}
                   className={cn(
                     "w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95",
-                    "bg-white/5 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                    "bg-secondary/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
                   )}
                 >
                   Cancel Proposal

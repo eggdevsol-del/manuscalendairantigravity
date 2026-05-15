@@ -93,7 +93,7 @@ export default function PayoutHistory() {
                                     <Banknote className="w-5 h-5 text-emerald-400" />
                                     Earnings Summary
                                 </h2>
-                                <div className="flex gap-1 bg-white/5 rounded-lg p-0.5">
+                                <div className="flex gap-1 bg-secondary/50 rounded-lg p-0.5">
                                     {(["7d", "30d", "90d", "all"] as Period[]).map((p) => (
                                         <button
                                             key={p}
@@ -113,7 +113,7 @@ export default function PayoutHistory() {
 
                             {earnings && (
                                 <div className="grid grid-cols-2 gap-3">
-                                    <div className="bg-white/5 rounded-lg p-3">
+                                    <div className="bg-secondary/50 rounded-lg p-3">
                                         <p className="text-[10px] text-muted-foreground uppercase">
                                             Gross Revenue
                                         </p>
@@ -129,7 +129,7 @@ export default function PayoutHistory() {
                                             {formatCents(earnings.netCents)}
                                         </p>
                                     </div>
-                                    <div className="bg-white/5 rounded-lg p-3">
+                                    <div className="bg-secondary/50 rounded-lg p-3">
                                         <p className="text-[10px] text-muted-foreground uppercase">
                                             Platform Fees
                                         </p>
@@ -140,7 +140,7 @@ export default function PayoutHistory() {
                                             Paid by clients at checkout
                                         </p>
                                     </div>
-                                    <div className="bg-white/5 rounded-lg p-3">
+                                    <div className="bg-secondary/50 rounded-lg p-3">
                                         <p className="text-[10px] text-muted-foreground uppercase">
                                             Artist Fees
                                         </p>
@@ -178,7 +178,7 @@ export default function PayoutHistory() {
                                     "border-0 overflow-hidden"
                                 )}
                             >
-                                <div className="p-4 border-b border-white/5">
+                                <div className="p-4 border-b border-border">
                                     <h3 className="font-semibold text-foreground text-sm">
                                         Recent Transactions
                                     </h3>
@@ -190,7 +190,7 @@ export default function PayoutHistory() {
                                         return (
                                             <div
                                                 key={entry.id}
-                                                className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                                                className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div
@@ -263,7 +263,7 @@ export default function PayoutHistory() {
                                     "border-0 overflow-hidden"
                                 )}
                             >
-                                <div className="p-4 border-b border-white/5">
+                                <div className="p-4 border-b border-border">
                                     <h3 className="font-semibold text-foreground text-sm">
                                         Payouts
                                     </h3>
@@ -272,7 +272,7 @@ export default function PayoutHistory() {
                                     {history!.payouts.map((payout: any) => (
                                         <div
                                             key={payout.id}
-                                            className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                                            className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors"
                                         >
                                             <div className="flex items-center gap-3">
                                                 <div

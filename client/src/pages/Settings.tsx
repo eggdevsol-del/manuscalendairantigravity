@@ -63,7 +63,7 @@ function PaymentProcessingSettingsRow() {
 
   return (
     <div
-      className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+      className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
       onClick={handleClick}
     >
       <div className="flex items-center gap-3">
@@ -145,7 +145,7 @@ export default function Settings() {
       {/* 2. Top Context Area (Profile Summary) */}
       <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border-2 border-white/5 shadow-lg">
+          <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center overflow-hidden border-2 border-border shadow-lg">
             {user?.avatar ? (
               <img
                 src={getAssetUrl(user.avatar)}
@@ -153,7 +153,7 @@ export default function Settings() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <User className="w-8 h-8 text-white/50" />
+              <User className="w-8 h-8 text-muted-foreground" />
             )}
           </div>
           <div>
@@ -185,7 +185,7 @@ export default function Settings() {
               >
                 <div className="divide-y divide-white/5">
                   <div
-                    className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                    className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
                     onClick={() => navigateToSection("profile")}
                   >
                     <div className="flex items-center gap-3">
@@ -203,7 +203,7 @@ export default function Settings() {
                   </div>
 
                   <div
-                    className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                    className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
                     onClick={toggleTheme}
                   >
                     <div className="flex items-center gap-3">
@@ -252,7 +252,7 @@ export default function Settings() {
                   {!isArtist && (
                     <>
                       <div
-                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
                         onClick={() => setLocation("/consultations")}
                       >
                         <div className="flex items-center gap-3">
@@ -271,7 +271,7 @@ export default function Settings() {
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div
-                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
                         onClick={() => setLocation("/policies")}
                       >
                         <div className="flex items-center gap-3">
@@ -295,7 +295,7 @@ export default function Settings() {
                   {isArtist && (
                     <>
                       <div
-                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
                         onClick={() => setLocation("/clients")}
                       >
                         <div className="flex items-center gap-3">
@@ -314,7 +314,7 @@ export default function Settings() {
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div
-                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
                         onClick={() => navigateToSection("booking-link")}
                       >
                         <div className="flex items-center gap-3">
@@ -333,7 +333,7 @@ export default function Settings() {
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div
-                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
                         onClick={() => navigateToSection("business")}
                       >
                         <div className="flex items-center gap-3">
@@ -353,7 +353,7 @@ export default function Settings() {
                       </div>
                       {(user?.role === "studio" || user?.role === "admin") && (
                         <div
-                          className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                          className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
                           onClick={() => setLocation("/studio")}
                         >
                           <div className="flex items-center gap-3">
@@ -373,7 +373,7 @@ export default function Settings() {
                         </div>
                       )}
                       <div
-                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
                         onClick={() => setLocation("/subscriptions")}
                       >
                         <div className="flex items-center gap-3">
@@ -393,7 +393,7 @@ export default function Settings() {
                       </div>
                       <PaymentProcessingSettingsRow />
                       <div
-                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
                         onClick={() => navigateToSection("work-hours")}
                       >
                         <div className="flex items-center gap-3">
@@ -412,7 +412,7 @@ export default function Settings() {
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div
-                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
                         onClick={() => navigateToSection("regulation")}
                       >
                         <div className="flex items-center gap-3">
@@ -431,7 +431,7 @@ export default function Settings() {
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div
-                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
                         onClick={() => setLocation("/quick-actions")}
                       >
                         <div className="flex items-center gap-3">
@@ -450,7 +450,7 @@ export default function Settings() {
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div
-                        className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99]"
+                        className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
                         onClick={() => setLocation("/notifications-management")}
                       >
                         <div className="flex items-center gap-3">
@@ -487,7 +487,7 @@ export default function Settings() {
                 )}
               >
                 <div className="divide-y divide-white/5">
-                  <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                  <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-slate-500/20 text-slate-400">
                         <Zap className="w-5 h-5" />
@@ -508,7 +508,7 @@ export default function Settings() {
                   </div>
 
                   <div
-                    className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer active:scale-[0.99] group"
+                    className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99] group"
                     onClick={() => {
                       toast.info("Checking for updates...");
                       forceUpdate();

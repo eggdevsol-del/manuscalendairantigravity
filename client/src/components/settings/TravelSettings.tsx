@@ -84,7 +84,7 @@ function TripCard({ trip, onRemove, onEdit }: { trip: Trip; onRemove: () => void
     return (
         <div
             ref={cardRef}
-            className="relative overflow-hidden border border-white/10 hover:border-white/20 transition-colors cursor-pointer rounded-2xl"
+            className="relative overflow-hidden border border-border hover:border-border transition-colors cursor-pointer rounded-2xl"
             onClick={() => setFabOpen(prev => !prev)}
         >
             {/* Full satellite map background — 100% opacity */}
@@ -124,13 +124,13 @@ function TripCard({ trip, onRemove, onEdit }: { trip: Trip; onRemove: () => void
                             <MapPin className="w-4 h-4 mr-2 text-primary" />
                             {trip.location}, {trip.country}
                         </h5>
-                        <span className="text-sm text-white/70 mt-1 ml-6 font-mono drop-shadow-sm">
+                        <span className="text-sm text-muted-foreground mt-1 ml-6 font-mono drop-shadow-sm">
                             {new Date(trip.startDate).toLocaleDateString()} – {new Date(trip.endDate).toLocaleDateString()}
                         </span>
                     </div>
                     <button
                         onClick={(e) => { e.stopPropagation(); onRemove(); }}
-                        className="w-6 h-6 flex items-center justify-center rounded-full text-white/40 hover:text-destructive hover:bg-destructive/20 transition-colors shrink-0"
+                        className="w-6 h-6 flex items-center justify-center rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/20 transition-colors shrink-0"
                     >
                         <Trash className="w-3 h-3" />
                     </button>
@@ -140,7 +140,7 @@ function TripCard({ trip, onRemove, onEdit }: { trip: Trip; onRemove: () => void
                 <button
                     onClick={handleNotify}
                     disabled={scanning || matchQuery.isLoading}
-                    className="w-full h-10 flex items-center justify-center gap-2 text-sm font-semibold text-white backdrop-blur-xl bg-white/10 border border-white/15 hover:bg-white/15 transition-all disabled:opacity-60 rounded-xl"
+                    className="w-full h-10 flex items-center justify-center gap-2 text-sm font-semibold text-white backdrop-blur-xl bg-secondary/50 border border-border hover:bg-secondary/50 transition-all disabled:opacity-60 rounded-xl"
                 >
                     {scanning || matchQuery.isLoading ? (
                         <><Loader2 className="w-4 h-4 animate-spin" /> Scanning Clients...</>
@@ -155,13 +155,13 @@ function TripCard({ trip, onRemove, onEdit }: { trip: Trip; onRemove: () => void
             {/* Edit FAB Menu — appears on card tap */}
             {fabOpen && (
                 <div
-                    className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-md bg-black/50 animate-in fade-in duration-200 rounded-2xl"
+                    className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-md bg-background/80 animate-in fade-in duration-200 rounded-2xl"
 
                 >
                     <div className="flex gap-3">
                         <button
                             onClick={(e) => { e.stopPropagation(); setFabOpen(false); onEdit(trip); }}
-                            className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors backdrop-blur-sm"
+                            className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl bg-secondary/50 hover:bg-secondary/50 text-white transition-colors backdrop-blur-sm"
                         >
                             <Pencil className="w-5 h-5" />
                             <span className="text-xs font-medium">Edit</span>
@@ -175,7 +175,7 @@ function TripCard({ trip, onRemove, onEdit }: { trip: Trip; onRemove: () => void
                         </button>
                         <button
                             onClick={(e) => { e.stopPropagation(); setFabOpen(false); }}
-                            className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors backdrop-blur-sm"
+                            className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl bg-secondary/50 hover:bg-secondary/50 text-white transition-colors backdrop-blur-sm"
                         >
                             <X className="w-5 h-5" />
                             <span className="text-xs font-medium">Close</span>
@@ -237,10 +237,10 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
 
     return (
         <div className="w-full h-full flex flex-col overflow-hidden relative">
-            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
                 <button
                     onClick={onBack}
-                    className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                    className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
                 >
                     <ChevronLeft className="w-5 h-5 text-foreground" />
                 </button>
@@ -253,7 +253,7 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
             <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
                 <div className="pb-[180px] max-w-lg mx-auto space-y-6 px-4 pt-6">
 
-                    <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-[4px] p-6 text-center border border-white/5">
+                    <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-[4px] p-6 text-center border border-border">
                         <Plane className="w-8 h-8 text-primary mx-auto mb-3 opacity-90" />
                         <h3 className="text-lg font-bold text-foreground mb-1">Artist on the Move</h3>
                         <p className="text-sm text-muted-foreground">Block out your international or inter-state travels, alert local clients actively, and manage waitlists effectively.</p>
@@ -322,7 +322,7 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
                                 </div>
 
                                 {/* Divider */}
-                                <div className="border-t border-white/5" />
+                                <div className="border-t border-border" />
 
                                 {/* Step 2: Travel Dates */}
                                 <div className="space-y-3">
@@ -370,7 +370,7 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
                                 </div>
 
                                 {/* Divider */}
-                                <div className="border-t border-white/5" />
+                                <div className="border-t border-border" />
 
                                 {/* Actions */}
                                 <div className="flex gap-3">
@@ -392,7 +392,7 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
 
                     <div className="space-y-3">
                         {trips.length === 0 && !isAdding && (
-                            <div className="bg-white/5 border border-white/5 p-8 rounded-[4px] text-center text-muted-foreground text-sm flex flex-col items-center">
+                            <div className="bg-secondary/50 border border-border p-8 rounded-[4px] text-center text-muted-foreground text-sm flex flex-col items-center">
                                 <Navigation className="w-8 h-8 opacity-20 mb-3" />
                                 No travel legs scheduled.
                             </div>

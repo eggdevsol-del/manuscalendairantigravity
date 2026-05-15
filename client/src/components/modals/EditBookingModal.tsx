@@ -218,7 +218,7 @@ export function EditBookingModal({
             <div className="space-y-3">
                 <label className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Name</span>
-                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-white/5")}>
+                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-border")}>
                         <User className="w-3.5 h-3.5 text-muted-foreground" />
                         <input
                             type="text"
@@ -232,7 +232,7 @@ export function EditBookingModal({
 
                 <label className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Phone Number</span>
-                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-white/5")}>
+                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-border")}>
                         <Phone className="w-3.5 h-3.5 text-muted-foreground" />
                         <input
                             type="tel"
@@ -267,7 +267,7 @@ export function EditBookingModal({
             <div className="space-y-3">
                 <label className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Service</span>
-                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-white/5")}>
+                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-border")}>
                         <select
                             value={serviceName}
                             onChange={(e) => {
@@ -307,7 +307,7 @@ export function EditBookingModal({
                                         type="text"
                                         value={newServiceName}
                                         onChange={(e) => setNewServiceName(e.target.value)}
-                                        className={cn(card.base, card.bg, "px-3 py-2.5 rounded-[4px] border-white/5 text-[11px] text-foreground font-medium")}
+                                        className={cn(card.base, card.bg, "px-3 py-2.5 rounded-[4px] border-border text-[11px] text-foreground font-medium")}
                                         placeholder="e.g. Touch Up"
                                     />
                                 </label>
@@ -317,7 +317,7 @@ export function EditBookingModal({
                                         type="number"
                                         value={newServiceDuration}
                                         onChange={(e) => setNewServiceDuration(e.target.value)}
-                                        className={cn(card.base, card.bg, "px-3 py-2.5 rounded-[4px] border-white/5 text-[11px] text-foreground font-medium")}
+                                        className={cn(card.base, card.bg, "px-3 py-2.5 rounded-[4px] border-border text-[11px] text-foreground font-medium")}
                                         placeholder="60"
                                     />
                                 </label>
@@ -328,7 +328,7 @@ export function EditBookingModal({
 
                 <label className="flex flex-col gap-1.5 pt-1">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Price per Session</span>
-                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-white/5 focus-within:border-primary/50 transition-colors")}>
+                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-border focus-within:border-primary/50 transition-colors")}>
                         <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
                         <input
                             type="number"
@@ -351,7 +351,7 @@ export function EditBookingModal({
                     )}>
                     <div className={cn(
                         "w-4 h-4 rounded-[2px] border flex items-center justify-center transition-colors shrink-0",
-                        applyToAll ? "bg-primary border-primary text-primary-foreground" : "border-white/20 bg-black/20"
+                        applyToAll ? "bg-primary border-primary text-primary-foreground" : "border-border bg-background/80"
                     )}>
                         {applyToAll && <CheckCircle2 className="w-3 h-3" />}
                     </div>
@@ -379,7 +379,7 @@ export function EditBookingModal({
             <div className="space-y-3">
                 <label className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">New Date</span>
-                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-white/5")}>
+                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-border")}>
                         <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
                         <input
                             type="date"
@@ -393,7 +393,7 @@ export function EditBookingModal({
 
                 <label className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Start Time</span>
-                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-white/5")}>
+                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-border")}>
                         <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                         <input
                             type="time"
@@ -425,7 +425,7 @@ export function EditBookingModal({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[990]"
+                        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[990]"
                     />
                     <motion.div
                         initial={{ y: "100%" }}
@@ -446,14 +446,14 @@ export function EditBookingModal({
                             </div>
                             <button
                                 onClick={onClose}
-                                className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95"
+                                className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
                         {/* Tab Navigation */}
-                        <div className="flex gap-2 mb-4 p-1 bg-white/5 rounded-[4px]">
+                        <div className="flex gap-2 mb-4 p-1 bg-secondary/50 rounded-[4px]">
                             {(["contact", "cost", "reschedule"] as TabKey[]).map((tab) => (
                                 <button
                                     key={tab}
@@ -461,8 +461,8 @@ export function EditBookingModal({
                                     className={cn(
                                         "flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-[2px] transition-all",
                                         activeTab === tab
-                                            ? "bg-white/10 text-foreground shadow-sm"
-                                            : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                                            ? "bg-secondary/50 text-foreground shadow-sm"
+                                            : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                                     )}
                                 >
                                     {tab}

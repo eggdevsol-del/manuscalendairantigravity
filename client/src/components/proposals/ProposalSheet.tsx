@@ -121,14 +121,14 @@ export function ProposalSheet({
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Client Info */}
-        <div className="bg-white/5 rounded-2xl p-4">
+        <div className="bg-secondary/50 rounded-2xl p-4">
           <h3 className="text-white font-medium mb-2">Sending to</h3>
-          <p className="text-white/90">{clientName}</p>
+          <p className="text-muted-foreground">{clientName}</p>
           {clientEmail && (
-            <p className="text-white/60 text-sm">{clientEmail}</p>
+            <p className="text-muted-foreground text-sm">{clientEmail}</p>
           )}
           {projectType && (
-            <p className="text-white/60 text-sm mt-1">
+            <p className="text-muted-foreground text-sm mt-1">
               Project: {projectType.replace(/-/g, " ")}
             </p>
           )}
@@ -154,9 +154,9 @@ export function ProposalSheet({
 
           <div className="space-y-3">
             {dateOptions.map((option, index) => (
-              <div key={option.id} className="bg-white/5 rounded-2xl p-4">
+              <div key={option.id} className="bg-secondary/50 rounded-2xl p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-white/60 text-sm">
+                  <span className="text-muted-foreground text-sm">
                     Option {index + 1}
                   </span>
                   {dateOptions.length > 1 && (
@@ -175,12 +175,12 @@ export function ProposalSheet({
                   onChange={e =>
                     updateDateOption(option.id, "date", e.target.value)
                   }
-                  className="w-full bg-white/10 border-0 rounded-xl px-4 py-3 text-white mb-3"
+                  className="w-full bg-secondary/50 border-0 rounded-xl px-4 py-3 text-white mb-3"
                 />
 
                 <div className="flex gap-3">
                   <div className="flex-1">
-                    <label className="text-white/60 text-xs mb-1 block">
+                    <label className="text-muted-foreground text-xs mb-1 block">
                       Start
                     </label>
                     <input
@@ -189,11 +189,11 @@ export function ProposalSheet({
                       onChange={e =>
                         updateDateOption(option.id, "startTime", e.target.value)
                       }
-                      className="w-full bg-white/10 border-0 rounded-xl px-4 py-3 text-white"
+                      className="w-full bg-secondary/50 border-0 rounded-xl px-4 py-3 text-white"
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="text-white/60 text-xs mb-1 block">
+                    <label className="text-muted-foreground text-xs mb-1 block">
                       End
                     </label>
                     <input
@@ -202,7 +202,7 @@ export function ProposalSheet({
                       onChange={e =>
                         updateDateOption(option.id, "endTime", e.target.value)
                       }
-                      className="w-full bg-white/10 border-0 rounded-xl px-4 py-3 text-white"
+                      className="w-full bg-secondary/50 border-0 rounded-xl px-4 py-3 text-white"
                     />
                   </div>
                 </div>
@@ -218,14 +218,14 @@ export function ProposalSheet({
             Deposit Required
           </h3>
 
-          <div className="bg-white/5 rounded-2xl p-4">
+          <div className="bg-secondary/50 rounded-2xl p-4">
             <div className="flex gap-2 mb-3">
               <button
                 onClick={() => setDepositType("fixed")}
                 className={`flex-1 py-2 rounded-xl text-sm transition-colors ${
                   depositType === "fixed"
                     ? "bg-[#7C5CFC] text-white"
-                    : "bg-white/10 text-white/60"
+                    : "bg-secondary/50 text-muted-foreground"
                 }`}
               >
                 Fixed Amount
@@ -235,7 +235,7 @@ export function ProposalSheet({
                 className={`flex-1 py-2 rounded-xl text-sm transition-colors ${
                   depositType === "percentage"
                     ? "bg-[#7C5CFC] text-white"
-                    : "bg-white/10 text-white/60"
+                    : "bg-secondary/50 text-muted-foreground"
                 }`}
               >
                 Percentage
@@ -243,7 +243,7 @@ export function ProposalSheet({
             </div>
 
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                 {depositType === "fixed" ? "$" : ""}
               </span>
               <input
@@ -251,12 +251,12 @@ export function ProposalSheet({
                 value={depositAmount}
                 onChange={e => setDepositAmount(e.target.value)}
                 placeholder={depositType === "fixed" ? "200" : "20"}
-                className={`w-full bg-white/10 border-0 rounded-xl py-3 text-white ${
+                className={`w-full bg-secondary/50 border-0 rounded-xl py-3 text-white ${
                   depositType === "fixed" ? "pl-8 pr-4" : "pl-4 pr-8"
                 }`}
               />
               {depositType === "percentage" && (
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60">
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                   %
                 </span>
               )}
@@ -265,7 +265,7 @@ export function ProposalSheet({
             {estimatedValue &&
               depositType === "percentage" &&
               depositAmount && (
-                <p className="text-white/60 text-sm mt-2">
+                <p className="text-muted-foreground text-sm mt-2">
                   = $
                   {Math.round(
                     ((estimatedValue / 100) * Number(depositAmount)) / 100
@@ -283,13 +283,13 @@ export function ProposalSheet({
             onChange={e => setNotes(e.target.value)}
             placeholder="Any additional details for the client..."
             rows={3}
-            className="w-full bg-white/5 border-0 rounded-2xl px-4 py-3 text-white placeholder:text-white/40 resize-none"
+            className="w-full bg-secondary/50 border-0 rounded-2xl px-4 py-3 text-white placeholder:text-muted-foreground resize-none"
           />
         </div>
       </div>
 
       {/* Send Button */}
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-border">
         <button
           onClick={handleSend}
           disabled={isSending}

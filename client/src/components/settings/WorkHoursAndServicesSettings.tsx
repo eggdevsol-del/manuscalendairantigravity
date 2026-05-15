@@ -260,10 +260,10 @@ export function WorkHoursAndServicesSettings({
     return (
         <div className="w-full h-full flex flex-col overflow-hidden relative">
             {/* 1. Page Header - Floating style */}
-            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
                 <button
                     onClick={onBack}
-                    className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                    className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
                 >
                     <ChevronLeft className="w-5 h-5 text-foreground" />
                 </button>
@@ -318,7 +318,7 @@ export function WorkHoursAndServicesSettings({
                                                         handleTypeChange(key, val)
                                                     }
                                                 >
-                                                    <SelectTrigger className="h-8 bg-white/5 border-white/10 text-xs w-full mb-1">
+                                                    <SelectTrigger className="h-8 bg-secondary/50 border-border text-xs w-full mb-1">
                                                         <SelectValue placeholder="Select type" />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -336,7 +336,7 @@ export function WorkHoursAndServicesSettings({
                                                             onChange={e =>
                                                                 handleTimeChange(key, "start", e.target.value)
                                                             }
-                                                            className="bg-white/5 border-white/10"
+                                                            className="bg-secondary/50 border-border"
                                                         />
                                                     </div>
                                                     <span className="flex items-center text-muted-foreground text-xs">
@@ -349,7 +349,7 @@ export function WorkHoursAndServicesSettings({
                                                             onChange={e =>
                                                                 handleTimeChange(key, "end", e.target.value)
                                                             }
-                                                            className="bg-white/5 border-white/10"
+                                                            className="bg-secondary/50 border-border"
                                                         />
                                                     </div>
                                                 </div>
@@ -362,7 +362,7 @@ export function WorkHoursAndServicesSettings({
                     </div>
 
                     {/* Services Section */}
-                    <div className="pt-4 border-t border-white/5">
+                    <div className="pt-4 border-t border-border">
                         <div className="mb-4 flex items-center justify-between">
                             <div>
                                 <p className="text-muted-foreground text-sm font-medium">
@@ -387,11 +387,11 @@ export function WorkHoursAndServicesSettings({
 
                     <div className="p-4 space-y-1">
                         {showAddForm && (
-                            <div className="p-4 border border-dashed border-white/20 rounded-[4px] space-y-3 bg-white/5 mb-4">
+                            <div className="p-4 border border-dashed border-border rounded-[4px] space-y-3 bg-secondary/50 mb-4">
                                 <h3 className="font-semibold text-sm">
                                     New Service Details
                                 </h3>
-                                <div className="space-y-4 mb-4 pb-4 border-b border-white/10">
+                                <div className="space-y-4 mb-4 pb-4 border-b border-border">
                                     <div className="flex items-center justify-between">
                                         <Label className="text-foreground font-semibold">Project Mode</Label>
                                         <div className="flex items-center gap-2">
@@ -418,7 +418,7 @@ export function WorkHoursAndServicesSettings({
                                             onChange={e =>
                                                 setNewService({ ...newService, name: e.target.value })
                                             }
-                                            className="bg-white/5 border-white/10"
+                                            className="bg-secondary/50 border-border"
                                         />
                                     </div>
 
@@ -435,7 +435,7 @@ export function WorkHoursAndServicesSettings({
                                                         duration: (parseInt(e.target.value) || 0) * 60,
                                                     })
                                                 }
-                                                className="bg-white/5 border-white/10"
+                                                className="bg-secondary/50 border-border"
                                             />
                                         </div>
                                         <div className="space-y-2 flex flex-col justify-end">
@@ -450,7 +450,7 @@ export function WorkHoursAndServicesSettings({
                                                         price: parseInt(e.target.value) || 0,
                                                     })
                                                 }
-                                                className="bg-white/5 border-white/10"
+                                                className="bg-secondary/50 border-border"
                                             />
                                         </div>
                                     </div>
@@ -468,7 +468,7 @@ export function WorkHoursAndServicesSettings({
                                                         color: e.target.value,
                                                     })
                                                 }
-                                                className="w-12 h-10 p-1 bg-white/5 border-white/10 cursor-pointer"
+                                                className="w-12 h-10 p-1 bg-secondary/50 border-border cursor-pointer"
                                             />
                                             <Input
                                                 type="text"
@@ -479,7 +479,7 @@ export function WorkHoursAndServicesSettings({
                                                         color: e.target.value,
                                                     })
                                                 }
-                                                className="flex-1 bg-white/5 border-white/10"
+                                                className="flex-1 bg-secondary/50 border-border"
                                                 placeholder="#3b82f6"
                                             />
                                         </div>
@@ -515,12 +515,12 @@ export function WorkHoursAndServicesSettings({
                                                         sittings: Math.max(2, parseInt(e.target.value) || 2),
                                                     })
                                                 }
-                                                className="bg-black/30 border-white/20"
+                                                className="bg-background/80 border-border"
                                             />
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex gap-2 pt-4 mt-2 border-t border-white/5">
+                                <div className="flex gap-2 pt-4 mt-2 border-t border-border">
                                     <Button size="sm" onClick={handleAddService}>
                                         Add
                                     </Button>
@@ -538,12 +538,12 @@ export function WorkHoursAndServicesSettings({
                         {services.map((service, index) => (
                             <div
                                 key={index}
-                                className="p-4 border border-white/10 rounded-[4px] bg-white/5"
+                                className="p-4 border border-border rounded-[4px] bg-secondary/50"
                             >
                                 {editingIndex === index && editingService ? (
                                     // Edit Mode
                                     <div className="space-y-3">
-                                        <div className="space-y-4 mb-4 pb-4 border-b border-white/10">
+                                        <div className="space-y-4 mb-4 pb-4 border-b border-border">
                                             <div className="flex items-center justify-between">
                                                 <Label className="text-foreground font-semibold">Project Mode</Label>
                                                 <div className="flex items-center gap-2">
@@ -569,7 +569,7 @@ export function WorkHoursAndServicesSettings({
                                                         name: e.target.value,
                                                     })
                                                 }
-                                                className="bg-white/5 border-white/10"
+                                                className="bg-secondary/50 border-border"
                                             />
                                         </div>
 
@@ -585,7 +585,7 @@ export function WorkHoursAndServicesSettings({
                                                             duration: (parseInt(e.target.value) || 0) * 60,
                                                         })
                                                     }
-                                                    className="bg-white/5 border-white/10"
+                                                    className="bg-secondary/50 border-border"
                                                 />
                                             </div>
                                             <div className="space-y-2">
@@ -599,7 +599,7 @@ export function WorkHoursAndServicesSettings({
                                                             price: parseInt(e.target.value) || 0,
                                                         })
                                                     }
-                                                    className="bg-white/5 border-white/10"
+                                                    className="bg-secondary/50 border-border"
                                                 />
                                             </div>
                                         </div>
@@ -616,7 +616,7 @@ export function WorkHoursAndServicesSettings({
                                                             color: e.target.value,
                                                         })
                                                     }
-                                                    className="w-12 h-10 p-1 bg-white/5 border-white/10 cursor-pointer"
+                                                    className="w-12 h-10 p-1 bg-secondary/50 border-border cursor-pointer"
                                                 />
                                                 <Input
                                                     type="text"
@@ -627,7 +627,7 @@ export function WorkHoursAndServicesSettings({
                                                             color: e.target.value,
                                                         })
                                                     }
-                                                    className="flex-1 bg-white/5 border-white/10"
+                                                    className="flex-1 bg-secondary/50 border-border"
                                                     placeholder="#3b82f6"
                                                 />
                                             </div>
@@ -661,12 +661,12 @@ export function WorkHoursAndServicesSettings({
                                                             sittings: Math.max(2, parseInt(e.target.value) || 2),
                                                         })
                                                     }
-                                                    className="bg-black/30 border-white/20"
+                                                    className="bg-background/80 border-border"
                                                 />
                                             </div>
                                         )}
 
-                                        <div className="flex gap-2 pt-4 mt-2 border-t border-white/5">
+                                        <div className="flex gap-2 pt-4 mt-2 border-t border-border">
                                             <Button size="sm" onClick={handleSaveEdit}>
                                                 Save
                                             </Button>
@@ -701,7 +701,7 @@ export function WorkHoursAndServicesSettings({
                                                         In Funnel
                                                     </div>
                                                 ) : (
-                                                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted border border-white/10 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted border border-border text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                                                         <Globe className="w-3 h-3 opacity-50" />
                                                         Hidden
                                                     </div>

@@ -133,7 +133,7 @@ export function WeeklySnapshotModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
             onClick={onClose}
           />
 
@@ -145,9 +145,9 @@ export function WeeklySnapshotModal({
             transition={tokens.motion.springModal}
             className="fixed inset-x-4 top-[10%] bottom-[10%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-md z-50 flex flex-col"
           >
-            <div className="bg-background/95 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl flex flex-col h-full overflow-hidden">
+            <div className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border shadow-2xl flex flex-col h-full overflow-hidden">
               {/* Header */}
-              <div className="shrink-0 px-6 pt-6 pb-4 border-b border-white/5">
+              <div className="shrink-0 px-6 pt-6 pb-4 border-b border-border">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-bold">Weekly Snapshot</h2>
@@ -155,7 +155,7 @@ export function WeeklySnapshotModal({
                   </div>
                   <button
                     onClick={onClose}
-                    className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+                    className="w-10 h-10 rounded-full bg-secondary/50 hover:bg-secondary/50 flex items-center justify-center transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -190,7 +190,7 @@ export function WeeklySnapshotModal({
                               stroke="currentColor"
                               strokeWidth="8"
                               fill="none"
-                              className="text-white/10"
+                              className="text-muted-foreground"
                             />
                             <circle
                               cx="64"
@@ -218,7 +218,7 @@ export function WeeklySnapshotModal({
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-white/5 rounded-2xl p-4">
+                      <div className="bg-secondary/50 rounded-2xl p-4">
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">
                           <CheckCircle2 className="w-4 h-4" />
                           <span className="text-xs">Tasks Completed</span>
@@ -228,7 +228,7 @@ export function WeeklySnapshotModal({
                         </p>
                       </div>
 
-                      <div className="bg-white/5 rounded-2xl p-4">
+                      <div className="bg-secondary/50 rounded-2xl p-4">
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">
                           <Zap className="w-4 h-4 text-red-400" />
                           <span className="text-xs">Critical Tasks</span>
@@ -238,7 +238,7 @@ export function WeeklySnapshotModal({
                         </p>
                       </div>
 
-                      <div className="bg-white/5 rounded-2xl p-4">
+                      <div className="bg-secondary/50 rounded-2xl p-4">
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">
                           <Clock className="w-4 h-4" />
                           <span className="text-xs">Avg Response</span>
@@ -252,7 +252,7 @@ export function WeeklySnapshotModal({
                         </p>
                       </div>
 
-                      <div className="bg-white/5 rounded-2xl p-4">
+                      <div className="bg-secondary/50 rounded-2xl p-4">
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">
                           <ComparisonIndicator
                             value={data.comparison.responseTimeVsBenchmark}
@@ -266,7 +266,7 @@ export function WeeklySnapshotModal({
                     </div>
 
                     {/* Task Breakdown */}
-                    <div className="bg-white/5 rounded-2xl p-4">
+                    <div className="bg-secondary/50 rounded-2xl p-4">
                       <h3 className="text-sm font-medium text-muted-foreground mb-3">
                         Task Breakdown
                       </h3>
@@ -319,7 +319,7 @@ export function WeeklySnapshotModal({
                         {data.insights.map((insight, index) => (
                           <div
                             key={index}
-                            className="bg-white/5 rounded-xl p-3 text-sm"
+                            className="bg-secondary/50 rounded-xl p-3 text-sm"
                           >
                             {insight}
                           </div>
@@ -335,7 +335,7 @@ export function WeeklySnapshotModal({
               </div>
 
               {/* Footer */}
-              <div className="shrink-0 px-6 py-4 border-t border-white/5">
+              <div className="shrink-0 px-6 py-4 border-t border-border">
                 <Button variant="default" onClick={onClose} className="w-full">
                   Got it
                 </Button>

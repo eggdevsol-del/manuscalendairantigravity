@@ -73,7 +73,7 @@ export function ImageUpload({
                     alt="Uploaded preview"
                     className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <button
                         onClick={onRemove}
                         className="p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-full transition-colors"
@@ -89,7 +89,7 @@ export function ImageUpload({
     return (
         <div
             onClick={() => !isUploading && fileInputRef.current?.click()}
-            className={`relative border-2 border-dashed border-white/20 rounded-xl flex flex-col items-center justify-center gap-2 text-white/60 hover:text-white hover:border-white/40 hover:bg-white/5 transition-all cursor-pointer overflow-hidden ${isUploading ? "opacity-50 pointer-events-none" : ""
+            className={`relative border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-white hover:border-border hover:bg-secondary/50 transition-all cursor-pointer overflow-hidden ${isUploading ? "opacity-50 pointer-events-none" : ""
                 } ${className}`}
         >
             {isUploading ? (
@@ -99,7 +99,7 @@ export function ImageUpload({
                 </>
             ) : (
                 <>
-                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-1">
+                    <div className="w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center mb-1">
                         <Upload className="w-6 h-6" />
                     </div>
                     <span className="text-sm font-medium px-4 text-center">{label}</span>

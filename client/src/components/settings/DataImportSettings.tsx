@@ -276,10 +276,10 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
 
     return (
         <div className="w-full h-full flex flex-col overflow-hidden relative">
-            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
                 <button
                     onClick={onBack}
-                    className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                    className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
                 >
                     <ChevronLeft className="w-5 h-5 text-foreground" />
                 </button>
@@ -290,7 +290,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                 <div className="pb-[180px] max-w-lg mx-auto space-y-6 px-4 pt-6">
 
                     {/* Header Info */}
-                    <div className="flex flex-col items-center justify-center py-6 border-b border-white/5 mb-2 text-center space-y-3">
+                    <div className="flex flex-col items-center justify-center py-6 border-b border-border mb-2 text-center space-y-3">
                         <Database className="w-8 h-8 text-primary opacity-80" />
                         <h3 className="font-semibold text-foreground tracking-tight">Data Migration Tool</h3>
                         <p className="text-sm text-muted-foreground leading-relaxed max-w-[90%]">Upload a .CSV file exported from tools like Vagaro, Square, or Fresha to instantly copy your {importMode === "clients" ? "client roster" : "appointment history"} directly into your CRM.</p>
@@ -298,16 +298,16 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
 
                     {/* Mode Switcher */}
                     {!file && (
-                        <div className="flex bg-white/5 p-1 rounded-[8px] border border-white/10 w-full mb-4">
+                        <div className="flex bg-secondary/50 p-1 rounded-[8px] border border-border w-full mb-4">
                             <button
                                 onClick={() => setImportMode("clients")}
-                                className={`flex-1 flex justify-center py-2 text-sm font-semibold rounded-[4px] transition-all ${importMode === "clients" ? 'bg-primary text-black' : 'text-muted-foreground hover:bg-white/5'}`}
+                                className={`flex-1 flex justify-center py-2 text-sm font-semibold rounded-[4px] transition-all ${importMode === "clients" ? 'bg-primary text-black' : 'text-muted-foreground hover:bg-secondary/50'}`}
                             >
                                 Clients
                             </button>
                             <button
                                 onClick={() => setImportMode("appointments")}
-                                className={`flex-1 flex justify-center py-2 text-sm font-semibold rounded-[4px] transition-all ${importMode === "appointments" ? 'bg-primary text-black' : 'text-muted-foreground hover:bg-white/5'}`}
+                                className={`flex-1 flex justify-center py-2 text-sm font-semibold rounded-[4px] transition-all ${importMode === "appointments" ? 'bg-primary text-black' : 'text-muted-foreground hover:bg-secondary/50'}`}
                             >
                                 Appointments
                             </button>
@@ -317,7 +317,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                     {!file ? (
                         <div className="space-y-4">
                             <Label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground ml-1">Spreadsheet File</Label>
-                            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-white/20 rounded-[4px] cursor-pointer bg-black/20 hover:bg-black/40 hover:border-white/40 transition-all">
+                            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-border rounded-[4px] cursor-pointer bg-background/80 hover:bg-background/80 hover:border-border transition-all">
                                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                     <UploadCloud className="w-8 h-8 mb-3 text-muted-foreground" />
                                     <p className="mb-2 text-sm text-muted-foreground font-semibold"><span className="text-primary font-bold">Click to upload</span> or drag and drop</p>
@@ -327,7 +327,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                             </label>
 
                             {importMode === "appointments" && (
-                                <div className="pt-6 mt-6 border-t border-white/5 space-y-4">
+                                <div className="pt-6 mt-6 border-t border-border space-y-4">
                                     <Label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground ml-1">External Calendar Sync</Label>
                                     <p className="text-[11px] text-muted-foreground/80 px-1 leading-relaxed">
                                         If you use Google Calendar, Apple Calendar, or any other platform that outputs a public <span className="text-primary font-mono bg-primary/10 px-1 py-0.5 rounded">.ics</span> link, paste it below to continuously block your availability based on external events.
@@ -339,12 +339,12 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                                 value={extCalendarUrl}
                                                 onChange={(e) => setExtCalendarUrl(e.target.value)}
                                                 placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
-                                                className="pl-9 h-10 text-xs bg-black/20 border-white/10"
+                                                className="pl-9 h-10 text-xs bg-background/80 border-border"
                                             />
                                         </div>
                                         <Button
                                             variant="secondary"
-                                            className="h-10 text-[11px] font-bold shrink-0 whitespace-nowrap bg-white/10 hover:bg-white/20"
+                                            className="h-10 text-[11px] font-bold shrink-0 whitespace-nowrap bg-secondary/50 hover:bg-secondary/50"
                                             disabled={!extCalendarUrl || isSavingUrl}
                                             onClick={handleSaveCalendar}
                                         >
@@ -370,7 +370,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                 <div className="mb-2">
                                     <p className="text-muted-foreground text-sm font-medium">Uploaded File</p>
                                 </div>
-                                <div className="flex items-center justify-between px-4 py-3 bg-white/5 border border-white/10 rounded-[4px]">
+                                <div className="flex items-center justify-between px-4 py-3 bg-secondary/50 border border-border rounded-[4px]">
                                     <div>
                                         <p className="font-semibold text-sm flex items-center gap-2">
                                             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -396,7 +396,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                         <div className="mb-2">
                                             <p className="text-muted-foreground text-sm font-medium">Status summary</p>
                                         </div>
-                                        <div className="flex items-start gap-4 p-4 bg-white/5 border border-white/10 rounded-[4px]">
+                                        <div className="flex items-start gap-4 p-4 bg-secondary/50 border border-border rounded-[4px]">
                                             <Database className="w-6 h-6 text-primary mt-1" />
                                             <div>
                                                 <h3 className="text-sm font-semibold text-foreground">Ready to Import {importMode === "clients" ? "Clients" : "Appointments"}</h3>
@@ -409,17 +409,17 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                     </div>
 
                                     {importMode === "appointments" && uniqueServices.length > 0 && (
-                                        <div className="space-y-4 pt-6 border-t border-white/5">
+                                        <div className="space-y-4 pt-6 border-t border-border">
                                             <div className="mb-2">
                                                 <h4 className="text-sm font-medium text-foreground">Map Imported Services</h4>
                                                 <p className="text-[11px] text-muted-foreground leading-relaxed mt-1">We detected these raw external service names from your spreadsheet. You can assign them to your internal services now so they inherit the correct price and duration, or leave them as mystery strings to edit locally later.</p>
                                             </div>
                                             <div className="space-y-3">
                                                 {uniqueServices.map(extService => (
-                                                    <div key={extService} className="flex flex-col gap-2 p-3 bg-white/5 border border-white/10 rounded-[4px]">
+                                                    <div key={extService} className="flex flex-col gap-2 p-3 bg-secondary/50 border border-border rounded-[4px]">
                                                         <Label className="text-xs font-semibold">{extService}</Label>
                                                         <Select value={serviceMap[extService] || "SKIP"} onValueChange={(val) => setServiceMap(prev => ({ ...prev, [extService]: val }))}>
-                                                            <SelectTrigger className="w-full bg-black/40 border-white/10 rounded-[4px] h-9 text-xs">
+                                                            <SelectTrigger className="w-full bg-background/80 border-border rounded-[4px] h-9 text-xs">
                                                                 <SelectValue placeholder="Do not map (Keep as mystery string)" />
                                                             </SelectTrigger>
                                                             <SelectContent className="z-[200] rounded-[4px]">
@@ -468,11 +468,11 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                             <p className="text-muted-foreground text-sm font-medium">Map columns from your CSV</p>
                                         </div>
 
-                                        <div className="space-y-4 p-4 bg-black/20 border border-white/10 rounded-[4px]">
+                                        <div className="space-y-4 p-4 bg-background/80 border border-border rounded-[4px]">
                                             <div className="space-y-2">
                                                 <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Client Name <span className="text-destructive">*</span></Label>
                                                 <Select value={nameCol} onValueChange={setNameCol}>
-                                                    <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
+                                                    <SelectTrigger className="w-full bg-secondary/50 border-border rounded-[4px]">
                                                         <SelectValue placeholder="Select CSV column..." />
                                                     </SelectTrigger>
                                                     <SelectContent className="z-[200] rounded-[4px]">
@@ -485,7 +485,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                             <div className="space-y-2">
                                                 <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Phone Number</Label>
                                                 <Select value={phoneCol} onValueChange={setPhoneCol}>
-                                                    <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
+                                                    <SelectTrigger className="w-full bg-secondary/50 border-border rounded-[4px]">
                                                         <SelectValue placeholder="Select CSV column..." />
                                                     </SelectTrigger>
                                                     <SelectContent className="z-[200] rounded-[4px]">
@@ -499,7 +499,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                             <div className="space-y-2">
                                                 <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Email</Label>
                                                 <Select value={emailCol} onValueChange={setEmailCol}>
-                                                    <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
+                                                    <SelectTrigger className="w-full bg-secondary/50 border-border rounded-[4px]">
                                                         <SelectValue placeholder="Select CSV column..." />
                                                     </SelectTrigger>
                                                     <SelectContent className="z-[200] rounded-[4px]">
@@ -513,10 +513,10 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
 
                                             {importMode === "appointments" && (
                                                 <>
-                                                    <div className="space-y-2 pt-4 border-t border-white/10">
+                                                    <div className="space-y-2 pt-4 border-t border-border">
                                                         <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Appointment Date <span className="text-destructive">*</span></Label>
                                                         <Select value={dateCol} onValueChange={setDateCol}>
-                                                            <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
+                                                            <SelectTrigger className="w-full bg-secondary/50 border-border rounded-[4px]">
                                                                 <SelectValue placeholder="Select CSV column..." />
                                                             </SelectTrigger>
                                                             <SelectContent className="z-[200] rounded-[4px]">
@@ -530,7 +530,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                                     <div className="space-y-2">
                                                         <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Start Time <span className="text-destructive">*</span></Label>
                                                         <Select value={startTimeCol} onValueChange={setStartTimeCol}>
-                                                            <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
+                                                            <SelectTrigger className="w-full bg-secondary/50 border-border rounded-[4px]">
                                                                 <SelectValue placeholder="Select CSV column..." />
                                                             </SelectTrigger>
                                                             <SelectContent className="z-[200] rounded-[4px]">
@@ -544,7 +544,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                                     <div className="space-y-2">
                                                         <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">End Time / Duration</Label>
                                                         <Select value={endTimeCol} onValueChange={setEndTimeCol}>
-                                                            <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
+                                                            <SelectTrigger className="w-full bg-secondary/50 border-border rounded-[4px]">
                                                                 <SelectValue placeholder="Select CSV column..." />
                                                             </SelectTrigger>
                                                             <SelectContent className="z-[200] rounded-[4px]">
@@ -559,7 +559,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                                     <div className="space-y-2">
                                                         <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Service Name</Label>
                                                         <Select value={serviceCol} onValueChange={setServiceCol}>
-                                                            <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
+                                                            <SelectTrigger className="w-full bg-secondary/50 border-border rounded-[4px]">
                                                                 <SelectValue placeholder="Select CSV column..." />
                                                             </SelectTrigger>
                                                             <SelectContent className="z-[200] rounded-[4px]">
@@ -574,7 +574,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                                     <div className="space-y-2">
                                                         <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Service / Treatment</Label>
                                                         <Select value={serviceCol} onValueChange={setServiceCol}>
-                                                            <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
+                                                            <SelectTrigger className="w-full bg-secondary/50 border-border rounded-[4px]">
                                                                 <SelectValue placeholder="Select CSV column..." />
                                                             </SelectTrigger>
                                                             <SelectContent className="z-[200] rounded-[4px]">
@@ -589,7 +589,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                                     <div className="space-y-2 pb-4">
                                                         <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Price / Cost (Optional)</Label>
                                                         <Select value={priceCol} onValueChange={setPriceCol}>
-                                                            <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-[4px]">
+                                                            <SelectTrigger className="w-full bg-secondary/50 border-border rounded-[4px]">
                                                                 <SelectValue placeholder="Select CSV column..." />
                                                             </SelectTrigger>
                                                             <SelectContent className="z-[200] rounded-[4px]">

@@ -20,7 +20,7 @@ export function GlassSheet({ children, className }: GlassSheetProps) {
     <div
       className={cn(
         tokens.sheetMain.container,
-        "dark:bg-slate-950/40 border-t border-white/5",
+        "dark:bg-slate-950/40 border-t border-border",
         className
       )}
     >

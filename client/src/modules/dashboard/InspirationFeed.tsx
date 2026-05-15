@@ -47,14 +47,14 @@ export function InspirationFeed({ likes }: InspirationFeedProps) {
               alt="Portfolio item"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black/20" />
+            <div className="absolute inset-0 bg-background/80" />
             <div className="absolute bottom-2 left-2 right-2">
               <p className="text-white text-xs font-medium truncate drop-shadow-md">
                 {like.portfolio?.artist?.name}
               </p>
             </div>
             <div className="absolute top-2 right-2">
-              <div className="bg-black/40 backdrop-blur-sm p-1.5 rounded-full">
+              <div className="bg-background/80 backdrop-blur-sm p-1.5 rounded-full">
                 <Heart className="w-3 h-3 text-red-500 fill-red-500" />
               </div>
             </div>

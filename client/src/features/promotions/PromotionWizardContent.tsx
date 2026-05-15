@@ -339,7 +339,7 @@ export function PromotionWizardContent({
         variants={fab.animation.item}
         className={cn(
           fab.itemRow,
-          "p-4 border-b border-white/10 shrink-0 mb-2"
+          "p-4 border-b border-border shrink-0 mb-2"
         )}
       >
         <button onClick={goBack} className={fab.itemButton}>
@@ -448,7 +448,7 @@ export function PromotionWizardContent({
       </div>
 
       {/* Action Footer */}
-      <div className="p-4 pt-2 border-t border-white/10 flex gap-2 shrink-0">
+      <div className="p-4 pt-2 border-t border-border flex gap-2 shrink-0">
         {step === "preview" ? (
           <button
             className="flex-1 py-3 rounded-[4px] text-xs font-bold uppercase tracking-widest transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
@@ -583,13 +583,13 @@ function ValueConfigStep({
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="Voucher Name"
-            className="h-9 text-xs bg-white/5 border-white/10"
+            className="h-9 text-xs bg-secondary/50 border-border"
           />
           <Textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
             placeholder="Public description..."
-            className="min-h-[50px] text-[10px] bg-white/5 border-white/10 p-2"
+            className="min-h-[50px] text-[10px] bg-secondary/50 border-border p-2"
           />
         </div>
       </motion.div>
@@ -606,7 +606,7 @@ function ValueConfigStep({
                 "flex-1 py-1.5 rounded-[4px] text-[10px] font-bold transition-all",
                 valueType === "fixed"
                   ? "bg-primary text-primary-foreground"
-                  : "bg-white/5 text-muted-foreground"
+                  : "bg-secondary/50 text-muted-foreground"
               )}
             >
               Fixed
@@ -617,7 +617,7 @@ function ValueConfigStep({
                 "flex-1 py-1.5 rounded-[4px] text-[10px] font-bold transition-all",
                 valueType === "percentage"
                   ? "bg-primary text-primary-foreground"
-                  : "bg-white/5 text-muted-foreground"
+                  : "bg-secondary/50 text-muted-foreground"
               )}
             >
               Percent
@@ -631,7 +631,7 @@ function ValueConfigStep({
               type="number"
               value={value}
               onChange={e => setValue(e.target.value)}
-              className="h-10 pl-7 text-sm font-bold bg-white/5 border-white/10"
+              className="h-10 pl-7 text-sm font-bold bg-secondary/50 border-border"
               placeholder="0"
             />
             {valueType === "percentage" && (
@@ -681,7 +681,7 @@ function RulesConfigStep({
                 value={validityDuration}
                 onChange={(e: any) => setValidityDuration(e.target.value)}
                 placeholder="Days"
-                className="h-9 text-xs bg-white/5 border-white/10 pr-12"
+                className="h-9 text-xs bg-secondary/50 border-border pr-12"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground uppercase font-bold">
                 Days
@@ -796,9 +796,9 @@ function DesignCustomizationStep({
             />
           </motion.div>
           {backgroundImageUrl && (
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 flex items-center gap-2 pointer-events-none z-20 shadow-lg">
-              <Move className="w-3 h-3 text-white/70" />
-              <span className="text-[9px] font-medium text-white/90 tracking-wide uppercase">Drag to pan • Scroll to zoom</span>
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-background/80 backdrop-blur-md rounded-full border border-border flex items-center gap-2 pointer-events-none z-20 shadow-lg">
+              <Move className="w-3 h-3 text-muted-foreground" />
+              <span className="text-[9px] font-medium text-muted-foreground tracking-wide uppercase">Drag to pan • Scroll to zoom</span>
             </div>
           )}
         </div>
@@ -819,7 +819,7 @@ function DesignCustomizationStep({
                   "flex-1 py-1.5 rounded-[4px] text-[9px] font-bold uppercase transition-all",
                   colorMode === m
                     ? "bg-primary text-primary-foreground"
-                    : "bg-white/5 text-muted-foreground"
+                    : "bg-secondary/50 text-muted-foreground"
                 )}
               >
                 {m}
@@ -832,7 +832,7 @@ function DesignCustomizationStep({
         {colorMode === "gradient" && (
           <motion.div
             variants={fab.animation.item}
-            className="grid grid-cols-4 gap-1.5 p-2 bg-white/5 rounded-[4px]"
+            className="grid grid-cols-4 gap-1.5 p-2 bg-secondary/50 rounded-[4px]"
           >
             {GRADIENTS.map(gradient => (
               <button
@@ -842,7 +842,7 @@ function DesignCustomizationStep({
                   "h-6 rounded-sm border transition-all",
                   gradientId === gradient.id
                     ? "border-white scale-110 shadow-lg"
-                    : "border-white/10 opacity-60"
+                    : "border-border opacity-60"
                 )}
                 style={{ background: `linear-gradient(${gradient.direction}, ${gradient.from}, ${gradient.to})` }}
               />
@@ -865,7 +865,7 @@ function DesignCustomizationStep({
                   font.className,
                   fontFamily === font.id
                     ? "bg-primary/20 border-primary text-foreground"
-                    : "bg-white/5 border-white/5 text-muted-foreground hover:bg-white/10"
+                    : "bg-secondary/50 border-border text-muted-foreground hover:bg-secondary/50"
                 )}
               >
                 {font.name}
@@ -887,7 +887,7 @@ function DesignCustomizationStep({
               <button
                 onClick={() => backgroundInputRef.current?.click()}
                 disabled={uploadingBackground}
-                className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all"
+                className="p-1.5 rounded-full bg-secondary/50 hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-all"
               >
                 {uploadingBackground ? (
                   <Clock className="w-3.5 h-3.5 animate-spin" />
@@ -924,7 +924,7 @@ function DesignCustomizationStep({
             <button
               onClick={() => logoInputRef.current?.click()}
               disabled={uploadingLogo}
-              className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all"
+              className="p-1.5 rounded-full bg-secondary/50 hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-all"
             >
               {uploadingLogo ? (
                 <Clock className="w-3.5 h-3.5 animate-spin" />

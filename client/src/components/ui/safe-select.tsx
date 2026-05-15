@@ -72,7 +72,7 @@ function SafeSelect({ value, onValueChange, children, disabled }: SafeSelectProp
                     "focus:outline-none focus:ring-1 focus:ring-ring",
                     "disabled:cursor-not-allowed disabled:opacity-50",
                     "appearance-none cursor-pointer",
-                    "bg-white/5 border-white/10 text-foreground",
+                    "bg-secondary/50 border-border text-foreground",
                     "[&>option]:bg-background [&>option]:text-foreground"
                 )}
             >

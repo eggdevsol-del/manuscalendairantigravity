@@ -192,10 +192,10 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
     return (
         <div className="w-full h-full flex flex-col overflow-hidden relative">
             {/* 1. Page Header - Floating style */}
-            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
                 <button
                     onClick={onBack}
-                    className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                    className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
                 >
                     <ChevronLeft className="w-5 h-5 text-foreground" />
                 </button>
@@ -226,10 +226,10 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                     </Button>
 
                     {templates && templates.length === 0 ? (
-                        <div className="p-8 bg-white/5 border border-white/5 rounded-[4px]">
+                        <div className="p-8 bg-secondary/50 border border-border rounded-[4px]">
                             <div className="text-center space-y-3">
-                                <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mx-auto">
-                                    <Bell className="w-8 h-8 text-white/50" />
+                                <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mx-auto">
+                                    <Bell className="w-8 h-8 text-muted-foreground" />
                                 </div>
                                 <div>
                                     <p className="font-semibold text-foreground">
@@ -244,7 +244,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                     ) : (
                         <div className="space-y-3">
                             {templates?.map((template: any) => (
-                                <div key={template.id} className="bg-transparent border-b border-white/5 pb-4 pt-4 last:border-0 overflow-hidden">
+                                <div key={template.id} className="bg-transparent border-b border-border pb-4 pt-4 last:border-0 overflow-hidden">
                                     <div className="flex items-start justify-between gap-3 mb-3">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
@@ -268,13 +268,13 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                                                 )}
                                             </p>
                                         </div>
-                                        <div className="flex bg-white/5 rounded-lg border border-white/10">
+                                        <div className="flex bg-secondary/50 rounded-lg border border-border">
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => handleTestClick(template)}
                                                 disabled={isTesting}
-                                                className="tap-target h-10 w-10 text-primary hover:bg-white/10 rounded-none rounded-l-lg border-r border-white/10"
+                                                className="tap-target h-10 w-10 text-primary hover:bg-secondary/50 rounded-none rounded-l-lg border-r border-border"
                                                 title="Send Test Push"
                                             >
                                                 <Send className="w-4 h-4" />
@@ -283,7 +283,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => handleEdit(template)}
-                                                className="tap-target h-10 w-10 hover:bg-white/10 rounded-none border-r border-white/10 text-white/70"
+                                                className="tap-target h-10 w-10 hover:bg-secondary/50 rounded-none border-r border-border text-muted-foreground"
                                             >
                                                 <Edit className="w-4 h-4" />
                                             </Button>
@@ -297,7 +297,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                                             </Button>
                                         </div>
                                     </div>
-                                    <div className="p-4 bg-white/5 rounded-[4px] border border-white/5">
+                                    <div className="p-4 bg-secondary/50 rounded-[4px] border border-border">
                                         <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
                                             {template.content}
                                         </p>
@@ -326,7 +326,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                                 setShowDialog(false);
                                 resetForm();
                             }}
-                            className="flex-1 bg-transparent border-white/10 hover:bg-white/5"
+                            className="flex-1 bg-transparent border-border hover:bg-secondary/50"
                         >
                             Cancel
                         </Button>
@@ -353,7 +353,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                                 setFormData({ ...formData, templateType: value })
                             }
                         >
-                            <SelectTrigger className="bg-white/5 border-white/10">
+                            <SelectTrigger className="bg-secondary/50 border-border">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -378,7 +378,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                                 setFormData({ ...formData, title: e.target.value })
                             }
                             placeholder="Your Appointment is Confirmed"
-                            className="bg-white/5 border-white/10"
+                            className="bg-secondary/50 border-border"
                         />
                     </div>
 
@@ -392,10 +392,10 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                             }
                             placeholder="Hi {clientName}, your appointment on {date} at {time} is confirmed..."
                             rows={5}
-                            className="bg-white/5 border-white/10 font-sans leading-relaxed"
+                            className="bg-secondary/50 border-border font-sans leading-relaxed"
                         />
                         <p className="text-xs text-muted-foreground px-1">
-                            Placeholders: <code className="bg-white/10 px-1 py-0.5 rounded text-[10px] mx-0.5">{"{clientName}"}</code>, <code className="bg-white/10 px-1 py-0.5 rounded text-[10px] mx-0.5">{"{date}"}</code>, <code className="bg-white/10 px-1 py-0.5 rounded text-[10px] mx-0.5">{"{time}"}</code>
+                            Placeholders: <code className="bg-secondary/50 px-1 py-0.5 rounded text-[10px] mx-0.5">{"{clientName}"}</code>, <code className="bg-secondary/50 px-1 py-0.5 rounded text-[10px] mx-0.5">{"{date}"}</code>, <code className="bg-secondary/50 px-1 py-0.5 rounded text-[10px] mx-0.5">{"{time}"}</code>
                         </p>
                     </div>
 
@@ -411,7 +411,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                                         setFormData({ ...formData, timing: e.target.value })
                                     }
                                     placeholder="1 hour before / 24 hours after"
-                                    className="bg-white/5 border-white/10"
+                                    className="bg-secondary/50 border-border"
                                 />
                                 <p className="text-xs text-muted-foreground">
                                     E.g., "1 hour before", "24 hours after", "2 days before"
@@ -419,7 +419,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                             </div>
                         )}
 
-                    <div className="flex items-center justify-between pt-2 border-t border-white/10 mt-6">
+                    <div className="flex items-center justify-between pt-2 border-t border-border mt-6">
                         <Label htmlFor="enabled">Template Enabled</Label>
                         <Switch
                             id="enabled"
@@ -445,7 +445,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                 <div className="py-4 space-y-2">
                     <Button
                         variant="outline"
-                        className="w-full justify-start font-normal h-auto py-3 bg-white/5 border-white/10 hover:bg-white/10"
+                        className="w-full justify-start font-normal h-auto py-3 bg-secondary/50 border-border hover:bg-secondary/50"
                         onClick={() => handleSendPushToClient(user?.id || "")}
                     >
                         <div className="flex flex-col items-start gap-1">
@@ -456,7 +456,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                         </div>
                     </Button>
 
-                    <div className="h-px bg-white/10 my-4" />
+                    <div className="h-px bg-secondary/50 my-4" />
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 px-1">
                         My Clients
                     </p>
@@ -469,7 +469,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                                 <Button
                                     key={client.id}
                                     variant="ghost"
-                                    className="w-full justify-start h-auto py-3 px-4 bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/5 transition-all"
+                                    className="w-full justify-start h-auto py-3 px-4 bg-secondary/50 hover:bg-secondary/50 border border-transparent hover:border-border transition-all"
                                     onClick={() => handleSendPushToClient(client.id)}
                                 >
                                     <div className="flex-1 text-left">

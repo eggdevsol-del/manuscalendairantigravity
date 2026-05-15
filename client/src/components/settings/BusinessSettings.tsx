@@ -90,10 +90,10 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
     return (
         <div className="w-full h-full flex flex-col overflow-hidden relative">
             {/* 1. Page Header - Left aligned, floating panel style */}
-            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
                 <button
                     onClick={onBack}
-                    className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                    className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
                 >
                     <ChevronLeft className="w-5 h-5 text-foreground" />
                 </button>
@@ -116,7 +116,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                                 value={businessName}
                                 onChange={e => setBusinessName(e.target.value)}
                                 placeholder="Your business name"
-                                className="bg-white/5 border-white/10"
+                                className="bg-secondary/50 border-border"
                             />
                         </div>
 
@@ -127,7 +127,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                                 value={displayName}
                                 onChange={e => setDisplayName(e.target.value)}
                                 placeholder="Alias shown to clients"
-                                className="bg-white/5 border-white/10"
+                                className="bg-secondary/50 border-border"
                             />
                             <p className="text-xs text-muted-foreground">
                                 This is the name clients will see in messages.
@@ -142,7 +142,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                                 onChange={e => setBusinessEmail(e.target.value)}
                                 placeholder="email@example.com"
                                 type="email"
-                                className="bg-white/5 border-white/10"
+                                className="bg-secondary/50 border-border"
                             />
                             <p className="text-xs text-muted-foreground">
                                 This email will be used for sending notifications to clients
@@ -161,7 +161,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                                 value={licenceNumber}
                                 onChange={e => setLicenceNumber(e.target.value)}
                                 placeholder="E.g. 123456789"
-                                className="bg-white/5 border-white/10"
+                                className="bg-secondary/50 border-border"
                             />
                             <p className="text-xs text-muted-foreground">
                                 Required for generating health regulation logs (e.g. QLD
@@ -177,7 +177,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                                 onChange={e => setBusinessAddress(e.target.value)}
                                 placeholder="Your business address"
                                 rows={3}
-                                className="bg-white/5 border-white/10"
+                                className="bg-secondary/50 border-border"
                             />
                             <p className="text-xs text-muted-foreground">
                                 Clients will receive a map link to this address on
@@ -186,7 +186,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
 
                             {/* Google Maps Preview */}
                             {businessAddress && (
-                                <div className="mt-3 rounded-xl overflow-hidden border border-white/10 h-40 bg-black/20 relative group">
+                                <div className="mt-3 rounded-xl overflow-hidden border border-border h-40 bg-background/80 relative group">
                                     <iframe
                                         width="100%"
                                         height="100%"
@@ -197,7 +197,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                                         src={getGoogleMapsEmbedUrl(debouncedAddress)}
                                         className="opacity-70 group-hover:opacity-100 transition-opacity"
                                     />
-                                    <div className="absolute bottom-0 right-0 bg-black/60 px-2 py-1 text-[10px] text-white/70 backdrop-blur-sm rounded-tl-lg pointer-events-none">
+                                    <div className="absolute bottom-0 right-0 bg-background/80 px-2 py-1 text-[10px] text-muted-foreground backdrop-blur-sm rounded-tl-lg pointer-events-none">
                                         Preview
                                     </div>
                                 </div>
@@ -205,7 +205,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                         </div>
                     </div>
 
-                    <div className="space-y-4 pt-4 border-t border-white/10">
+                    <div className="space-y-4 pt-4 border-t border-border">
                         <h3 className="font-semibold text-foreground">
                             Usage Settings
                         </h3>
@@ -226,7 +226,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                         </div>
                     </div>
 
-                    <div className="space-y-4 pt-4 border-t border-white/10">
+                    <div className="space-y-4 pt-4 border-t border-border">
                         <h3 className="font-semibold text-foreground">
                             Deposit Payment Settings
                         </h3>
@@ -234,7 +234,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                         <div className="space-y-2">
                             <Label htmlFor="businessCountry">Business Country</Label>
                             <Select value={businessCountry} onValueChange={setBusinessCountry}>
-                                <SelectTrigger className="w-full bg-white/5 border-white/10">
+                                <SelectTrigger className="w-full bg-secondary/50 border-border">
                                     <SelectValue placeholder="Select Country" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -258,7 +258,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                                     onChange={e => setBsb(e.target.value)}
                                     placeholder={businessCountry === "AU" ? "123-456" : ""}
                                     maxLength={15}
-                                    className="bg-white/5 border-white/10"
+                                    className="bg-secondary/50 border-border"
                                 />
                             </div>
                         )}
@@ -270,7 +270,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                                 value={accountNumber}
                                 onChange={e => setAccountNumber(e.target.value)}
                                 placeholder="12345678"
-                                className="bg-white/5 border-white/10"
+                                className="bg-secondary/50 border-border"
                             />
                         </div>
 
@@ -280,7 +280,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                             </Label>
                             {(!artistSettings?.subscriptionTier || artistSettings.subscriptionTier === "basic") ? (
                                 <>
-                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-border">
                                         <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 shrink-0">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                                         </div>
@@ -304,7 +304,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                                         value={depositAmount}
                                         onChange={e => setDepositAmount(e.target.value)}
                                         placeholder="100"
-                                        className="bg-white/5 border-white/10"
+                                        className="bg-secondary/50 border-border"
                                     />
                                     <p className="text-xs text-muted-foreground">
                                         Custom deposit amount per appointment

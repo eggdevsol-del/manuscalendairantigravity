@@ -855,7 +855,7 @@ export default function Calendar() {
         <div className="absolute bottom-24 right-6 z-50">
           <Button
             size="icon"
-            className="w-14 h-14 rounded-full bg-black text-white shadow-2xl hover:bg-black/90 hover:scale-105 transition-all"
+            className="w-14 h-14 rounded-full bg-black text-white shadow-2xl hover:bg-background/80 hover:scale-105 transition-all"
             onClick={() => {
               setAppointmentForm(prev => ({
                 ...prev,

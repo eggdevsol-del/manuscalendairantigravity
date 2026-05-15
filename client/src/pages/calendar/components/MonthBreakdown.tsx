@@ -145,7 +145,7 @@ export function MonthBreakdown({
                   let contentClass =
                     "flex items-center justify-center text-[10px] font-medium transition-all relative cursor-pointer active:scale-95 w-full h-full";
                   // Default background if no events
-                  if (!hasEvents) contentClass += " bg-white/5";
+                  if (!hasEvents) contentClass += " bg-secondary/50";
 
                   // Create the split background layers based on activeArtists
                   const backgrounds = hasEvents
@@ -214,7 +214,7 @@ export function MonthBreakdown({
         {/* Bottom: Stats (Underneath, Evenly Spaced) */}
         <div
           className={cn(
-            "mt-2 px-6 grid gap-4 border-t border-white/5 pt-2",
+            "mt-2 px-6 grid gap-4 border-t border-border pt-2",
             isClient ? "grid-cols-2" : "grid-cols-3"
           )}
         >

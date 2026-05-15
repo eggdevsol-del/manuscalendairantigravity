@@ -19,19 +19,19 @@ function StorefrontContent({ slug, storefront }: { slug: string; storefront: any
   return (
     <div className="h-[100dvh] overflow-y-auto overflow-x-hidden bg-[#050505] text-white font-sans pb-32">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5 px-4 py-4 flex items-center justify-between">
+      <div className="sticky top-0 z-40 bg-[#050505]/80 backdrop-blur-xl border-b border-border px-4 py-4 flex items-center justify-between">
         <button 
           onClick={() => setLocation(`/${slug}`)}
-          className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors"
+          className="p-2 -ml-2 rounded-full hover:bg-secondary/50 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 text-white/70" />
+          <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
         <span className="font-bold tracking-wider uppercase text-sm truncate max-w-[200px]">{storefront.artistName}</span>
         <button 
           onClick={() => setIsCartOpen(true)}
-          className="relative p-2 rounded-full hover:bg-white/10 transition-colors"
+          className="relative p-2 rounded-full hover:bg-secondary/50 transition-colors"
         >
-          <ShoppingCart className="w-5 h-5 text-white/70" />
+          <ShoppingCart className="w-5 h-5 text-muted-foreground" />
           {totalItems > 0 && (
             <span className="absolute top-0 right-0 w-4 h-4 bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
               {totalItems}
@@ -44,10 +44,10 @@ function StorefrontContent({ slug, storefront }: { slug: string; storefront: any
         <h1 className="text-3xl font-extrabold mb-8">Shop</h1>
 
         {products.length === 0 ? (
-          <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/5">
-            <Package className="w-12 h-12 text-white/20 mx-auto mb-4" />
+          <div className="text-center py-20 bg-secondary/50 rounded-3xl border border-border">
+            <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">No Products</h2>
-            <p className="text-white/50 text-sm">Check back later for merch and aftercare.</p>
+            <p className="text-muted-foreground text-sm">Check back later for merch and aftercare.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -69,7 +69,7 @@ function StorefrontContent({ slug, storefront }: { slug: string; storefront: any
           >
             <button
               onClick={() => setIsCartOpen(true)}
-              className="bg-white text-black px-6 py-4 rounded-full font-bold shadow-2xl flex items-center gap-3 w-full max-w-sm hover:scale-[1.02] active:scale-95 transition-all"
+              className="bg-foreground text-background px-6 py-4 rounded-full font-bold shadow-2xl flex items-center gap-3 w-full max-w-sm hover:scale-[1.02] active:scale-95 transition-all"
             >
               <div className="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
                 {totalItems}
@@ -99,7 +99,7 @@ export default function PublicStorefront() {
   if (isLoading) {
     return (
       <div className="min-h-[100dvh] bg-[#050505] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-white/20 animate-spin" />
+        <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
       </div>
     );
   }
@@ -108,10 +108,10 @@ export default function PublicStorefront() {
     return (
       <div className="min-h-[100dvh] bg-[#050505] flex flex-col items-center justify-center p-6 text-center">
         <h1 className="text-2xl font-bold text-white mb-2">Store Not Found</h1>
-        <p className="text-white/60 mb-6">This artist may not have their store set up.</p>
+        <p className="text-muted-foreground mb-6">This artist may not have their store set up.</p>
         <button 
           onClick={() => setLocation(`/${slug}`)}
-          className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors font-medium text-sm"
+          className="px-6 py-3 bg-secondary/50 hover:bg-secondary/50 text-white rounded-full transition-colors font-medium text-sm"
         >
           Return to Hub
         </button>

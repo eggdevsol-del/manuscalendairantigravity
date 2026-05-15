@@ -155,10 +155,10 @@ export function QuickActionsSettings({ onBack }: QuickActionsSettingsProps) {
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative">
-      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
         <button
           onClick={onBack}
-          className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+          className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
         >
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
@@ -189,7 +189,7 @@ export function QuickActionsSettings({ onBack }: QuickActionsSettingsProps) {
           )}
 
           {showAddNew && (
-            <div className="bg-white/5 border border-primary/30 p-4 rounded-[4px] space-y-4">
+            <div className="bg-secondary/50 border border-primary/30 p-4 rounded-[4px] space-y-4">
               <div className="mb-2">
                 <h3 className="text-base font-semibold text-foreground">
                   {editingId ? "Edit" : "New"} Quick Action

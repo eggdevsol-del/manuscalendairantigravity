@@ -32,10 +32,10 @@ export function FeatureLock({
     }
 
     return (
-        <div className="relative isolate overflow-hidden rounded-xl border border-white/10 bg-black/40 p-6 shadow-2xl backdrop-blur-md w-full">
+        <div className="relative isolate overflow-hidden rounded-xl border border-border bg-background/80 p-6 shadow-2xl backdrop-blur-md w-full">
             <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent opacity-50" />
             <div className="flex flex-col items-center justify-center text-center space-y-4 py-8">
-                <div className="rounded-full bg-white/10 p-4 border border-white/5 shadow-inner">
+                <div className="rounded-full bg-secondary/50 p-4 border border-border shadow-inner">
                     <Lock className="w-8 h-8 text-amber-500/80" />
                 </div>
                 <div className="space-y-2 max-w-sm">

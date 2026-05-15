@@ -27,7 +27,7 @@ export default function PublicStudioFunnel() {
         </p>
         <button
           onClick={() => setLocation("/")}
-          className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+          className="px-6 py-2 bg-secondary/50 hover:bg-secondary/50 rounded-full transition-colors"
         >
           Return Home
         </button>
@@ -54,9 +54,9 @@ export default function PublicStudioFunnel() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <header className="pt-12 pb-6 px-4 shrink-0 border-b border-border/10 bg-black/20 text-center">
+      <header className="pt-12 pb-6 px-4 shrink-0 border-b border-border/10 bg-background/80 text-center">
         {studio.logoUrl && (
-          <div className="w-24 h-24 mx-auto bg-white/10 rounded-full mb-4 overflow-hidden border-2 border-primary/20">
+          <div className="w-24 h-24 mx-auto bg-secondary/50 rounded-full mb-4 overflow-hidden border-2 border-primary/20">
             <img
               src={getAssetUrl(studio.logoUrl)}
               alt={studio.name}

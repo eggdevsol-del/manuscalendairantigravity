@@ -123,7 +123,7 @@ export default function LeadDetail() {
       <PageHeader title="Consultation Request" />
       <div className={tokens.contentContainer.base}>
         {/* Back Button */}
-        <div className="shrink-0 pt-4 pb-2 px-4 border-b border-white/5">
+        <div className="shrink-0 pt-4 pb-2 px-4 border-b border-border">
           <Button
             variant="ghost"
             size="sm"
@@ -139,7 +139,7 @@ export default function LeadDetail() {
         <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y">
           <div className="pb-32 max-w-lg mx-auto space-y-6">
             {/* Client Info Card */}
-            <Card className={cn(tokens.card.base, "hover:bg-white/5")}>
+            <Card className={cn(tokens.card.base, "hover:bg-secondary/50")}>
               <h2 className="text-lg font-semibold text-foreground px-4 pt-4">
                 {lead.clientName}
               </h2>
@@ -175,8 +175,8 @@ export default function LeadDetail() {
             </Card>
 
             {/* Project Details Card */}
-            <Card className={cn(tokens.card.base, "hover:bg-white/5")}>
-              <div className="p-4 border-b border-white/5">
+            <Card className={cn(tokens.card.base, "hover:bg-secondary/50")}>
+              <div className="p-4 border-b border-border">
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                   Project Details
                 </h3>
@@ -185,7 +185,7 @@ export default function LeadDetail() {
               <div className="p-4 space-y-4">
                 {lead.projectType && (
                   <div className="flex items-start gap-3">
-                    <div className="mt-0.5 p-1.5 rounded-full bg-white/5">
+                    <div className="mt-0.5 p-1.5 rounded-full bg-secondary/50">
                       <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
                     </div>
                     <div>
@@ -201,7 +201,7 @@ export default function LeadDetail() {
 
                 {lead.projectDescription && (
                   <div className="flex items-start gap-3">
-                    <div className="mt-0.5 p-1.5 rounded-full bg-white/5">
+                    <div className="mt-0.5 p-1.5 rounded-full bg-secondary/50">
                       <MessageCircle className="w-3.5 h-3.5 text-muted-foreground" />
                     </div>
                     <div>
@@ -217,7 +217,7 @@ export default function LeadDetail() {
 
                 {lead.stylePreferences && lead.stylePreferences.length > 0 && (
                   <div className="flex items-start gap-3">
-                    <div className="mt-0.5 p-1.5 rounded-full bg-white/5">
+                    <div className="mt-0.5 p-1.5 rounded-full bg-secondary/50">
                       <Palette className="w-3.5 h-3.5 text-muted-foreground" />
                     </div>
                     <div>
@@ -229,7 +229,7 @@ export default function LeadDetail() {
                           (style: string, i: number) => (
                             <span
                               key={i}
-                              className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-foreground font-medium"
+                              className="px-2.5 py-1 bg-secondary/50 border border-border rounded-full text-xs text-foreground font-medium"
                             >
                               {style}
                             </span>
@@ -242,7 +242,7 @@ export default function LeadDetail() {
 
                 {lead.budgetLabel && (
                   <div className="flex items-start gap-3">
-                    <div className="mt-0.5 p-1.5 rounded-full bg-white/5">
+                    <div className="mt-0.5 p-1.5 rounded-full bg-secondary/50">
                       <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
                     </div>
                     <div>
@@ -258,7 +258,7 @@ export default function LeadDetail() {
 
                 {lead.preferredTimeframe && (
                   <div className="flex items-start gap-3">
-                    <div className="mt-0.5 p-1.5 rounded-full bg-white/5">
+                    <div className="mt-0.5 p-1.5 rounded-full bg-secondary/50">
                       <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
                     </div>
                     <div>
@@ -275,7 +275,7 @@ export default function LeadDetail() {
                 {/* Images */}
                 {(lead.referenceImages || lead.bodyPlacementImages) && (
                   <div className="flex items-start gap-3">
-                    <div className="mt-0.5 p-1.5 rounded-full bg-white/5">
+                    <div className="mt-0.5 p-1.5 rounded-full bg-secondary/50">
                       <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />
                     </div>
                     <div className="w-full">
@@ -296,7 +296,7 @@ export default function LeadDetail() {
                             ).map((img: string, i: number) => (
                               <div
                                 key={i}
-                                className="aspect-square rounded-md overflow-hidden bg-white/5 border border-white/10 cursor-pointer hover:opacity-80 transition-opacity"
+                                className="aspect-square rounded-md overflow-hidden bg-secondary/50 border border-border cursor-pointer hover:opacity-80 transition-opacity"
                                 onClick={() =>
                                   window.open(getAssetUrl(img), "_blank")
                                 }
@@ -325,7 +325,7 @@ export default function LeadDetail() {
                             ).map((img: string, i: number) => (
                               <div
                                 key={i}
-                                className="aspect-square rounded-md overflow-hidden bg-white/5 border border-white/10 cursor-pointer hover:opacity-80 transition-opacity"
+                                className="aspect-square rounded-md overflow-hidden bg-secondary/50 border border-border cursor-pointer hover:opacity-80 transition-opacity"
                                 onClick={() =>
                                   window.open(getAssetUrl(img), "_blank")
                                 }

@@ -49,7 +49,7 @@ export function GoogleLoginButton({
     <Button
       type="button"
       variant="outline"
-      className="w-full mb-6 h-12 rounded-lg border-white/10 bg-white/5 hover:bg-white/10 text-foreground font-medium flex items-center justify-center gap-3 transition-all"
+      className="w-full mb-6 h-12 rounded-lg border-border bg-secondary/50 hover:bg-secondary/50 text-foreground font-medium flex items-center justify-center gap-3 transition-all"
       onClick={() => googleLogin()}
       disabled={disabled}
     >

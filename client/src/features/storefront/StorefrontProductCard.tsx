@@ -18,10 +18,10 @@ export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 rounded-[24px] border border-white/10 overflow-hidden flex flex-col hover:border-white/20 transition-colors relative"
+      className="bg-secondary/50 rounded-[24px] border border-border overflow-hidden flex flex-col hover:border-border transition-colors relative"
     >
       {/* Product Image */}
-      <div className="aspect-square bg-black/50 relative overflow-hidden group">
+      <div className="aspect-square bg-background/80 relative overflow-hidden group">
         {product.imageUrl ? (
           <img 
             src={product.imageUrl} 
@@ -30,15 +30,15 @@ export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Package className="w-12 h-12 text-white/10" />
+            <Package className="w-12 h-12 text-muted-foreground" />
           </div>
         )}
         {/* Fulfillment Badge */}
-        <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-white/10">
-          {product.fulfillmentType === "pickup" && <Store className="w-3.5 h-3.5 text-white/70" />}
-          {product.fulfillmentType === "delivery" && <Truck className="w-3.5 h-3.5 text-white/70" />}
-          {product.fulfillmentType === "both" && <Globe className="w-3.5 h-3.5 text-white/70" />}
-          <span className="text-[10px] uppercase font-bold tracking-wider text-white/80">
+        <div className="absolute top-3 left-3 bg-background/80 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-border">
+          {product.fulfillmentType === "pickup" && <Store className="w-3.5 h-3.5 text-muted-foreground" />}
+          {product.fulfillmentType === "delivery" && <Truck className="w-3.5 h-3.5 text-muted-foreground" />}
+          {product.fulfillmentType === "both" && <Globe className="w-3.5 h-3.5 text-muted-foreground" />}
+          <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
             {product.fulfillmentType === "both" ? "Delivery / Pickup" : product.fulfillmentType}
           </span>
         </div>
@@ -48,7 +48,7 @@ export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
         <h3 className="text-lg font-bold mb-1 truncate h-[28px]">{product.title}</h3>
         
         <div className="relative h-[64px] mb-4 flex flex-col justify-start">
-          <p className="text-white/50 text-sm line-clamp-2 leading-relaxed">
+          <p className="text-muted-foreground text-sm line-clamp-2 leading-relaxed">
             {product.description}
           </p>
           {product.description && product.description.length > 60 && (
@@ -61,7 +61,7 @@ export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
           )}
         </div>
         
-        <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+        <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
           <span className="text-xl font-bold tracking-tight">
             ${(product.priceCents / 100).toFixed(2)}
           </span>
@@ -71,10 +71,10 @@ export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
               Sold Out
             </span>
           ) : inCart > 0 ? (
-            <div className="flex items-center gap-3 bg-white/10 rounded-full p-1 border border-white/10">
+            <div className="flex items-center gap-3 bg-secondary/50 rounded-full p-1 border border-border">
               <button
                 onClick={() => removeItem(product.id)}
-                className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/20 transition-colors"
+                className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center hover:bg-secondary/50 transition-colors"
               >
                 <Minus className="w-4 h-4 text-white" />
               </button>
@@ -114,7 +114,7 @@ export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
                   artistId: product.artistId
                 });
               }}
-              className="flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-full font-bold hover:bg-white/90 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)]"
+              className="flex items-center gap-2 bg-foreground text-background px-5 py-2.5 rounded-full font-bold hover:bg-secondary/50 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)]"
             >
               <ShoppingCart className="w-4 h-4" />
               Add
@@ -133,17 +133,17 @@ export function StorefrontProductCard({ product }: StorefrontProductCardProps) {
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="absolute inset-0 z-30 bg-[#111]/95 backdrop-blur-xl flex flex-col"
           >
-            <div className="p-5 flex items-center justify-between border-b border-white/10 bg-black/20 shrink-0">
+            <div className="p-5 flex items-center justify-between border-b border-border bg-background/80 shrink-0">
               <h3 className="font-bold text-lg text-white">Description</h3>
               <button 
                 onClick={() => setIsExpanded(false)}
-                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 text-white shrink-0 transition-colors shadow-lg"
+                className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center hover:bg-secondary/50 text-white shrink-0 transition-colors shadow-lg"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
             <div className="p-5 overflow-y-auto mobile-scroll flex-1">
-              <p className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap">
+              <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
                 {product.description}
               </p>
             </div>

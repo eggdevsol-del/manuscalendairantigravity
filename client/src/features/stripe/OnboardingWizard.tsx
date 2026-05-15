@@ -92,7 +92,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     }
   };
 
-  const inputClass = "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#E09F3E]/50 focus:ring-1 focus:ring-[#E09F3E]/30 transition-colors text-sm";
+  const inputClass = "w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#E09F3E]/50 focus:ring-1 focus:ring-[#E09F3E]/30 transition-colors text-sm";
   const labelClass = "block text-xs font-medium text-muted-foreground mb-1.5";
   const selectClass = `${inputClass} appearance-none`;
 
@@ -102,7 +102,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       <div className="flex items-center gap-1 px-1">
         {STEPS.map((s, i) => (
           <div key={s} className="flex-1 flex flex-col items-center gap-1.5">
-            <div className={`h-1.5 w-full rounded-full transition-colors ${i <= step ? "bg-[#E09F3E]" : "bg-white/10"}`} />
+            <div className={`h-1.5 w-full rounded-full transition-colors ${i <= step ? "bg-[#E09F3E]" : "bg-secondary/50"}`} />
             <span className={`text-[10px] font-medium transition-colors ${i <= step ? "text-[#E09F3E]" : "text-muted-foreground/40"}`}>{STEP_LABELS[i]}</span>
           </div>
         ))}
@@ -187,7 +187,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-foreground">ID Verification</h2>
             <p className="text-xs text-muted-foreground">Upload a photo of your driver's licence or passport. This is required to enable payouts.</p>
-            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-[#E09F3E]/30 transition-colors bg-white/[0.02]">
+            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-border rounded-2xl cursor-pointer hover:border-[#E09F3E]/30 transition-colors bg-secondary/50">
               {idFile ? (
                 <div className="flex flex-col items-center gap-2">
                   <Check className="w-8 h-8 text-emerald-400" />
@@ -223,13 +223,13 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                 ["Account", `••••${form.bankAccountNumber.slice(-4)}`],
                 ["ID Document", idFile?.name || "Not uploaded"],
               ].map(([label, value]) => (
-                <div key={label} className="flex justify-between items-center py-2 border-b border-white/5">
+                <div key={label} className="flex justify-between items-center py-2 border-b border-border">
                   <span className="text-muted-foreground">{label}</span>
                   <span className="text-foreground font-medium text-right max-w-[60%] truncate">{value}</span>
                 </div>
               ))}
             </div>
-            <div className="bg-white/5 rounded-xl p-3 mt-4">
+            <div className="bg-secondary/50 rounded-xl p-3 mt-4">
               <p className="text-[11px] text-muted-foreground">
                 By submitting, you agree to Stripe's{" "}
                 <a href="https://stripe.com/connect-account/legal" target="_blank" rel="noreferrer" className="text-[#E09F3E] underline">Connected Account Agreement</a>{" "}

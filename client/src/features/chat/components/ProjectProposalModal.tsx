@@ -125,7 +125,7 @@ export function ProjectProposalModal({
   const minutes = totalMinutes % 60;
 
   const ProposalDatesList = () => (
-    <Card className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden p-4">
+    <Card className="bg-secondary/50 border border-border rounded-2xl overflow-hidden p-4">
       <div className="flex items-center justify-between mb-4">
         <span className={tokens.proposalModal.sectionLabel}>
           SCHEDULE BREAKDOWN
@@ -175,12 +175,12 @@ export function ProjectProposalModal({
   );
 
   const ProposalPolicies = () => (
-    <Card className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden p-4">
+    <Card className="bg-secondary/50 border border-border rounded-2xl overflow-hidden p-4">
       <h4 className={cn("mb-4", tokens.proposalModal.sectionLabel)}>
         Policies & Terms
       </h4>
       <Accordion type="single" collapsible className="w-full">
-        <AccordionItem value="cancellation" className="border-white/5">
+        <AccordionItem value="cancellation" className="border-border">
           <AccordionTrigger className={tokens.proposalModal.accordionTrigger}>
             Cancellation Policy
           </AccordionTrigger>
@@ -190,7 +190,7 @@ export function ProjectProposalModal({
             directly for rescheduling.
           </AccordionContent>
         </AccordionItem>
-        <AccordionItem value="deposit" className="border-white/5">
+        <AccordionItem value="deposit" className="border-border">
           <AccordionTrigger className={tokens.proposalModal.accordionTrigger}>
             Deposit Information
           </AccordionTrigger>
@@ -406,7 +406,7 @@ export function ProjectProposalModal({
       }}
     >
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content className="fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col justify-end overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-in-from-bottom-10 data-[state=open]:slide-in-from-bottom-0">
           <div
             className={cn(
@@ -493,7 +493,7 @@ export function ProjectProposalModal({
                             });
                             setShowVoucherList(false);
                           }}
-                          className="bg-white/5 border-white/10 hover:bg-white/[0.08] transition-colors cursor-pointer group"
+                          className="bg-secondary/50 border-border hover:bg-secondary/50 transition-colors cursor-pointer group"
                         >
                           <div className="p-4 flex flex-col gap-1">
                             <div className="flex justify-between items-center">
@@ -516,7 +516,7 @@ export function ProjectProposalModal({
 
                     {!isLoadingPromotions &&
                       availablePromotions?.length === 0 && (
-                        <div className="text-center py-12 border border-dashed border-white/10 rounded-2xl">
+                        <div className="text-center py-12 border border-dashed border-border rounded-2xl">
                           <Tag className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
                           <p className="text-muted-foreground font-medium">
                             No vouchers found
@@ -563,7 +563,7 @@ export function ProjectProposalModal({
                             Total
                           </span>
                         </div>
-                        <div className="w-px h-8 bg-white/10 hidden sm:block" />
+                        <div className="w-px h-8 bg-secondary/50 hidden sm:block" />
                         <div className="flex items-center gap-3">
                           <span className="text-2xl font-bold text-foreground tracking-tight">
                             {hours}
@@ -583,7 +583,7 @@ export function ProjectProposalModal({
                             Duration
                           </span>
                         </div>
-                        <div className="w-px h-8 bg-white/10 hidden sm:block" />
+                        <div className="w-px h-8 bg-secondary/50 hidden sm:block" />
                         <div className="flex items-center gap-3">
                           <span className="text-2xl font-bold text-foreground tracking-tight">
                             {sittings || 1}

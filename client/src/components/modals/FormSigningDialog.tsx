@@ -43,8 +43,8 @@ export function FormSigningDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="max-w-xl p-0 overflow-hidden bg-slate-950 border-white/10 h-[90vh] flex flex-col">
-        <DialogHeader className="p-6 border-b border-white/10 shrink-0">
+      <DialogContent className="max-w-xl p-0 overflow-hidden bg-slate-950 border-border h-[90vh] flex flex-col">
+        <DialogHeader className="p-6 border-b border-border shrink-0">
           <DialogTitle className="text-xl font-bold">{formTitle}</DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm">
             {viewOnly
@@ -63,11 +63,11 @@ export function FormSigningDialog({
                   {formContent}
                 </div>
                 {viewOnly && signature && (
-                  <div className="mt-12 pt-8 border-t border-white/10">
+                  <div className="mt-12 pt-8 border-t border-border">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-4">
                       Digitally Signed By Client
                     </p>
-                    <div className="bg-white/5 rounded-2xl border border-white/10 p-6 inline-block">
+                    <div className="bg-secondary/50 rounded-2xl border border-border p-6 inline-block">
                       <img
                         src={signature}
                         alt="Client Signature"
@@ -78,7 +78,7 @@ export function FormSigningDialog({
                 )}
               </ScrollArea>
               {!viewOnly && (
-                <div className="p-6 border-t border-white/10 bg-black/20 shrink-0">
+                <div className="p-6 border-t border-border bg-background/80 shrink-0">
                   <Button
                     className="w-full h-12 shadow-lg shadow-primary/20"
                     onClick={() => setStep("signature")}

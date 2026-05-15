@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
  * Card Dimensions (SSOT - matches TaskCard):
  * - Border radius: rounded-2xl (1rem / 16px)
  * - Padding: p-4 (1rem / 16px)
- * - Background: bg-white/5 with hover:bg-white/10 (with primary accent for pending)
+ * - Background: bg-secondary/50 with hover:bg-secondary/50 (with primary accent for pending)
  * - Border: border-0 (no border)
  */
 import { tokens } from "@/ui/tokens";
@@ -56,7 +56,7 @@ export function ConsultationCard({
       <div
         className={cn(
           tokens.card.leftAccent,
-          isNew ? "bg-primary" : "bg-white/5"
+          isNew ? "bg-primary" : "bg-secondary/50"
         )}
       />
 
@@ -82,7 +82,7 @@ export function ConsultationCard({
             </p>
           )}
         </div>
-        <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-muted-foreground group-hover:border-primary group-hover:text-primary transition-colors">
+        <div className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground group-hover:border-primary group-hover:text-primary transition-colors">
           <ChevronRight className="w-4 h-4" />
         </div>
       </div>

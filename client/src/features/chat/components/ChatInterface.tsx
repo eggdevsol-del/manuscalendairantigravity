@@ -507,7 +507,7 @@ export function ChatInterface({
 
         {/* Media Quick Links Bar */}
         {isArtist && hasMedia && (
-          <div className="px-4 py-2 border-t border-white/5 bg-muted/30 flex items-center gap-3">
+          <div className="px-4 py-2 border-t border-border bg-muted/30 flex items-center gap-3">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider shrink-0">
               Media
             </span>
@@ -516,7 +516,7 @@ export function ChatInterface({
                 <button
                   key={`media-${index}`}
                   onClick={() => setSelectedMediaImage(img.url)}
-                  className="w-8 h-8 rounded-md overflow-hidden bg-muted/50 border border-white/10 hover:border-primary/50 transition-colors shrink-0"
+                  className="w-8 h-8 rounded-md overflow-hidden bg-muted/50 border border-border hover:border-primary/50 transition-colors shrink-0"
                 >
                   <img
                     src={img.url}
@@ -528,7 +528,7 @@ export function ChatInterface({
               {allMediaImages.length > 6 && (
                 <button
                   onClick={() => setShowClientInfo(true)}
-                  className="w-8 h-8 rounded-md bg-muted/50 border border-white/10 hover:border-primary/50 transition-colors flex items-center justify-center shrink-0"
+                  className="w-8 h-8 rounded-md bg-muted/50 border border-border hover:border-primary/50 transition-colors flex items-center justify-center shrink-0"
                 >
                   <span className="text-xs font-medium text-muted-foreground">
                     +{allMediaImages.length - 6}
@@ -550,7 +550,7 @@ export function ChatInterface({
 
         {/* Consultation Details & Pinning */}
         {consultationData && (
-          <div className="px-4 py-3 border-t border-white/5 bg-accent/5 backdrop-blur-sm flex items-start justify-between gap-4">
+          <div className="px-4 py-3 border-t border-border bg-accent/5 backdrop-blur-sm flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-sm flex items-center gap-2 text-foreground/90">
                 {consultationData.subject}
@@ -599,7 +599,7 @@ export function ChatInterface({
 
         {/* Pinned Proposals — pending + accepted with future dates */}
         {pinnedProposals.length > 0 && (
-          <div className="px-3 py-2 border-b border-white/5 bg-white/[0.01] space-y-1">
+          <div className="px-3 py-2 border-b border-border bg-secondary/50 space-y-1">
             {(isProposalsExpanded
               ? pinnedProposals
               : pinnedProposals.slice(0, 2)
@@ -644,7 +644,7 @@ export function ChatInterface({
 
         {/* Upcoming Appointments Banner — shows for imported/direct appointments when no pinned proposals */}
         {pinnedProposals.length === 0 && upcomingAppointments.length > 0 && (
-          <div className="px-3 py-2 border-b border-white/5 bg-primary/5 space-y-1">
+          <div className="px-3 py-2 border-b border-border bg-primary/5 space-y-1">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-semibold px-1 mb-1">
               Upcoming Appointments
             </p>
@@ -668,7 +668,7 @@ export function ChatInterface({
                   );
                   setFABOpen(true);
                 }}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-left group"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-secondary/50 hover:bg-secondary/50 transition-colors text-left group"
               >
                 <div className="p-1.5 rounded-lg bg-primary/15 text-primary shrink-0">
                   <Calendar className="w-4 h-4" />
@@ -863,7 +863,7 @@ export function ChatInterface({
                 <EmptyHeader>
                   <EmptyMedia
                     variant="icon"
-                    className="w-16 h-16 rounded-full bg-white/5"
+                    className="w-16 h-16 rounded-full bg-secondary/50"
                   >
                     <MessageCircle className="w-8 h-8" />
                   </EmptyMedia>
@@ -920,7 +920,7 @@ export function ChatInterface({
                 </a>
                 <button
                   onClick={() => setInviteDismissed(true)}
-                  className="shrink-0 p-1 rounded-md hover:bg-white/10 transition-colors text-muted-foreground"
+                  className="shrink-0 p-1 rounded-md hover:bg-secondary/50 transition-colors text-muted-foreground"
                 >
                   <XIcon className="w-3 h-3" />
                 </button>
@@ -928,8 +928,8 @@ export function ChatInterface({
             );
           })()}
 
-        <div className="flex items-center gap-2 p-2 rounded-2xl bg-gray-100/80 dark:bg-slate-950/80 backdrop-blur-xl border border-white/10 shadow-lg" style={{ transform: 'translate(0px, 21px)' }}>
-          <label className="cursor-pointer p-2 hover:bg-white/10 rounded-xl transition-colors">
+        <div className="flex items-center gap-2 p-2 rounded-2xl bg-gray-100/80 dark:bg-slate-950/80 backdrop-blur-xl border border-border shadow-lg" style={{ transform: 'translate(0px, 21px)' }}>
+          <label className="cursor-pointer p-2 hover:bg-secondary/50 rounded-xl transition-colors">
             <input
               type="file"
               accept="image/*"
@@ -1006,11 +1006,11 @@ export function ChatInterface({
       {/* Media Image Lightbox */}
       {selectedMediaImage && (
         <div
-          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] bg-background/80 flex items-center justify-center p-4"
           onClick={() => setSelectedMediaImage(null)}
         >
           <button
-            className="absolute top-4 right-4 text-white/70 hover:text-white text-sm px-3 py-1 rounded-lg bg-white/10"
+            className="absolute top-4 right-4 text-muted-foreground hover:text-white text-sm px-3 py-1 rounded-lg bg-secondary/50"
             onClick={() => setSelectedMediaImage(null)}
           >
             Close

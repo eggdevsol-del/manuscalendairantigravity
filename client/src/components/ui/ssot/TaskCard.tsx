@@ -10,7 +10,7 @@ import { Card } from "../card";
  * Card Dimensions (SSOT):
  * - Border radius: rounded-2xl (1rem / 16px)
  * - Padding: p-4 (1rem / 16px)
- * - Background: bg-white/5 with hover:bg-white/10
+ * - Background: bg-secondary/50 with hover:bg-secondary/50
  * - Border: border-0 (no border)
  */
 import { tokens } from "@/ui/tokens";
@@ -74,7 +74,7 @@ export function TaskCard({
         </div>
 
         {/* Right Chevron / Check */}
-        <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-muted-foreground group-hover:border-white/30 group-hover:text-foreground transition-colors">
+        <div className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground group-hover:border-border group-hover:text-foreground transition-colors">
           {status === "completed" ? (
             <Check className="w-4 h-4 text-green-500" />
           ) : (

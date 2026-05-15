@@ -199,7 +199,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         {/* Header Profile Section */}
         {/* Fixed Header */}
         <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-          <div className="h-1 bg-white/5" />
+          <div className="h-1 bg-secondary/50" />
           <div className="px-4 py-3 flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
               Step {currentStep + 1} of {totalSteps}
@@ -329,10 +329,10 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 <button
                   type="button"
                   onClick={() => setShowReferenceUpload(true)}
-                  className="w-full p-4 border border-border rounded-[4px] hover:border-foreground/30 transition-colors flex items-center justify-between bg-white/5"
+                  className="w-full p-4 border border-border rounded-[4px] hover:border-foreground/30 transition-colors flex items-center justify-between bg-secondary/50"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white/10 rounded-[4px] flex items-center justify-center">
+                    <div className="w-10 h-10 bg-secondary/50 rounded-[4px] flex items-center justify-center">
                       <ImageIcon className="w-5 h-5 text-muted-foreground" />
                     </div>
                     <div className="text-left">
@@ -365,7 +365,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                       </div>
                     ))}
                     {referenceImages.length > 4 && (
-                      <div className="w-16 h-16 rounded-[4px] bg-white/10 flex items-center justify-center flex-shrink-0 border border-border/50">
+                      <div className="w-16 h-16 rounded-[4px] bg-secondary/50 flex items-center justify-center flex-shrink-0 border border-border/50">
                         <span className="text-sm font-medium text-muted-foreground">
                           +{referenceImages.length - 4}
                         </span>
@@ -388,9 +388,9 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               <button
                 type="button"
                 onClick={() => setShowBodyPlacementUpload(true)}
-                className="w-full p-6 border-2 border-dashed border-border rounded-[4px] hover:border-foreground/40 transition-colors flex flex-col items-center justify-center gap-3 bg-white/5"
+                className="w-full p-6 border-2 border-dashed border-border rounded-[4px] hover:border-foreground/40 transition-colors flex flex-col items-center justify-center gap-3 bg-secondary/50"
               >
-                <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center">
+                <div className="w-14 h-14 bg-secondary/50 rounded-full flex items-center justify-center">
                   <Camera className="w-7 h-7 text-muted-foreground" />
                 </div>
                 <div className="text-center">
@@ -441,8 +441,8 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                     key={budget.label}
                     onClick={() => setSelectedBudget(budget)}
                     className={`w-full p-4 text-left rounded-[4px] border transition-colors ${selectedBudget?.label === budget.label
-                      ? "border-foreground bg-white/10"
-                      : "border-border hover:border-foreground/30 bg-white/5"
+                      ? "border-foreground bg-secondary/50"
+                      : "border-border hover:border-foreground/30 bg-secondary/50"
                       }`}
                   >
                     <span className="font-medium text-foreground">
@@ -466,8 +466,8 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                     key={option.id}
                     onClick={() => setTimeframe(option.id)}
                     className={`w-full p-4 text-left rounded-[4px] border transition-colors ${timeframe === option.id
-                      ? "border-foreground bg-white/10"
-                      : "border-border hover:border-foreground/30 bg-white/5"
+                      ? "border-foreground bg-secondary/50"
+                      : "border-border hover:border-foreground/30 bg-secondary/50"
                       }`}
                   >
                     <span className="font-medium text-foreground">
@@ -487,7 +487,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               <button
                 onClick={handleBack}
                 disabled={submitting}
-                className="flex-1 py-3 px-6 border border-border rounded-[4px] font-medium text-foreground hover:bg-white/10 disabled:opacity-50"
+                className="flex-1 py-3 px-6 border border-border rounded-[4px] font-medium text-foreground hover:bg-secondary/50 disabled:opacity-50"
               >
                 Back
               </button>

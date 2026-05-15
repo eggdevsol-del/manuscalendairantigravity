@@ -67,7 +67,7 @@ export function MoodboardCard({
         <div className="grid grid-cols-2 gap-2">
           {/* Add Image Placeholder */}
           <div
-            className="aspect-square rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center text-muted-foreground cursor-pointer hover:bg-white/10 transition-colors"
+            className="aspect-square rounded-xl bg-secondary/50 border border-border flex flex-col items-center justify-center text-muted-foreground cursor-pointer hover:bg-secondary/50 transition-colors"
             onClick={() => {
               // Trigger image upload flow - simplistic prompt for now or file input
               const url = prompt("Enter image URL (mock):"); // Replace with file picker later
@@ -85,7 +85,7 @@ export function MoodboardCard({
             >
               <img src={img} className="w-full h-full object-cover" />
               {isEditMode && (
-                <button className="absolute top-1 right-1 bg-black/50 p-1.5 rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="absolute top-1 right-1 bg-background/80 p-1.5 rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Trash2 className="w-3 h-3" />
                 </button>
               )}
@@ -121,7 +121,7 @@ export function MoodboardCard({
         {isEditMode && (
           <Button
             variant="outline"
-            className="w-full h-12 border-dashed border-white/20 bg-white/5 text-muted-foreground"
+            className="w-full h-12 border-dashed border-border bg-secondary/50 text-muted-foreground"
             onClick={() => setIsCreateOpen(true)}
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -131,7 +131,7 @@ export function MoodboardCard({
 
         {boards?.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground opacity-60">
-            <div className="bg-white/5 p-4 rounded-full mb-3">
+            <div className="bg-secondary/50 p-4 rounded-full mb-3">
               <ImageIcon className="w-8 h-8" />
             </div>
             <p>No moodboards ye</p>
@@ -141,14 +141,14 @@ export function MoodboardCard({
             <motion.div
               key={board.id}
               layoutId={`board-${board.id}`}
-              className="group relative overflow-hidden rounded-2xl bg-muted/30 border border-white/5 p-4 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-all"
+              className="group relative overflow-hidden rounded-2xl bg-muted/30 border border-border p-4 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-all"
               onClick={() => setSelectedBoardId(board.id)}
             >
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-lg bg-black/20 overflow-hidden grid grid-cols-2 gap-0.5">
+                <div className="w-16 h-16 rounded-lg bg-background/80 overflow-hidden grid grid-cols-2 gap-0.5">
                   {/* Mini Preview Grid */}
                   {[0, 1, 2, 3].map(i => (
-                    <div key={i} className="bg-white/5 h-full w-full">
+                    <div key={i} className="bg-secondary/50 h-full w-full">
                       {board.previewImages[i] && (
                         <img
                           src={board.previewImages[i]}

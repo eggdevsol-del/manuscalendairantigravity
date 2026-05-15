@@ -104,7 +104,7 @@ export default function IOSInstallPrompt({
   // For non-iOS devices when forceShow is true, show a generic install prompt
   if (forceShow && !isIOS) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
         <div
           className="w-full max-w-sm max-h-[70vh] overflow-y-auto rounded-2xl p-6"
           style={{
@@ -117,7 +117,7 @@ export default function IOSInstallPrompt({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute -top-2 -right-2 h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
+              className="absolute -top-2 -right-2 h-8 w-8 text-muted-foreground hover:text-white hover:bg-secondary/50"
               onClick={handleDismiss}
             >
               <X className="h-5 w-5" />
@@ -130,13 +130,13 @@ export default function IOSInstallPrompt({
               <h2 className="text-xl font-bold text-white mb-2">
                 Stay Connected
               </h2>
-              <p className="text-sm text-white/70">
+              <p className="text-sm text-muted-foreground">
                 Get the app for the best experience
               </p>
             </div>
 
             <div className="space-y-3 mb-6">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
                 <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
                   <MessageCircle className="w-5 h-5 text-purple-400" />
                 </div>
@@ -144,13 +144,13 @@ export default function IOSInstallPrompt({
                   <p className="text-sm font-medium text-white">
                     Instant Messaging
                   </p>
-                  <p className="text-xs text-white/60">
+                  <p className="text-xs text-muted-foreground">
                     Chat directly with your artist
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
                 <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
                   <Gift className="w-5 h-5 text-blue-400" />
                 </div>
@@ -158,13 +158,13 @@ export default function IOSInstallPrompt({
                   <p className="text-sm font-medium text-white">
                     Exclusive Vouchers
                   </p>
-                  <p className="text-xs text-white/60">
+                  <p className="text-xs text-muted-foreground">
                     Receive promotions & discounts
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
                 <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
                   <Calendar className="w-5 h-5 text-green-400" />
                 </div>
@@ -172,13 +172,13 @@ export default function IOSInstallPrompt({
                   <p className="text-sm font-medium text-white">
                     Track Appointments
                   </p>
-                  <p className="text-xs text-white/60">
+                  <p className="text-xs text-muted-foreground">
                     Manage your bookings easily
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
                 <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
                   <Bell className="w-5 h-5 text-orange-400" />
                 </div>
@@ -186,7 +186,7 @@ export default function IOSInstallPrompt({
                   <p className="text-sm font-medium text-white">
                     Push Notifications
                   </p>
-                  <p className="text-xs text-white/60">Never miss an update</p>
+                  <p className="text-xs text-muted-foreground">Never miss an update</p>
                 </div>
               </div>
             </div>
@@ -194,7 +194,7 @@ export default function IOSInstallPrompt({
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                className="flex-1 border-white/20 text-white hover:bg-white/10"
+                className="flex-1 border-border text-white hover:bg-secondary/50"
                 onClick={handleDismiss}
               >
                 Maybe Later
@@ -218,7 +218,7 @@ export default function IOSInstallPrompt({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
       <div
         className="w-full max-w-sm max-h-[70vh] overflow-y-auto rounded-2xl p-6"
         style={{
@@ -231,7 +231,7 @@ export default function IOSInstallPrompt({
           <Button
             variant="ghost"
             size="icon"
-            className="absolute -top-2 -right-2 h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
+            className="absolute -top-2 -right-2 h-8 w-8 text-muted-foreground hover:text-white hover:bg-secondary/50"
             onClick={handleDismiss}
           >
             <X className="h-5 w-5" />
@@ -244,13 +244,13 @@ export default function IOSInstallPrompt({
             <h2 className="text-xl font-bold text-white mb-2">
               Install the App
             </h2>
-            <p className="text-sm text-white/70">
+            <p className="text-sm text-muted-foreground">
               Add to your home screen for the best experience
             </p>
           </div>
 
           {/* iOS Install Steps */}
-          <div className="space-y-4 mb-6 p-4 rounded-xl bg-white/5">
+          <div className="space-y-4 mb-6 p-4 rounded-xl bg-secondary/50">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0">
                 <span className="text-purple-400 font-bold text-sm">1</span>
@@ -261,7 +261,7 @@ export default function IOSInstallPrompt({
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   <Share className="w-4 h-4 text-purple-400" />
-                  <p className="text-xs text-white/60">
+                  <p className="text-xs text-muted-foreground">
                     At the bottom of Safari
                   </p>
                 </div>
@@ -278,7 +278,7 @@ export default function IOSInstallPrompt({
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   <Plus className="w-4 h-4 text-purple-400" />
-                  <p className="text-xs text-white/60">
+                  <p className="text-xs text-muted-foreground">
                     Scroll down in the share menu
                   </p>
                 </div>
@@ -293,7 +293,7 @@ export default function IOSInstallPrompt({
                 <p className="text-sm font-medium text-white">
                   Tap "Add" to confirm
                 </p>
-                <p className="text-xs text-white/60 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Required for Push Notifications
                 </p>
               </div>
@@ -302,23 +302,23 @@ export default function IOSInstallPrompt({
 
           {/* Benefits */}
           <div className="space-y-2 mb-6">
-            <p className="text-xs font-medium text-white/60 uppercase tracking-wider">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Benefits
             </p>
             <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center gap-2 text-xs text-white/80">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <MessageCircle className="w-3 h-3 text-purple-400" />
                 <span>Instant chat</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-white/80">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Gift className="w-3 h-3 text-blue-400" />
                 <span>Vouchers</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-white/80">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Calendar className="w-3 h-3 text-green-400" />
                 <span>Appointments</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-white/80">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Bell className="w-3 h-3 text-orange-400" />
                 <span>Notifications</span>
               </div>
@@ -328,7 +328,7 @@ export default function IOSInstallPrompt({
           <div className="flex gap-3">
             <Button
               variant="outline"
-              className="flex-1 border-white/20 text-white hover:bg-white/10"
+              className="flex-1 border-border text-white hover:bg-secondary/50"
               onClick={handleDismiss}
             >
               Maybe Later

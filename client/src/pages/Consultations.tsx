@@ -131,7 +131,7 @@ export default function Consultations() {
       {/* 3. Content Container (was GlassSheet) */}
       <div className={tokens.contentContainer.base}>
         {/* Sheet Header: Filter/Sort could go here */}
-        <div className="shrink-0 pt-6 pb-2 px-6 border-b border-white/5">
+        <div className="shrink-0 pt-6 pb-2 px-6 border-b border-border">
           <h2 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">
             Your History ({consultations?.length || 0})
           </h2>
@@ -188,13 +188,13 @@ export default function Consultations() {
                       />
                     </div>
 
-                    <p className="text-sm text-white/60 line-clamp-2 leading-relaxed mb-4">
+                    <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed mb-4">
                       {consultation.description}
                     </p>
 
-                    <div className="flex items-center gap-4 text-xs font-medium text-white/40 group-hover:text-white/60 transition-colors">
+                    <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground group-hover:text-muted-foreground transition-colors">
                       {consultation.preferredDate && (
-                        <div className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-md">
+                        <div className="flex items-center gap-1.5 bg-secondary/50 px-2 py-1 rounded-md">
                           <Calendar className="w-3.5 h-3.5" />
                           <span>
                             {new Date(
@@ -219,7 +219,7 @@ export default function Consultations() {
               ))
             ) : (
               <div className="text-center py-12 px-6">
-                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mx-auto mb-4">
                   <Calendar className="w-8 h-8 text-muted-foreground opacity-50" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">
@@ -254,7 +254,7 @@ export default function Consultations() {
           <div className="flex w-full gap-2">
             <Button
               variant="outline"
-              className="flex-1 bg-transparent border-white/10 hover:bg-white/5"
+              className="flex-1 bg-transparent border-border hover:bg-secondary/50"
               onClick={() => setShowNewDialog(false)}
             >
               Cancel
@@ -278,7 +278,7 @@ export default function Consultations() {
               value={selectedArtistId}
               onValueChange={setSelectedArtistId}
             >
-              <SelectTrigger className="bg-white/5 border-white/10 h-11">
+              <SelectTrigger className="bg-secondary/50 border-border h-11">
                 <SelectValue placeholder="Choose an artist" />
               </SelectTrigger>
               <SelectContent>
@@ -300,7 +300,7 @@ export default function Consultations() {
               value={subject}
               onChange={e => setSubject(e.target.value)}
               placeholder="e.g., Custom tattoo design"
-              className="bg-white/5 border-white/10 h-11"
+              className="bg-secondary/50 border-border h-11"
             />
           </div>
 
@@ -312,7 +312,7 @@ export default function Consultations() {
               onChange={e => setDescription(e.target.value)}
               placeholder="Describe what you'd like to discuss..."
               rows={5}
-              className="bg-white/5 border-white/10 min-h-[120px]"
+              className="bg-secondary/50 border-border min-h-[120px]"
             />
           </div>
 
@@ -323,7 +323,7 @@ export default function Consultations() {
               type="date"
               value={preferredDate}
               onChange={e => setPreferredDate(e.target.value)}
-              className="bg-white/5 border-white/10 h-11"
+              className="bg-secondary/50 border-border h-11"
             />
           </div>
         </div>

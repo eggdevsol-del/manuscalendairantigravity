@@ -72,10 +72,10 @@ export function RegulationSettings({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative">
-      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
         <button
           onClick={onBack}
-          className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+          className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
         >
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
@@ -90,7 +90,7 @@ export function RegulationSettings({ onBack }: { onBack: () => void }) {
             </p>
           </div>
           {/* Tab Switcher */}
-          <div className="flex gap-1 bg-white/5 p-1 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar whitespace-nowrap">
+          <div className="flex gap-1 bg-secondary/50 p-1 rounded-2xl border border-border overflow-x-auto no-scrollbar whitespace-nowrap">
             {tabs.map(tab => (
               <button
                 key={tab.id}
@@ -119,28 +119,28 @@ export function RegulationSettings({ onBack }: { onBack: () => void }) {
                   Loading logs...
                 </div>
               ) : !logs || logs.length === 0 ? (
-                <div className="p-12 text-center bg-white/5 rounded-2xl border border-dashed border-white/10 text-muted-foreground">
+                <div className="p-12 text-center bg-secondary/50 rounded-2xl border border-dashed border-border text-muted-foreground">
                   No procedure logs found.
                 </div>
               ) : (
-                <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md">
+                <div className="overflow-hidden rounded-2xl border border-border bg-secondary/50 backdrop-blur-md">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse min-w-max">
                       <thead>
-                        <tr className="bg-white/10 text-muted-foreground font-bold uppercase tracking-wider">
-                          <th className="p-3 border-b border-white/10 whitespace-nowrap">
+                        <tr className="bg-secondary/50 text-muted-foreground font-bold uppercase tracking-wider">
+                          <th className="p-3 border-b border-border whitespace-nowrap">
                             Date
                           </th>
-                          <th className="p-3 border-b border-white/10 whitespace-nowrap">
+                          <th className="p-3 border-b border-border whitespace-nowrap">
                             Client
                           </th>
-                          <th className="p-3 border-b border-white/10 whitespace-nowrap">
+                          <th className="p-3 border-b border-border whitespace-nowrap">
                             Artist License
                           </th>
-                          <th className="p-3 border-b border-white/10 whitespace-nowrap">
+                          <th className="p-3 border-b border-border whitespace-nowrap">
                             Amount
                           </th>
-                          <th className="p-3 border-b border-white/10 whitespace-nowrap">
+                          <th className="p-3 border-b border-border whitespace-nowrap">
                             Payment
                           </th>
                         </tr>
@@ -149,7 +149,7 @@ export function RegulationSettings({ onBack }: { onBack: () => void }) {
                         {logs.map(log => (
                           <tr
                             key={log.id}
-                            className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                            className="border-b border-border hover:bg-secondary/50 transition-colors"
                           >
                             <td className="p-3 font-mono whitespace-nowrap">
                               {new Date(log.date).toLocaleDateString()}
@@ -191,7 +191,7 @@ export function RegulationSettings({ onBack }: { onBack: () => void }) {
                         onChange={e => setMedical(e.target.value)}
                         placeholder="Enter medical history questions..."
                         rows={12}
-                        className="bg-white/5 border-white/10 leading-relaxed"
+                        className="bg-secondary/50 border-border leading-relaxed"
                       />
                     </div>
                   </div>
@@ -211,7 +211,7 @@ export function RegulationSettings({ onBack }: { onBack: () => void }) {
                         onChange={e => setConsent(e.target.value)}
                         placeholder="Enter procedure consent terms..."
                         rows={12}
-                        className="bg-white/5 border-white/10 leading-relaxed"
+                        className="bg-secondary/50 border-border leading-relaxed"
                       />
                     </div>
                   </div>

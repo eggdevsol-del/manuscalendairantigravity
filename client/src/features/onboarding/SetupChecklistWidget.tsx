@@ -132,7 +132,7 @@ export function SetupChecklistWidget() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.1 }}
                             onClick={task.onClick}
-                            className="w-full flex items-center p-4 hover:bg-white/[0.03] transition-colors text-left group"
+                            className="w-full flex items-center p-4 hover:bg-secondary/50 transition-colors text-left group"
                         >
                             <div className={cn(
                                 "flex items-center justify-center w-8 h-8 rounded-full shrink-0 transition-colors",

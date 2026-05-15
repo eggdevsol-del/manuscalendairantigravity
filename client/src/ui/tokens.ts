@@ -16,7 +16,7 @@ export const tokens = {
 
   // Secondary sheet (Modals, Booking Wizard)
   sheetSecondary: {
-    overlay: "fixed inset-0 z-[100] bg-black/40 backdrop-blur-md",
+    overlay: "fixed inset-0 z-[100] bg-background/80 backdrop-blur-md",
     content:
       "fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col gap-0 overflow-hidden",
     container:
@@ -26,7 +26,7 @@ export const tokens = {
     highlight:
       "absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent",
     header:
-      "shrink-0 pt-6 pb-4 px-6 border-b border-white/5 bg-white/[0.01] backdrop-blur-md z-10 relative",
+      "shrink-0 pt-6 pb-4 px-6 border-b border-border bg-secondary/50 backdrop-blur-md z-10 relative",
   },
 
   // 3. Cards
@@ -184,16 +184,16 @@ export const tokens = {
   selectionCard: {
     base: "w-full p-4 rounded-lg border transition-all text-left flex items-start gap-4 cursor-pointer group select-none",
     selected: "bg-primary/10 border-primary/50",
-    idle: "bg-black/5 dark:bg-white/5 border-transparent hover:bg-black/10 dark:hover:bg-white/10",
+    idle: "bg-background/80 dark:bg-secondary/50 border-transparent hover:bg-background/80 dark:hover:bg-secondary/50",
     iconContainer: {
       base: "w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-colors",
       selected: "bg-primary text-primary-foreground",
-      idle: "bg-black/10 dark:bg-white/10",
+      idle: "bg-background/80 dark:bg-secondary/50",
     },
     indicator: {
       base: "w-8 h-8 rounded-full flex items-center justify-center border transition-all ml-4",
       selected: "bg-primary border-primary text-primary-foreground",
-      idle: "bg-transparent border-black/20 dark:border-white/20 text-transparent group-hover:border-black/40 dark:group-hover:border-white/40",
+      idle: "bg-transparent border-black/20 dark:border-border text-transparent group-hover:border-black/40 dark:group-hover:border-border",
     },
     title: {
       base: "font-semibold text-base transition-colors",
@@ -267,17 +267,17 @@ export const tokens = {
   // Calendar-specific tokens
   calendar: {
     // Cell backgrounds and borders
-    cellBg: "bg-black/5 dark:bg-white/5",
-    cellBgHover: "hover:bg-black/10 dark:hover:bg-white/10",
-    cellBorder: "border-black/5 dark:border-white/10",
-    cellBorderHover: "hover:border-black/10 dark:hover:border-white/20",
+    cellBg: "bg-background/80 dark:bg-secondary/50",
+    cellBgHover: "hover:bg-background/80 dark:hover:bg-secondary/50",
+    cellBorder: "border-black/5 dark:border-border",
+    cellBorderHover: "hover:border-black/10 dark:hover:border-border",
     selectedBg: "bg-primary/10",
     selectedBorder: "border-primary/50",
     selectedCellBg: "bg-primary/20",
     selectedCellBorder: "border-primary",
     todayBg: "bg-primary/5",
     todayRing: "ring-1 ring-primary/50",
-    dimmedBg: "bg-black/5 dark:bg-white/[0.02]",
+    dimmedBg: "bg-background/80 dark:bg-secondary/50",
 
     // New Calendar Redesign Colors (Pastel Palette)
     event: {
@@ -338,7 +338,7 @@ export const tokens = {
     },
 
     // Timeline
-    timelineBg: "bg-black/5 dark:bg-black/20",
+    timelineBg: "bg-background/80 dark:bg-background/80",
     headerBg: "bg-secondary",
     slotHover: "hover:bg-border",
     slotActive: "active:bg-secondary",

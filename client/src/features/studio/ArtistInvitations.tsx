@@ -29,9 +29,9 @@ export default function ArtistInvitations({ onBack }: { onBack: () => void }) {
               </p>
             )}
             {invites?.map(invite => (
-              <Card key={invite.id} className="p-4 bg-white/5 border-white/10">
+              <Card key={invite.id} className="p-4 bg-secondary/50 border-border">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/5 flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center border-2 border-border flex-shrink-0">
                     {invite.studio.logoUrl ? (
                       <img
                         src={invite.studio.logoUrl}
@@ -68,7 +68,7 @@ export default function ArtistInvitations({ onBack }: { onBack: () => void }) {
                       </Button>
                       <Button
                         variant="outline"
-                        className="flex-1 hover:bg-red-500/10 hover:text-red-400 border-white/10"
+                        className="flex-1 hover:bg-red-500/10 hover:text-red-400 border-border"
                         disabled={respondMutation.isPending}
                         onClick={() =>
                           respondMutation.mutate({

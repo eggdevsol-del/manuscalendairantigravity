@@ -69,7 +69,7 @@ export function PayoutWidgetContainer({
     // Loading state
     if (nextPayoutQuery.isLoading) {
         return (
-            <div className="animate-pulse bg-white/5 rounded-2xl h-48" />
+            <div className="animate-pulse bg-secondary/50 rounded-2xl h-48" />
         );
     }
 

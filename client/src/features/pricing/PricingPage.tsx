@@ -133,7 +133,7 @@ export function PricingPage({
                     "relative rounded-2xl p-5 border overflow-hidden",
                     !isPro
                         ? "bg-card border-primary/30 shadow-lg shadow-primary/5"
-                        : "bg-white/5 border-white/10"
+                        : "bg-secondary/50 border-border"
                 )}
             >
                 {!isPro && (
@@ -153,11 +153,11 @@ export function PricingPage({
                     {FREE_FEATURES.map((f, i) => (
                         <div key={i} className="flex items-center gap-2.5">
                             {f.included ? (
-                                <div className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                                <div className="w-4 h-4 rounded-full bg-secondary/50 flex items-center justify-center shrink-0">
                                     <Check className="w-2.5 h-2.5 text-emerald-400" />
                                 </div>
                             ) : (
-                                <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center shrink-0">
+                                <div className="w-4 h-4 rounded-full bg-secondary/50 flex items-center justify-center shrink-0">
                                     <X className="w-2.5 h-2.5 text-muted-foreground/40" />
                                 </div>
                             )}
@@ -187,7 +187,7 @@ export function PricingPage({
                     "relative rounded-2xl p-5 border overflow-hidden",
                     isPro
                         ? "bg-card border-primary/30 shadow-lg shadow-primary/10"
-                        : "bg-card border-white/20 shadow-xl"
+                        : "bg-card border-border shadow-xl"
                 )}
             >
                 <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-purple-500 to-primary" />
@@ -235,7 +235,7 @@ export function PricingPage({
                     <button
                         onClick={onManageSubscription}
                         disabled={isLoading}
-                        className="w-full py-3 rounded-xl border border-white/20 text-foreground font-semibold text-sm hover:bg-white/5 transition-colors disabled:opacity-50"
+                        className="w-full py-3 rounded-xl border border-border text-foreground font-semibold text-sm hover:bg-secondary/50 transition-colors disabled:opacity-50"
                     >
                         Manage Subscription
                     </button>
@@ -308,7 +308,7 @@ export function PricingPage({
                         </p>
                     </div>
 
-                    <div className="border-t border-white/5 pt-3">
+                    <div className="border-t border-border pt-3">
                         <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
                             Artist Fee
                         </h4>
@@ -318,11 +318,11 @@ export function PricingPage({
                         </p>
                     </div>
 
-                    <div className="border-t border-white/5 pt-3">
+                    <div className="border-t border-border pt-3">
                         <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
                             Example: $1,000 booking
                         </h4>
-                        <div className="bg-white/5 rounded-lg p-3 space-y-1.5 text-sm">
+                        <div className="bg-secondary/50 rounded-lg p-3 space-y-1.5 text-sm">
                             <div className="flex justify-between">
                                 <span className="text-foreground/70">Your day rate</span>
                                 <span className="font-medium">$1,000.00</span>
@@ -331,7 +331,7 @@ export function PricingPage({
                                 <span className="text-foreground/70">Client pays (+ {platformFee})</span>
                                 <span className="font-medium">${(exampleClientTotal / 100).toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between border-t border-white/10 pt-1.5">
+                            <div className="flex justify-between border-t border-border pt-1.5">
                                 <span className="text-foreground/70">
                                     You receive ({isPro ? `Pro ${proArtistFee}` : `Free ${freeArtistFee}`} fee)
                                 </span>

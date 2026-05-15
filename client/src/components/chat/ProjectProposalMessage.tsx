@@ -142,7 +142,7 @@ export function ProjectProposalMessage({
         {/* Cancel button (artist only, pending only) */}
         {isArtist && isPending && onCancel && (
           <button
-            className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center bg-white/5 hover:bg-red-500/20 text-muted-foreground hover:text-red-500 transition-colors"
+            className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center bg-secondary/50 hover:bg-red-500/20 text-muted-foreground hover:text-red-500 transition-colors"
             onClick={e => {
               e.stopPropagation();
               onCancel();
@@ -184,7 +184,7 @@ export function ProjectProposalMessage({
         <div
           className={cn(
             card.base,
-            "grid grid-cols-3 gap-px rounded-[4px] overflow-hidden bg-white/[0.03]"
+            "grid grid-cols-3 gap-px rounded-[4px] overflow-hidden bg-secondary/50"
           )}
         >
           {[
@@ -222,7 +222,7 @@ export function ProjectProposalMessage({
             {/* Cancel (artist only, pending only) */}
             {isArtist && isPending && onCancel && (
               <button
-                className="w-6 h-6 rounded-full flex items-center justify-center bg-white/5 hover:bg-red-500/20 text-muted-foreground hover:text-red-500 transition-colors"
+                className="w-6 h-6 rounded-full flex items-center justify-center bg-secondary/50 hover:bg-red-500/20 text-muted-foreground hover:text-red-500 transition-colors"
                 onClick={e => {
                   e.stopPropagation();
                   onCancel();

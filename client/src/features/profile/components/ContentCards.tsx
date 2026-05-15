@@ -35,7 +35,7 @@ export function HistoryCard({ history }: { history: any[] }) {
           <p>No history yet</p>
         </div>
       ) : (
-        <div className="space-y-0 relative border-l border-white/10 ml-3 pl-6 py-2">
+        <div className="space-y-0 relative border-l border-border ml-3 pl-6 py-2">
           {history?.map(item => {
             const isLog = item.type === "log";
             const isForm = item.type === "form";
@@ -79,7 +79,7 @@ export function HistoryCard({ history }: { history: any[] }) {
                 case "completed":
                   return "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
                 default:
-                  return "bg-white/5 text-muted-foreground border-white/5";
+                  return "bg-secondary/50 text-muted-foreground border-border";
               }
             };
 
@@ -94,7 +94,7 @@ export function HistoryCard({ history }: { history: any[] }) {
                         ? "border-indigo-400"
                       : isForm
                         ? "border-orange-500"
-                        : "border-white/20"
+                        : "border-border"
                   )}
                 >
                   <div
@@ -150,7 +150,7 @@ export function HistoryCard({ history }: { history: any[] }) {
                   {isOrder && item.items && item.items.length > 0 && (
                     <div className="mt-1.5 space-y-1">
                       {item.items.map((prod: any, idx: number) => (
-                        <div key={idx} className="text-xs text-white/50 flex justify-between bg-black/20 px-2 py-1 rounded">
+                        <div key={idx} className="text-xs text-muted-foreground flex justify-between bg-background/80 px-2 py-1 rounded">
                           <span>{prod.quantity}x {prod.name}</span>
                           <span>${prod.price.toFixed(2)}</span>
                         </div>
@@ -301,7 +301,7 @@ export function PhotosCard({
                 loading="lazy"
               />
               {isEditMode && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <div className="absolute inset-0 bg-background/80 flex items-center justify-center opacity-0 group-hover:opacity-100">
                   {/* Delete action */}
                 </div>
               )}
@@ -397,7 +397,7 @@ export function FormsCard({ forms }: { forms: any[] }) {
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="shrink-0 text-xs hover:bg-white/5 opacity-60 hover:opacity-100"
+                  className="shrink-0 text-xs hover:bg-secondary/50 opacity-60 hover:opacity-100"
                   onClick={() => handleSignClick(form)}
                 >
                   View

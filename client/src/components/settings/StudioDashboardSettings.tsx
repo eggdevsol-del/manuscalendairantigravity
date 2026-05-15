@@ -78,10 +78,10 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
   if (isLoadingStudio) {
     return (
       <div className="w-full h-full flex flex-col overflow-hidden relative">
-        <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+        <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
           <button
             onClick={onBack}
-            className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+            className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
           >
             <ChevronLeft className="w-5 h-5 text-foreground" />
           </button>
@@ -101,10 +101,10 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
   ) {
     return (
       <div className="w-full h-full flex flex-col overflow-hidden relative">
-        <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+        <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
           <button
             onClick={onBack}
-            className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+            className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
           >
             <ChevronLeft className="w-5 h-5 text-foreground" />
           </button>
@@ -148,10 +148,10 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative">
-      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
         <button
           onClick={onBack}
-          className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+          className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
         >
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
@@ -160,7 +160,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
 
       {/* Desktop Horizontal Layout Optimized Tabs */}
       <div className="shrink-0 z-10 px-4 pt-4 pb-2 bg-transparent border-b border-border/10">
-        <div className="flex justify-between items-center w-full max-w-4xl mx-auto bg-white/5 rounded-xl p-1 relative border border-white/10 overflow-x-auto no-scrollbar">
+        <div className="flex justify-between items-center w-full max-w-4xl mx-auto bg-secondary/50 rounded-xl p-1 relative border border-border overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab("team")}
             className={cn(
@@ -284,10 +284,10 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                       {activeMembers.map((member: any) => (
                         <div
                           key={member.id}
-                          className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between hover:bg-white/10 transition-colors"
+                          className="p-4 rounded-xl bg-secondary/50 border border-border flex items-center justify-between hover:bg-secondary/50 transition-colors"
                         >
                           <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-white/10 overflow-hidden flex items-center justify-center border border-white/20">
+                            <div className="w-12 h-12 rounded-full bg-secondary/50 overflow-hidden flex items-center justify-center border border-border">
                               {member.user.avatar ? (
                                 <img
                                   src={member.user.avatar}
@@ -351,10 +351,10 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                         {pendingMembers.map((member: any) => (
                           <div
                             key={member.id}
-                            className="p-4 rounded-xl bg-white/5 border border-white/5 border-dashed flex items-center justify-between opacity-70"
+                            className="p-4 rounded-xl bg-secondary/50 border border-border border-dashed flex items-center justify-between opacity-70"
                           >
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-full bg-white/5 border-2 border-dashed border-white/20 flex items-center justify-center">
+                              <div className="w-12 h-12 rounded-full bg-secondary/50 border-2 border-dashed border-border flex items-center justify-center">
                                 <Mail className="w-5 h-5 text-muted-foreground" />
                               </div>
                               <div>
@@ -396,7 +396,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                 transition={{ duration: 0.3 }}
                 className="max-w-2xl mx-auto space-y-6"
               >
-                <div className="p-8 bg-white/5 border border-white/5 rounded-[4px]">
+                <div className="p-8 bg-secondary/50 border border-border rounded-[4px]">
                   <div className="mb-8 text-center">
                     <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
                       <UserPlus className="w-8 h-8 text-primary" />
@@ -417,7 +417,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                           placeholder="artist@example.com"
                           value={inviteEmail}
                           onChange={e => setInviteEmail(e.target.value)}
-                          className="w-full bg-black/30 border-white/20 py-6 text-lg"
+                          className="w-full bg-background/80 border-border py-6 text-lg"
                           type="email"
                           required
                         />
@@ -427,7 +427,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                           Role
                         </label>
                         <select
-                          className="w-full bg-black/30 border border-white/20 rounded-xl px-4 py-3 text-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full bg-background/80 border border-border rounded-xl px-4 py-3 text-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                           value={inviteRole}
                           onChange={e => setInviteRole(e.target.value as any)}
                         >
@@ -465,8 +465,8 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
-                <div className="p-12 bg-white/5 border border-white/5 rounded-[4px] text-center flex flex-col items-center justify-center min-h-[400px]">
-                  <div className="p-6 rounded-full bg-white/5 border border-white/10 mb-6">
+                <div className="p-12 bg-secondary/50 border border-border rounded-[4px] text-center flex flex-col items-center justify-center min-h-[400px]">
+                  <div className="p-6 rounded-full bg-secondary/50 border border-border mb-6">
                     <BarChart3 className="w-16 h-16 text-muted-foreground opacity-70" />
                   </div>
                   <h3 className="text-3xl font-bold mb-4 tracking-tight">
@@ -492,8 +492,8 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
-                <div className="p-8 bg-white/5 border border-white/5 rounded-[4px] flex flex-col items-center justify-center min-h-[400px] text-center">
-                  <div className="p-6 rounded-full bg-white/5 border border-white/10 mb-6">
+                <div className="p-8 bg-secondary/50 border border-border rounded-[4px] flex flex-col items-center justify-center min-h-[400px] text-center">
+                  <div className="p-6 rounded-full bg-secondary/50 border border-border mb-6">
                     <SettingsIcon className="w-16 h-16 text-muted-foreground opacity-70" />
                   </div>
                   <h3 className="text-3xl font-bold mb-4 tracking-tight">

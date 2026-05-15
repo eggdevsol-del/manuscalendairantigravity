@@ -139,7 +139,7 @@ export function SendPromotionSheet({
       contextContent={
         <div>
           <p className="text-lg font-bold text-white">{promotion.name}</p>
-          <p className="text-sm text-white/70">
+          <p className="text-sm text-muted-foreground">
             {promotion.valueType === "percentage"
               ? `${promotion.value}% discount`
               : `$${(promotion.value / 100).toFixed(2)} value`}
@@ -155,7 +155,7 @@ export function SendPromotionSheet({
             "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all",
             mode === "specific"
               ? "bg-primary text-primary-foreground"
-              : "bg-black/5 dark:bg-white/5 text-muted-foreground"
+              : "bg-background/80 dark:bg-secondary/50 text-muted-foreground"
           )}
         >
           <User className="w-4 h-4" />
@@ -167,7 +167,7 @@ export function SendPromotionSheet({
             "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all",
             mode === "auto"
               ? "bg-primary text-primary-foreground"
-              : "bg-black/5 dark:bg-white/5 text-muted-foreground"
+              : "bg-background/80 dark:bg-secondary/50 text-muted-foreground"
           )}
         >
           <Users className="w-4 h-4" />
@@ -235,7 +235,7 @@ export function SendPromotionSheet({
                       "w-full p-4 rounded-xl border transition-all text-left flex items-center gap-3",
                       isSelected
                         ? "bg-primary/10 border-primary/50"
-                        : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10"
+                        : "bg-background/80 dark:bg-secondary/50 border-black/10 dark:border-border"
                     )}
                   >
                     <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
@@ -271,7 +271,7 @@ export function SendPromotionSheet({
         <>
           {/* Auto-Apply Configuration */}
           <div className="space-y-6">
-            <div className="bg-black/5 dark:bg-white/5 rounded-xl p-4">
+            <div className="bg-background/80 dark:bg-secondary/50 rounded-xl p-4">
               <div className="flex items-start gap-3">
                 <Calendar className="w-5 h-5 text-primary mt-0.5" />
                 <div>

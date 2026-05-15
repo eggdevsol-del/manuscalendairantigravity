@@ -25,7 +25,7 @@ export function WebPushSettings({
   if (!enabled) return null;
 
   return (
-    <div className="p-4 rounded-[4px] bg-white/5 border border-white/10 space-y-4">
+    <div className="p-4 rounded-[4px] bg-secondary/50 border border-border space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <Bell className="w-4 h-4 text-primary" />

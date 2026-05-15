@@ -125,7 +125,7 @@ export function AgendaDayList({
                           className="flex-1 flex flex-col gap-2 min-w-0"
                         >
                           {activeArtists.length > 1 && (
-                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate pb-1 border-b border-white/5 mb-1">
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate pb-1 border-b border-border mb-1">
                               {artist.user?.name || "Artist"}
                             </div>
                           )}
@@ -182,7 +182,7 @@ export function AgendaDayList({
                               })
                             : !isDesign && (
                                 <div
-                                  className="py-6 text-center text-xs text-muted-foreground/30 italic cursor-pointer hover:bg-white/[0.02] rounded-md transition-colors border border-dashed border-white/5 h-full flex flex-col justify-center"
+                                  className="py-6 text-center text-xs text-muted-foreground/30 italic cursor-pointer hover:bg-secondary/50 rounded-md transition-colors border border-dashed border-border h-full flex flex-col justify-center"
                                   onClick={() => onDateTap?.(date)}
                                 >
                                   <span className="mb-1">
@@ -199,7 +199,7 @@ export function AgendaDayList({
                   /* Fallback if no artists loaded yet or someone removed all artists */
                   !isDesign && (
                     <div
-                      className="py-6 text-center text-sm text-muted-foreground/30 italic cursor-pointer hover:bg-white/[0.02] rounded-md transition-colors"
+                      className="py-6 text-center text-sm text-muted-foreground/30 italic cursor-pointer hover:bg-secondary/50 rounded-md transition-colors"
                       onClick={() => onDateTap?.(date)}
                     >
                       Touch to add appointment

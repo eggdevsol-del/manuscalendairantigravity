@@ -61,7 +61,7 @@ export function WizardShell({
           <Button
             variant="ghost"
             onClick={handleBack}
-            className="text-white/50 hover:text-white hover:bg-white/5 -ml-4 font-bold"
+            className="text-muted-foreground hover:text-white hover:bg-secondary/50 -ml-4 font-bold"
           >
             Back
           </Button>

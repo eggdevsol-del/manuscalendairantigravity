@@ -36,7 +36,7 @@ export default function PublicEvents() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-white/20 animate-spin" />
+        <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
       </div>
     );
   }
@@ -45,10 +45,10 @@ export default function PublicEvents() {
     return (
       <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6 text-center">
         <h1 className="text-2xl font-bold text-white mb-2">Events Not Found</h1>
-        <p className="text-white/60 mb-6">This artist may not have any upcoming events.</p>
+        <p className="text-muted-foreground mb-6">This artist may not have any upcoming events.</p>
         <button
           onClick={() => setLocation(`/${slug}`)}
-          className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors font-medium text-sm"
+          className="px-6 py-3 bg-secondary/50 hover:bg-secondary/50 text-white rounded-full transition-colors font-medium text-sm"
         >
           Return to Hub
         </button>
@@ -59,12 +59,12 @@ export default function PublicEvents() {
   return (
     <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden font-sans pb-20">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5 px-4 py-4 flex items-center justify-between">
+      <div className="sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-border px-4 py-4 flex items-center justify-between">
         <button
           onClick={() => setLocation(`/${slug}`)}
-          className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors"
+          className="p-2 -ml-2 rounded-full hover:bg-secondary/50 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 text-white/70" />
+          <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
         <span className="font-bold tracking-wider uppercase text-sm">Upcoming Events</span>
         <div className="w-9" />
@@ -74,10 +74,10 @@ export default function PublicEvents() {
         <h1 className="text-3xl font-extrabold mb-8">Seminars & Events</h1>
 
         {seminars.length === 0 ? (
-          <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/5">
-            <CalendarDays className="w-12 h-12 text-white/20 mx-auto mb-4" />
+          <div className="text-center py-20 bg-secondary/50 rounded-3xl border border-border">
+            <CalendarDays className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">No Upcoming Events</h2>
-            <p className="text-white/50 text-sm">Check back later for live and virtual seminars.</p>
+            <p className="text-muted-foreground text-sm">Check back later for live and virtual seminars.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -93,7 +93,7 @@ export default function PublicEvents() {
                   key={seminar.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white/5 rounded-[24px] border border-white/10 overflow-hidden hover:border-white/20 transition-colors"
+                  className="bg-secondary/50 rounded-[24px] border border-border overflow-hidden hover:border-border transition-colors"
                 >
                   <div className="p-6">
                     {/* Type Badge */}
@@ -111,10 +111,10 @@ export default function PublicEvents() {
 
                     {/* Title & Description */}
                     <h3 className="text-xl font-bold mb-2 leading-tight">{seminar.title}</h3>
-                    <p className="text-white/50 text-sm leading-relaxed mb-4 line-clamp-3">{seminar.description}</p>
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-4 line-clamp-3">{seminar.description}</p>
 
                     {/* Meta Row */}
-                    <div className="flex flex-wrap items-center gap-4 mb-5 text-white/60 text-xs">
+                    <div className="flex flex-wrap items-center gap-4 mb-5 text-muted-foreground text-xs">
                       <div className="flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
                         <span>{eventDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })} · {eventDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span>
@@ -126,7 +126,7 @@ export default function PublicEvents() {
                     </div>
 
                     {/* Price + CTA */}
-                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                    <div className="flex items-center justify-between pt-4 border-t border-border">
                       <span className="text-2xl font-bold tracking-tight">
                         ${(seminar.priceCents / 100).toFixed(2)}
                       </span>

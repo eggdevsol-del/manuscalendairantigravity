@@ -176,10 +176,10 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative">
       {/* 1. Page Header - Floating style */}
-      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
         <button
           onClick={onBack}
-          className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+          className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
         >
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
@@ -190,17 +190,17 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
       <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
         <div className="pb-[180px] max-w-lg mx-auto space-y-6 px-4 pt-6">
           {/* Enable/Disable Toggle */}
-          <div className="bg-white/5 rounded-2xl p-4">
+          <div className="bg-secondary/50 rounded-2xl p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {funnelEnabled ? (
                   <Eye className="w-5 h-5 text-green-400" />
                 ) : (
-                  <EyeOff className="w-5 h-5 text-white/40" />
+                  <EyeOff className="w-5 h-5 text-muted-foreground" />
                 )}
                 <div>
                   <p className="text-white font-medium">Public Booking Link</p>
-                  <p className="text-white/60 text-sm">
+                  <p className="text-muted-foreground text-sm">
                     {funnelEnabled
                       ? "Clients can request consultations"
                       : "Link is disabled"}
@@ -209,7 +209,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
               </div>
               <button
                 onClick={() => setFunnelEnabled(!funnelEnabled)}
-                className={`w-12 h-7 rounded-full transition-colors relative ${funnelEnabled ? "bg-[#7C5CFC]" : "bg-white/20"
+                className={`w-12 h-7 rounded-full transition-colors relative ${funnelEnabled ? "bg-[#7C5CFC]" : "bg-secondary/50"
                   }`}
               >
                 <div
@@ -227,15 +227,15 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
               Your Link
             </h3>
 
-            <div className="bg-white/5 rounded-2xl p-4 space-y-4">
+            <div className="bg-secondary/50 rounded-2xl p-4 space-y-4">
               {/* Slug Input */}
               <div>
-                <label className="text-white/60 text-sm mb-2 block">
+                <label className="text-muted-foreground text-sm mb-2 block">
                   Custom URL Slug
                 </label>
                 <div className="flex gap-2">
-                  <div className="flex-1 flex items-center bg-white/10 rounded-xl overflow-hidden">
-                    <span className="text-white/40 text-sm pl-3 pr-1">
+                  <div className="flex-1 flex items-center bg-secondary/50 rounded-xl overflow-hidden">
+                    <span className="text-muted-foreground text-sm pl-3 pr-1">
                       /
                     </span>
                     <input
@@ -244,7 +244,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
                       onChange={e => handleSlugChange(e.target.value)}
                       onBlur={handleCheckSlug}
                       placeholder="yourname"
-                      className="flex-1 bg-transparent border-0 py-3 pr-3 text-white placeholder:text-white/30 focus:outline-none"
+                      className="flex-1 bg-transparent border-0 py-3 pr-3 text-white placeholder:text-muted-foreground focus:outline-none"
                     />
                   </div>
                 </div>
@@ -255,7 +255,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
                   </p>
                 )}
                 {isCheckingSlug && (
-                  <p className="text-white/60 text-sm mt-2">
+                  <p className="text-muted-foreground text-sm mt-2">
                     Checking availability...
                   </p>
                 )}
@@ -263,8 +263,8 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
 
               {/* Full URL Display */}
               {slug && !slugError && (
-                <div className="bg-white/5 rounded-xl p-3">
-                  <p className="text-white/60 text-xs mb-1">Your booking link:</p>
+                <div className="bg-secondary/50 rounded-xl p-3">
+                  <p className="text-muted-foreground text-xs mb-1">Your booking link:</p>
                   <p className="text-white font-mono text-sm break-all">
                     {funnelUrl}
                   </p>
@@ -276,7 +276,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
                 <button
                   onClick={handleCopy}
                   disabled={!slug || !!slugError}
-                  className="flex-1 bg-white/10 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 bg-secondary/50 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {copied ? (
                     <Check className="w-4 h-4" />
@@ -288,7 +288,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
                 <button
                   onClick={handleShare}
                   disabled={!slug || !!slugError}
-                  className="flex-1 bg-white/10 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 bg-secondary/50 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <Share2 className="w-4 h-4" />
                   Share
@@ -296,7 +296,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
                 <button
                   onClick={handlePreview}
                   disabled={!slug || !!slugError}
-                  className="bg-white/10 text-white p-3 rounded-xl disabled:opacity-50"
+                  className="bg-secondary/50 text-white p-3 rounded-xl disabled:opacity-50"
                 >
                   <ExternalLink className="w-5 h-5" />
                 </button>
@@ -307,12 +307,12 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
           {/* Funnel Theme Toggle */}
           <div>
             <h3 className="text-white font-medium mb-3">Booking Link Theme</h3>
-            <div className="bg-white/5 rounded-2xl p-2 flex gap-2">
+            <div className="bg-secondary/50 rounded-2xl p-2 flex gap-2">
               <button
                 onClick={() => setFunnelTheme("light")}
                 className={`flex-1 py-3 px-4 rounded-xl font-medium transition-colors ${funnelTheme === "light"
-                  ? "bg-white text-black"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-white hover:bg-secondary/50"
                   }`}
               >
                 Light Theme
@@ -320,8 +320,8 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
               <button
                 onClick={() => setFunnelTheme("dark")}
                 className={`flex-1 py-3 px-4 rounded-xl font-medium transition-colors ${funnelTheme === "dark"
-                  ? "bg-[#1E1E1E] text-white border border-white/10"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
+                  ? "bg-[#1E1E1E] text-white border border-border"
+                  : "text-muted-foreground hover:text-white hover:bg-secondary/50"
                   }`}
               >
                 Dark Theme
@@ -332,7 +332,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
           {/* Banner Image Upload */}
           <div>
             <h3 className="text-white font-medium mb-3">Header Banner Image</h3>
-            <div className="bg-white/5 rounded-2xl p-4">
+            <div className="bg-secondary/50 rounded-2xl p-4">
               <ImageUpload
                 value={funnelBannerUrl || ""}
                 onChange={(url: string) => setFunnelBannerUrl(url)}
@@ -340,7 +340,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
                 label="Upload Banner (16:9 recommended)"
                 className="w-full aspect-[21/9] rounded-xl overflow-hidden"
               />
-              <p className="text-white/40 text-xs mt-3">
+              <p className="text-muted-foreground text-xs mt-3">
                 This image will appear at the top of your booking link and smoothly fade into the background.
               </p>
             </div>
@@ -351,7 +351,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
             <h4 className="text-[#7C5CFC] font-medium mb-2">
               Tips for your link
             </h4>
-            <ul className="text-white/70 text-sm space-y-2">
+            <ul className="text-muted-foreground text-sm space-y-2">
               <li>• Add it to your Instagram bio</li>
               <li>• Share it in your TikTok profile</li>
               <li>• Include it in your email signature</li>

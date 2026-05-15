@@ -314,7 +314,7 @@ export default function Signup() {
                         "py-2.5 px-3 rounded-xl border-2 text-sm font-medium transition-all outline-none",
                         gender === opt.value
                           ? "border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.15)]"
-                          : "border-white/10 bg-white/5 text-foreground hover:bg-white/10"
+                          : "border-border bg-secondary/50 text-foreground hover:bg-secondary/50"
                       )}
                       disabled={isLoading}
                     >
@@ -337,7 +337,7 @@ export default function Signup() {
                       setCity(cityComp?.long_name || place.name || "");
                       if (countryComp) setCountry(countryComp.long_name);
                     }}
-                    className="bg-white/5 border-white/10 h-[52px] rounded-xl pl-3"
+                    className="bg-secondary/50 border-border h-[52px] rounded-xl pl-3"
                   />
                 </div>
                 <div className="space-y-2">
@@ -419,7 +419,7 @@ export default function Signup() {
 
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-white/10" />
+              <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-[10px] font-bold tracking-widest uppercase">
               <span className="bg-background px-4 text-muted-foreground">
@@ -526,7 +526,7 @@ export default function Signup() {
                       "py-2.5 px-3 rounded-xl border-2 text-sm font-medium transition-all outline-none",
                       gender === opt.value
                         ? "border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.15)]"
-                        : "border-white/10 bg-white/5 text-foreground hover:bg-white/10"
+                        : "border-border bg-secondary/50 text-foreground hover:bg-secondary/50"
                     )}
                     disabled={isLoading}
                   >
@@ -549,7 +549,7 @@ export default function Signup() {
                     setCity(cityComp?.long_name || place.name || "");
                     if (countryComp) setCountry(countryComp.long_name);
                   }}
-                  className="bg-white/5 border-white/10 h-[52px] rounded-xl pl-3"
+                  className="bg-secondary/50 border-border h-[52px] rounded-xl pl-3"
                 />
               </div>
               <div className="space-y-2">
@@ -654,7 +654,7 @@ export default function Signup() {
           <div className="mt-8 space-y-4">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-white/10" />
+                <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-[10px] font-bold tracking-widest uppercase">
                 <span className="bg-background px-4 text-muted-foreground">
@@ -667,7 +667,7 @@ export default function Signup() {
               type="button"
               className={cn(
                 tokens.button.secondary,
-                "w-full border border-white/5"
+                "w-full border border-border"
               )}
               onClick={() => setLocation("/login")}
               disabled={isLoading}

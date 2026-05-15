@@ -57,7 +57,7 @@ export function RefundConfirmationFAB({
       className="fixed bottom-[80px] right-5 z-[55] flex flex-col items-start gap-3"
       panelClassName="w-[320px] max-w-[calc(100vw-40px)]"
     >
-      <div className="flex items-center gap-3 w-full pb-2 mb-2 border-b border-white/5">
+      <div className="flex items-center gap-3 w-full pb-2 mb-2 border-b border-border">
         <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
           <AlertTriangle className="w-4 h-4 text-red-500" />
         </div>
@@ -82,7 +82,7 @@ export function RefundConfirmationFAB({
           <span className="font-bold text-foreground capitalize">{transaction.type}</span>
         </div>
         
-        <div className="flex justify-between items-center text-sm border-t border-white/5 pt-2 mt-1">
+        <div className="flex justify-between items-center text-sm border-t border-border pt-2 mt-1">
           <span className="font-bold text-foreground">Refund Amount</span>
           <span className="font-black text-red-400">
             {formatCents(transaction.amountCents)}

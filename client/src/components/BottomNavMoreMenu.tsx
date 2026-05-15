@@ -60,7 +60,7 @@ export function BottomNavMoreMenu({
 
         // EXACT match of BottomNav visual properties
         "bg-gray-100/95 dark:bg-slate-950/80 backdrop-blur-[32px]",
-        "border-t border-l border-gray-200 dark:border-white/10",
+        "border-t border-l border-gray-200 dark:border-border",
 
         // Rounded top-left mainly, maybe top-right too. Bottom corners square to attach.
         "rounded-tl-2xl",

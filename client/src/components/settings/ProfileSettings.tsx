@@ -136,10 +136,10 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
     return (
         <div className="w-full h-full flex flex-col overflow-hidden relative">
             {/* 1. Page Header - Floating style */}
-            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-white/5">
+            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
                 <button
                     onClick={onBack}
-                    className="p-2 -ml-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                    className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
                 >
                     <ChevronLeft className="w-5 h-5 text-foreground" />
                 </button>
@@ -151,7 +151,7 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
                 <div className="pb-[180px] max-w-lg mx-auto space-y-6 px-4 pt-6">
                     {/* Avatar Display */}
                     <div className="flex flex-col items-center justify-center mb-6">
-                        <div className="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center overflow-hidden mb-4 shadow-xl border border-white/10">
+                        <div className="w-24 h-24 rounded-full bg-secondary/50 flex items-center justify-center overflow-hidden mb-4 shadow-xl border border-border">
                             {profileAvatar ? (
                                 <img
                                     src={getAssetUrl(profileAvatar)}
@@ -159,7 +159,7 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <User className="w-12 h-12 text-white/50" />
+                                <User className="w-12 h-12 text-muted-foreground" />
                             )}
                         </div>
                     </div>
@@ -181,7 +181,7 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
                                         document.getElementById("avatar-upload")?.click()
                                     }
                                     disabled={uploadingAvatar}
-                                    className="bg-transparent border-white/10 hover:bg-white/5"
+                                    className="bg-transparent border-border hover:bg-secondary/50"
                                 >
                                     {uploadingAvatar ? "Uploading..." : "Upload New Photo"}
                                 </Button>
@@ -195,7 +195,7 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
                                 value={profileName}
                                 onChange={e => setProfileName(e.target.value)}
                                 placeholder="Your name"
-                                className="bg-white/5 border-white/10"
+                                className="bg-secondary/50 border-border"
                             />
                         </div>
 
@@ -206,7 +206,7 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
                                 value={profilePhone}
                                 onChange={e => setProfilePhone(e.target.value)}
                                 placeholder="Your phone number"
-                                className="bg-white/5 border-white/10"
+                                className="bg-secondary/50 border-border"
                             />
                         </div>
 
@@ -217,7 +217,7 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
                                 type="date"
                                 value={profileBirthday}
                                 onChange={e => setProfileBirthday(e.target.value)}
-                                className="bg-white/5 border-white/10 [color-scheme:dark]"
+                                className="bg-secondary/50 border-border [color-scheme:dark]"
                             />
                         </div>
 
@@ -229,7 +229,7 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
                                 onChange={e => setProfileAddress(e.target.value)}
                                 placeholder="E.g. 123 Main St"
                                 rows={2}
-                                className="bg-white/5 border-white/10"
+                                className="bg-secondary/50 border-border"
                             />
                         </div>
 
@@ -242,7 +242,7 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
                                     const cityComp = place.address_components.find(c => c.types.includes("locality"));
                                     setProfileCity(cityComp?.long_name || place.name || "");
                                 }}
-                                className="bg-white/5 border-white/10"
+                                className="bg-secondary/50 border-border"
                             />
                         </div>
 
@@ -254,7 +254,7 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
                                 onChange={e => setProfileBio(e.target.value)}
                                 placeholder="Tell us about yourself"
                                 rows={4}
-                                className="bg-white/5 border-white/10"
+                                className="bg-secondary/50 border-border"
                             />
                         </div>
                     </div>

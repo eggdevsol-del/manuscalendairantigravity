@@ -19,7 +19,7 @@ export function EmbeddedStripeCheckout({ clientSecret, onComplete }: EmbeddedStr
   if (!clientSecret) return null;
 
   return (
-    <div className="w-full bg-white/5 rounded-xl border border-white/10 overflow-hidden relative" style={{ minHeight: "500px" }}>
+    <div className="w-full bg-secondary/50 rounded-xl border border-border overflow-hidden relative" style={{ minHeight: "500px" }}>
       <EmbeddedCheckoutProvider
         stripe={stripePromise}
         options={{ clientSecret, onComplete }}

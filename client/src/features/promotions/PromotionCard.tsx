@@ -213,7 +213,7 @@ export function PromotionCard({
 
         {/* Magnetic stripe */}
         {template.hasMagStripe && (
-          <div className="absolute bottom-12 left-0 right-0 h-8 bg-black/80" />
+          <div className="absolute bottom-12 left-0 right-0 h-8 bg-background/80" />
         )}
 
         {/* Logo area */}
@@ -222,7 +222,7 @@ export function PromotionCard({
             src={getAssetUrl(data.logoUrl)}
             alt="Logo"
             className={cn(
-              "absolute w-12 h-12 object-contain bg-white/90 rounded-lg p-1",
+              "absolute w-12 h-12 object-contain bg-secondary/50 rounded-lg p-1",
               template.logoPosition === "top-left" && "top-4 left-4",
               template.logoPosition === "top-right" && "top-4 right-4",
               template.logoPosition === "bottom-left" && "bottom-4 left-4",

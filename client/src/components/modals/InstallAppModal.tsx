@@ -68,7 +68,7 @@ export function InstallAppModal({ isOpen, onClose }: InstallAppModalProps) {
           </p>
         </div>
 
-        <div className="bg-white/5 rounded-2xl p-4 w-full border border-white/10 text-left space-y-3">
+        <div className="bg-secondary/50 rounded-2xl p-4 w-full border border-border text-left space-y-3">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
               <span className="text-green-500 text-xs">✓</span>
