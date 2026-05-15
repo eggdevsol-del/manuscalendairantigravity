@@ -85,6 +85,9 @@ export function SupplierStorefront({
                   </div>
                   
                   <div className="p-3 flex flex-col flex-1">
+                    {product.category && (
+                      <p className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full w-max mb-1.5 line-clamp-1">{product.category}</p>
+                    )}
                     <h3 className="font-bold text-sm line-clamp-2 leading-tight mb-2 flex-1">{product.title}</h3>
                     
                     {hasVariants && (

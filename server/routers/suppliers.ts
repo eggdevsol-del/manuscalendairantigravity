@@ -30,33 +30,50 @@ export const suppliersRouter = router({
         throw new Error("Invalid URL format provided.");
       }
 
-      const productsUrl = `${baseUrl}/products.json`;
-
+      let allProducts: any[] = [];
+      let page = 1;
+      const MAX_PAGES = 10;
+      
       try {
-        const response = await fetch(productsUrl, {
-          headers: {
-            'User-Agent': 'Tattoi App Import',
+        while (page <= MAX_PAGES) {
+          const productsUrl = `${baseUrl}/products.json?limit=250&page=${page}`;
+          const response = await fetch(productsUrl, {
+            headers: {
+              'User-Agent': 'Tattoi App Import',
+            }
+          });
+
+          if (!response.ok) {
+            if (page === 1) throw new Error("Could not fetch products. Make sure this is a valid Shopify store.");
+            break;
           }
-        });
 
-        if (!response.ok) {
-          throw new Error("Could not fetch products. Make sure this is a valid Shopify store.");
-        }
+          const contentType = response.headers.get("content-type");
+          if (!contentType || !contentType.includes("application/json")) {
+            if (page === 1) throw new Error("The store URL did not return valid JSON data. Please ensure the URL points to a standard Shopify storefront.");
+            break;
+          }
 
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("The store URL did not return valid JSON data. Please ensure the URL points to a standard Shopify storefront.");
-        }
+          let data;
+          try {
+            data = await response.json();
+          } catch (e) {
+            if (page === 1) throw new Error("Failed to parse store data. The URL might not be a standard Shopify store.");
+            break;
+          }
+          
+          if (!data || !data.products || !Array.isArray(data.products)) {
+            if (page === 1) throw new Error("Invalid response format. Not a recognized Shopify catalog.");
+            break;
+          }
 
-        let data;
-        try {
-          data = await response.json();
-        } catch (e) {
-          throw new Error("Failed to parse store data. The URL might not be a standard Shopify store.");
-        }
-        
-        if (!data || !data.products || !Array.isArray(data.products)) {
-          throw new Error("Invalid response format. Not a recognized Shopify catalog.");
+          allProducts = allProducts.concat(data.products);
+          
+          if (data.products.length < 250) {
+            break; // No more pages
+          }
+          
+          page++;
         }
 
         // Determine store name from URL hostname
@@ -74,7 +91,7 @@ export const suppliersRouter = router({
         const supplierId = supplierResult.insertId;
 
         // Save Products
-        const productsToInsert = data.products.map((p: any) => {
+        const productsToInsert = allProducts.map((p: any) => {
           let imageUrl = p.images && p.images.length > 0 ? p.images[0].src : null;
           let description = p.body_html ? p.body_html.replace(/<[^>]*>?/gm, '') : null;
           
@@ -103,7 +120,7 @@ export const suppliersRouter = router({
 
         const variantsToInsert: any[] = [];
         
-        for (const sp of data.products) {
+        for (const sp of allProducts) {
           const dbProduct = insertedProducts.find(p => p.shopifyProductId === sp.id.toString());
           if (dbProduct && sp.variants && sp.variants.length > 0) {
             for (const v of sp.variants) {
@@ -127,7 +144,7 @@ export const suppliersRouter = router({
         return { 
           success: true, 
           supplierId, 
-          productCount: data.products.length,
+          productCount: allProducts.length,
           name: storeName
         };
         
