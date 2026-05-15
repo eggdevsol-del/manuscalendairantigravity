@@ -120,14 +120,14 @@ export function ContactsTab() {
             <button className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors">See all</button>
           </div>
           
-          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-6 px-6 hide-scrollbar">
+          <div className="flex overflow-x-auto gap-4 pb-4 -mx-6 px-6 hide-scrollbar">
             {dbSuppliers?.map((supplier, i) => (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
                 key={supplier.id}
-                className="snap-start shrink-0 w-[280px] bg-card border border-border rounded-[24px] overflow-hidden group shadow-sm hover:shadow-md transition-all"
+                className="shrink-0 w-[280px] bg-card border border-border rounded-[24px] overflow-hidden group shadow-sm hover:shadow-md transition-all"
               >
                 <div className="h-32 w-full overflow-hidden relative bg-secondary/50 flex items-center justify-center">
                   {supplier.logoUrl ? (
@@ -174,7 +174,7 @@ export function ContactsTab() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: (dbSuppliers?.length || 0) * 0.1 }}
-              className="snap-start shrink-0 w-[280px] bg-secondary/20 border border-dashed border-border rounded-[24px] overflow-hidden flex flex-col items-center justify-center cursor-pointer hover:bg-secondary/40 transition-colors p-6 text-center h-[280px]"
+              className="shrink-0 w-[280px] bg-secondary/20 border border-dashed border-border rounded-[24px] overflow-hidden flex flex-col items-center justify-center cursor-pointer hover:bg-secondary/40 transition-colors p-6 text-center h-[280px]"
               onClick={() => setIsScrapeModalOpen(true)}
             >
               <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4">
@@ -195,14 +195,14 @@ export function ContactsTab() {
             </span>
           </div>
           
-          <div className="flex overflow-x-auto snap-x hide-scrollbar gap-4 pb-4 -mx-4 px-4">
+          <div className="flex overflow-x-auto hide-scrollbar gap-4 pb-4 -mx-4 px-4">
             {MOCK_SUPPLIERS_DIRECTORY.map((dirSup, idx) => (
               <motion.div
                 key={dirSup.name}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.1 }}
-                className="snap-start shrink-0 w-[240px] bg-card border border-border rounded-[24px] overflow-hidden flex flex-col shadow-sm"
+                className="shrink-0 w-[240px] bg-card border border-border rounded-[24px] overflow-hidden flex flex-col shadow-sm"
               >
                 <div className="h-20 bg-secondary/30 flex items-center justify-center border-b border-border">
                   <h3 className="font-black text-lg text-foreground">{dirSup.name}</h3>
