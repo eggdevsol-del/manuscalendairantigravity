@@ -35,6 +35,15 @@ const MOCK_ARTISTS = [
   }
 ];
 
+const MOCK_SUPPLIERS_DIRECTORY = [
+  { name: "Pro Tattoo Supply", url: "https://protattoosupply.com.au/" },
+  { name: "Dr Pickles", url: "https://drpickles.com/" },
+  { name: "Tatsup", url: "https://www.tatsup.com/" },
+  { name: "Inkjecta", url: "https://inkjecta.com/" },
+  { name: "Dynamic Color", url: "https://dynamiccolor.com/" },
+  { name: "Bstattoo", url: "https://www.bstattoo.com.au/" }
+];
+
 export function ContactsTab() {
   const { actions } = useDashboardTasks();
   const [selectedSupplierId, setSelectedSupplierId] = useState<number | null>(null);
@@ -175,7 +184,44 @@ export function ContactsTab() {
               <p className="text-sm text-muted-foreground">Import products instantly from any Shopify store.</p>
             </motion.div>
           </div>
-        </section>
+        </div>
+
+        {/* Discover Suppliers Directory */}
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h2 className="text-xl font-black text-foreground">Discover Suppliers</h2>
+            <span className="text-xs font-bold text-muted-foreground bg-secondary px-2 py-1 rounded-full">
+              AUS / NZ
+            </span>
+          </div>
+          
+          <div className="flex overflow-x-auto snap-x hide-scrollbar gap-4 pb-4 -mx-4 px-4">
+            {MOCK_SUPPLIERS_DIRECTORY.map((dirSup, idx) => (
+              <motion.div
+                key={dirSup.name}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="snap-start shrink-0 w-[240px] bg-card border border-border rounded-[24px] overflow-hidden flex flex-col shadow-sm"
+              >
+                <div className="h-20 bg-secondary/30 flex items-center justify-center border-b border-border">
+                  <h3 className="font-black text-lg text-foreground">{dirSup.name}</h3>
+                </div>
+                <div className="p-4 flex flex-col gap-2">
+                  <p className="text-xs text-muted-foreground text-center line-clamp-1 mb-2">{dirSup.url}</p>
+                  <button 
+                    onClick={() => scrapeMutation.mutate({ storeUrl: dirSup.url })}
+                    disabled={scrapeMutation.isPending}
+                    className="w-full py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Import Supplier
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
 
         {/* Artists Matrix */}
         <section>

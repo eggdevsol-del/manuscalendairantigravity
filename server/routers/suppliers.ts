@@ -96,6 +96,13 @@ export const suppliersRouter = router({
           // ignore
         }
 
+        if (!logoUrl && allProducts.length > 0) {
+          const productWithImage = allProducts.find(p => p.images && p.images.length > 0);
+          if (productWithImage) {
+            logoUrl = productWithImage.images[0].src;
+          }
+        }
+
         // Save Supplier
         const [supplierResult] = await db.insert(schema.suppliers).values({
           name: storeName,
