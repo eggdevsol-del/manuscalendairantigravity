@@ -350,6 +350,8 @@ export default function Dashboard() {
     setActiveIndex(newIndex);
   };
 
+  if (user?.role === "studio") return null;
+
   return (
     <PageShell>
       {/* 1. Page Header - Left aligned, no icons */}

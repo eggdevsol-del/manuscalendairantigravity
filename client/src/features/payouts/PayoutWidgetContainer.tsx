@@ -22,6 +22,7 @@ export function PayoutWidgetContainer({
 }: PayoutWidgetContainerProps) {
     const [, setLocation] = useLocation();
     const [showTransactions, setShowTransactions] = useState(false);
+    const [selectedRefundTransaction, setSelectedRefundTransaction] = useState<any | null>(null);
 
     // Fetch payout data
     const nextPayoutQuery = trpc.payouts.nextPayout.useQuery();
@@ -88,8 +89,6 @@ export function PayoutWidgetContainer({
 
     // Derive transaction entries from history query
     const transactions = historyQuery.data?.entries || [];
-
-    const [selectedRefundTransaction, setSelectedRefundTransaction] = useState<any | null>(null);
 
     return (
         <>
