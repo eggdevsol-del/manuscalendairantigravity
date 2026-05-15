@@ -184,7 +184,7 @@ export function ContactsTab() {
               <p className="text-sm text-muted-foreground">Import products instantly from any Shopify store.</p>
             </motion.div>
           </div>
-        </div>
+        </section>
 
         {/* Discover Suppliers Directory */}
         <div className="pt-2">
