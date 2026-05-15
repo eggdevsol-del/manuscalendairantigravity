@@ -12,7 +12,7 @@ export async function getDb() {
       const pool = mysql.createPool({
         uri: process.env.DATABASE_URL,
         waitForConnections: true,
-        connectionLimit: 5,
+        connectionLimit: 15,
         queueLimit: 0,
       });
       _db = drizzle(pool, { mode: "default", schema });
