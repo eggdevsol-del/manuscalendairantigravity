@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, MapPin, ExternalLink, MessageCircle, Plus, Loader2, Link as LinkIcon } from "lucide-react";
+import { Search, MapPin, ExternalLink, MessageCircle, Plus, Loader2, Link as LinkIcon, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDashboardTasks } from "@/features/dashboard/useDashboardTasks";
 import { trpc } from "@/lib/trpc";
@@ -53,6 +53,22 @@ export function ContactsTab() {
       toast.error(err.message);
     }
   });
+
+  const deleteMutation = trpc.suppliers.deleteSupplier.useMutation({
+    onSuccess: () => {
+      toast.success("Storefront deleted");
+      refetchSuppliers();
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    }
+  });
+
+  const handleDelete = (id: number) => {
+    if (window.confirm("Are you sure you want to delete this storefront?")) {
+      deleteMutation.mutate({ supplierId: id });
+    }
+  };
 
   const handleContact = (email: string) => {
     actions.handleComms.email(email);
@@ -131,6 +147,14 @@ export function ContactsTab() {
                   >
                     <ExternalLink className="w-4 h-4" />
                     Browse Storefront
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(supplier.id)}
+                    disabled={deleteMutation.isPending}
+                    className="w-full py-2 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete Storefront
                   </button>
                 </div>
               </motion.div>

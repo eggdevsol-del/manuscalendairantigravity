@@ -82,10 +82,25 @@ export const suppliersRouter = router({
         // Capitalize
         storeName = storeName.charAt(0).toUpperCase() + storeName.slice(1);
 
+        let logoUrl = null;
+        try {
+          const htmlResponse = await fetch(baseUrl, {
+            headers: { 'User-Agent': 'Tattoi App Import' }
+          });
+          const html = await htmlResponse.text();
+          const match = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i) || html.match(/<meta\s+name="twitter:image"\s+content="([^"]+)"/i);
+          if (match && match[1]) {
+            logoUrl = match[1].startsWith('//') ? 'https:' + match[1] : match[1];
+          }
+        } catch (e) {
+          // ignore
+        }
+
         // Save Supplier
         const [supplierResult] = await db.insert(schema.suppliers).values({
           name: storeName,
           websiteUrl: baseUrl,
+          logoUrl,
         });
 
         const supplierId = supplierResult.insertId;
@@ -160,6 +175,15 @@ export const suppliersRouter = router({
       orderBy: (suppliers, { desc }) => [desc(suppliers.createdAt)]
     });
   }),
+
+  deleteSupplier: protectedProcedure
+    .input(z.object({ supplierId: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+      await db.delete(schema.suppliers).where(eq(schema.suppliers.id, input.supplierId));
+      return { success: true };
+    }),
 
   getSupplier: protectedProcedure
     .input(z.object({ id: z.number() }))
