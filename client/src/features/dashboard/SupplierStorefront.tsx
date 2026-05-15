@@ -27,7 +27,7 @@ export function SupplierStorefront({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="absolute inset-0 z-50 bg-background flex flex-col"
+      className="w-full min-h-screen pb-32"
     >
       <div className="flex items-center justify-between p-4 border-b border-border bg-secondary/30 backdrop-blur-md">
         <button 
@@ -51,14 +51,14 @@ export function SupplierStorefront({
         </a>
       </div>
 
-      <div className="flex-1 overflow-y-auto mobile-scroll p-4">
+      <div className="w-full p-4 mt-2">
         {isProductsLoading ? (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <Loader2 className="w-8 h-8 animate-spin mb-4 text-indigo-500" />
             <p>Loading catalog...</p>
           </div>
         ) : products?.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <PackageSearch className="w-12 h-12 mb-4 opacity-50" />
             <h3 className="text-xl font-bold mb-2 text-foreground">No Products Found</h3>
             <p className="text-center max-w-xs">We couldn't find any active products for this supplier. The catalog may be empty or failed to import.</p>
