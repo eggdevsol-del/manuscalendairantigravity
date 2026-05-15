@@ -20,6 +20,7 @@ export function SupplierStorefront({
   const [selectedVariants, setSelectedVariants] = useState<Record<number, number>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showInStockOnly, setShowInStockOnly] = useState(false);
 
   // Background Sync
   const scrapeMutation = trpc.suppliers.scrapeShopifyStore.useMutation({
@@ -59,6 +60,12 @@ export function SupplierStorefront({
       filtered = filtered.filter(p => p.category === selectedCategory);
     }
     
+    if (showInStockOnly) {
+      filtered = filtered.filter(p => {
+        return p.variants && p.variants.some((v: any) => v.inventoryCount > 0);
+      });
+    }
+    
     if (searchQuery.trim() !== "") {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(p => 
@@ -68,7 +75,7 @@ export function SupplierStorefront({
     }
     
     return filtered;
-  }, [products, selectedCategory, searchQuery]);
+  }, [products, selectedCategory, searchQuery, showInStockOnly]);
 
   return (
     <motion.div
@@ -130,6 +137,18 @@ export function SupplierStorefront({
           {categories.length > 0 && (
             <div className="flex overflow-x-auto snap-x hide-scrollbar gap-2 -mx-4 px-4 pb-1">
               <button
+                onClick={() => setShowInStockOnly(!showInStockOnly)}
+                className={cn(
+                  "snap-start shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-colors border",
+                  showInStockOnly 
+                    ? "bg-emerald-500 text-white border-emerald-500" 
+                    : "bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary hover:text-foreground"
+                )}
+              >
+                In-Stock
+              </button>
+              <div className="w-px h-6 bg-border mx-1 self-center shrink-0"></div>
+              <button
                 onClick={() => setSelectedCategory(null)}
                 className={cn(
                   "snap-start shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-colors border",
@@ -170,13 +189,13 @@ export function SupplierStorefront({
             <PackageSearch className="w-12 h-12 mb-4 opacity-50" />
             <h3 className="text-xl font-bold mb-2 text-foreground">No Products Found</h3>
             <p className="max-w-xs text-sm">
-              {searchQuery || selectedCategory 
+              {searchQuery || selectedCategory || showInStockOnly
                 ? "Try adjusting your search or category filters."
                 : "We couldn't find any active products for this supplier. The catalog may be empty or failed to import."}
             </p>
-            {(searchQuery || selectedCategory) && (
+            {(searchQuery || selectedCategory || showInStockOnly) && (
               <button 
-                onClick={() => { setSearchQuery(""); setSelectedCategory(null); }}
+                onClick={() => { setSearchQuery(""); setSelectedCategory(null); setShowInStockOnly(false); }}
                 className="mt-6 px-6 py-2 bg-secondary rounded-full font-bold text-sm text-foreground hover:bg-secondary/80"
               >
                 Clear Filters
