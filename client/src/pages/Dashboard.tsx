@@ -408,7 +408,10 @@ export default function Dashboard() {
 
         {/* Scrollable wrapper — contains widgets AND tab content */}
         <div className="flex-1 overflow-y-auto mobile-scroll">
-          <div className="px-6 w-full -mt-2 z-10 relative space-y-4">
+          <motion.div 
+            animate={{ marginTop: activeCategory === "contacts" ? 0 : -8 }}
+            className="px-6 w-full z-10 relative space-y-4"
+          >
             <SetupChecklistWidget />
             {user?.role === "artist" || user?.role === "admin" ? (
               <motion.div
@@ -416,7 +419,6 @@ export default function Dashboard() {
                   height: activeCategory === "contacts" ? 0 : "auto",
                   opacity: activeCategory === "contacts" ? 0 : 1,
                   scale: activeCategory === "contacts" ? 0.95 : 1,
-                  marginBottom: activeCategory === "contacts" ? -16 : 0
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="overflow-hidden"
@@ -424,7 +426,7 @@ export default function Dashboard() {
                 <PayoutWidgetContainer period="30d" />
               </motion.div>
             ) : null}
-          </div>
+          </motion.div>
 
           <div
             className={cn(
