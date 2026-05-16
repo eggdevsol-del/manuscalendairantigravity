@@ -181,7 +181,7 @@ export function ContactsTab() {
                 <Plus className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-lg mb-2">Add Supplier</h3>
-              <p className="text-sm text-muted-foreground">Import products instantly from any Shopify store.</p>
+              <p className="text-sm text-muted-foreground">Import products instantly from any Shopify or WooCommerce store.</p>
             </motion.div>
           </div>
         </section>
@@ -292,7 +292,7 @@ export function ContactsTab() {
               
               <h3 className="text-xl font-bold mb-2">Import Store</h3>
               <p className="text-sm text-muted-foreground mb-6">
-                Paste the URL of any Shopify supplier to instantly import their entire catalog.
+                Paste the URL of any Shopify or WooCommerce supplier to instantly import their entire catalog.
               </p>
               
               <div className="space-y-4">

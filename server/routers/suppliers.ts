@@ -31,50 +31,87 @@ export const suppliersRouter = router({
       }
 
       let allProducts: any[] = [];
-      let page = 1;
       const MAX_PAGES = 10;
       
       try {
-        while (page <= MAX_PAGES) {
-          const productsUrl = `${baseUrl}/products.json?limit=250&page=${page}`;
+        // ENGINE 1: Try Shopify
+      try {
+        let shopifyPage = 1;
+        while (shopifyPage <= MAX_PAGES) {
+          const productsUrl = `${baseUrl}/products.json?limit=250&page=${shopifyPage}`;
           const response = await fetch(productsUrl, {
-            headers: {
-              'User-Agent': 'Tattoi App Import',
-            }
+            headers: { 'User-Agent': 'Tattoi App Import' }
           });
 
-          if (!response.ok) {
-            if (page === 1) throw new Error("Could not fetch products. Make sure this is a valid Shopify store.");
-            break;
-          }
+          if (!response.ok) break;
 
           const contentType = response.headers.get("content-type");
-          if (!contentType || !contentType.includes("application/json")) {
-            if (page === 1) throw new Error("The store URL did not return valid JSON data. Please ensure the URL points to a standard Shopify storefront.");
-            break;
-          }
+          if (!contentType || !contentType.includes("application/json")) break;
 
-          let data;
-          try {
-            data = await response.json();
-          } catch (e) {
-            if (page === 1) throw new Error("Failed to parse store data. The URL might not be a standard Shopify store.");
-            break;
-          }
-          
-          if (!data || !data.products || !Array.isArray(data.products)) {
-            if (page === 1) throw new Error("Invalid response format. Not a recognized Shopify catalog.");
-            break;
-          }
+          const data = await response.json();
+          if (!data || !data.products || !Array.isArray(data.products)) break;
 
           allProducts = allProducts.concat(data.products);
           
-          if (data.products.length < 250) {
-            break; // No more pages
-          }
-          
-          page++;
+          if (data.products.length < 250) break;
+          shopifyPage++;
         }
+      } catch (e) {
+        // Shopify failed, continue to fallback
+      }
+
+      // ENGINE 2: Try WooCommerce (Public Store API) if Shopify failed
+      if (allProducts.length === 0) {
+        try {
+          let wooPage = 1;
+          while (wooPage <= MAX_PAGES) {
+            const wooUrl = `${baseUrl}/wp-json/wc/store/products?page=${wooPage}&per_page=100`;
+            const response = await fetch(wooUrl, {
+              headers: { 'User-Agent': 'Tattoi App Import' }
+            });
+
+            if (!response.ok) break;
+
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) break;
+
+            const wData = await response.json();
+            if (!Array.isArray(wData)) break;
+
+            // Map WooCommerce structure to match expected Shopify-like structure for the rest of the function
+            const mappedWooProducts = wData.map((wp: any) => {
+              const priceVal = wp.prices?.price ? (parseInt(wp.prices.price, 10) / 100).toString() : "0";
+              return {
+                id: wp.id.toString(),
+                title: wp.name,
+                body_html: wp.short_description || wp.description || "",
+                product_type: wp.categories && wp.categories.length > 0 ? wp.categories[0].name : "",
+                images: wp.images ? wp.images.map((img: any) => ({ src: img.src })) : [],
+                variants: [
+                  {
+                    id: wp.id.toString(),
+                    title: "Default",
+                    price: priceVal,
+                    sku: wp.sku || "",
+                    available: wp.is_in_stock
+                  }
+                ]
+              };
+            });
+
+            allProducts = allProducts.concat(mappedWooProducts);
+            
+            if (wData.length < 100) break;
+            wooPage++;
+          }
+        } catch (e) {
+          // WooCommerce failed
+        }
+      }
+
+      if (allProducts.length === 0) {
+        throw new Error("Could not find public products at this URL. Make sure it is a valid Shopify or modern WooCommerce store without strict API blocking.");
+      }
 
         // Determine store name from URL hostname
         const urlObj = new URL(baseUrl);
