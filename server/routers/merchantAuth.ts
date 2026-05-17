@@ -100,7 +100,7 @@ export const merchantAuthRouter = router({
         });
 
         // 2. Create Merchant
-        await tx.insert(schema.merchants).values({
+        const [merchantResult] = await tx.insert(schema.merchants).values({
           country: input.country,
           userId: userId,
           businessName: input.businessName,
