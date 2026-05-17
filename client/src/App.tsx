@@ -38,6 +38,7 @@ import CompleteProfile from "./pages/CompleteProfile";
 import Subscriptions from "./pages/Subscriptions";
 import StudioDashboard from "./features/studio/StudioDashboard";
 import Clients from "./pages/Clients";
+import { OnboardingMerchantFlow } from "./features/onboarding/OnboardingMerchantFlow";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import SetPassword from "./pages/SetPassword";
@@ -191,6 +192,7 @@ function Router() {
         <GuardedRoute path="/payout-history" component={PayoutHistory} />
         <GuardedRoute path="/bank-payouts" component={BankPayoutsPage} />
         <GuardedRoute path="/admin/errors" component={ErrorDashboard} />
+        <GuardedRoute path="/onboarding/merchant" component={OnboardingMerchantFlow} />
 
         <Route path="/404" component={NotFound} />
         {/* Dynamic Slug Route for Artist Hub */}

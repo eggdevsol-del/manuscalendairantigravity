@@ -126,9 +126,9 @@ export const merchantAuthRouter = router({
         supplierId: z.number(),
         email: z.string().email(),
         password: z.string().min(8),
-        name: z.string().min(1),
-        businessName: z.string().min(1),
-        country: z.enum(["AU", "NZ"]),
+        name: z.string().optional(),
+        businessName: z.string().optional(),
+        country: z.enum(["AU", "NZ"]).optional(),
         abn: z.string().optional(),
         nzbn: z.string().optional(),
         phone: z.string().optional(),
@@ -177,7 +177,7 @@ export const merchantAuthRouter = router({
           id: userId,
           email: input.email,
           password: hashedPassword,
-          name: input.name,
+          name: input.name || supplier.name || "Claimed Store",
           phone: input.phone,
           address: input.address,
           role: "merchant",
@@ -185,12 +185,12 @@ export const merchantAuthRouter = router({
 
         // 2. Create Merchant
         const [merchantResult] = await tx.insert(schema.merchants).values({
-          country: input.country,
+          country: input.country || "AU", // Will be verified via Stripe Express
           userId: userId,
-          businessName: input.businessName,
+          businessName: input.businessName || supplier.name || "Claimed Store",
           abn: input.abn,
           nzbn: input.nzbn,
-          contactName: input.name,
+          contactName: input.name || supplier.name || "Claimed Store",
           phone: input.phone,
           address: input.address,
           status: "pending",

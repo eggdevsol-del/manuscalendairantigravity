@@ -5,6 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { cn } from "@/lib/utils";
+import { ClaimStoreModal } from "@/components/modals/ClaimStoreModal";
 
 export function SupplierStorefront({ 
   supplierId, 
@@ -21,6 +22,7 @@ export function SupplierStorefront({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showInStockOnly, setShowInStockOnly] = useState(false);
+  const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
 
   // Background Sync
   const scrapeMutation = trpc.suppliers.scrapeShopifyStore.useMutation({
@@ -84,7 +86,20 @@ export function SupplierStorefront({
       exit={{ opacity: 0, y: 20 }}
       className="w-full min-h-screen pb-32 flex flex-col"
     >
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border shadow-sm">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border shadow-sm flex flex-col">
+        {/* Claim Store Banner */}
+        {supplier && supplier.claimed === 0 && (
+          <div className="bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between shadow-sm z-20">
+            <span className="text-xs font-semibold">Is this your business?</span>
+            <button 
+              onClick={() => setIsClaimModalOpen(true)}
+              className="text-xs font-bold bg-background text-foreground px-3 py-1 rounded-full shadow-sm hover:scale-105 transition-transform"
+            >
+              Claim Store
+            </button>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between p-4">
           <button 
@@ -273,6 +288,12 @@ export function SupplierStorefront({
           </div>
         )}
       </div>
+
+      <ClaimStoreModal 
+        supplierId={supplierId} 
+        isOpen={isClaimModalOpen} 
+        onClose={() => setIsClaimModalOpen(false)} 
+      />
     </motion.div>
   );
 }
