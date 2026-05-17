@@ -1,5 +1,5 @@
-import { getDb } from "../_core/db";
-import { schema } from "../_core/schema";
+import { getDb } from "../db";
+import * as schema from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 
 export const syncStatusMap = new Map<number, { status: "syncing" | "complete" | "failed", count: number, error?: string }>();
