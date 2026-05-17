@@ -23,6 +23,7 @@ import {
   Mail,
   User,
   Phone,
+  CalendarDays,
   MapPin,
   Globe,
   Store,
@@ -119,8 +120,7 @@ export default function Signup() {
         toast.error(error.message || "Registration failed. Please try again.");
         setIsLoading(false);
       }
-    },
-  });
+    };
 
   // --- Google Sign-In ---
   const isGoogleReady = useGoogleAuthReady();
