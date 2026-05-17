@@ -8,6 +8,7 @@ import { hashPassword, generateToken } from "../_core/auth-new";
 import { getUserByEmail } from "../db";
 import { randomBytes } from "crypto";
 import { resolveCountry } from "../utils/resolveCountry";
+import { scrapeForMerchant } from "../services/scraper";
 
 export const merchantAuthRouter = router({
   /**
@@ -65,6 +66,7 @@ export const merchantAuthRouter = router({
         nzbn: z.string().optional(),
         phone: z.string().optional(),
         address: z.string().optional(),
+        websiteUrl: z.string().url().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -110,6 +112,15 @@ export const merchantAuthRouter = router({
           status: "pending",
           verified: 0,
         });
+
+        const merchantId = merchantResult.insertId;
+
+        // Background Scrape
+        if (input.websiteUrl) {
+          setTimeout(() => {
+            scrapeForMerchant(merchantId, input.websiteUrl!).catch(console.error);
+          }, 0);
+        }
       });
 
       // 3. Return JWT
@@ -335,6 +346,41 @@ export const merchantAuthRouter = router({
       connected: true,
       chargesEnabled: account.charges_enabled,
       payoutsEnabled: account.payouts_enabled,
+    };
+  }),
+
+  /**
+   * Polling query to check background scraper progress
+   */
+  getSyncStatus: merchantProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+
+    const merchant = await db.query.merchants.findFirst({
+      where: eq(schema.merchants.userId, ctx.user.id),
+    });
+
+    if (!merchant) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Merchant not found" });
+    }
+
+    const { syncStatusMap } = await import("../services/scraper");
+    
+    // If it's in the map, return it live
+    if (syncStatusMap.has(merchant.id)) {
+      return syncStatusMap.get(merchant.id);
+    }
+    
+    // If not in the map, it's either finished a long time ago, or never started
+    // We can count the products to see if they have any
+    const products = await db.query.products.findMany({
+      where: eq(schema.products.artistId, ctx.user.id),
+      limit: 1
+    });
+    
+    return {
+      status: products.length > 0 ? "complete" : "idle",
+      count: products.length,
     };
   }),
 });

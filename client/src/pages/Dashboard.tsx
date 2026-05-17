@@ -50,6 +50,7 @@ import {
   ChevronRight,
   Settings,
 } from "lucide-react";
+import { SyncOverlay } from "@/features/onboarding/SyncOverlay";
 import { Card } from "@/components/ui/card";
 import { useTeaser } from "@/contexts/TeaserContext";
 import { InstallAppModal } from "@/components/modals/InstallAppModal";
@@ -359,6 +360,8 @@ export default function Dashboard() {
 
   return (
     <PageShell>
+      {user?.role === "merchant" && <SyncOverlay />}
+      
       {/* 1. Page Header - Left aligned, no icons */}
       <PageHeader title="Home" />
 

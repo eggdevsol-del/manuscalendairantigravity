@@ -23,9 +23,9 @@ import {
   Mail,
   User,
   Phone,
-  CalendarDays,
   MapPin,
   Globe,
+  Store,
 } from "lucide-react";
 import { useGoogleAuthReady } from "@/main";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
@@ -46,6 +46,13 @@ export default function Signup() {
   const [gender, setGender] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  
+  const currentParams = new URLSearchParams(window.location.search);
+  const isClientRole = currentParams.get("role") === "client";
+  
+  const [accountType, setAccountType] = useState<"artist" | "supplier">(isClientRole ? "artist" : "artist");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -61,15 +68,25 @@ export default function Signup() {
   const updateProfileMutation = trpc.auth.updateProfile.useMutation();
   const googleLoginMutation = trpc.auth.googleLogin.useMutation();
 
+  const handleSignupSuccess = (data: any) => {
+    localStorage.setItem("authToken", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user || { id: data.userId, role: accountType }));
+    toast.success("Account created! Welcome to CalendAIr.");
+    setLocation(accountType === "supplier" ? "/dashboard" : "/calendar");
+    setIsLoading(false);
+  };
+
+  const merchantRegisterMutation = trpc.merchantAuth.register.useMutation({
+    onSuccess: handleSignupSuccess,
+    onError: (error) => handleSignupError(error),
+  });
+
   const registerMutation = trpc.auth.register.useMutation({
-    onSuccess: data => {
-      localStorage.setItem("authToken", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      toast.success("Account created! Welcome to CalendAIr.");
-      setLocation("/calendar");
-      setIsLoading(false);
-    },
-    onError: error => {
+    onSuccess: handleSignupSuccess,
+    onError: (error) => handleSignupError(error),
+  });
+
+  const handleSignupError = (error: any) => {
       if (
         error.data?.code === "CONFLICT" ||
         error.message.includes("already exists")
@@ -185,35 +202,56 @@ export default function Signup() {
             );
             setIsLoading(false);
           } else {
+            if (accountType === "supplier") {
+              merchantRegisterMutation.mutate({
+                name,
+                email,
+                password,
+                businessName,
+                country: (country === "New Zealand" || country === "NZ") ? "NZ" : "AU",
+                websiteUrl,
+              });
+            } else {
+              registerMutation.mutate({
+                name,
+                email,
+                password,
+                role: isClientRole ? "client" : "artist",
+                ...(referralArtistId ? { referralArtistId } : {}),
+                ...(phone ? { phone } : {}),
+                ...(birthday ? { birthday } : {}),
+                ...(gender ? { gender: gender as any } : {}),
+                ...(city ? { city } : {}),
+                ...(country ? { country } : {}),
+              });
+            }
+          }
+        },
+        onError: () => {
+          if (accountType === "supplier") {
+            merchantRegisterMutation.mutate({
+              name,
+              email,
+              password,
+              businessName,
+              country: (country === "New Zealand" || country === "NZ") ? "NZ" : "AU",
+              websiteUrl,
+            });
+          } else {
             registerMutation.mutate({
               name,
               email,
               password,
-              role: urlRole || "artist",
+              role: isClientRole ? "client" : "artist",
               ...(referralArtistId ? { referralArtistId } : {}),
               ...(phone ? { phone } : {}),
               ...(birthday ? { birthday } : {}),
               ...(gender ? { gender: gender as any } : {}),
               ...(city ? { city } : {}),
               ...(country ? { country } : {}),
-
+              ...(referralArtistId ? { referralArtistId } : {}),
             });
           }
-        },
-        onError: () => {
-          registerMutation.mutate({
-            name,
-            email,
-            password,
-            role: urlRole || "artist",
-            ...(referralArtistId ? { referralArtistId } : {}),
-            ...(phone ? { phone } : {}),
-            ...(birthday ? { birthday } : {}),
-            ...(gender ? { gender: gender as any } : {}),
-            ...(city ? { city } : {}),
-            ...(country ? { country } : {}),
-            ...(referralArtistId ? { referralArtistId } : {}),
-          });
         },
       }
     );
@@ -388,8 +426,6 @@ export default function Signup() {
   }
 
   // ------- STEP: MAIN SIGNUP FORM -------
-  const currentParams = new URLSearchParams(window.location.search);
-  const isClientRole = currentParams.get("role") === "client";
 
   return (
     <PageShell className="items-center px-4 py-8 !overflow-y-auto mobile-scroll">
@@ -427,6 +463,31 @@ export default function Signup() {
               </span>
             </div>
           </div>
+
+          {!isClientRole && (
+            <div className="flex bg-secondary/50 p-1 rounded-xl mb-6">
+              <button
+                type="button"
+                className={cn(
+                  "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
+                  accountType === "artist" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setAccountType("artist")}
+              >
+                Tattoo Artist
+              </button>
+              <button
+                type="button"
+                className={cn(
+                  "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
+                  accountType === "supplier" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setAccountType("supplier")}
+              >
+                Supplier / Brand
+              </button>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Full Name */}
@@ -471,70 +532,121 @@ export default function Signup() {
               </div>
             </div>
 
-            {/* Phone */}
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="04XX XXX XXX"
-                  value={phone}
-                  onChange={e => setPhone(e.target.value)}
-                  variant="hero"
-                  className="pl-10"
-                  disabled={isLoading}
-                />
-              </div>
-              <p className="text-[11px] text-muted-foreground/70">
-                So your artist can send you appointment reminders
-              </p>
-            </div>
+            {accountType === "supplier" && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="businessName">
+                    Business Name <span className="text-red-400">*</span>
+                  </Label>
+                  <div className="relative">
+                    <Store className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      id="businessName"
+                      type="text"
+                      placeholder="My Supply Co."
+                      value={businessName}
+                      onChange={e => setBusinessName(e.target.value)}
+                      variant="hero"
+                      className="pl-10"
+                      disabled={isLoading}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="websiteUrl">
+                    Store Website URL <span className="text-red-400">*</span>
+                  </Label>
+                  <div className="relative">
+                    <Globe className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      id="websiteUrl"
+                      type="url"
+                      placeholder="https://mysupply.co"
+                      value={websiteUrl}
+                      onChange={e => setWebsiteUrl(e.target.value)}
+                      variant="hero"
+                      className="pl-10"
+                      disabled={isLoading}
+                      required
+                    />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground/70">
+                    We'll use this to automatically build your Tattoi storefront!
+                  </p>
+                </div>
+              </>
+            )}
 
-            {/* Birthday */}
-            <div className="space-y-2">
-              <Label htmlFor="birthday">Date of Birth</Label>
-              <div className="relative">
-                <CalendarDays className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
-                <Input
-                  id="birthday"
-                  type="date"
-                  value={birthday}
-                  onChange={e => setBirthday(e.target.value)}
-                  variant="hero"
-                  className="pl-10"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
+            {accountType === "artist" && (
+              <>
+                {/* Phone */}
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="04XX XXX XXX"
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                      variant="hero"
+                      className="pl-10"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground/70">
+                    So your artist can send you appointment reminders
+                  </p>
+                </div>
 
-            {/* Gender */}
-            <div className="space-y-2">
-              <Label>Gender</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { value: "male", label: "Male" },
-                  { value: "female", label: "Female" },
-                  { value: "other", label: "Other" },
-                ].map(opt => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setGender(opt.value)}
-                    className={cn(
-                      "py-2.5 px-3 rounded-xl border-2 text-sm font-medium transition-all outline-none",
-                      gender === opt.value
-                        ? "border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.15)]"
-                        : "border-border bg-secondary/50 text-foreground hover:bg-secondary/50"
-                    )}
-                    disabled={isLoading}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+                {/* Birthday */}
+                <div className="space-y-2">
+                  <Label htmlFor="birthday">Date of Birth</Label>
+                  <div className="relative">
+                    <CalendarDays className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      id="birthday"
+                      type="date"
+                      value={birthday}
+                      onChange={e => setBirthday(e.target.value)}
+                      variant="hero"
+                      className="pl-10"
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+
+                {/* Gender */}
+                <div className="space-y-2">
+                  <Label>Gender</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: "male", label: "Male" },
+                      { value: "female", label: "Female" },
+                      { value: "other", label: "Other" },
+                    ].map(opt => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setGender(opt.value)}
+                        className={cn(
+                          "py-2.5 px-3 rounded-xl border-2 text-sm font-medium transition-all outline-none",
+                          gender === opt.value
+                            ? "border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.15)]"
+                            : "border-border bg-secondary/50 text-foreground hover:bg-secondary/50"
+                        )}
+                        disabled={isLoading}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* City & Country */}
             <div className="grid grid-cols-2 gap-3">

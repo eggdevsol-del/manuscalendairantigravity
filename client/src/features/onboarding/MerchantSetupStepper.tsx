@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { CheckCircle2, Circle, Loader2, Store } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { CheckCircle2, Circle, Loader2, Store, CreditCard } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { motion } from "framer-motion";
 
@@ -7,13 +7,26 @@ export function MerchantSetupStepper() {
   const { data: stripeStatus, refetch } = trpc.merchantAuth.getMerchantStripeStatus.useQuery(undefined, {
     refetchInterval: 15000, // Poll every 15s to check if webhook verified
   });
+  const connectStripeMutation = trpc.merchantAuth.connectStripe.useMutation();
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  const handleConnectStripe = async () => {
+    setIsConnecting(true);
+    try {
+      const { url } = await connectStripeMutation.mutateAsync();
+      window.location.href = url;
+    } catch (error) {
+      console.error("Failed to connect Stripe:", error);
+      setIsConnecting(false);
+    }
+  };
 
   const isConnected = stripeStatus?.connected;
   const isVerified = stripeStatus?.chargesEnabled && stripeStatus?.payoutsEnabled;
 
   const steps = [
     {
-      label: "Store Claimed",
+      label: "Account Created",
       status: "complete", // Assumed complete if they are seeing this component
       icon: <CheckCircle2 className="w-5 h-5 text-emerald-500" />,
     },
@@ -67,11 +80,28 @@ export function MerchantSetupStepper() {
       </div>
       
       {!isVerified && (
-        <p className="text-sm text-muted-foreground text-center mt-6">
-          {isConnected 
-            ? "Waiting for Stripe to verify your identity. This usually takes a few minutes."
-            : "Please complete your Stripe onboarding to activate your store."}
-        </p>
+        <div className="flex flex-col items-center mt-6">
+          <p className="text-sm text-muted-foreground text-center mb-4">
+            {isConnected 
+              ? "Waiting for Stripe to verify your identity. This usually takes a few minutes."
+              : "Please connect your bank account via Stripe to activate your store."}
+          </p>
+          
+          {!isConnected && (
+            <button
+              onClick={handleConnectStripe}
+              disabled={isConnecting}
+              className="px-6 py-3 bg-[#635BFF] hover:bg-[#5851df] text-white font-bold rounded-xl shadow-[0_0_15px_rgba(99,91,255,0.3)] transition-all flex items-center gap-2"
+            >
+              {isConnecting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <CreditCard className="w-5 h-5" />
+              )}
+              Connect Stripe to Accept Payments
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
