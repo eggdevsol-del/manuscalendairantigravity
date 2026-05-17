@@ -444,8 +444,8 @@ export default function Signup() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Google Sign-In — only rendered when provider is ready */}
-          {isGoogleReady && (
+          {/* Google Sign-In — only rendered when provider is ready and not supplier */}
+          {isGoogleReady && accountType !== "supplier" && (
             <GoogleLoginButton
               onSuccess={handleGoogleSuccess}
               onError={() => toast.error("Google sign-in was cancelled or failed.")}
@@ -453,16 +453,18 @@ export default function Signup() {
             />
           )}
 
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
+          {accountType !== "supplier" && (
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-[10px] font-bold tracking-widest uppercase">
+                <span className="bg-background px-4 text-muted-foreground">
+                  {isGoogleReady ? "Or sign up with email" : "Sign up with email"}
+                </span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-[10px] font-bold tracking-widest uppercase">
-              <span className="bg-background px-4 text-muted-foreground">
-                {isGoogleReady ? "Or sign up with email" : "Sign up with email"}
-              </span>
-            </div>
-          </div>
+          )}
 
           {!isClientRole && (
             <div className="flex bg-secondary/50 p-1 rounded-xl mb-6">

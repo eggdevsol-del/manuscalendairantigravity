@@ -52,6 +52,8 @@ export default function Login() {
       // Redirect based on role
       if (data.user.role === "studio") {
         setLocation("/studio");
+      } else if (data.user.role === "merchant") {
+        setLocation("/dashboard");
       } else {
         setLocation("/calendar");
       }
