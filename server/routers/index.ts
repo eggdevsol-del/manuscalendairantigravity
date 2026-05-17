@@ -2,6 +2,7 @@ import { router } from "../_core/trpc";
 import { appointmentsRouter } from "./appointments";
 import { artistSettingsRouter } from "./artistSettings";
 import { authRouter } from "./auth";
+import { merchantAuthRouter } from "./merchantAuth";
 import { consultationsRouter } from "./consultations";
 import { conversationsRouter } from "./conversations";
 import { messagesRouter } from "./messages";
@@ -36,6 +37,7 @@ export const appRouter = router({
   appointments: appointmentsRouter,
   artistSettings: artistSettingsRouter,
   auth: authRouter,
+  merchantAuth: merchantAuthRouter,
   booking: bookingRouter,
   clientProfile: clientProfileRouter,
   consultations: consultationsRouter,

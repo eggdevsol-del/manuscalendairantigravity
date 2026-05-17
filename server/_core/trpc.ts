@@ -87,3 +87,13 @@ export const artistProcedure = protectedProcedure.use(({ ctx, next }) => {
   }
   return next({ ctx });
 });
+
+export const merchantProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.user.role !== "merchant") {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Merchant access required",
+    });
+  }
+  return next({ ctx });
+});

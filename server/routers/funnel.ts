@@ -736,6 +736,7 @@ export const funnelRouter = router({
       const activeProducts = await db.query.products.findMany({
         where: and(
           eq(schema.products.artistId, artist.id),
+          eq(schema.products.ownerType, "artist"),
           eq(schema.products.isActive, 1)
         ),
         columns: { id: true },

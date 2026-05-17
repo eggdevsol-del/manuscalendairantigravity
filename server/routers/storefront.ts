@@ -17,6 +17,7 @@ export const storefrontRouter = router({
     return db.query.products.findMany({
       where: and(
         eq(schema.products.artistId, ctx.user.id),
+        eq(schema.products.ownerType, "artist"),
         eq(schema.products.isActive, 1)
       ),
       with: { variants: true },
@@ -61,6 +62,7 @@ export const storefrontRouter = router({
 
       const [result] = await db.insert(schema.products).values({
         artistId: ctx.user.id,
+        ownerType: "artist",
         title: input.title,
         description: input.description,
         priceCents: input.priceCents,
@@ -142,6 +144,7 @@ export const storefrontRouter = router({
       const products = await db.query.products.findMany({
         where: and(
           eq(schema.products.artistId, artistId),
+          eq(schema.products.ownerType, "artist"),
           eq(schema.products.isActive, 1)
         ),
         with: { variants: true },
@@ -187,6 +190,7 @@ export const storefrontRouter = router({
       const products = await db.query.products.findMany({
         where: and(
           eq(schema.products.artistId, input.artistId),
+          eq(schema.products.ownerType, "artist"),
           eq(schema.products.isActive, 1)
         ),
         with: { variants: true },

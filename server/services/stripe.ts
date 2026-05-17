@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { getDb } from "./core";
 import { eq, and } from "drizzle-orm";
-import { studios, artistSettings, leads, messages, paymentLedger, appointments, orders, products, orderItems, users, conversations } from "../../drizzle/schema";
+import { studios, artistSettings, leads, messages, paymentLedger, appointments, orders, products, orderItems, users, conversations, merchants } from "../../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import type { Request, Response } from "express";
 
@@ -774,8 +774,58 @@ export async function handleStripeWebhook(req: Request, res: Response) {
       // ── Stripe Connect: Account Updated ─────────────────────
       case "account.updated": {
         const account = event.data.object as Stripe.Account;
-        const { syncAccountStatusToDb } = await import("./stripeConnect");
-        await syncAccountStatusToDb(account.id);
+        
+        // 1. Check if it's a Merchant
+        const merchant = await db.query.merchants.findFirst({
+          where: eq(merchants.stripeAccountId, account.id),
+        });
+
+        if (merchant) {
+          // If already active, it's idempotent, so skip
+          if (merchant.status !== 'active') {
+            const chargesEnabled = account.charges_enabled === true;
+            const payoutsEnabled = account.payouts_enabled === true;
+
+            if (chargesEnabled && payoutsEnabled) {
+              await db.transaction(async (tx) => {
+                // Activate products
+                await tx.update(products)
+                  .set({ isActive: 1 })
+                  .where(
+                    and(
+                      eq(products.artistId, merchant.userId),
+                      eq(products.ownerType, 'merchant')
+                    )
+                  );
+                
+                // Activate merchant
+                await tx.update(merchants)
+                  .set({ status: 'active' })
+                  .where(eq(merchants.id, merchant.id));
+                  
+                // Push notification to outbox
+                const user = await tx.query.users.findFirst({ where: eq(users.id, merchant.userId) });
+                if (user?.email) {
+                  const { notificationOutbox } = await import("../../drizzle/schema");
+                  await tx.insert(notificationOutbox).values({
+                    eventType: "merchant_store_live",
+                    payloadJson: JSON.stringify({
+                      to: user.email,
+                      subject: "Your store is now live",
+                      body: "Your Stripe account is fully verified. Your products are now active and you can accept payments.",
+                    }),
+                  });
+                }
+              });
+
+              console.log(`[Stripe Webhook] Merchant ${merchant.id} verified. Products activated.`);
+            }
+          }
+        } else {
+          // 2. If not Merchant, assume Artist and sync
+          const { syncAccountStatusToDb } = await import("./stripeConnect");
+          await syncAccountStatusToDb(account.id);
+        }
         break;
       }
 

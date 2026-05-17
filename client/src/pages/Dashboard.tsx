@@ -56,6 +56,7 @@ import { InstallAppModal } from "@/components/modals/InstallAppModal";
 import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SetupChecklistWidget } from "@/features/onboarding/SetupChecklistWidget";
+import { MerchantSetupStepper } from "@/features/onboarding/MerchantSetupStepper";
 
 import { type FABMenuItem } from "@/ui/FABMenu";
 import { DashboardFABActions } from "@/features/dashboard/DashboardActions";
@@ -412,7 +413,7 @@ export default function Dashboard() {
             animate={{ marginTop: activeCategory === "contacts" ? 0 : -8 }}
             className="px-6 w-full z-10 relative space-y-4"
           >
-            <SetupChecklistWidget />
+            {user?.role === "merchant" ? <MerchantSetupStepper /> : <SetupChecklistWidget />}
             {user?.role === "artist" || user?.role === "admin" ? (
               <motion.div
                 animate={{
