@@ -47,9 +47,21 @@ export function SyncOverlay() {
         {syncStatus.status === "syncing" && (
           <div className="w-full flex flex-col items-center">
             {/* Dynamic Scraper Output */}
-            <p className="text-lg font-medium text-foreground mb-8">
+            <p className="text-lg font-medium text-foreground mb-4">
               Importing your catalogue — <span className="font-bold">{syncStatus.count}</span> products found
             </p>
+
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={syncStatus.message || LOADING_STEPS[stepIndex]}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="text-sm text-muted-foreground mb-8 text-center h-6"
+              >
+                {syncStatus.message || LOADING_STEPS[stepIndex]}
+              </motion.p>
+            </AnimatePresence>
 
             {/* Pulsing loading bar */}
             <div className="h-[2px] w-full max-w-[200px] bg-secondary overflow-hidden mb-12">
@@ -58,22 +70,6 @@ export function SyncOverlay() {
                 animate={{ x: ["-100%", "100%"] }}
                 transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
               />
-            </div>
-
-            {/* Static cycling text */}
-            <div className="h-6 relative w-full overflow-hidden flex justify-center">
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={stepIndex}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-sm text-muted-foreground/70 absolute"
-                >
-                  {LOADING_STEPS[stepIndex]}
-                </motion.p>
-              </AnimatePresence>
             </div>
           </div>
         )}

@@ -2,7 +2,7 @@ import { getDb } from "../db";
 import * as schema from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 
-export const syncStatusMap = new Map<number, { status: "syncing" | "complete" | "failed", count: number, error?: string }>();
+export const syncStatusMap = new Map<number, { status: "syncing" | "complete" | "failed", count: number, error?: string, message?: string }>();
 
 export async function runStoreScraper(storeUrl: string) {
   // Clean up the URL input robustly
@@ -147,9 +147,11 @@ export async function runStoreScraper(storeUrl: string) {
   };
 }
 
+import { translateShopifyToTattoi } from "../utils/shopifyTranslator";
+
 export async function scrapeForMerchant(merchantId: number, userId: string, storeUrl: string) {
   try {
-    syncStatusMap.set(merchantId, { status: "syncing", count: 0 });
+    syncStatusMap.set(merchantId, { status: "syncing", count: 0, message: "Establishing secure connection to storefront..." });
 
     const db = await getDb();
     if (!db) {
@@ -159,55 +161,33 @@ export async function scrapeForMerchant(merchantId: number, userId: string, stor
 
     const { allProducts } = await runStoreScraper(storeUrl);
     
-    syncStatusMap.set(merchantId, { status: "syncing", count: allProducts.length });
+    syncStatusMap.set(merchantId, { status: "syncing", count: allProducts.length, message: `Extracted ${allProducts.length} raw items. Initializing translation layer...` });
 
-    // Save Products to live schema.products with isActive: 0
-    const productsToInsert = allProducts.map((p: any) => {
-      let imageUrl = p.images && p.images.length > 0 ? p.images[0].src : null;
-      let description = p.body_html ? p.body_html.replace(/<[^>]*>?/gm, '') : null;
-      
-      return {
-        artistId: userId,
-        ownerType: "merchant" as const,
-        title: p.title,
-        description,
-        imageUrl,
-        priceCents: 0, // Base price, variants will have specific prices
-        hasVariants: p.variants && p.variants.length > 0 ? 1 : 0,
-        isActive: 0, // Will toggle to 1 after Stripe verification
-        inventoryCount: 0, // Master inventory count
-      };
-    });
-
-    if (productsToInsert.length === 0) return;
+    if (allProducts.length === 0) {
+      syncStatusMap.set(merchantId, { status: "complete", count: 0, message: "No products found." });
+      return;
+    }
 
     // We do this safely, iterating so we can capture insertIds and insert variants
     for (let i = 0; i < allProducts.length; i++) {
+      if (i % 10 === 0) {
+         syncStatusMap.set(merchantId, { status: "syncing", count: allProducts.length, message: `Resolving null values and mapping variants (${i}/${allProducts.length})...` });
+      }
+      
       const p = allProducts[i];
-      const pData = productsToInsert[i];
+      const { masterProduct, variantsToInsert } = translateShopifyToTattoi(p, userId);
 
-      const [insertRes] = await db.insert(schema.products).values(pData);
+      const [insertRes] = await db.insert(schema.products).values(masterProduct);
       const productId = insertRes.insertId;
 
-      if (p.variants && p.variants.length > 0) {
-        const variantsToInsert = p.variants.map((v: any) => {
-          const priceVal = parseFloat(v.price) || 0;
-          return {
-            productId,
-            name: v.title || "Default",
-            priceCents: Math.round(priceVal * 100),
-            sku: v.sku || null,
-            inventoryCount: v.inventory_quantity !== undefined ? v.inventory_quantity : (v.available ? 1 : 0),
-          };
-        });
-
-        if (variantsToInsert.length > 0) {
-          await db.insert(schema.productVariants).values(variantsToInsert);
-        }
+      if (variantsToInsert && variantsToInsert.length > 0) {
+        // Map the correct productId to the variants before insertion
+        const mappedVariants = variantsToInsert.map(v => ({ ...v, productId }));
+        await db.insert(schema.productVariants).values(mappedVariants);
       }
     }
     
-    syncStatusMap.set(merchantId, { status: "complete", count: allProducts.length });
+    syncStatusMap.set(merchantId, { status: "complete", count: allProducts.length, message: "Import complete." });
   } catch (error: any) {
     console.error("Background Scrape for Merchant failed:", error);
     syncStatusMap.set(merchantId, { status: "failed", count: 0, error: error.message });
