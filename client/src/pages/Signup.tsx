@@ -435,12 +435,18 @@ export default function Signup() {
             <UserPlus className="w-8 h-8 text-primary" />
           </div>
           <CardTitle className="text-3xl font-bold tracking-tight text-foreground">
-            {isClientRole ? "Create Tattoi Account" : "Create Artist Account"}
+            {isClientRole 
+              ? "Create Tattoi Account" 
+              : accountType === "supplier" 
+                ? "Create Supplier Account" 
+                : "Create Artist Account"}
           </CardTitle>
           <CardDescription className="text-base font-medium">
             {isClientRole 
               ? "Sign up to track your orders and chat with your artist"
-              : "Set up your booking link and start managing clients"}
+              : accountType === "supplier"
+                ? "Start selling products directly to professional tattoo artists"
+                : "Set up your booking link and start managing clients"}
           </CardDescription>
         </CardHeader>
         <CardContent>

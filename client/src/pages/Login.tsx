@@ -251,11 +251,11 @@ export default function Login() {
 
             <Button
               type="button"
-              onClick={() => setLocation("/signup")}
+              onClick={() => setLocation("/signup?role=client")}
               disabled={isLoading}
               className={cn(
                 tokens.button.secondary,
-                "w-full border border-border h-14 rounded-lg text-base"
+                "w-full border border-border h-14 rounded-lg text-base mb-3"
               )}
             >
               Create Account
@@ -272,6 +272,18 @@ export default function Login() {
             >
               Forgot password?
             </Button>
+            
+            <div className="mt-6 flex justify-center">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setLocation("/signup")}
+                disabled={isLoading}
+                className="text-sm text-muted-foreground hover:text-foreground h-auto p-2"
+              >
+                Create Artist / Supplier Account
+              </Button>
+            </div>
           </div>
 
           {/* Version Number */}
