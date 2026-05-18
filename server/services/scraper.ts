@@ -30,6 +30,7 @@ export async function runStoreScraper(storeUrl: string) {
     while (shopifyPage <= MAX_PAGES) {
       const productsUrl = `${baseUrl}/products.json?limit=250&page=${shopifyPage}`;
       const response = await fetch(productsUrl, {
+        signal: AbortSignal.timeout(8000),
         headers: { 
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           'Accept': 'application/json'
@@ -60,6 +61,7 @@ export async function runStoreScraper(storeUrl: string) {
       while (wooPage <= MAX_PAGES) {
         const wooUrl = `${baseUrl}/wp-json/wc/store/products?page=${wooPage}&per_page=100`;
         const response = await fetch(wooUrl, {
+          signal: AbortSignal.timeout(8000),
           headers: { 
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'application/json'
@@ -118,6 +120,7 @@ export async function runStoreScraper(storeUrl: string) {
   let logoUrl = null;
   try {
     const htmlResponse = await fetch(baseUrl, {
+      signal: AbortSignal.timeout(8000),
       headers: { 
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml'
