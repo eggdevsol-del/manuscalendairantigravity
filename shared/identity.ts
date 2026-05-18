@@ -20,6 +20,7 @@ export interface Identity extends Person {
   id: string | number;
   type: IdentityType;
   name: string; // Aggregate name for UI convenience
+  role?: string; // Role of the user (if type is user)
   clerkId?: string; // Only relevant for type 'user'
   clerkEmail?: string; // Primary email from Clerk
   hasPassword?: boolean; // True if user has set a password (i.e. has signed up for the app)

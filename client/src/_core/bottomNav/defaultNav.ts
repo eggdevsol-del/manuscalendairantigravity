@@ -8,6 +8,8 @@ import {
   User,
   Users,
   Home,
+  Package,
+  ShoppingBag,
 } from "lucide-react";
 import { BottomNavButton } from "./types";
 
@@ -51,6 +53,19 @@ export const STUDIO_NAV_ITEMS: BottomNavButton[] = [
   },
   { id: "calendar", path: "/calendar", label: "Calendar", icon: Calendar },
   { id: "promotions", path: "/promotions", label: "Promotions", icon: Gift },
+];
+
+export const MERCHANT_NAV_ITEMS: BottomNavButton[] = [
+  { id: "dashboard", path: "/dashboard", label: "Home", icon: Home },
+  { id: "orders", path: "/merchant/orders", label: "Orders", icon: Package },
+  { id: "products", path: "/merchant/products", label: "Products", icon: ShoppingBag },
+  {
+    id: "messages",
+    path: "/conversations",
+    label: "Messages",
+    icon: MessageCircle,
+    badgeCount: 0,
+  },
 ];
 
 // Default to artist for backward compatibility or initial load

@@ -34,6 +34,7 @@ export async function resolveIdentity(
         phone: user.phone ?? undefined,
         birthday: user.birthday ?? undefined,
         avatar: user.avatar ?? undefined,
+        role: user.role ?? undefined,
         clerkId: user.clerkId ?? undefined,
         hasPassword: !!user.password,
       };

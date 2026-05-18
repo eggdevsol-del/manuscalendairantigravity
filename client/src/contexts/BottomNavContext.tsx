@@ -13,11 +13,12 @@ import {
   ARTIST_NAV_ITEMS,
   CLIENT_NAV_ITEMS,
   STUDIO_NAV_ITEMS,
+  MERCHANT_NAV_ITEMS,
 } from "@/_core/bottomNav/defaultNav";
 import { BottomNavButton } from "@/_core/bottomNav/types";
 import { FABMenuItem } from "@/ui/FABMenu";
 
-export type Scope = "artist" | "client" | "studio";
+export type Scope = "artist" | "client" | "studio" | "merchant";
 
 interface BottomNavContextType {
   // The content of the contextual row (Row 1)
@@ -68,11 +69,13 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
   // Default to 'client' for safety if not authenticated or specified.
   const rawRole = user?.role;
   const scope: Scope =
-    rawRole === "artist" || rawRole === "admin"
-      ? "artist"
-      : rawRole === "studio"
-        ? "studio"
-        : "client";
+    rawRole === "merchant"
+      ? "merchant"
+      : rawRole === "artist" || rawRole === "admin"
+        ? "artist"
+        : rawRole === "studio"
+          ? "studio"
+          : "client";
 
   const [registry, setRegistry] = useState<
     Record<Scope, Record<string, ReactNode>>
@@ -115,11 +118,13 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
 
   // Derived nav items
   const navItems =
-    scope === "artist"
-      ? ARTIST_NAV_ITEMS
-      : scope === "studio"
-        ? STUDIO_NAV_ITEMS
-        : CLIENT_NAV_ITEMS;
+    scope === "merchant"
+      ? MERCHANT_NAV_ITEMS
+      : scope === "artist"
+        ? ARTIST_NAV_ITEMS
+        : scope === "studio"
+          ? STUDIO_NAV_ITEMS
+          : CLIENT_NAV_ITEMS;
 
   const registerRow = useCallback(
     (targetScope: Scope, id: string, content: ReactNode) => {
@@ -265,11 +270,13 @@ export function useRegisterBottomNavRow(id: string, content: ReactNode) {
   const { user } = useAuth();
   const rawRole = user?.role;
   const scope: Scope =
-    rawRole === "artist" || rawRole === "admin"
-      ? "artist"
-      : rawRole === "studio"
-        ? "studio"
-        : "client";
+    rawRole === "merchant"
+      ? "merchant"
+      : rawRole === "artist" || rawRole === "admin"
+        ? "artist"
+        : rawRole === "studio"
+          ? "studio"
+          : "client";
 
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {

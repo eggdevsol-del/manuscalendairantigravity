@@ -1,5 +1,5 @@
 import { LoadingState, PageShell, PageHeader } from "@/components/ui/ssot";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useArtistReferral } from "@/features/chat/useArtistReferral";
 import { useInboxRequests } from "@/features/chat/hooks/useInboxRequests";
@@ -21,6 +21,10 @@ import { Button } from "@/components/ui";
 export default function Conversations() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
+  const [activeTab, setActiveTab] = useState<"clients" | "contacts">("clients");
+
+  // Merchant app only uses the "Contacts" tab
+  const currentTab = user?.role === "merchant" ? "contacts" : activeTab;
 
   // Handle referrals
   useArtistReferral();
@@ -66,9 +70,38 @@ export default function Conversations() {
   return (
     <PageShell>
       {/* Mobile: Full List */}
-      <div className="md:hidden h-full">
+      <div className="md:hidden h-full flex flex-col">
         <PageHeader title="Messages" className="bg-transparent" />
-        <ConversationsList />
+        
+        {/* Mobile Tabs */}
+        {user?.role === "artist" && (
+          <div className="flex bg-secondary/50 p-1 mx-4 rounded-xl mb-2 shrink-0">
+            <button
+              type="button"
+              className={cn(
+                "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
+                currentTab === "clients" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              )}
+              onClick={() => setActiveTab("clients")}
+            >
+              Clients
+            </button>
+            <button
+              type="button"
+              className={cn(
+                "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
+                currentTab === "contacts" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              )}
+              onClick={() => setActiveTab("contacts")}
+            >
+              Contacts
+            </button>
+          </div>
+        )}
+
+        <div className="flex-1 overflow-hidden">
+          <ConversationsList filter={currentTab} />
+        </div>
       </div>
 
       {/* iPad/Desktop: Split View */}
@@ -76,7 +109,34 @@ export default function Conversations() {
         {/* Left Panel: List (50%) */}
         <div className="w-1/2 border-r border-border flex flex-col h-full">
           <PageHeader title="Messages" className="bg-transparent" />
-          <ConversationsList className="bg-transparent" />
+          
+          {/* Desktop Tabs */}
+          {user?.role === "artist" && (
+            <div className="flex bg-secondary/50 p-1 mx-6 rounded-xl mb-4 shrink-0">
+              <button
+                type="button"
+                className={cn(
+                  "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
+                  currentTab === "clients" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setActiveTab("clients")}
+              >
+                Clients
+              </button>
+              <button
+                type="button"
+                className={cn(
+                  "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
+                  currentTab === "contacts" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setActiveTab("contacts")}
+              >
+                Contacts
+              </button>
+            </div>
+          )}
+
+          <ConversationsList className="bg-transparent" filter={currentTab} />
         </div>
 
         {/* Right Panel: Placeholder */}

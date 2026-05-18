@@ -27,12 +27,14 @@ interface ConversationsListProps {
   className?: string;
   onSelect?: () => void; // Callback when a conversation is selected (optional)
   activeId?: number; // Conversation ID to highlight
+  filter?: "clients" | "contacts"; // Filter by role
 }
 
 export function ConversationsList({
   className,
   onSelect,
   activeId,
+  filter = "clients",
 }: ConversationsListProps) {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
@@ -69,6 +71,20 @@ export function ConversationsList({
       console.error("Failed to mark item as read:", error);
     }
   };
+
+  const filteredConversations = useMemo(() => {
+    if (!conversations) return [];
+    if (!filter) return conversations;
+
+    return conversations.filter(conv => {
+      const isClient = conv.otherUser?.role === "client";
+      if (filter === "clients") return isClient;
+      if (filter === "contacts") return !isClient;
+      return true;
+    });
+  }, [conversations, filter]);
+
+  const filteredRequests = filter === "contacts" ? [] : requestItems;
 
   // Register FAB Actions
   const fabActions = useMemo<FABMenuItem[]>(() => {
@@ -109,7 +125,7 @@ export function ConversationsList({
   }
 
   const unreadTotal =
-    conversations?.reduce((acc, curr) => acc + (curr.unreadCount || 0), 0) || 0;
+    filteredConversations?.reduce((acc, curr) => acc + (curr.unreadCount || 0), 0) || 0;
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
@@ -136,12 +152,12 @@ export function ConversationsList({
         {/* Scrollable Content */}
         <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y will-change-scroll transform-gpu">
           <div className="pb-32 max-w-lg mx-auto space-y-4 min-h-[50vh]">
-            {requestItems.length > 0 ||
-            (conversations && conversations.length > 0) ? (
+            {filteredRequests.length > 0 ||
+            (filteredConversations && filteredConversations.length > 0) ? (
               <div className="space-y-1">
                 {/* 1. New Requests (Pinned to top) */}
                 {isArtist &&
-                  requestItems.map(item => (
+                  filteredRequests.map(item => (
                     <ConversationCard
                       key={`${item.type}-${item.id}`}
                       name={item.name}
@@ -199,7 +215,7 @@ export function ConversationsList({
                   ))}
 
                 {/* 2. Standard Conversations */}
-                {conversations?.map(conv => (
+                {filteredConversations?.map(conv => (
                   <ConversationCard
                     key={conv.id}
                     name={conv.otherUser?.name || "Unknown User"}

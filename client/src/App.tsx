@@ -27,6 +27,8 @@ import Conversations from "./pages/Conversations";
 import Dashboard from "./pages/Dashboard";
 // Portfolio page removed - replaced by Promotions
 import Promotions from "./pages/Promotions";
+import { MerchantOrders } from "./features/merchant/Orders";
+import { MerchantProducts } from "./features/merchant/Products";
 
 import Consultations from "./pages/Consultations";
 import Policies from "./pages/Policies";
@@ -171,6 +173,9 @@ function Router() {
         <GuardedRoute path="/calendar" component={Calendar} />
 
         <GuardedRoute path="/dashboard" component={Dashboard} />
+        <GuardedRoute path="/merchant/orders" component={MerchantOrders} />
+        <GuardedRoute path="/merchant/products" component={MerchantProducts} />
+        
         {/* Portfolio routes removed */}
         <GuardedRoute path="/promotions" component={Promotions} />
 
