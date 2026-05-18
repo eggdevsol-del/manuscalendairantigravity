@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Settings, RefreshCw, CheckCircle2, AlertCircle, KeyRound, Link as LinkIcon, Loader2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/ui/input";
 
 export function ShopifySyncTier() {
   const [shopUrl, setShopUrl] = useState("");
