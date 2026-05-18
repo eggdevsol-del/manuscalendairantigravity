@@ -147,7 +147,7 @@ export async function runStoreScraper(storeUrl: string) {
   };
 }
 
-export async function scrapeForMerchant(merchantId: number, storeUrl: string) {
+export async function scrapeForMerchant(merchantId: number, userId: string, storeUrl: string) {
   try {
     syncStatusMap.set(merchantId, { status: "syncing", count: 0 });
 
@@ -167,7 +167,7 @@ export async function scrapeForMerchant(merchantId: number, storeUrl: string) {
       let description = p.body_html ? p.body_html.replace(/<[^>]*>?/gm, '') : null;
       
       return {
-        merchantId,
+        artistId: userId,
         ownerType: "merchant" as const,
         title: p.title,
         description,

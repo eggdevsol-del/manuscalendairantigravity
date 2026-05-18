@@ -118,7 +118,7 @@ export const merchantAuthRouter = router({
         // Background Scrape
         if (input.websiteUrl) {
           setTimeout(() => {
-            scrapeForMerchant(merchantId, input.websiteUrl!).catch(console.error);
+            scrapeForMerchant(merchantId, userId, input.websiteUrl!).catch(console.error);
           }, 0);
         }
       });

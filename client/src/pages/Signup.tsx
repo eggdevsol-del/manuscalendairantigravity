@@ -71,9 +71,15 @@ export default function Signup() {
   const utils = trpc.useUtils();
 
   const handleSignupSuccess = (data: any) => {
+    const userObj = data.user || { 
+      id: data.userId, 
+      role: accountType === "supplier" ? "merchant" : accountType,
+      email: email,
+      name: name
+    };
     localStorage.setItem("authToken", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user || { id: data.userId, role: accountType }));
-    utils.auth.me.setData(undefined, data.user);
+    localStorage.setItem("user", JSON.stringify(userObj));
+    utils.auth.me.setData(undefined, userObj);
     toast.success("Account created! Welcome to CalendAIr.");
     setLocation(accountType === "supplier" ? "/dashboard" : "/calendar");
     setIsLoading(false);
