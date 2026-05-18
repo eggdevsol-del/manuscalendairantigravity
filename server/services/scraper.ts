@@ -172,7 +172,8 @@ export async function scrapeForMerchant(merchantId: number, userId: string, stor
         title: p.title,
         description,
         imageUrl,
-        category: p.product_type,
+        priceCents: 0, // Base price, variants will have specific prices
+        hasVariants: p.variants && p.variants.length > 0 ? 1 : 0,
         isActive: 0, // Will toggle to 1 after Stripe verification
         inventoryCount: 0, // Master inventory count
       };
@@ -193,7 +194,7 @@ export async function scrapeForMerchant(merchantId: number, userId: string, stor
           const priceVal = parseFloat(v.price) || 0;
           return {
             productId,
-            title: v.title || "Default",
+            name: v.title || "Default",
             priceCents: Math.round(priceVal * 100),
             sku: v.sku || null,
             inventoryCount: v.inventory_quantity !== undefined ? v.inventory_quantity : (v.available ? 1 : 0),
