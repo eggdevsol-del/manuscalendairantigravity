@@ -12,6 +12,7 @@ const LOADING_STEPS = [
 
 export function SyncOverlay() {
   const [stepIndex, setStepIndex] = useState(0);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   const { data: syncStatus } = trpc.merchantAuth.getSyncStatus.useQuery(undefined, {
     refetchInterval: (data) => data?.status === "syncing" ? 1000 : false,
@@ -27,7 +28,7 @@ export function SyncOverlay() {
     }
   }, [syncStatus?.status]);
 
-  if (!syncStatus || syncStatus.status === "complete" || syncStatus.status === "idle") {
+  if (!syncStatus || syncStatus.status === "complete" || syncStatus.status === "idle" || isDismissed) {
     return null;
   }
 
@@ -80,11 +81,11 @@ export function SyncOverlay() {
         {syncStatus.status === "failed" && (
           <div className="flex flex-col items-center">
             <h2 className="text-xl font-bold text-red-400 mb-2">Import Failed</h2>
-            <p className="text-sm text-muted-foreground mb-8">
-              We couldn't extract products from the provided URL.
+            <p className="text-sm text-muted-foreground mb-8 px-4 text-center max-w-sm">
+              {syncStatus.error || "We couldn't extract products from the provided URL."}
             </p>
             <button 
-              onClick={() => window.location.reload()}
+              onClick={() => setIsDismissed(true)}
               className="px-6 py-2 bg-secondary text-foreground font-bold rounded-full text-sm hover:bg-secondary/80 transition-colors"
             >
               Continue to Dashboard

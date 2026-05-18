@@ -68,10 +68,12 @@ export default function Signup() {
   const checkEmailMutation = trpc.auth.checkEmailExists.useMutation();
   const updateProfileMutation = trpc.auth.updateProfile.useMutation();
   const googleLoginMutation = trpc.auth.googleLogin.useMutation();
+  const utils = trpc.useUtils();
 
   const handleSignupSuccess = (data: any) => {
     localStorage.setItem("authToken", data.token);
     localStorage.setItem("user", JSON.stringify(data.user || { id: data.userId, role: accountType }));
+    utils.auth.me.setData(undefined, data.user);
     toast.success("Account created! Welcome to CalendAIr.");
     setLocation(accountType === "supplier" ? "/dashboard" : "/calendar");
     setIsLoading(false);
@@ -180,6 +182,11 @@ export default function Signup() {
 
     setIsLoading(true);
 
+    let formattedWebsiteUrl = websiteUrl;
+    if (formattedWebsiteUrl && !/^https?:\/\//i.test(formattedWebsiteUrl)) {
+      formattedWebsiteUrl = `https://${formattedWebsiteUrl}`;
+    }
+
     const params = new URLSearchParams(window.location.search);
     const urlRole = params.get("role") as "artist" | "client" | null;
     const referralArtistId = params.get("referralArtistId") || undefined;
@@ -209,7 +216,7 @@ export default function Signup() {
                 password,
                 businessName,
                 country: (country === "New Zealand" || country === "NZ") ? "NZ" : "AU",
-                websiteUrl,
+                websiteUrl: formattedWebsiteUrl,
               });
             } else {
               registerMutation.mutate({
@@ -235,7 +242,7 @@ export default function Signup() {
               password,
               businessName,
               country: (country === "New Zealand" || country === "NZ") ? "NZ" : "AU",
-              websiteUrl,
+              websiteUrl: formattedWebsiteUrl,
             });
           } else {
             registerMutation.mutate({
@@ -570,8 +577,8 @@ export default function Signup() {
                     <Globe className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="websiteUrl"
-                      type="url"
-                      placeholder="https://mysupply.co"
+                      type="text"
+                      placeholder="mysupply.co"
                       value={websiteUrl}
                       onChange={e => setWebsiteUrl(e.target.value)}
                       variant="hero"

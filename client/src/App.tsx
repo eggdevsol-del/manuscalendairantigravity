@@ -134,7 +134,7 @@ function Router() {
     "/promotions", "/consultations", "/policies", "/policy-management",
     "/notifications-management", "/work-hours", "/subscriptions",
     "/studio", "/quick-actions", "/clients", "/profile",
-    "/payout-history", "/bank-payouts", "/admin/errors", "/events", "/404"
+    "/payout-history", "/bank-payouts", "/admin/errors", "/events", "/404", "/merchant"
   ];
   const isAppRoute = location === "/" || knownAppRoutes.some(route => location.startsWith(route));
 

@@ -30,7 +30,10 @@ export async function runStoreScraper(storeUrl: string) {
     while (shopifyPage <= MAX_PAGES) {
       const productsUrl = `${baseUrl}/products.json?limit=250&page=${shopifyPage}`;
       const response = await fetch(productsUrl, {
-        headers: { 'User-Agent': 'Tattoi App Import' }
+        headers: { 
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'application/json'
+        }
       });
 
       if (!response.ok) break;
@@ -57,7 +60,10 @@ export async function runStoreScraper(storeUrl: string) {
       while (wooPage <= MAX_PAGES) {
         const wooUrl = `${baseUrl}/wp-json/wc/store/products?page=${wooPage}&per_page=100`;
         const response = await fetch(wooUrl, {
-          headers: { 'User-Agent': 'Tattoi App Import' }
+          headers: { 
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/json'
+          }
         });
 
         if (!response.ok) break;
@@ -100,7 +106,7 @@ export async function runStoreScraper(storeUrl: string) {
   }
 
   if (allProducts.length === 0) {
-    throw new Error("Could not find public products at this URL. Make sure it is a valid Shopify or modern WooCommerce store without strict API blocking.");
+    throw new Error("Could not find public products at this URL. If this is a new Shopify store, please ensure it is not password protected. Otherwise, make sure it is a valid store without strict API blocking.");
   }
 
   // Determine store name from URL hostname
@@ -112,7 +118,10 @@ export async function runStoreScraper(storeUrl: string) {
   let logoUrl = null;
   try {
     const htmlResponse = await fetch(baseUrl, {
-      headers: { 'User-Agent': 'Tattoi App Import' }
+      headers: { 
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml'
+      }
     });
     const html = await htmlResponse.text();
     const match = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i) || html.match(/<meta\s+name="twitter:image"\s+content="([^"]+)"/i);
