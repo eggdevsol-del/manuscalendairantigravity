@@ -9,6 +9,7 @@ import { getUserByEmail } from "../db";
 import { randomBytes } from "crypto";
 import { resolveCountry } from "../utils/resolveCountry";
 import { scrapeForMerchant } from "../services/scraper";
+import { syncInventoryFromAdmin } from "../services/shopifyAdminApi";
 
 export const merchantAuthRouter = router({
   /**
@@ -47,9 +48,23 @@ export const merchantAuthRouter = router({
   validateNzbn: publicProcedure
     .input(z.object({ nzbn: z.string().min(1) })) // Actual length validation would be .length(13) usually
     .query(async ({ input }) => {
-      // Stub: in future, hit NZBN API using process.env.NZBN_API_KEY
+      // Stub: in future, hit NZBN API
       return { valid: true, businessName: null };
     }),
+
+  /**
+   * Get merchant profile
+   */
+  getMerchantProfile: merchantProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+    
+    const merchant = await db.query.merchants.findFirst({
+      where: eq(schema.merchants.userId, ctx.user.id),
+    });
+    
+    return merchant;
+  }),
 
   /**
    * Register a new merchant from scratch
@@ -382,5 +397,68 @@ export const merchantAuthRouter = router({
       status: products.length > 0 ? "complete" : "idle",
       count: products.length,
     };
+  }),
+
+  /**
+   * Save Shopify Custom App Token and Domain
+   */
+  saveShopifyCredentials: merchantProcedure
+    .input(z.object({
+      shopUrl: z.string().min(1),
+      accessToken: z.string().min(1)
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database connection failed");
+
+      // Format URL to domain
+      let domain = input.shopUrl.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+      if (!domain.includes('.myshopify.com')) {
+        if (!domain.includes('.')) {
+          domain = `${domain}.myshopify.com`;
+        }
+      }
+
+      await db.update(schema.merchants)
+        .set({
+          integrationType: "shopify",
+          shopifyDomain: domain,
+          shopifyToken: input.accessToken,
+        })
+        .where(eq(schema.merchants.userId, ctx.user.id));
+        
+      return { success: true, domain };
+    }),
+
+  /**
+   * Manually trigger a Shopify Admin API sync
+   */
+  triggerShopifySync: merchantProcedure.mutation(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+
+    const merchant = await db.query.merchants.findFirst({
+      where: eq(schema.merchants.userId, ctx.user.id),
+    });
+
+    if (!merchant) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Merchant not found" });
+    }
+
+    if (!merchant.shopifyDomain || !merchant.shopifyToken) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: "Shopify credentials missing." });
+    }
+
+    // Run in background
+    setTimeout(() => {
+      syncInventoryFromAdmin(
+        merchant.id,
+        ctx.user.id,
+        merchant.shopifyDomain!,
+        merchant.shopifyToken!
+      ).catch(console.error);
+    }, 0);
+
+    return { success: true };
   }),
 });
