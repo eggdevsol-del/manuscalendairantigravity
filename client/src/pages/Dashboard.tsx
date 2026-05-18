@@ -64,6 +64,7 @@ import { DashboardFABActions } from "@/features/dashboard/DashboardActions";
 import { PayoutWidgetContainer } from "@/features/payouts/PayoutWidgetContainer";
 import { OrdersTab } from "@/features/dashboard/OrdersTab";
 import { ContactsTab } from "@/features/dashboard/ContactsTab";
+import { MerchantDashboard } from "@/features/merchant/Dashboard";
 
 // SSOT Components
 
@@ -357,10 +358,10 @@ export default function Dashboard() {
   };
 
   if (user?.role === "studio") return null;
+  if (user?.role === "merchant") return <MerchantDashboard />;
 
   return (
     <PageShell>
-      {user?.role === "merchant" && <SyncOverlay />}
       
       {/* 1. Page Header - Left aligned, no icons */}
       <PageHeader title="Home" />
@@ -416,7 +417,7 @@ export default function Dashboard() {
             animate={{ marginTop: activeCategory === "contacts" ? 0 : -8 }}
             className="px-6 w-full z-10 relative space-y-4"
           >
-            {user?.role === "merchant" ? <MerchantSetupStepper /> : <SetupChecklistWidget />}
+            <SetupChecklistWidget />
             {user?.role === "artist" || user?.role === "admin" ? (
               <motion.div
                 animate={{
