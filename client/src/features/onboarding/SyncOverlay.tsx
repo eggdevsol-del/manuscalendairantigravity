@@ -15,7 +15,11 @@ export function SyncOverlay() {
   const [progress, setProgress] = useState(0);
 
   const { data: syncStatus } = trpc.merchantAuth.getSyncStatus.useQuery(undefined, {
-    refetchInterval: (data) => data?.status === "syncing" ? 1000 : false,
+    refetchInterval: (query) => {
+      const status = (query.state.data as any)?.status;
+      // Continue polling if we have no data yet, or if it's still syncing
+      return (!status || status === "syncing") ? 1000 : false;
+    },
   });
 
   // Cycle through static loading messages
