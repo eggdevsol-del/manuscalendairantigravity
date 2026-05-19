@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 const LOADING_STEPS = [
@@ -13,6 +12,7 @@ const LOADING_STEPS = [
 export function SyncOverlay() {
   const [stepIndex, setStepIndex] = useState(0);
   const [isDismissed, setIsDismissed] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const { data: syncStatus } = trpc.merchantAuth.getSyncStatus.useQuery(undefined, {
     refetchInterval: (data) => data?.status === "syncing" ? 1000 : false,
@@ -28,6 +28,30 @@ export function SyncOverlay() {
     }
   }, [syncStatus?.status]);
 
+  // Calculate dynamic progress
+  useEffect(() => {
+    if (syncStatus?.status === "syncing") {
+      const interval = setInterval(() => {
+        setProgress(p => {
+          // If we can extract explicit progress from the backend message, use it
+          const match = syncStatus.message?.match(/\((\d+)\/(\d+)\)/);
+          if (match) {
+             const current = parseInt(match[1]);
+             const total = parseInt(match[2]);
+             return (current / total) * 100;
+          }
+          
+          // Otherwise, slowly auto-increment up to 95% to simulate loading
+          const next = p + 0.3; // Very slow tick
+          return next > 95 ? 95 : next;
+        });
+      }, 50);
+      return () => clearInterval(interval);
+    } else if (syncStatus?.status === "complete") {
+      setProgress(100);
+    }
+  }, [syncStatus?.status, syncStatus?.message]);
+
   if (!syncStatus || syncStatus.status === "complete" || syncStatus.status === "idle" || isDismissed) {
     return null;
   }
@@ -39,10 +63,18 @@ export function SyncOverlay() {
         animate={{ opacity: 1 }}
         className="w-full max-w-lg flex flex-col items-center relative"
       >
-        {/* TATTOI Header */}
-        <h1 className="text-4xl md:text-5xl font-light tracking-widest text-foreground mb-16">
-          TATTOI
-        </h1>
+        {/* TATTOI Header with Fill Animation */}
+        <div className="relative mb-16">
+          <h1 className="text-4xl md:text-5xl font-light tracking-widest text-foreground opacity-10 select-none">
+            TATTOI
+          </h1>
+          <h1 
+            className="text-4xl md:text-5xl font-light tracking-widest text-foreground absolute inset-0 select-none transition-all duration-75 ease-linear"
+            style={{ clipPath: `inset(${100 - progress}% 0 0 0)` }}
+          >
+            TATTOI
+          </h1>
+        </div>
 
         {syncStatus.status === "syncing" && (
           <div className="w-full flex flex-col items-center">
@@ -62,15 +94,9 @@ export function SyncOverlay() {
                 {syncStatus.message || LOADING_STEPS[stepIndex]}
               </motion.p>
             </AnimatePresence>
-
-            {/* Pulsing loading bar */}
-            <div className="h-[2px] w-full max-w-[200px] bg-secondary overflow-hidden mb-12">
-              <motion.div 
-                className="h-full bg-primary"
-                animate={{ x: ["-100%", "100%"] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </div>
+            
+            {/* Fallback space for the removed line bar so the layout stays consistent */}
+            <div className="h-[2px] mb-12"></div>
           </div>
         )}
 

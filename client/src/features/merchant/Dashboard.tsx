@@ -3,24 +3,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PageShell, PageHeader } from "@/components/ui/ssot";
 import { SyncOverlay } from "@/features/onboarding/SyncOverlay";
 import { cn } from "@/lib/utils";
-import { ChevronRight, ArrowLeft, TrendingUp, Package, Users, Store, Gift, Settings } from "lucide-react";
+import { ArrowLeft, TrendingUp, Package, Users, Store, Gift, Settings, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui";
 import { ArtistsTier } from "./ArtistsTier";
 import { StorefrontPreviewTier } from "./StorefrontPreviewTier";
 import { ShopifySyncTier } from "./ShopifySyncTier";
 import { PromotionsTier } from "./PromotionsTier";
-
-const CARDS = [
-  { id: "analytics", title: "Analytics & Revenue", icon: TrendingUp, color: "text-blue-400", bg: "bg-blue-400/10" },
-  { id: "inventory", title: "Inventory & Alerts", icon: Package, color: "text-amber-400", bg: "bg-amber-400/10" },
-  { id: "artists", title: "Top Artists", icon: Users, color: "text-emerald-400", bg: "bg-emerald-400/10" },
-  { id: "storefront", title: "Storefront Preview", icon: Store, color: "text-purple-400", bg: "bg-purple-400/10" },
-  { id: "promotions", title: "Promotions & Discounts", icon: Gift, color: "text-pink-400", bg: "bg-pink-400/10" },
-  { id: "shopify", title: "Shopify Sync", icon: Settings, color: "text-green-500", bg: "bg-green-500/10" },
-];
+import { trpc } from "@/lib/trpc";
 
 export function MerchantDashboard() {
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+  const { data: merchant } = trpc.merchantAuth.getMerchantProfile.useQuery();
+
+  const isShopifyConnected = merchant?.integrationType === "shopify" && !!merchant?.shopifyToken;
 
   const renderExpandedContent = () => {
     switch (expandedCardId) {
@@ -39,6 +34,18 @@ export function MerchantDashboard() {
       default:
         return null;
     }
+  };
+
+  const getExpandedTitle = () => {
+    const titles: Record<string, string> = {
+      analytics: "Analytics & Revenue",
+      inventory: "Inventory & Alerts",
+      artists: "Top Artists",
+      storefront: "Storefront Preview",
+      promotions: "Promotions & Discounts",
+      shopify: "Shopify Integration"
+    };
+    return expandedCardId ? titles[expandedCardId] : "";
   };
 
   return (
@@ -68,7 +75,7 @@ export function MerchantDashboard() {
               Back to Dashboard
             </Button>
             <h2 className="text-3xl font-bold tracking-tight text-foreground">
-              {CARDS.find(c => c.id === expandedCardId)?.title}
+              {getExpandedTitle()}
             </h2>
           </motion.div>
         )}
@@ -78,44 +85,138 @@ export function MerchantDashboard() {
       <div className="flex-1 w-full relative mt-4">
         <div className="absolute inset-0 overflow-y-auto mobile-scroll px-6 pb-32">
           
-          {/* Default Grid View */}
           <AnimatePresence mode="wait">
             {!expandedCardId && (
               <motion.div 
-                key="grid"
+                key="carousels"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20"
+                className="space-y-8 pb-20"
               >
-                {/* Quick Actions Row */}
-                <div className="col-span-1 md:col-span-2 flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-6 px-6">
-                  {["Add Product", "Create PO", "Discounts", "Preview"].map(action => (
-                    <button key={action} className="whitespace-nowrap px-5 py-2.5 rounded-full bg-secondary/80 text-sm font-semibold text-foreground hover:bg-secondary transition-colors shrink-0">
-                      {action}
-                    </button>
-                  ))}
+                
+                {/* Action Required Row */}
+                <div>
+                  <h2 className="text-[15px] font-bold text-foreground mb-4 pl-1">Action Required</h2>
+                  <div className="flex gap-4 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-hide -mx-6 px-6">
+                    
+                    <motion.div
+                      layoutId={`card-analytics`}
+                      onClick={() => setExpandedCardId("analytics")}
+                      className="snap-center shrink-0 w-[260px] h-[300px] rounded-[32px] bg-gradient-to-br from-blue-500/20 to-blue-900/10 border border-blue-500/20 flex flex-col justify-between p-6 cursor-pointer relative overflow-hidden"
+                    >
+                      <div>
+                        <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-4">
+                          <TrendingUp className="w-6 h-6 text-blue-400" />
+                        </div>
+                        <h3 className="font-bold text-foreground text-xl">3 Pending<br/>Orders</h3>
+                      </div>
+                      <p className="text-sm text-blue-400 font-medium">Requires fulfillment</p>
+                    </motion.div>
+
+                    <motion.div
+                      layoutId={`card-inventory`}
+                      onClick={() => setExpandedCardId("inventory")}
+                      className="snap-center shrink-0 w-[260px] h-[300px] rounded-[32px] bg-gradient-to-br from-amber-500/20 to-amber-900/10 border border-amber-500/20 flex flex-col justify-between p-6 cursor-pointer relative overflow-hidden"
+                    >
+                      <div>
+                        <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center mb-4">
+                          <Package className="w-6 h-6 text-amber-400" />
+                        </div>
+                        <h3 className="font-bold text-foreground text-xl">Low Stock<br/>Alerts</h3>
+                      </div>
+                      <p className="text-sm text-amber-400 font-medium">12 items below minimum</p>
+                    </motion.div>
+
+                  </div>
                 </div>
 
-                {CARDS.map((card) => (
-                  <motion.div
-                    key={card.id}
-                    layoutId={`card-${card.id}`}
-                    onClick={() => setExpandedCardId(card.id)}
-                    className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-[24px] p-5 flex items-center justify-between cursor-pointer hover:bg-secondary/40 transition-colors shadow-sm"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", card.bg)}>
-                        <card.icon className={cn("w-6 h-6", card.color)} />
+                {/* Store Management Row */}
+                <div>
+                  <h2 className="text-[15px] font-bold text-foreground mb-4 pl-1">Store Management</h2>
+                  <div className="flex gap-4 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-hide -mx-6 px-6">
+                    
+                    <motion.div
+                      layoutId={`card-shopify`}
+                      onClick={() => setExpandedCardId("shopify")}
+                      className="snap-center shrink-0 w-[280px] h-[360px] rounded-[32px] bg-card border border-border/50 flex flex-col justify-between p-6 cursor-pointer relative overflow-hidden"
+                    >
+                      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-green-500/20 to-transparent"></div>
+                      <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div className="flex justify-between items-start">
+                          <div className="w-14 h-14 rounded-2xl bg-green-500/20 flex items-center justify-center backdrop-blur-md">
+                            <Settings className="w-7 h-7 text-green-500" />
+                          </div>
+                          {isShopifyConnected && (
+                            <div className="px-3 py-1 bg-emerald-500/20 text-emerald-500 text-[10px] font-bold rounded-full flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" /> CONNECTED
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-foreground text-2xl mb-2">Shopify Sync</h3>
+                          <p className="text-sm text-muted-foreground leading-relaxed">Manage your live API integration and webhook settings.</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-bold text-foreground text-[15px]">{card.title}</h3>
-                        <p className="text-[13px] text-muted-foreground/80 font-medium mt-0.5">Tap to expand</p>
+                    </motion.div>
+
+                    <motion.div
+                      layoutId={`card-storefront`}
+                      onClick={() => setExpandedCardId("storefront")}
+                      className="snap-center shrink-0 w-[280px] h-[360px] rounded-[32px] bg-card border border-border/50 flex flex-col justify-between p-6 cursor-pointer relative overflow-hidden group"
+                    >
+                       <div className="absolute inset-0 opacity-40 group-hover:opacity-60 transition-opacity">
+                         <img src="https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover" alt="Ink" />
+                         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+                       </div>
+                      <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div className="w-14 h-14 rounded-2xl bg-purple-500/20 flex items-center justify-center backdrop-blur-md">
+                          <Store className="w-7 h-7 text-purple-400" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-foreground text-2xl mb-2">Storefront Preview</h3>
+                          <p className="text-sm text-muted-foreground/80 leading-relaxed">View how artists see your products.</p>
+                        </div>
                       </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground/50" />
-                  </motion.div>
-                ))}
+                    </motion.div>
+                    
+                    <motion.div
+                      layoutId={`card-promotions`}
+                      onClick={() => setExpandedCardId("promotions")}
+                      className="snap-center shrink-0 w-[280px] h-[360px] rounded-[32px] bg-card border border-border/50 flex flex-col justify-between p-6 cursor-pointer relative overflow-hidden"
+                    >
+                      <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div className="w-14 h-14 rounded-2xl bg-pink-500/20 flex items-center justify-center">
+                          <Gift className="w-7 h-7 text-pink-400" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-foreground text-2xl mb-2">Promotions</h3>
+                          <p className="text-sm text-muted-foreground leading-relaxed">Create discount codes for top artists.</p>
+                        </div>
+                      </div>
+                    </motion.div>
+
+                  </div>
+                </div>
+
+                {/* Discovery Row */}
+                <div>
+                  <h2 className="text-[15px] font-bold text-foreground mb-4 pl-1">Discover Top Artists</h2>
+                  <div className="flex gap-4 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-hide -mx-6 px-6">
+                    <motion.div
+                      layoutId={`card-artists`}
+                      onClick={() => setExpandedCardId("artists")}
+                      className="snap-center shrink-0 w-[180px] h-[240px] rounded-[32px] bg-card border border-border/50 flex flex-col items-center justify-center p-6 cursor-pointer text-center relative"
+                    >
+                       <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary/20 mb-4">
+                         <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" alt="Artist" className="w-full h-full object-cover" />
+                       </div>
+                       <h3 className="font-bold text-foreground text-lg leading-tight">Explore<br/>Network</h3>
+                       <p className="text-xs text-primary mt-3 font-bold uppercase tracking-wider">See All</p>
+                    </motion.div>
+                  </div>
+                </div>
+
               </motion.div>
             )}
           </AnimatePresence>
@@ -126,7 +227,7 @@ export function MerchantDashboard() {
               <motion.div
                 key="expanded"
                 layoutId={`card-${expandedCardId}`}
-                className="bg-card border border-border/50 rounded-[32px] overflow-hidden min-h-[60vh] shadow-xl"
+                className="bg-card border border-border/50 rounded-[32px] overflow-hidden min-h-[70vh] shadow-[0_0_50px_rgba(0,0,0,0.3)] relative z-50 mb-10"
               >
                 {renderExpandedContent()}
               </motion.div>
