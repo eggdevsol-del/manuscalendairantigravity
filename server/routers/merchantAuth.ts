@@ -3,7 +3,7 @@ import { router, publicProcedure, merchantProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 import * as schema from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { hashPassword, generateToken } from "../_core/auth-new";
 import { getUserByEmail } from "../db";
 import { randomBytes } from "crypto";
@@ -64,6 +64,60 @@ export const merchantAuthRouter = router({
     });
     
     return merchant;
+  }),
+
+  /**
+   * Get merchant dashboard stats
+   */
+  getDashboardStats: merchantProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+    
+    const merchant = await db.query.merchants.findFirst({
+      where: eq(schema.merchants.userId, ctx.user.id),
+    });
+
+    if (!merchant) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Merchant not found" });
+    }
+    
+    const orders = await db.query.orders.findMany({
+      where: eq(schema.orders.artistId, ctx.user.id),
+    });
+
+    let revenueCents = 0;
+    let pendingOrders = 0;
+    
+    for (const o of orders) {
+      if (o.status === "paid" || o.status === "fulfilled") {
+        revenueCents += o.totalAmountCents;
+      }
+      if (o.status === "pending") {
+        pendingOrders++;
+      }
+    }
+
+    const products = await db.query.products.findMany({
+      where: and(
+        eq(schema.products.artistId, ctx.user.id),
+        eq(schema.products.ownerType, "merchant")
+      )
+    });
+
+    let lowStockItems = 0;
+    const threshold = merchant.lowStockThreshold || 5;
+    for (const p of products) {
+      if (p.inventoryCount < threshold) {
+        lowStockItems++;
+      }
+    }
+
+    return {
+      revenueCents,
+      pendingOrders,
+      lowStockItems,
+      totalOrders: orders.length,
+    };
   }),
 
   /**

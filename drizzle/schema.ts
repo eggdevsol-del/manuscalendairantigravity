@@ -2153,6 +2153,7 @@ export const merchants = mysqlTable("merchants", {
   xeroAccessToken: text(),
   xeroRefreshToken: text(),
   xeroTokenExpiry: timestamp(),
+  lowStockThreshold: int().default(5).notNull(),
   myobAccessToken: text(),
   shippitApiKey: varchar({ length: 255 }),
   status: mysqlEnum(["pending", "active", "suspended"]).default("pending"),

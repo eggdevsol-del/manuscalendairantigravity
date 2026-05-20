@@ -9,20 +9,24 @@ import { ArtistsTier } from "./ArtistsTier";
 import { StorefrontPreviewTier } from "./StorefrontPreviewTier";
 import { ShopifySyncTier } from "./ShopifySyncTier";
 import { PromotionsTier } from "./PromotionsTier";
+import { AnalyticsTier } from "./AnalyticsTier";
+import { InventoryTier } from "./InventoryTier";
 import { trpc } from "@/lib/trpc";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 export function MerchantDashboard() {
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
   const { data: merchant } = trpc.merchantAuth.getMerchantProfile.useQuery();
+  const { data: stats } = trpc.merchantAuth.getDashboardStats.useQuery();
 
   const isShopifyConnected = merchant?.integrationType === "shopify" && !!merchant?.shopifyToken;
 
   const renderExpandedContent = () => {
     switch (expandedCardId) {
       case "analytics":
-        return <div className="p-8 text-center text-muted-foreground pt-20">Analytics dashboard coming soon. Includes Weekly/Monthly toggles and Pending orders.</div>;
+        return <AnalyticsTier />;
       case "inventory":
-        return <div className="p-8 text-center text-muted-foreground pt-20">Inventory management and low stock alerts.</div>;
+        return <InventoryTier />;
       case "artists":
         return <ArtistsTier />;
       case "storefront":
@@ -58,10 +62,10 @@ export function MerchantDashboard() {
       <div className="px-6 pt-4 z-10 shrink-0 flex flex-col justify-center min-h-[14vh] transition-all duration-300">
         {!expandedCardId ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Today's Revenue</p>
-            <p className="text-4xl font-light text-foreground tracking-tight">$1,240.50</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Total Revenue</p>
+            <p className="text-4xl font-light text-foreground tracking-tight">{stats ? formatCurrency(stats.revenueCents) : "$0.00"}</p>
             <p className="text-sm text-emerald-400 mt-2 flex items-center gap-1 font-medium">
-              <TrendingUp className="w-4 h-4" /> +14% vs yesterday (12 orders)
+              <TrendingUp className="w-4 h-4" /> Lifetime earnings
             </p>
           </motion.div>
         ) : (
@@ -74,9 +78,6 @@ export function MerchantDashboard() {
               <ArrowLeft className="w-5 h-5 mr-2" />
               Back to Dashboard
             </Button>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">
-              {getExpandedTitle()}
-            </h2>
           </motion.div>
         )}
       </div>
@@ -109,7 +110,7 @@ export function MerchantDashboard() {
                         <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-4">
                           <TrendingUp className="w-6 h-6 text-blue-400" />
                         </div>
-                        <h3 className="font-bold text-foreground text-xl">3 Pending<br/>Orders</h3>
+                        <h3 className="font-bold text-foreground text-xl">{stats?.pendingOrders || 0} Pending<br/>Orders</h3>
                       </div>
                       <p className="text-sm text-blue-400 font-medium">Requires fulfillment</p>
                     </motion.div>
@@ -125,7 +126,7 @@ export function MerchantDashboard() {
                         </div>
                         <h3 className="font-bold text-foreground text-xl">Low Stock<br/>Alerts</h3>
                       </div>
-                      <p className="text-sm text-amber-400 font-medium">12 items below minimum</p>
+                      <p className="text-sm text-amber-400 font-medium">{stats?.lowStockItems || 0} items below minimum</p>
                     </motion.div>
 
                   </div>
