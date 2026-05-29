@@ -1,5 +1,8 @@
 import React, { useState } from "react";
+import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
+import { Settings, Search } from "lucide-react";
+import { useRegisterFABActions } from "@/contexts/BottomNavContext";
 import { PageShell, PageHeader, SegmentedHeader } from "@/components/ui/ssot";
 import { SyncOverlay } from "@/features/onboarding/SyncOverlay";
 import { cn } from "@/lib/utils";
@@ -19,6 +22,16 @@ export function MerchantDashboard() {
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [[page, direction], setPage] = useState([0, 0]);
+  const [, setLocation] = useLocation();
+
+  useRegisterFABActions("merchant-dashboard-actions", [
+    {
+      id: "merchant-settings",
+      label: "Settings",
+      icon: Settings,
+      onClick: () => setLocation("/settings"),
+    },
+  ]);
 
   const { data: merchant } = trpc.merchantAuth.getMerchantProfile.useQuery();
   const { data: stats } = trpc.merchantAuth.getDashboardStats.useQuery();
@@ -69,9 +82,14 @@ export function MerchantDashboard() {
             {selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Total Revenue</p>
-          <p className="text-xl font-bold text-emerald-500">{stats ? formatCurrency(stats.revenueCents) : "$0.00"}</p>
+        <div className="flex items-center gap-4 text-right">
+          <button className="w-10 h-10 rounded-full bg-secondary/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+            <Search className="w-5 h-5" />
+          </button>
+          <div className="text-right">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Total Revenue</p>
+            <p className="text-xl font-bold text-emerald-500">{stats ? formatCurrency(stats.revenueCents) : "$0.00"}</p>
+          </div>
         </div>
       </div>
 
