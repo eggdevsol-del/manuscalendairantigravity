@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Helper script to push updates to GitHub and trigger Render deployment
+# Helper script to push updates to GitHub and trigger Railway deployment
 
 echo "🚀 Artist Booking App - Push to GitHub"
 echo "======================================"
@@ -44,8 +44,8 @@ git push
 if [ $? -eq 0 ]; then
     echo ""
     echo "✅ Successfully pushed to GitHub!"
-    echo "🔄 Render will automatically detect changes and redeploy your app"
-    echo "📱 Check deployment status at: https://dashboard.render.com"
+    echo "🔄 Railway will automatically detect changes and redeploy your app"
+    echo "📱 Check deployment status at: https://railway.app"
 else
     echo ""
     echo "❌ Push failed!"
