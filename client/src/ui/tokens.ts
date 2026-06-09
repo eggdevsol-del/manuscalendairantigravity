@@ -129,12 +129,12 @@ export const tokens = {
   // 5c. Auth Flow Components
   authFlow: {
     iconContainer: "mx-auto w-16 h-16 rounded-[4px] bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]",
-    genderButton: "py-2.5 px-3 rounded-[4px] border-2 text-sm font-medium transition-all outline-none border-border bg-secondary/50 text-foreground hover:bg-secondary/50",
-    genderButtonActive: "py-2.5 px-3 rounded-[4px] border-2 text-sm font-medium transition-all outline-none border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.15)]",
-    placesInput: "bg-secondary/50 border-border h-[52px] rounded-[4px] pl-3",
-    toggleContainer: "flex bg-secondary/50 p-1 rounded-[4px] mb-6",
-    toggleButton: "flex-1 py-2 text-sm font-bold rounded-[4px] transition-all text-muted-foreground hover:text-foreground",
-    toggleButtonActive: "flex-1 py-2 text-sm font-bold rounded-[4px] transition-all bg-background text-foreground shadow-sm",
+    genderButton: "h-14 flex items-center justify-center px-3 rounded-[4px] border-2 text-sm font-medium transition-all outline-none border-border bg-secondary/50 text-foreground hover:bg-secondary/50",
+    genderButtonActive: "h-14 flex items-center justify-center px-3 rounded-[4px] border-2 text-sm font-medium transition-all outline-none border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.15)]",
+    placesInput: "bg-secondary/50 border-border h-14 rounded-[4px] pl-3",
+    toggleContainer: "flex bg-secondary/50 p-1 rounded-[4px] mb-6 h-14 items-stretch",
+    toggleButton: "flex-1 flex items-center justify-center text-sm font-bold rounded-[4px] transition-all text-muted-foreground hover:text-foreground",
+    toggleButtonActive: "flex-1 flex items-center justify-center text-sm font-bold rounded-[4px] transition-all bg-background text-foreground shadow-sm",
   },
 
   // 6. Typography
