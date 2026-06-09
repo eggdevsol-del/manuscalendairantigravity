@@ -411,7 +411,7 @@ export default function Signup() {
 
               <Button
                 type="submit"
-                className={cn(tokens.button.hero, "mt-4")}
+                className={cn(tokens.button.auth, "mt-4")}
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -770,7 +770,7 @@ export default function Signup() {
 
             <Button
               type="submit"
-              className={cn(tokens.button.hero, "mt-4")}
+              className={cn(tokens.button.auth, "mt-4")}
               disabled={isLoading}
             >
               {isLoading ? (
@@ -798,10 +798,7 @@ export default function Signup() {
 
             <Button
               type="button"
-              className={cn(
-                tokens.button.secondary,
-                "w-full border border-border"
-              )}
+              className={tokens.button.authSecondary}
               onClick={() => setLocation("/login")}
               disabled={isLoading}
             >

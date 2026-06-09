@@ -32,7 +32,7 @@ export const tokens = {
   // 3. Cards
   // Global App Card (Dashboard, Settings, etc.) - Rectangular SSOT (v1.0.319)
   card: {
-    base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px] opacity-80", // Global 4px radius, no margin
+    base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[6px] opacity-80", // Global 6px radius, no margin
     bg: "bg-transparent hover:bg-secondary", // Transparent base, subtle hover
     bgAccent:
       "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
@@ -61,6 +61,8 @@ export const tokens = {
       "text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors",
     link: "text-primary underline-offset-4 hover:underline px-0 transition-opacity active:opacity-70",
     icon: "rounded-full bg-secondary hover:bg-secondary/80 text-foreground w-10 h-10 flex items-center justify-center transition-all active:scale-90",
+    auth: "w-full h-14 rounded-[4px] font-bold text-base shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-all active:scale-[0.97]",
+    authSecondary: "w-full h-14 rounded-[4px] border border-border font-bold text-base bg-secondary hover:bg-secondary/80 text-secondary-foreground flex items-center justify-center transition-all active:scale-[0.98]",
   },
 
   // 5. FAB Menu (Floating Action Button Menu) — SSOT for all FAB menus
@@ -120,8 +122,8 @@ export const tokens = {
   // 5b. Inputs (Text Fields)
   input: {
     base: "flex w-full min-w-0 border bg-transparent px-4 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground",
-    default: "h-12 rounded-[4px]",
-    hero: "h-14 rounded-[4px] px-5 text-base border-border bg-transparent hover:bg-secondary focus-visible:border-primary/50 text-foreground",
+    default: "h-12 rounded-[6px]",
+    hero: "h-14 rounded-[6px] px-5 text-base border-border bg-transparent hover:bg-secondary focus-visible:border-primary/50 text-foreground",
   },
 
   // 6. Typography
@@ -386,11 +388,11 @@ export const tokens = {
       "text-sm font-bold text-muted-foreground uppercase tracking-widest",
 
     // Card styling
-    card: "p-4 min-h-[120px] cursor-pointer transition-all duration-300 border-0 rounded-[4px]",
+    card: "p-4 min-h-[120px] cursor-pointer transition-all duration-300 border-0 rounded-[6px]",
 
     // Specific Event Card (Agenda) - Rectangular, Tight Stack
     eventCard: {
-      base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[4px] opacity-80", // Removed mb-2
+      base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[6px] opacity-80", // Removed mb-2
       bg: "", // Cleared to allow getEventStyle palette to win and prevent purple tint/hover color change
       interactive: "cursor-pointer active:scale-[0.98]",
       padding: "p-3",
@@ -476,7 +478,7 @@ export const tokens = {
     // Cards
     cardBg: "bg-card hover:bg-secondary/50",
     cardBorder: "border-border",
-    cardRadius: "rounded-[4px]",
+    cardRadius: "rounded-[6px]",
     cardPadding: "p-4",
 
     // Typography

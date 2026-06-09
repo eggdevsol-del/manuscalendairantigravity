@@ -223,7 +223,7 @@ export default function Login() {
 
             <Button
               type="submit"
-              className={cn(tokens.button.hero, "w-full mt-2 h-14 rounded-lg text-base")}
+              className={cn(tokens.button.auth, "mt-2")}
               disabled={isLoading}
             >
               {isLoading ? (
@@ -254,8 +254,8 @@ export default function Login() {
               onClick={() => setLocation("/signup?role=client")}
               disabled={isLoading}
               className={cn(
-                tokens.button.secondary,
-                "w-full border border-border h-14 rounded-lg text-base mb-3"
+                tokens.button.authSecondary,
+                "mb-3"
               )}
             >
               Create Account
@@ -263,10 +263,7 @@ export default function Login() {
 
             <Button
               type="button"
-              className={cn(
-                tokens.button.hero,
-                "w-full h-14 rounded-lg text-base"
-              )}
+              className={tokens.button.auth}
               onClick={() => setLocation("/forgot-password")}
               disabled={isLoading}
             >
