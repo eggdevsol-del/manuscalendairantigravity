@@ -298,7 +298,7 @@ export default function Signup() {
       <PageShell className="justify-center items-center px-4 py-8 overflow-y-auto mobile-scroll">
         <div className="w-full max-w-md shrink-0 mt-auto mb-auto">
           <CardHeader className="space-y-1 text-center pb-6 border-none">
-            <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]">
+            <div className="mx-auto w-16 h-16 rounded-[4px] bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]">
               <UserPlus className="w-8 h-8 text-primary" />
             </div>
             <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
@@ -362,7 +362,7 @@ export default function Signup() {
                       type="button"
                       onClick={() => setGender(opt.value)}
                       className={cn(
-                        "py-2.5 px-3 rounded-xl border-2 text-sm font-medium transition-all outline-none",
+                        "py-2.5 px-3 rounded-[4px] border-2 text-sm font-medium transition-all outline-none",
                         gender === opt.value
                           ? "border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.15)]"
                           : "border-border bg-secondary/50 text-foreground hover:bg-secondary/50"
@@ -388,7 +388,7 @@ export default function Signup() {
                       setCity(cityComp?.long_name || place.name || "");
                       if (countryComp) setCountry(countryComp.long_name);
                     }}
-                    className="bg-secondary/50 border-border h-[52px] rounded-xl pl-3"
+                    className="bg-secondary/50 border-border h-[52px] rounded-[4px] pl-3"
                   />
                 </div>
                 <div className="space-y-2">
@@ -444,7 +444,7 @@ export default function Signup() {
     <PageShell className="items-center px-4 py-8 !overflow-y-auto mobile-scroll">
       <div className="w-full max-w-md shrink-0">
         <CardHeader className="space-y-1 text-center pb-6 border-none">
-          <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]">
+          <div className="mx-auto w-16 h-16 rounded-[4px] bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]">
             <UserPlus className="w-8 h-8 text-primary" />
           </div>
           <CardTitle className="text-3xl font-bold tracking-tight text-foreground">
@@ -486,11 +486,11 @@ export default function Signup() {
           )}
 
           {!isClientRole && (
-            <div className="flex bg-secondary/50 p-1 rounded-xl mb-6">
+            <div className="flex bg-secondary/50 p-1 rounded-[4px] mb-6">
               <button
                 type="button"
                 className={cn(
-                  "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
+                  "flex-1 py-2 text-sm font-bold rounded-[4px] transition-all",
                   accountType === "artist" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 )}
                 onClick={() => setAccountType("artist")}
@@ -500,7 +500,7 @@ export default function Signup() {
               <button
                 type="button"
                 className={cn(
-                  "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
+                  "flex-1 py-2 text-sm font-bold rounded-[4px] transition-all",
                   accountType === "supplier" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 )}
                 onClick={() => setAccountType("supplier")}
@@ -654,7 +654,7 @@ export default function Signup() {
                         type="button"
                         onClick={() => setGender(opt.value)}
                         className={cn(
-                          "py-2.5 px-3 rounded-xl border-2 text-sm font-medium transition-all outline-none",
+                          "py-2.5 px-3 rounded-[4px] border-2 text-sm font-medium transition-all outline-none",
                           gender === opt.value
                             ? "border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.15)]"
                             : "border-border bg-secondary/50 text-foreground hover:bg-secondary/50"
@@ -682,7 +682,7 @@ export default function Signup() {
                     setCity(cityComp?.long_name || place.name || "");
                     if (countryComp) setCountry(countryComp.long_name);
                   }}
-                  className="bg-secondary/50 border-border h-[52px] rounded-xl pl-3"
+                  className="bg-secondary/50 border-border h-[52px] rounded-[4px] pl-3"
                 />
               </div>
               <div className="space-y-2">
