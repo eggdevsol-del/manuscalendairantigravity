@@ -33,11 +33,16 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   sessionStorage.removeItem("user");
 
   // Prevent redirect loops on public/auth pages
-  const publicPaths = ["/login", "/signup", "/set-password", "/complete-profile"];
-  const isPublic = publicPaths.includes(window.location.pathname) || 
-                   window.location.pathname.startsWith("/start/") ||
-                   window.location.pathname.startsWith("/deposit/") ||
-                   window.location.pathname.startsWith("/studio/");
+  const publicPaths = ["/", "/login", "/signup", "/set-password", "/complete-profile"];
+  // Normalize path by stripping trailing slash unless it's strictly "/"
+  const normalizedPath = window.location.pathname.endsWith("/") && window.location.pathname.length > 1 
+      ? window.location.pathname.slice(0, -1) 
+      : window.location.pathname;
+
+  const isPublic = publicPaths.includes(normalizedPath) || 
+                   normalizedPath.startsWith("/start/") ||
+                   normalizedPath.startsWith("/deposit/") ||
+                   normalizedPath.startsWith("/studio/");
 
   if (!isPublic) {
     window.location.href = "/login";
