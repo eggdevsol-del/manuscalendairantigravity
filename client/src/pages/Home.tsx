@@ -12,7 +12,7 @@ import { Calendar, MessageCircle, Sparkles, Users } from "lucide-react";
 import { LoadingState } from "@/components/ui/ssot";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { APP_VERSION } from "@/version";
+import { APP_VERSION } from "@/lib/version";
 
 export default function Home() {
   const { user, loading, isAuthenticated } = useAuth();
