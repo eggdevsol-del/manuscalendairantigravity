@@ -26,12 +26,22 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
 
   if (!isUnauthorized) return;
 
-  // Clear auth token and redirect to login
+  // Clear auth token and user data
   localStorage.removeItem("authToken");
   localStorage.removeItem("user");
   sessionStorage.removeItem("authToken");
   sessionStorage.removeItem("user");
-  window.location.href = "/login";
+
+  // Prevent redirect loops on public/auth pages
+  const publicPaths = ["/login", "/signup", "/set-password", "/complete-profile"];
+  const isPublic = publicPaths.includes(window.location.pathname) || 
+                   window.location.pathname.startsWith("/start/") ||
+                   window.location.pathname.startsWith("/deposit/") ||
+                   window.location.pathname.startsWith("/studio/");
+
+  if (!isPublic) {
+    window.location.href = "/login";
+  }
 };
 
 queryClient.getQueryCache().subscribe(event => {
