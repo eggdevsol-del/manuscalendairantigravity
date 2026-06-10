@@ -135,7 +135,7 @@ export const GooglePlacesInput = React.forwardRef<HTMLInputElement, GooglePlaces
                     placeholder={placeholder}
                     autoComplete="off"
                     className={cn(
-                        "flex h-9 w-full rounded-[4px] border border-border bg-secondary/50 px-3 py-1 text-sm shadow-sm transition-colors",
+                        "flex h-14 w-full rounded-md border border-border bg-secondary/50 px-3 py-1 text-sm shadow-sm transition-colors",
                         "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50",
                         className
                     )}
@@ -148,7 +148,7 @@ export const GooglePlacesInput = React.forwardRef<HTMLInputElement, GooglePlaces
                 )}
 
                 {showDropdown && predictions.length > 0 && (
-                    <div className="absolute z-50 top-full mt-1 w-full border border-border rounded-[4px] shadow-xl max-h-[200px] overflow-y-auto" style={{ backgroundColor: '#0e1732' }}>
+                    <div className="absolute z-50 top-full mt-1 w-full border border-border rounded-md shadow-xl max-h-[200px] overflow-y-auto" style={{ backgroundColor: '#0e1732' }}>
                         {predictions.map((p, i) => (
                             <button
                                 key={p.placeId}

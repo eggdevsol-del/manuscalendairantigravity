@@ -5,10 +5,10 @@
 @custom-variant noir (&:is(.noir *));
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -45,7 +45,7 @@
 
 :root {
   /* Light Theme Palette (Soft Slate) */
-  --radius: 2rem;
+  --radius: 6px;
 
   /* Soft Off-White Base */
   --background: oklch(0.97 0.01 260);

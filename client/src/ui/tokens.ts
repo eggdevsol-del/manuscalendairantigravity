@@ -49,18 +49,18 @@ export const tokens = {
   // 4. Buttons
   button: {
     primary:
-      "shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-12 px-6 rounded-xl text-base font-semibold transition-all active:scale-[0.98]",
-    hero: "w-full h-14 rounded-2xl font-bold text-base shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-all active:scale-[0.97]",
+      "shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-14 px-6 rounded-[6px] text-base font-semibold transition-all active:scale-[0.98]",
+    hero: "w-full h-14 rounded-[6px] font-bold text-base shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-all active:scale-[0.97]",
     secondary:
-      "bg-secondary hover:bg-secondary/80 text-secondary-foreground h-12 px-6 rounded-xl text-base font-semibold transition-all active:scale-[0.98]",
+      "bg-secondary hover:bg-secondary/80 text-secondary-foreground h-14 px-6 rounded-[6px] text-base font-semibold transition-all active:scale-[0.98]",
     destructive:
-      "bg-destructive hover:bg-destructive/90 text-destructive-foreground h-12 px-6 rounded-xl text-base font-semibold transition-all active:scale-[0.98]",
+      "bg-destructive hover:bg-destructive/90 text-destructive-foreground h-14 px-6 rounded-[6px] text-base font-semibold transition-all active:scale-[0.98]",
     outline:
-      "border border-border bg-transparent hover:bg-secondary text-foreground h-10 px-4 rounded-xl text-sm font-medium transition-all active:scale-[0.98]",
+      "border border-border bg-transparent hover:bg-secondary text-foreground h-14 px-4 rounded-[6px] text-sm font-medium transition-all active:scale-[0.98]",
     ghost:
-      "text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors",
+      "text-muted-foreground hover:text-foreground hover:bg-secondary rounded-[6px] transition-colors",
     link: "text-primary underline-offset-4 hover:underline px-0 transition-opacity active:opacity-70",
-    icon: "rounded-full bg-secondary hover:bg-secondary/80 text-foreground w-10 h-10 flex items-center justify-center transition-all active:scale-90",
+    icon: "rounded-[6px] bg-secondary hover:bg-secondary/80 text-foreground w-14 h-14 flex items-center justify-center transition-all active:scale-90",
     auth: "w-full h-14 rounded-[4px] font-bold text-base shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-all active:scale-[0.97]",
     authSecondary: "w-full h-14 rounded-[4px] border border-border font-bold text-base bg-secondary hover:bg-secondary/80 text-secondary-foreground flex items-center justify-center transition-all active:scale-[0.98]",
   },
@@ -122,7 +122,7 @@ export const tokens = {
   // 5b. Inputs (Text Fields)
   input: {
     base: "flex w-full min-w-0 border bg-transparent px-4 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground",
-    default: "h-12 rounded-[6px]",
+    default: "h-14 rounded-[6px]",
     hero: "h-14 rounded-[6px] px-5 text-base border-border bg-transparent hover:bg-secondary focus-visible:border-primary/50 text-foreground",
   },
 
@@ -195,7 +195,7 @@ export const tokens = {
 
   // 11. Selection Cards (Pills)
   selectionCard: {
-    base: "w-full p-4 rounded-lg border transition-all text-left flex items-start gap-4 cursor-pointer group select-none",
+    base: "w-full p-4 rounded-[6px] border transition-all text-left flex items-start gap-4 cursor-pointer group select-none",
     selected: "bg-primary/10 border-primary/50",
     idle: "bg-background/80 dark:bg-secondary/50 border-transparent hover:bg-background/80 dark:hover:bg-secondary/50",
     iconContainer: {
@@ -458,7 +458,7 @@ export const tokens = {
 
     // Form Inputs
     inputHeight: "h-14",
-    inputRadius: "rounded-xl",
+    inputRadius: "rounded-[6px]",
     inputBg: "bg-background",
     inputBorder: "border-border",
     inputBorderHover: "hover:bg-secondary",
@@ -470,7 +470,7 @@ export const tokens = {
     createButton:
       "bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-[0_0_20px_-5px_rgba(var(--primary-rgb),0.5)]",
     buttonHeight: "h-14",
-    buttonRadius: "rounded-full",
+    buttonRadius: "rounded-[6px]",
   },
 
   // Proposal Modal (Chat feature)
@@ -509,8 +509,8 @@ export const tokens = {
       "text-sm hover:no-underline hover:bg-secondary px-2 rounded-lg py-3 text-foreground font-medium",
 
     // Buttons
-    buttonHeight: "h-12",
-    buttonRadius: "rounded-xl",
+    buttonHeight: "h-14",
+    buttonRadius: "rounded-[6px]",
     voucherButton:
       "border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold",
     declineButton:
@@ -527,7 +527,7 @@ export const tokens = {
     errorBorder: "border-red-500/20",
     statusPadding: "p-3",
     statusPaddingLarge: "p-4",
-    statusRadius: "rounded-xl",
+    statusRadius: "rounded-[6px]",
   },
 
   // Content Container (replaces GlassSheet)
