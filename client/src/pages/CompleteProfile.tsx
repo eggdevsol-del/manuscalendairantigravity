@@ -15,6 +15,7 @@ import { LoadingState } from "@/components/ui/ssot";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { tokens } from "@/ui/tokens";
 
 export default function CompleteProfile() {
   const { user, loading } = useAuth();
@@ -96,6 +97,7 @@ export default function CompleteProfile() {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Enter your full name"
+                  variant="hero"
                   required
                 />
               </div>
@@ -107,6 +109,7 @@ export default function CompleteProfile() {
                   type="email"
                   value={user?.email || ""}
                   disabled
+                  variant="hero"
                   className="bg-muted"
                 />
                 <p className="text-xs text-muted-foreground">
@@ -124,6 +127,7 @@ export default function CompleteProfile() {
                     setFormData({ ...formData, phone: e.target.value })
                   }
                   placeholder="+1 (555) 123-4567"
+                  variant="hero"
                   required
                 />
               </div>
@@ -137,6 +141,7 @@ export default function CompleteProfile() {
                   onChange={e =>
                     setFormData({ ...formData, birthday: e.target.value })
                   }
+                  variant="hero"
                 />
                 <p className="text-xs text-muted-foreground">
                   We'll send you a special birthday message!
@@ -145,8 +150,7 @@ export default function CompleteProfile() {
 
               <Button
                 type="submit"
-                className="w-full"
-                size="lg"
+                className={tokens.button.auth}
                 disabled={updateProfileMutation.isPending}
               >
                 {updateProfileMutation.isPending

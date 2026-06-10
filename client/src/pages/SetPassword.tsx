@@ -13,6 +13,7 @@ import {
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, KeyRound, CheckCircle2 } from "lucide-react";
+import { tokens } from "@/ui/tokens";
 
 export default function SetPassword() {
   const [, setLocation] = useLocation();
@@ -101,7 +102,7 @@ export default function SetPassword() {
         </CardHeader>
         <CardContent>
           {/* Info banner */}
-          <div className="mb-6 p-4 rounded-lg bg-primary/5 border border-primary/20">
+          <div className="mb-6 p-4 rounded-[4px] bg-primary/5 border border-primary/20">
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
               <div className="text-sm">
@@ -117,12 +118,14 @@ export default function SetPassword() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email display (read-only) */}
             <div className="space-y-2">
               <Label>Email</Label>
-              <div className="p-3 rounded-lg bg-muted/50 border text-sm text-muted-foreground">
-                {email}
-              </div>
+              <Input
+                value={email}
+                variant="hero"
+                disabled
+                className="bg-muted/50 text-muted-foreground"
+              />
             </div>
 
             <div className="space-y-2">
@@ -137,6 +140,7 @@ export default function SetPassword() {
                   disabled={isLoading}
                   required
                   minLength={8}
+                  variant="hero"
                   autoFocus
                 />
                 <button
@@ -164,6 +168,7 @@ export default function SetPassword() {
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
                   disabled={isLoading}
+                  variant="hero"
                   required
                 />
                 <button
@@ -183,7 +188,7 @@ export default function SetPassword() {
 
             <Button
               type="submit"
-              className="w-full h-12 text-lg font-semibold"
+              className={tokens.button.auth}
               disabled={isLoading}
             >
               {isLoading ? (
