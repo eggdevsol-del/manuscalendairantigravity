@@ -95,7 +95,7 @@ export function MerchantDashboard() {
 
       <div className="flex-1 overflow-y-auto mobile-scroll">
         <div className="flex flex-col">
-          <div className="px-6 pb-2 shrink-0">
+          <div className="px-6 pb-2 shrink-0 relative z-50">
             <SegmentedHeader
               options={TITLES}
               activeIndex={activeIndex}
@@ -120,15 +120,6 @@ export function MerchantDashboard() {
                   x: { type: "spring", stiffness: 300, damping: 30 },
                   opacity: { duration: 0.2 },
                 }}
-                drag="x"
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={0.2}
-                onDragEnd={(e, { offset, velocity }) => {
-                  const swipe = swipePower(offset.x, velocity.x);
-                  if (swipe < -swipeConfidenceThreshold) paginate(1);
-                  else if (swipe > swipeConfidenceThreshold) paginate(-1);
-                }}
-                dragDirectionLock
                 className="absolute top-0 left-0 w-full px-4 pt-4 touch-pan-y"
               >
                 <div className="space-y-1 pb-32 max-w-lg mx-auto">
