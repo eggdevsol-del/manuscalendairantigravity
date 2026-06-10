@@ -83,18 +83,18 @@ export const tokens = {
 
     // Menu item icon button (default)
     itemButton:
-      "h-10 w-10 rounded-full shadow-lg border border-border bg-card hover:bg-secondary flex items-center justify-center transition-all active:scale-95 text-foreground",
+      "h-10 w-10 rounded-[6px] shadow-lg border border-border bg-card hover:bg-secondary flex items-center justify-center transition-all active:scale-95 text-foreground",
 
     // Menu item icon button (highlighted / primary)
     itemButtonHighlight:
-      "h-10 w-10 rounded-full shadow-lg border border-border bg-[#E09F3E]/80 text-white hover:bg-[#C98B32]/80 flex items-center justify-center transition-all active:scale-95",
+      "h-10 w-10 rounded-[6px] shadow-lg border border-border bg-[#E09F3E]/80 text-white hover:bg-[#C98B32]/80 flex items-center justify-center transition-all active:scale-95",
 
     // Menu item button icon size
     itemIconSize: "h-4 w-4",
 
     // Main toggle FAB button
     toggle:
-      "h-14 w-14 rounded-full shadow-2xl flex items-center justify-center transition-colors border border-border",
+      "h-14 w-14 rounded-[6px] shadow-2xl flex items-center justify-center transition-colors border border-border",
     toggleOpen: "bg-foreground text-background dark:bg-foreground dark:text-background",
     toggleClosed: "bg-[#E09F3E]/90 text-white",
     toggleIconSize: "h-6 w-6",
