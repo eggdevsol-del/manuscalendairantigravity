@@ -387,7 +387,7 @@ export function WorkHoursAndServicesSettings({
 
                     <div className="p-4 space-y-1">
                         {showAddForm && (
-                            <div className="p-4 border border-dashed border-border rounded-[4px] space-y-3 bg-secondary/50 mb-4">
+                            <div className="p-4 border border-dashed border-border rounded-md space-y-3 bg-secondary/50 mb-4">
                                 <h3 className="font-semibold text-sm">
                                     New Service Details
                                 </h3>
@@ -497,7 +497,7 @@ export function WorkHoursAndServicesSettings({
                                     </div>
 
                                     {isProjectMode && (
-                                        <div className="space-y-2 bg-primary/10 border border-primary/20 p-3 rounded-[4px]">
+                                        <div className="space-y-2 bg-primary/10 border border-primary/20 p-3 rounded-md">
                                             <div className="flex items-center gap-2 mb-1">
                                                 <Layers className="w-4 h-4 text-primary" />
                                                 <Label className="text-primary font-semibold">Number of Appointments</Label>
@@ -538,7 +538,7 @@ export function WorkHoursAndServicesSettings({
                         {services.map((service, index) => (
                             <div
                                 key={index}
-                                className="p-4 border border-border rounded-[4px] bg-secondary/50"
+                                className="p-4 border border-border rounded-md bg-secondary/50"
                             >
                                 {editingIndex === index && editingService ? (
                                     // Edit Mode
@@ -643,7 +643,7 @@ export function WorkHoursAndServicesSettings({
                                             <p className="text-[10px] text-muted-foreground leading-snug">Allow clients to select this service directly from your public booking link.</p>
                                         </div>
                                         {(editingService.sittings || 1) > 1 && (
-                                            <div className="space-y-2 bg-primary/10 border border-primary/20 p-3 rounded-[4px] mt-4">
+                                            <div className="space-y-2 bg-primary/10 border border-primary/20 p-3 rounded-md mt-4">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <Layers className="w-4 h-4 text-primary" />
                                                     <Label className="text-primary font-semibold">Number of Appointments</Label>
@@ -739,7 +739,7 @@ export function WorkHoursAndServicesSettings({
                     </div>
 
                     <Button
-                        className="w-full shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-base font-semibold"
+                        className="w-full shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-14 text-base font-semibold"
                         onClick={handleSave}
                         disabled={upsertMutation.isPending}
                     >

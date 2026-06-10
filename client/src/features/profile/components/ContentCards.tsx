@@ -207,7 +207,7 @@ export function UpcomingCard({ upcoming }: { upcoming: any[] }) {
             return (
               <div
                 key={item.id}
-                className="relative p-4 rounded-2xl overflow-hidden mb-4"
+                className="relative p-4 rounded-md overflow-hidden mb-4"
               >
                 {daysAway <= 5 && (
                   <div className="absolute top-0 right-0 px-3 py-1 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider rounded-bl-xl">
@@ -359,7 +359,7 @@ export function FormsCard({ forms }: { forms: any[] }) {
           {forms?.map(form => (
             <div
               key={form.id}
-              className="flex items-center gap-4 p-4 rounded-xl"
+              className="flex items-center gap-4 p-4 rounded-md"
             >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${

@@ -67,7 +67,7 @@ export function MoodboardCard({
         <div className="grid grid-cols-2 gap-2">
           {/* Add Image Placeholder */}
           <div
-            className="aspect-square rounded-xl bg-secondary/50 border border-border flex flex-col items-center justify-center text-muted-foreground cursor-pointer hover:bg-secondary/50 transition-colors"
+            className="aspect-square rounded-md bg-secondary/50 border border-border flex flex-col items-center justify-center text-muted-foreground cursor-pointer hover:bg-secondary/50 transition-colors"
             onClick={() => {
               // Trigger image upload flow - simplistic prompt for now or file input
               const url = prompt("Enter image URL (mock):"); // Replace with file picker later
@@ -81,7 +81,7 @@ export function MoodboardCard({
           {selectedBoard.previewImages.map((img, idx) => (
             <div
               key={idx}
-              className="aspect-square rounded-xl overflow-hidden bg-muted relative group"
+              className="aspect-square rounded-md overflow-hidden bg-muted relative group"
             >
               <img src={img} className="w-full h-full object-cover" />
               {isEditMode && (
@@ -121,7 +121,7 @@ export function MoodboardCard({
         {isEditMode && (
           <Button
             variant="outline"
-            className="w-full h-12 border-dashed border-border bg-secondary/50 text-muted-foreground"
+            className="w-full h-14 border-dashed border-border bg-secondary/50 text-muted-foreground"
             onClick={() => setIsCreateOpen(true)}
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -141,7 +141,7 @@ export function MoodboardCard({
             <motion.div
               key={board.id}
               layoutId={`board-${board.id}`}
-              className="group relative overflow-hidden rounded-2xl bg-muted/30 border border-border p-4 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-all"
+              className="group relative overflow-hidden rounded-md bg-muted/30 border border-border p-4 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-all"
               onClick={() => setSelectedBoardId(board.id)}
             >
               <div className="flex items-center gap-4">

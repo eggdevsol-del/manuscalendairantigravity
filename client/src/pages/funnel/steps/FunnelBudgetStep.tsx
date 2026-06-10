@@ -129,7 +129,7 @@ export default function FunnelBudgetStep({
               transition={{ delay: index * 0.02 }}
               onClick={() => setPlacement(p.id)}
               className={`
-                relative p-2 rounded-[4px] border-2 text-center transition-all text-sm
+                relative p-2 rounded-md border-2 text-center transition-all text-sm
                 ${placement === p.id
                   ? "border-primary bg-primary/10"
                   : "border-border bg-card hover:border-primary/50"
@@ -165,7 +165,7 @@ export default function FunnelBudgetStep({
               transition={{ delay: 0.2 + index * 0.05 }}
               onClick={() => setEstimatedSize(size.id)}
               className={`
-                relative p-3 rounded-[4px] border-2 text-left transition-all
+                relative p-3 rounded-md border-2 text-left transition-all
                 ${estimatedSize === size.id
                   ? "border-primary bg-primary/10"
                   : "border-border bg-card hover:border-primary/50"
@@ -207,7 +207,7 @@ export default function FunnelBudgetStep({
               transition={{ delay: 0.3 + index * 0.05 }}
               onClick={() => setSelectedBudget(range)}
               className={`
-                relative w-full p-3 rounded-[4px] border-2 text-left transition-all
+                relative w-full p-3 rounded-md border-2 text-left transition-all
                 ${selectedBudget?.label === range.label
                   ? "border-primary bg-primary/10"
                   : "border-border bg-card hover:border-primary/50"

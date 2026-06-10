@@ -184,7 +184,7 @@ export function ProjectProposalMessage({
         <div
           className={cn(
             card.base,
-            "grid grid-cols-3 gap-px rounded-[4px] overflow-hidden bg-secondary/50"
+            "grid grid-cols-3 gap-px rounded-md overflow-hidden bg-secondary/50"
           )}
         >
           {[

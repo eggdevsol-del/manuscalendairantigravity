@@ -132,7 +132,7 @@ export default function FunnelAvailabilityStep({
               transition={{ delay: index * 0.05 }}
               onClick={() => setPreferredTimeframe(option.id)}
               className={`
-                relative w-full p-3 rounded-[4px] border-2 text-left transition-all flex items-center gap-3
+                relative w-full p-3 rounded-md border-2 text-left transition-all flex items-center gap-3
                 ${preferredTimeframe === option.id
                   ? "border-primary bg-primary/10"
                   : "border-border bg-card hover:border-primary/50"
@@ -206,7 +206,7 @@ export default function FunnelAvailabilityStep({
               transition={{ delay: 0.3 + index * 0.05 }}
               onClick={() => setUrgency(option.id as typeof urgency)}
               className={`
-                relative w-full p-3 rounded-[4px] border-2 text-left transition-all
+                relative w-full p-3 rounded-md border-2 text-left transition-all
                 ${urgency === option.id
                   ? "border-primary bg-primary/10"
                   : "border-border bg-card hover:border-primary/50"

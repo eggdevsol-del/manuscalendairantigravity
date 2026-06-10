@@ -160,7 +160,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
 
       {/* Desktop Horizontal Layout Optimized Tabs */}
       <div className="shrink-0 z-10 px-4 pt-4 pb-2 bg-transparent border-b border-border/10">
-        <div className="flex justify-between items-center w-full max-w-4xl mx-auto bg-secondary/50 rounded-xl p-1 relative border border-border overflow-x-auto no-scrollbar">
+        <div className="flex justify-between items-center w-full max-w-4xl mx-auto bg-secondary/50 rounded-md p-1 relative border border-border overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab("team")}
             className={cn(
@@ -175,7 +175,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
             {activeTab === "team" && (
               <motion.div
                 layoutId="studio_tab_indicator"
-                className="absolute inset-0 bg-primary/30 border border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] rounded-lg -z-10"
+                className="absolute inset-0 bg-primary/30 border border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] rounded-md -z-10"
                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
               />
             )}
@@ -195,7 +195,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
             {activeTab === "invite" && (
               <motion.div
                 layoutId="studio_tab_indicator"
-                className="absolute inset-0 bg-primary/30 border border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] rounded-lg -z-10"
+                className="absolute inset-0 bg-primary/30 border border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] rounded-md -z-10"
                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
               />
             )}
@@ -215,7 +215,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
             {activeTab === "analytics" && (
               <motion.div
                 layoutId="studio_tab_indicator"
-                className="absolute inset-0 bg-primary/30 border border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] rounded-lg -z-10"
+                className="absolute inset-0 bg-primary/30 border border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] rounded-md -z-10"
                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
               />
             )}
@@ -235,7 +235,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
             {activeTab === "settings" && (
               <motion.div
                 layoutId="studio_tab_indicator"
-                className="absolute inset-0 bg-primary/30 border border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] rounded-lg -z-10"
+                className="absolute inset-0 bg-primary/30 border border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] rounded-md -z-10"
                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
               />
             )}
@@ -257,7 +257,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
               >
                 {/* Intro for Studio Accounts */}
                 {teamMembers && teamMembers.length <= 1 && (
-                  <div className="p-6 bg-primary/10 border border-primary/30 rounded-[4px]">
+                  <div className="p-6 bg-primary/10 border border-primary/30 rounded-md">
                     <h3 className="text-xl font-bold mb-2">
                       Welcome to your Studio!
                     </h3>
@@ -284,7 +284,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                       {activeMembers.map((member: any) => (
                         <div
                           key={member.id}
-                          className="p-4 rounded-xl bg-secondary/50 border border-border flex items-center justify-between hover:bg-secondary/50 transition-colors"
+                          className="p-4 rounded-md bg-secondary/50 border border-border flex items-center justify-between hover:bg-secondary/50 transition-colors"
                         >
                           <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-full bg-secondary/50 overflow-hidden flex items-center justify-center border border-border">
@@ -325,7 +325,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                             currentStudio.role === "owner" && (
                               <button
                                 onClick={() => handleRemoveMember(member.user.id)}
-                                className="p-2.5 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                                className="p-2.5 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                               >
                                 <Trash2 className="w-5 h-5" />
                               </button>
@@ -351,7 +351,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                         {pendingMembers.map((member: any) => (
                           <div
                             key={member.id}
-                            className="p-4 rounded-xl bg-secondary/50 border border-border border-dashed flex items-center justify-between opacity-70"
+                            className="p-4 rounded-md bg-secondary/50 border border-border border-dashed flex items-center justify-between opacity-70"
                           >
                             <div className="flex items-center gap-4">
                               <div className="w-12 h-12 rounded-full bg-secondary/50 border-2 border-dashed border-border flex items-center justify-center">
@@ -372,7 +372,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                             {currentStudio.role === "owner" && (
                               <button
                                 onClick={() => handleRemoveMember(member.user.id)}
-                                className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                                className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                                 title="Cancel Invite"
                               >
                                 <Trash2 className="w-5 h-5" />
@@ -396,7 +396,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                 transition={{ duration: 0.3 }}
                 className="max-w-2xl mx-auto space-y-6"
               >
-                <div className="p-8 bg-secondary/50 border border-border rounded-[4px]">
+                <div className="p-8 bg-secondary/50 border border-border rounded-md">
                   <div className="mb-8 text-center">
                     <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
                       <UserPlus className="w-8 h-8 text-primary" />
@@ -427,7 +427,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                           Role
                         </label>
                         <select
-                          className="w-full bg-background/80 border border-border rounded-xl px-4 py-3 text-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full bg-background/80 border border-border rounded-md px-4 py-3 text-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                           value={inviteRole}
                           onChange={e => setInviteRole(e.target.value as any)}
                         >
@@ -465,7 +465,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
-                <div className="p-12 bg-secondary/50 border border-border rounded-[4px] text-center flex flex-col items-center justify-center min-h-[400px]">
+                <div className="p-12 bg-secondary/50 border border-border rounded-md text-center flex flex-col items-center justify-center min-h-[400px]">
                   <div className="p-6 rounded-full bg-secondary/50 border border-border mb-6">
                     <BarChart3 className="w-16 h-16 text-muted-foreground opacity-70" />
                   </div>
@@ -492,7 +492,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
-                <div className="p-8 bg-secondary/50 border border-border rounded-[4px] flex flex-col items-center justify-center min-h-[400px] text-center">
+                <div className="p-8 bg-secondary/50 border border-border rounded-md flex flex-col items-center justify-center min-h-[400px] text-center">
                   <div className="p-6 rounded-full bg-secondary/50 border border-border mb-6">
                     <SettingsIcon className="w-16 h-16 text-muted-foreground opacity-70" />
                   </div>

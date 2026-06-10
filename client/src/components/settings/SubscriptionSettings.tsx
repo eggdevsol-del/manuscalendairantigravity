@@ -197,7 +197,7 @@ export function SubscriptionSettings({ onBack }: SubscriptionSettingsProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4 }}
                   className={cn(
-                    "relative rounded-[4px] p-6 border overflow-hidden",
+                    "relative rounded-md p-6 border overflow-hidden",
                     plan.isPopular
                       ? "bg-primary/5 border-primary/50"
                       : "bg-secondary/50 border-border"
@@ -257,7 +257,7 @@ export function SubscriptionSettings({ onBack }: SubscriptionSettingsProps) {
                     onClick={() => handleAction(plan.id as "solo" | "studio")}
                     disabled={isPending || isLoadingStudio}
                     className={cn(
-                      "w-full h-12 rounded-xl font-bold text-sm tracking-wide gap-2",
+                      "w-full h-14 rounded-md font-bold text-sm tracking-wide gap-2",
                       isCurrentPlan
                         ? "bg-secondary/50 text-foreground hover:bg-secondary/50"
                         : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25"

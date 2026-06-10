@@ -218,7 +218,7 @@ export function EditBookingModal({
             <div className="space-y-3">
                 <label className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Name</span>
-                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-border")}>
+                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-md border-border")}>
                         <User className="w-3.5 h-3.5 text-muted-foreground" />
                         <input
                             type="text"
@@ -232,7 +232,7 @@ export function EditBookingModal({
 
                 <label className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Phone Number</span>
-                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-border")}>
+                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-md border-border")}>
                         <Phone className="w-3.5 h-3.5 text-muted-foreground" />
                         <input
                             type="tel"
@@ -244,7 +244,7 @@ export function EditBookingModal({
                     </div>
                 </label>
 
-                <div className="flex items-start gap-2 px-3 py-2 bg-zinc-500/10 rounded-[4px]">
+                <div className="flex items-start gap-2 px-3 py-2 bg-zinc-500/10 rounded-md">
                     <AlertCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
                     <p className="text-[9px] text-muted-foreground leading-tight">
                         Email addresses are strictly read-only to prevent broken logins and authentication mismatches.
@@ -255,7 +255,7 @@ export function EditBookingModal({
             <button
                 onClick={handleSaveContact}
                 disabled={isSubmitting || !name}
-                className="w-full py-3 rounded-[4px] bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-wider active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center pt-4" // pt-4 to push it down visually
+                className="w-full py-3 rounded-md bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-wider active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center pt-4" // pt-4 to push it down visually
             >
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Details"}
             </button>
@@ -267,7 +267,7 @@ export function EditBookingModal({
             <div className="space-y-3">
                 <label className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Service</span>
-                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-border")}>
+                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-md border-border")}>
                         <select
                             value={serviceName}
                             onChange={(e) => {
@@ -307,7 +307,7 @@ export function EditBookingModal({
                                         type="text"
                                         value={newServiceName}
                                         onChange={(e) => setNewServiceName(e.target.value)}
-                                        className={cn(card.base, card.bg, "px-3 py-2.5 rounded-[4px] border-border text-[11px] text-foreground font-medium")}
+                                        className={cn(card.base, card.bg, "px-3 py-2.5 rounded-md border-border text-[11px] text-foreground font-medium")}
                                         placeholder="e.g. Touch Up"
                                     />
                                 </label>
@@ -317,7 +317,7 @@ export function EditBookingModal({
                                         type="number"
                                         value={newServiceDuration}
                                         onChange={(e) => setNewServiceDuration(e.target.value)}
-                                        className={cn(card.base, card.bg, "px-3 py-2.5 rounded-[4px] border-border text-[11px] text-foreground font-medium")}
+                                        className={cn(card.base, card.bg, "px-3 py-2.5 rounded-md border-border text-[11px] text-foreground font-medium")}
                                         placeholder="60"
                                     />
                                 </label>
@@ -328,7 +328,7 @@ export function EditBookingModal({
 
                 <label className="flex flex-col gap-1.5 pt-1">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Price per Session</span>
-                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-border focus-within:border-primary/50 transition-colors")}>
+                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-md border-border focus-within:border-primary/50 transition-colors")}>
                         <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
                         <input
                             type="number"
@@ -346,7 +346,7 @@ export function EditBookingModal({
                     onClick={() => setApplyToAll(!applyToAll)}
                     className={cn(
                         card.base,
-                        "flex items-center gap-3 p-3 rounded-[4px] cursor-pointer active:scale-[0.98] transition-all border border-transparent mt-2",
+                        "flex items-center gap-3 p-3 rounded-md cursor-pointer active:scale-[0.98] transition-all border border-transparent mt-2",
                         applyToAll ? "bg-primary/10 border-primary/20" : card.bg
                     )}>
                     <div className={cn(
@@ -367,7 +367,7 @@ export function EditBookingModal({
             <button
                 onClick={handleSaveCost}
                 disabled={isSubmitting || price === "" || (serviceName === "__NEW__" && !newServiceName)}
-                className="w-full py-3 rounded-[4px] bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-wider active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center"
+                className="w-full py-3 rounded-md bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-wider active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center"
             >
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Updates"}
             </button>
@@ -379,7 +379,7 @@ export function EditBookingModal({
             <div className="space-y-3">
                 <label className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">New Date</span>
-                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-border")}>
+                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-md border-border")}>
                         <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
                         <input
                             type="date"
@@ -393,7 +393,7 @@ export function EditBookingModal({
 
                 <label className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Start Time</span>
-                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-[4px] border-border")}>
+                    <div className={cn(card.base, card.bg, "flex items-center gap-2 px-3 py-2.5 rounded-md border-border")}>
                         <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                         <input
                             type="time"
@@ -409,7 +409,7 @@ export function EditBookingModal({
             <button
                 onClick={handleSaveReschedule}
                 disabled={isSubmitting || !dateStr || !timeStr}
-                className="w-full py-3 rounded-[4px] bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-wider active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center"
+                className="w-full py-3 rounded-md bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-wider active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center"
             >
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm Reschedule"}
             </button>
@@ -453,7 +453,7 @@ export function EditBookingModal({
                         </div>
 
                         {/* Tab Navigation */}
-                        <div className="flex gap-2 mb-4 p-1 bg-secondary/50 rounded-[4px]">
+                        <div className="flex gap-2 mb-4 p-1 bg-secondary/50 rounded-md">
                             {(["contact", "cost", "reschedule"] as TabKey[]).map((tab) => (
                                 <button
                                     key={tab}

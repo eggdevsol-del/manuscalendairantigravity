@@ -11,7 +11,7 @@ export function ArtistsTier() {
 
       <div className="p-6 space-y-6">
         {/* Sample Artist Card */}
-        <div className="bg-secondary/20 border border-border/50 rounded-2xl p-5">
+        <div className="bg-secondary/20 border border-border/50 rounded-md p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full bg-emerald-500/20 flex items-center justify-center">
@@ -30,19 +30,19 @@ export function ArtistsTier() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-background/50 rounded-xl p-3">
+            <div className="bg-background/50 rounded-md p-3">
               <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">AOV</p>
               <p className="text-lg font-light text-foreground">$425.00</p>
             </div>
-            <div className="bg-background/50 rounded-xl p-3">
+            <div className="bg-background/50 rounded-md p-3">
               <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">Orders</p>
               <p className="text-lg font-light text-foreground">24</p>
             </div>
-            <div className="bg-background/50 rounded-xl p-3">
+            <div className="bg-background/50 rounded-md p-3">
               <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">Top Brand</p>
               <p className="text-lg font-light text-foreground">Kwadron</p>
             </div>
-            <div className="bg-background/50 rounded-xl p-3">
+            <div className="bg-background/50 rounded-md p-3">
               <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">Pref. Needles</p>
               <p className="text-lg font-light text-foreground">1203RL</p>
             </div>
@@ -50,7 +50,7 @@ export function ArtistsTier() {
         </div>
 
         {/* Another Sample Artist Card */}
-        <div className="bg-secondary/20 border border-border/50 rounded-2xl p-5">
+        <div className="bg-secondary/20 border border-border/50 rounded-md p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center">
@@ -69,19 +69,19 @@ export function ArtistsTier() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-background/50 rounded-xl p-3">
+            <div className="bg-background/50 rounded-md p-3">
               <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">AOV</p>
               <p className="text-lg font-light text-foreground">$310.00</p>
             </div>
-            <div className="bg-background/50 rounded-xl p-3">
+            <div className="bg-background/50 rounded-md p-3">
               <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">Orders</p>
               <p className="text-lg font-light text-foreground">18</p>
             </div>
-            <div className="bg-background/50 rounded-xl p-3">
+            <div className="bg-background/50 rounded-md p-3">
               <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">Top Brand</p>
               <p className="text-lg font-light text-foreground">Cheyenne</p>
             </div>
-            <div className="bg-background/50 rounded-xl p-3">
+            <div className="bg-background/50 rounded-md p-3">
               <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">Pref. Needles</p>
               <p className="text-lg font-light text-foreground">1007CM</p>
             </div>

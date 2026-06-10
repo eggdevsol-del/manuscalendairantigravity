@@ -189,7 +189,7 @@ export function QuickActionsSettings({ onBack }: QuickActionsSettingsProps) {
           )}
 
           {showAddNew && (
-            <div className="bg-secondary/50 border border-primary/30 p-4 rounded-[4px] space-y-4">
+            <div className="bg-secondary/50 border border-primary/30 p-4 rounded-md space-y-4">
               <div className="mb-2">
                 <h3 className="text-base font-semibold text-foreground">
                   {editingId ? "Edit" : "New"} Quick Action
@@ -249,7 +249,7 @@ export function QuickActionsSettings({ onBack }: QuickActionsSettingsProps) {
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg border">
+                <div className="flex items-center justify-between p-3 rounded-md border">
                   <div>
                     <Label htmlFor="enabled" className="text-base">
                       Enabled
@@ -300,7 +300,7 @@ export function QuickActionsSettings({ onBack }: QuickActionsSettingsProps) {
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3 flex-1">
-                        <div className="p-2 rounded-lg bg-primary/10">
+                        <div className="p-2 rounded-md bg-primary/10">
                           <Zap className="w-4 h-4 text-primary" />
                         </div>
                         <div className="flex-1">

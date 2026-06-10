@@ -72,7 +72,7 @@ export function ShopifySyncTier() {
 
       <div className="p-6 space-y-6">
         {!isConnected ? (
-          <form onSubmit={handleConnect} className="bg-secondary/20 border border-border/50 rounded-2xl p-6 space-y-6">
+          <form onSubmit={handleConnect} className="bg-secondary/20 border border-border/50 rounded-md p-6 space-y-6">
             <div>
               <h4 className="text-base font-bold text-foreground mb-2">Connect via Custom App Token</h4>
               <p className="text-sm text-muted-foreground mb-6">
@@ -122,9 +122,9 @@ export function ShopifySyncTier() {
             </div>
           </form>
         ) : (
-          <div className="bg-secondary/20 border border-border/50 rounded-2xl p-6">
+          <div className="bg-secondary/20 border border-border/50 rounded-md p-6">
             <div className="flex items-start gap-4 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center shrink-0">
+              <div className="w-12 h-14 rounded-md bg-green-500/20 flex items-center justify-center shrink-0">
                 <Settings className="w-6 h-6 text-green-500" />
               </div>
               <div>
@@ -136,7 +136,7 @@ export function ShopifySyncTier() {
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-background/50 rounded-xl">
+              <div className="flex items-center justify-between p-4 bg-background/50 rounded-md">
                 <div>
                   <p className="text-sm font-bold text-foreground">Products Synced</p>
                   <p className="text-xs text-muted-foreground">Admin API Active</p>
@@ -144,7 +144,7 @@ export function ShopifySyncTier() {
                 <p className="text-xl font-light text-foreground">Live</p>
               </div>
               
-              <div className="flex items-center justify-between p-4 bg-background/50 rounded-xl border border-amber-500/20">
+              <div className="flex items-center justify-between p-4 bg-background/50 rounded-md border border-amber-500/20">
                 <div className="flex items-center gap-3">
                   <AlertCircle className="w-5 h-5 text-amber-500" />
                   <div>

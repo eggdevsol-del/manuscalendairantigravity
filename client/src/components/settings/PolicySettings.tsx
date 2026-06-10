@@ -89,7 +89,7 @@ export function PolicySettings({ onBack }: PolicySettingsProps) {
                 <LoadingState message="Loading policy..." />
               </div>
             ) : !policy || !policy.enabled ? (
-              <div className="p-8 text-center bg-secondary/50 border border-border rounded-[4px] flex flex-col items-center justify-center">
+              <div className="p-8 text-center bg-secondary/50 border border-border rounded-md flex flex-col items-center justify-center">
                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                   <FileText className="w-8 h-8 text-muted-foreground" />
                 </div>
@@ -140,7 +140,7 @@ export function PolicySettings({ onBack }: PolicySettingsProps) {
       <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
         <div className="pb-[180px] max-w-lg mx-auto space-y-4 px-4 pt-6">
           {!artistId ? (
-            <div className="p-8 text-center bg-secondary/50 border border-border rounded-[4px] flex flex-col items-center justify-center">
+            <div className="p-8 text-center bg-secondary/50 border border-border rounded-md flex flex-col items-center justify-center">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-muted-foreground" />
               </div>
@@ -162,7 +162,7 @@ export function PolicySettings({ onBack }: PolicySettingsProps) {
                 >
                   <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-3 flex-1">
-                      <div className="p-2 rounded-lg bg-primary/10">
+                      <div className="p-2 rounded-md bg-primary/10">
                         <Icon className="w-5 h-5 text-primary" />
                       </div>
                       <h3 className="text-base font-semibold text-foreground">{label}</h3>

@@ -182,7 +182,7 @@ export function DepositSheet() {
   if (error || !depositInfo) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1a] flex items-center justify-center p-4">
-        <div className="bg-secondary/50 rounded-[4px] p-6 text-center max-w-md">
+        <div className="bg-secondary/50 rounded-md p-6 text-center max-w-md">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <h1 className="text-white text-xl font-semibold mb-2">
             Link Invalid
@@ -198,7 +198,7 @@ export function DepositSheet() {
   if (isComplete) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1a] flex items-center justify-center p-4">
-        <div className="bg-secondary/50 rounded-[4px] p-6 text-center max-w-md">
+        <div className="bg-secondary/50 rounded-md p-6 text-center max-w-md">
           <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="w-8 h-8 text-green-400" />
           </div>
@@ -208,7 +208,7 @@ export function DepositSheet() {
           <p className="text-muted-foreground mb-4">
             Your booking with {depositInfo.artistName} is now confirmed.
           </p>
-          <div className="bg-secondary/50 rounded-[4px] p-4 text-left">
+          <div className="bg-secondary/50 rounded-md p-4 text-left">
             <p className="text-muted-foreground text-sm">Appointment</p>
             <p className="text-white font-medium">{depositInfo.selectedDate}</p>
             <p className="text-muted-foreground">{depositInfo.selectedTime}</p>
@@ -245,7 +245,7 @@ export function DepositSheet() {
         </div>
 
         {/* Booking Summary */}
-        <div className="bg-secondary/50 rounded-[4px] p-4 mb-6">
+        <div className="bg-secondary/50 rounded-md p-4 mb-6">
           <h2 className="text-white font-medium mb-3">Booking Summary</h2>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -285,7 +285,7 @@ export function DepositSheet() {
           {depositInfo.paymentMethods.stripe && (
             <button
               onClick={() => setSelectedMethod("stripe")}
-              className={`w-full p-4 rounded-[4px] flex items-center gap-3 transition-colors ${selectedMethod === "stripe"
+              className={`w-full p-4 rounded-md flex items-center gap-3 transition-colors ${selectedMethod === "stripe"
                 ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
                 : "bg-secondary/50 border-2 border-transparent"
                 }`}
@@ -303,7 +303,7 @@ export function DepositSheet() {
           {depositInfo.paymentMethods.paypal && (
             <button
               onClick={() => setSelectedMethod("paypal")}
-              className={`w-full p-4 rounded-[4px] flex items-center gap-3 transition-colors ${selectedMethod === "paypal"
+              className={`w-full p-4 rounded-md flex items-center gap-3 transition-colors ${selectedMethod === "paypal"
                 ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
                 : "bg-secondary/50 border-2 border-transparent"
                 }`}
@@ -319,7 +319,7 @@ export function DepositSheet() {
           {depositInfo.paymentMethods.bank && (
             <button
               onClick={() => setSelectedMethod("bank")}
-              className={`w-full p-4 rounded-[4px] flex items-center gap-3 transition-colors ${selectedMethod === "bank"
+              className={`w-full p-4 rounded-md flex items-center gap-3 transition-colors ${selectedMethod === "bank"
                 ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
                 : "bg-secondary/50 border-2 border-transparent"
                 }`}
@@ -335,7 +335,7 @@ export function DepositSheet() {
           {depositInfo.paymentMethods.cash && (
             <button
               onClick={() => setSelectedMethod("cash")}
-              className={`w-full p-4 rounded-[4px] flex items-center gap-3 transition-colors ${selectedMethod === "cash"
+              className={`w-full p-4 rounded-md flex items-center gap-3 transition-colors ${selectedMethod === "cash"
                 ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
                 : "bg-secondary/50 border-2 border-transparent"
                 }`}
@@ -351,7 +351,7 @@ export function DepositSheet() {
 
         {/* Payment Details */}
         {selectedMethod === "bank" && depositInfo.bankDetails && (
-          <div className="mt-6 bg-secondary/50 rounded-[4px] p-4">
+          <div className="mt-6 bg-secondary/50 rounded-md p-4">
             <h3 className="text-white font-medium mb-3">Bank Details</h3>
             <div className="space-y-2 text-sm mb-4">
               <div className="flex justify-between">
@@ -407,7 +407,7 @@ export function DepositSheet() {
               </p>
               <label className="block">
                 <div
-                  className={`border-2 border-dashed rounded-[4px] p-4 text-center cursor-pointer transition-colors ${screenshotFile
+                  className={`border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition-colors ${screenshotFile
                     ? "border-green-500 bg-green-500/10"
                     : "border-border hover:border-border"
                     }`}
@@ -436,7 +436,7 @@ export function DepositSheet() {
         )}
 
         {selectedMethod === "cash" && (
-          <div className="mt-6 bg-secondary/50 rounded-[4px] p-4">
+          <div className="mt-6 bg-secondary/50 rounded-md p-4">
             <p className="text-muted-foreground text-sm">
               By selecting cash payment, you confirm that you will pay the
               deposit of{" "}
@@ -461,7 +461,7 @@ export function DepositSheet() {
               disabled={
                 isSubmitting || (selectedMethod === "bank" && !screenshotFile)
               }
-              className="w-full bg-[#7C5CFC] text-white py-4 rounded-[4px] font-medium disabled:opacity-50"
+              className="w-full bg-[#7C5CFC] text-white py-4 rounded-md font-medium disabled:opacity-50"
             >
               {isSubmitting
                 ? "Processing..."

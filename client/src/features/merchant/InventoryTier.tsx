@@ -14,8 +14,8 @@ export function InventoryTier() {
   return (
     <div className="pt-2">
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-card border border-border/50 rounded-2xl p-4 flex flex-col justify-between">
-          <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center mb-3">
+        <div className="bg-card border border-border/50 rounded-md p-4 flex flex-col justify-between">
+          <div className="w-8 h-8 rounded-md bg-amber-500/10 flex items-center justify-center mb-3">
             <AlertTriangle className="w-4 h-4 text-amber-500" />
           </div>
           <div>
@@ -24,8 +24,8 @@ export function InventoryTier() {
           </div>
         </div>
 
-        <div className="bg-card border border-border/50 rounded-2xl p-4 flex flex-col justify-between">
-          <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mb-3">
+        <div className="bg-card border border-border/50 rounded-md p-4 flex flex-col justify-between">
+          <div className="w-8 h-8 rounded-md bg-blue-500/10 flex items-center justify-center mb-3">
             <Box className="w-4 h-4 text-blue-500" />
           </div>
           <div>
@@ -34,7 +34,7 @@ export function InventoryTier() {
           </div>
         </div>
       </div>
-      <div className="mt-4 bg-secondary/50 rounded-xl p-4 flex items-center justify-center gap-2">
+      <div className="mt-4 bg-secondary/50 rounded-md p-4 flex items-center justify-center gap-2">
         <Package className="w-4 h-4 text-muted-foreground" />
         <span className="text-sm font-medium text-muted-foreground">Detailed Inventory Editor Coming Soon</span>
       </div>

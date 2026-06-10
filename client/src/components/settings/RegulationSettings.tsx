@@ -96,7 +96,7 @@ export function RegulationSettings({ onBack }: { onBack: () => void }) {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl transition-all font-medium text-xs whitespace-nowrap min-w-[80px]",
+                  "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-md transition-all font-medium text-xs whitespace-nowrap min-w-[80px]",
                   activeTab === tab.id
                     ? "bg-primary text-primary-foreground shadow-lg"
                     : "text-muted-foreground hover:text-foreground"
@@ -219,7 +219,7 @@ export function RegulationSettings({ onBack }: { onBack: () => void }) {
               </div>
 
               <Button
-                className="w-full h-12 shadow-xl shadow-primary/20"
+                className="w-full h-14 shadow-xl shadow-primary/20"
                 onClick={handleSave}
                 disabled={updateTemplates.isPending}
               >

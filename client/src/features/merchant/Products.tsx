@@ -11,9 +11,9 @@ export function MerchantProducts() {
         <div className="flex items-center gap-3 mb-6">
           <div className="relative flex-1">
             <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input className="pl-10 h-12 rounded-xl bg-secondary/20 border-transparent" placeholder="Search products..." />
+            <Input className="pl-10 h-14 rounded-md bg-secondary/20 border-transparent" placeholder="Search products..." />
           </div>
-          <Button className="h-12 px-4 rounded-xl shrink-0 flex items-center gap-2 font-bold shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]">
+          <Button className="h-14 px-4 rounded-md shrink-0 flex items-center gap-2 font-bold shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]">
             <Plus className="w-5 h-5" /> Add New
           </Button>
         </div>
@@ -26,7 +26,7 @@ export function MerchantProducts() {
           <p className="text-muted-foreground mt-2 max-w-xs mb-6">
             Add products manually or configure the Shopify integration to automatically sync your inventory.
           </p>
-          <Button variant="outline" className="h-12 rounded-full px-6 font-bold">
+          <Button variant="outline" className="h-14 rounded-full px-6 font-bold">
             Setup Shopify Sync
           </Button>
         </div>

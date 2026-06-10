@@ -16,7 +16,7 @@ export function PromotionsTier() {
 
       <div className="p-6 space-y-4">
         {/* Active Promotion */}
-        <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 rounded-2xl p-5">
+        <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 rounded-md p-5">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center">
@@ -31,7 +31,7 @@ export function PromotionsTier() {
               </div>
             </div>
           </div>
-          <div className="bg-background/50 rounded-xl p-4 flex items-center justify-between">
+          <div className="bg-background/50 rounded-md p-4 flex items-center justify-between">
             <div>
               <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">Code</p>
               <p className="text-lg font-mono font-bold tracking-widest text-foreground">WINTER20</p>
@@ -44,7 +44,7 @@ export function PromotionsTier() {
         </div>
 
         {/* Draft Promotion */}
-        <div className="bg-secondary/20 border border-border/50 rounded-2xl p-5 opacity-70">
+        <div className="bg-secondary/20 border border-border/50 rounded-md p-5 opacity-70">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
@@ -59,7 +59,7 @@ export function PromotionsTier() {
               </div>
             </div>
           </div>
-          <div className="bg-background/50 rounded-xl p-4 flex items-center justify-between">
+          <div className="bg-background/50 rounded-md p-4 flex items-center justify-between">
             <div>
               <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">Code</p>
               <p className="text-lg font-mono font-bold tracking-widest text-foreground">INKFLASH50</p>

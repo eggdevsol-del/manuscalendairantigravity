@@ -15,8 +15,8 @@ export function AnalyticsTier() {
   return (
     <div className="pt-2">
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-card border border-border/50 rounded-2xl p-4 flex flex-col justify-between">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-3">
+        <div className="bg-card border border-border/50 rounded-md p-4 flex flex-col justify-between">
+          <div className="w-8 h-8 rounded-md bg-emerald-500/10 flex items-center justify-center mb-3">
             <TrendingUp className="w-4 h-4 text-emerald-500" />
           </div>
           <div>
@@ -25,8 +25,8 @@ export function AnalyticsTier() {
           </div>
         </div>
 
-        <div className="bg-card border border-border/50 rounded-2xl p-4 flex flex-col justify-between">
-          <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mb-3">
+        <div className="bg-card border border-border/50 rounded-md p-4 flex flex-col justify-between">
+          <div className="w-8 h-8 rounded-md bg-blue-500/10 flex items-center justify-center mb-3">
             <Package className="w-4 h-4 text-blue-500" />
           </div>
           <div>
@@ -35,8 +35,8 @@ export function AnalyticsTier() {
           </div>
         </div>
 
-        <div className="bg-card border border-border/50 rounded-2xl p-4 flex flex-col justify-between">
-          <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center mb-3">
+        <div className="bg-card border border-border/50 rounded-md p-4 flex flex-col justify-between">
+          <div className="w-8 h-8 rounded-md bg-orange-500/10 flex items-center justify-center mb-3">
             <Clock className="w-4 h-4 text-orange-500" />
           </div>
           <div>
@@ -45,8 +45,8 @@ export function AnalyticsTier() {
           </div>
         </div>
 
-        <div className="bg-card border border-border/50 rounded-2xl p-4 flex flex-col justify-between">
-          <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center mb-3">
+        <div className="bg-card border border-border/50 rounded-md p-4 flex flex-col justify-between">
+          <div className="w-8 h-8 rounded-md bg-purple-500/10 flex items-center justify-center mb-3">
             <Activity className="w-4 h-4 text-purple-500" />
           </div>
           <div>

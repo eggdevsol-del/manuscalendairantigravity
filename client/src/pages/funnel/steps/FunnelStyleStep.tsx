@@ -118,7 +118,7 @@ export default function FunnelStyleStep({
               transition={{ delay: index * 0.03 }}
               onClick={() => toggleStyle(service.id)}
               className={`
-                relative p-4 rounded-[4px] border-2 text-left transition-all flex flex-col gap-1
+                relative p-4 rounded-md border-2 text-left transition-all flex flex-col gap-1
                 ${selectedStyles.includes(service.id)
                   ? "border-primary bg-primary/10"
                   : "border-border bg-card hover:border-primary/50"

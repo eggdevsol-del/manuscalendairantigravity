@@ -159,7 +159,7 @@ export default function ImageUploadSheet({
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
-              className={`relative border-2 border-dashed rounded-[4px] p-8 text-center transition-colors mb-6 ${dragActive
+              className={`relative border-2 border-dashed rounded-md p-8 text-center transition-colors mb-6 ${dragActive
                   ? "border-foreground bg-secondary/50"
                   : "border-border hover:border-foreground/30"
                 }`}
@@ -177,7 +177,7 @@ export default function ImageUploadSheet({
                   <button
                     type="button"
                     onClick={openFileSelector}
-                    className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-[4px] text-sm font-medium hover:opacity-90 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-md text-sm font-medium hover:opacity-90 transition-colors"
                   >
                     <ImageIcon className="w-4 h-4" />
                     Choose Files
@@ -185,7 +185,7 @@ export default function ImageUploadSheet({
                   <button
                     type="button"
                     onClick={openCamera}
-                    className="flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-[4px] text-sm font-medium hover:bg-secondary/50 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-md text-sm font-medium hover:bg-secondary/50 transition-colors"
                   >
                     <Camera className="w-4 h-4" />
                     Take Photo
@@ -236,7 +236,7 @@ export default function ImageUploadSheet({
                 {images.map(image => (
                   <div
                     key={image.id}
-                    className="relative aspect-square rounded-[4px] overflow-hidden bg-muted border border-border/50"
+                    className="relative aspect-square rounded-md overflow-hidden bg-muted border border-border/50"
                   >
                     <img
                       src={image.preview}
@@ -287,7 +287,7 @@ export default function ImageUploadSheet({
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-3 bg-primary text-primary-foreground rounded-[4px] font-medium hover:bg-primary/90 transition-colors"
+            className="w-full py-3 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 transition-colors"
           >
             Done ({images.length} {images.length === 1 ? "image" : "images"})
           </button>

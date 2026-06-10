@@ -140,7 +140,7 @@ function TripCard({ trip, onRemove, onEdit }: { trip: Trip; onRemove: () => void
                 <button
                     onClick={handleNotify}
                     disabled={scanning || matchQuery.isLoading}
-                    className="w-full h-10 flex items-center justify-center gap-2 text-sm font-semibold text-white backdrop-blur-xl bg-secondary/50 border border-border hover:bg-secondary/50 transition-all disabled:opacity-60 rounded-xl"
+                    className="w-full h-14 flex items-center justify-center gap-2 text-sm font-semibold text-white backdrop-blur-xl bg-secondary/50 border border-border hover:bg-secondary/50 transition-all disabled:opacity-60 rounded-md"
                 >
                     {scanning || matchQuery.isLoading ? (
                         <><Loader2 className="w-4 h-4 animate-spin" /> Scanning Clients...</>
@@ -161,21 +161,21 @@ function TripCard({ trip, onRemove, onEdit }: { trip: Trip; onRemove: () => void
                     <div className="flex gap-3">
                         <button
                             onClick={(e) => { e.stopPropagation(); setFabOpen(false); onEdit(trip); }}
-                            className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl bg-secondary/50 hover:bg-secondary/50 text-white transition-colors backdrop-blur-sm"
+                            className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-md bg-secondary/50 hover:bg-secondary/50 text-white transition-colors backdrop-blur-sm"
                         >
                             <Pencil className="w-5 h-5" />
                             <span className="text-xs font-medium">Edit</span>
                         </button>
                         <button
                             onClick={(e) => { e.stopPropagation(); setFabOpen(false); onRemove(); }}
-                            className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl bg-destructive/20 hover:bg-destructive/30 text-destructive transition-colors backdrop-blur-sm"
+                            className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-md bg-destructive/20 hover:bg-destructive/30 text-destructive transition-colors backdrop-blur-sm"
                         >
                             <Trash className="w-5 h-5" />
                             <span className="text-xs font-medium">Delete</span>
                         </button>
                         <button
                             onClick={(e) => { e.stopPropagation(); setFabOpen(false); }}
-                            className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl bg-secondary/50 hover:bg-secondary/50 text-white transition-colors backdrop-blur-sm"
+                            className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-md bg-secondary/50 hover:bg-secondary/50 text-white transition-colors backdrop-blur-sm"
                         >
                             <X className="w-5 h-5" />
                             <span className="text-xs font-medium">Close</span>
@@ -253,7 +253,7 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
             <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
                 <div className="pb-[180px] max-w-lg mx-auto space-y-6 px-4 pt-6">
 
-                    <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-[4px] p-6 text-center border border-border">
+                    <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-md p-6 text-center border border-border">
                         <Plane className="w-8 h-8 text-primary mx-auto mb-3 opacity-90" />
                         <h3 className="text-lg font-bold text-foreground mb-1">Artist on the Move</h3>
                         <p className="text-sm text-muted-foreground">Block out your international or inter-state travels, alert local clients actively, and manage waitlists effectively.</p>
@@ -281,7 +281,7 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
                                     <div className="relative">
                                         <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
                                         <GooglePlacesInput
-                                            className="pl-9 h-10"
+                                            className="pl-9 h-14"
                                             placeholder="Search a city, e.g. London, Tokyo, Auckland..."
                                             onPlaceSelected={(place) => {
                                                 let extractedCountry = "";
@@ -312,7 +312,7 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
 
                                     {/* Confirmed destination pill */}
                                     {newTrip.location && newTrip.country && (
-                                        <div className="flex items-center gap-2 px-3 py-2 rounded-[4px] bg-primary/10 border border-primary/20 text-sm">
+                                        <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary/10 border border-primary/20 text-sm">
                                             <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
                                             <span className="font-medium text-foreground">{newTrip.location}</span>
                                             <span className="text-muted-foreground">•</span>
@@ -336,7 +336,7 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
                                             <div className="relative">
                                                 <CalendarDays className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                                                 <Input
-                                                    className="pl-9 h-10 text-sm"
+                                                    className="pl-9 h-14 text-sm"
                                                     type="date"
                                                     value={newTrip.startDate}
                                                     onChange={e => setNewTrip({ ...newTrip, startDate: e.target.value })}
@@ -348,7 +348,7 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
                                             <div className="relative">
                                                 <CalendarDays className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                                                 <Input
-                                                    className="pl-9 h-10 text-sm"
+                                                    className="pl-9 h-14 text-sm"
                                                     type="date"
                                                     value={newTrip.endDate}
                                                     onChange={e => setNewTrip({ ...newTrip, endDate: e.target.value })}
@@ -374,7 +374,7 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
 
                                 {/* Actions */}
                                 <div className="flex gap-3">
-                                    <Button className="flex-1 h-10" onClick={addTrip} disabled={upsert.isPending}>
+                                    <Button className="flex-1 h-14" onClick={addTrip} disabled={upsert.isPending}>
                                         {upsert.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                                             <>
                                                 <Plus className="w-4 h-4 mr-2" />
@@ -382,7 +382,7 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
                                             </>
                                         )}
                                     </Button>
-                                    <Button variant="outline" onClick={() => setIsAdding(false)} className="h-10 px-6">
+                                    <Button variant="outline" onClick={() => setIsAdding(false)} className="h-14 px-6">
                                         Cancel
                                     </Button>
                                 </div>
@@ -392,7 +392,7 @@ export function TravelSettings({ onBack, onNavigateToClients }: { onBack: () => 
 
                     <div className="space-y-3">
                         {trips.length === 0 && !isAdding && (
-                            <div className="bg-secondary/50 border border-border p-8 rounded-[4px] text-center text-muted-foreground text-sm flex flex-col items-center">
+                            <div className="bg-secondary/50 border border-border p-8 rounded-md text-center text-muted-foreground text-sm flex flex-col items-center">
                                 <Navigation className="w-8 h-8 opacity-20 mb-3" />
                                 No travel legs scheduled.
                             </div>

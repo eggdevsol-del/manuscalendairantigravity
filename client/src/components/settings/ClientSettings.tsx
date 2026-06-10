@@ -261,7 +261,7 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
 
           {/* Advanced Filter Drawer */}
           {showFilters && (
-            <div className="bg-secondary/50 border border-border rounded-[4px] p-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="bg-secondary/50 border border-border rounded-md p-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5 ">
                   <Label className="text-xs text-muted-foreground">Location</Label>
@@ -318,7 +318,7 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
           )}
 
           {/* Stats Header */}
-          <div className="bg-gradient-to-br from-primary/10 to-accent/10 hover:from-primary/15 hover:to-accent/15 rounded-[4px] p-6 text-center border border-border">
+          <div className="bg-gradient-to-br from-primary/10 to-accent/10 hover:from-primary/15 hover:to-accent/15 rounded-md p-6 text-center border border-border">
             <p className="text-4xl font-bold text-foreground">
               {clients.length}
             </p>
@@ -329,7 +329,7 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
 
           {/* Client List */}
           {filteredClients.length === 0 ? (
-            <div className="p-8 text-center bg-secondary/50 rounded-[4px] border border-border flex flex-col items-center justify-center">
+            <div className="p-8 text-center bg-secondary/50 rounded-md border border-border flex flex-col items-center justify-center">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
                 <User className="w-8 h-8 text-muted-foreground" />
               </div>
@@ -361,7 +361,7 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
                   key={client.id}
                   onClick={() => toggleSelection(client.id)}
                   className={cn(
-                    "bg-transparent hover:bg-secondary/50 transition-colors border-b border-border pb-4 pt-3 px-2 rounded-[4px] last:border-0 cursor-pointer",
+                    "bg-transparent hover:bg-secondary/50 transition-colors border-b border-border pb-4 pt-3 px-2 rounded-md last:border-0 cursor-pointer",
                     selectedClients.has(client.id) && "bg-primary/5 hover:bg-primary/10 border-primary/20"
                   )}
                 >
@@ -420,14 +420,14 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
                     </Button>
                   </div>
                   {clientToDelete?.id === client.id ? (
-                    <div className="mt-4 p-4 bg-destructive/5 border border-destructive/20 rounded-xl space-y-4 lg:ml-[60px]">
+                    <div className="mt-4 p-4 bg-destructive/5 border border-destructive/20 rounded-md space-y-4 lg:ml-[60px]">
                       <h4 className="font-semibold text-destructive flex items-center">
                         <Trash className="w-4 h-4 mr-2" />
                         Wipe Client Data
                       </h4>
 
                       <div className="space-y-3">
-                        <label className="flex items-start gap-3 p-3 rounded-lg border border-border bg-secondary/50 cursor-pointer hover:bg-secondary/50 transition-colors">
+                        <label className="flex items-start gap-3 p-3 rounded-md border border-border bg-secondary/50 cursor-pointer hover:bg-secondary/50 transition-colors">
                           <input
                             type="radio"
                             name={`del-${client.id}`}
@@ -441,7 +441,7 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
                           </div>
                         </label>
 
-                        <label className="flex items-start gap-3 p-3 rounded-lg border border-destructive/30 bg-destructive/10 cursor-pointer hover:bg-destructive/20 transition-colors">
+                        <label className="flex items-start gap-3 p-3 rounded-md border border-destructive/30 bg-destructive/10 cursor-pointer hover:bg-destructive/20 transition-colors">
                           <input
                             type="radio"
                             name={`del-${client.id}`}

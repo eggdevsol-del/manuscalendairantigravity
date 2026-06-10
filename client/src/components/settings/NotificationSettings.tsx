@@ -219,14 +219,14 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                             resetForm();
                             setShowDialog(true);
                         }}
-                        className="w-full tap-target shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-base font-semibold"
+                        className="w-full tap-target shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-14 text-base font-semibold"
                     >
                         <Plus className="w-5 h-5 mr-2" />
                         Add Notification Template
                     </Button>
 
                     {templates && templates.length === 0 ? (
-                        <div className="p-8 bg-secondary/50 border border-border rounded-[4px]">
+                        <div className="p-8 bg-secondary/50 border border-border rounded-md">
                             <div className="text-center space-y-3">
                                 <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mx-auto">
                                     <Bell className="w-8 h-8 text-muted-foreground" />
@@ -268,7 +268,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                                                 )}
                                             </p>
                                         </div>
-                                        <div className="flex bg-secondary/50 rounded-lg border border-border">
+                                        <div className="flex bg-secondary/50 rounded-md border border-border">
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
@@ -297,7 +297,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                                             </Button>
                                         </div>
                                     </div>
-                                    <div className="p-4 bg-secondary/50 rounded-[4px] border border-border">
+                                    <div className="p-4 bg-secondary/50 rounded-md border border-border">
                                         <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
                                             {template.content}
                                         </p>

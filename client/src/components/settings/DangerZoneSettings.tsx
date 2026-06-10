@@ -72,7 +72,7 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
             <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
                 <div className="pb-[180px] max-w-lg mx-auto space-y-6 px-4 pt-6">
 
-                    <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-[4px] flex items-start gap-3">
+                    <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-md flex items-start gap-3">
                         <ShieldAlert className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                         <div>
                             <p className="text-sm font-semibold text-red-500">Warning: Destructive Actions</p>
@@ -84,7 +84,7 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                     <div className="space-y-4">
 
                         {/* Delete Appointments */}
-                        <div className="p-4 bg-secondary/50 border border-border rounded-[4px]">
+                        <div className="p-4 bg-secondary/50 border border-border rounded-md">
                             <div className="flex items-center justify-between mb-2">
                                 <div>
                                     <h3 className="text-foreground font-semibold text-sm">Delete All Appointments</h3>
@@ -92,7 +92,7 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                                 </div>
                                 <button
                                     onClick={() => { setActiveAction("appointments"); setConfirmText(""); }}
-                                    className="bg-red-500/20 hover:bg-red-500/30 text-red-500 p-2 rounded-[4px] transition-colors"
+                                    className="bg-red-500/20 hover:bg-red-500/30 text-red-500 p-2 rounded-md transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -106,12 +106,12 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                                             value={confirmText}
                                             onChange={(e) => setConfirmText(e.target.value)}
                                             placeholder="DELETE"
-                                            className="bg-zinc-900 border border-red-500/50 rounded-[4px] px-3 py-2 text-sm text-foreground w-full outline-none focus:border-red-500 flex-1"
+                                            className="bg-zinc-900 border border-red-500/50 rounded-md px-3 py-2 text-sm text-foreground w-full outline-none focus:border-red-500 flex-1"
                                         />
                                         <button
                                             onClick={handleExecute}
                                             disabled={confirmText !== "DELETE" || wipeAppointments.isPending}
-                                            className="bg-red-500 text-white font-bold text-xs uppercase tracking-wider px-4 rounded-[4px] disabled:opacity-50 transition-all active:scale-95"
+                                            className="bg-red-500 text-white font-bold text-xs uppercase tracking-wider px-4 rounded-md disabled:opacity-50 transition-all active:scale-95"
                                         >
                                             Confirm
                                         </button>
@@ -121,7 +121,7 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                         </div>
 
                         {/* Delete Clients */}
-                        <div className="p-4 bg-secondary/50 border border-border rounded-[4px]">
+                        <div className="p-4 bg-secondary/50 border border-border rounded-md">
                             <div className="flex items-center justify-between mb-2">
                                 <div>
                                     <h3 className="text-foreground font-semibold text-sm">Delete All Clients</h3>
@@ -129,7 +129,7 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                                 </div>
                                 <button
                                     onClick={() => { setActiveAction("clients"); setConfirmText(""); }}
-                                    className="bg-red-500/20 hover:bg-red-500/30 text-red-500 p-2 rounded-[4px] transition-colors"
+                                    className="bg-red-500/20 hover:bg-red-500/30 text-red-500 p-2 rounded-md transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -143,12 +143,12 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                                             value={confirmText}
                                             onChange={(e) => setConfirmText(e.target.value)}
                                             placeholder="DELETE"
-                                            className="bg-zinc-900 border border-red-500/50 rounded-[4px] px-3 py-2 text-sm text-foreground w-full outline-none focus:border-red-500 flex-1"
+                                            className="bg-zinc-900 border border-red-500/50 rounded-md px-3 py-2 text-sm text-foreground w-full outline-none focus:border-red-500 flex-1"
                                         />
                                         <button
                                             onClick={handleExecute}
                                             disabled={confirmText !== "DELETE" || wipeClients.isPending}
-                                            className="bg-red-500 text-white font-bold text-xs uppercase tracking-wider px-4 rounded-[4px] disabled:opacity-50 transition-all active:scale-95"
+                                            className="bg-red-500 text-white font-bold text-xs uppercase tracking-wider px-4 rounded-md disabled:opacity-50 transition-all active:scale-95"
                                         >
                                             Confirm
                                         </button>
@@ -158,7 +158,7 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                         </div>
 
                         {/* Delete Account */}
-                        <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-[4px]">
+                        <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-md">
                             <div className="flex items-center justify-between mb-2">
                                 <div>
                                     <h3 className="text-red-500 font-semibold text-sm">Delete Account</h3>
@@ -166,7 +166,7 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                                 </div>
                                 <button
                                     onClick={() => { setActiveAction("account"); setConfirmText(""); }}
-                                    className="bg-red-500 text-white p-2 rounded-[4px] transition-colors"
+                                    className="bg-red-500 text-white p-2 rounded-md transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -180,12 +180,12 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                                             value={confirmText}
                                             onChange={(e) => setConfirmText(e.target.value)}
                                             placeholder="DELETE"
-                                            className="bg-zinc-900 border border-red-500/50 rounded-[4px] px-3 py-2 text-sm text-foreground w-full outline-none focus:border-red-500 flex-1"
+                                            className="bg-zinc-900 border border-red-500/50 rounded-md px-3 py-2 text-sm text-foreground w-full outline-none focus:border-red-500 flex-1"
                                         />
                                         <button
                                             onClick={handleExecute}
                                             disabled={confirmText !== "DELETE" || deleteAccount.isPending}
-                                            className="bg-red-500 text-white font-bold text-xs uppercase tracking-wider px-4 rounded-[4px] disabled:opacity-50 transition-all active:scale-95"
+                                            className="bg-red-500 text-white font-bold text-xs uppercase tracking-wider px-4 rounded-md disabled:opacity-50 transition-all active:scale-95"
                                         >
                                             Execute
                                         </button>

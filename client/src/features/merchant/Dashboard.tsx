@@ -172,7 +172,7 @@ export function MerchantDashboard() {
                         isExpanded={expandedCardId === "shopify"}
                         onToggle={() => toggleExpand("shopify")}
                       >
-                        <div className="bg-card rounded-xl p-2"><ShopifySyncTier /></div>
+                        <div className="bg-card rounded-md p-2"><ShopifySyncTier /></div>
                       </ExpandableTaskCard>
 
                       <ExpandableTaskCard
@@ -184,7 +184,7 @@ export function MerchantDashboard() {
                         isExpanded={expandedCardId === "storefront"}
                         onToggle={() => toggleExpand("storefront")}
                       >
-                        <div className="bg-card rounded-xl p-2"><StorefrontPreviewTier /></div>
+                        <div className="bg-card rounded-md p-2"><StorefrontPreviewTier /></div>
                       </ExpandableTaskCard>
 
                       <ExpandableTaskCard
@@ -196,7 +196,7 @@ export function MerchantDashboard() {
                         isExpanded={expandedCardId === "promotions"}
                         onToggle={() => toggleExpand("promotions")}
                       >
-                        <div className="bg-card rounded-xl p-2"><PromotionsTier /></div>
+                        <div className="bg-card rounded-md p-2"><PromotionsTier /></div>
                       </ExpandableTaskCard>
                     </>
                   )}
@@ -212,7 +212,7 @@ export function MerchantDashboard() {
                         isExpanded={expandedCardId === "artists"}
                         onToggle={() => toggleExpand("artists")}
                       >
-                        <div className="bg-card rounded-xl p-2"><ArtistsTier /></div>
+                        <div className="bg-card rounded-md p-2"><ArtistsTier /></div>
                       </ExpandableTaskCard>
                     </>
                   )}

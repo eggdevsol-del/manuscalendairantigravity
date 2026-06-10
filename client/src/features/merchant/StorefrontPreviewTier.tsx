@@ -39,8 +39,8 @@ export function StorefrontPreviewTier() {
 
             <div className="px-4 mt-8 grid grid-cols-2 gap-3">
               {[1, 2, 3, 4].map(i => (
-                <div key={i} className="bg-secondary/20 rounded-2xl p-3">
-                  <div className="aspect-square bg-background rounded-xl mb-2 flex items-center justify-center">
+                <div key={i} className="bg-secondary/20 rounded-md p-3">
+                  <div className="aspect-square bg-background rounded-md mb-2 flex items-center justify-center">
                     <Package className="w-8 h-8 text-muted-foreground/30" />
                   </div>
                   <p className="text-[10px] font-bold text-foreground line-clamp-2 leading-tight">Cheyenne Hawk Pen</p>

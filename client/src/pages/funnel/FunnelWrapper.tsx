@@ -230,7 +230,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                       <button
                         key={service.id}
                         onClick={() => setProjectType(service.id)}
-                        className={`relative p-4 rounded-[6px] border-2 text-left transition-all flex flex-col gap-1 ${projectType === service.id
+                        className={`relative p-4 rounded-md border-2 text-left transition-all flex flex-col gap-1 ${projectType === service.id
                           ? "border-primary bg-primary/10"
                           : "border-border bg-card hover:border-primary/50"
                           }`}
@@ -249,7 +249,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                       </button>
                     ))
                   ) : (
-                    <div className="p-6 border border-dashed border-border rounded-[4px] text-center text-sm text-muted-foreground">
+                    <div className="p-6 border border-dashed border-border rounded-md text-center text-sm text-muted-foreground">
                       This artist has not listed any public services yet.
                     </div>
                   )}
@@ -265,7 +265,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   onChange={e => setProjectDescription(e.target.value)}
                   placeholder="Tell us about your vision..."
                   rows={4}
-                  className="w-full px-4 py-3 border border-border rounded-[4px] focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent resize-none text-foreground bg-background placeholder-muted-foreground"
+                  className="w-full px-4 py-3 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent resize-none text-foreground bg-background placeholder-muted-foreground"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   {projectDescription.length < 10
@@ -329,10 +329,10 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                 <button
                   type="button"
                   onClick={() => setShowReferenceUpload(true)}
-                  className="w-full p-4 border border-border rounded-[4px] hover:border-foreground/30 transition-colors flex items-center justify-between bg-secondary/50"
+                  className="w-full p-4 border border-border rounded-md hover:border-foreground/30 transition-colors flex items-center justify-between bg-secondary/50"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-secondary/50 rounded-[4px] flex items-center justify-center">
+                    <div className="w-10 h-10 bg-secondary/50 rounded-md flex items-center justify-center">
                       <ImageIcon className="w-5 h-5 text-muted-foreground" />
                     </div>
                     <div className="text-left">
@@ -355,7 +355,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                     {referenceImages.slice(0, 4).map(img => (
                       <div
                         key={img.id}
-                        className="w-16 h-16 rounded-[4px] overflow-hidden flex-shrink-0 border border-border/50"
+                        className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 border border-border/50"
                       >
                         <img
                           src={img.preview}
@@ -365,7 +365,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                       </div>
                     ))}
                     {referenceImages.length > 4 && (
-                      <div className="w-16 h-16 rounded-[4px] bg-secondary/50 flex items-center justify-center flex-shrink-0 border border-border/50">
+                      <div className="w-16 h-16 rounded-md bg-secondary/50 flex items-center justify-center flex-shrink-0 border border-border/50">
                         <span className="text-sm font-medium text-muted-foreground">
                           +{referenceImages.length - 4}
                         </span>
@@ -388,7 +388,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               <button
                 type="button"
                 onClick={() => setShowBodyPlacementUpload(true)}
-                className="w-full p-6 border-2 border-dashed border-border rounded-[4px] hover:border-foreground/40 transition-colors flex flex-col items-center justify-center gap-3 bg-secondary/50"
+                className="w-full p-6 border-2 border-dashed border-border rounded-md hover:border-foreground/40 transition-colors flex flex-col items-center justify-center gap-3 bg-secondary/50"
               >
                 <div className="w-14 h-14 bg-secondary/50 rounded-full flex items-center justify-center">
                   <Camera className="w-7 h-7 text-muted-foreground" />
@@ -411,7 +411,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   {bodyPlacementImages.map(img => (
                     <div
                       key={img.id}
-                      className="aspect-square rounded-[4px] overflow-hidden border border-border/50"
+                      className="aspect-square rounded-md overflow-hidden border border-border/50"
                     >
                       <img
                         src={img.preview}
@@ -440,7 +440,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   <button
                     key={budget.label}
                     onClick={() => setSelectedBudget(budget)}
-                    className={`w-full p-4 text-left rounded-[4px] border transition-colors ${selectedBudget?.label === budget.label
+                    className={`w-full p-4 text-left rounded-md border transition-colors ${selectedBudget?.label === budget.label
                       ? "border-foreground bg-secondary/50"
                       : "border-border hover:border-foreground/30 bg-secondary/50"
                       }`}
@@ -465,7 +465,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
                   <button
                     key={option.id}
                     onClick={() => setTimeframe(option.id)}
-                    className={`w-full p-4 text-left rounded-[4px] border transition-colors ${timeframe === option.id
+                    className={`w-full p-4 text-left rounded-md border transition-colors ${timeframe === option.id
                       ? "border-foreground bg-secondary/50"
                       : "border-border hover:border-foreground/30 bg-secondary/50"
                       }`}
@@ -487,7 +487,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
               <button
                 onClick={handleBack}
                 disabled={submitting}
-                className="flex-1 py-3 px-6 border border-border rounded-[4px] font-medium text-foreground hover:bg-secondary/50 disabled:opacity-50"
+                className="flex-1 py-3 px-6 border border-border rounded-md font-medium text-foreground hover:bg-secondary/50 disabled:opacity-50"
               >
                 Back
               </button>
@@ -495,7 +495,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
             <button
               onClick={handleNext}
               disabled={!canProceed() || submitting}
-              className={`${currentStep === 0 ? "w-full" : "flex-1"} py-3 px-6 bg-primary text-primary-foreground rounded-[4px] font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={`${currentStep === 0 ? "w-full" : "flex-1"} py-3 px-6 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {submitting
                 ? "Submitting..."
