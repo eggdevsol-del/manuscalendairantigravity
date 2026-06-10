@@ -75,16 +75,19 @@ export const tokens = {
     panel:
       "mb-2 p-4 rounded-[2rem] border border-border shadow-2xl flex flex-col items-end gap-4 bg-[color-mix(in_srgb,var(--background)_95%,white)]/[0.85] dark:bg-[color-mix(in_srgb,var(--background)_95%,white)]/[0.85] backdrop-blur-[32px] w-[220px] max-h-[50vh] overflow-y-auto",
 
-    // Individual menu item row (now functions as the floating pill card)
-    itemRow: "flex items-center justify-end gap-3 px-4 py-2.5 bg-card/90 backdrop-blur-md hover:bg-secondary border border-border shadow-2xl rounded-[6px] transition-all group-active:scale-95",
-    itemRowHighlight: "flex items-center justify-end gap-3 px-4 py-2.5 bg-[#E09F3E]/90 backdrop-blur-md hover:bg-[#C98B32]/90 border border-[#E09F3E] shadow-2xl rounded-[6px] transition-all group-active:scale-95",
+    // Individual menu item row (label + button)
+    itemRow: "flex items-center justify-end gap-3 w-full",
 
     // Menu item label text
-    itemLabel: "text-sm font-bold text-foreground whitespace-nowrap",
+    itemLabel: "text-xs font-medium text-muted-foreground",
 
-    // Menu item icon container (no longer needs background, row provides it)
-    itemButton: "flex items-center justify-center text-foreground transition-transform group-hover:scale-110",
-    itemButtonHighlight: "flex items-center justify-center text-white transition-transform group-hover:scale-110",
+    // Menu item icon button (default)
+    itemButton:
+      "h-10 w-10 rounded-full shadow-lg border border-border bg-card hover:bg-secondary flex items-center justify-center transition-all active:scale-95 text-foreground",
+
+    // Menu item icon button (highlighted / primary)
+    itemButtonHighlight:
+      "h-10 w-10 rounded-full shadow-lg border border-border bg-[#E09F3E]/80 text-white hover:bg-[#C98B32]/80 flex items-center justify-center transition-all active:scale-95",
 
     // Menu item button icon size
     itemIconSize: "h-4 w-4",

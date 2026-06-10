@@ -109,10 +109,10 @@ export function FABMenu(props: FABMenuProps) {
               exit="hidden"
               variants={fab.animation.panel}
               className={cn(
-                props.items && props.items.length > 0
-                  ? "flex flex-col items-end gap-3 max-h-[70vh] overflow-y-auto overflow-x-hidden pr-2 pb-2" // Transparent track for floating pills
-                  : cn(fab.panel, "overflow-y-auto max-h-[70vh] pointer-events-auto", isIPad && "w-[440px] max-h-[60vh] p-6 gap-5"), // Solid panel for children
-                props.panelClassName
+                fab.panel,
+                props.panelClassName,
+                "overflow-y-auto max-h-[70vh] pointer-events-auto",
+                isIPad && "w-[440px] max-h-[60vh] p-6 gap-5"
               )}
             >
               {props.items && props.items.length > 0
@@ -123,8 +123,7 @@ export function FABMenu(props: FABMenuProps) {
                       variants={fab.animation.item}
                       className={cn(
                         fab.itemRow,
-                        item.highlight ? fab.itemRowHighlight : "",
-                        "group outline-none w-auto pointer-events-auto"
+                        "group outline-none border-none bg-transparent"
                       )}
                       onClick={() => {
                         item.onClick();
@@ -134,17 +133,19 @@ export function FABMenu(props: FABMenuProps) {
                       <span
                         className={cn(
                           fab.itemLabel,
-                          item.highlight ? "text-white" : "",
-                          item.className
+                          item.className,
+                          "group-hover:text-foreground transition-colors"
                         )}
                       >
                         {item.label}
                       </span>
                       <div
                         className={cn(
-                          item.highlight ? fab.itemButtonHighlight : fab.itemButton,
+                          item.highlight
+                            ? fab.itemButtonHighlight
+                            : fab.itemButton,
                           item.className,
-                          "transition-transform"
+                          "group-hover:scale-110 group-active:scale-95 transition-all"
                         )}
                       >
                         <item.icon className={fab.itemIconSize} />
