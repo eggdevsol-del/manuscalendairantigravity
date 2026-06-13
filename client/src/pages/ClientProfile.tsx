@@ -12,7 +12,7 @@ import {
 } from "@/features/profile/components/ContentCards";
 import { EditBioModal } from "@/features/profile/components/EditBioModal";
 import { useRegisterBottomNavRow } from "@/contexts/BottomNavContext";
-import { ClientArtistCard } from "@/features/client-profile/ClientArtistCard";
+import { ClientFeedTab } from "@/features/client-profile/ClientFeedTab";
 import {
   Edit3,
   User,
@@ -113,38 +113,7 @@ export default function ClientProfile() {
 
   // Artist cards content
   const artistCardsContent = useMemo(() => {
-    if (!conversations || conversations.length === 0) {
-      return (
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center space-y-2">
-            <MessageCircle className="w-12 h-12 text-muted-foreground/30 mx-auto" />
-            <p className="text-muted-foreground text-sm">No artists yet</p>
-            <p className="text-muted-foreground/60 text-xs">Your artist connections will appear here</p>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="p-4 space-y-3 overflow-y-auto mobile-scroll h-full">
-        {conversations.map((conv: any) => {
-          const artist = conv.otherUser;
-          if (!artist) return null;
-
-          const bannerUrl = artist.funnelBannerUrl || null;
-          const artistName = artist.name || artist.firstName || "Artist";
-          const avatarUrl = artist.avatar || null;
-
-          return (
-            <ClientArtistCard 
-              key={conv.id} 
-              conv={conv} 
-              onShopToggle={setIsShopExpanded}
-            />
-          );
-        })}
-      </div>
-    );
+    return <ClientFeedTab conversations={conversations || []} setIsShopExpanded={setIsShopExpanded} />;
   }, [conversations, setIsShopExpanded]);
 
   const tabs = useMemo(

@@ -114,6 +114,7 @@ export const artistSettingsRouter = router({
         googleCalendarToken: z.string().optional(),
         appleCalendarUrl: z.string().optional(),
         travelDates: z.string().optional(),
+        keywords: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -141,6 +142,7 @@ export const artistSettingsRouter = router({
         googleCalendarToken: input.googleCalendarToken,
         appleCalendarUrl: input.appleCalendarUrl,
         travelDates: input.travelDates,
+        keywords: input.keywords,
       } as any);
     }),
 

@@ -23,9 +23,10 @@ export const conversationsRouter = router({
           if (settings?.displayName) {
             otherUser.name = settings.displayName;
           }
-          // Expose funnel banner and slug for client profile cards
+          // Expose funnel banner, slug, and keywords for client profile cards
           (otherUser as any).publicSlug = settings?.publicSlug || null;
           (otherUser as any).funnelBannerUrl = settings?.funnelBannerUrl || null;
+          (otherUser as any).keywords = settings?.keywords || null;
         }
 
         const unreadCount = await db.getUnreadMessageCount(

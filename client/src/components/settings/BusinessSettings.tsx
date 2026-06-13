@@ -24,6 +24,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
     const [licenceNumber, setLicenceNumber] = useState("");
     const [depositAmount, setDepositAmount] = useState("");
     const [autoSendDepositInfo, setAutoSendDepositInfo] = useState(false);
+    const [keywords, setKeywords] = useState("");
 
     const debouncedAddress = useDebounce(businessAddress, 1000);
 
@@ -63,6 +64,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
             setLicenceNumber(artistSettings.licenceNumber || "");
             setDepositAmount(artistSettings.depositAmount?.toString() || "");
             setAutoSendDepositInfo(!!artistSettings.autoSendDepositInfo);
+            setKeywords(artistSettings.keywords || "");
         }
     }, [artistSettings]);
 
@@ -79,6 +81,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                 licenceNumber,
                 depositAmount: depositAmount ? parseInt(depositAmount) : undefined,
                 autoSendDepositInfo: autoSendDepositInfo,
+                keywords,
                 workSchedule: artistSettings.workSchedule,
                 services: artistSettings.services,
             });
@@ -166,6 +169,20 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                             <p className="text-xs text-muted-foreground">
                                 Required for generating health regulation logs (e.g. QLD
                                 Form 9)
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="keywords">Search Keywords</Label>
+                            <Input
+                                id="keywords"
+                                value={keywords}
+                                onChange={e => setKeywords(e.target.value)}
+                                placeholder="e.g. realism, portrait, colour, tamoko"
+                                className="bg-secondary/50 border-border"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Keywords help clients find you in the search feed. Separate with commas.
                             </p>
                         </div>
 
