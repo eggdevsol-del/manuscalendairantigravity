@@ -1,5 +1,5 @@
 import { eq, or } from "drizzle-orm";
-import { users, InsertUser } from "../../drizzle/schema";
+import { users, InsertUser, artistSettings } from "../../drizzle/schema";
 import { getDb } from "./core";
 import { ENV } from "../_core/env";
 
@@ -93,6 +93,7 @@ export async function getArtists() {
     return [];
   }
 
+  // Join users with their artistSettings for enriched discovery data
   const result = await db
     .select({
       id: users.id,
@@ -101,12 +102,22 @@ export async function getArtists() {
       avatar: users.avatar,
       bio: users.bio,
       instagramUsername: users.instagramUsername,
+      city: users.city,
+      // from artistSettings
+      businessName: artistSettings.businessName,
+      displayName: artistSettings.displayName,
+      businessAddress: artistSettings.businessAddress,
+      funnelBannerUrl: artistSettings.funnelBannerUrl,
+      keywords: artistSettings.keywords,
+      publicSlug: artistSettings.publicSlug,
     })
     .from(users)
+    .leftJoin(artistSettings, eq(artistSettings.userId, users.id))
     .where(eq(users.role, "artist"));
 
   return result;
 }
+
 
 export async function updateUserProfile(
   userId: string,
