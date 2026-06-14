@@ -179,6 +179,9 @@ export const artistSettings = mysqlTable(
     depositPercentage: int().default(25), // Free=25 fixed, Pro/Top configurable
     allowUpfrontPayment: tinyint().default(0), // Pro only, off by default
     instantPayoutsEnabled: tinyint().default(0), // Opt-in, ~1% fee
+    // ── Geo Location ──
+    lat: decimal({ precision: 10, scale: 7 }),  // Latitude for map pin
+    lng: decimal({ precision: 10, scale: 7 }),  // Longitude for map pin
   },
   table => [unique("artistSettings_publicSlug_unique").on(table.publicSlug)]
 );

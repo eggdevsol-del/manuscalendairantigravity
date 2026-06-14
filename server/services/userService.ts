@@ -110,6 +110,8 @@ export async function getArtists() {
       funnelBannerUrl: artistSettings.funnelBannerUrl,
       keywords: artistSettings.keywords,
       publicSlug: artistSettings.publicSlug,
+      lat: artistSettings.lat,
+      lng: artistSettings.lng,
     })
     .from(users)
     .leftJoin(artistSettings, eq(artistSettings.userId, users.id))
