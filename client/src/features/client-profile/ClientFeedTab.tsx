@@ -24,6 +24,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { CartProvider, useCart } from "@/features/storefront/CartContext";
 import { StorefrontProductCard } from "@/features/storefront/StorefrontProductCard";
 import { StorefrontCheckoutFAB } from "@/features/storefront/StorefrontCheckoutFAB";
+import { PortfolioExpand } from "@/features/client-profile/PortfolioExpand";
 
 const STYLE_FILTERS = [
   "All", "Realism", "Portrait", "Black & Grey", "Colour",
@@ -278,17 +279,7 @@ function ConsultationForm({
               disabled={createConsultation.isPending}
               className="flex-1 h-10 rounded-xl bg-primary text-white font-semibold text-sm disabled:opacity-40"
             >
-              {createConsultation.isPending ? "Sending..." : "Send Request ✓"}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Discover Artist Card ─────────────────────────────────────
-function DiscoverArtistCard({
+  function DiscoverArtistCard({
   artist,
   clientId,
 }: {
@@ -296,7 +287,8 @@ function DiscoverArtistCard({
   clientId: string;
 }) {
   const [, setLocation] = useLocation();
-  const [expandedSection, setExpandedSection] = useState<"storefront" | "consultation" | null>(null);
+  // null = collapsed | "portfolio" | "storefront" | "consultation"
+  const [expanded, setExpanded] = useState<"portfolio" | "storefront" | "consultation" | null>(null);
   const utils = trpc.useUtils();
 
   const getOrCreate = trpc.conversations.getOrCreate.useMutation({
@@ -312,88 +304,130 @@ function DiscoverArtistCard({
   const location = artist.city || (artist.businessAddress ? artist.businessAddress.split(",")[0] : null);
   const keywordList = (artist.keywords || "").split(",").map((k: string) => k.trim()).filter(Boolean);
 
-  const toggle = (section: "storefront" | "consultation") =>
-    setExpandedSection(prev => (prev === section ? null : section));
+  const toggle = (section: "portfolio" | "storefront" | "consultation") =>
+    setExpanded(prev => (prev === section ? null : section));
+
+  const handleMessage = () => {
+    if (clientId) getOrCreate.mutate({ artistId: artist.id, clientId });
+  };
 
   return (
     <div className="w-full rounded-2xl overflow-hidden bg-[#111] shadow-lg border border-border">
-      {/* Banner */}
-      <div className="relative h-[100px] overflow-hidden">
-        {bannerUrl
-          ? <img src={bannerUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
-          : <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/20 to-primary/10" />}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-black/40 to-transparent" />
-      </div>
+      {/* Tappable card header → toggles portfolio */}
+      <button
+        className="w-full text-left focus:outline-none"
+        onClick={() => toggle("portfolio")}
+      >
+        {/* Banner */}
+        <div className="relative h-[100px] overflow-hidden">
+          {bannerUrl
+            ? <img src={bannerUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            : <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/20 to-primary/10" />}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-black/40 to-transparent" />
+        </div>
 
-      {/* Info + actions row */}
-      <div className="relative -mt-7 flex items-end gap-3 px-4 pb-3">
-        <div className="w-12 h-12 rounded-full border-2 border-border overflow-hidden bg-secondary/50 shrink-0 shadow-lg">
-          {avatarUrl
-            ? <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
-            : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary to-accent">
-                <span className="text-white font-bold text-lg">{displayName.charAt(0).toUpperCase()}</span>
+        {/* Info + action buttons row */}
+        <div
+          className="relative -mt-7 flex items-end gap-3 px-4 pb-3"
+          onClick={e => e.stopPropagation()} // prevent card toggle when tapping buttons
+        >
+          {/* Avatar (part of the button but we stop propagation on action row) */}
+          <div className="w-12 h-12 rounded-full border-2 border-border overflow-hidden bg-secondary/50 shrink-0 shadow-lg">
+            {avatarUrl
+              ? <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+              : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary to-accent">
+                  <span className="text-white font-bold text-lg">{displayName.charAt(0).toUpperCase()}</span>
+                </div>
+            }
+          </div>
+          <div
+            className="flex-1 min-w-0 pb-1 cursor-pointer"
+            onClick={e => { e.stopPropagation(); toggle("portfolio"); }}
+          >
+            <p className="text-white font-bold text-base leading-tight truncate drop-shadow-md">{displayName}</p>
+            {location && (
+              <div className="flex items-center gap-1 mt-0.5">
+                <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
+                <p className="text-muted-foreground text-xs truncate">{location}</p>
               </div>
-          }
+            )}
+            {expanded === null && (
+              <p className="text-white/30 text-[10px] mt-0.5">Tap to view portfolio</p>
+            )}
+          </div>
+          {/* Action buttons */}
+          <div className="flex items-center gap-1.5 pb-1 shrink-0">
+            <button
+              onClick={() => toggle("storefront")}
+              className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all ${
+                expanded === "storefront"
+                  ? "bg-foreground text-background border-white"
+                  : "bg-secondary/50 text-white border-border"
+              }`}
+            >
+              <ShoppingBag className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => toggle("consultation")}
+              className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all ${
+                expanded === "consultation"
+                  ? "bg-primary text-white border-primary"
+                  : "bg-secondary/50 text-white border-border"
+              }`}
+            >
+              <CalendarPlus className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleMessage}
+              disabled={getOrCreate.isPending || !clientId}
+              className="w-9 h-9 rounded-full bg-secondary/50 text-white border border-border flex items-center justify-center disabled:opacity-50"
+            >
+              {getOrCreate.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
-        <div className="flex-1 min-w-0 pb-1">
-          <p className="text-white font-bold text-base leading-tight truncate drop-shadow-md">{displayName}</p>
-          {location && (
-            <div className="flex items-center gap-1 mt-0.5">
-              <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
-              <p className="text-muted-foreground text-xs truncate">{location}</p>
-            </div>
-          )}
-        </div>
-        {/* Action buttons */}
-        <div className="flex items-center gap-1.5 pb-1 shrink-0">
-          <button
-            onClick={() => toggle("storefront")}
-            className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all ${
-              expandedSection === "storefront"
-                ? "bg-foreground text-background border-white"
-                : "bg-secondary/50 text-white border-border"
-            }`}
-          >
-            <ShoppingBag className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => toggle("consultation")}
-            className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all ${
-              expandedSection === "consultation"
-                ? "bg-primary text-white border-primary"
-                : "bg-secondary/50 text-white border-border"
-            }`}
-          >
-            <CalendarPlus className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => clientId && getOrCreate.mutate({ artistId: artist.id, clientId })}
-            disabled={getOrCreate.isPending || !clientId}
-            className="w-9 h-9 rounded-full bg-secondary/50 text-white border border-border flex items-center justify-center disabled:opacity-50"
-          >
-            {getOrCreate.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
-          </button>
-        </div>
-      </div>
 
-      {/* Keywords */}
-      {keywordList.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 px-4 pb-3">
-          {keywordList.slice(0, 4).map((kw: string) => (
-            <span key={kw} className="px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-medium">
-              {kw}
-            </span>
-          ))}
-        </div>
-      )}
+        {/* Keywords */}
+        {keywordList.length > 0 && (
+          <div
+            className="flex flex-wrap gap-1.5 px-4 pb-3"
+            onClick={e => e.stopPropagation()}
+          >
+            {keywordList.slice(0, 4).map((kw: string) => (
+              <span key={kw} className="px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-medium">
+                {kw}
+              </span>
+            ))}
+          </div>
+        )}
+      </button>
 
       {/* Expandable sections */}
-      <AnimatePresence>
-        {expandedSection === "storefront" && (
+      <AnimatePresence initial={false}>
+        {expanded === "portfolio" && (
           <motion.div
+            key="portfolio"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="border-t border-border overflow-hidden"
+          >
+            <PortfolioExpand
+              artistId={artist.id}
+              artistName={displayName}
+              onMessage={handleMessage}
+              showMessageCTA={!!clientId}
+            />
+          </motion.div>
+        )}
+        {expanded === "storefront" && (
+          <motion.div
+            key="storefront"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="border-t border-border overflow-hidden"
           >
             <CartProvider>
@@ -404,16 +438,18 @@ function DiscoverArtistCard({
             </CartProvider>
           </motion.div>
         )}
-        {expandedSection === "consultation" && (
+        {expanded === "consultation" && (
           <motion.div
+            key="consultation"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="border-t border-border overflow-hidden"
           >
             <ConsultationForm
               artist={artist}
-              onClose={() => setExpandedSection(null)}
+              onClose={() => setExpanded(null)}
             />
           </motion.div>
         )}
@@ -421,6 +457,7 @@ function DiscoverArtistCard({
     </div>
   );
 }
+
 
 // ── Main feed tab ────────────────────────────────────────────
 interface ClientFeedTabProps {

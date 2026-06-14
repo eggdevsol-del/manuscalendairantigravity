@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Settings, Plus, Sun, Moon, Crown, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane, Banknote, Store } from "lucide-react";
+import { Settings, Plus, Sun, Moon, Crown, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane, Banknote, Store, Images } from "lucide-react";
 import { useLocation } from "wouter";
 import { FABMenu, FABMenuItem } from "@/ui/FABMenu";
 import { cn } from "@/lib/utils";
@@ -26,10 +26,11 @@ import { DataImportSettings } from "../settings/DataImportSettings";
 import { FunnelSettings } from "../FunnelSettings";
 import { DangerZoneSettings } from "../settings/DangerZoneSettings";
 import { TravelSettings } from "../settings/TravelSettings";
+import { PortfolioSettings } from "../settings/PortfolioSettings";
 import StorefrontSetupWizard from "@/features/storefront/StorefrontSetupWizard";
 // PaymentSettings moved to dedicated /bank-payouts page
 
-type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions" | "data-import" | "booking-link" | "travel" | "danger-zone" | "payments" | "storefront";
+type SettingsView = "main" | "settings-menu" | "profile" | "business" | "work-hours" | "notifications" | "regulation" | "consultations" | "policies" | "clients" | "studio" | "subscriptions" | "quick-actions" | "data-import" | "booking-link" | "travel" | "danger-zone" | "payments" | "storefront" | "portfolio";
 
 interface CentralNavFABProps {
   className?: string;
@@ -118,6 +119,13 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           label: "Storefront",
           icon: Store,
           onClick: () => handleViewChange("storefront"),
+          closeOnClick: false,
+        },
+        {
+          id: "portfolio",
+          label: "Portfolio",
+          icon: Images,
+          onClick: () => handleViewChange("portfolio"),
           closeOnClick: false,
         },
         {
@@ -443,6 +451,11 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
         {activeSettingsView === "storefront" && panelReady && (
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <StorefrontSetupWizard onClose={() => handleViewChange("settings-menu")} />
+          </div>
+        )}
+        {activeSettingsView === "portfolio" && panelReady && (
+          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
+            <PortfolioSettings onBack={() => handleViewChange("settings-menu")} />
           </div>
         )}
         {/* Bank Payouts moved to dedicated /bank-payouts page */}
