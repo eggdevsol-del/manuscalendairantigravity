@@ -279,7 +279,17 @@ function ConsultationForm({
               disabled={createConsultation.isPending}
               className="flex-1 h-10 rounded-xl bg-primary text-white font-semibold text-sm disabled:opacity-40"
             >
-  function DiscoverArtistCard({
+              {createConsultation.isPending ? "Sending..." : "Send Request ✓"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Discover Artist Card ─────────────────────────────────────
+function DiscoverArtistCard({
   artist,
   clientId,
 }: {
