@@ -48,15 +48,28 @@ export const consultationsRouter = router({
         artistId: z.string(),
         subject: z.string(),
         description: z.string(),
+        placement: z.string().optional(),
+        style: z.string().optional(),
+        referenceUrls: z.array(z.string()).optional(),
         preferredDate: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Embed tattoo-specific metadata into description as structured text
+      // so the artist sees all details without needing a schema change
+      const parts: string[] = [];
+      if (input.style) parts.push(`Style: ${input.style}`);
+      if (input.placement) parts.push(`Placement: ${input.placement}`);
+      if (input.description) parts.push(`\nDescription:\n${input.description}`);
+      if (input.referenceUrls?.length) {
+        parts.push(`\nReferences:\n${input.referenceUrls.join("\n")}`);
+      }
+
       return db.createConsultation({
         clientId: ctx.user.id,
         artistId: input.artistId,
         subject: input.subject,
-        description: input.description,
+        description: parts.join("\n"),
         preferredDate: input.preferredDate
           ? new Date(input.preferredDate).toISOString()
           : undefined,
