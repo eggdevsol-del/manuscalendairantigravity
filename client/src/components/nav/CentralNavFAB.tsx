@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Settings, Plus, Sun, Moon, Crown, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane, Banknote, Store, Images } from "lucide-react";
+import { Settings, Menu, Sun, Moon, Crown, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane, Banknote, Store, Images } from "lucide-react";
 import { useLocation } from "wouter";
 import { FABMenu, FABMenuItem } from "@/ui/FABMenu";
 import { cn } from "@/lib/utils";
@@ -349,7 +349,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
       )}
     >
       <FABMenu
-        toggleIcon={<Plus className="w-6 h-6" />}
+        toggleIcon={<Menu className="w-6 h-6" />}
         items={
           !fabChildren && activeSettingsView === "main"
             ? allItems
