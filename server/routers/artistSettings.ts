@@ -5,6 +5,7 @@ import { parseExternalCalendar } from "../services/icalParser";
 import { getDb } from "../services/core";
 import * as schema from "../../drizzle/schema";
 import { eq, and, or, like, inArray } from "drizzle-orm";
+import { geocodeAddress } from "../services/geocode";
 
 export const artistSettingsRouter = router({
   get: artistProcedure.query(async ({ ctx }) => {
@@ -118,9 +119,25 @@ export const artistSettingsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Auto-geocode businessAddress → lat/lng using OpenStreetMap Nominatim
+      let geoUpdate: { lat?: string; lng?: string } = {};
+      if (input.businessAddress) {
+        const existing = await db.getArtistSettings(ctx.user.id);
+        const addressChanged =
+          input.businessAddress !== existing?.businessAddress;
+
+        if (addressChanged || !existing?.lat || !existing?.lng) {
+          const coords = await geocodeAddress(input.businessAddress);
+          if (coords) {
+            geoUpdate = { lat: coords.lat, lng: coords.lng };
+          }
+        }
+      }
+
       return db.upsertArtistSettings({
         userId: ctx.user.id,
         ...input,
+        ...geoUpdate,
         autoSendDepositInfo:
           input.autoSendDepositInfo !== undefined
             ? input.autoSendDepositInfo
