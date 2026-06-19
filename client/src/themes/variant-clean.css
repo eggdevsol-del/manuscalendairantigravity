@@ -1,0 +1,465 @@
+/**
+ * variant-clean.css — "Flat White" UI Variant
+ *
+ * Activated via: ?ui=clean in the URL
+ * Scoped under: html[data-ui-variant="clean"]
+ *
+ * Design intent:
+ *   - Pure white surfaces, zero glassmorphism
+ *   - Icons-only bottom nav with soft gradient top edge
+ *   - FAB toggle as inline icon, not a round floating button
+ *   - Purple primary for all interactive elements
+ *   - Minimal shadows, clean borders
+ *
+ * Forces light mode regardless of dark/noir toggle state.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. COLOR VARIABLES — Pure White Foundation
+   Forces light appearance even when .dark or .noir is active.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html[data-ui-variant="clean"],
+html[data-ui-variant="clean"].dark,
+html[data-ui-variant="clean"].noir {
+  /* Base surfaces */
+  --background: #ffffff;
+  --foreground: #1a1a2e;
+
+  /* Cards */
+  --card: #ffffff;
+  --card-foreground: #1a1a2e;
+
+  /* Popover */
+  --popover: #ffffff;
+  --popover-foreground: #1a1a2e;
+
+  /* Primary — Deep Violet (unchanged from light theme) */
+  --primary: oklch(0.55 0.15 280);
+  --primary-foreground: #ffffff;
+
+  /* Secondary */
+  --secondary: #f5f5f7;
+  --secondary-foreground: #1a1a2e;
+
+  /* Muted */
+  --muted: #f0f0f2;
+  --muted-foreground: #6b7280;
+
+  /* Accent — softer purple tint */
+  --accent: #f0eef5;
+  --accent-foreground: #1a1a2e;
+
+  /* Destructive */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  /* Borders & Inputs */
+  --border: #e5e5ea;
+  --input: #e5e5ea;
+  --ring: oklch(0.55 0.15 280);
+
+  /* Charts */
+  --chart-1: oklch(0.55 0.15 280);
+  --chart-2: oklch(0.5 0.2 280);
+  --chart-3: #6b7280;
+  --chart-4: #9ca3af;
+  --chart-5: #d1d5db;
+
+  /* Sidebar */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a2e;
+  --sidebar-primary: oklch(0.55 0.15 280);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5f5f7;
+  --sidebar-accent-foreground: #1a1a2e;
+  --sidebar-border: #e5e5ea;
+  --sidebar-ring: oklch(0.55 0.15 280);
+
+  /* Kill the background gradient entirely */
+  --bg-gradient: #ffffff;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. BACKGROUND — Flat White, No Gradients
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Override the fixed background pseudo-element */
+html[data-ui-variant="clean"]::before {
+  background: #ffffff !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3. KILL GLASSMORPHISM — Globally Remove Blur & Glass Effects
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Kill backdrop-filter on ALL elements (nuclear but correct for this variant) */
+[data-ui-variant="clean"] [class*="backdrop-blur"],
+[data-ui-variant="clean"] .liquid-glass,
+[data-ui-variant="clean"] .glass-card,
+[data-ui-variant="clean"] .floating-nav,
+[data-ui-variant="clean"] .mobile-header,
+[data-ui-variant="clean"] .mobile-bottom-nav {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Glass card classes — clean white surface */
+[data-ui-variant="clean"] .liquid-glass,
+[data-ui-variant="clean"] .glass-card,
+[data-ui-variant="clean"] .card,
+[data-ui-variant="clean"] .floating-nav {
+  background: #ffffff !important;
+  box-shadow: none !important;
+  border: 1px solid #e5e5ea !important;
+  border-top: 1px solid #e5e5ea !important;
+  border-radius: 12px !important;
+}
+
+/* Dark/noir glass overrides — same clean treatment */
+[data-ui-variant="clean"] .dark .liquid-glass,
+[data-ui-variant="clean"] .dark .glass-card,
+[data-ui-variant="clean"] .dark .card,
+[data-ui-variant="clean"] .dark .floating-nav,
+[data-ui-variant="clean"] .noir .liquid-glass,
+[data-ui-variant="clean"] .noir .glass-card,
+[data-ui-variant="clean"] .noir .card,
+[data-ui-variant="clean"] .noir .floating-nav {
+  background: #ffffff !important;
+  box-shadow: none !important;
+  border: 1px solid #e5e5ea !important;
+  border-top: 1px solid #e5e5ea !important;
+}
+
+/* Mobile header — solid white */
+[data-ui-variant="clean"] .mobile-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e5e5ea !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4. BOTTOM NAV — Solid White, Icons Only, Gradient Top Border
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Main nav container (the motion.div inside <nav>) — solid white, no blur */
+[data-ui-variant="clean"] nav.fixed > div {
+  background: #ffffff !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border-top: none !important;
+  position: relative;
+}
+
+/* Soft gradient fade top border — replaces the hard 1px line */
+[data-ui-variant="clean"] nav.fixed > div::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    #d1d5db 15%,
+    #d1d5db 85%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Hide nav button labels (icons-only) */
+[data-ui-variant="clean"] nav.fixed button > span {
+  display: none !important;
+}
+
+/* Hide the active dot indicator */
+[data-ui-variant="clean"] nav.fixed button > div.absolute {
+  display: none !important;
+}
+
+/* Nav button icons — consistent gray, active = dark */
+[data-ui-variant="clean"] nav.fixed button {
+  color: #9ca3af !important;
+}
+
+[data-ui-variant="clean"] nav.fixed button svg {
+  color: inherit !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* Active nav button — dark gray, no glow */
+[data-ui-variant="clean"] nav.fixed a:has(button) button[class*="text-gray-900"],
+[data-ui-variant="clean"] nav.fixed button[class*="text-gray-900"] {
+  color: #1a1a2e !important;
+}
+
+/* Remove hover backgrounds on nav buttons */
+[data-ui-variant="clean"] nav.fixed button:hover {
+  background: transparent !important;
+}
+
+/* Contextual row border — also gradient fade */
+[data-ui-variant="clean"] nav.fixed > div > div > div:nth-child(2) {
+  border-top: none !important;
+  position: relative;
+}
+[data-ui-variant="clean"] nav.fixed > div > div > div:nth-child(2)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    #e5e5ea 15%,
+    #e5e5ea 85%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   5. FAB TOGGLE — Inline Icon, Not a Round Floating Button
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Target the FAB toggle button (the round shadow button in the nav) */
+[data-ui-variant="clean"] nav.fixed button[class*="rounded-full"][class*="shadow"] {
+  border-radius: 8px !important;
+  width: 48px !important;
+  height: 48px !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border: none !important;
+  color: #9ca3af !important;
+}
+
+[data-ui-variant="clean"] nav.fixed button[class*="rounded-full"][class*="shadow"]:hover {
+  background: #f5f5f7 !important;
+  color: #1a1a2e !important;
+}
+
+/* When FAB is open — subtle indicator */
+[data-ui-variant="clean"] nav.fixed button[class*="rounded-full"][class*="shadow"][class*="bg-foreground"] {
+  background: #f0eef5 !important;
+  color: oklch(0.55 0.15 280) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   6. FAB PANEL & MENU — Clean White, No Glass
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* FAB menu panel (portaled to body) */
+[data-ui-variant="clean"] [class*="rounded-[2rem]"][class*="shadow-2xl"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: #ffffff !important;
+  border: 1px solid #e5e5ea !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06),
+              0 1px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Large FAB panel (settings sub-views) */
+[data-ui-variant="clean"] [class*="rounded-[32px]"][class*="shadow-2xl"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: #ffffff !important;
+  border: 1px solid #e5e5ea !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08),
+              0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* FAB backdrop overlay — lighter for clean variant */
+[data-ui-variant="clean"] .fixed.inset-0[class*="z-[999]"] > div:first-child {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* FAB menu item buttons — clean circular style */
+[data-ui-variant="clean"] [class*="rounded-full"][class*="shadow-lg"][class*="border"][class*="bg-card"] {
+  background: #f5f5f7 !important;
+  border: 1px solid #e5e5ea !important;
+  box-shadow: none !important;
+}
+
+[data-ui-variant="clean"] [class*="rounded-full"][class*="shadow-lg"][class*="border"][class*="bg-card"]:hover {
+  background: #ebebed !important;
+}
+
+/* FAB highlight buttons (amber) — use purple instead */
+[data-ui-variant="clean"] [class*="bg-[#E09F3E]"] {
+  background: oklch(0.55 0.15 280) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   7. SHEETS & OVERLAYS — No Blur, Clean White
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Sheet main container (rounded top panel that slides up) */
+[data-ui-variant="clean"] [class*="rounded-t-[2.5rem]"][class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: #ffffff !important;
+}
+
+[data-ui-variant="clean"] [class*="rounded-t-[2.5rem]"] {
+  background: #ffffff !important;
+}
+
+/* Sheet overlay backdrop */
+[data-ui-variant="clean"] [class*="bg-background/80"][class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Sheet highlight line (the subtle gradient at top) — softer */
+[data-ui-variant="clean"] [class*="bg-gradient-to-l"][class*="from-white"] {
+  opacity: 0 !important;
+}
+[data-ui-variant="clean"] [class*="bg-gradient-to-r"][class*="via-white"] {
+  opacity: 0 !important;
+}
+
+/* Sheet headers with backdrop blur */
+[data-ui-variant="clean"] [class*="bg-secondary/50"][class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: #f5f5f7 !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   8. CARDS — Clean White with Subtle Border
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* General card-like surfaces using bg-secondary or bg-card */
+[data-ui-variant="clean"] [class*="bg-card"] {
+  background: #ffffff !important;
+}
+
+/* Transparent cards (dark mode style) — make white */
+[data-ui-variant="clean"] [class*="bg-transparent"][class*="rounded-t-"] {
+  background: #ffffff !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   9. BUTTONS — Purple Primary, Clean Shadows
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Primary buttons — clean shadow instead of glow */
+[data-ui-variant="clean"] [class*="bg-primary"] {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Primary buttons on hover */
+[data-ui-variant="clean"] [class*="bg-primary"]:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Destructive buttons — clean */
+[data-ui-variant="clean"] [class*="bg-destructive"] {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Secondary surfaces */
+[data-ui-variant="clean"] [class*="bg-secondary"] {
+  background-color: #f5f5f7 !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   10. SCROLLBAR — Lighter for white surfaces
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+[data-ui-variant="clean"] ::-webkit-scrollbar-thumb {
+  background: #d1d5db !important;
+}
+
+[data-ui-variant="clean"] ::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af !important;
+}
+
+[data-ui-variant="clean"] * {
+  scrollbar-color: #d1d5db transparent !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   11. TEXT — Force Light-mode Colors
+   Overrides dark: and noir: variant classes applied inline via Tailwind.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Force dark-mode text overrides back to light-mode values */
+[data-ui-variant="clean"] [class*="dark:text-white"] {
+  color: #1a1a2e !important;
+}
+
+[data-ui-variant="clean"] [class*="dark:text-muted-foreground"] {
+  color: #6b7280 !important;
+}
+
+[data-ui-variant="clean"] [class*="noir:text-white"] {
+  color: #1a1a2e !important;
+}
+
+/* Force dark-mode bg overrides */
+[data-ui-variant="clean"] [class*="dark:bg-slate-950"] {
+  background-color: #ffffff !important;
+}
+
+[data-ui-variant="clean"] [class*="dark:bg-secondary"] {
+  background-color: #f5f5f7 !important;
+}
+
+/* Dark mode shadows/glows — kill them */
+[data-ui-variant="clean"] [class*="dark:shadow-"] {
+  box-shadow: none !important;
+}
+
+[data-ui-variant="clean"] [class*="dark:drop-shadow-"],
+[data-ui-variant="clean"] [class*="noir:drop-shadow-"] {
+  filter: none !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   12. MISC CLEAN-UP
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Inset shadow highlights (glass effect accents) — hide */
+[data-ui-variant="clean"] [class*="shadow-[inset"] {
+  box-shadow: none !important;
+}
+
+/* Badge styling — keep clean */
+[data-ui-variant="clean"] [class*="ring-background"] {
+  --tw-ring-color: #ffffff !important;
+}
+
+/* Setup checklist / dashboard widgets — clean borders */
+[data-ui-variant="clean"] [class*="shadow-xl"] {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid #e5e5ea !important;
+}
+
+/* Toast notifications — clean */
+[data-ui-variant="clean"] [data-sonner-toaster] [data-sonner-toast] {
+  background: #ffffff !important;
+  border: 1px solid #e5e5ea !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}

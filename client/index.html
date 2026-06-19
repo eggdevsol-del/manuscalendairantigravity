@@ -19,6 +19,22 @@
 
   <!-- OneSignal Web SDK for PWA -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
+  <!-- UI Variant Loader (dev/test only) — activate with ?ui=clean, reset with ?ui=reset -->
+  <script>
+    (function() {
+      var p = new URLSearchParams(location.search).get('ui');
+      if (p === 'reset') { sessionStorage.removeItem('ui-variant'); return; }
+      var v = p || sessionStorage.getItem('ui-variant');
+      if (v) {
+        sessionStorage.setItem('ui-variant', v);
+        document.documentElement.setAttribute('data-ui-variant', v);
+        var l = document.createElement('link');
+        l.rel = 'stylesheet'; l.href = '/src/themes/variant-' + v + '.css';
+        document.head.appendChild(l);
+      }
+    })();
+  </script>
 </head>
 
 <body>
