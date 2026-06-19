@@ -142,14 +142,27 @@ html[data-ui-variant="clean"]::before {
 
 /* ═══════════════════════════════════════════════════════════════════════════
    4. BOTTOM NAV — Solid White, Icons Only, Gradient Top Border
+   The BottomNav uses bg-gray-100/90 (gray + transparency) and backdrop-blur.
+   These overrides force solid white with zero transparency.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Main nav container (the motion.div inside <nav>) — solid white, no blur */
-[data-ui-variant="clean"] nav.fixed > div {
+/* The <nav> element itself */
+[data-ui-variant="clean"] nav.fixed {
+  background-color: #ffffff !important;
+}
+
+/* Main nav container (the motion.div inside <nav>) — SOLID white, no blur, no transparency */
+[data-ui-variant="clean"] nav.fixed > div,
+[data-ui-variant="clean"] nav.fixed > [class*="bg-gray"],
+[data-ui-variant="clean"] nav.fixed > [class*="bg-slate"],
+[data-ui-variant="clean"] nav.fixed > [class*="bg-background"] {
   background: #ffffff !important;
+  background-color: #ffffff !important;
+  opacity: 1 !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
   border-top: none !important;
+  border-color: transparent !important;
   position: relative;
 }
 
@@ -185,12 +198,14 @@ html[data-ui-variant="clean"]::before {
 /* Nav button icons — consistent gray, active = dark */
 [data-ui-variant="clean"] nav.fixed button {
   color: #9ca3af !important;
+  background: transparent !important;
 }
 
 [data-ui-variant="clean"] nav.fixed button svg {
   color: inherit !important;
   filter: none !important;
   -webkit-filter: none !important;
+  drop-shadow: none !important;
 }
 
 /* Active nav button — dark gray, no glow */
@@ -204,9 +219,11 @@ html[data-ui-variant="clean"]::before {
   background: transparent !important;
 }
 
-/* Contextual row border — also gradient fade */
+/* Contextual row — also solid white with gradient fade */
 [data-ui-variant="clean"] nav.fixed > div > div > div:nth-child(2) {
   border-top: none !important;
+  border-color: transparent !important;
+  background: #ffffff !important;
   position: relative;
 }
 [data-ui-variant="clean"] nav.fixed > div > div > div:nth-child(2)::before {
@@ -228,29 +245,42 @@ html[data-ui-variant="clean"]::before {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   5. FAB TOGGLE — Inline Icon, Not a Round Floating Button
+   5. FAB TOGGLE — Solid Inline Icon, Not a Round Floating Button
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Target the FAB toggle button (the round shadow button in the nav) */
+/* Target the FAB toggle button — strip round shape, make solid and flat */
 [data-ui-variant="clean"] nav.fixed button[class*="rounded-full"][class*="shadow"] {
   border-radius: 8px !important;
   width: 48px !important;
   height: 48px !important;
   box-shadow: none !important;
   background: transparent !important;
+  background-color: transparent !important;
   border: none !important;
   color: #9ca3af !important;
+  opacity: 1 !important;
 }
 
 [data-ui-variant="clean"] nav.fixed button[class*="rounded-full"][class*="shadow"]:hover {
   background: #f5f5f7 !important;
+  background-color: #f5f5f7 !important;
   color: #1a1a2e !important;
 }
 
-/* When FAB is open — subtle indicator */
+/* When FAB is open — solid subtle indicator */
 [data-ui-variant="clean"] nav.fixed button[class*="rounded-full"][class*="shadow"][class*="bg-foreground"] {
   background: #f0eef5 !important;
+  background-color: #f0eef5 !important;
   color: oklch(0.55 0.15 280) !important;
+  opacity: 1 !important;
+}
+
+/* Kill the amber/gold background on closed FAB toggle */
+[data-ui-variant="clean"] nav.fixed button[class*="bg-[#E09F3E]"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #9ca3af !important;
+  opacity: 1 !important;
 }
 
 
