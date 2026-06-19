@@ -141,48 +141,40 @@ html[data-ui-variant="clean"]::before {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   4. BOTTOM NAV — Solid White, Icons Only, Gradient Top Border
+   4. BOTTOM NAV — Solid White, Icons Only, No Top Border
    The BottomNav uses bg-gray-100/90 (gray + transparency) and backdrop-blur.
-   These overrides force solid white with zero transparency.
+   These overrides force solid white with zero transparency and zero borders.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* The <nav> element itself */
 [data-ui-variant="clean"] nav.fixed {
   background-color: #ffffff !important;
+  border: none !important;
 }
 
-/* Main nav container (the motion.div inside <nav>) — SOLID white, no blur, no transparency */
+/* Main nav container (the motion.div inside <nav>) — SOLID white, NO border */
 [data-ui-variant="clean"] nav.fixed > div,
 [data-ui-variant="clean"] nav.fixed > [class*="bg-gray"],
 [data-ui-variant="clean"] nav.fixed > [class*="bg-slate"],
-[data-ui-variant="clean"] nav.fixed > [class*="bg-background"] {
+[data-ui-variant="clean"] nav.fixed > [class*="bg-background"],
+[data-ui-variant="clean"] nav.fixed > [class*="border-gray"],
+[data-ui-variant="clean"] nav.fixed > [class*="border-t"],
+[data-ui-variant="clean"] nav.fixed > [class*="border-border"] {
   background: #ffffff !important;
   background-color: #ffffff !important;
   opacity: 1 !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
+  border: none !important;
   border-top: none !important;
   border-color: transparent !important;
-  position: relative;
 }
 
-/* Soft gradient fade top border — replaces the hard 1px line */
-[data-ui-variant="clean"] nav.fixed > div::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent 0%,
-    #d1d5db 15%,
-    #d1d5db 85%,
-    transparent 100%
-  );
-  pointer-events: none;
-  z-index: 1;
+/* Kill any pseudo-element borders */
+[data-ui-variant="clean"] nav.fixed > div::before,
+[data-ui-variant="clean"] nav.fixed > div::after {
+  display: none !important;
+  content: none !important;
 }
 
 /* Hide nav button labels (icons-only) */
@@ -219,28 +211,17 @@ html[data-ui-variant="clean"]::before {
   background: transparent !important;
 }
 
-/* Contextual row — also solid white with gradient fade */
+/* Contextual row — solid white, no border */
 [data-ui-variant="clean"] nav.fixed > div > div > div:nth-child(2) {
+  border: none !important;
   border-top: none !important;
   border-color: transparent !important;
   background: #ffffff !important;
-  position: relative;
 }
-[data-ui-variant="clean"] nav.fixed > div > div > div:nth-child(2)::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent 0%,
-    #e5e5ea 15%,
-    #e5e5ea 85%,
-    transparent 100%
-  );
-  pointer-events: none;
+[data-ui-variant="clean"] nav.fixed > div > div > div:nth-child(2)::before,
+[data-ui-variant="clean"] nav.fixed > div > div > div:nth-child(2)::after {
+  display: none !important;
+  content: none !important;
 }
 
 
