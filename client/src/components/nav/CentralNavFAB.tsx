@@ -387,7 +387,16 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
       onClick: () => handleViewChange("policies"),
       closeOnClick: false,
     },
-  ], [handleViewChange]);
+    {
+      id: "logout",
+      label: "Log Out",
+      icon: LogOut,
+      onClick: async () => {
+        await logout();
+        setLocation("/");
+      },
+    },
+  ], [handleViewChange, logout, setLocation]);
 
   // ── Resolve active menu items ────────────────────────────────────────
   /** Returns the FABMenuItem[] to display for the current activeSettingsView */
