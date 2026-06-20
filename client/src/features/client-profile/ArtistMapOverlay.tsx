@@ -18,6 +18,8 @@ import "leaflet/dist/leaflet.css";
 import { X, Search, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ClientArtistCard } from "@/features/client-profile/ClientArtistCard";
+import { FavouriteHeartButton } from "@/features/client-profile/FavouriteHeartButton";
+import { useFavourites } from "@/features/client-profile/useFavourites";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
@@ -130,6 +132,7 @@ interface ArtistMapOverlayProps {
 
 export function ArtistMapOverlay({ onClose, conversations }: ArtistMapOverlayProps) {
   const { user } = useAuth();
+  const { isFavourited, toggleFavourite } = useFavourites();
   const [activeFilter, setActiveFilter] = useState("All Styles");
   const [searchText, setSearchText] = useState("");
   const [showSearchArea, setShowSearchArea] = useState(false);
@@ -351,6 +354,8 @@ export function ArtistMapOverlay({ onClose, conversations }: ArtistMapOverlayPro
                 artist={selectedArtist!}
                 clientId={user?.id || ""}
                 onDismiss={() => setSelectedArtist(null)}
+                isFavourited={isFavourited(selectedArtist!.id)}
+                onToggleFavourite={toggleFavourite}
               />
             ) : (
               <div>
@@ -372,11 +377,13 @@ export function ArtistMapOverlay({ onClose, conversations }: ArtistMapOverlayPro
 
 // ── Discovery artist popup (no conversation yet) ─────────────
 function DiscoveryArtistPopup({
-  artist, clientId, onDismiss,
+  artist, clientId, onDismiss, isFavourited, onToggleFavourite,
 }: {
   artist: any;
   clientId: string;
   onDismiss: () => void;
+  isFavourited: boolean;
+  onToggleFavourite: (artistId: string) => void;
 }) {
   const utils = trpc.useUtils();
   const [, setLocation] = useLocation();
@@ -434,6 +441,11 @@ function DiscoveryArtistPopup({
       )}
 
       <div className="flex gap-2 px-4 pb-3">
+        <FavouriteHeartButton
+          artistId={artist.id}
+          isFavourited={isFavourited}
+          onToggle={onToggleFavourite}
+        />
         <button
           onClick={() => clientId && getOrCreate.mutate({ artistId: artist.id, clientId })}
           disabled={getOrCreate.isPending || !clientId}

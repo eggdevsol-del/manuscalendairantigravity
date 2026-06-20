@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Settings, Menu, Sun, Moon, Crown, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane, Banknote, Store, Images } from "lucide-react";
+import { Settings, Menu, Sun, Moon, Crown, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane, Banknote, Store, Images, Clock, Camera } from "lucide-react";
 import { useLocation } from "wouter";
 import { FABMenu, FABMenuItem } from "@/ui/FABMenu";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,8 @@ import { DangerZoneSettings } from "../settings/DangerZoneSettings";
 import { TravelSettings } from "../settings/TravelSettings";
 import { PortfolioSettings } from "../settings/PortfolioSettings";
 import StorefrontSetupWizard from "@/features/storefront/StorefrontSetupWizard";
+import { FormsCard, PhotosCard, HistoryCard } from "@/features/profile/components/ContentCards";
+import { useClientProfileController } from "@/features/profile/useClientProfileController";
 // PaymentSettings moved to dedicated /bank-payouts page
 // SubscriptionSettings & QuickActionsSettings removed from FAB — accessible via their routes
 
@@ -53,7 +55,10 @@ type SettingsView =
   | "danger-zone"
   | "payments"
   | "storefront"
-  | "portfolio";
+  | "portfolio"
+  | "forms"
+  | "photos"
+  | "history";
 
 /** Map each leaf settings view to its parent category for back-navigation */
 const leafToCategory: Partial<Record<SettingsView, SettingsView>> = {
@@ -87,6 +92,24 @@ interface CentralNavFABProps {
  *  4. Bank Payouts           (standalone — routes to /bank-payouts)
  *  5. System & Preferences   (Notifications, UI Debug, Updates, Log Out, Danger Zone)
  */
+
+/** Reusable panel wrapper for client FAB settings sub-views */
+function ClientSettingsPanel({ onBack, title, children }: { onBack: () => void; title: string; children: React.ReactNode }) {
+  return (
+    <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0">
+        <button onClick={onBack} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-secondary/50 transition-colors">
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <h2 className="text-lg font-bold">{title}</h2>
+      </div>
+      <div className="flex-1 overflow-y-auto mobile-scroll p-4">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function CentralNavFAB({ className }: CentralNavFABProps) {
   const [, setLocation] = useLocation();
   const { theme, toggleTheme } = useTheme();
@@ -97,6 +120,11 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
   const { user, logout } = useAuth();
   const { showDebugLabels, setShowDebugLabels } = useUIDebug();
   const [activeSettingsView, setActiveSettingsView] = useState<SettingsView>("main");
+
+  // Client profile data — only fetched for client role (used for Forms/Photos/History panels)
+  const isClient = user?.role === "client";
+  const clientProfileController = useClientProfileController();
+  const clientProfileData = isClient ? clientProfileController : null;
 
   // Views that are "menu-level" — not full panels
   const isMenuView = (view: SettingsView) =>
@@ -374,17 +402,31 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
       closeOnClick: false,
     },
     {
-      id: "consultations",
-      label: "Consultations",
-      icon: Calendar,
-      onClick: () => handleViewChange("consultations"),
-      closeOnClick: false,
-    },
-    {
       id: "policies",
       label: "Policies",
       icon: Bell,
       onClick: () => handleViewChange("policies"),
+      closeOnClick: false,
+    },
+    {
+      id: "forms",
+      label: "Forms",
+      icon: FileText,
+      onClick: () => handleViewChange("forms"),
+      closeOnClick: false,
+    },
+    {
+      id: "photos",
+      label: "Photos",
+      icon: Camera,
+      onClick: () => handleViewChange("photos"),
+      closeOnClick: false,
+    },
+    {
+      id: "history",
+      label: "History",
+      icon: Clock,
+      onClick: () => handleViewChange("history"),
       closeOnClick: false,
     },
     {
@@ -602,6 +644,21 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
           <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <PortfolioSettings onBack={() => handleViewChange(getBackTarget("portfolio"))} />
           </div>
+        )}
+        {activeSettingsView === "forms" && panelReady && (
+          <ClientSettingsPanel onBack={() => handleViewChange(getBackTarget("forms"))} title="Forms">
+            <FormsCard forms={clientProfileData?.forms || []} />
+          </ClientSettingsPanel>
+        )}
+        {activeSettingsView === "photos" && panelReady && (
+          <ClientSettingsPanel onBack={() => handleViewChange(getBackTarget("photos"))} title="Photos">
+            <PhotosCard photos={clientProfileData?.photos || []} isEditMode={false} />
+          </ClientSettingsPanel>
+        )}
+        {activeSettingsView === "history" && panelReady && (
+          <ClientSettingsPanel onBack={() => handleViewChange(getBackTarget("history"))} title="History">
+            <HistoryCard history={clientProfileData?.history || []} />
+          </ClientSettingsPanel>
         )}
         {/* Bank Payouts moved to dedicated /bank-payouts page */}
         {fabChildren && activeSettingsView === "main" && fabChildren}

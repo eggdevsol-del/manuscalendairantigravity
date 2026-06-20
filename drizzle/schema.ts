@@ -2252,3 +2252,23 @@ export type PurchaseOrder = InferSelectModel<typeof purchaseOrders>;
 export type PurchaseOrderItem = InferSelectModel<typeof purchaseOrderItems>;
 export type StockAdjustment = InferSelectModel<typeof stockAdjustments>;
 export type MerchantAccountingLog = InferSelectModel<typeof merchantAccountingLog>;
+
+// ── Client Favourites ──
+
+export const favouriteArtists = mysqlTable(
+  "favourite_artists",
+  {
+    id: int().primaryKey().autoincrement(),
+    clientId: varchar({ length: 64 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    artistId: varchar({ length: 64 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
+  },
+  table => [unique("fav_client_artist").on(table.clientId, table.artistId)]
+);
+
+export type InsertFavouriteArtist = InferInsertModel<typeof favouriteArtists>;
+export type SelectFavouriteArtist = InferSelectModel<typeof favouriteArtists>;

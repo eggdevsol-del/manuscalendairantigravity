@@ -1,151 +1,43 @@
-import { useState, useMemo, useEffect } from "react";
+/**
+ * ClientProfile.tsx
+ * ─────────────────────────────────────────────────────────
+ * Client home page — feed layout (no tabs).
+ *
+ * Layout:
+ *   FloatingProfileIcon (top-right)
+ *   MyArtistsSection (conditional: conversations + favourites)
+ *   UpcomingWidget (next 1-2 appointments)
+ *   DiscoverArtists (ClientFeedTab discover section)
+ */
+import { useState, useMemo } from "react";
 import { useClientProfileController } from "@/features/profile/useClientProfileController";
-import { ProfileHeader } from "@/features/profile/components/ProfileHeader";
-import { ProfileSwipeCarousel } from "@/features/profile/components/ProfileSwipeCarousel";
 
-import { motion } from "framer-motion";
-import {
-  PhotosCard,
-  HistoryCard,
-  UpcomingCard,
-  FormsCard,
-} from "@/features/profile/components/ContentCards";
-import { EditBioModal } from "@/features/profile/components/EditBioModal";
-import { useRegisterBottomNavRow } from "@/contexts/BottomNavContext";
+import { FloatingProfileIcon } from "@/features/client-profile/FloatingProfileIcon";
+import { MyArtistsSection } from "@/features/client-profile/MyArtistsSection";
+import { UpcomingWidget } from "@/features/client-profile/UpcomingWidget";
 import { ClientFeedTab } from "@/features/client-profile/ClientFeedTab";
-import {
-  Edit3,
-  User,
-  ToggleLeft,
-  ToggleRight,
-  MessageCircle,
-} from "lucide-react";
-import { NavActionButton, PageShell } from "@/components/ui/ssot";
+import { useFavourites } from "@/features/client-profile/useFavourites";
 
 import { useTeaser } from "@/contexts/TeaserContext";
 import { Lock } from "lucide-react";
 import { InstallAppModal } from "@/components/modals/InstallAppModal";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
-import { useLocation } from "wouter";
+import { PageShell } from "@/components/ui/ssot";
 
 export default function ClientProfile() {
   const { isTeaserClient } = useTeaser();
   const [showInstallModal, setShowInstallModal] = useState(false);
-  const [, setLocation] = useLocation();
-
-  const {
-    profile,
-    trustBadges,
-
-    photos,
-    history,
-    upcoming,
-    forms,
-    updateBio,
-    updateAvatar,
-  } = useClientProfileController();
-
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [isBioModalOpen, setIsBioModalOpen] = useState(false);
-  const [activeTabId, setActiveTabId] = useState("artists");
   const [isShopExpanded, setIsShopExpanded] = useState(false);
 
-  // Deep-linking to tabs via query param
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tab = params.get("tab");
-    if (tab && ["artists", "upcoming", "forms", "history", "photos"].includes(tab)) {
-      setActiveTabId(tab);
-    }
-  }, []);
+  const { upcoming } = useClientProfileController();
+
+  const { favouriteIds, isFavourited, toggleFavourite } = useFavourites();
 
   // Fetch conversations to get connected artists
   const { data: conversations } = trpc.conversations.list.useQuery(undefined, {
     staleTime: 30000,
   });
-
-  // File Input Ref for Profile Pic
-  const handleProfilePicUpload = () => {
-    // Mock upload for now
-    const url = prompt("Enter new avatar URL:");
-    if (url) updateAvatar.mutate({ avatarUrl: url });
-  };
-  const clientProfileActions = useMemo(
-    () => (
-      <>
-        {[
-          {
-            id: "edit-toggle",
-            label: isEditMode ? "Done" : "Edit",
-            icon: isEditMode ? ToggleRight : ToggleLeft,
-            onClick: () => setIsEditMode(!isEditMode),
-            highlight: isEditMode,
-          },
-          {
-            id: "profile-pic",
-            label: "Profile Pic",
-            icon: User,
-            onClick: handleProfilePicUpload,
-          },
-          {
-            id: "edit-bio",
-            label: "Bio",
-            icon: Edit3,
-            onClick: () => setIsBioModalOpen(true),
-          },
-        ].map(item => (
-          <NavActionButton
-            key={item.id}
-            id={item.id}
-            label={item.label}
-            icon={item.icon}
-            onAction={item.onClick}
-            highlight={item.highlight}
-          />
-        ))}
-      </>
-    ),
-    [isEditMode, handleProfilePicUpload]
-  );
-
-  useRegisterBottomNavRow("client-profile", clientProfileActions);
-
-  // Artist cards content
-  const artistCardsContent = useMemo(() => {
-    return <ClientFeedTab conversations={conversations || []} setIsShopExpanded={setIsShopExpanded} />;
-  }, [conversations, setIsShopExpanded]);
-
-  const tabs = useMemo(
-    () => [
-      {
-        id: "artists",
-        label: "My Artists",
-        content: artistCardsContent,
-      },
-      {
-        id: "upcoming",
-        label: "Upcoming",
-        content: <UpcomingCard upcoming={upcoming || []} />,
-      },
-      {
-        id: "forms",
-        label: "Forms",
-        content: <FormsCard forms={forms || []} />,
-      },
-      {
-        id: "history",
-        label: "History",
-        content: <HistoryCard history={history || []} />,
-      },
-      {
-        id: "photos",
-        label: "Photos",
-        content: <PhotosCard photos={photos || []} isEditMode={isEditMode} />,
-      },
-    ],
-    [upcoming, forms, history, photos, isEditMode, artistCardsContent]
-  );
 
   return (
     <PageShell className="bg-transparent">
@@ -178,33 +70,29 @@ export default function ClientProfile() {
           isTeaserClient && "filter blur-sm pointer-events-none select-none"
         )}
       >
-        {/* Header */}
-        <motion.div className="shrink-0 transition-all duration-300 ease-in-out">
-          <ProfileHeader
-            user={profile}
-            trustBadges={trustBadges}
-            isEditMode={isEditMode}
-            onEditAvatar={handleProfilePicUpload}
-            isCompact={isShopExpanded}
-          />
-        </motion.div>
+        {/* Floating profile icon — top right */}
+        <FloatingProfileIcon />
 
-        {/* Swipeable Cards */}
-        <motion.div className="flex-1 min-h-0 relative transition-all duration-300 ease-in-out">
-          <ProfileSwipeCarousel
-            tabs={tabs}
-            defaultTab={activeTabId}
-            onTabChange={setActiveTabId}
+        {/* Scrollable feed content */}
+        <div className="flex-1 overflow-y-auto mobile-scroll px-4 pt-14 pb-[120px] space-y-6">
+          {/* My Artists — conversations first, then favourites-only */}
+          <MyArtistsSection
+            conversations={conversations || []}
+            favouriteIds={favouriteIds}
+            isFavourited={isFavourited}
+            toggleFavourite={toggleFavourite}
+            onShopToggle={setIsShopExpanded}
           />
-        </motion.div>
 
-        {/* Modals */}
-        <EditBioModal
-          isOpen={isBioModalOpen}
-          onClose={() => setIsBioModalOpen(false)}
-          initialBio={profile?.bio || ""}
-          onSave={async bio => updateBio.mutate({ bio })}
-        />
+          {/* Upcoming appointments widget */}
+          <UpcomingWidget upcoming={upcoming || []} />
+
+          {/* Discover Artists feed */}
+          <ClientFeedTab
+            conversations={conversations || []}
+            setIsShopExpanded={setIsShopExpanded}
+          />
+        </div>
       </div>
     </PageShell>
   );

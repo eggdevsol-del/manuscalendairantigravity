@@ -32,6 +32,7 @@ import { payoutsRouter } from "./payouts";
 import { errorLogRouter } from "./errorLog";
 import { storefrontRouter } from "./storefront";
 import { suppliersRouter } from "./suppliers";
+import { favouritesRouter } from "./favourites";
 
 export const appRouter = router({
   appointments: appointmentsRouter,
@@ -66,6 +67,7 @@ export const appRouter = router({
   payouts: payoutsRouter,
   storefront: storefrontRouter,
   suppliers: suppliersRouter,
+  favourites: favouritesRouter,
 });
 
 export type AppRouter = typeof appRouter;

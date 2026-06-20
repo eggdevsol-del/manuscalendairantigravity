@@ -16,6 +16,8 @@ import { useState, useMemo, useRef } from "react";
 import { MessageCircle, MapPin, Search, X, ShoppingBag, ChevronRight, CalendarPlus, Loader2, Package, Check, ImagePlus } from "lucide-react";
 import { ClientArtistCard } from "@/features/client-profile/ClientArtistCard";
 import { ArtistMapOverlay } from "@/features/client-profile/ArtistMapOverlay";
+import { FavouriteHeartButton } from "@/features/client-profile/FavouriteHeartButton";
+import { useFavourites } from "@/features/client-profile/useFavourites";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
 import { AnimatePresence, motion } from "framer-motion";
@@ -292,9 +294,13 @@ function ConsultationForm({
 function DiscoverArtistCard({
   artist,
   clientId,
+  isFavourited,
+  onToggleFavourite,
 }: {
   artist: any;
   clientId: string;
+  isFavourited: boolean;
+  onToggleFavourite: (artistId: string) => void;
 }) {
   const [, setLocation] = useLocation();
   // null = collapsed | "portfolio" | "storefront" | "consultation"
@@ -367,6 +373,11 @@ function DiscoverArtistCard({
           </div>
           {/* Action buttons */}
           <div className="flex items-center gap-1.5 pb-1 shrink-0">
+            <FavouriteHeartButton
+              artistId={artist.id}
+              isFavourited={isFavourited}
+              onToggle={onToggleFavourite}
+            />
             <button
               onClick={() => toggle("storefront")}
               className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all ${
@@ -478,6 +489,7 @@ interface ClientFeedTabProps {
 export function ClientFeedTab({ conversations, setIsShopExpanded }: ClientFeedTabProps) {
   const { user } = useAuth();
   const clientId = user?.id || "";
+  const { isFavourited, toggleFavourite } = useFavourites();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
@@ -593,33 +605,16 @@ export function ClientFeedTab({ conversations, setIsShopExpanded }: ClientFeedTa
                 </div>
               ) : (
                 filteredDiscoverArtists.map((artist: any) => (
-                  <DiscoverArtistCard key={artist.id} artist={artist} clientId={clientId} />
+                  <DiscoverArtistCard
+                    key={artist.id}
+                    artist={artist}
+                    clientId={clientId}
+                    isFavourited={isFavourited(artist.id)}
+                    onToggleFavourite={toggleFavourite}
+                  />
                 ))
               )}
             </div>
-          </div>
-
-          {/* ── My Artists ──────────────────────────────────── */}
-          <div>
-            <h3 className="font-bold text-lg mb-3">My Artists</h3>
-            {filteredConversations.length === 0 ? (
-              <div className="text-center py-8">
-                <MessageCircle className="w-12 h-12 text-muted-foreground/30 mx-auto mb-2" />
-                <p className="text-muted-foreground text-sm">
-                  {searchQuery ? "No artists match your search" : "No artists yet"}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {filteredConversations.map((conv: any) => (
-                  <ClientArtistCard
-                    key={conv.id}
-                    conv={conv}
-                    onShopToggle={setIsShopExpanded}
-                  />
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
