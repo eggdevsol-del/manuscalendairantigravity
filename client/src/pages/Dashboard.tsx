@@ -470,20 +470,7 @@ export default function Dashboard() {
                     <div className="space-y-1 pb-32 max-w-lg mx-auto">
                       {/* Render Content Based on Active Category */}
                       {activeCategory === "contacts" ? (
-                        <div className="relative h-full min-h-[50vh]">
-                          <div className="filter blur-[8px] pointer-events-none select-none opacity-50 transition-all duration-500">
-                            <ContactsTab />
-                          </div>
-                          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-8 text-center mt-[-10vh]">
-                            <div className="bg-card/90 backdrop-blur-md p-8 rounded-3xl border border-border shadow-2xl flex flex-col items-center max-w-sm mx-auto">
-                              <Lock className="w-12 h-12 text-primary mb-4" />
-                              <h2 className="text-2xl font-bold mb-2 text-foreground">Coming Soon</h2>
-                              <p className="text-muted-foreground font-medium text-sm">
-                                The Supplier Network is currently in development. Soon you'll be able to discover, connect, and order directly from top brands.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                        <ContactsTab />
                       ) : activeCategory === "orders" ? (
                         <OrdersTab />
                       ) : activeCategory === "business" && businessLoading ? (
