@@ -1,13 +1,16 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
-import { db } from "../db";
+import * as db from "../db";
 import { favouriteArtists } from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 
 export const favouritesRouter = router({
   /** List all favourited artist IDs for the current client */
   list: protectedProcedure.query(async ({ ctx }) => {
-    const rows = await db
+    const dbRef = await db.getDb();
+    if (!dbRef) return [];
+
+    const rows = await dbRef
       .select({ artistId: favouriteArtists.artistId })
       .from(favouriteArtists)
       .where(eq(favouriteArtists.clientId, ctx.user.id));
@@ -18,7 +21,10 @@ export const favouritesRouter = router({
   toggle: protectedProcedure
     .input(z.object({ artistId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const existing = await db
+      const dbRef = await db.getDb();
+      if (!dbRef) return { favourited: false };
+
+      const existing = await dbRef
         .select({ id: favouriteArtists.id })
         .from(favouriteArtists)
         .where(
@@ -30,12 +36,12 @@ export const favouritesRouter = router({
         .limit(1);
 
       if (existing.length > 0) {
-        await db
+        await dbRef
           .delete(favouriteArtists)
           .where(eq(favouriteArtists.id, existing[0].id));
         return { favourited: false };
       } else {
-        await db.insert(favouriteArtists).values({
+        await dbRef.insert(favouriteArtists).values({
           clientId: ctx.user.id,
           artistId: input.artistId,
         });
