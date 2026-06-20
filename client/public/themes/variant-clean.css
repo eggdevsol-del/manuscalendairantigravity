@@ -474,3 +474,112 @@ html[data-ui-variant="clean"]::before {
   border: 1px solid #e5e5ea !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   13. ARTIST CARDS — Preserve Dark Card Button Visibility
+   Artist cards (ClientArtistCard, DiscoverArtistCard) use bg-[#111] with
+   banner images. The clean CSS overrides on bg-secondary/50 make the
+   action buttons light gray with white text = invisible. These rules
+   restore proper dark semi-transparent buttons on these dark cards.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Artist card containers — preserve dark bg, don't whiten */
+[data-ui-variant="clean"] .bg-\[\#111\] {
+  background-color: #111 !important;
+}
+
+/* Buttons inside dark cards — dark semi-transparent with clear white icons */
+[data-ui-variant="clean"] .bg-\[\#111\] button[class*="bg-secondary"],
+[data-ui-variant="clean"] .bg-\[\#111\] button[class*="bg-secondary/50"],
+[data-ui-variant="clean"] .bg-\[\#111\] [class*="bg-secondary/50"] {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+[data-ui-variant="clean"] .bg-\[\#111\] button[class*="bg-secondary"]:hover,
+[data-ui-variant="clean"] .bg-\[\#111\] button[class*="bg-secondary/50"]:hover {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* White text inside dark artist cards must stay white */
+[data-ui-variant="clean"] .bg-\[\#111\] .text-white,
+[data-ui-variant="clean"] .bg-\[\#111\] button .text-white,
+[data-ui-variant="clean"] .bg-\[\#111\] [class*="text-white"] {
+  color: #ffffff !important;
+}
+
+/* Button icons inside dark cards — ensure white */
+[data-ui-variant="clean"] .bg-\[\#111\] button svg {
+  color: #ffffff !important;
+}
+
+/* Active/toggled button states inside cards — keep their original look */
+[data-ui-variant="clean"] .bg-\[\#111\] button[class*="bg-foreground"] {
+  background-color: #ffffff !important;
+  color: #111111 !important;
+  border-color: #ffffff !important;
+}
+[data-ui-variant="clean"] .bg-\[\#111\] button[class*="bg-foreground"] svg {
+  color: #111111 !important;
+}
+
+[data-ui-variant="clean"] .bg-\[\#111\] button[class*="bg-primary"] {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+  border-color: var(--primary) !important;
+}
+[data-ui-variant="clean"] .bg-\[\#111\] button[class*="bg-primary"] svg {
+  color: #ffffff !important;
+}
+
+/* Keyword badges inside dark cards — keep purple-on-dark look */
+[data-ui-variant="clean"] .bg-\[\#111\] [class*="bg-primary/10"] {
+  background-color: rgba(139, 92, 246, 0.15) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Drop shadow on card text — keep readable over banners */
+[data-ui-variant="clean"] .bg-\[\#111\] .drop-shadow-md {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
+}
+
+/* Muted foreground text inside dark cards — lighter for contrast */
+[data-ui-variant="clean"] .bg-\[\#111\] .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Borders inside dark cards — subtle white instead of the clean gray */
+[data-ui-variant="clean"] .bg-\[\#111\] [class*="border-border"] {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Unread badge — keep red and visible */
+[data-ui-variant="clean"] .bg-\[\#111\] .bg-red-500 {
+  background-color: #ef4444 !important;
+}
+
+/* FavouriteHeartButton inside dark cards — favourited (red) stays red */
+[data-ui-variant="clean"] .bg-\[\#111\] button[class*="bg-red-500"],
+[data-ui-variant="clean"] .bg-\[\#111\] [class*="bg-red-500/20"] {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+}
+[data-ui-variant="clean"] .bg-\[\#111\] .text-red-500,
+[data-ui-variant="clean"] .bg-\[\#111\] [class*="text-red-500"] {
+  color: #ef4444 !important;
+}
+[data-ui-variant="clean"] .bg-\[\#111\] .text-red-500 svg {
+  color: #ef4444 !important;
+}
+
+/* Unfavourited heart — visible white icon on dark card */
+[data-ui-variant="clean"] .bg-\[\#111\] [class*="text-white/60"] {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Shadow on dark cards — give clean soft shadow */
+[data-ui-variant="clean"] .bg-\[\#111\][class*="shadow"] {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
