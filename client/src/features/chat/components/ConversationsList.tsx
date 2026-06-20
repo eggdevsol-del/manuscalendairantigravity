@@ -74,7 +74,9 @@ export function ConversationsList({
 
   const filteredConversations = useMemo(() => {
     if (!conversations) return [];
-    if (!filter) return conversations;
+    // Filter only applies to artist/admin inbox (clients vs contacts tabs)
+    // For client users, show all conversations unfiltered
+    if (!filter || (user?.role !== "artist" && user?.role !== "admin")) return conversations;
 
     return conversations.filter(conv => {
       const isClient = conv.otherUser?.role === "client";
@@ -82,7 +84,7 @@ export function ConversationsList({
       if (filter === "contacts") return !isClient;
       return true;
     });
-  }, [conversations, filter]);
+  }, [conversations, filter, user?.role]);
 
   const filteredRequests = filter === "contacts" ? [] : requestItems;
 
