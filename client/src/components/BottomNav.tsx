@@ -1,10 +1,9 @@
 /**
- * BottomNav - Clean white 4-tab navigation bar
+ * BottomNav - Clean 4-tab navigation bar
  *
- * Icons-only, solid white, flush to bottom edge.
- * Matches the clean UI variant aesthetic.
+ * Icons-only, seamless with page background, flush to screen bottom.
  *
- * @version 1.1.2
+ * @version 1.1.3
  */
 
 import { Button } from "@/components/ui";
@@ -34,15 +33,25 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-[50] select-none"
+      id="bottom-nav"
       style={{
-        backgroundColor: "var(--background)",
-        paddingBottom: "env(safe-area-inset-bottom)",
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        background: "transparent",
+        userSelect: "none",
       }}
     >
+      {/* Icon row */}
       <div
-        className="flex items-center"
-        style={{ height: 77 }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          height: 56,
+          background: "transparent",
+        }}
       >
         {navItems.map((item) => {
           const active = isActive(item.path);
@@ -51,42 +60,47 @@ export default function BottomNav() {
 
           return (
             <Link key={item.id} href={item.path || "#"} className="contents">
-              <Button
-                variant="ghost"
-                className={cn(
-                  "flex flex-col items-center justify-center h-full flex-1 rounded-none transition-all relative",
-                  active ? "text-[#1a1a2e]" : "text-[#9ca3af]"
-                )}
-                style={{ background: "transparent" }}
+              <button
+                type="button"
+                className="flex flex-col items-center justify-center flex-1 h-full"
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  cursor: "pointer",
+                  color: active ? "#1a1a2e" : "#9ca3af",
+                  WebkitTapHighlightColor: "transparent",
+                }}
               >
                 <div className="relative">
                   <item.icon
-                    className={cn(
-                      "w-6 h-6 transition-all duration-200",
-                      active ? "text-[#1a1a2e]" : "text-[#9ca3af]"
-                    )}
+                    className="w-6 h-6"
+                    style={{ color: "inherit" }}
                     strokeWidth={active ? 2.5 : 1.8}
                   />
 
                   {/* Lock Badge for Teaser Clients */}
                   {isTeaserClient && item.id === "profile" && (
-                    <div className="absolute -top-1 -right-1 rounded-full p-0.5 shadow-sm border border-gray-200" style={{ backgroundColor: "var(--background)" }}>
-                      <Lock className="w-2.5 h-2.5 text-[#9ca3af]" />
+                    <div className="absolute -top-1 -right-1 rounded-full p-0.5" style={{ background: "transparent" }}>
+                      <Lock className="w-2.5 h-2.5" style={{ color: "#9ca3af" }} />
                     </div>
                   )}
 
                   {/* Unread Badge */}
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2" style={{ "--tw-ring-color": "var(--background)" } as React.CSSProperties}>
+                    <span className="absolute -top-1 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                       {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                   )}
                 </div>
-              </Button>
+              </button>
             </Link>
           );
         })}
       </div>
+
+      {/* Safe area spacer — fills the home indicator zone on iOS */}
+      <div style={{ height: "env(safe-area-inset-bottom, 0px)", background: "transparent" }} />
     </nav>
   );
 }

@@ -54,8 +54,8 @@
   --background: #ffffff;
   --foreground: #1a1a2e;
 
-  /* Cards — Solid White */
-  --card: #ffffff;
+  /* Cards — Transparent (seamless with background) */
+  --card: transparent;
   --card-foreground: #1a1a2e;
 
   /* Popover */
@@ -256,13 +256,13 @@
     }
   }
 
-  /* Card surfaces — Clean, solid, no glass */
+  /* Card surfaces — Transparent, no glass */
   .liquid-glass,
   .glass-card,
   .card,
   .floating-nav {
-    background: var(--card);
-    border: 1px solid var(--border);
+    background: transparent;
+    border: none;
     border-radius: 12px;
     box-shadow: none;
   }
@@ -338,6 +338,16 @@
   backdrop-filter: none !important;
 }
 
+/* Bottom nav — must remain transparent and flush to screen bottom */
+#bottom-nav,
+#bottom-nav * {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
 /* Sheets & overlays — solid white, no blur */
 [class*="rounded-t-"][class*="backdrop-blur"] {
   -webkit-backdrop-filter: none !important;
@@ -370,9 +380,9 @@
   background: #f5f5f7 !important;
 }
 
-/* Cards — force solid white */
+/* Cards — transparent */
 [class*="bg-card"] {
-  background: #ffffff !important;
+  background: transparent !important;
 }
 
 /* Transparent cards (dark mode artifacts) — make white */
