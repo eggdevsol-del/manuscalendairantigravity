@@ -1,15 +1,10 @@
 /**
- * BottomNav - System-level navigation controller
+ * BottomNav - Clean white 4-tab navigation bar
  *
- * Handles 2D navigation:
- * - Horizontal (X): Fixed 4-item layout (Dashboard, Calendar, Messages, More)
- * - Vertical (Y): Row swap between main nav and contextual actions via swipe up/down
+ * Icons-only, solid white, no borders, no shadows.
+ * Matches the clean UI variant aesthetic.
  *
- * CRITICAL ARCHITECTURE NOTES:
- * - Row 0 (main nav) uses a fixed grid/flex layout (NO SCROLL)
- * - Row 1 (contextual actions) uses a SIMPLE FLEX container with NO scroll
- *
- * @version 1.0.308
+ * @version 1.1.0
  */
 
 import { Button } from "@/components/ui";
@@ -18,22 +13,15 @@ import { Link, useLocation } from "wouter";
 import { useTotalUnreadCount } from "@/lib/selectors/conversation.selectors";
 import { useBottomNav } from "@/contexts/BottomNavContext";
 import { useTeaser } from "@/contexts/TeaserContext";
-import { useRef, useCallback, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Lock, MoreHorizontal } from "lucide-react";
-import { BottomNavMoreMenu } from "./BottomNavMoreMenu";
-import { CentralNavFAB } from "./nav/CentralNavFAB";
+import { useCallback } from "react";
+import { Lock } from "lucide-react";
 
-// Constants
-const SWIPE_THRESHOLD = 30;
-const ROW_HEIGHT = 77;
-const PRIMARY_NAV_IDS = ["dashboard", "calendar", "messages"];
+const NAV_HEIGHT = 64;
 
 export default function BottomNav() {
   const [location] = useLocation();
   const totalUnreadCount = useTotalUnreadCount();
-  const { navItems, contextualRow, isContextualVisible, setContextualVisible } =
-    useBottomNav();
+  const { navItems } = useBottomNav();
   const { isTeaserClient } = useTeaser();
 
   const isActive = useCallback(
@@ -46,134 +34,60 @@ export default function BottomNav() {
     [location]
   );
 
-  const hasContextualRow = contextualRow !== null;
-
-  const renderButton = (item: any) => {
-    const active = isActive(item.path);
-    const unreadCount =
-      item.id === "messages" ? totalUnreadCount : item.badgeCount || 0;
-
-    return (
-      <Button
-        key={item.id} // moved key here
-        variant="ghost"
-        className={cn(
-          "flex flex-col items-center justify-center gap-1.5 h-full min-w-[64px] flex-1 rounded-none hover:bg-gray-200/50 transition-all relative shrink-0",
-          active
-            ? "text-gray-900"
-            : "text-gray-500"
-        )}
-        onClick={item.action}
-      >
-        <div className="relative p-1">
-          <item.icon
-            className={cn(
-              "w-6 h-6 transition-all duration-300",
-              active
-                ? "text-gray-900 scale-110"
-                : "text-gray-500 group-hover:text-gray-700"
-            )}
-            strokeWidth={active ? 2.5 : 2}
-          />
-
-          {/* Lock Badge for Teaser Clients (Profile) */}
-          {isTeaserClient && item.id === "profile" && (
-            <div className="absolute -top-1 -right-1 bg-background/80 backdrop-blur-sm rounded-full p-0.5 shadow-sm border border-border">
-              <Lock className="w-3 h-3 text-muted-foreground" />
-            </div>
-          )}
-
-          {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-background">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-        </div>
-        <span
-          className={cn(
-            "text-[11px] font-medium tracking-wide transition-all duration-300",
-            active
-              ? "text-gray-900 dark:text-white noir:text-white opacity-100"
-              : "text-gray-500 dark:text-muted-foreground noir:text-muted-foreground opacity-70"
-          )}
-        >
-          {item.label}
-        </span>
-        {active && (
-          <div className="absolute bottom-2 w-1 h-1 rounded-full bg-gray-900 dark:bg-white noir:bg-white shadow-[0_0_8px_rgba(0,0,0,0.3)] dark:shadow-[0_0_8px_white] noir:shadow-[0_0_8px_white]" />
-        )}
-      </Button>
-    );
-  };
-
   return (
     <nav className="fixed bottom-0 inset-x-0 z-[50] select-none">
-      {/* Main container - Animating Height instead of Transform */}
-      <motion.div
-        className="bg-gray-100/90 dark:bg-slate-950/60 noir:bg-background/80 backdrop-blur-[32px] border-t border-gray-200 dark:border-border noir:border-border overflow-hidden"
-        initial={false}
-        animate={{
-          height: isContextualVisible ? ROW_HEIGHT * 2 : ROW_HEIGHT,
-        }}
-        transition={{ type: "spring", stiffness: 400, damping: 35 }}
+      <div
+        className="bg-white"
         style={{
+          height: NAV_HEIGHT,
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        {/* Row Container */}
-        <div className="flex flex-col">
-          {/* Row 0: Main Navigation - Reverted to SCROLLABLE */}
-          <div
-            className="w-full flex items-center overflow-x-auto no-scrollbar mask-gradient-x" // Restore scrolling
-            style={{ height: ROW_HEIGHT }}
-          >
-            {/* Render items split by Central FAB */}
-            {(() => {
-              const mid = Math.ceil(navItems.length / 2);
-              const leftItems = navItems.slice(0, mid);
-              const rightItems = navItems.slice(mid);
+        <div className="flex items-center h-full">
+          {navItems.map((item) => {
+            const active = isActive(item.path);
+            const unreadCount =
+              item.id === "messages" ? totalUnreadCount : item.badgeCount || 0;
 
-              return (
-                <>
-                  {leftItems.map(item => (
-                    <Link
-                      key={item.id}
-                      href={item.path || "#"}
-                      className="contents"
-                    >
-                      {renderButton(item)}
-                    </Link>
-                  ))}
+            return (
+              <Link key={item.id} href={item.path || "#"} className="contents">
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "flex flex-col items-center justify-center h-full flex-1 rounded-none transition-all relative",
+                    active ? "text-[#1a1a2e]" : "text-[#9ca3af]"
+                  )}
+                  style={{ background: "transparent" }}
+                >
+                  <div className="relative">
+                    <item.icon
+                      className={cn(
+                        "w-6 h-6 transition-all duration-200",
+                        active ? "text-[#1a1a2e]" : "text-[#9ca3af]"
+                      )}
+                      strokeWidth={active ? 2.5 : 1.8}
+                    />
 
-                  <CentralNavFAB />
+                    {/* Lock Badge for Teaser Clients */}
+                    {isTeaserClient && item.id === "profile" && (
+                      <div className="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-sm border border-gray-200">
+                        <Lock className="w-2.5 h-2.5 text-[#9ca3af]" />
+                      </div>
+                    )}
 
-                  {rightItems.map(item => (
-                    <Link
-                      key={item.id}
-                      href={item.path || "#"}
-                      className="contents"
-                    >
-                      {renderButton(item)}
-                    </Link>
-                  ))}
-                </>
-              );
-            })()}
-          </div>
-
-          {/*
-           * Row 1: Contextual Actions
-           */}
-          <div
-            className="w-full flex items-center justify-start px-2 shrink-0 border-t border-gray-200 dark:border-border noir:border-border"
-            style={{
-              height: ROW_HEIGHT,
-            }}
-          >
-            {contextualRow}
-          </div>
+                    {/* Unread Badge */}
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </div>
+                </Button>
+              </Link>
+            );
+          })}
         </div>
-      </motion.div>
+      </div>
     </nav>
   );
 }

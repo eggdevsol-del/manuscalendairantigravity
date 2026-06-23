@@ -21,36 +21,30 @@ import { FABMenuItem } from "@/ui/FABMenu";
 export type Scope = "artist" | "client" | "studio" | "merchant";
 
 interface BottomNavContextType {
-  // The content of the contextual row (Row 1)
-  contextualRow: ReactNode | null;
   // Main row items based on scope
   navItems: BottomNavButton[];
-  // Whether the contextual row is currently visible (rowIndex === 1)
-  isContextualVisible: boolean;
-  // Function to register a row (returns unregister function)
-  registerRow: (scope: Scope, id: string, content: ReactNode) => () => void;
-  // Function to toggle visibility
-  setContextualVisible: (visible: boolean) => void;
-  // Current row index (0 = default, 1 = contextual)
-  rowIndex: number;
-  // Current Scope (for debug overlay)
+  // Current Scope
   scope: Scope;
-  // Context-dependent FAB actions
+
+  // ──────────────────────────────────────────────────────
+  // LEGACY FAB INTERFACE — kept for backward compatibility
+  // All methods are no-ops. Will be removed in Phase 7.
+  // ──────────────────────────────────────────────────────
+  contextualRow: ReactNode | null;
+  isContextualVisible: boolean;
+  registerRow: (scope: Scope, id: string, content: ReactNode) => () => void;
+  setContextualVisible: (visible: boolean) => void;
+  rowIndex: number;
   fabActions: FABMenuItem[];
-  // Function to register FAB actions
   registerFABActions: (
     id: string,
     actions: FABMenuItem[] | ReactNode
   ) => () => void;
-  // Custom FAB content (for complex flows)
   fabChildren: ReactNode | null;
-  // Programmatic FAB control
   isFABOpen: boolean;
   setFABOpen: (open: boolean) => void;
-  // Larger FAB panel (e.g. for forms)
   isLargePanel: boolean;
   setLargePanel: (large: boolean) => void;
-  // Deep-link: allows external components to request a specific FAB settings panel
   requestedSettingsView: string | null;
   requestSettingsView: (view: string | null) => void;
 }
@@ -59,14 +53,14 @@ const BottomNavContext = createContext<BottomNavContextType | undefined>(
   undefined
 );
 
-// Stable empty array to avoid referential instability in context value
+// Stable empty array to avoid referential instability
 const EMPTY_FAB_ACTIONS: FABMenuItem[] = [];
+const NOOP_UNREGISTER = () => {};
 
 export function BottomNavProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const [location] = useLocation();
 
-  // Default to 'client' for safety if not authenticated or specified.
+  // Derive scope from user role
   const rawRole = user?.role;
   const scope: Scope =
     rawRole === "merchant"
@@ -77,46 +71,7 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
           ? "studio"
           : "client";
 
-  const [registry, setRegistry] = useState<
-    Record<Scope, Record<string, ReactNode>>
-  >({
-    artist: {},
-    client: {},
-    studio: {},
-  });
-
-  const [fabRegistry, setFabRegistry] = useState<
-    Record<string, FABMenuItem[] | ReactNode>
-  >({});
-  const [fabIdStack, setFabIdStack] = useState<string[]>([]);
-
-  // activeId is global, but resolved against current scope.
-  const [rowIdStack, setRowIdStack] = useState<string[]>([]);
-  const [isContextualVisible, setIsContextualVisible] = useState(false);
-
-  const activeId =
-    rowIdStack.length > 0 ? rowIdStack[rowIdStack.length - 1] : null;
-  const activeFabId =
-    fabIdStack.length > 0 ? fabIdStack[fabIdStack.length - 1] : null;
-
-  // Derived contextual row based on current scope
-  const contextualRow = activeId ? registry[scope][activeId] || null : null;
-
-  // Derived FAB actions
-  // CRITICAL: fabActions must be referentially stable to prevent the context
-  // value useMemo from producing a new object on every render, which would
-  // trigger infinite re-renders across ALL context consumers (React #185).
-  const fabContent = activeFabId ? fabRegistry[activeFabId] : null;
-  const fabActions = useMemo(
-    () => (Array.isArray(fabContent) ? fabContent : EMPTY_FAB_ACTIONS),
-    [fabContent]
-  );
-  const fabChildren = useMemo(
-    () => (!Array.isArray(fabContent) ? fabContent : null),
-    [fabContent]
-  );
-
-  // Derived nav items
+  // Derive nav items from scope
   const navItems =
     scope === "merchant"
       ? MERCHANT_NAV_ITEMS
@@ -126,128 +81,41 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
           ? STUDIO_NAV_ITEMS
           : CLIENT_NAV_ITEMS;
 
+  // Legacy no-op callbacks — stable references
   const registerRow = useCallback(
-    (targetScope: Scope, id: string, content: ReactNode) => {
-      setRegistry(prev => ({
-        ...prev,
-        [targetScope]: {
-          ...prev[targetScope],
-          [id]: content,
-        },
-      }));
-      setRowIdStack(prev => {
-        const copy = prev.filter(x => x !== id);
-        return [...copy, id];
-      });
-
-      return () => {
-        setRegistry(prev => {
-          const newScopeRegistry = { ...prev[targetScope] };
-          delete newScopeRegistry[id];
-          return {
-            ...prev,
-            [targetScope]: newScopeRegistry,
-          };
-        });
-
-        setRowIdStack(prev => {
-          const copy = prev.filter(x => x !== id);
-          if (copy.length === 0) {
-            setIsContextualVisible(false);
-          }
-          return copy;
-        });
-      };
-    },
+    (_scope: Scope, _id: string, _content: ReactNode) => NOOP_UNREGISTER,
     []
   );
-
   const registerFABActions = useCallback(
-    (id: string, actions: FABMenuItem[] | ReactNode) => {
-      setFabRegistry(prev => ({ ...prev, [id]: actions }));
-      setFabIdStack(prev => {
-        const copy = prev.filter(x => x !== id);
-        return [...copy, id];
-      });
-
-      return () => {
-        setFabRegistry(prev => {
-          const next = { ...prev };
-          delete next[id];
-          return next;
-        });
-        setFabIdStack(prev => prev.filter(x => x !== id));
-      };
-    },
+    (_id: string, _actions: FABMenuItem[] | ReactNode) => NOOP_UNREGISTER,
     []
   );
-
-  const setContextualVisible = useCallback(
-    (visible: boolean) => {
-      if (visible && !contextualRow) return; // Cannot show if no content
-      setIsContextualVisible(visible);
-    },
-    [contextualRow]
-  );
-
-  const rowIndex = isContextualVisible && contextualRow ? 1 : 0;
-
-  const [isFABOpen, setFABOpen] = useState(false);
-  const [requestedSettingsView, setRequestedSettingsView] = useState<string | null>(null);
-
-  // Deep-link: accept string | null directly — no empty string ambiguity
-  const requestSettingsView = useCallback((view: string | null) => {
-    if (view) {
-      setRequestedSettingsView(view);
-      setFABOpen(true);
-    } else {
-      setRequestedSettingsView(null);
-    }
-  }, []);
-
-  // Auto-close FAB on route change
-  useEffect(() => {
-    setFABOpen(false);
-    setLargePanel(false);
-  }, [location]);
-
-  const [isLargePanel, setLargePanel] = useState(false);
+  const setContextualVisible = useCallback((_visible: boolean) => {}, []);
+  const setFABOpen = useCallback((_open: boolean) => {}, []);
+  const setLargePanel = useCallback((_large: boolean) => {}, []);
+  const requestSettingsView = useCallback((_view: string | null) => {}, []);
 
   const value = useMemo(
     () => ({
-      contextualRow,
       navItems,
-      isContextualVisible,
+      scope,
+      // Legacy no-ops
+      contextualRow: null,
+      isContextualVisible: false,
       registerRow,
       setContextualVisible,
-      rowIndex,
-      scope,
-      fabActions,
+      rowIndex: 0,
+      fabActions: EMPTY_FAB_ACTIONS,
       registerFABActions,
-      fabChildren,
-      isFABOpen,
+      fabChildren: null,
+      isFABOpen: false,
       setFABOpen,
-      isLargePanel,
+      isLargePanel: false,
       setLargePanel,
-      requestedSettingsView,
+      requestedSettingsView: null,
       requestSettingsView,
     }),
-    [
-      contextualRow,
-      navItems,
-      isContextualVisible,
-      registerRow,
-      setContextualVisible,
-      rowIndex,
-      scope,
-      fabActions,
-      registerFABActions,
-      fabChildren,
-      isFABOpen,
-      isLargePanel,
-      requestedSettingsView,
-      requestSettingsView,
-    ]
+    [navItems, scope, registerRow, registerFABActions, setContextualVisible, setFABOpen, setLargePanel, requestSettingsView]
   );
 
   return (
@@ -265,42 +133,21 @@ export function useBottomNav() {
   return context;
 }
 
-export function useRegisterBottomNavRow(id: string, content: ReactNode) {
-  const { registerRow } = useBottomNav();
-  const { user } = useAuth();
-  const rawRole = user?.role;
-  const scope: Scope =
-    rawRole === "merchant"
-      ? "merchant"
-      : rawRole === "artist" || rawRole === "admin"
-        ? "artist"
-        : rawRole === "studio"
-          ? "studio"
-          : "client";
-
-  useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
-      console.log(
-        `[BottomNavRegistry] scope=${scope} route=${id} row=1 (contextual)`
-      );
-    }
-    const unregister = registerRow(scope, id, content);
-    return unregister;
-  }, [id, content, registerRow, scope]);
+/**
+ * useRegisterBottomNavRow — LEGACY no-op.
+ * Kept for backward compatibility. Does nothing.
+ */
+export function useRegisterBottomNavRow(_id: string, _content: ReactNode) {
+  // No-op — contextual rows have been removed
 }
 
 /**
- * useRegisterFABActions - Hooks into the Central Navigation FAB
- * Use this to dynamically add actions to the global FAB menu from any page.
+ * useRegisterFABActions — LEGACY no-op.
+ * Kept for backward compatibility. Does nothing.
  */
 export function useRegisterFABActions(
-  id: string,
-  actions: FABMenuItem[] | ReactNode
+  _id: string,
+  _actions: FABMenuItem[] | ReactNode
 ) {
-  const { registerFABActions } = useBottomNav();
-
-  useEffect(() => {
-    const unregister = registerFABActions(id, actions);
-    return unregister;
-  }, [id, actions, registerFABActions]);
+  // No-op — FAB actions have been removed
 }

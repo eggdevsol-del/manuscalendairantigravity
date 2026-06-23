@@ -319,3 +319,167 @@
     display: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CLEAN UI GLOBAL OVERRIDES
+   These replace the variant-clean.css overrides that were previously loaded
+   as a separate stylesheet. They kill glassmorphism, backdrop-blur, and
+   dark-mode visual artifacts across all components.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Kill backdrop-filter globally */
+[class*="backdrop-blur"],
+.liquid-glass,
+.glass-card,
+.floating-nav,
+.mobile-header,
+.mobile-bottom-nav {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Sheets & overlays — solid white, no blur */
+[class*="rounded-t-"][class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: #ffffff !important;
+}
+
+[class*="rounded-t-[2.5rem]"] {
+  background: #ffffff !important;
+}
+
+[class*="bg-background/80"][class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Sheet gradient highlights — hide */
+[class*="bg-gradient-to-l"][class*="from-white"] {
+  opacity: 0 !important;
+}
+[class*="bg-gradient-to-r"][class*="via-white"] {
+  opacity: 0 !important;
+}
+
+/* Sheet headers with backdrop blur */
+[class*="bg-secondary/50"][class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: #f5f5f7 !important;
+}
+
+/* Cards — force solid white */
+[class*="bg-card"] {
+  background: #ffffff !important;
+}
+
+/* Transparent cards (dark mode artifacts) — make white */
+[class*="bg-transparent"][class*="rounded-t-"] {
+  background: #ffffff !important;
+}
+
+/* Primary buttons — clean shadow */
+[class*="bg-primary"] {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+[class*="bg-primary"]:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Destructive buttons — clean */
+[class*="bg-destructive"] {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Secondary surfaces */
+[class*="bg-secondary"]:not([class*="bg-secondary/"]) {
+  background-color: #f5f5f7 !important;
+}
+
+/* Kill inset shadows (glass effect accents) */
+[class*="shadow-[inset"] {
+  box-shadow: none !important;
+}
+
+/* Badge ring color — white */
+[class*="ring-background"] {
+  --tw-ring-color: #ffffff !important;
+}
+
+/* Dashboard/widget shadows — clean */
+[class*="shadow-xl"] {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid #e5e5ea !important;
+}
+
+/* Toast notifications — clean */
+[data-sonner-toaster] [data-sonner-toast] {
+  background: #ffffff !important;
+  border: 1px solid #e5e5ea !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Amber/gold FAB accent — replace with purple primary */
+[class*="bg-[#E09F3E]"] {
+  background: oklch(0.55 0.15 280) !important;
+}
+
+/* Force dark-mode Tailwind text overrides back to light */
+[class*="dark:text-white"] {
+  color: #1a1a2e !important;
+}
+[class*="dark:text-muted-foreground"] {
+  color: #6b7280 !important;
+}
+[class*="noir:text-white"] {
+  color: #1a1a2e !important;
+}
+
+/* Force dark-mode bg overrides */
+[class*="dark:bg-slate-950"] {
+  background-color: #ffffff !important;
+}
+[class*="dark:bg-secondary"] {
+  background-color: #f5f5f7 !important;
+}
+
+/* Dark mode shadows/glows — kill */
+[class*="dark:shadow-"] {
+  box-shadow: none !important;
+}
+[class*="dark:drop-shadow-"],
+[class*="noir:drop-shadow-"] {
+  filter: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ARTIST CARDS — Preserve Dark Card Button Visibility
+   Artist cards use bg-[#111] with banner images. These overrides ensure
+   action buttons stay visible on dark card backgrounds.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Artist card action buttons — keep visible on dark bg */
+[class*="bg-[#111]"] [class*="bg-secondary"],
+[class*="bg-[#111]"] [class*="bg-secondary/50"] {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+[class*="bg-[#111]"] [class*="bg-secondary"]:hover,
+[class*="bg-[#111]"] [class*="bg-secondary/50"]:hover {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+[class*="bg-[#111]"] [class*="text-foreground"] {
+  color: #ffffff !important;
+}
+
+[class*="bg-[#111]"] [class*="text-muted-foreground"] {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+[class*="bg-[#111]"] svg {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
