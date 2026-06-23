@@ -2,7 +2,6 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
-@custom-variant noir (&:is(.noir *));
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 2px);
@@ -43,107 +42,102 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   CLEAN WHITE THEME — Single Visual Identity
+   Pure white surfaces, zero glassmorphism, purple primary.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 :root {
-  /* Light Theme Palette (Soft Slate) */
   --radius: 6px;
 
-  /* Soft Off-White Base */
-  --background: oklch(0.97 0.01 260);
-  /* Deep Slate Text - Darker for better readability */
-  --foreground: oklch(0.15 0.05 260);
+  /* Base surfaces — Pure White */
+  --background: #ffffff;
+  --foreground: #1a1a2e;
 
-  /* Glassy White Card - High opacity in light mode for better contrast */
-  --card: oklch(1 0 0 / 0.97);
-  --card-foreground: oklch(0.15 0.05 260);
+  /* Cards — Solid White */
+  --card: #ffffff;
+  --card-foreground: #1a1a2e;
 
-  --popover: oklch(1 0 0 / 0.95);
-  --popover-foreground: oklch(0.15 0.05 260);
+  /* Popover */
+  --popover: #ffffff;
+  --popover-foreground: #1a1a2e;
 
-  /* Primary: Deep Violet (Readable on light) */
+  /* Primary — Deep Violet */
   --primary: oklch(0.55 0.15 280);
-  --primary-foreground: oklch(0.98 0 0);
+  --primary-foreground: #ffffff;
 
-  --secondary: oklch(0.92 0.02 260);
-  --secondary-foreground: oklch(0.15 0.05 260);
+  /* Secondary */
+  --secondary: #f5f5f7;
+  --secondary-foreground: #1a1a2e;
 
-  --muted: oklch(0.96 0.01 260);
-  --muted-foreground: oklch(0.4 0.05 260);
+  /* Muted */
+  --muted: #f0f0f2;
+  --muted-foreground: #6b7280;
 
-  --accent: oklch(0.9 0.05 260);
-  --accent-foreground: oklch(0.15 0.05 260);
+  /* Accent — Softer purple tint */
+  --accent: #f0eef5;
+  --accent-foreground: #1a1a2e;
 
-  --destructive: oklch(0.6 0.22 25);
-  --destructive-foreground: oklch(0.98 0 0);
+  /* Destructive */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
 
-  --border: oklch(0.2 0.05 260 / 0.1);
-  --input: oklch(0.2 0.05 260 / 0.1);
+  /* Borders & Inputs */
+  --border: #e5e5ea;
+  --input: #e5e5ea;
   --ring: oklch(0.55 0.15 280);
 
-  /* Chart Colors */
+  /* Charts */
   --chart-1: oklch(0.55 0.15 280);
   --chart-2: oklch(0.5 0.2 280);
-  --chart-3: oklch(0.6 0.05 260);
-  --chart-4: oklch(0.7 0.02 200);
-  --chart-5: oklch(0.65 0.1 340);
+  --chart-3: #6b7280;
+  --chart-4: #9ca3af;
+  --chart-5: #d1d5db;
 
   /* Sidebar */
-  --sidebar: oklch(0.97 0.01 260);
-  --sidebar-foreground: oklch(0.15 0.05 260);
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a2e;
   --sidebar-primary: oklch(0.55 0.15 280);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.2 0.05 260 / 0.05);
-  --sidebar-accent-foreground: oklch(0.15 0.05 260);
-  --sidebar-border: oklch(0.2 0.05 260 / 0.1);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5f5f7;
+  --sidebar-accent-foreground: #1a1a2e;
+  --sidebar-border: #e5e5ea;
   --sidebar-ring: oklch(0.55 0.15 280);
 
-  /* Background Image/Gradient */
-  --bg-gradient:
-    radial-gradient(circle at 100% 0%,
-      oklch(0.95 0.05 260) 0%,
-      transparent 40%),
-    radial-gradient(circle at 0% 100%,
-      oklch(0.92 0.05 280) 0%,
-      transparent 40%),
-    var(--background);
+  /* Background — Flat white, no gradient */
+  --bg-gradient: #ffffff;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   DARK THEME — Preserved but NOT user-accessible.
+   Kept in codebase for potential future use. Never applied by ThemeContext.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 .dark {
-  /* Liquid Night Theme (Original) */
   --background: oklch(0.12 0.05 260);
   --foreground: oklch(0.98 0 0);
-
   --card: transparent;
   --card-foreground: oklch(0.98 0 0);
-
   --popover: oklch(0.12 0.05 260 / 0.85);
   --popover-foreground: oklch(0.98 0 0);
-
   --primary: oklch(0.7 0.15 280);
   --primary-foreground: oklch(1 0 0);
-
   --secondary: oklch(0.85 0.05 260 / 0.1);
   --secondary-foreground: oklch(0.98 0 0);
-
   --muted: oklch(1 0 0 / 0.05);
   --muted-foreground: oklch(0.7 0.02 260);
-
   --accent: oklch(0.65 0.2 280);
   --accent-foreground: oklch(1 0 0);
-
   --destructive: oklch(0.6 0.22 25);
   --destructive-foreground: oklch(1 0 0);
-
   --border: oklch(1 0 0 / 0.15);
   --input: oklch(1 0 0 / 0.1);
   --ring: oklch(0.7 0.15 280);
-
   --chart-1: oklch(0.7 0.15 280);
   --chart-2: oklch(0.65 0.2 280);
   --chart-3: oklch(0.8 0.05 260);
   --chart-4: oklch(0.9 0.02 200);
   --chart-5: oklch(0.75 0.1 340);
-
-  /* Sidebar */
   --sidebar: oklch(0.12 0.05 260 / 0.6);
   --sidebar-foreground: oklch(0.98 0 0);
   --sidebar-primary: oklch(0.7 0.15 280);
@@ -152,66 +146,9 @@
   --sidebar-accent-foreground: oklch(0.98 0 0);
   --sidebar-border: oklch(1 0 0 / 0.15);
   --sidebar-ring: oklch(0.7 0.15 280);
-
-  /* Dark Mode Gradient */
   --bg-gradient:
     radial-gradient(circle at 100% 0%, #172c68 0%, transparent 40%),
     radial-gradient(circle at 0% 100%, #111c3f 0%, transparent 40%), #0b1120;
-}
-
-.noir {
-  /* NOIR Theme — Pure Black with same purple accents as Dark, faint gold bg glow */
-  --background: oklch(0.05 0 0);
-  --foreground: oklch(0.98 0 0);
-
-  --card: transparent;
-  --card-foreground: oklch(0.98 0 0);
-
-  --popover: oklch(0.08 0 0 / 0.9);
-  --popover-foreground: oklch(0.98 0 0);
-
-  /* Primary: Same purple as dark mode */
-  --primary: oklch(0.7 0.15 280);
-  --primary-foreground: oklch(1 0 0);
-
-  --secondary: oklch(0.85 0.05 260 / 0.1);
-  --secondary-foreground: oklch(0.98 0 0);
-
-  --muted: oklch(1 0 0 / 0.05);
-  --muted-foreground: oklch(0.7 0.02 260);
-
-  /* Accent: Same purple as dark mode */
-  --accent: oklch(0.65 0.2 280);
-  --accent-foreground: oklch(1 0 0);
-
-  --destructive: oklch(0.6 0.22 25);
-  --destructive-foreground: oklch(1 0 0);
-
-  --border: oklch(1 0 0 / 0.15);
-  --input: oklch(1 0 0 / 0.1);
-  --ring: oklch(0.7 0.15 280);
-
-  --chart-1: oklch(0.7 0.15 280);
-  --chart-2: oklch(0.65 0.2 280);
-  --chart-3: oklch(0.8 0.05 260);
-  --chart-4: oklch(0.9 0.02 200);
-  --chart-5: oklch(0.75 0.1 340);
-
-  /* Sidebar */
-  --sidebar: oklch(0.05 0 0 / 0.6);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.7 0.15 280);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(1 0 0 / 0.1);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(1 0 0 / 0.15);
-  --sidebar-ring: oklch(0.7 0.15 280);
-
-  /* NOIR Gradient — Very subtle, faint gold glow on pure black */
-  --bg-gradient:
-    radial-gradient(circle at 100% 0%, oklch(0.1 0.04 85) 0%, transparent 40%),
-    radial-gradient(circle at 0% 100%, oklch(0.08 0.03 85) 0%, transparent 40%),
-    oklch(0.05 0 0);
 }
 
 @layer base {
@@ -224,7 +161,7 @@
     background: var(--background);
   }
 
-  /* Global SSOT Minimal Pill Scrollbar */
+  /* Scrollbar — Light mode optimized */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -235,23 +172,22 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: var(--muted-foreground);
+    background: #d1d5db;
     border-radius: 9999px;
-    /* Pill shape */
     transition: background-color 0.2s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in srgb, var(--foreground) 50%, var(--muted-foreground));
+    background: #9ca3af;
   }
 
   /* Firefox support */
   * {
     scrollbar-width: thin;
-    scrollbar-color: var(--muted-foreground) transparent;
+    scrollbar-color: #d1d5db transparent;
   }
 
-  /* Fixed background layer - works on iOS Safari where background-attachment: fixed doesn't */
+  /* Fixed background layer */
   html::before {
     content: "";
     position: fixed;
@@ -295,31 +231,19 @@
 @layer components {
 
   /**
-   * Custom container utility that centers content and adds responsive padding.
-   *
-   * This overrides Tailwind's default container behavior to:
-   * - Auto-center content (mx-auto)
-   * - Add responsive horizontal padding
-   * - Set max-width for large screens
-   *
-   * Usage: <div className="container">...</div>
-   *
-   * For custom widths, use max-w-* utilities directly:
-   * <div className="max-w-6xl mx-auto px-4">...</div>
+   * Container utility — centers content with responsive padding.
    */
   .container {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
     padding-left: 1rem;
-    /* 16px - mobile padding */
     padding-right: 1rem;
   }
 
   @media (min-width: 640px) {
     .container {
       padding-left: 1.5rem;
-      /* 24px - tablet padding */
       padding-right: 1.5rem;
     }
   }
@@ -327,73 +251,20 @@
   @media (min-width: 1024px) {
     .container {
       padding-left: 2rem;
-      /* 32px - desktop padding */
       padding-right: 2rem;
       max-width: 1280px;
-      /* Standard content width */
     }
   }
 
-  /* 
-     LIQUID GLASS VARIANT
-     - Soft, milky transparency
-     - Floating feel
-     - Subtle white borders
-  */
-  /* 
-     LIQUID GLASS VARIANT
-     - Soft, milky transparency
-     - Floating feel
-     - Subtle white borders
-  */
+  /* Card surfaces — Clean, solid, no glass */
   .liquid-glass,
   .glass-card,
   .card,
   .floating-nav {
-    @apply backdrop-blur-[20px] shadow-lg rounded-[2rem];
-
-    /* Glass Surface - Theme Aware */
     background: var(--card);
-    /* Uses variable which changes with theme */
-
-    /* Soft Glow Border */
     border: 1px solid var(--border);
-    border-top: 1px solid var(--input);
-
-    /* Smooth Shadow */
-    box-shadow:
-      0 8px 32px -4px rgba(0, 0, 0, 0.1),
-      /* Lighter shadow base */
-      inset 0 1px 0 0 var(--input);
-  }
-
-  .dark .liquid-glass,
-  .dark .glass-card,
-  .dark .card,
-  .dark .floating-nav {
-    /* Re-apply stronger shadows for dark mode if needed, or stick to variables */
-    box-shadow:
-      0 8px 32px -4px rgba(0, 0, 0, 0.5),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
-    background: linear-gradient(180deg,
-        rgba(255, 255, 255, 0.08) 0%,
-        rgba(255, 255, 255, 0.03) 100%);
-  }
-
-  .noir .liquid-glass,
-  .noir .glass-card,
-  .noir .card,
-  .noir .floating-nav {
-    box-shadow:
-      0 8px 32px -4px rgba(0, 0, 0, 0.7),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-    background: linear-gradient(180deg,
-        rgba(255, 255, 255, 0.05) 0%,
-        rgba(255, 255, 255, 0.02) 100%);
+    border-radius: 12px;
+    box-shadow: none;
   }
 
   /* Mobile-first utilities */
@@ -408,12 +279,12 @@
   }
 
   .mobile-header {
-    @apply sticky top-0 z-50 bg-background/60 backdrop-blur-md border-b border-border;
+    @apply sticky top-0 z-50 bg-background border-b border-border;
     padding-top: env(safe-area-inset-top);
   }
 
   .mobile-bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 z-50 bg-background/60 backdrop-blur-md border-t border-border;
+    @apply fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border;
     padding-bottom: env(safe-area-inset-bottom);
   }
 

@@ -16,49 +16,29 @@ interface ThemeProviderProps {
   switchable?: boolean;
 }
 
-const THEME_ORDER: Theme[] = ["dark", "light", "noir"];
-
+/**
+ * ThemeProvider — Always applies light (clean white) theme.
+ * Dark mode code is preserved in index.css but never activated.
+ * The toggle is intentionally hidden from the UI.
+ */
 export function ThemeProvider({
   children,
-  defaultTheme = "dark",
+  defaultTheme = "light",
   switchable = false,
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (switchable) {
-      const stored = localStorage.getItem("theme");
-      if (stored === "light" || stored === "dark" || stored === "noir") return stored;
-      return defaultTheme;
-    }
-    return defaultTheme;
-  });
+  // Always light — ignore stored preference
+  const [theme] = useState<Theme>("light");
 
   useEffect(() => {
     const root = document.documentElement;
-    // Remove all theme classes first
+    // Ensure no dark/noir class is applied
     root.classList.remove("dark", "noir");
-    // Apply the active theme class (light = no class)
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else if (theme === "noir") {
-      root.classList.add("noir");
-    }
-
-    if (switchable) {
-      localStorage.setItem("theme", theme);
-    }
-  }, [theme, switchable]);
-
-  const toggleTheme = switchable
-    ? () => {
-      setTheme(prev => {
-        const idx = THEME_ORDER.indexOf(prev);
-        return THEME_ORDER[(idx + 1) % THEME_ORDER.length];
-      });
-    }
-    : undefined;
+    // Remove any stale theme from localStorage
+    localStorage.removeItem("theme");
+  }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, switchable }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme: undefined, switchable: false }}>
       {children}
     </ThemeContext.Provider>
   );

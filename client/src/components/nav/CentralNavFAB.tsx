@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Settings, Menu, Sun, Moon, Crown, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane, Banknote, Store, Images, Clock, Camera } from "lucide-react";
+import { Settings, Menu, Link, User, MapPin, ChevronLeft, Bell, FileText, Calendar, Users, Zap, RefreshCw, LogOut, Database, AlertTriangle, Plane, Banknote, Store, Images, Clock, Camera } from "lucide-react";
 import { useLocation } from "wouter";
 import { FABMenu, FABMenuItem } from "@/ui/FABMenu";
 import { cn } from "@/lib/utils";
 import { useBottomNav } from "@/contexts/BottomNavContext";
-import { useTheme } from "@/contexts/ThemeContext";
+
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { ProfileSettings } from "../settings/ProfileSettings";
@@ -112,7 +112,6 @@ function ClientSettingsPanel({ onBack, title, children }: { onBack: () => void; 
 
 export function CentralNavFAB({ className }: CentralNavFABProps) {
   const [, setLocation] = useLocation();
-  const { theme, toggleTheme } = useTheme();
   const { fabActions, fabChildren, isFABOpen, setFABOpen, isLargePanel, setLargePanel,
     requestedSettingsView, requestSettingsView } =
     useBottomNav();
@@ -490,13 +489,6 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
 
   const permanentItems: FABMenuItem[] = useMemo(() => [
     {
-      id: "theme",
-      label: theme === "dark" ? "Light Mode" : theme === "light" ? "Noir" : "Dark Mode",
-      icon: theme === "dark" ? Sun : theme === "light" ? Crown : Moon,
-      onClick: () => toggleTheme?.(),
-      closeOnClick: false, // Keep menu open to show change
-    },
-    {
       id: "copy-link",
       label: isArtist ? "Booking Link" : "Referral Link",
       icon: Link,
@@ -509,7 +501,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
       onClick: () => handleViewChange("settings-menu"),
       closeOnClick: false,
     }
-  ], [theme, toggleTheme, isArtist, handleCopyLink, handleViewChange]);
+  ], [isArtist, handleCopyLink, handleViewChange]);
 
 
 

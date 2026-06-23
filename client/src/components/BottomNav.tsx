@@ -58,10 +58,10 @@ export default function BottomNav() {
         key={item.id} // moved key here
         variant="ghost"
         className={cn(
-          "flex flex-col items-center justify-center gap-1.5 h-full min-w-[64px] flex-1 rounded-none hover:bg-gray-200/50 dark:hover:bg-secondary/50 noir:hover:bg-secondary/50 transition-all relative shrink-0",
+          "flex flex-col items-center justify-center gap-1.5 h-full min-w-[64px] flex-1 rounded-none hover:bg-gray-200/50 transition-all relative shrink-0",
           active
-            ? "text-gray-900 dark:text-white noir:text-white"
-            : "text-gray-500 dark:text-muted-foreground noir:text-muted-foreground"
+            ? "text-gray-900"
+            : "text-gray-500"
         )}
         onClick={item.action}
       >
@@ -70,8 +70,8 @@ export default function BottomNav() {
             className={cn(
               "w-6 h-6 transition-all duration-300",
               active
-                ? "text-gray-900 dark:text-white noir:text-white scale-110 drop-shadow-[0_0_8px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] noir:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-                : "text-gray-500 dark:text-muted-foreground noir:text-muted-foreground group-hover:text-gray-700 dark:group-hover:text-muted-foreground noir:group-hover:text-muted-foreground"
+                ? "text-gray-900 scale-110"
+                : "text-gray-500 group-hover:text-gray-700"
             )}
             strokeWidth={active ? 2.5 : 2}
           />
