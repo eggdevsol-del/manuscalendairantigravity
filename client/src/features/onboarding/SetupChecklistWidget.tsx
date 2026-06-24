@@ -1,7 +1,7 @@
 import React from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useBottomNav } from "@/contexts/BottomNavContext";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Circle, ChevronRight, User, MapPin, Clock, Briefcase, Banknote } from "lucide-react";
@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
  */
 export function SetupChecklistWidget() {
     const { user, refresh } = useAuth();
-    const { requestSettingsView } = useBottomNav();
+    const [, setLocation] = useLocation();
     const updateOnboardingMutation = trpc.auth.completeOnboarding.useMutation();
 
     const { data: artistSettings, isLoading } = trpc.artistSettings.get.useQuery(undefined, {
@@ -62,7 +62,7 @@ export function SetupChecklistWidget() {
             description: "Add a photo and phone number so clients can reach you.",
             isComplete: hasProfileComplete,
             icon: User,
-            onClick: () => requestSettingsView("profile"),
+            onClick: () => setLocation("/settings"),
         },
         {
             id: "business",
@@ -70,7 +70,7 @@ export function SetupChecklistWidget() {
             description: "Tell clients where to find you.",
             isComplete: hasBusinessAddress,
             icon: MapPin,
-            onClick: () => requestSettingsView("business"),
+            onClick: () => setLocation("/settings"),
         },
         {
             id: "hours",
@@ -78,7 +78,7 @@ export function SetupChecklistWidget() {
             description: "Define your weekly availability.",
             isComplete: hasWorkHours,
             icon: Clock,
-            onClick: () => requestSettingsView("work-hours"),
+            onClick: () => setLocation("/work-hours"),
         },
         {
             id: "services",
@@ -86,7 +86,7 @@ export function SetupChecklistWidget() {
             description: "What tattoos do you offer?",
             isComplete: hasServices,
             icon: Briefcase,
-            onClick: () => requestSettingsView("work-hours"), // Shared panel
+            onClick: () => setLocation("/work-hours"),
         },
         {
             id: "payments",
