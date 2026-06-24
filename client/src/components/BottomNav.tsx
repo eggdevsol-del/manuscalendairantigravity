@@ -43,14 +43,6 @@ export default function BottomNav() {
         userSelect: "none",
       }}
     >
-      {/* Gradient fade — transparent → white */}
-      <div
-        style={{
-          height: 24,
-          background: "linear-gradient(to bottom, rgba(255,255,255,0), #ffffff)",
-          pointerEvents: "none",
-        }}
-      />
 
       {/* Icon row — solid white */}
       <div
