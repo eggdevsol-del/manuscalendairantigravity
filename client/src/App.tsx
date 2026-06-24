@@ -33,7 +33,7 @@ function getRedirectUrlForRole(role: string, path: string = "") {
   const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
   // Localhost dev setup mapping
-  if (LOCAL_HOSTS.has(hostname) || hostname.endsWith(".localhost")) {
+  if (LOCAL_HOSTS.has(hostname) || hostname.endsWith(".localhost") || hostname.endsWith(".lvh.me")) {
     const baseHost = hostname.replace(/^(artist|merchant|app)\./, "");
     let subdomain = "";
     if (role === "artist" || role === "admin") subdomain = "artist.";
