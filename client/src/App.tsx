@@ -1,94 +1,70 @@
 import React from "react";
-import { trpc } from "@/lib/trpc";
 import { Toaster, TooltipProvider } from "@/components/ui";
 import { UIDebugProvider } from "@/_core/contexts/UIDebugContext";
-import {
-  BottomNavProvider,
-} from "@/contexts/BottomNavContext";
+import { BottomNavProvider } from "@/contexts/BottomNavContext";
 import InstallPrompt from "./components/InstallPrompt";
 import IOSInstallPrompt from "./components/IOSInstallPrompt";
-import BottomNav from "@/components/BottomNav";
-import { ActionPanel } from "@/components/ActionPanel";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useTabletLandscape } from "@/hooks/useTabletLandscape";
 import { TeaserProvider } from "@/contexts/TeaserContext";
-import { useAppointmentCheckIn } from "@/features/appointments/useAppointmentCheckIn";
-import { AppointmentCheckInModal } from "@/components/modals/AppointmentCheckInModal";
 import { SplashScreen } from "@/components/SplashScreen";
 
-import Home from "./pages/Home";
-import Chat from "./pages/Chat";
-import Calendar from "./pages/Calendar";
-import Settings from "./pages/Settings";
-import Conversations from "./pages/Conversations";
-import Dashboard from "./pages/Dashboard";
-import { MerchantOrders } from "./features/merchant/Orders";
-import { MerchantProducts } from "./features/merchant/Products";
-
-// Phase 4: Deferred features — imports removed, routes hidden
-// Consultations, Promotions, Studio, QuickActions, Policies — backend intact
-import NotificationsManagement from "./pages/NotificationsManagement";
-import WorkHours from "./pages/WorkHours";
-import CompleteProfile from "./pages/CompleteProfile";
-import Subscriptions from "./pages/Subscriptions";
-import Clients from "./pages/Clients";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import SetPassword from "./pages/SetPassword";
-import ClientProfile from "./pages/ClientProfile";
-import { PublicFunnel } from "./pages/funnel";
+import CompleteProfile from "./pages/CompleteProfile";
 import PublicStudioFunnel from "./pages/funnel/PublicStudioFunnel";
+import { PublicFunnel } from "./pages/funnel";
 import { DepositSheet } from "./pages/funnel/DepositSheet";
 import { BalanceSheet } from "./pages/funnel/BalanceSheet";
-import ArtistHub from "./pages/public/ArtistHub";
 import PublicStorefront from "./pages/public/PublicStorefront";
 import PublicEvents from "./pages/public/PublicEvents";
-import LeadDetail from "./pages/LeadDetail";
-import PayoutHistory from "./pages/PayoutHistory";
-import BankPayoutsPage from "./pages/BankPayoutsPage";
-import ErrorDashboard from "./pages/admin/ErrorDashboard";
+import ArtistHub from "./pages/public/ArtistHub";
+
+import ArtistShell from "./shells/ArtistShell";
+import ClientShell from "./shells/ClientShell";
+import MerchantShell from "./shells/MerchantShell";
+
+function GuardedShell() {
+  const { user, loading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  React.useEffect(() => {
+    if (!loading && !user) {
+      setLocation("/login");
+    }
+  }, [user, loading, setLocation]);
+
+  if (loading) return null;
+  if (!user) return null;
+
+  if (user.role === "artist" || user.role === "admin") {
+    return <ArtistShell />;
+  } else if (user.role === "merchant") {
+    return <MerchantShell />;
+  } else {
+    return <ClientShell />;
+  }
+}
 
 function Router() {
-  const [location, setLocation] = useLocation();
-  const { user, loading: authLoading } = useAuth();
-  const isTabletLandscape = useTabletLandscape();
-  const isArtist = user?.role === "artist";
-
-  // Guard routing component
-  const GuardedRoute = ({ component: Component, ...rest }: any) => {
-    return (
-      <Route
-        {...rest}
-        component={(props: any) => {
-          // Wait for auth to finish loading before making redirect decisions
-          if (authLoading) return null;
-          if (!user) {
-            setLocation("/login");
-            return null;
-          }
-          return <Component {...props} />;
-        }}
-      />
-    );
-  };
+  const [location] = useLocation();
+  const { user } = useAuth();
 
   // iOS Cold-Boot Deeplink Failsafe
-  // When an iOS PWA is fully asleep and tapped via Push Notification,
-  // Apple breaks the sandbox if opened on a deep route instead of root '/'.
-  // The service worker passes ?deeplink= in the URL instead.
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const deeplink = params.get("deeplink");
     if (deeplink) {
       window.history.replaceState({}, document.title, window.location.pathname);
-      // Wait a tiny fraction of a second for React layout to mount before navigating
-      setTimeout(() => setLocation(deeplink), 50);
+      setTimeout(() => {
+        window.location.href = deeplink;
+      }, 50);
     }
-  }, [setLocation]);
+  }, []);
 
   // Initialize OneSignal
   React.useEffect(() => {
@@ -103,7 +79,6 @@ function Router() {
       import("@/lib/onesignal").then(
         ({ setExternalUserId, requestNotificationPermission }) => {
           setExternalUserId(user.id).then(() => {
-            // Explicitly prompt the user for permission now that they are logged in
             requestNotificationPermission().catch(err => {
               console.error(
                 "[OneSignal] Failed to request permission on login:",
@@ -116,37 +91,14 @@ function Router() {
     }
   }, [user?.id]);
 
-  const hideBottomNavPaths = [
-    "/",
-    "/login",
-    "/signup",
-    "/set-password",
-    "/complete-profile",
-  ];
-  
-  const knownAppRoutes = [
-    "/login", "/signup", "/set-password", "/complete-profile",
-    "/conversations", "/chat", "/lead", "/calendar", "/settings", "/dashboard",
-    "/notifications-management", "/work-hours", "/subscriptions",
-    "/clients", "/profile", "/portfolio",
-    "/payout-history", "/bank-payouts", "/wallet", "/admin/errors", "/events", "/404", "/merchant"
-  ];
-  const isAppRoute = location === "/" || knownAppRoutes.some(route => location.startsWith(route));
-
   const isPublicFunnel =
     location.startsWith("/start/") ||
     location.startsWith("/deposit/") ||
     location.startsWith("/balance/") ||
-    location.startsWith("/studio/") ||
-    !isAppRoute;
-
-  const shouldShowBottomNav =
-    !hideBottomNavPaths.includes(location) &&
-    !location.startsWith("/404") &&
-    !isPublicFunnel;
+    location.startsWith("/studio/");
 
   return (
-    <div className={`min-h-screen ${shouldShowBottomNav ? "pb-16" : ""}`}>
+    <div className="min-h-screen">
       {!isPublicFunnel && <SplashScreen />}
       <Switch>
         <Route path="/" component={Login} />
@@ -161,95 +113,25 @@ function Router() {
         <Route path="/deposit/:token" component={DepositSheet} />
         <Route path="/balance/:id" component={BalanceSheet} />
 
-        {/* Protected Routes */}
-        <GuardedRoute path="/conversations" component={Conversations} />
-        <GuardedRoute path="/lead/:id" component={LeadDetail} />
-        <GuardedRoute path="/chat/:id" component={Chat} />
-        <GuardedRoute path="/calendar" component={Calendar} />
-
-        <GuardedRoute path="/dashboard" component={Dashboard} />
-        <GuardedRoute path="/merchant/orders" component={MerchantOrders} />
-        <GuardedRoute path="/merchant/products" component={MerchantProducts} />
-        
-        {/* Portfolio routes removed */}
-
-        <GuardedRoute path="/settings" component={Settings} />
-        <GuardedRoute
-          path="/notifications-management"
-          component={NotificationsManagement}
-        />
-        <GuardedRoute path="/work-hours" component={WorkHours} />
-        <GuardedRoute path="/subscriptions" component={Subscriptions} />
-        <GuardedRoute path="/clients" component={Clients} />
-        <GuardedRoute path="/profile" component={ClientProfile} />
-        <GuardedRoute path="/payout-history" component={PayoutHistory} />
-        <GuardedRoute path="/bank-payouts" component={BankPayoutsPage} />
-        <GuardedRoute path="/admin/errors" component={ErrorDashboard} />
-
-        <Route path="/404" component={NotFound} />
         {/* Dynamic Slug Route for Artist Hub */}
         <Route path="/shop/:slug" component={PublicStorefront} />
         <Route path="/events/:slug" component={PublicEvents} />
         <Route path="/:slug" component={ArtistHub} />
-        <Route component={NotFound} />
+
+        {/* Fallback to GuardedShell for all app routes */}
+        <Route path="*">
+          <GuardedShell />
+        </Route>
       </Switch>
-      {shouldShowBottomNav && (
-        <ErrorBoundary boundary="fab">
-          <BottomNav />
-          <ActionPanel />
-        </ErrorBoundary>
-      )}
-      {isArtist && <AppointmentCheckInOverlay />}
     </div>
   );
 }
 
-/**
- * AppointmentCheckInPill — Non-blocking persistent pill at top of page.
- * Uses SSOT card width, thinner height, 6px radius, no blur.
- * Stays visible until an action is selected.
- */
-function AppointmentCheckInOverlay() {
-  const [dismissed, setDismissed] = React.useState<number | null>(null);
-  const { activeCheckIn, updateAppointment } = useAppointmentCheckIn();
-
-  const activeId = activeCheckIn?.appointment?.id;
-
-  // Reset dismissed state when the active appointment changes
-  React.useEffect(() => {
-    if (activeId && activeId !== dismissed) {
-      setDismissed(null);
-    }
-  }, [activeId, dismissed]);
-
-  if (!activeCheckIn || dismissed === activeCheckIn.appointment.id) return null;
-
-  return (
-    <div className="fixed top-0 left-0 right-0 z-[60] flex justify-center px-4 pt-[env(safe-area-inset-top,12px)] pointer-events-none">
-      <div className="w-full max-w-md pointer-events-auto">
-        <AppointmentCheckInModal
-          isOpen={true}
-          checkIn={activeCheckIn}
-          onDismiss={() => {
-            setDismissed(activeCheckIn.appointment.id);
-          }}
-          updateAppointment={updateAppointment}
-        />
-      </div>
-    </div>
-  );
-}
-
-/**
- * Wrapper component to conditionally render IOSInstallPrompt
- * Only shows on non-funnel pages (funnel has its own install prompt on success)
- */
 function ConditionalIOSInstallPrompt() {
   const [location] = useLocation();
   const isPublicFunnel =
     location.startsWith("/start/") || location.startsWith("/deposit/");
 
-  // Don't render on funnel pages - the funnel handles its own install prompt
   if (isPublicFunnel) {
     return null;
   }

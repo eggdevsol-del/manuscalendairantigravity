@@ -68,10 +68,88 @@ export const authRouter = router({
     // when Instagram credentials are configured
     return { url: "" };
   }),
-  listArtists: protectedProcedure.query(async () => {
-    // Get all users with artist or admin role
-    return db.getArtists();
-  }),
+  listArtists: protectedProcedure
+    .input(
+      z.object({
+        lat: z.number().optional(),
+        lng: z.number().optional(),
+        sortBy: z.enum(["all", "distance", "popularity"]).optional().default("all"),
+      }).optional()
+    )
+    .query(async ({ input }) => {
+      const database = await db.getDb();
+      if (!database) return [];
+
+      // Get all users with artist or admin role
+      const artists = await db.getArtists();
+
+      const { eq, or, sql } = await import("drizzle-orm");
+      const { appointments } = await import("../../drizzle/schema");
+
+      // Fetch count of completed/confirmed appointments group by artistId
+      const bookingCounts = await database
+        .select({
+          artistId: appointments.artistId,
+          bookingCount: sql<number>`count(${appointments.id})`.mapWith(Number),
+        })
+        .from(appointments)
+        .where(
+          or(
+            eq(appointments.status, "completed"),
+            eq(appointments.status, "confirmed")
+          )
+        )
+        .groupBy(appointments.artistId);
+
+      const countMap = new Map<string, number>();
+      bookingCounts.forEach((b) => {
+        countMap.set(b.artistId, b.bookingCount);
+      });
+
+      // Enrich artists with booking count and optionally calculate distance
+      let enrichedArtists = artists.map((artist) => {
+        const bookingCount = countMap.get(artist.id) || 0;
+        let distance: number | null = null;
+
+        if (input?.lat && input?.lng && artist.lat != null && artist.lng != null) {
+          const clientLat = input.lat;
+          const clientLng = input.lng;
+          const lat1 = Number(artist.lat);
+          const lng1 = Number(artist.lng);
+
+          const dLat = ((lat1 - clientLat) * Math.PI) / 180;
+          const dLng = ((lng1 - clientLng) * Math.PI) / 180;
+          const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos((clientLat * Math.PI) / 180) *
+              Math.cos((lat1 * Math.PI) / 180) *
+              Math.sin(dLng / 2) *
+              Math.sin(dLng / 2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          distance = 6371 * c; // in km
+        }
+
+        return {
+          ...artist,
+          bookingCount,
+          distance,
+        };
+      });
+
+      // Sort
+      const sortBy = input?.sortBy || "all";
+      if (sortBy === "popularity") {
+        enrichedArtists.sort((a, b) => b.bookingCount - a.bookingCount);
+      } else if (sortBy === "distance") {
+        enrichedArtists.sort((a, b) => {
+          const distA = a.distance ?? Infinity;
+          const distB = b.distance ?? Infinity;
+          return distA - distB;
+        });
+      }
+
+      return enrichedArtists;
+    }),
   deleteAccount: protectedProcedure.mutation(async ({ ctx }) => {
     const database = await db.getDb();
     if (!database) {

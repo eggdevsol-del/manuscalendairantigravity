@@ -12,7 +12,8 @@
  * - Floating search pill is transparent outside the pill shape
  */
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { toast } from "sonner";
 import { MessageCircle, MapPin, Search, X, ShoppingBag, ChevronRight, CalendarPlus, Loader2, Package, Check, ImagePlus } from "lucide-react";
 import { ClientArtistCard } from "@/features/client-profile/ClientArtistCard";
 import { ArtistMapOverlay } from "@/features/client-profile/ArtistMapOverlay";
@@ -361,12 +362,24 @@ function DiscoverArtistCard({
             onClick={e => { e.stopPropagation(); toggle("portfolio"); }}
           >
             <p className="text-white font-bold text-base leading-tight truncate drop-shadow-md">{displayName}</p>
-            {location && (
-              <div className="flex items-center gap-1 mt-0.5">
-                <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
-                <p className="text-muted-foreground text-xs truncate">{location}</p>
-              </div>
-            )}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
+              {location && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <p className="text-muted-foreground text-xs truncate">{location}</p>
+                </div>
+              )}
+              {artist.bookingCount !== undefined && artist.bookingCount > 0 && (
+                <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded shrink-0">
+                  🔥 {artist.bookingCount} Booking{artist.bookingCount !== 1 ? "s" : ""}
+                </span>
+              )}
+              {artist.distance !== undefined && artist.distance !== null && artist.distance !== Infinity && (
+                <span className="text-[10px] text-blue-400 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded shrink-0">
+                  📍 {artist.distance.toFixed(1)} km
+                </span>
+              )}
+            </div>
             {expanded === null && (
               <p className="text-white/30 text-[10px] mt-0.5">Tap to view portfolio</p>
             )}
@@ -494,8 +507,33 @@ export function ClientFeedTab({ conversations, setIsShopExpanded }: ClientFeedTa
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [mapOpen, setMapOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<"all" | "distance" | "popularity">("all");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
-  const { data: allArtists = [], isLoading: loadingArtists } = trpc.auth.listArtists.useQuery();
+  useEffect(() => {
+    if (sortBy === "distance" && !coords && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoords({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (error) => {
+          toast.error("Location access denied. Distance sorting disabled.");
+          setSortBy("all");
+        }
+      );
+    }
+  }, [sortBy, coords]);
+
+  const { data: allArtists = [], isLoading: loadingArtists } = trpc.auth.listArtists.useQuery({
+    lat: coords?.lat,
+    lng: coords?.lng,
+    sortBy,
+  }, {
+    staleTime: 30000,
+  });
 
   // My Artists search filter
   const filteredConversations = useMemo(() => {
@@ -573,6 +611,40 @@ export function ClientFeedTab({ conversations, setIsShopExpanded }: ClientFeedTa
               </div>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </button>
+
+            {/* Sorting chips */}
+            <div className="flex gap-2 overflow-x-auto no-scrollbar mb-3">
+              <button
+                onClick={() => setSortBy("all")}
+                className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  sortBy === "all"
+                    ? "bg-primary text-white border-primary shadow-md"
+                    : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"
+                }`}
+              >
+                All Artists
+              </button>
+              <button
+                onClick={() => setSortBy("distance")}
+                className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  sortBy === "distance"
+                    ? "bg-primary text-white border-primary shadow-md"
+                    : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"
+                }`}
+              >
+                Near Me
+              </button>
+              <button
+                onClick={() => setSortBy("popularity")}
+                className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  sortBy === "popularity"
+                    ? "bg-primary text-white border-primary shadow-md"
+                    : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"
+                }`}
+              >
+                Popular
+              </button>
+            </div>
 
             {/* Style filter chips */}
             <div className="flex gap-2 overflow-x-auto no-scrollbar mb-3">
