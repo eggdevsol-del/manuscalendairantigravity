@@ -5,19 +5,15 @@ import {
   Button,
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   Checkbox,
   Input,
   Label,
 } from "@/components/ui";
-import { PageShell } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, LogIn, Mail } from "lucide-react";
+import { Eye, EyeOff, Loader2, Mail } from "lucide-react";
 import { APP_VERSION } from "@/lib/version";
 import { useGoogleAuthReady } from "@/main";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
@@ -29,6 +25,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [showOtherMethods, setShowOtherMethods] = useState(false);
   const { user, loading: authLoading } = useAuth();
 
   const loginMutation = trpc.auth.login.useMutation({
@@ -124,173 +121,182 @@ export default function Login() {
   };
 
   return (
-    <PageShell className="justify-center items-center px-4 py-8 overflow-y-auto mobile-scroll">
-      <div className="w-full max-w-md shrink-0 mt-auto mb-auto">
-        <CardHeader className="space-y-1 text-center pb-6 border-none flex flex-col items-center">
-          <h1 className="text-7xl sm:text-8xl font-light text-white tracking-widest mb-2 w-full text-center">
-            TATTOI
-          </h1>
-          <CardDescription className="text-[13px] font-light">
-            REVENUE PROTECTION - FOR SERIOUS ARTISTS
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Google Sign-In — only rendered when provider is ready */}
-          {isGoogleReady && (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        display: "flex",
+        flexDirection: "column",
+        background: "#ffffff",
+      }}
+    >
+      {/* Background image — fills the screen, logo centered upper area */}
+      <div
+        style={{
+          flex: 1,
+          backgroundImage: "url(/tattoi-login-bg.png)",
+          backgroundSize: "contain",
+          backgroundPosition: "center 30%",
+          backgroundRepeat: "no-repeat",
+        }}
+      />
+
+      {/* Bottom action area — pinned to bottom */}
+      <div
+        style={{
+          padding: "0 32px",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 40px)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        {/* Other methods panel — slides in when toggled */}
+        {showOtherMethods && (
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 400,
+              marginBottom: 8,
+            }}
+          >
+            <Card className="border-0 shadow-none bg-transparent p-0">
+              <CardContent className="p-0 space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" style={{ fontWeight: 300 }}>Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        variant="hero"
+                        className="pl-10 h-11"
+                        disabled={isLoading}
+                        required
+                        style={{ fontWeight: 300 }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="password" style={{ fontWeight: 300 }}>Password</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        variant="hero"
+                        className="pr-10 h-11"
+                        disabled={isLoading}
+                        required
+                        style={{ fontWeight: 300 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground outline-none"
+                        disabled={isLoading}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="remember"
+                        checked={rememberMe}
+                        onCheckedChange={checked => setRememberMe(checked === true)}
+                        disabled={isLoading}
+                      />
+                      <label
+                        htmlFor="remember"
+                        className="text-sm leading-none cursor-pointer text-muted-foreground"
+                        style={{ fontWeight: 300 }}
+                      >
+                        Remember me
+                      </label>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setLocation("/forgot-password")}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      style={{ fontWeight: 300 }}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className={cn(tokens.button.auth, "w-full h-12 rounded-full")}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing in...
+                      </>
+                    ) : (
+                      "Sign In"
+                    )}
+                  </Button>
+                </form>
+
+                <div className="flex justify-center gap-1 text-sm text-muted-foreground" style={{ fontWeight: 300 }}>
+                  <span>Don't have an account?</span>
+                  <button
+                    onClick={() => setLocation("/signup?role=client")}
+                    className="text-primary font-medium hover:underline"
+                  >
+                    Sign up
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Google Sign-In — primary CTA */}
+        {isGoogleReady && (
+          <div style={{ width: "100%", maxWidth: 400 }}>
             <GoogleLoginButton
               onSuccess={handleGoogleSuccess}
               onError={() => toast.error("Google sign-in was cancelled or failed.")}
               disabled={isLoading}
             />
-          )}
-
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-[10px] font-bold tracking-widest uppercase">
-              <span className="bg-background px-4 text-muted-foreground">
-                {isGoogleReady ? "Or sign in with email" : "Sign in with email"}
-              </span>
-            </div>
           </div>
+        )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" style={{ fontWeight: 300 }}>Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  variant="hero"
-                  className="pl-10"
-                  disabled={isLoading}
-                  required
-                  style={{ fontWeight: 300 }}
-                />
-              </div>
-            </div>
+        {/* Other sign-in options toggle */}
+        <button
+          onClick={() => setShowOtherMethods(!showOtherMethods)}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          style={{ fontWeight: 300 }}
+        >
+          {showOtherMethods ? "Hide other options" : "Other sign-in options"}
+        </button>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" style={{ fontWeight: 300 }}>Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  variant="hero"
-                  className="pr-10"
-                  disabled={isLoading}
-                  required
-                  style={{ fontWeight: 300 }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-4 text-muted-foreground hover:text-foreground outline-none"
-                  disabled={isLoading}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-6 w-6" />
-                  ) : (
-                    <Eye className="h-6 w-6" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="remember"
-                checked={rememberMe}
-                onCheckedChange={checked => setRememberMe(checked === true)}
-                disabled={isLoading}
-              />
-              <label
-                htmlFor="remember"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                style={{ fontWeight: 300 }}
-              >
-                Remember me
-              </label>
-            </div>
-
-            <Button
-              type="submit"
-              className={cn(tokens.button.auth, "mt-2")}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                "Sign In"
-              )}
-            </Button>
-          </form>
-
-          <div className="mt-8 space-y-4">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-[10px] tracking-widest uppercase" style={{ fontWeight: 300 }}>
-                <span className="bg-background px-4 text-muted-foreground">
-                  Don't have an account?
-                </span>
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              onClick={() => setLocation("/signup?role=client")}
-              disabled={isLoading}
-              className={cn(
-                tokens.button.authSecondary,
-                "mb-3"
-              )}
-            >
-              Create Account
-            </Button>
-
-            <Button
-              type="button"
-              className={tokens.button.auth}
-              onClick={() => setLocation("/forgot-password")}
-              disabled={isLoading}
-            >
-              Forgot password?
-            </Button>
-            
-            <div className="mt-6 flex justify-center">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setLocation("/signup")}
-                disabled={isLoading}
-                className="text-sm text-muted-foreground hover:text-foreground h-auto p-2"
-              >
-                Create Artist / Supplier Account
-              </Button>
-            </div>
-          </div>
-
-          {/* Version Number */}
-          <div className="mt-6 text-center">
-            <span className="text-xs text-muted-foreground" style={{ fontWeight: 300 }}>
-              v{APP_VERSION}
-            </span>
-          </div>
-        </CardContent>
+        {/* Version */}
+        <span
+          className="text-xs text-muted-foreground/50"
+          style={{ fontWeight: 300 }}
+        >
+          v{APP_VERSION}
+        </span>
       </div>
-    </PageShell>
+    </div>
   );
 }
