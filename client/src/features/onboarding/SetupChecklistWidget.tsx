@@ -8,6 +8,20 @@ import { CheckCircle2, Circle, ChevronRight, User, MapPin, Clock, Briefcase, Ban
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+/**
+ * SetupChecklistWidget — Progressive onboarding via Dashboard.
+ *
+ * SSOT: This is the single onboarding mechanism for artists.
+ * The old 7-step OnboardingArtistFlow overlay has been removed.
+ * Artists are guided through setup contextually via this checklist.
+ *
+ * Tasks:
+ *  1. Upload Profile Picture → Settings > Profile
+ *  2. Set Studio Location → Settings > Business
+ *  3. Configure Work Hours → Settings > Work Hours
+ *  4. Add a Service → Settings > Work Hours (shared panel)
+ *  5. Set up Bank Payouts → /bank-payouts (Stripe Express)
+ */
 export function SetupChecklistWidget() {
     const { user, refresh } = useAuth();
     const { requestSettingsView } = useBottomNav();
@@ -100,22 +114,22 @@ export function SetupChecklistWidget() {
     };
 
     return (
-        <div className="dashboard-setup-widget w-full rounded-2xl bg-card border border-border shadow-xl overflow-hidden mb-6 relative">
-            <div className="p-5 border-b border-border relative bg-background/80">
+        <div className="w-full rounded-2xl bg-white overflow-hidden mb-6">
+            <div className="p-5 pb-4">
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <h3 className="text-lg font-bold text-foreground tracking-tight">Studio Setup Checklist</h3>
-                        <p className="text-sm text-muted-foreground mt-0.5">Prepare your studio to accept bookings.</p>
+                        <h3 className="text-lg font-bold text-foreground tracking-tight">Studio Setup</h3>
+                        <p className="text-sm text-muted-foreground mt-0.5">Complete these steps to accept bookings.</p>
                     </div>
-                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-accent/20 border border-accent/40 shadow-[0_0_15px_rgba(224,159,62,0.2)] shrink-0">
-                        <span className="text-accent font-bold text-sm">{completedTasks}/{tasks.length}</span>
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0">
+                        <span className="text-primary font-bold text-xs">{completedTasks}/{tasks.length}</span>
                     </div>
                 </div>
 
                 {/* Progress Bar */}
-                <div className="h-2 w-full bg-secondary/50 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                     <motion.div
-                        className="h-full bg-accent"
+                        className="h-full bg-primary rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${progressPercentage}%` }}
                         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -123,35 +137,35 @@ export function SetupChecklistWidget() {
                 </div>
             </div>
 
-            <div className="divide-y divide-white/5 bg-transparent">
+            <div className="border-t border-gray-50">
                 <AnimatePresence>
                     {tasks.map((task, index) => (
                         <motion.button
                             key={task.id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
+                            transition={{ delay: index * 0.08 }}
                             onClick={task.onClick}
-                            className="w-full flex items-center p-4 hover:bg-secondary/50 transition-colors text-left group"
+                            className="w-full flex items-center px-5 py-3.5 hover:bg-gray-50 transition-colors text-left group border-b border-gray-50 last:border-b-0"
                         >
                             <div className={cn(
                                 "flex items-center justify-center w-8 h-8 rounded-full shrink-0 transition-colors",
-                                task.isComplete ? "text-emerald-500 bg-emerald-500/10" : "text-muted-foreground bg-secondary/50 group-hover:bg-secondary/50 group-hover:text-foreground"
+                                task.isComplete ? "text-emerald-500 bg-emerald-50" : "text-muted-foreground bg-gray-100 group-hover:text-foreground"
                             )}>
-                                {task.isComplete ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
+                                {task.isComplete ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
                             </div>
 
-                            <div className="flex-1 ml-4 pr-2">
+                            <div className="flex-1 ml-3 pr-2">
                                 <h4 className={cn(
-                                    "text-sm font-semibold transition-colors",
-                                    task.isComplete ? "text-muted-foreground line-through decoration-white/20" : "text-foreground group-hover:text-accent"
+                                    "text-sm font-medium transition-colors",
+                                    task.isComplete ? "text-muted-foreground line-through" : "text-foreground"
                                 )}>
                                     {task.title}
                                 </h4>
-                                <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{task.description}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{task.description}</p>
                             </div>
 
-                            <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                            <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                         </motion.button>
                     ))}
                 </AnimatePresence>
@@ -162,12 +176,12 @@ export function SetupChecklistWidget() {
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
-                        className="p-4 bg-emerald-500/10 border-t border-emerald-500/20"
+                        className="p-4 bg-emerald-50 border-t border-emerald-100"
                     >
                         <Button
                             onClick={handleFinalizeSetup}
                             disabled={updateOnboardingMutation.isPending}
-                            className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all"
+                            className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all"
                         >
                             {updateOnboardingMutation.isPending ? "Finalizing..." : "Complete Setup & Launch"}
                         </Button>
