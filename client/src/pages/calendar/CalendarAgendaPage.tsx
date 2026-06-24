@@ -3,7 +3,7 @@ import { CalendarMonthHeader } from "./components/CalendarMonthHeader";
 import { CalendarDateStrip7 } from "./components/CalendarDateStrip7";
 import { AgendaDayList } from "./components/AgendaDayList";
 import { MonthBreakdown } from "./components/MonthBreakdown";
-import { PageShell } from "@/components/ui/ssot";
+import { PageShell, PageHeader } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { useRegisterFABActions } from "@/contexts/BottomNavContext";
@@ -157,6 +157,7 @@ export default function CalendarAgendaPage() {
 
   return (
     <PageShell>
+      <PageHeader title="Calendar" />
       <div
         className="flex flex-col md:flex-row flex-1 overflow-hidden"
         onTouchStart={handleTouchStart}
