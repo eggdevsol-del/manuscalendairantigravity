@@ -26,20 +26,15 @@ import Calendar from "./pages/Calendar";
 import Settings from "./pages/Settings";
 import Conversations from "./pages/Conversations";
 import Dashboard from "./pages/Dashboard";
-// Portfolio page removed - replaced by Promotions
-import Promotions from "./pages/Promotions";
 import { MerchantOrders } from "./features/merchant/Orders";
 import { MerchantProducts } from "./features/merchant/Products";
 
-import Consultations from "./pages/Consultations";
-import Policies from "./pages/Policies";
-import PolicyManagement from "./pages/PolicyManagement";
+// Phase 4: Deferred features — imports removed, routes hidden
+// Consultations, Promotions, Studio, QuickActions, Policies — backend intact
 import NotificationsManagement from "./pages/NotificationsManagement";
 import WorkHours from "./pages/WorkHours";
-import QuickActionsManagement from "./pages/QuickActionsManagement";
 import CompleteProfile from "./pages/CompleteProfile";
 import Subscriptions from "./pages/Subscriptions";
-import StudioDashboard from "./features/studio/StudioDashboard";
 import Clients from "./pages/Clients";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -132,10 +127,9 @@ function Router() {
   const knownAppRoutes = [
     "/login", "/signup", "/set-password", "/complete-profile",
     "/conversations", "/chat", "/lead", "/calendar", "/settings", "/dashboard",
-    "/promotions", "/consultations", "/policies", "/policy-management",
     "/notifications-management", "/work-hours", "/subscriptions",
-    "/studio", "/quick-actions", "/clients", "/profile",
-    "/payout-history", "/bank-payouts", "/admin/errors", "/events", "/404", "/merchant"
+    "/clients", "/profile", "/portfolio",
+    "/payout-history", "/bank-payouts", "/wallet", "/admin/errors", "/events", "/404", "/merchant"
   ];
   const isAppRoute = location === "/" || knownAppRoutes.some(route => location.startsWith(route));
 
@@ -178,20 +172,14 @@ function Router() {
         <GuardedRoute path="/merchant/products" component={MerchantProducts} />
         
         {/* Portfolio routes removed */}
-        <GuardedRoute path="/promotions" component={Promotions} />
 
         <GuardedRoute path="/settings" component={Settings} />
-        <GuardedRoute path="/consultations" component={Consultations} />
-        <GuardedRoute path="/policies" component={Policies} />
-        <GuardedRoute path="/policy-management" component={PolicyManagement} />
         <GuardedRoute
           path="/notifications-management"
           component={NotificationsManagement}
         />
         <GuardedRoute path="/work-hours" component={WorkHours} />
         <GuardedRoute path="/subscriptions" component={Subscriptions} />
-        <GuardedRoute path="/studio" component={StudioDashboard} />
-        <GuardedRoute path="/quick-actions" component={QuickActionsManagement} />
         <GuardedRoute path="/clients" component={Clients} />
         <GuardedRoute path="/profile" component={ClientProfile} />
         <GuardedRoute path="/payout-history" component={PayoutHistory} />
