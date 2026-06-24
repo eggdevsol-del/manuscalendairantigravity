@@ -159,7 +159,7 @@ export default function CalendarAgendaPage() {
     <PageShell>
       <PageHeader title="Calendar" />
       <div
-        className="flex flex-col md:flex-row flex-1 overflow-hidden"
+        className="relative flex flex-col md:flex-row flex-1 overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
