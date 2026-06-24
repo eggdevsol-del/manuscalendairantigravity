@@ -50,6 +50,7 @@ export default function BottomNav() {
           display: "flex",
           alignItems: "center",
           height: 44,
+          paddingTop: 15,
           backgroundColor: "#ffffff",
         }}
       >
