@@ -1,0 +1,23 @@
+{
+  "name": "TATTOI Artist",
+  "short_name": "TATTOI Artist",
+  "description": "TATTOI Artist - Beautiful appointments made simple",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0d0c15",
+  "theme_color": "#0d0c15",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-artist.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "business",
+    "productivity"
+  ]
+}

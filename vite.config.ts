@@ -91,6 +91,13 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: path.resolve(import.meta.dirname, "dist/public"),
       emptyOutDir: true,
+      rollupOptions: {
+        input: {
+          main: path.resolve(import.meta.dirname, "client/index.html"),
+          artist: path.resolve(import.meta.dirname, "client/artist.html"),
+          merchant: path.resolve(import.meta.dirname, "client/merchant.html"),
+        },
+      },
     },
     server: {
       host: true,

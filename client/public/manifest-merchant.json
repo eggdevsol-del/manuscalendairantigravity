@@ -1,0 +1,23 @@
+{
+  "name": "TATTOI Merchant",
+  "short_name": "TATTOI Merchant",
+  "description": "TATTOI Merchant - Beautiful appointments made simple",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0d0c15",
+  "theme_color": "#0d0c15",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-merchant.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "business",
+    "productivity"
+  ]
+}

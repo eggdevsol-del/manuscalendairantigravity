@@ -28,7 +28,30 @@ import ArtistShell from "./shells/ArtistShell";
 import ClientShell from "./shells/ClientShell";
 import MerchantShell from "./shells/MerchantShell";
 
-function GuardedShell() {
+function getRedirectUrlForRole(role: string, path: string = "") {
+  const { hostname, port, protocol } = window.location;
+  const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+
+  // Localhost dev setup mapping
+  if (LOCAL_HOSTS.has(hostname) || hostname.endsWith(".localhost")) {
+    const baseHost = hostname.replace(/^(artist|merchant|app)\./, "");
+    let subdomain = "";
+    if (role === "artist" || role === "admin") subdomain = "artist.";
+    if (role === "merchant") subdomain = "merchant.";
+
+    const portStr = port ? `:${port}` : "";
+    return `${protocol}//${subdomain}${baseHost}${portStr}${path}`;
+  }
+
+  // Production setup mapping
+  let subdomain = "app";
+  if (role === "artist" || role === "admin") subdomain = "artist";
+  if (role === "merchant") subdomain = "merchant";
+
+  return `${protocol}//${subdomain}.tattoi.app${path}`;
+}
+
+function GuardedShell({ appType }: { appType: "artist" | "client" | "merchant" }) {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
 
@@ -38,19 +61,59 @@ function GuardedShell() {
     }
   }, [user, loading, setLocation]);
 
+  React.useEffect(() => {
+    if (loading || !user) return;
+
+    const userRole = user.role;
+    const isArtist = userRole === "artist" || userRole === "admin";
+    const isMerchant = userRole === "merchant";
+    const isClient = userRole === "client";
+
+    let needsRedirect = false;
+    let targetRole = "";
+
+    if (appType === "artist" && !isArtist) {
+      needsRedirect = true;
+      targetRole = isMerchant ? "merchant" : "client";
+    } else if (appType === "merchant" && !isMerchant) {
+      needsRedirect = true;
+      targetRole = isArtist ? "artist" : "client";
+    } else if (appType === "client" && !isClient && (isArtist || isMerchant)) {
+      needsRedirect = true;
+      targetRole = isArtist ? "artist" : "merchant";
+    }
+
+    if (needsRedirect) {
+      console.log(`[Router] Redirecting to subdomain matching role: ${targetRole}`);
+      window.location.href = getRedirectUrlForRole(targetRole, window.location.pathname + window.location.search);
+    }
+  }, [user, loading, appType]);
+
   if (loading) return null;
   if (!user) return null;
 
-  if (user.role === "artist" || user.role === "admin") {
+  const userRole = user.role;
+  const isArtist = userRole === "artist" || userRole === "admin";
+  const isMerchant = userRole === "merchant";
+  const isClient = userRole === "client";
+
+  const isMismatch =
+    (appType === "artist" && !isArtist) ||
+    (appType === "merchant" && !isMerchant) ||
+    (appType === "client" && !isClient && (isArtist || isMerchant));
+
+  if (isMismatch) return null;
+
+  if (isArtist) {
     return <ArtistShell />;
-  } else if (user.role === "merchant") {
+  } else if (isMerchant) {
     return <MerchantShell />;
   } else {
     return <ClientShell />;
   }
 }
 
-function Router() {
+function Router({ appType }: { appType: "artist" | "client" | "merchant" }) {
   const [location] = useLocation();
   const { user } = useAuth();
 
@@ -91,6 +154,25 @@ function Router() {
     }
   }, [user?.id]);
 
+  // Redirect client public pages from artist/merchant subdomains to the client subdomain
+  React.useEffect(() => {
+    if (appType !== "client") {
+      const path = window.location.pathname;
+      const isPublicClientPage =
+        path.startsWith("/start/") ||
+        path.startsWith("/deposit/") ||
+        path.startsWith("/balance/") ||
+        path.startsWith("/shop/") ||
+        path.startsWith("/events/") ||
+        path.startsWith("/studio/");
+
+      if (isPublicClientPage) {
+        console.log(`[Router] Redirecting public client page to client subdomain`);
+        window.location.href = getRedirectUrlForRole("client", path + window.location.search);
+      }
+    }
+  }, [appType, user]);
+
   const isPublicFunnel =
     location.startsWith("/start/") ||
     location.startsWith("/deposit/") ||
@@ -120,7 +202,7 @@ function Router() {
 
         {/* Fallback to GuardedShell for all app routes */}
         <Route path="*">
-          <GuardedShell />
+          <GuardedShell appType={appType} />
         </Route>
       </Switch>
     </div>
@@ -139,7 +221,7 @@ function ConditionalIOSInstallPrompt() {
   return <IOSInstallPrompt />;
 }
 
-function App() {
+function App({ appType = "client" }: { appType?: "artist" | "client" | "merchant" }) {
   return (
     <ThemeProvider defaultTheme="dark" switchable>
       <TeaserProvider>
@@ -150,7 +232,7 @@ function App() {
               <InstallPrompt />
               <ConditionalIOSInstallPrompt />
               <ErrorBoundary boundary="app-root">
-                <Router />
+                <Router appType={appType} />
               </ErrorBoundary>
             </TooltipProvider>
           </BottomNavProvider>

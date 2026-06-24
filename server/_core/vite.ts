@@ -24,20 +24,32 @@ export async function setupVite(app: Express, server: Server) {
   app.use(vite.middlewares);
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
+    const host = req.headers.host || "";
 
     try {
+      let htmlFile = "index.html";
+      let mainScript = "main.tsx";
+
+      if (host.startsWith("artist.")) {
+        htmlFile = "artist.html";
+        mainScript = "artist-main.tsx";
+      } else if (host.startsWith("merchant.")) {
+        htmlFile = "merchant.html";
+        mainScript = "merchant-main.tsx";
+      }
+
       const clientTemplate = path.resolve(
         import.meta.dirname,
         "../..",
         "client",
-        "index.html"
+        htmlFile
       );
 
       // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
       template = template.replace(
-        `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${nanoid()}"`
+        `src="/src/${mainScript}"`,
+        `src="/src/${mainScript}?v=${nanoid()}"`
       );
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
@@ -76,12 +88,22 @@ export function serveStatic(app: Express) {
     })
   );
 
-  // fall through to index.html if the file doesn't exist
+  // fall through to matching entry point if the file doesn't exist
   // Always serve fresh HTML with no-cache headers
-  app.use("*", (_req, res) => {
+  app.use("*", (req, res) => {
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
-    res.sendFile(path.resolve(distPath, "index.html"));
+
+    const host = req.headers.host || "";
+    let htmlFile = "index.html";
+
+    if (host.startsWith("artist.")) {
+      htmlFile = "artist.html";
+    } else if (host.startsWith("merchant.")) {
+      htmlFile = "merchant.html";
+    }
+
+    res.sendFile(path.resolve(distPath, htmlFile));
   });
 }
