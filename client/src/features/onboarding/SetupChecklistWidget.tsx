@@ -37,6 +37,8 @@ export function SetupChecklistWidget() {
 
     // Evaluate Checklist State
     const hasProfileImage = !!user.avatar && user.avatar.length > 0;
+    const hasPhone = !!user.phone && user.phone.length > 0;
+    const hasProfileComplete = hasProfileImage && hasPhone;
     const hasBusinessAddress = !!artistSettings?.businessAddress && artistSettings.businessAddress.length > 0;
 
     // Check if WorkSchedule JSON has valid keys
@@ -56,9 +58,9 @@ export function SetupChecklistWidget() {
     const tasks = [
         {
             id: "profile",
-            title: "Upload Profile Picture",
-            description: "Help clients recognize you.",
-            isComplete: hasProfileImage,
+            title: "Complete Your Profile",
+            description: "Add a photo and phone number so clients can reach you.",
+            isComplete: hasProfileComplete,
             icon: User,
             onClick: () => requestSettingsView("profile"),
         },

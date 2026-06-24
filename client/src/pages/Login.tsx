@@ -91,8 +91,8 @@ export default function Login() {
       await utils.auth.me.invalidate();
 
       if (result.isNewUser) {
-        toast.success("Account created! Please complete your profile.");
-        window.location.href = "/signup";
+        toast.success("Welcome to Tattoi! Let's get you set up.");
+        window.location.href = "/calendar";
       } else {
         toast.success("Welcome back!");
         if (result.user.role === "studio") {
