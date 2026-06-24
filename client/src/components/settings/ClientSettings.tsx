@@ -42,6 +42,7 @@ import { useConversations } from "@/hooks/useConversations";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
 import {
   Select,
   SelectContent,
@@ -59,6 +60,7 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showBulkMessage, setShowBulkMessage] = useState(false);
   const [bulkMessage, setBulkMessage] = useState("");
@@ -483,7 +485,7 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
                         <Button
                           variant="secondary"
                           size="sm"
-                          onClick={() => setLocation(`/profile?tab=history&clientId=${client.id}`)}
+                          onClick={() => setSelectedClientId(client.id)}
                           className="w-full"
                         >
                           <Clock className="w-4 h-4 mr-2" />
@@ -493,7 +495,7 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setLocation(`/profile?clientId=${client.id}`)}
+                        onClick={() => setSelectedClientId(client.id)}
                         className="w-full mt-2 text-xs opacity-70"
                       >
                         View Full Profile
@@ -646,6 +648,12 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
           </div>
         </div>
       </ModalShell>
+      {/* Client Detail Bottom Sheet */}
+      <ClientProfileSheet
+        isOpen={!!selectedClientId}
+        onClose={() => setSelectedClientId(null)}
+        clientId={selectedClientId}
+      />
     </div >
   );
 }

@@ -37,11 +37,13 @@ import { toast } from "sonner";
 import { useConversations } from "@/hooks/useConversations";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
+import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
 
 export default function Clients() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -293,11 +295,7 @@ export default function Clients() {
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() =>
-                        setLocation(
-                          `/profile?tab=history&clientId=${client.id}`
-                        )
-                      }
+                      onClick={() => setSelectedClientId(client.id)}
                       className="w-full"
                     >
                       <Clock className="w-4 h-4 mr-2" />
@@ -307,9 +305,7 @@ export default function Clients() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() =>
-                      setLocation(`/profile?clientId=${client.id}`)
-                    }
+                    onClick={() => setSelectedClientId(client.id)}
                     className="w-full mt-2 text-xs opacity-70"
                   >
                     View Full Profile
@@ -420,6 +416,13 @@ export default function Clients() {
       >
         <div />
       </ModalShell>
+
+      {/* Client Detail Bottom Sheet */}
+      <ClientProfileSheet
+        isOpen={!!selectedClientId}
+        onClose={() => setSelectedClientId(null)}
+        clientId={selectedClientId}
+      />
     </div>
   );
 }

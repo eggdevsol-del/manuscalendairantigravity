@@ -8,6 +8,7 @@ import {
   consentForms,
   appointments,
   orders,
+  clientNotes,
 } from "../../drizzle/schema";
 import { eq, desc, and, gte } from "drizzle-orm";
 import { z } from "zod";
@@ -432,6 +433,57 @@ export const clientProfileRouter = router({
         })
         .where(eq(users.id, input.clientId));
 
+      return { success: true };
+    }),
+
+  getClientNotes: protectedProcedure
+    .input(z.object({ clientId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) return [];
+      return database
+        .select()
+        .from(clientNotes)
+        .where(
+          and(
+            eq(clientNotes.clientId, input.clientId),
+            eq(clientNotes.artistId, ctx.user.id)
+          )
+        )
+        .orderBy(desc(clientNotes.createdAt));
+    }),
+
+  addClientNote: protectedProcedure
+    .input(z.object({ clientId: z.string(), note: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const newNote = {
+        id: crypto.randomUUID(),
+        artistId: ctx.user.id,
+        clientId: input.clientId,
+        note: input.note,
+      };
+
+      await database.insert(clientNotes).values(newNote);
+      return newNote;
+    }),
+
+  deleteClientNote: protectedProcedure
+    .input(z.object({ noteId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      await database
+        .delete(clientNotes)
+        .where(
+          and(
+            eq(clientNotes.id, input.noteId),
+            eq(clientNotes.artistId, ctx.user.id)
+          )
+        );
       return { success: true };
     }),
 });

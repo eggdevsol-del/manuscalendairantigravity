@@ -1,11 +1,8 @@
-import {
-  ScrollArea,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui";
-import { SheetShell } from "@/components/ui/overlays/sheet-shell";
+import { BottomSheet } from "@/components/ui/ssot";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui";
 import {
   User,
   Mail,
@@ -15,20 +12,19 @@ import {
   Image as ImageIcon,
   Camera,
   Loader2,
-  Ticket,
   Calendar,
-  Edit2,
-  Check,
   X,
+  ChevronRight,
+  Download,
+  Trash,
+  Plus,
 } from "lucide-react";
-import { format, addDays } from "date-fns";
+import { format } from "date-fns";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { WebPushSettings } from "@/components/WebPushSettings";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getAssetUrl } from "@/lib/assets";
 import { Identity, getFullName } from "../../../../shared/identity";
@@ -37,436 +33,541 @@ import { HistoryCard } from "@/features/profile/components/ContentCards";
 interface ClientProfileSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  client: (Identity & { id: string }) | null | undefined;
+  clientId?: string | null;
+  client?: (Identity & { id: string }) | null | undefined;
 }
 
 export function ClientProfileSheet({
   isOpen,
   onClose,
-  client,
+  clientId,
+  client: propClient,
 }: ClientProfileSheetProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editDate, setEditDate] = useState<string>("");
+  const [newNoteText, setNewNoteText] = useState("");
   const utils = trpc.useUtils();
 
-  // Fetch client media from leads
-  const { data: mediaData, isLoading: mediaLoading } =
-    trpc.conversations.getClientMedia.useQuery(
-      { clientId: client?.id || "" },
+  const targetClientId = clientId || propClient?.id || "";
+
+  // Fetch client profile if we only have clientId, or to ensure we have fresh data
+  const { data: fetchedClient, isLoading: clientLoading } =
+    trpc.clientProfile.getProfile.useQuery(
+      { clientId: targetClientId },
       {
-        enabled: isOpen && !!client?.id,
+        enabled: isOpen && !!targetClientId,
         staleTime: 30000, // Cache for 30 seconds
       }
     );
 
-  // Fetch client promotions
-  const { data: promotions, isLoading: promotionsLoading } =
-    trpc.promotions.getClientPromotions.useQuery(
-      { clientId: client?.id || "" },
+  const client = fetchedClient || propClient;
+
+  // Fetch client media
+  const { data: mediaData, isLoading: mediaLoading } =
+    trpc.conversations.getClientMedia.useQuery(
+      { clientId: targetClientId },
       {
-        enabled: isOpen && !!client?.id,
+        enabled: isOpen && !!targetClientId,
+        staleTime: 30000,
       }
     );
 
   // Fetch client history
   const { data: history, isLoading: historyLoading } =
     trpc.clientProfile.getHistory.useQuery(
-      { clientId: client?.id || "" },
+      { clientId: targetClientId },
       {
-        enabled: isOpen && !!client?.id,
+        enabled: isOpen && !!targetClientId,
       }
     );
 
-  const updatePromotionMutation =
-    trpc.promotions.updateIssuedPromotion.useMutation({
-      onSuccess: () => {
-        toast.success("Promotion updated");
-        utils.promotions.getClientPromotions.invalidate({
-          clientId: client?.id || "",
-        });
-      },
-      onError: err => {
-        toast.error(err.message);
-      },
-    });
+  // Fetch client upcoming appointments
+  const { data: upcoming, isLoading: upcomingLoading } =
+    trpc.clientProfile.getUpcoming.useQuery(
+      { clientId: targetClientId },
+      {
+        enabled: isOpen && !!targetClientId,
+      }
+    );
 
-  if (!client) return null;
+  // Fetch client consent forms
+  const { data: forms, isLoading: formsLoading } =
+    trpc.clientProfile.getConsentForms.useQuery(
+      { clientId: targetClientId },
+      {
+        enabled: isOpen && !!targetClientId,
+      }
+    );
+
+  // Fetch client spend summary (payments info)
+  const { data: spend, isLoading: spendLoading } =
+    trpc.clientProfile.getSpendSummary.useQuery(
+      { clientId: targetClientId },
+      {
+        enabled: isOpen && !!targetClientId,
+      }
+    );
+
+  // Fetch client notes
+  const { data: notes, isLoading: notesLoading } =
+    trpc.clientProfile.getClientNotes.useQuery(
+      { clientId: targetClientId },
+      {
+        enabled: isOpen && !!targetClientId,
+      }
+    );
+
+  // Notes mutations
+  const addNoteMutation = trpc.clientProfile.addClientNote.useMutation({
+    onSuccess: () => {
+      toast.success("Note added");
+      utils.clientProfile.getClientNotes.invalidate({ clientId: targetClientId });
+    },
+    onError: err => {
+      toast.error("Failed to add note: " + err.message);
+    },
+  });
+
+  const deleteNoteMutation = trpc.clientProfile.deleteClientNote.useMutation({
+    onSuccess: () => {
+      toast.success("Note deleted");
+      utils.clientProfile.getClientNotes.invalidate({ clientId: targetClientId });
+    },
+    onError: err => {
+      toast.error("Failed to delete note: " + err.message);
+    },
+  });
+
+  const handleAddNote = () => {
+    if (!newNoteText.trim()) return;
+    addNoteMutation.mutate({
+      clientId: targetClientId,
+      note: newNoteText,
+    });
+    setNewNoteText("");
+  };
+
+  const handleSaveToDevice = async (imageUrl: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      const filename = imageUrl.split("/").pop() || "photo.jpg";
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+      toast.success("Image saved to device");
+    } catch (error) {
+      console.error("Save to device failed", error);
+      window.open(imageUrl, "_blank");
+      toast.info("Image opened in a new tab. Press and hold to save to device.");
+    }
+  };
+
+  if (!isOpen || !client) return null;
 
   const hasMedia = mediaData && mediaData.totalCount > 0;
+  const allMediaImages = [
+    ...(mediaData?.referenceImages || []),
+    ...(mediaData?.bodyPlacementImages || []),
+  ];
 
   return (
     <>
-      <SheetShell
-        isOpen={isOpen}
-        onClose={onClose}
-        title="Client Profile"
-        side="right"
-        className="w-[400px] sm:w-[540px] border-l border-border"
-        overlayName="Client Profile"
-        overlayId="chat.client_profile"
-      >
-        <div className="flex items-center gap-4 mb-6 px-1">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center overflow-hidden ring-4 ring-background/50 shadow-xl">
-            {client.avatar ? (
-              <img
-                src={getAssetUrl(client.avatar)}
-                alt={getFullName(client)}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="text-2xl text-white font-bold">
-                {client.firstName ? client.firstName[0].toUpperCase() : "?"}
-              </span>
-            )}
+      <BottomSheet open={isOpen} onOpenChange={(o) => !o && onClose()} title="Client Profile">
+        {/* Sticky Header */}
+        <div className="shrink-0 pt-6 pb-4 px-6 border-b border-border bg-card flex items-center justify-between z-10 relative">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center overflow-hidden">
+              {client.avatar ? (
+                <img
+                  src={getAssetUrl(client.avatar)}
+                  alt={getFullName(client)}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-white font-bold text-lg">
+                  {client.firstName ? client.firstName[0].toUpperCase() : "?"}
+                </span>
+              )}
+            </div>
+            <div>
+              <h3 className="font-bold text-lg flex items-center gap-1.5 text-foreground">
+                {getFullName(client) || "Unknown Client"}
+                <BadgeCheck className="w-4 h-4 text-blue-500" />
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Client Profile
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              {getFullName(client) || "Unknown Client"}
-              <BadgeCheck className="w-5 h-5 text-blue-400" />
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Client since {new Date().getFullYear()}
-            </p>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="w-10 h-10 rounded-full hover:bg-secondary"
+          >
+            <X className="w-5 h-5" />
+          </Button>
         </div>
 
-        <Tabs defaultValue="info" className="flex-1">
-          <TabsList className="grid w-full grid-cols-4 bg-muted/20 p-1 rounded-xl">
-            <TabsTrigger
-              value="info"
-              className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-lg text-xs sm:text-sm"
-            >
-              Info
-            </TabsTrigger>
-            <TabsTrigger
-              value="promotions"
-              className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-lg text-xs sm:text-sm"
-            >
-              Promos{" "}
-              {promotions && promotions.length > 0 && (
-                <span className="ml-1 text-[10px] opacity-70">
-                  ({promotions.length})
+        {/* Scrollable Body */}
+        <ScrollArea className="flex-1 h-[calc(100vh-100px)]">
+          <div className="p-6 space-y-6 pb-24">
+            {/* Contact Details */}
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="p-4 rounded-xl bg-secondary/30 border border-border/50">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1">
+                  <Mail className="w-3.5 h-3.5" /> Email
                 </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger
-              value="media"
-              className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-lg text-xs sm:text-sm"
-            >
-              Media{" "}
-              {hasMedia && (
-                <span className="ml-1 text-[10px] opacity-70">
-                  ({mediaData.totalCount})
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger
-              value="history"
-              className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-lg text-xs sm:text-sm"
-            >
-              History
-            </TabsTrigger>
-          </TabsList>
-
-          <ScrollArea className="h-[calc(100vh-250px)] mt-6 -mr-6 pr-6">
-            <TabsContent
-              value="info"
-              className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-500"
-            >
-              <div className="grid gap-4">
-                <div className="p-4 rounded-2xl bg-muted/30 border border-border space-y-1">
-                  <div className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-2">
-                    <Mail className="w-3 h-3" /> Contact Email
-                  </div>
-                  <p className="font-medium text-foreground text-sm">
-                    {client.email || "No email provided"}
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-muted/30 border border-border space-y-1">
-                  <div className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-2">
-                    <Phone className="w-3 h-3" /> Phone Number
-                  </div>
-                  <p className="font-medium text-foreground text-sm">
-                    {client.phone || "No phone number"}
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-muted/30 border border-border space-y-1">
-                  <div className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-2">
-                    <Cake className="w-3 h-3" /> Birthday
-                  </div>
-                  <p className="font-medium text-foreground text-sm">
-                    {client.birthday
-                      ? format(new Date(client.birthday), "MMMM do, yyyy")
-                      : "Not set"}
-                  </p>
-                </div>
-
-                <WebPushSettings />
+                <p className="text-sm font-semibold text-foreground mt-1 truncate">
+                  {client.email || "No email provided"}
+                </p>
               </div>
-            </TabsContent>
+              <div className="p-4 rounded-xl bg-secondary/30 border border-border/50">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1">
+                  <Phone className="w-3.5 h-3.5" /> Phone
+                </span>
+                <p className="text-sm font-semibold text-foreground mt-1">
+                  {client.phone || "No phone number"}
+                </p>
+              </div>
+              <div className="p-4 rounded-xl bg-secondary/30 border border-border/50">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5" /> Birthday
+                </span>
+                <p className="text-sm font-semibold text-foreground mt-1">
+                  {client.birthday
+                    ? format(new Date(client.birthday), "MMMM do, yyyy")
+                    : "Not set"}
+                </p>
+              </div>
+            </div>
 
-            <TabsContent
-              value="promotions"
-              className="space-y-4 animate-in fade-in-50 slide-in-from-bottom-2 duration-500"
-            >
-              {promotionsLoading ? (
-                <div className="flex flex-col items-center justify-center py-12 space-y-3">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">
-                    Loading promotions...
-                  </p>
+            {/* Media Strip */}
+            {allMediaImages.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-muted-foreground tracking-widest uppercase">Shared Media</h4>
+                <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
+                  {allMediaImages.map((img: any, index: number) => (
+                    <button
+                      key={`media-${index}`}
+                      onClick={() => setSelectedImage(img.url)}
+                      className="w-20 h-20 rounded-xl overflow-hidden bg-secondary border border-border hover:border-primary/50 transition-colors shrink-0"
+                    >
+                      <img
+                        src={getAssetUrl(img.url)}
+                        alt={`Media ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
                 </div>
-              ) : !promotions || promotions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center space-y-3 opacity-50">
-                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                    <Ticket className="w-6 h-6" />
+              </div>
+            )}
+
+            {/* Collapsible Sections */}
+            <div className="space-y-1">
+              {/* Upcoming Appointments */}
+              <CollapsibleSection title="Upcoming Appointments" count={upcoming?.length} defaultExpanded={true}>
+                {upcomingLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
                   </div>
-                  <p className="text-sm font-medium">No active promotions</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {promotions.map(promo => {
-                    const isEditing = editingId === promo.id;
-                    const isExpired =
-                      promo.expiresAt && new Date(promo.expiresAt) < new Date();
-
-                    return (
-                      <div
-                        key={promo.id}
-                        className="p-4 rounded-xl bg-secondary/50 border border-border space-y-3"
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-bold text-base">
-                              {promo.name}
-                            </h4>
-                            <p className="text-sm text-muted-foreground">
-                              {promo.valueType === "percentage"
-                                ? `${promo.originalAmount}% Discount` // Using originalAmount as placeholder if value is missing
-                                : `$${(promo.originalAmount / 100).toFixed(2)} Value`}
-                            </p>
-                          </div>
-                          <div
-                            className={cn(
-                              "px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider",
-                              isExpired
-                                ? "bg-red-500/20 text-red-500"
-                                : "bg-green-500/20 text-green-500"
-                            )}
-                          >
-                            {isExpired
-                              ? "Expired"
-                              : promo.status === "active"
-                                ? "Active"
-                                : promo.status}
-                          </div>
+                ) : !upcoming || upcoming.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-6 bg-secondary/20 rounded-xl border border-border/50">
+                    No upcoming appointments scheduled.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {upcoming.map((appt: any) => (
+                      <div key={appt.id} className="p-3 rounded-xl border border-border bg-secondary/30 flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold text-sm text-foreground">{appt.title || appt.serviceName || "Tattoo Sitting"}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {format(new Date(appt.date), "EEE, MMM d, yyyy • h:mm a")}
+                          </p>
                         </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-primary">${appt.price}</p>
+                          <span className="inline-block text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 capitalize font-bold mt-1">
+                            {appt.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CollapsibleSection>
 
-                        <div className="pt-3 border-t border-border flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar className="w-4 h-4" />
-                            {isEditing ? (
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="date"
-                                  value={editDate}
-                                  onChange={e => setEditDate(e.target.value)}
-                                  className="h-8 w-32 px-2 text-xs"
-                                />
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-8 w-8 text-green-500 hover:text-green-400"
-                                  onClick={() => {
-                                    // Save
-                                    const date = new Date(editDate);
-                                    // Set to end of day? Or just date. Backend expects ISO string.
-                                    // Let's ensure time is preserved or set to end of day.
-                                    // Simple approach: set to 23:59:59 of that day
-                                    date.setHours(23, 59, 59);
-                                    const iso = date
-                                      .toISOString()
-                                      .slice(0, 19)
-                                      .replace("T", " ");
+              {/* History */}
+              <CollapsibleSection title="Appointment History" count={history?.length}>
+                {historyLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <HistoryCard history={history || []} />
+                )}
+              </CollapsibleSection>
 
-                                    updatePromotionMutation.mutate({
-                                      id: promo.id,
-                                      expiresAt: iso,
-                                    });
-                                    setEditingId(null);
-                                  }}
-                                >
-                                  <Check className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-8 w-8 text-red-500 hover:text-red-400"
-                                  onClick={() => setEditingId(null)}
-                                >
-                                  <X className="w-4 h-4" />
-                                </Button>
+              {/* Consent Forms */}
+              <CollapsibleSection title="Consent Forms" count={forms?.length}>
+                {formsLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : !forms || forms.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-6 bg-secondary/20 rounded-xl border border-border/50">
+                    No consent forms on file.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {forms.map((form: any) => (
+                      <div key={form.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-secondary/30">
+                        <div>
+                          <p className="font-semibold text-sm text-foreground">{form.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {form.status === "signed"
+                              ? `Signed ${format(new Date(form.signedAt || form.updatedAt), "MMM d, yyyy")}`
+                              : "Pending signature"}
+                          </p>
+                        </div>
+                        <span className={cn(
+                          "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border",
+                          form.status === "signed"
+                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                            : "bg-orange-500/10 text-orange-500 border-orange-500/20"
+                        )}>
+                          {form.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CollapsibleSection>
+
+              {/* Payments */}
+              <CollapsibleSection title="Payments">
+                {spendLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="p-3 bg-secondary/30 rounded-xl text-center border border-border/50">
+                        <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Total spend</span>
+                        <p className="text-base font-bold text-foreground mt-1">${spend?.totalSpend || 0}</p>
+                      </div>
+                      <div className="p-3 bg-secondary/30 rounded-xl text-center border border-border/50">
+                        <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Sittings</span>
+                        <p className="text-base font-bold text-foreground mt-1">{spend?.appointmentCount || 0}</p>
+                      </div>
+                      <div className="p-3 bg-secondary/30 rounded-xl text-center border border-border/50">
+                        <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Max single</span>
+                        <p className="text-base font-bold text-foreground mt-1">${spend?.maxSingleSpend || 0}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h5 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Receipts & Invoices</h5>
+                      {historyLoading ? (
+                        <div className="py-2 text-center text-xs text-muted-foreground">Loading payments...</div>
+                      ) : !history || history.filter(item => (item.type === "appointment" || item.type === "store_order") && item.price > 0).length === 0 ? (
+                        <p className="text-xs text-muted-foreground/60 text-center py-4 bg-secondary/10 rounded-xl border border-border/30">
+                          No payments recorded.
+                        </p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {history
+                            .filter(item => (item.type === "appointment" || item.type === "store_order") && item.price > 0)
+                            .map((item: any) => (
+                              <div key={item.id} className="flex items-center justify-between text-xs p-3 rounded-xl bg-secondary/10 border border-border/50">
+                                <div>
+                                  <p className="font-semibold text-foreground">{item.title}</p>
+                                  <p className="text-[10px] text-muted-foreground mt-0.5">{format(new Date(item.date), "MMM d, yyyy")}</p>
+                                </div>
+                                <span className="font-bold text-foreground">${item.price.toFixed(2)}</span>
                               </div>
-                            ) : (
-                              <span>
-                                Expires:{" "}
-                                {promo.expiresAt
-                                  ? format(
-                                      new Date(promo.expiresAt),
-                                      "MMM do, yyyy"
-                                    )
-                                  : "Never"}
-                              </span>
-                            )}
-                          </div>
-
-                          {!isEditing && (
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-8 w-8 text-muted-foreground hover:text-primary"
-                              onClick={() => {
-                                setEditingId(promo.id);
-                                // Initialize edit date
-                                if (promo.expiresAt) {
-                                  setEditDate(
-                                    format(
-                                      new Date(promo.expiresAt),
-                                      "yyyy-MM-dd"
-                                    )
-                                  );
-                                } else {
-                                  setEditDate("");
-                                }
-                              }}
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                          )}
+                            ))}
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent
-              value="media"
-              className="animate-in fade-in-50 slide-in-from-bottom-2 duration-500"
-            >
-              {mediaLoading ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">
-                    Loading media...
-                  </p>
-                </div>
-              ) : hasMedia ? (
-                <div className="space-y-6">
-                  {/* Reference Images */}
-                  {mediaData.referenceImages.length > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-3">
-                        <ImageIcon className="w-3 h-3" /> Reference Images
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {mediaData.referenceImages.map((img, index) => (
-                          <button
-                            key={`ref-${index}`}
-                            onClick={() => setSelectedImage(img.url)}
-                            className="aspect-square rounded-lg overflow-hidden bg-muted/30 border border-border hover:border-primary/50 transition-colors"
-                          >
-                            <img
-                              src={getAssetUrl(img.url)}
-                              alt={`Reference ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </button>
-                        ))}
-                      </div>
+                      )}
                     </div>
-                  )}
-
-                  {/* Body Placement Images */}
-                  {mediaData.bodyPlacementImages.length > 0 && (
-                    <div>
-                      <div className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-3">
-                        <Camera className="w-3 h-3" /> Body Placement Photos
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {mediaData.bodyPlacementImages.map((img, index) => (
-                          <button
-                            key={`body-${index}`}
-                            onClick={() => setSelectedImage(img.url)}
-                            className="aspect-square rounded-lg overflow-hidden bg-muted/30 border border-border hover:border-primary/50 transition-colors"
-                          >
-                            <img
-                              src={getAssetUrl(img.url)}
-                              alt={`Body placement ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center space-y-3 opacity-50">
-                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                    <ImageIcon className="w-6 h-6" />
                   </div>
-                  <p className="text-sm font-medium">No shared media</p>
-                  <p className="text-xs text-muted-foreground">
-                    Images uploaded through the consultation funnel will appear
-                    here
-                  </p>
-                </div>
-              )}
-            </TabsContent>
+                )}
+              </CollapsibleSection>
 
-            <TabsContent value="history">
-              {historyLoading ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">
-                    Loading history...
-                  </p>
-                </div>
-              ) : (
-                <HistoryCard history={history || []} />
-              )}
-            </TabsContent>
-          </ScrollArea>
-        </Tabs>
-      </SheetShell>
+              {/* Notes */}
+              <CollapsibleSection title="Notes" count={notes?.length}>
+                {notesLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Add Note Input */}
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Add a new client note..."
+                        value={newNoteText}
+                        onChange={e => setNewNoteText(e.target.value)}
+                        className="flex-1 h-10 text-sm"
+                        onKeyDown={e => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleAddNote();
+                          }
+                        }}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={handleAddNote}
+                        disabled={!newNoteText.trim() || addNoteMutation.isPending}
+                        className="h-10 px-4 shrink-0 bg-primary text-white hover:bg-primary/95"
+                      >
+                        {addNoteMutation.isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          "Add"
+                        )}
+                      </Button>
+                    </div>
 
-      {/* Image Lightbox - Portal to body to ensure it's above all sheets */}
+                    {/* Notes List */}
+                    {!notes || notes.length === 0 ? (
+                      <p className="text-xs text-muted-foreground text-center py-6 bg-secondary/20 rounded-xl border border-border/50">
+                        No notes on file. Add your first note above.
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {notes.map((note: any) => (
+                          <div key={note.id} className="p-3 bg-secondary/30 rounded-xl border border-border/50 flex items-start justify-between gap-3 group relative">
+                            <div className="flex-1 pr-6">
+                              <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground/90">{note.note}</p>
+                              <p className="text-[10px] text-muted-foreground/60 mt-1.5">
+                                {format(new Date(note.createdAt), "MMM d, yyyy • h:mm a")}
+                              </p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:text-destructive rounded-lg hover:bg-destructive/10 shrink-0 md:opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => deleteNoteMutation.mutate({ noteId: note.id })}
+                              disabled={deleteNoteMutation.isPending}
+                            >
+                              {deleteNoteMutation.isPending ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <Trash className="w-3.5 h-3.5" />
+                              )}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CollapsibleSection>
+            </div>
+
+            {/* Web Push Notification Settings */}
+            <div className="pt-4 border-t border-border/50">
+              <WebPushSettings />
+            </div>
+          </div>
+        </ScrollArea>
+      </BottomSheet>
+
+      {/* Image Lightbox - Portal to body to ensure it's above the bottom sheet */}
       {selectedImage &&
         createPortal(
           <div
-            className="fixed inset-0 z-[9999] bg-background/80 flex items-center justify-center p-4"
+            className="fixed inset-0 z-[9999] bg-background/90 flex items-center justify-center p-4"
             onClick={() => setSelectedImage(null)}
           >
-            <button
-              className="absolute top-4 right-4 text-muted-foreground hover:text-white text-sm px-3 py-1.5 rounded-lg bg-secondary/50 backdrop-blur-sm z-10"
-              onClick={() => setSelectedImage(null)}
-            >
-              Close
-            </button>
-            <img
-              src={getAssetUrl(selectedImage)}
-              alt="Full size"
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+            <div
+              className="relative w-[80vw] h-[80vh] flex flex-col items-center justify-center"
               onClick={e => e.stopPropagation()}
-            />
+            >
+              {/* Toolbar */}
+              <div className="absolute top-4 right-4 flex items-center gap-3 z-10">
+                <button
+                  className="p-2.5 rounded-full bg-secondary/80 hover:bg-secondary text-foreground hover:text-primary transition-all active:scale-90"
+                  onClick={() => handleSaveToDevice(selectedImage)}
+                  title="Save to Device"
+                >
+                  <Download className="w-5 h-5" />
+                </button>
+                <button
+                  className="p-2.5 rounded-full bg-secondary/80 hover:bg-secondary text-foreground hover:text-primary transition-all active:scale-90"
+                  onClick={() => setSelectedImage(null)}
+                  title="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Contained Image */}
+              <img
+                src={getAssetUrl(selectedImage)}
+                alt="Full size media"
+                className="w-full h-full object-contain rounded-xl shadow-2xl"
+              />
+            </div>
           </div>,
           document.body
         )}
     </>
+  );
+}
+
+function CollapsibleSection({
+  title,
+  count,
+  defaultExpanded = false,
+  children,
+}: {
+  title: string;
+  count?: number;
+  defaultExpanded?: boolean;
+  children: React.ReactNode;
+}) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  return (
+    <div className="border-b border-border py-4 last:border-b-0">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between text-left font-semibold text-lg text-foreground hover:opacity-80 transition-opacity focus:outline-none py-1"
+      >
+        <span className="flex items-center gap-2">
+          {title}
+          {count !== undefined && count > 0 && (
+            <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+              {count}
+            </span>
+          )}
+        </span>
+        <ChevronRight
+          className={cn(
+            "w-5 h-5 text-muted-foreground transition-transform duration-200",
+            expanded && "transform rotate-90"
+          )}
+        />
+      </button>
+      <div
+        className={cn(
+          "grid transition-all duration-200 ease-in-out",
+          expanded ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0 overflow-hidden"
+        )}
+      >
+        <div className="overflow-hidden min-h-0">
+          {children}
+        </div>
+      </div>
+    </div>
   );
 }
