@@ -49,7 +49,7 @@ export function ActionPanel() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/30"
+            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[3px]"
             onClick={handleClose}
           />
         )}
@@ -78,12 +78,12 @@ export function ActionPanel() {
 
             {/* If fabChildren is set (e.g. BookingWizardContent), render it directly */}
             {fabChildren ? (
-              <div className="flex-1 overflow-y-auto overflow-x-hidden h-full">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden h-full" style={{ padding: 40 }}>
                 {fabChildren}
               </div>
             ) : (
               /* Action items list */
-              <div className="px-4 pb-6 overflow-y-auto max-h-[calc(60dvh-40px)]">
+              <div className="overflow-y-auto max-h-[calc(60dvh-40px)]" style={{ padding: 40 }}>
                 {fabActions.map((action) => (
                   <button
                     key={action.id}
@@ -125,7 +125,7 @@ export function ActionPanel() {
         )}
         style={{
           right: 20,
-          bottom: "calc(56px + env(safe-area-inset-bottom, 0px) + 16px)",
+          bottom: "calc(56px + env(safe-area-inset-bottom, 0px) + 46px)",
         }}
         aria-label={isFABOpen ? "Close actions" : "Open actions"}
       >
