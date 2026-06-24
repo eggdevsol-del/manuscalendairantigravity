@@ -8,6 +8,7 @@ import {
 import InstallPrompt from "./components/InstallPrompt";
 import IOSInstallPrompt from "./components/IOSInstallPrompt";
 import BottomNav from "@/components/BottomNav";
+import { ActionPanel } from "@/components/ActionPanel";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -207,6 +208,7 @@ function Router() {
       {shouldShowBottomNav && (
         <ErrorBoundary boundary="fab">
           <BottomNav />
+          <ActionPanel />
         </ErrorBoundary>
       )}
       {isArtist && <AppointmentCheckInOverlay />}

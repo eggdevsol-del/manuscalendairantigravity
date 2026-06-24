@@ -6,6 +6,7 @@ import React, {
   ReactNode,
   useCallback,
   useMemo,
+  useRef,
 } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
@@ -26,15 +27,9 @@ interface BottomNavContextType {
   // Current Scope
   scope: Scope;
 
-  // ──────────────────────────────────────────────────────
-  // LEGACY FAB INTERFACE — kept for backward compatibility
-  // All methods are no-ops. Will be removed in Phase 7.
-  // ──────────────────────────────────────────────────────
-  contextualRow: ReactNode | null;
-  isContextualVisible: boolean;
-  registerRow: (scope: Scope, id: string, content: ReactNode) => () => void;
-  setContextualVisible: (visible: boolean) => void;
-  rowIndex: number;
+  // ── FAB Action System ──────────────────────────────────
+  // Pages register contextual actions (booking, proposals, etc.)
+  // These render in a bottom sheet when the FAB button is tapped.
   fabActions: FABMenuItem[];
   registerFABActions: (
     id: string,
@@ -47,14 +42,19 @@ interface BottomNavContextType {
   setLargePanel: (large: boolean) => void;
   requestedSettingsView: string | null;
   requestSettingsView: (view: string | null) => void;
+
+  // ── Legacy no-ops (contextual rows removed) ────────────
+  contextualRow: ReactNode | null;
+  isContextualVisible: boolean;
+  registerRow: (scope: Scope, id: string, content: ReactNode) => () => void;
+  setContextualVisible: (visible: boolean) => void;
+  rowIndex: number;
 }
 
 const BottomNavContext = createContext<BottomNavContextType | undefined>(
   undefined
 );
 
-// Stable empty array to avoid referential instability
-const EMPTY_FAB_ACTIONS: FABMenuItem[] = [];
 const NOOP_UNREGISTER = () => {};
 
 export function BottomNavProvider({ children }: { children: React.ReactNode }) {
@@ -81,41 +81,91 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
           ? STUDIO_NAV_ITEMS
           : CLIENT_NAV_ITEMS;
 
-  // Legacy no-op callbacks — stable references
+  // ── FAB Action State ───────────────────────────────────
+  const [fabActions, setFabActions] = useState<FABMenuItem[]>([]);
+  const [fabChildren, setFabChildren] = useState<ReactNode | null>(null);
+  const [isFABOpen, setFABOpenState] = useState(false);
+  const [isLargePanel, setLargePanelState] = useState(false);
+  const [requestedSettingsView, setRequestedSettingsView] = useState<string | null>(null);
+
+  // Track registered action sets by id
+  const actionsRegistry = useRef<Map<string, FABMenuItem[]>>(new Map());
+  const childrenRegistry = useRef<Map<string, ReactNode>>(new Map());
+
+  const setFABOpen = useCallback((open: boolean) => {
+    setFABOpenState(open);
+  }, []);
+
+  const setLargePanel = useCallback((large: boolean) => {
+    setLargePanelState(large);
+  }, []);
+
+  const requestSettingsView = useCallback((view: string | null) => {
+    setRequestedSettingsView(view);
+  }, []);
+
+  const registerFABActions = useCallback(
+    (id: string, actions: FABMenuItem[] | ReactNode) => {
+      if (Array.isArray(actions)) {
+        actionsRegistry.current.set(id, actions as FABMenuItem[]);
+        // Merge all registered action sets
+        const merged = Array.from(actionsRegistry.current.values()).flat();
+        setFabActions(merged);
+        setFabChildren(null);
+      } else {
+        // ReactNode children (e.g. BookingWizardContent)
+        childrenRegistry.current.set(id, actions);
+        setFabChildren(actions as ReactNode);
+      }
+
+      return () => {
+        actionsRegistry.current.delete(id);
+        childrenRegistry.current.delete(id);
+        const merged = Array.from(actionsRegistry.current.values()).flat();
+        setFabActions(merged);
+        // If any children registrations remain, use the last one
+        const remainingChildren = Array.from(childrenRegistry.current.values());
+        setFabChildren(remainingChildren.length > 0 ? remainingChildren[remainingChildren.length - 1] : null);
+      };
+    },
+    []
+  );
+
+  // Legacy no-op callbacks
   const registerRow = useCallback(
     (_scope: Scope, _id: string, _content: ReactNode) => NOOP_UNREGISTER,
     []
   );
-  const registerFABActions = useCallback(
-    (_id: string, _actions: FABMenuItem[] | ReactNode) => NOOP_UNREGISTER,
-    []
-  );
   const setContextualVisible = useCallback((_visible: boolean) => {}, []);
-  const setFABOpen = useCallback((_open: boolean) => {}, []);
-  const setLargePanel = useCallback((_large: boolean) => {}, []);
-  const requestSettingsView = useCallback((_view: string | null) => {}, []);
 
   const value = useMemo(
     () => ({
       navItems,
       scope,
+      // FAB action system — live state
+      fabActions,
+      registerFABActions,
+      fabChildren,
+      isFABOpen,
+      setFABOpen,
+      isLargePanel,
+      setLargePanel,
+      requestedSettingsView,
+      requestSettingsView,
       // Legacy no-ops
       contextualRow: null,
       isContextualVisible: false,
       registerRow,
       setContextualVisible,
       rowIndex: 0,
-      fabActions: EMPTY_FAB_ACTIONS,
-      registerFABActions,
-      fabChildren: null,
-      isFABOpen: false,
-      setFABOpen,
-      isLargePanel: false,
-      setLargePanel,
-      requestedSettingsView: null,
-      requestSettingsView,
     }),
-    [navItems, scope, registerRow, registerFABActions, setContextualVisible, setFABOpen, setLargePanel, requestSettingsView]
+    [
+      navItems, scope,
+      fabActions, registerFABActions, fabChildren,
+      isFABOpen, setFABOpen, isLargePanel, setLargePanel,
+      requestedSettingsView, requestSettingsView,
+      registerRow, setContextualVisible,
+    ]
   );
 
   return (
@@ -142,12 +192,17 @@ export function useRegisterBottomNavRow(_id: string, _content: ReactNode) {
 }
 
 /**
- * useRegisterFABActions — LEGACY no-op.
- * Kept for backward compatibility. Does nothing.
+ * useRegisterFABActions — registers page-specific actions for the FAB panel.
+ * Pages call this to add booking, proposal, payment actions, etc.
  */
 export function useRegisterFABActions(
-  _id: string,
-  _actions: FABMenuItem[] | ReactNode
+  id: string,
+  actions: FABMenuItem[] | ReactNode
 ) {
-  // No-op — FAB actions have been removed
+  const { registerFABActions } = useBottomNav();
+
+  useEffect(() => {
+    const unregister = registerFABActions(id, actions);
+    return unregister;
+  }, [id, actions, registerFABActions]);
 }
