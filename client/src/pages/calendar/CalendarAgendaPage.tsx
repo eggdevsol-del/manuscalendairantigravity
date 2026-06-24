@@ -230,7 +230,7 @@ export default function CalendarAgendaPage() {
                    Typically BottomNav is in PageShell. This Page IS the content. 
                    If we transform this div, the income bar moves with it. Correct. */}
         {!isClient && (
-          <div className="absolute bottom-16 left-0 right-0 h-10 bg-secondary/50 backdrop-blur-md border-t border-border flex items-center justify-between px-4 z-40">
+          <div className="absolute bottom-16 left-0 right-0 h-10 bg-secondary/50 flex items-center justify-between px-4 z-40">
             <span className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
               This week's income
             </span>
