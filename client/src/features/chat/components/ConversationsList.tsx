@@ -131,25 +131,7 @@ export function ConversationsList({
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
-      {/* 2. Top Context Area (Non-interactive) */}
-      <div
-        className={cn(
-          tokens.spacing.containerPadding,
-          "pt-4 z-10 shrink-0 flex flex-col justify-center min-h-[140px] opacity-80"
-        )}
-      >
-        <p className={tokens.header.contextTitle}>Inbox</p>
-        <div className="flex items-center gap-3 mt-1">
-          <span className={tokens.header.contextSubtitle}>
-            {unreadTotal > 0 ? `${unreadTotal} Unread` : "All caught up"}
-          </span>
-          {unreadTotal > 0 && (
-            <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
-          )}
-        </div>
-      </div>
-
-      {/* 3. Content Container */}
+      {/* Content Container */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Scrollable Content */}
         <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y will-change-scroll transform-gpu">

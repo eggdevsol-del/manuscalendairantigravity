@@ -2,18 +2,14 @@
  * UI SINGLE SOURCE OF TRUTH (SSOT)
  * -------------------------------
  * PageHeader is the canonical page header component.
- * Use this for consistent header styling across all pages.
+ * ALL pages that need a header MUST use this component.
+ * DO NOT create custom header styles in page components.
  *
  * Features:
- * - Left-aligned title
- * - Optional subtitle (e.g., version number)
- * - Fixed positioning at top of screen
- * - Consistent title size and placement
- * - Safe area inset handling
+ * - Left: Business branding (name + "by Tattoi")
+ * - Right: Current page name
+ * - Safe area inset handling for phone notch
  * - Optional back button
- *
- * DO NOT create custom header styles in page components.
- * DO NOT add icons or buttons to the header area.
  */
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
@@ -22,18 +18,18 @@ import { Button } from "../button";
 import { useAuth } from "@/_core/hooks/useAuth";
 
 interface PageHeaderProps {
-  /** Page title - rendered with consistent SSOT styling */
+  /** Page title — displayed on the right side as the current page indicator */
   title: string;
-  /** Optional subtitle - displayed next to title (e.g., version number) */
+  /** Optional subtitle — displayed below title on right side */
   subtitle?: string;
   /** Additional classes for the header container */
   className?: string;
-  /** Optional back action - renders a back button */
+  /** Optional back action — renders a back button */
   onBack?: () => void;
 }
 
 /**
- * PageHeader - SSOT header component with left-aligned title
+ * PageHeader - SSOT header with left branding + right page name
  */
 export function PageHeader({
   title,
@@ -41,29 +37,17 @@ export function PageHeader({
   className,
   onBack,
 }: PageHeaderProps) {
-  // Use SSOT state from useAuth hook to display the correct Business Name
   const { user } = useAuth();
 
-  // Try businessName first, fallback to user name
+  // Business name for branding — fallback to user name
   const artistBranding = (user as any)?.artistSettings?.businessName || user?.name || null;
-
-  // Format: [Artist Name] by TATTOI
-  const displayTitle = artistBranding ? (
-    <span className="flex flex-col">
-      <span>{artistBranding}</span>
-      <span className="text-[10px] uppercase font-bold tracking-widest opacity-50">
-        by Tattoi
-      </span>
-    </span>
-  ) : (
-    title
-  );
 
   return (
     <header
-      className={cn(tokens.shell.header, className)}
+      className={cn(tokens.shell.header, "justify-between", className)}
       style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
     >
+      {/* Left side — branding or back button */}
       <div className="flex items-center gap-2">
         {onBack && (
           <Button
@@ -75,26 +59,27 @@ export function PageHeader({
             <ChevronLeft className="w-6 h-6" />
           </Button>
         )}
-        <h1 className={tokens.header.pageTitle}>
-          {artistBranding ? displayTitle : title}
-        </h1>
+        {artistBranding ? (
+          <div className="flex flex-col">
+            <h1 className={tokens.header.pageTitle}>{artistBranding}</h1>
+            <span className="text-[10px] uppercase font-bold tracking-widest opacity-50">
+              by Tattoi
+            </span>
+          </div>
+        ) : (
+          <h1 className={tokens.header.pageTitle}>{title}</h1>
+        )}
       </div>
-      {subtitle && !artistBranding && (
-        <span className={tokens.header.pageSubtitle}>{subtitle}</span>
-      )}
-      {/* If branding is active, we might suppress the subtitle or display the original title as subtitle? 
-                The requirement says "Artist name = primary", "by TOI = ~50% size".
-                It doesn't explicitly say we lose the Page Title (like "Dashboard").
-                But usually branding replaces the App Name. 
-                Let's assume we keep the Page Title as a subtitle if needed?
-                "On all client-facing pages... [Artist Name] by TOI"
-                Actually, this implies the Header *Brand* changes. 
-                But PageHeader usually displays the Page Name (e.g. "Promotions").
-                Replacing "Promotions" with "P Mason Tattoo" might be confusing navigationally.
-                
-                However, for Teaser App, the context is the Artist.
-                Let's stick to the requirement: "Header Branding... Format: [Artist Name] by TOI".
-            */}
+
+      {/* Right side — current page name */}
+      <div className="flex flex-col items-end">
+        <span className="text-lg font-light text-foreground/60 tracking-tight">
+          {title}
+        </span>
+        {subtitle && (
+          <span className="text-xs text-muted-foreground/60">{subtitle}</span>
+        )}
+      </div>
     </header>
   );
 }

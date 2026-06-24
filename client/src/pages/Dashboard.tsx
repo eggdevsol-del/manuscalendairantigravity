@@ -363,35 +363,10 @@ export default function Dashboard() {
   return (
     <PageShell>
       
-      {/* 1. Page Header - Left aligned, no icons */}
+      {/* 1. Page Header - Left branding, right page name */}
       <PageHeader title="Home" />
 
-      {/* 2. Top Context Area (Date) */}
-      <motion.div 
-        animate={{
-          height: activeCategory === "contacts" ? "8vh" : "20vh",
-          opacity: activeCategory === "contacts" ? 0.3 : 0.8,
-          scale: activeCategory === "contacts" ? 0.95 : 1,
-          transformOrigin: "left center"
-        }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="px-6 pt-4 z-10 shrink-0 flex flex-col justify-center"
-      >
-        <p className="text-4xl font-light text-foreground/90 tracking-tight">
-          {selectedDate.toLocaleDateString("en-US", { weekday: "long" })}
-        </p>
-        <motion.p 
-          animate={{ height: activeCategory === "contacts" ? 0 : "auto", opacity: activeCategory === "contacts" ? 0 : 1 }}
-          className="text-muted-foreground text-lg font-medium mt-1 overflow-hidden"
-        >
-          {selectedDate.toLocaleDateString("en-US", {
-            month: "long",
-            day: "numeric",
-          })}
-        </motion.p>
-      </motion.div>
-
-      {/* 3. Sheet Container (Matched to Calendar.tsx) */}
+      {/* 2. Sheet Container (Matched to Calendar.tsx) */}
       <div className={cn(tokens.contentContainer.base, "relative")}>
         {/* Teaser Mode Overlay */}
         {isTeaserClient && (
