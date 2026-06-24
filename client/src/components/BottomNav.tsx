@@ -44,12 +44,13 @@ export default function BottomNav() {
       }}
     >
 
-      {/* Icon row — solid white */}
+      {/* Icon row — solid white, icons centered across full nav height */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           height: 56,
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
           backgroundColor: "#ffffff",
         }}
       >
@@ -129,9 +130,6 @@ export default function BottomNav() {
           );
         })}
       </div>
-
-      {/* Safe area spacer — white to fill home indicator zone */}
-      <div style={{ height: "env(safe-area-inset-bottom, 0px)", backgroundColor: "#ffffff" }} />
     </nav>
   );
 }
