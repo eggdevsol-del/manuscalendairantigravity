@@ -44,15 +44,12 @@ export default function BottomNav() {
       }}
     >
 
-      {/* Top white extension — matches safe-area height for equal background above icons */}
-      <div style={{ height: "env(safe-area-inset-bottom, 0px)", backgroundColor: "#ffffff" }} />
-
-      {/* Icon row — solid white, 56px, icons vertically centered */}
+      {/* Icon row — solid white, icons vertically centered */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          height: 48,
+          height: 44,
           backgroundColor: "#ffffff",
         }}
       >
@@ -133,7 +130,7 @@ export default function BottomNav() {
         })}
       </div>
 
-      {/* Bottom safe-area spacer — equal to top extension */}
+      {/* Bottom safe-area spacer */}
       <div style={{ height: "env(safe-area-inset-bottom, 0px)", backgroundColor: "#ffffff" }} />
     </nav>
   );
