@@ -338,14 +338,11 @@
   backdrop-filter: none !important;
 }
 
-/* Bottom nav — must remain transparent and flush to screen bottom */
-#bottom-nav,
+/* Bottom nav — prevent CSS overrides from interfering */
 #bottom-nav * {
-  background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
-  border: none !important;
 }
 
 /* Sheets & overlays — solid white, no blur */

@@ -1,12 +1,12 @@
 /**
  * BottomNav - Clean 4-tab navigation bar
  *
- * Icons-only, seamless with page background, flush to screen bottom.
+ * Icons-only, solid white matching app background,
+ * with a subtle top fade so page content blends in.
  *
- * @version 1.1.3
+ * @version 1.1.4
  */
 
-import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
 import { useTotalUnreadCount } from "@/lib/selectors/conversation.selectors";
@@ -40,17 +40,25 @@ export default function BottomNav() {
         left: 0,
         right: 0,
         zIndex: 50,
-        background: "transparent",
         userSelect: "none",
       }}
     >
-      {/* Icon row */}
+      {/* Gradient fade — transparent → white */}
+      <div
+        style={{
+          height: 24,
+          background: "linear-gradient(to bottom, rgba(255,255,255,0), #ffffff)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Icon row — solid white */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           height: 56,
-          background: "transparent",
+          backgroundColor: "#ffffff",
         }}
       >
         {navItems.map((item) => {
@@ -62,33 +70,64 @@ export default function BottomNav() {
             <Link key={item.id} href={item.path || "#"} className="contents">
               <button
                 type="button"
-                className="flex flex-col items-center justify-center flex-1 h-full"
                 style={{
-                  background: "transparent",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flex: 1,
+                  height: "100%",
+                  background: "none",
                   border: "none",
                   outline: "none",
                   cursor: "pointer",
                   color: active ? "#1a1a2e" : "#9ca3af",
                   WebkitTapHighlightColor: "transparent",
+                  padding: 0,
                 }}
               >
-                <div className="relative">
+                <div style={{ position: "relative" }}>
                   <item.icon
-                    className="w-6 h-6"
-                    style={{ color: "inherit" }}
+                    style={{ width: 24, height: 24, color: "inherit" }}
                     strokeWidth={active ? 2.5 : 1.8}
                   />
 
                   {/* Lock Badge for Teaser Clients */}
                   {isTeaserClient && item.id === "profile" && (
-                    <div className="absolute -top-1 -right-1 rounded-full p-0.5" style={{ background: "transparent" }}>
-                      <Lock className="w-2.5 h-2.5" style={{ color: "#9ca3af" }} />
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: -4,
+                        right: -4,
+                        borderRadius: 9999,
+                        padding: 2,
+                        background: "#ffffff",
+                      }}
+                    >
+                      <Lock style={{ width: 10, height: 10, color: "#9ca3af" }} />
                     </div>
                   )}
 
                   {/* Unread Badge */}
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: -4,
+                        right: -8,
+                        display: "flex",
+                        height: 16,
+                        width: 16,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: 9999,
+                        backgroundColor: "#ef4444",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "#ffffff",
+                        boxShadow: "0 0 0 2px #ffffff",
+                      }}
+                    >
                       {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                   )}
@@ -99,8 +138,8 @@ export default function BottomNav() {
         })}
       </div>
 
-      {/* Safe area spacer — fills the home indicator zone on iOS */}
-      <div style={{ height: "env(safe-area-inset-bottom, 0px)", background: "transparent" }} />
+      {/* Safe area spacer — white to fill home indicator zone */}
+      <div style={{ height: "env(safe-area-inset-bottom, 0px)", backgroundColor: "#ffffff" }} />
     </nav>
   );
 }
