@@ -104,6 +104,9 @@ async function startServer() {
         "https://artist-booking-app-production.up.railway.app",
         "https://tattoi.app",
         "https://www.tattoi.app",
+        "https://artist.tattoi.app",
+        "https://merchant.tattoi.app",
+        "https://app.tattoi.app",
         "https://vidabiz.butterfly-effect.dev"
       ];
 
