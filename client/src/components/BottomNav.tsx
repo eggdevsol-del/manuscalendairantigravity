@@ -52,7 +52,7 @@ export default function BottomNav() {
         style={{
           display: "flex",
           alignItems: "center",
-          height: 56,
+          height: 48,
           backgroundColor: "#ffffff",
         }}
       >
