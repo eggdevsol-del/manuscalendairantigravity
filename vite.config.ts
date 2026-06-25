@@ -18,30 +18,10 @@ const plugins = [
     filename: "sw.js",
     registerType: "autoUpdate",
     includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
-    manifest: {
-      name: "TOI",
-      short_name: "TOI",
-      description: "Beautiful appointments made simple",
-      theme_color: "#f5f3ff",
-      background_color: "#f5f3ff",
-      display: "standalone",
-      start_url: "/",
-      scope: "/",
-      icons: [
-        {
-          src: "/icon-192.png",
-          sizes: "192x192",
-          type: "image/png",
-          purpose: "any maskable",
-        },
-        {
-          src: "/icon-512.png",
-          sizes: "512x512",
-          type: "image/png",
-          purpose: "any maskable",
-        },
-      ],
-    },
+    // manifest: false — each subdomain's HTML links its own manifest
+    // (manifest-artist.json, manifest-client.json, manifest-merchant.json)
+    // so we must not auto-generate a competing manifest.webmanifest
+    manifest: false,
     devOptions: {
       enabled: true,
       type: "module",

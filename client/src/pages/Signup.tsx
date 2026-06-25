@@ -28,7 +28,7 @@ import {
   Globe,
   Store,
 } from "lucide-react";
-import { useGoogleAuthReady } from "@/main";
+import { useGoogleAuthReady } from "@/lib/google-auth";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 
 type Step = "form" | "complete-profile";

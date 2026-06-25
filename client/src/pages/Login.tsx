@@ -15,7 +15,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, Mail } from "lucide-react";
 import { APP_VERSION } from "@/lib/version";
-import { useGoogleAuthReady } from "@/main";
+import { useGoogleAuthReady } from "@/lib/google-auth";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 
 export default function Login() {

@@ -195,12 +195,19 @@ function Router({ appType }: { appType: "artist" | "client" | "merchant" }) {
         <Route path="/deposit/:token" component={DepositSheet} />
         <Route path="/balance/:id" component={BalanceSheet} />
 
-        {/* Dynamic Slug Route for Artist Hub */}
-        <Route path="/shop/:slug" component={PublicStorefront} />
-        <Route path="/events/:slug" component={PublicEvents} />
-        <Route path="/:slug" component={ArtistHub} />
+        {/* Public slug routes — client app only.
+            /:slug is a greedy catch-all that matches /calendar, /messages, etc.
+            Only mount on the client app so artist/merchant paths fall through
+            to GuardedShell below. */}
+        {appType === "client" && (
+          <>
+            <Route path="/shop/:slug" component={PublicStorefront} />
+            <Route path="/events/:slug" component={PublicEvents} />
+            <Route path="/:slug" component={ArtistHub} />
+          </>
+        )}
 
-        {/* Fallback to GuardedShell for all app routes */}
+        {/* Fallback to GuardedShell for all authenticated app routes */}
         <Route path="*">
           <GuardedShell appType={appType} />
         </Route>
