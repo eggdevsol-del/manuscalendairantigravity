@@ -1,12 +1,12 @@
 {
-  "name": "TATTOI",
+  "name": "TATTOI Discover",
   "short_name": "TATTOI",
-  "description": "TATTOI Discover - Beautiful appointments made simple",
+  "description": "TATTOI Discover — find and book tattoo artists",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0d0c15",
-  "theme_color": "#0d0c15",
+  "background_color": "#0d4f4f",
+  "theme_color": "#0d4f4f",
   "orientation": "portrait",
   "icons": [
     {
@@ -18,6 +18,6 @@
   ],
   "categories": [
     "business",
-    "productivity"
+    "lifestyle"
   ]
 }

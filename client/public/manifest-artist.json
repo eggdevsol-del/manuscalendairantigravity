@@ -1,12 +1,12 @@
 {
   "name": "TATTOI Artist",
   "short_name": "TATTOI Artist",
-  "description": "TATTOI Artist - Beautiful appointments made simple",
+  "description": "TATTOI Artist — manage bookings, clients & payments",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0d0c15",
-  "theme_color": "#0d0c15",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
   "orientation": "portrait",
   "icons": [
     {
