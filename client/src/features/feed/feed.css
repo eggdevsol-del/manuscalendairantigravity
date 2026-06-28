@@ -1,0 +1,298 @@
+/* ══════════════════════════════════════════════════════════
+   DISCOVER FEED — Instagram-style vertical scroll
+   Dark theme, full-width portrait cards
+   ══════════════════════════════════════════════════════════ */
+
+.discover-feed {
+  background: #050505;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+/* ── Header ── */
+.discover-feed-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 16px;
+  background: rgba(5, 5, 5, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.discover-feed-logo {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #fff;
+}
+
+/* ── Loading / Empty states ── */
+.discover-feed-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #050505;
+}
+
+.discover-feed-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  background: #050505;
+  color: #888;
+  text-align: center;
+  padding: 32px;
+}
+
+.discover-feed-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.discover-feed-empty h2 {
+  color: #ccc;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.discover-feed-empty p {
+  font-size: 14px;
+  max-width: 260px;
+  line-height: 1.5;
+}
+
+/* ── Cards container ── */
+.discover-feed-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ── Individual Card ── */
+.feed-card {
+  background: #0a0a0a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ── Artist header ── */
+.feed-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.feed-card-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #222;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.feed-card-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.feed-card-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #999;
+}
+
+.feed-card-artist-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.feed-card-artist-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feed-card-artist-location {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: #666;
+  margin-top: 1px;
+}
+
+/* ── Image ── */
+.feed-card-image-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: #111;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.feed-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+/* ── Double-tap heart ── */
+.feed-card-heart-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.6));
+}
+
+/* ── Action bar ── */
+.feed-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 4px;
+}
+
+.feed-card-actions-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.feed-card-action-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.feed-card-action-btn:active {
+  transform: scale(0.85);
+}
+
+.feed-card-action-disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.feed-card-action-disabled:active {
+  transform: none;
+}
+
+.feed-card-liked {
+  animation: feed-like-pop 0.3s ease;
+}
+
+@keyframes feed-like-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* ── Like count ── */
+.feed-card-likes {
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #e5e5e5;
+}
+
+/* ── Caption ── */
+.feed-card-caption {
+  padding: 4px 14px 0;
+  font-size: 13px;
+  color: #ccc;
+  line-height: 1.4;
+}
+
+.feed-card-caption-name {
+  font-weight: 700;
+  color: #fff;
+  margin-right: 4px;
+}
+
+/* ── Style tags ── */
+.feed-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 14px 0;
+}
+
+.feed-card-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 3px 10px;
+  border-radius: 100px;
+  letter-spacing: 0.2px;
+}
+
+/* ── Book CTA ── */
+.feed-card-book-btn {
+  display: block;
+  width: calc(100% - 28px);
+  margin: 12px 14px 14px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.feed-card-book-btn:active {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Load more ── */
+.discover-feed-load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+  min-height: 60px;
+}

@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Switch } from "wouter";
+import { Route, Switch, Redirect } from "wouter";
 import BottomNav from "@/components/BottomNav";
 import { ActionPanel } from "@/components/ActionPanel";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -9,16 +9,21 @@ import Chat from "@/pages/Chat";
 import Calendar from "@/pages/Calendar";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
+import DiscoverFeed from "@/features/feed/DiscoverFeed";
 
 export default function ClientShell() {
   return (
     <div className="min-h-screen pb-16">
       <Switch>
+        <Route path="/discover" component={DiscoverFeed} />
         <Route path="/profile" component={ClientProfile} />
         <Route path="/conversations" component={Conversations} />
         <Route path="/chat/:id" component={Chat} />
         <Route path="/calendar" component={Calendar} />
         <Route path="/settings" component={Settings} />
+        <Route path="/">
+          <Redirect to="/discover" />
+        </Route>
         <Route component={NotFound} />
       </Switch>
 
