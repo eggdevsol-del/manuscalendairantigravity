@@ -113,6 +113,49 @@ function GuardedShell({ appType }: { appType: "artist" | "client" | "merchant" }
   }
 }
 
+// Known first-segment app routes used by the shells.
+// Any path starting with one of these is an authenticated app route, not an artist slug.
+const KNOWN_APP_ROUTES = new Set([
+  "calendar", "conversations", "chat", "dashboard", "settings",
+  "work-hours", "clients", "bank-payouts", "payout-history",
+  "notifications-management", "subscriptions", "lead", "admin",
+  "profile", "merchant", "discover", "complete-profile",
+]);
+
+/**
+ * Smart catch-all that disambiguates between app routes and public slug pages.
+ * - Known app routes → GuardedShell (handles auth + role-based shell)
+ * - Multi-segment paths → GuardedShell
+ * - On client app, unknown single-segment paths → public pages (ArtistHub, Storefront, Events)
+ * - On artist/merchant apps, everything → GuardedShell
+ */
+function CatchAllRoute({ appType }: { appType: "artist" | "client" | "merchant" }) {
+  const [location] = useLocation();
+
+  // Extract the first path segment (e.g. "/calendar" → "calendar", "/shop/xyz" → "shop")
+  const segments = location.replace(/^\//, "").split("/");
+  const firstSegment = segments[0] || "";
+
+  // On the client app, route unknown slugs to public pages
+  if (appType === "client" && firstSegment && !KNOWN_APP_ROUTES.has(firstSegment)) {
+    // /shop/:slug → PublicStorefront
+    if (firstSegment === "shop" && segments.length >= 2) {
+      return <PublicStorefront />;
+    }
+    // /events/:slug → PublicEvents
+    if (firstSegment === "events" && segments.length >= 2) {
+      return <PublicEvents />;
+    }
+    // /:slug (single segment, not a known route) → ArtistHub
+    if (segments.length === 1) {
+      return <ArtistHub />;
+    }
+  }
+
+  // Everything else → authenticated shell
+  return <GuardedShell appType={appType} />;
+}
+
 function Router({ appType }: { appType: "artist" | "client" | "merchant" }) {
   const [location] = useLocation();
   const { user } = useAuth();
@@ -195,21 +238,12 @@ function Router({ appType }: { appType: "artist" | "client" | "merchant" }) {
         <Route path="/deposit/:token" component={DepositSheet} />
         <Route path="/balance/:id" component={BalanceSheet} />
 
-        {/* Public slug routes — client app only.
-            /:slug is a greedy catch-all that matches /calendar, /messages, etc.
-            Only mount on the client app so artist/merchant paths fall through
-            to GuardedShell below. */}
-        {appType === "client" && (
-          <>
-            <Route path="/shop/:slug" component={PublicStorefront} />
-            <Route path="/events/:slug" component={PublicEvents} />
-            <Route path="/:slug" component={ArtistHub} />
-          </>
-        )}
-
-        {/* Fallback to GuardedShell for all authenticated app routes */}
+        {/* Single smart catch-all that disambiguates between:
+            - Known app routes (calendar, settings, etc.) → GuardedShell
+            - Public slug routes on client app (/:slug) → ArtistHub/Storefront
+            This avoids the /:slug vs * ordering conflict in Switch. */}
         <Route path="*">
-          <GuardedShell appType={appType} />
+          <CatchAllRoute appType={appType} />
         </Route>
       </Switch>
     </div>
