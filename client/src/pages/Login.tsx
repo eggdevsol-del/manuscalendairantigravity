@@ -51,6 +51,8 @@ export default function Login() {
         setLocation("/studio");
       } else if (data.user.role === "merchant") {
         setLocation("/dashboard");
+      } else if (data.user.role === "client") {
+        setLocation("/discover");
       } else {
         setLocation("/calendar");
       }
@@ -92,11 +94,13 @@ export default function Login() {
 
       if (result.isNewUser) {
         toast.success("Welcome to Tattoi! Let's get you set up.");
-        window.location.href = "/calendar";
+        window.location.href = result.user.role === "client" ? "/discover" : "/calendar";
       } else {
         toast.success("Welcome back!");
         if (result.user.role === "studio") {
           window.location.href = "/studio";
+        } else if (result.user.role === "client") {
+          window.location.href = "/discover";
         } else {
           window.location.href = "/calendar";
         }
