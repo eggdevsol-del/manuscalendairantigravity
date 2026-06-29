@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Switch, Redirect } from "wouter";
+import { Route, Switch } from "wouter";
 import BottomNav from "@/components/BottomNav";
 import { ActionPanel } from "@/components/ActionPanel";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -21,9 +21,6 @@ export default function ClientShell() {
         <Route path="/chat/:id" component={Chat} />
         <Route path="/calendar" component={Calendar} />
         <Route path="/settings" component={Settings} />
-        <Route path="/">
-          <Redirect to="/discover" />
-        </Route>
         <Route component={NotFound} />
       </Switch>
 

@@ -7,7 +7,7 @@ import { PageShell, PageHeader } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { useRegisterFABActions } from "@/contexts/BottomNavContext";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Compass } from "lucide-react";
 import { useMemo } from "react";
 import { type FABMenuItem } from "@/ui/FABMenu";
 import { BookingWizardContent } from "@/features/booking/BookingWizardContent";
@@ -158,6 +158,33 @@ export default function CalendarAgendaPage() {
   return (
     <PageShell>
       <PageHeader title="Calendar" />
+
+      {/* Discover Artists button — client only */}
+      {isClient && (
+        <button
+          onClick={() => setLocation("/discover")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            width: "calc(100% - 32px)",
+            margin: "8px 16px 12px",
+            padding: "14px 16px",
+            background: "linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(59, 130, 246, 0.15))",
+            border: "1px solid rgba(168, 85, 247, 0.25)",
+            borderRadius: "14px",
+            color: "var(--foreground, #fff)",
+            cursor: "pointer",
+            WebkitTapHighlightColor: "transparent",
+          }}
+        >
+          <Compass size={22} style={{ color: "rgb(168, 85, 247)", flexShrink: 0 }} />
+          <div style={{ textAlign: "left" }}>
+            <div style={{ fontSize: "14px", fontWeight: 700, letterSpacing: "-0.2px" }}>Discover Artists</div>
+            <div style={{ fontSize: "12px", opacity: 0.6, marginTop: "2px" }}>Browse portfolios & find your next tattoo artist</div>
+          </div>
+        </button>
+      )}
       <div
         className="relative flex flex-col md:flex-row flex-1 overflow-hidden"
         onTouchStart={handleTouchStart}
