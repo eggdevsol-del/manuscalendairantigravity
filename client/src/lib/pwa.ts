@@ -3,22 +3,32 @@ import { registerSW } from "virtual:pwa-register";
 /**
  * Register service worker for PWA functionality
  *
- * This implementation uses aggressive update checking to ensure
- * users always get the latest version of the app.
+ * Uses automatic update strategy:
+ * - Checks for SW updates every 60 seconds
+ * - When a new SW is found, it auto-activates (skipWaiting + clientsClaim in sw.js)
+ * - On controller change, silently reloads the page to load fresh assets
  */
 export async function registerServiceWorker() {
   if ("serviceWorker" in navigator) {
     console.log("[PWA] Registering service worker...");
 
+    // Listen for controller change (new SW took over) — reload to get fresh assets
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (refreshing) return;
+      refreshing = true;
+      console.log("[PWA] New service worker activated, reloading for fresh assets...");
+      window.location.reload();
+    });
+
     const updateSW = registerSW({
-      immediate: false, // Don't force immediate activation to prevent reload loops
+      immediate: true, // Register and activate immediately
       onNeedRefresh() {
-        console.log(
-          "[PWA] New content available. User will be prompted to refresh."
-        );
-        if (window.confirm("New version available! Reload to update?")) {
-          updateSW(true);
-        }
+        console.log("[PWA] New content available, updating automatically...");
+        // Auto-update — no user prompt needed
+        // The SW already calls skipWaiting() + clientsClaim()
+        // The controllerchange listener above will reload the page
+        updateSW(true);
       },
       onOfflineReady() {
         console.log("[PWA] App ready to work offline");
@@ -33,6 +43,15 @@ export async function registerServiceWorker() {
               console.error("[PWA] Update check failed:", err);
             });
           }, 60000);
+
+          // Also check on page visibility change (user switches back to the app)
+          document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+              registration.update().catch(err => {
+                console.error("[PWA] Visibility update check failed:", err);
+              });
+            }
+          });
         }
       },
       onRegisterError(error) {

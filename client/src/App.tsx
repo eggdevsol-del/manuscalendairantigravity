@@ -11,6 +11,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { TeaserProvider } from "@/contexts/TeaserContext";
 import { SplashScreen } from "@/components/SplashScreen";
+import { useVersionCheck } from "@/lib/useVersionCheck";
 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -263,6 +264,9 @@ function ConditionalIOSInstallPrompt() {
 }
 
 function App({ appType = "client" }: { appType?: "artist" | "client" | "merchant" }) {
+  // Check client version against server on boot + periodically
+  useVersionCheck();
+
   return (
     <ThemeProvider defaultTheme="dark" switchable>
       <TeaserProvider>
