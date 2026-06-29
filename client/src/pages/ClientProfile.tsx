@@ -10,6 +10,7 @@
  *   DiscoverArtists (ClientFeedTab discover section)
  */
 import { useState, useMemo } from "react";
+import { useLocation } from "wouter";
 import { useClientProfileController } from "@/features/profile/useClientProfileController";
 
 import { FloatingProfileIcon } from "@/features/client-profile/FloatingProfileIcon";
@@ -19,7 +20,7 @@ import { ClientFeedTab } from "@/features/client-profile/ClientFeedTab";
 import { useFavourites } from "@/features/client-profile/useFavourites";
 
 import { useTeaser } from "@/contexts/TeaserContext";
-import { Lock } from "lucide-react";
+import { Lock, Compass } from "lucide-react";
 import { InstallAppModal } from "@/components/modals/InstallAppModal";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
@@ -27,6 +28,7 @@ import { PageShell } from "@/components/ui/ssot";
 
 export default function ClientProfile() {
   const { isTeaserClient } = useTeaser();
+  const [, setLocation] = useLocation();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [isShopExpanded, setIsShopExpanded] = useState(false);
 
@@ -86,6 +88,37 @@ export default function ClientProfile() {
 
           {/* Upcoming appointments widget */}
           <UpcomingWidget upcoming={upcoming || []} />
+
+          {/* Discovery button — opens the full-screen portrait feed */}
+          <button
+            onClick={() => setLocation("/discover")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              width: "100%",
+              padding: "16px",
+              background: "linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(59, 130, 246, 0.12))",
+              border: "1px solid rgba(168, 85, 247, 0.2)",
+              borderRadius: "16px",
+              color: "var(--foreground, #fff)",
+              cursor: "pointer",
+              WebkitTapHighlightColor: "transparent",
+              textAlign: "left",
+            }}
+          >
+            <div style={{
+              width: 44, height: 44, borderRadius: 12,
+              background: "linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(59, 130, 246, 0.25))",
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            }}>
+              <Compass size={22} style={{ color: "rgb(168, 85, 247)" }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: "-0.2px" }}>Discovery</div>
+              <div style={{ fontSize: 12, opacity: 0.5, marginTop: 2 }}>Browse artist portfolios</div>
+            </div>
+          </button>
 
           {/* Discover Artists feed */}
           <ClientFeedTab
