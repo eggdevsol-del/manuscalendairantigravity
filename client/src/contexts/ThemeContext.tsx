@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 type Theme = "light" | "dark" | "noir";
 
@@ -17,23 +18,33 @@ interface ThemeProviderProps {
 }
 
 /**
- * ThemeProvider — Always applies light (clean white) theme.
- * Dark mode code is preserved in index.css but never activated.
- * The toggle is intentionally hidden from the UI.
+ * ThemeProvider — Applies light theme for artists/merchants,
+ * dark theme for client scope.
  */
 export function ThemeProvider({
   children,
   defaultTheme = "light",
   switchable = false,
 }: ThemeProviderProps) {
-  // Always light — ignore stored preference
-  const [theme] = useState<Theme>("light");
+  const { user } = useAuth();
+  const isClient = user?.role === "client";
+
+  // Client scope → dark, everything else → light
+  const theme: Theme = isClient ? "dark" : "light";
 
   useEffect(() => {
     const root = document.documentElement;
-    // Ensure no dark/noir class is applied
-    root.classList.remove("dark", "noir");
-    // Remove any stale theme from localStorage
+
+    if (theme === "dark") {
+      root.classList.add("dark");
+      root.classList.remove("noir");
+    } else {
+      root.classList.remove("dark", "noir");
+    }
+  }, [theme]);
+
+  // Also clean up stale localStorage
+  useEffect(() => {
     localStorage.removeItem("theme");
   }, []);
 

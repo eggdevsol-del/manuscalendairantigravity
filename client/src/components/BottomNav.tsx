@@ -12,6 +12,7 @@ import { Link, useLocation } from "wouter";
 import { useTotalUnreadCount } from "@/lib/selectors/conversation.selectors";
 import { useBottomNav } from "@/contexts/BottomNavContext";
 import { useTeaser } from "@/contexts/TeaserContext";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { useCallback } from "react";
 import { Lock } from "lucide-react";
 
@@ -20,6 +21,13 @@ export default function BottomNav() {
   const totalUnreadCount = useTotalUnreadCount();
   const { navItems } = useBottomNav();
   const { isTeaserClient } = useTeaser();
+  const { user } = useAuth();
+  const isDark = user?.role === "client";
+
+  const bgColor = isDark ? "#050505" : "#ffffff";
+  const activeColor = isDark ? "#ffffff" : "#1a1a2e";
+  const inactiveColor = isDark ? "#555" : "#9ca3af";
+  const badgeBorder = isDark ? "#050505" : "#ffffff";
 
   const isActive = useCallback(
     (p?: string) => {
@@ -51,7 +59,7 @@ export default function BottomNav() {
           alignItems: "center",
           height: 44,
           paddingTop: 15,
-          backgroundColor: "#ffffff",
+          backgroundColor: bgColor,
         }}
       >
         {navItems.map((item) => {
@@ -74,7 +82,7 @@ export default function BottomNav() {
                   border: "none",
                   outline: "none",
                   cursor: "pointer",
-                  color: active ? "#1a1a2e" : "#9ca3af",
+                  color: active ? activeColor : inactiveColor,
                   WebkitTapHighlightColor: "transparent",
                   padding: 0,
                 }}
@@ -94,7 +102,7 @@ export default function BottomNav() {
                         right: -4,
                         borderRadius: 9999,
                         padding: 2,
-                        background: "#ffffff",
+                        background: bgColor,
                       }}
                     >
                       <Lock style={{ width: 10, height: 10, color: "#9ca3af" }} />
@@ -118,7 +126,7 @@ export default function BottomNav() {
                         fontSize: 10,
                         fontWeight: 700,
                         color: "#ffffff",
-                        boxShadow: "0 0 0 2px #ffffff",
+                        boxShadow: `0 0 0 2px ${badgeBorder}`,
                       }}
                     >
                       {unreadCount > 9 ? "9+" : unreadCount}
@@ -132,7 +140,7 @@ export default function BottomNav() {
       </div>
 
       {/* Bottom safe-area spacer */}
-      <div style={{ height: "env(safe-area-inset-bottom, 0px)", backgroundColor: "#ffffff" }} />
+      <div style={{ height: "env(safe-area-inset-bottom, 0px)", backgroundColor: bgColor }} />
     </nav>
   );
 }

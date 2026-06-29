@@ -3,7 +3,7 @@ import { Route, Switch } from "wouter";
 import BottomNav from "@/components/BottomNav";
 import { ActionPanel } from "@/components/ActionPanel";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import ClientProfile from "@/pages/ClientProfile";
+import ClientHome from "@/features/client-home/ClientHome";
 import Conversations from "@/pages/Conversations";
 import Chat from "@/pages/Chat";
 import Calendar from "@/pages/Calendar";
@@ -16,7 +16,7 @@ export default function ClientShell() {
     <div className="min-h-screen pb-16">
       <Switch>
         <Route path="/discover" component={DiscoverFeed} />
-        <Route path="/profile" component={ClientProfile} />
+        <Route path="/profile" component={ClientHome} />
         <Route path="/conversations" component={Conversations} />
         <Route path="/chat/:id" component={Chat} />
         <Route path="/calendar" component={Calendar} />
