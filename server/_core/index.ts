@@ -304,6 +304,15 @@ async function startServer() {
     }).catch((err) => {
       console.error("[Scheduler] Failed to start scheduled tasks:", err);
     });
+
+    // One-time: Seed portfolio images for mock artists (idempotent)
+    import("../startup/seedPortfolios").then(({ seedPortfolioImages }) => {
+      seedPortfolioImages().catch((err) => {
+        console.error("[Seed] Portfolio seeding failed:", err);
+      });
+    }).catch(() => {
+      // Module not found or import error — silently skip
+    });
   });
 }
 
