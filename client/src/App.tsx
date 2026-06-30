@@ -268,7 +268,7 @@ function App({ appType = "client" }: { appType?: "artist" | "client" | "merchant
   useVersionCheck();
 
   return (
-    <ThemeProvider defaultTheme="dark" switchable>
+    <ThemeProvider forceTheme={appType === "client" ? "dark" : "light"}>
       <TeaserProvider>
         <UIDebugProvider>
           <BottomNavProvider>
