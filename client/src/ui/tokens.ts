@@ -32,8 +32,8 @@ export const tokens = {
   // 3. Cards
   // Global App Card (Dashboard, Settings, etc.) - Rectangular SSOT (v1.0.319)
   card: {
-    base: "group relative overflow-hidden transition-all duration-300 border-0 rounded-[6px] opacity-80", // Global 6px radius, no margin
-    bg: "bg-transparent hover:bg-secondary", // Transparent base, subtle hover
+    base: "group relative overflow-hidden transition-all duration-300 border-0 dark:border dark:border-border rounded-[6px] opacity-80", // Global 6px radius, no margin. Borders restored in dark mode.
+    bg: "bg-transparent hover:bg-secondary dark:bg-card dark:hover:bg-card/80", // Transparent base in light, visible card bg in dark
     bgAccent:
       "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
     interactive: "cursor-pointer active:scale-[0.98]",
