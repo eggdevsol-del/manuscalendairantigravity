@@ -192,7 +192,7 @@ export default function PushNotificationSettings() {
 
   if (!("Notification" in window)) {
     return (
-      <Card style={{ backgroundColor: '#111111' }}>
+      <Card className="settings-card-override">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BellOff className="h-5 w-5" />
@@ -207,7 +207,7 @@ export default function PushNotificationSettings() {
   }
 
   return (
-    <Card style={{ backgroundColor: '#111111' }}>
+    <Card className="settings-card-override">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Bell className="h-5 w-5" />

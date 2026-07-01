@@ -1,5 +1,0 @@
-/* Dark mode card overrides — loaded after Tailwind processing */
-.dark [data-slot="card"] {
-  background-color: #111111 !important;
-  color: #e5e5e5;
-}

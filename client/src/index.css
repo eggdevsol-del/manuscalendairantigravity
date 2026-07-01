@@ -489,3 +489,9 @@
 [class*="bg-[#111]"] svg {
   color: rgba(255, 255, 255, 0.9) !important;
 }
+
+/* ═══ SETTINGS PAGE OVERRIDE ═══ */
+.dark .settings-card-override {
+  background-color: #111111 !important;
+  color: #e5e5e5;
+}
