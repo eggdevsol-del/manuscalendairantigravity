@@ -9,6 +9,7 @@ import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl, API_BASE_URL } from "./const";
 import "./index.css";
+import "./dark-overrides.css";
 import { registerServiceWorker } from "./lib/pwa";
 import { initializeOneSignal } from "./lib/onesignal";
 import { initGlobalErrorListeners } from "./lib/errorReporter";
