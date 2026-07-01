@@ -128,7 +128,7 @@ export default function Settings() {
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 mb-2">
               Profile & Identity
             </h2>
-            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")}>
+            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")} style={{ backgroundColor: 'transparent' }}>
               <div className="divide-y divide-border/30">
                 {/* Profile summary at top */}
                 <div className="p-4 flex items-center gap-4">
@@ -177,7 +177,7 @@ export default function Settings() {
               <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 mb-2">
                 Business
               </h2>
-              <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")}>
+              <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")} style={{ backgroundColor: 'transparent' }}>
                 <div className="divide-y divide-border/30">
                   <SettingsRow
                     icon={MapPin}
@@ -211,7 +211,7 @@ export default function Settings() {
               <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 mb-2">
                 Payments
               </h2>
-              <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")}>
+              <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")} style={{ backgroundColor: 'transparent' }}>
                 <div className="divide-y divide-border/30">
                   <PaymentProcessingRow />
                   <SettingsRow
@@ -239,7 +239,7 @@ export default function Settings() {
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 mb-2">
               System
             </h2>
-            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")}>
+            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden")} style={{ backgroundColor: 'transparent' }}>
               <div className="divide-y divide-border/30">
                 <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors">
                   <div className="flex items-center gap-3">
@@ -278,6 +278,7 @@ export default function Settings() {
           <section>
             <Card
               className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0 group")}
+              style={{ backgroundColor: 'transparent' }}
               onClick={handleLogout}
             >
               <div className="p-4 flex items-center justify-between">

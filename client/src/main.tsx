@@ -98,7 +98,7 @@ createRoot(document.getElementById("root")!).render(
   <GoogleAuthWrapper>
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <App appType="client" />
+        <App />
       </QueryClientProvider>
     </trpc.Provider>
   </GoogleAuthWrapper>

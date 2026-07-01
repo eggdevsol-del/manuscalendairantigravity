@@ -52,7 +52,11 @@ function getRedirectUrlForRole(role: string, path: string = "") {
   return `${protocol}//${subdomain}.tattoi.app${path}`;
 }
 
-function GuardedShell({ appType }: { appType: "artist" | "client" | "merchant" }) {
+/**
+ * GuardedShell — selects the correct shell based on the logged-in user's role.
+ * No subdomain redirects — single entrypoint serves all roles.
+ */
+function GuardedShell() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
 
@@ -62,48 +66,12 @@ function GuardedShell({ appType }: { appType: "artist" | "client" | "merchant" }
     }
   }, [user, loading, setLocation]);
 
-  React.useEffect(() => {
-    if (loading || !user) return;
-
-    const userRole = user.role;
-    const isArtist = userRole === "artist" || userRole === "admin";
-    const isMerchant = userRole === "merchant";
-    const isClient = userRole === "client";
-
-    let needsRedirect = false;
-    let targetRole = "";
-
-    if (appType === "artist" && !isArtist) {
-      needsRedirect = true;
-      targetRole = isMerchant ? "merchant" : "client";
-    } else if (appType === "merchant" && !isMerchant) {
-      needsRedirect = true;
-      targetRole = isArtist ? "artist" : "client";
-    } else if (appType === "client" && !isClient && (isArtist || isMerchant)) {
-      needsRedirect = true;
-      targetRole = isArtist ? "artist" : "merchant";
-    }
-
-    if (needsRedirect) {
-      console.log(`[Router] Redirecting to subdomain matching role: ${targetRole}`);
-      window.location.href = getRedirectUrlForRole(targetRole, window.location.pathname + window.location.search);
-    }
-  }, [user, loading, appType]);
-
   if (loading) return null;
   if (!user) return null;
 
   const userRole = user.role;
   const isArtist = userRole === "artist" || userRole === "admin";
   const isMerchant = userRole === "merchant";
-  const isClient = userRole === "client";
-
-  const isMismatch =
-    (appType === "artist" && !isArtist) ||
-    (appType === "merchant" && !isMerchant) ||
-    (appType === "client" && !isClient && (isArtist || isMerchant));
-
-  if (isMismatch) return null;
 
   if (isArtist) {
     return <ArtistShell />;
@@ -130,15 +98,17 @@ const KNOWN_APP_ROUTES = new Set([
  * - On client app, unknown single-segment paths → public pages (ArtistHub, Storefront, Events)
  * - On artist/merchant apps, everything → GuardedShell
  */
-function CatchAllRoute({ appType }: { appType: "artist" | "client" | "merchant" }) {
+function CatchAllRoute() {
   const [location] = useLocation();
+  const { user } = useAuth();
 
   // Extract the first path segment (e.g. "/calendar" → "calendar", "/shop/xyz" → "shop")
   const segments = location.replace(/^\//, "").split("/");
   const firstSegment = segments[0] || "";
 
-  // On the client app, route unknown slugs to public pages
-  if (appType === "client" && firstSegment && !KNOWN_APP_ROUTES.has(firstSegment)) {
+  // For client users (or unauthenticated), route unknown slugs to public pages
+  const isClient = !user || user.role === "client";
+  if (isClient && firstSegment && !KNOWN_APP_ROUTES.has(firstSegment)) {
     // /shop/:slug → PublicStorefront
     if (firstSegment === "shop" && segments.length >= 2) {
       return <PublicStorefront />;
@@ -154,10 +124,10 @@ function CatchAllRoute({ appType }: { appType: "artist" | "client" | "merchant" 
   }
 
   // Everything else → authenticated shell
-  return <GuardedShell appType={appType} />;
+  return <GuardedShell />;
 }
 
-function Router({ appType }: { appType: "artist" | "client" | "merchant" }) {
+function Router() {
   const [location] = useLocation();
   const { user } = useAuth();
 
@@ -198,25 +168,6 @@ function Router({ appType }: { appType: "artist" | "client" | "merchant" }) {
     }
   }, [user?.id]);
 
-  // Redirect client public pages from artist/merchant subdomains to the client subdomain
-  React.useEffect(() => {
-    if (appType !== "client") {
-      const path = window.location.pathname;
-      const isPublicClientPage =
-        path.startsWith("/start/") ||
-        path.startsWith("/deposit/") ||
-        path.startsWith("/balance/") ||
-        path.startsWith("/shop/") ||
-        path.startsWith("/events/") ||
-        path.startsWith("/studio/");
-
-      if (isPublicClientPage) {
-        console.log(`[Router] Redirecting public client page to client subdomain`);
-        window.location.href = getRedirectUrlForRole("client", path + window.location.search);
-      }
-    }
-  }, [appType, user]);
-
   const isPublicFunnel =
     location.startsWith("/start/") ||
     location.startsWith("/deposit/") ||
@@ -239,12 +190,9 @@ function Router({ appType }: { appType: "artist" | "client" | "merchant" }) {
         <Route path="/deposit/:token" component={DepositSheet} />
         <Route path="/balance/:id" component={BalanceSheet} />
 
-        {/* Single smart catch-all that disambiguates between:
-            - Known app routes (calendar, settings, etc.) → GuardedShell
-            - Public slug routes on client app (/:slug) → ArtistHub/Storefront
-            This avoids the /:slug vs * ordering conflict in Switch. */}
+        {/* Smart catch-all: app routes vs public slug pages */}
         <Route path="*">
-          <CatchAllRoute appType={appType} />
+          <CatchAllRoute />
         </Route>
       </Switch>
     </div>
@@ -263,12 +211,26 @@ function ConditionalIOSInstallPrompt() {
   return <IOSInstallPrompt />;
 }
 
-function App({ appType = "client" }: { appType?: "artist" | "client" | "merchant" }) {
+/**
+ * RoleThemeWrapper — Reads the user's role from auth and sets the theme.
+ * Client users get dark mode, artist/merchant get light mode.
+ */
+function RoleThemeWrapper({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const isClient = !user || user.role === "client";
+  return (
+    <ThemeProvider forceTheme={isClient ? "dark" : "light"}>
+      {children}
+    </ThemeProvider>
+  );
+}
+
+function App() {
   // Check client version against server on boot + periodically
   useVersionCheck();
 
   return (
-    <ThemeProvider forceTheme={appType === "client" ? "dark" : "light"}>
+    <RoleThemeWrapper>
       <TeaserProvider>
         <UIDebugProvider>
           <BottomNavProvider>
@@ -277,13 +239,13 @@ function App({ appType = "client" }: { appType?: "artist" | "client" | "merchant
               <InstallPrompt />
               <ConditionalIOSInstallPrompt />
               <ErrorBoundary boundary="app-root">
-                <Router appType={appType} />
+                <Router />
               </ErrorBoundary>
             </TooltipProvider>
           </BottomNavProvider>
         </UIDebugProvider>
       </TeaserProvider>
-    </ThemeProvider>
+    </RoleThemeWrapper>
   );
 }
 

@@ -74,8 +74,6 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           main: path.resolve(import.meta.dirname, "client/index.html"),
-          artist: path.resolve(import.meta.dirname, "client/artist.html"),
-          merchant: path.resolve(import.meta.dirname, "client/merchant.html"),
         },
       },
     },
