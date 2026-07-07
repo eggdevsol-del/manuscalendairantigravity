@@ -1,26 +1,31 @@
+import React from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useUIDebug } from "@/_core/contexts/UIDebugContext";
-import PushNotificationSettings from "@/components/PushNotificationSettings";
 import { getAssetUrl } from "@/lib/assets";
-
 import { Card, Switch } from "@/components/ui";
-import { LoadingState, PageShell, PageHeader } from "@/components/ui/ssot";
+import { LoadingState, PageShell } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import {
+  AlertTriangle,
+  Banknote,
   Bell,
+  BookOpen,
   ChevronRight,
   Clock,
+  CreditCard,
+  Database,
+  FileText,
+  Image,
   Link2,
   LogOut,
   MapPin,
-  User,
-  Zap,
+  Plane,
   RefreshCw,
-  Banknote,
-  Briefcase,
-  Image,
-  CreditCard,
+  Store,
+  User,
+  Users,
+  Zap,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -28,7 +33,38 @@ import { forceUpdate } from "@/lib/pwa";
 import { APP_VERSION } from "@/lib/version";
 import { trpc } from "@/lib/trpc";
 
-// --- Reusable Settings Row ---
+// ── Settings sub-panels ──────────────────────────────────────────────────────
+import { ProfileSettings } from "@/components/settings/ProfileSettings";
+import { BusinessSettings } from "@/components/settings/BusinessSettings";
+import { WorkHoursAndServicesSettings } from "@/components/settings/WorkHoursAndServicesSettings";
+import { PortfolioSettings } from "@/components/settings/PortfolioSettings";
+import { FunnelSettings } from "@/components/FunnelSettings";
+import { RegulationSettings } from "@/components/settings/RegulationSettings";
+import { ConsultationSettings } from "@/components/settings/ConsultationSettings";
+import { DataImportSettings } from "@/components/settings/DataImportSettings";
+import { TravelSettings } from "@/components/settings/TravelSettings";
+import { DangerZoneSettings } from "@/components/settings/DangerZoneSettings";
+import { NotificationSettings } from "@/components/settings/NotificationSettings";
+import { StudioDashboardSettings } from "@/components/settings/StudioDashboardSettings";
+import StorefrontSetupWizard from "@/features/storefront/StorefrontSetupWizard";
+
+// ── Valid section keys ───────────────────────────────────────────────────────
+type SettingsSection =
+  | "profile"
+  | "portfolio"
+  | "storefront"
+  | "booking-link"
+  | "business"
+  | "work-hours"
+  | "travel"
+  | "data-import"
+  | "regulation"
+  | "consultations"
+  | "studio"
+  | "notifications"
+  | "danger-zone";
+
+// ── Reusable row ─────────────────────────────────────────────────────────────
 interface SettingsRowProps {
   icon: React.ElementType;
   iconColor: string;
@@ -61,15 +97,14 @@ function SettingsRow({ icon: Icon, iconColor, title, subtitle, onClick, trailing
   );
 }
 
-// --- Stripe Connect Row ---
+// ── Stripe Connect status row ─────────────────────────────────────────────────
 function PaymentProcessingRow() {
   const connectStatus = trpc.artistSettings.getStripeConnectStatus.useQuery();
   const [, setLocation] = useLocation();
 
   const status = connectStatus.data;
-  const accountType = status?.accountType || "standard";
   const isConnected = status?.connected && status?.onboardingComplete;
-  const isPending = status?.connected && !status?.onboardingComplete;
+  const isPending   = status?.connected && !status?.onboardingComplete;
 
   return (
     <SettingsRow
@@ -82,45 +117,103 @@ function PaymentProcessingRow() {
       title="Payment Processing"
       subtitle={
         isConnected ? "Stripe Connected ✓"
-          : isPending && accountType === "custom"
-            ? "Complete onboarding →"
-            : isPending ? "Complete onboarding →"
-              : "Connect Stripe to receive payments"
+          : isPending ? "Complete onboarding →"
+            : "Connect Stripe to receive payments"
       }
-      onClick={() => setLocation("/wallet")}
+      onClick={() => setLocation("/bank-payouts")}
       trailing={
         <>
           {isConnected && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />}
-          {isPending && <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />}
+          {isPending   && <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />}
         </>
       }
     />
   );
 }
 
-// --- Main Settings Page ---
+// ── Main ─────────────────────────────────────────────────────────────────────
 export default function Settings() {
   const { user, loading, logout } = useAuth();
   const { showDebugLabels, setShowDebugLabels } = useUIDebug();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
 
+  // Robust section detection: reads window.location.search directly and
+  // re-syncs on every navigation event. useSearch() alone is unreliable when
+  // the pathname doesn't change (/settings → /settings?section=X).
+  const [section, setSection] = React.useState<SettingsSection | null>(() => {
+    const s = new URLSearchParams(window.location.search).get("section");
+    return s as SettingsSection | null;
+  });
+
+  React.useEffect(() => {
+    const sync = () => {
+      const s = new URLSearchParams(window.location.search).get("section");
+      setSection(s as SettingsSection | null);
+    };
+    // popstate fires on back/forward; wouter fires a custom "pushstate"-style event
+    window.addEventListener("popstate", sync);
+    // Patch setLocation so in-page navigation (/settings?section=X) also triggers sync
+    // by watching location changes from wouter as a secondary signal
+    return () => window.removeEventListener("popstate", sync);
+  }, []);
+
+  // Also re-sync whenever wouter's location updates (catches setLocation() calls)
+  React.useEffect(() => {
+    const s = new URLSearchParams(window.location.search).get("section");
+    setSection(s as SettingsSection | null);
+  }, [location]);
+
+  const handleBack = () => setLocation("/settings");
+
+  if (loading) return <LoadingState message="Loading..." fullScreen />;
+
+  const isArtist = user?.role === "artist" || user?.role === "admin";
+  const isStudio = user?.role === "studio"  || user?.role === "admin";
+
+  const nav = (s: SettingsSection) => () => setLocation(`/settings?section=${s}`);
+
+  // ── SECTION PANEL MODE ───────────────────────────────────────────────────
+  if (section) {
+    const panel = (() => {
+      switch (section) {
+        case "profile":       return <ProfileSettings onBack={handleBack} />;
+        case "portfolio":     return <PortfolioSettings onBack={handleBack} />;
+        case "storefront":    return <StorefrontSetupWizard onClose={handleBack} />;
+        case "booking-link":  return <FunnelSettings onBack={handleBack} />;
+        case "business":      return <BusinessSettings onBack={handleBack} />;
+        case "work-hours":    return <WorkHoursAndServicesSettings onBack={handleBack} />;
+        case "travel":        return <TravelSettings onBack={handleBack} onNavigateToClients={() => setLocation("/clients")} />;
+        case "data-import":   return <DataImportSettings onBack={handleBack} />;
+        case "regulation":    return <RegulationSettings onBack={handleBack} />;
+        case "consultations": return <ConsultationSettings onBack={handleBack} />;
+        case "studio":        return (isStudio) ? <StudioDashboardSettings onBack={handleBack} /> : null;
+        case "notifications": return <NotificationSettings onBack={handleBack} />;
+        case "danger-zone":   return <DangerZoneSettings onBack={handleBack} />;
+        default:              return null;
+      }
+    })();
+
+    // Settings components render their own header with back button.
+    // PageShell provides the full-height flex container.
+    return <PageShell>{panel}</PageShell>;
+  }
+
+  // ── MAIN LIST MODE ───────────────────────────────────────────────────────
   const handleLogout = async () => {
     await logout();
     setLocation("/");
   };
 
-  if (loading) {
-    return <LoadingState message="Loading..." fullScreen />;
-  }
-
-  const isArtist = user?.role === "artist" || user?.role === "admin";
-
   return (
     <PageShell>
-      <PageHeader title="Settings" subtitle={`v${APP_VERSION}`} />
+      {/* Header */}
+      <div className="px-4 pt-4 pb-2 shrink-0">
+        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">{`v${APP_VERSION}`}</p>
+      </div>
 
-      {/* Scrollable settings list */}
-      <div className="flex-1 overflow-y-auto mobile-scroll px-4 pt-4 pb-32">
+      {/* Scrollable list */}
+      <div className="flex-1 overflow-y-auto mobile-scroll px-4 pt-2 pb-32">
         <div className="max-w-lg mx-auto space-y-6">
 
           {/* ═══ PROFILE & IDENTITY ═══ */}
@@ -130,8 +223,11 @@ export default function Settings() {
             </h2>
             <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden", "settings-card-override")}>
               <div className="divide-y divide-border/30">
-                {/* Profile summary at top */}
-                <div className="p-4 flex items-center gap-4">
+                {/* Avatar summary row */}
+                <div
+                  className="p-4 flex items-center gap-4 cursor-pointer hover:bg-secondary/50 transition-colors"
+                  onClick={nav("profile")}
+                >
                   <div className="w-14 h-14 rounded-full bg-secondary/50 flex items-center justify-center overflow-hidden border border-border">
                     {user?.avatar ? (
                       <img src={getAssetUrl(user.avatar)} alt="Profile" className="w-full h-full object-cover" />
@@ -143,10 +239,7 @@ export default function Settings() {
                     <p className="text-base font-bold text-foreground">{user?.name || "User"}</p>
                     <p className="text-sm text-muted-foreground capitalize">{user?.role || "Account"}</p>
                   </div>
-                  <ChevronRight
-                    className="w-5 h-5 text-muted-foreground cursor-pointer"
-                    onClick={() => setLocation("/settings?section=profile")}
-                  />
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </div>
 
                 {isArtist && (
@@ -156,14 +249,21 @@ export default function Settings() {
                       iconColor="bg-violet-500/20 text-violet-400"
                       title="Portfolio"
                       subtitle="Manage your work gallery"
-                      onClick={() => setLocation("/portfolio")}
+                      onClick={nav("portfolio")}
+                    />
+                    <SettingsRow
+                      icon={Store}
+                      iconColor="bg-cyan-500/20 text-cyan-400"
+                      title="Storefront"
+                      subtitle="Your public profile page"
+                      onClick={nav("storefront")}
                     />
                     <SettingsRow
                       icon={Link2}
                       iconColor="bg-purple-500/20 text-purple-400"
                       title="Booking Link"
-                      subtitle="Share your link"
-                      onClick={() => setLocation("/settings?section=booking-link")}
+                      subtitle="Share your booking link"
+                      onClick={nav("booking-link")}
                     />
                   </>
                 )}
@@ -184,22 +284,59 @@ export default function Settings() {
                     iconColor="bg-indigo-500/20 text-indigo-400"
                     title="Business Info"
                     subtitle="Address & details"
-                    onClick={() => setLocation("/settings?section=business")}
+                    onClick={nav("business")}
                   />
                   <SettingsRow
                     icon={Clock}
                     iconColor="bg-pink-500/20 text-pink-400"
                     title="Services & Hours"
                     subtitle="Manage schedule & pricing"
-                    onClick={() => setLocation("/settings?section=work-hours")}
+                    onClick={nav("work-hours")}
                   />
                   <SettingsRow
-                    icon={User}
+                    icon={Plane}
+                    iconColor="bg-sky-500/20 text-sky-400"
+                    title="Travel Dates"
+                    subtitle="Guest spots & travel"
+                    onClick={nav("travel")}
+                  />
+                  <SettingsRow
+                    icon={Users}
                     iconColor="bg-green-500/20 text-green-400"
                     title="Clients"
                     subtitle="Manage client list"
                     onClick={() => setLocation("/clients")}
                   />
+                  <SettingsRow
+                    icon={Database}
+                    iconColor="bg-orange-500/20 text-orange-400"
+                    title="Import Clients"
+                    subtitle="Upload a CSV file"
+                    onClick={nav("data-import")}
+                  />
+                  <SettingsRow
+                    icon={FileText}
+                    iconColor="bg-teal-500/20 text-teal-400"
+                    title="Regulation & Forms"
+                    subtitle="Health & consent forms"
+                    onClick={nav("regulation")}
+                  />
+                  <SettingsRow
+                    icon={BookOpen}
+                    iconColor="bg-amber-500/20 text-amber-400"
+                    title="Consultations"
+                    subtitle="Intake & consult settings"
+                    onClick={nav("consultations")}
+                  />
+                  {isStudio && (
+                    <SettingsRow
+                      icon={Users}
+                      iconColor="bg-rose-500/20 text-rose-400"
+                      title="Studio Headquarters"
+                      subtitle="Manage your studio"
+                      onClick={nav("studio")}
+                    />
+                  )}
                 </div>
               </Card>
             </section>
@@ -226,21 +363,21 @@ export default function Settings() {
             </section>
           )}
 
-          {/* ═══ NOTIFICATIONS ═══ */}
+          {/* ═══ PREFERENCES ═══ */}
           <section>
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 mb-2">
-              Notifications
-            </h2>
-            <PushNotificationSettings />
-          </section>
-
-          {/* ═══ SYSTEM ═══ */}
-          <section>
-            <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 mb-2">
-              System
+              Preferences
             </h2>
             <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden", "settings-card-override")}>
               <div className="divide-y divide-border/30">
+                <SettingsRow
+                  icon={Bell}
+                  iconColor="bg-yellow-500/20 text-yellow-400"
+                  title="Notifications"
+                  subtitle="Push & alert preferences"
+                  onClick={nav("notifications")}
+                />
+                {/* UI Debug toggle */}
                 <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-xl bg-slate-500/20 text-slate-400">
@@ -253,6 +390,18 @@ export default function Settings() {
                   </div>
                   <Switch checked={showDebugLabels} onCheckedChange={setShowDebugLabels} />
                 </div>
+              </div>
+            </Card>
+          </section>
+
+          {/* ═══ SYSTEM ═══ */}
+          <section>
+            <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 mb-2">
+              System
+            </h2>
+            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden", "settings-card-override")}>
+              <div className="divide-y divide-border/30">
+                {/* Check for updates */}
                 <div
                   className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99] group"
                   onClick={() => {
@@ -270,6 +419,14 @@ export default function Settings() {
                     </div>
                   </div>
                 </div>
+                {/* Danger Zone */}
+                <SettingsRow
+                  icon={AlertTriangle}
+                  iconColor="bg-red-500/10 text-red-400"
+                  title="Danger Zone"
+                  subtitle="Delete account & data"
+                  onClick={nav("danger-zone")}
+                />
               </div>
             </Card>
           </section>

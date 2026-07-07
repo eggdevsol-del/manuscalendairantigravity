@@ -40,8 +40,6 @@ interface BottomNavContextType {
   setFABOpen: (open: boolean) => void;
   isLargePanel: boolean;
   setLargePanel: (large: boolean) => void;
-  requestedSettingsView: string | null;
-  requestSettingsView: (view: string | null) => void;
 
   // ── Legacy no-ops (contextual rows removed) ────────────
   contextualRow: ReactNode | null;
@@ -86,7 +84,6 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
   const [fabChildren, setFabChildren] = useState<ReactNode | null>(null);
   const [isFABOpen, setFABOpenState] = useState(false);
   const [isLargePanel, setLargePanelState] = useState(false);
-  const [requestedSettingsView, setRequestedSettingsView] = useState<string | null>(null);
 
   // Track registered action sets by id
   const actionsRegistry = useRef<Map<string, FABMenuItem[]>>(new Map());
@@ -98,10 +95,6 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
 
   const setLargePanel = useCallback((large: boolean) => {
     setLargePanelState(large);
-  }, []);
-
-  const requestSettingsView = useCallback((view: string | null) => {
-    setRequestedSettingsView(view);
   }, []);
 
   const registerFABActions = useCallback(
@@ -150,8 +143,6 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
       setFABOpen,
       isLargePanel,
       setLargePanel,
-      requestedSettingsView,
-      requestSettingsView,
       // Legacy no-ops
       contextualRow: null,
       isContextualVisible: false,
@@ -163,7 +154,6 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
       navItems, scope,
       fabActions, registerFABActions, fabChildren,
       isFABOpen, setFABOpen, isLargePanel, setLargePanel,
-      requestedSettingsView, requestSettingsView,
       registerRow, setContextualVisible,
     ]
   );

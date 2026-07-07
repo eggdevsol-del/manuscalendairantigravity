@@ -1,22 +1,22 @@
 /**
  * FloatingProfileIcon.tsx
  * Floating avatar button in the top-right of the client home page.
- * Tapping opens the FAB menu and navigates directly to profile settings.
+ * Tapping navigates to /settings?section=profile.
  */
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useBottomNav } from "@/contexts/BottomNavContext";
+import { useLocation } from "wouter";
 
 export function FloatingProfileIcon() {
   const { user } = useAuth();
-  const { setFABOpen, requestSettingsView } = useBottomNav();
+  const [, setLocation] = useLocation();
 
   if (!user) return null;
 
-  const initial = (user.name || user.email || "?").charAt(0).toUpperCase();
+  const initial  = (user.name || user.email || "?").charAt(0).toUpperCase();
   const avatarUrl = user.avatar || null;
 
   const handleTap = () => {
-    requestSettingsView("profile");
+    setLocation("/settings?section=profile");
   };
 
   return (
