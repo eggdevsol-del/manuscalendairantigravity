@@ -135,37 +135,15 @@ function PaymentProcessingRow() {
 export default function Settings() {
   const { user, loading, logout } = useAuth();
   const { showDebugLabels, setShowDebugLabels } = useUIDebug();
-  const [, setLocation] = useLocation();
+  const [, setLocation] = useLocation(); // for cross-page nav (logout, /clients, etc.)
+  // Section state — pure local state, no URL involved.
+  // nav(s) sets the section; handleBack() resets it.
+  // Using pure local state avoids any wouter routing side-effects.
+  const [section, setSection] = React.useState<SettingsSection | null>(null);
 
-  // Robust section detection: reads window.location.search directly and
-  // re-syncs on every navigation event. useSearch() alone is unreliable when
-  // the pathname doesn't change (/settings → /settings?section=X).
-  const [section, setSection] = React.useState<SettingsSection | null>(() => {
-    const s = new URLSearchParams(window.location.search).get("section");
-    return s as SettingsSection | null;
-  });
-
-  // Handle browser back-button: reset section when URL loses ?section= param
-  React.useEffect(() => {
-    const onPopState = () => {
-      const s = new URLSearchParams(window.location.search).get("section");
-      setSection(s as SettingsSection | null);
-    };
-    window.addEventListener("popstate", onPopState);
-    return () => window.removeEventListener("popstate", onPopState);
-  }, []);
-
-  // nav() updates local state DIRECTLY — no URL-parse round-trip needed.
-  // setLocation also updates the URL for history/deep-linking.
-  const nav = (s: SettingsSection) => () => {
-    setSection(s);
-    setLocation(`/settings?section=${s}`);
-  };
-
-  const handleBack = () => {
-    setSection(null);
-    setLocation("/settings");
-  };
+  // nav() updates section state directly — guaranteed re-render.
+  const nav = (s: SettingsSection) => () => setSection(s);
+  const handleBack = () => setSection(null);
 
   if (loading) return <LoadingState message="Loading..." fullScreen />;
 
