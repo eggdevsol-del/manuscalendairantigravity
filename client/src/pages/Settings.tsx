@@ -135,7 +135,7 @@ function PaymentProcessingRow() {
 export default function Settings() {
   const { user, loading, logout } = useAuth();
   const { showDebugLabels, setShowDebugLabels } = useUIDebug();
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
 
   // Robust section detection: reads window.location.search directly and
   // re-syncs on every navigation event. useSearch() alone is unreliable when
@@ -145,34 +145,33 @@ export default function Settings() {
     return s as SettingsSection | null;
   });
 
+  // Handle browser back-button: reset section when URL loses ?section= param
   React.useEffect(() => {
-    const sync = () => {
+    const onPopState = () => {
       const s = new URLSearchParams(window.location.search).get("section");
       setSection(s as SettingsSection | null);
     };
-    // popstate fires on back/forward; wouter fires a custom "pushstate"-style event
-    window.addEventListener("popstate", sync);
-    // Patch setLocation so in-page navigation (/settings?section=X) also triggers sync
-    // by watching location changes from wouter as a secondary signal
-    return () => window.removeEventListener("popstate", sync);
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  // Also re-sync whenever wouter's location updates (catches setLocation() calls)
-  React.useEffect(() => {
-    const s = new URLSearchParams(window.location.search).get("section");
-    setSection(s as SettingsSection | null);
-  }, [location]);
+  // nav() updates local state DIRECTLY — no URL-parse round-trip needed.
+  // setLocation also updates the URL for history/deep-linking.
+  const nav = (s: SettingsSection) => () => {
+    setSection(s);
+    setLocation(`/settings?section=${s}`);
+  };
 
-  const handleBack = () => setLocation("/settings");
+  const handleBack = () => {
+    setSection(null);
+    setLocation("/settings");
+  };
 
   if (loading) return <LoadingState message="Loading..." fullScreen />;
 
   const isArtist = user?.role === "artist" || user?.role === "admin";
   const isStudio = user?.role === "studio"  || user?.role === "admin";
 
-  const nav = (s: SettingsSection) => () => setLocation(`/settings?section=${s}`);
-
-  // ── SECTION PANEL MODE ───────────────────────────────────────────────────
   if (section) {
     const panel = (() => {
       switch (section) {
