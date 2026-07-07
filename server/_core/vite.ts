@@ -59,15 +59,32 @@ export function serveStatic(app: Express) {
     );
   }
 
-  // Serve static assets with caching (JS, CSS, images have hashed filenames)
+  // ── sw.js: MUST bypass CDN caching. Served via dedicated route BEFORE
+  //    express.static so Railway's Hikari edge layer doesn't apply its own
+  //    max-age=1y immutable override.
+  app.get("/sw.js", (_req, res) => {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    res.setHeader("Service-Worker-Allowed", "/");
+    res.setHeader("Content-Type", "application/javascript; charset=UTF-8");
+    res.sendFile(path.resolve(distPath, "sw.js"));
+  });
+
+  // ── Web app manifest: also should not be immutably cached
+  app.get("/manifest.webmanifest", (_req, res) => {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.sendFile(path.resolve(distPath, "manifest.webmanifest"));
+  });
+
+  // Serve all other static assets with long-term caching (hashed filenames)
   app.use(
     express.static(distPath, {
       maxAge: "1y",
       immutable: true,
-      // But don't cache HTML files
       setHeaders: (res, filePath) => {
+        // Belt-and-suspenders: also suppress cache on HTML
         if (filePath.endsWith(".html")) {
-          // No cache for HTML - always fetch fresh
           res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
           res.setHeader("Pragma", "no-cache");
           res.setHeader("Expires", "0");
