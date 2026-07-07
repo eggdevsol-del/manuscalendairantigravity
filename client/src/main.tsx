@@ -12,6 +12,7 @@ import "./index.css";
 import { registerServiceWorker } from "./lib/pwa";
 import { initializeOneSignal } from "./lib/onesignal";
 import { initGlobalErrorListeners } from "./lib/errorReporter";
+import { APP_VERSION, compareVersions } from "./lib/version";
 
 // Initialize global error listeners before anything else
 initGlobalErrorListeners();
@@ -70,7 +71,7 @@ const trpcClient = trpc.createClient({
     httpBatchLink({
       url: `${API_BASE_URL}/api/trpc`,
       transformer: superjson,
-      fetch(input, init) {
+      async fetch(input, init) {
         // Get JWT token from localStorage OR sessionStorage
         const token =
           localStorage.getItem("authToken") ||
@@ -82,11 +83,31 @@ const trpcClient = trpc.createClient({
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         };
 
-        return globalThis.fetch(input, {
+        const response = await globalThis.fetch(input, {
           ...(init ?? {}),
           credentials: "include",
           headers,
         });
+
+        // Layer 4: X-App-Version interception.
+        // Every API response carries the server's current version.
+        // If the server is ahead of this client bundle, show the update banner
+        // immediately — no need to wait for the 30-second /api/version poll.
+        const serverVersion = response.headers.get("X-App-Version");
+        if (serverVersion && compareVersions(APP_VERSION, serverVersion) < 0) {
+          console.log(
+            `[VersionCheck] X-App-Version mismatch: client=${APP_VERSION} server=${serverVersion}`
+          );
+          window.dispatchEvent(new CustomEvent("pwa-update-available"));
+          // Also trigger an immediate SW update check so the new sw.js is
+          // fetched and installed ASAP — closing the race window between the
+          // banner appearing and the waiting SW being ready.
+          navigator.serviceWorker?.getRegistration().then(reg => {
+            if (reg) reg.update().catch(() => {});
+          });
+        }
+
+        return response;
       },
     }),
   ],
@@ -104,8 +125,7 @@ createRoot(document.getElementById("root")!).render(
   </GoogleAuthWrapper>
 );
 
-// Current app version (baked in at build time)
-const APP_VERSION = import.meta.env.VITE_APP_VERSION || "0.0.0";
+// NOTE: APP_VERSION is now imported from ./lib/version (baked in at build time by Vite)
 console.log("[App] Starting version:", APP_VERSION);
 
 // Register service worker for PWA

@@ -16,7 +16,7 @@ const plugins = [
     strategies: "injectManifest",
     srcDir: "src",
     filename: "sw.js",
-    registerType: "autoUpdate",
+    registerType: "prompt",
     includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
     // manifest: false — each subdomain's HTML links its own manifest
     // (manifest-artist.json, manifest-client.json, manifest-merchant.json)

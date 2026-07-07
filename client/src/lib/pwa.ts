@@ -1,34 +1,77 @@
 import { registerSW } from "virtual:pwa-register";
 
 /**
- * Register service worker for PWA functionality
+ * Module-level reference to the updateSW function from vite-plugin-pwa.
+ * Stored so the UpdateBanner can call it when the user taps "Update".
+ */
+let _pendingUpdateSW: ((reloadPage?: boolean) => Promise<void>) | null = null;
+
+
+/**
+ * Called by the UpdateBanner when the user taps the update button.
  *
- * Uses automatic update strategy:
- * - Checks for SW updates every 60 seconds
- * - When a new SW is found, it auto-activates (skipWaiting + clientsClaim in sw.js)
- * - On controller change, silently reloads the page to load fresh assets
+ * Priority order:
+ *  1. _pendingUpdateSW — set by onNeedRefresh when a new SW is waiting (preferred).
+ *     Sends SKIP_WAITING via workbox-window, new SW activates, page reloads cleanly.
+ *  2. registration.waiting — direct send for cases where waiting SW exists but
+ *     onNeedRefresh raced with the banner (X-App-Version detected first).
+ *  3. forceUpdate() — nuclear fallback: clears all caches, unregisters SW, hard
+ *     reload from network. Guarantees the user gets the new version.
+ */
+export async function triggerSWUpdate() {
+  if (_pendingUpdateSW) {
+    // Preferred: workbox-window handles SKIP_WAITING + controllerchange + reload
+    _pendingUpdateSW(true);
+    return;
+  }
+
+  // Check if a waiting SW is already installed but onNeedRefresh raced
+  try {
+    const registration = await navigator.serviceWorker?.getRegistration();
+    if (registration?.waiting) {
+      console.log("[PWA] Found waiting SW — sending SKIP_WAITING directly");
+      // Tell the waiting SW to skip waiting and take control
+      registration.waiting.postMessage({ type: "SKIP_WAITING" });
+      // When the new SW claims control, reload the page
+      navigator.serviceWorker.addEventListener(
+        "controllerchange",
+        () => window.location.reload(),
+        { once: true }
+      );
+      return;
+    }
+  } catch {
+    // getRegistration failed — fall through to forceUpdate
+  }
+
+  // Last resort: X-App-Version mismatch was detected but no new SW has installed yet.
+  // Clear everything and reload from the network to guarantee new code.
+  console.log("[PWA] No waiting SW — using forceUpdate() to load fresh from network");
+  await forceUpdate();
+}
+
+/**
+ * Register service worker for PWA functionality.
+ *
+ * Update strategy (industry best-practice):
+ * - New SW installs silently in the background
+ * - When ready, dispatches "pwa-update-available" DOM event
+ * - React UpdateBanner listens for this event and shows a non-blocking banner
+ * - User taps "Update" → SKIP_WAITING → new SW activates → page reloads
+ * - This prevents the app from reloading mid-session without user consent
  */
 export async function registerServiceWorker() {
   if ("serviceWorker" in navigator) {
     console.log("[PWA] Registering service worker...");
 
-    // Listen for controller change (new SW took over) — reload to get fresh assets
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (refreshing) return;
-      refreshing = true;
-      console.log("[PWA] New service worker activated, reloading for fresh assets...");
-      window.location.reload();
-    });
-
     const updateSW = registerSW({
-      immediate: true, // Register and activate immediately
+      immediate: true,
       onNeedRefresh() {
-        console.log("[PWA] New content available, updating automatically...");
-        // Auto-update — no user prompt needed
-        // The SW already calls skipWaiting() + clientsClaim()
-        // The controllerchange listener above will reload the page
-        updateSW(true);
+        console.log("[PWA] New version available — showing update banner");
+        // Store the update function for the banner to call
+        _pendingUpdateSW = updateSW;
+        // Dispatch a DOM event so the React banner can listen without coupling
+        window.dispatchEvent(new CustomEvent("pwa-update-available"));
       },
       onOfflineReady() {
         console.log("[PWA] App ready to work offline");
@@ -37,12 +80,12 @@ export async function registerServiceWorker() {
         console.log("[PWA] Service Worker registered successfully");
 
         if (registration) {
-          // Check for updates every 60 seconds
+          // Check for SW updates every 30 seconds (reduced from 60s for faster deploy detection)
           setInterval(() => {
             registration.update().catch(err => {
               console.error("[PWA] Update check failed:", err);
             });
-          }, 60000);
+          }, 30_000);
 
           // Also check on page visibility change (user switches back to the app)
           document.addEventListener("visibilitychange", () => {
