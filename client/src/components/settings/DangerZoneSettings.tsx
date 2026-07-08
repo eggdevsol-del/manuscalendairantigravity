@@ -99,14 +99,14 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                             </div>
                             {activeAction === "appointments" && (
                                 <div className="mt-4 pt-4 border-t border-border animate-in fade-in slide-in-from-top-2">
-                                    <p className="text-xs text-zinc-300 mb-2">Type <strong>DELETE</strong> below to confirm wiping all appointments.</p>
+                                    <p className="text-xs text-muted-foreground mb-2">Type <strong>DELETE</strong> below to confirm wiping all appointments.</p>
                                     <div className="flex gap-2">
                                         <input
                                             type="text"
                                             value={confirmText}
                                             onChange={(e) => setConfirmText(e.target.value)}
                                             placeholder="DELETE"
-                                            className="bg-zinc-900 border border-red-500/50 rounded-md px-3 py-2 text-sm text-foreground w-full outline-none focus:border-red-500 flex-1"
+                                            className="bg-background border border-red-500/50 rounded-md px-3 py-2 text-sm text-foreground w-full outline-none focus:border-red-500 flex-1"
                                         />
                                         <button
                                             onClick={handleExecute}
@@ -136,14 +136,14 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                             </div>
                             {activeAction === "clients" && (
                                 <div className="mt-4 pt-4 border-t border-border animate-in fade-in slide-in-from-top-2">
-                                    <p className="text-xs text-zinc-300 mb-2">Type <strong>DELETE</strong> below to confirm wiping all clients.</p>
+                                    <p className="text-xs text-muted-foreground mb-2">Type <strong>DELETE</strong> below to confirm wiping all clients.</p>
                                     <div className="flex gap-2">
                                         <input
                                             type="text"
                                             value={confirmText}
                                             onChange={(e) => setConfirmText(e.target.value)}
                                             placeholder="DELETE"
-                                            className="bg-zinc-900 border border-red-500/50 rounded-md px-3 py-2 text-sm text-foreground w-full outline-none focus:border-red-500 flex-1"
+                                            className="bg-background border border-red-500/50 rounded-md px-3 py-2 text-sm text-foreground w-full outline-none focus:border-red-500 flex-1"
                                         />
                                         <button
                                             onClick={handleExecute}
@@ -180,7 +180,7 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                                             value={confirmText}
                                             onChange={(e) => setConfirmText(e.target.value)}
                                             placeholder="DELETE"
-                                            className="bg-zinc-900 border border-red-500/50 rounded-md px-3 py-2 text-sm text-foreground w-full outline-none focus:border-red-500 flex-1"
+                                            className="bg-background border border-red-500/50 rounded-md px-3 py-2 text-sm text-foreground w-full outline-none focus:border-red-500 flex-1"
                                         />
                                         <button
                                             onClick={handleExecute}

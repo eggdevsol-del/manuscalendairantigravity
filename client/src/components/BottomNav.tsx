@@ -22,12 +22,11 @@ export default function BottomNav() {
   const { navItems } = useBottomNav();
   const { isTeaserClient } = useTeaser();
   const { user } = useAuth();
-  const isDark = user?.role === "client";
 
-  const bgColor = isDark ? "#050505" : "#ffffff";
-  const activeColor = isDark ? "#ffffff" : "#1a1a2e";
-  const inactiveColor = isDark ? "#555" : "#9ca3af";
-  const badgeBorder = isDark ? "#050505" : "#ffffff";
+  const bgColor = "var(--background)";
+  const activeColor = "var(--foreground)";
+  const inactiveColor = "var(--muted-foreground)";
+  const badgeBorder = "var(--background)";
 
   const isActive = useCallback(
     (p?: string) => {

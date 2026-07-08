@@ -32,8 +32,8 @@ export const tokens = {
   // 3. Cards
   // Global App Card (Dashboard, Settings, etc.) - Rectangular SSOT (v1.0.319)
   card: {
-    base: "group relative overflow-hidden transition-all duration-300 border-0 dark:border dark:border-border rounded-[6px] opacity-80", // Global 6px radius, no margin. Borders restored in dark mode.
-    bg: "bg-transparent hover:bg-secondary dark:bg-transparent dark:hover:bg-secondary", // Transparent in all modes
+    base: "group relative overflow-hidden transition-all duration-300 border border-border/20 dark:border dark:border-border/40 rounded-[6px]", // Global 6px radius, subtle border in both modes
+    bg: "bg-card text-card-foreground hover:bg-card/90", // Proper card surface — #fff in light, #111 in dark
     bgAccent:
       "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
     interactive: "cursor-pointer active:scale-[0.98]",
@@ -293,31 +293,32 @@ export const tokens = {
     dimmedBg: "bg-background/80 dark:bg-secondary/50",
 
     // New Calendar Redesign Colors (Pastel Palette)
+    // Light mode: soft pastels. Dark mode: jewel-tone muted variants.
     event: {
       orange: {
-        bg: "bg-[#FFE4C4]",
-        text: "text-[#8B4513]",
-        border: "border-[#DEB887]",
+        bg: "bg-[#FFE4C4] dark:bg-[#7A3B0F]/40",
+        text: "text-[#8B4513] dark:text-[#FFB07C]",
+        border: "border-[#DEB887] dark:border-[#8B4513]/60",
       },
       purple: {
-        bg: "bg-[#E6E6FA]",
-        text: "text-[#4B0082]",
-        border: "border-[#9370DB]",
+        bg: "bg-[#E6E6FA] dark:bg-[#3B0082]/40",
+        text: "text-[#4B0082] dark:text-[#C4B5FD]",
+        border: "border-[#9370DB] dark:border-[#7C3AED]/60",
       },
       green: {
-        bg: "bg-[#F0FFF0]",
-        text: "text-[#006400]",
-        border: "border-[#90EE90]",
+        bg: "bg-[#F0FFF0] dark:bg-[#004D00]/40",
+        text: "text-[#006400] dark:text-[#86EFAC]",
+        border: "border-[#90EE90] dark:border-[#16A34A]/60",
       },
       pink: {
-        bg: "bg-[#FFF0F5]",
-        text: "text-[#C71585]",
-        border: "border-[#FFB6C1]",
+        bg: "bg-[#FFF0F5] dark:bg-[#7C0042]/40",
+        text: "text-[#C71585] dark:text-[#F9A8D4]",
+        border: "border-[#FFB6C1] dark:border-[#BE185D]/60",
       },
       blue: {
-        bg: "bg-[#E0F7FA]",
-        text: "text-[#006064]",
-        border: "border-[#4DD0E1]",
+        bg: "bg-[#E0F7FA] dark:bg-[#004D5A]/40",
+        text: "text-[#006064] dark:text-[#67E8F9]",
+        border: "border-[#4DD0E1] dark:border-[#0891B2]/60",
       },
       // Fallback
       default: {

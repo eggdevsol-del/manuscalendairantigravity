@@ -116,7 +116,7 @@ export function SetupChecklistWidget() {
     };
 
     return (
-        <div className="w-full rounded-2xl bg-white overflow-hidden mb-6">
+        <div className="w-full rounded-2xl bg-card border border-border/30 overflow-hidden mb-6">
             <div className="p-5 pb-4">
                 <div className="flex justify-between items-start mb-4">
                     <div>
@@ -129,7 +129,7 @@ export function SetupChecklistWidget() {
                 </div>
 
                 {/* Progress Bar */}
-                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
                     <motion.div
                         className="h-full bg-primary rounded-full"
                         initial={{ width: 0 }}
@@ -139,7 +139,7 @@ export function SetupChecklistWidget() {
                 </div>
             </div>
 
-            <div className="border-t border-gray-50">
+            <div className="border-t border-border/30">
                 <AnimatePresence>
                     {tasks.map((task, index) => (
                         <motion.button
@@ -148,11 +148,11 @@ export function SetupChecklistWidget() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.08 }}
                             onClick={task.onClick}
-                            className="w-full flex items-center px-5 py-3.5 hover:bg-gray-50 transition-colors text-left group border-b border-gray-50 last:border-b-0"
+                            className="w-full flex items-center px-5 py-3.5 hover:bg-secondary/50 transition-colors text-left group border-b border-border/20 last:border-b-0"
                         >
                             <div className={cn(
                                 "flex items-center justify-center w-8 h-8 rounded-full shrink-0 transition-colors",
-                                task.isComplete ? "text-emerald-500 bg-emerald-50" : "text-muted-foreground bg-gray-100 group-hover:text-foreground"
+                                task.isComplete ? "text-emerald-500 bg-emerald-500/10" : "text-muted-foreground bg-secondary group-hover:text-foreground"
                             )}>
                                 {task.isComplete ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
                             </div>
@@ -178,7 +178,7 @@ export function SetupChecklistWidget() {
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
-                        className="p-4 bg-emerald-50 border-t border-emerald-100"
+                        className="p-4 bg-emerald-500/10 border-t border-emerald-500/20"
                     >
                         <Button
                             onClick={handleFinalizeSetup}

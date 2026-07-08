@@ -285,7 +285,7 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
                                         value={confirmText}
                                         onChange={(e) => setConfirmText(e.target.value)}
                                         placeholder="DELETE"
-                                        className="bg-zinc-900 border border-red-500/50 rounded-md px-3 py-2 text-xs text-foreground w-full outline-none focus:border-red-500 flex-1"
+                                        className="bg-background border border-red-500/50 rounded-md px-3 py-2 text-xs text-foreground w-full outline-none focus:border-red-500 flex-1"
                                     />
                                     <button
                                         onClick={handleExecuteDelete}

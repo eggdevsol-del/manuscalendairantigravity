@@ -59,8 +59,8 @@ export function BottomNavMoreMenu({
         "w-1/2 max-w-[200px]", // Max 50% screen width, capped at 200px
 
         // EXACT match of BottomNav visual properties
-        "bg-gray-100/95 dark:bg-slate-950/80 backdrop-blur-[32px]",
-        "border-t border-l border-gray-200 dark:border-border",
+        "bg-popover/95 backdrop-blur-[32px]",
+        "border-t border-l border-border",
 
         // Rounded top-left mainly, maybe top-right too. Bottom corners square to attach.
         "rounded-tl-2xl",
