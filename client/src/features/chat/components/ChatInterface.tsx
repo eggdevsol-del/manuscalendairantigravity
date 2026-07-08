@@ -786,10 +786,7 @@ export function ChatInterface({
                     ) : isProjectProposal &&
                       (metadata?.status === "canceled" ||
                         metadata?.status === "revoked" ||
-                        metadata?.isDeleted) ? null : isProjectProposal &&
-                          metadata?.status ===
-                          "pending" ? // Pending proposals are pinned to the header — skip inline
-                      null : isProjectProposal ? (
+                        metadata?.isDeleted) ? null : isProjectProposal ? (
                         <div className="w-full flex justify-center">
                           <ProjectProposalMessage
                             metadata={metadata}
