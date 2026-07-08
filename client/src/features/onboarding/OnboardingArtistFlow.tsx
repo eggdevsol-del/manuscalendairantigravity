@@ -36,7 +36,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
 
     // Step 2: Business Details
     const [businessName, setBusinessName] = useState(user?.name || "");
-    const [publicSlug, setPublicSlug] = useState(user?.username || "");
+    const [publicSlug, setPublicSlug] = useState("");
     const [businessEmail, setBusinessEmail] = useState(user?.email || "");
     const [licenceNumber, setLicenceNumber] = useState("");
 

@@ -30,8 +30,8 @@ export const consultationsRouter = router({
       // Enrich with user details
       const enriched = await Promise.all(
         consultations.map(async c => {
-          const artist = await db.getUser(c.artistId);
-          const client = await db.getUser(c.clientId);
+          const artist = c.artistId ? await db.getUser(c.artistId) : null;
+          const client = c.clientId ? await db.getUser(c.clientId) : null;
           return {
             ...c,
             artist,

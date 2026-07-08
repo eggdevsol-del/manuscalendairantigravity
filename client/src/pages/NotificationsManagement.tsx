@@ -488,7 +488,7 @@ export default function NotificationsManagement() {
             <p className="text-sm text-muted-foreground">No clients found.</p>
           ) : (
             <div className="space-y-2">
-              {clients.map(client => (
+              {clients.filter((client): client is NonNullable<typeof client> => client !== null && client !== undefined).map(client => (
                 <Button
                   key={client.id}
                   variant="ghost"

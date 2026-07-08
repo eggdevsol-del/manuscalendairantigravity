@@ -392,7 +392,7 @@ function DiscoveryArtistPopup({
     onSuccess: (conv) => {
       utils.conversations.list.invalidate();
       onDismiss();
-      setLocation(`/chat/${conv.id}`);
+      if (conv) setLocation(`/chat/${conv.id}`);
     },
   });
 

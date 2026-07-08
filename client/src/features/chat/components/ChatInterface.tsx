@@ -794,7 +794,7 @@ export function ChatInterface({
                           <ProjectProposalMessage
                             metadata={metadata}
                             isArtist={isArtist}
-                            variant="inline"
+                            variant="portrait"
                             onPress={() => {
                               handleViewProposal(message, metadata);
                               const apptId = metadata.appointmentIds?.[0] || metadata.bookingId;

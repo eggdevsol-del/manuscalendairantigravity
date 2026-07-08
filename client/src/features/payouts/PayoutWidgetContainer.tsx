@@ -88,7 +88,7 @@ export function PayoutWidgetContainer({
     const showConnectButton = !payoutData.connected;
 
     // Derive transaction entries from history query
-    const transactions = historyQuery.data?.entries || [];
+    const transactions = (historyQuery.data?.entries || []) as any[];
 
     return (
         <>

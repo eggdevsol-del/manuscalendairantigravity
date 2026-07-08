@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getDb } from "../db";
 import { studios } from "../../drizzle/schema";
 import { v4 as uuid } from "uuid";

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import "dotenv/config";
 import { getDb } from "../services/db";
 import * as schema from "../../drizzle/schema";

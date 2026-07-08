@@ -64,7 +64,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
             setLicenceNumber(artistSettings.licenceNumber || "");
             setDepositAmount(artistSettings.depositAmount?.toString() || "");
             setAutoSendDepositInfo(!!artistSettings.autoSendDepositInfo);
-            setKeywords(artistSettings.keywords || "");
+            setKeywords((artistSettings as any).keywords || "");
         }
     }, [artistSettings]);
 

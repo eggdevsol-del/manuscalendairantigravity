@@ -376,7 +376,7 @@ export const messagesRouter = router({
 
       // Self-heal: if deposit was paid but remainingBalanceCents was never recalculated
       // (pre-v1.0.623 appointments) or totalPaidAmountCents was stored in dollars (pre-v1.0.626), fix the stored value now.
-      let effectiveBalance = nextSitting.remainingBalanceCents;
+      let effectiveBalance = nextSitting.remainingBalanceCents ?? 0;
       let totalPaid = nextSitting.totalPaidAmountCents || 0;
       const totalExpected = nextSitting.totalExpectedAmountCents || 0;
       const depositDollars = nextSitting.depositAmount || 0;

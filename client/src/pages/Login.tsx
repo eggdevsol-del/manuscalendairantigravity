@@ -24,38 +24,38 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true); // Fix B: default true — token in localStorage, survives PWA session flush
   const [showOtherMethods, setShowOtherMethods] = useState(false);
   const { user, loading: authLoading } = useAuth();
+  const utils = trpc.useUtils();
 
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: data => {
-      // Clear legacy/other storage first to avoid conflicts
+      // Write token to storage BEFORE navigating.
+      // Use window.location.href (hard reload) — mirrors the Google login path.
+      // setLocation() is a soft navigation that leaves the React tree alive;
+      // the me query (previously errored with 401) can briefly show user=null
+      // in GuardedShell, triggering a redirect back to /login before the
+      // refetch resolves. A hard reload re-initialises the tree with the
+      // token already in localStorage so the me query succeeds first time.
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
       sessionStorage.removeItem("authToken");
       sessionStorage.removeItem("user");
 
       const storage = rememberMe ? localStorage : sessionStorage;
-
-      // Store JWT token
       storage.setItem("authToken", data.token);
-
-      // Store user info
       storage.setItem("user", JSON.stringify(data.user));
 
       toast.success("Welcome back!");
 
-      // Redirect based on role
       if (data.user.role === "studio") {
-        setLocation("/studio");
+        window.location.href = "/studio";
       } else if (data.user.role === "merchant") {
-        setLocation("/dashboard");
+        window.location.href = "/dashboard";
       } else {
-        setLocation("/calendar");
+        window.location.href = "/calendar";
       }
-
-      setIsLoading(false);
     },
     onError: error => {
       toast.error(error.message || "Login failed. Please try again.");
@@ -66,7 +66,7 @@ export default function Login() {
   // --- Google Sign-In ---
   const isGoogleReady = useGoogleAuthReady();
   const googleLoginMutation = trpc.auth.googleLogin.useMutation();
-  const utils = trpc.useUtils();
+
 
   const handleGoogleSuccess = async (code: string) => {
     setIsLoading(true);

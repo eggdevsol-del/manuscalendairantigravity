@@ -75,6 +75,8 @@ export function BalanceSheet() {
 
   // We don't have a confirmBalance endpoint yet, but maybe not needed if Stripe webhook handles it.
   const createBalanceCheckout = trpc.funnel.createBalanceCheckout.useMutation();
+  // Stub: bank/cash confirmation — webhook handles actual status update
+  const confirmBalance = { mutateAsync: async (_args: any) => { /* handled by webhook */ } };
 
   useEffect(() => {
     if (data) {

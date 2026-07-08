@@ -11,6 +11,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { TeaserProvider } from "@/contexts/TeaserContext";
 import { SplashScreen } from "@/components/SplashScreen";
+import { UpdateBanner } from "@/components/UpdateBanner";
 import { useVersionCheck } from "@/lib/useVersionCheck";
 
 import Login from "./pages/Login";
@@ -57,16 +58,19 @@ function getRedirectUrlForRole(role: string, path: string = "") {
  * No subdomain redirects — single entrypoint serves all roles.
  */
 function GuardedShell() {
-  const { user, loading } = useAuth();
+  const { user, loading, isSessionChecked } = useAuth();
   const [, setLocation] = useLocation();
 
   React.useEffect(() => {
-    if (!loading && !user) {
+    // Only redirect once the me query has fully settled (isFetched).
+    // Using !loading alone creates a single-frame gap where loading=false
+    // but user hasn't populated yet, causing a premature /login redirect.
+    if (isSessionChecked && !loading && !user) {
       setLocation("/login");
     }
-  }, [user, loading, setLocation]);
+  }, [user, loading, isSessionChecked, setLocation]);
 
-  if (loading) return null;
+  if (loading || !isSessionChecked) return null;
   if (!user) return null;
 
   const userRole = user.role;
@@ -238,6 +242,7 @@ function App() {
               <Toaster />
               <InstallPrompt />
               <ConditionalIOSInstallPrompt />
+              <UpdateBanner />
               <ErrorBoundary boundary="app-root">
                 <Router />
               </ErrorBoundary>

@@ -4,12 +4,17 @@ import { forceUpdate } from "./pwa";
 
 /**
  * Checks the client's bundled version against the server's deployed version.
- * If the server is newer, forces a cache clear + reload.
  *
- * Runs:
- * - Once on mount (app boot)
- * - Every 5 minutes while the app is open
- * - On visibility change (user switches back to the app)
+ * Detection sources (fastest to slowest):
+ *   1. X-App-Version header on every tRPC/API response — near-instant detection
+ *      (handled in main.tsx tRPC link — triggers pwa-update-available event)
+ *   2. /api/version poll every 30 seconds (reduced from 5 min) — catches cases
+ *      where the app is idle and no API calls are being made
+ *   3. On visibility change — user switches back to the app after being away
+ *
+ * On mismatch: dispatches "pwa-update-available" to show the update banner.
+ * Falls back to forceUpdate() only if no SW is controlling the page (e.g.
+ * first-load or SW completely missing) to guarantee the user gets the new version.
  */
 export function useVersionCheck() {
   const checking = useRef(false);
@@ -35,11 +40,17 @@ export function useVersionCheck() {
         const cmp = compareVersions(APP_VERSION, serverVersion);
 
         if (cmp < 0) {
-          // Client is older than server — force update
           console.log(
-            `[VersionCheck] Client ${APP_VERSION} < Server ${serverVersion}, forcing update...`
+            `[VersionCheck] Client ${APP_VERSION} < Server ${serverVersion} — triggering update`
           );
-          await forceUpdate();
+
+          // Prefer the banner flow (user-consented update) if a SW is active.
+          // Fall back to forceUpdate() only if no SW is present.
+          if (navigator.serviceWorker?.controller) {
+            window.dispatchEvent(new CustomEvent("pwa-update-available"));
+          } else {
+            await forceUpdate();
+          }
         } else {
           console.log(
             `[VersionCheck] Client ${APP_VERSION} matches server ${serverVersion}`
@@ -56,8 +67,8 @@ export function useVersionCheck() {
     // Check on boot
     checkVersion();
 
-    // Check every 5 minutes
-    const interval = setInterval(checkVersion, 5 * 60 * 1000);
+    // Check every 30 seconds (reduced from 5 minutes for faster deploy detection)
+    const interval = setInterval(checkVersion, 30_000);
 
     // Check when user switches back to the app
     const onVisibilityChange = () => {

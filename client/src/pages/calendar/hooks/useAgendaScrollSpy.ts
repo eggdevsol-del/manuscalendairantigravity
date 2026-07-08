@@ -59,6 +59,7 @@ export function useAgendaScrollSpy({
       const scrollOffset = virtualizer.scrollOffset;
 
       if (visibleItems.length === 0) return;
+      if (scrollOffset === null) return;
 
       // Find the first item whose bottom edge extends into the visible area (below scrollTop)
       // item.start is top position, item.size is height.

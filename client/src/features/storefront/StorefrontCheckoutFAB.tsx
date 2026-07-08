@@ -129,7 +129,7 @@ export function StorefrontCheckoutFAB({
                           <div className="flex-1 flex flex-col justify-between">
                             <div className="flex justify-between items-start gap-4">
                               <h3 className="font-bold leading-tight">{item.title}</h3>
-                              <button onClick={() => removeItem(item.productId)} className="text-muted-foreground hover:text-white p-1">
+                              <button onClick={() => removeItem(item.cartItemId)} className="text-muted-foreground hover:text-white p-1">
                                 <X className="w-4 h-4" />
                               </button>
                             </div>
@@ -138,14 +138,14 @@ export function StorefrontCheckoutFAB({
                               
                               <div className="flex items-center gap-3 bg-background/80 rounded-full px-2 py-1 border border-border">
                                 <button
-                                  onClick={() => updateQuantity(item.productId, -1)}
+                                  onClick={() => updateQuantity(item.cartItemId, -1)}
                                   className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-secondary/50"
                                 >
                                   <Minus className="w-3 h-3" />
                                 </button>
                                 <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
                                 <button
-                                  onClick={() => updateQuantity(item.productId, 1)}
+                                  onClick={() => updateQuantity(item.cartItemId, 1)}
                                   disabled={item.quantity >= item.maxInventory}
                                   className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-secondary/50 disabled:opacity-30"
                                 >

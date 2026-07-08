@@ -1,5 +1,5 @@
 import React from "react";
-import { Store, ExternalLink } from "lucide-react";
+import { Store, ExternalLink, Package } from "lucide-react";
 
 export function StorefrontPreviewTier() {
   return (

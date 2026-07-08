@@ -92,7 +92,7 @@ export function BookingWizard({
     if (frequency !== "single" && !availability?.dates) return;
     if (frequency === "single" && customDates.length === 0) return;
 
-    const datesToUse = frequency === "single" ? customDates : availability.dates;
+    const datesToUse = frequency === "single" ? customDates : availability!.dates;
 
     const datesList = datesToUse
       .map((date: string | Date) =>

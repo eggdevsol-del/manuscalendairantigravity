@@ -113,7 +113,7 @@ export async function authenticateRequest(
       email: user.email,
       name: user.name,
       role: user.role,
-      hasCompletedOnboarding: user.hasCompletedOnboarding,
+      hasCompletedOnboarding: Boolean(user.hasCompletedOnboarding),
     } as AuthUser;
 
     next();
@@ -144,7 +144,7 @@ export async function optionalAuth(
             email: user.email,
             name: user.name,
             role: user.role,
-            hasCompletedOnboarding: user.hasCompletedOnboarding,
+            hasCompletedOnboarding: Boolean(user.hasCompletedOnboarding),
           } as AuthUser;
         }
       }

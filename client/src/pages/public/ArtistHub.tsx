@@ -2,7 +2,7 @@ import React from "react";
 import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Loader2, Instagram, Facebook, ArrowRight, Store, CalendarDays, Link as LinkIcon, CalendarPlus } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 export default function ArtistHub() {
   const [, params] = useRoute("/:slug");
@@ -37,7 +37,7 @@ export default function ArtistHub() {
     );
   }
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: { 
       opacity: 1,
@@ -48,7 +48,7 @@ export default function ArtistHub() {
     }
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
       opacity: 1, 

@@ -311,7 +311,7 @@ function DiscoverArtistCard({
   const getOrCreate = trpc.conversations.getOrCreate.useMutation({
     onSuccess: (conv) => {
       utils.conversations.list.invalidate();
-      setLocation(`/chat/${conv.id}`);
+      if (conv) setLocation(`/chat/${conv.id}`);
     },
   });
 

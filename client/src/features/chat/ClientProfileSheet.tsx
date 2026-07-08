@@ -27,7 +27,7 @@ import { WebPushSettings } from "@/components/WebPushSettings";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getAssetUrl } from "@/lib/assets";
-import { Identity, getFullName } from "../../../../shared/identity";
+import { Identity } from "../../../../shared/identity";
 import { HistoryCard } from "@/features/profile/components/ContentCards";
 
 interface ClientProfileSheetProps {
@@ -177,26 +177,31 @@ export function ClientProfileSheet({
 
   return (
     <>
-      <BottomSheet open={isOpen} onOpenChange={(o) => !o && onClose()} title="Client Profile">
+      <BottomSheet
+        open={isOpen}
+        onOpenChange={(o) => !o && onClose()}
+        title="Client Profile"
+        className="!h-[75dvh] !inset-auto !bottom-0 !inset-x-0 rounded-t-[2rem] bg-background/5 backdrop-blur-md"
+      >
         {/* Sticky Header */}
-        <div className="shrink-0 pt-6 pb-4 px-6 border-b border-border bg-card flex items-center justify-between z-10 relative">
+        <div className="shrink-0 pt-6 pb-4 px-6 border-b border-border/50 bg-background/80 backdrop-blur-md flex items-center justify-between z-10 relative">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center overflow-hidden">
               {client.avatar ? (
                 <img
                   src={getAssetUrl(client.avatar)}
-                  alt={getFullName(client)}
+                  alt={client.name || "Client"}
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <span className="text-white font-bold text-lg">
-                  {client.firstName ? client.firstName[0].toUpperCase() : "?"}
+                  {(client.name || "?")[0].toUpperCase()}
                 </span>
               )}
             </div>
             <div>
               <h3 className="font-bold text-lg flex items-center gap-1.5 text-foreground">
-                {getFullName(client) || "Unknown Client"}
+                {client.name || "Unknown Client"}
                 <BadgeCheck className="w-4 h-4 text-blue-500" />
               </h3>
               <p className="text-xs text-muted-foreground">

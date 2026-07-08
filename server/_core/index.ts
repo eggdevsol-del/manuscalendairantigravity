@@ -91,6 +91,12 @@ async function startServer() {
   app.set("trust proxy", true); // Railway runs behind a reverse proxy
   const server = createServer(app);
 
+  // Read package.json version once at startup — used for X-App-Version header
+  // and the /api/version endpoint below.
+  const packageJson = JSON.parse(
+    fs.readFileSync(path.join(process.cwd(), "package.json"), "utf-8")
+  );
+
   const corsOptions = {
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       // Allow requests with no origin (mobile apps often have no origin header)
@@ -154,6 +160,15 @@ async function startServer() {
     next();
   });
 
+  // Inject current server version on every response.
+  // Clients read this header on every tRPC call to detect deployments instantly,
+  // without waiting for the 30-second version-poll interval.
+  const SERVER_VERSION = packageJson.version;
+  app.use((_req, res, next) => {
+    res.setHeader("X-App-Version", SERVER_VERSION);
+    next();
+  });
+
   // MUST BE BEFORE express.json() to capture raw payload for signature verification
   app.post(
     ["/api/webhooks/stripe", "/api/stripe/webhook"],
@@ -182,10 +197,8 @@ async function startServer() {
   registerPublicFunnelRoutes(app);
 
   // Version endpoint for cache-busting (returns current server version)
-  // This is used by the client to detect version mismatches and force updates
-  const packageJson = JSON.parse(
-    fs.readFileSync(path.join(process.cwd(), "package.json"), "utf-8")
-  );
+  // This is used by the client to detect version mismatches and force updates.
+  // Note: X-App-Version header is also injected on every response by the middleware above.
   app.get("/api/version", (_req, res) => {
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.setHeader("Pragma", "no-cache");

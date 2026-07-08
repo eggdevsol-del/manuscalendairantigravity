@@ -116,7 +116,7 @@
 .dark {
   --background: #050505;
   --foreground: #f0f0f0;
-  --card: #050505;
+  --card: #111111;
   --card-foreground: #e5e5e5;
   --popover: rgba(15, 15, 15, 0.97);
   --popover-foreground: #f0f0f0;

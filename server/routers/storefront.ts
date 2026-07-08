@@ -537,12 +537,8 @@ export const storefrontRouter = router({
         priceAtPurchaseCents: seminar.priceCents,
       });
 
-      // Get Stripe Connect Account
-      const paymentSettings = await db.query.paymentMethodSettings.findFirst({
-        where: eq(schema.paymentMethodSettings.userId, seminar.artistId),
-      });
-
-      const connectAccountId = paymentSettings?.stripeConnectAccountId || undefined;
+      // Get Stripe Connect Account from artistSettings (already fetched above)
+      const connectAccountId = settings?.stripeConnectAccountId || undefined;
       const slug = settings.publicSlug || "events";
 
       const sessionResult = await createStorefrontCheckoutSession({

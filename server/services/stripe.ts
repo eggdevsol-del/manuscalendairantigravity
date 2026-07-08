@@ -435,7 +435,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 depositVerifiedAt: now,
                 stripeCheckoutSessionId: session.id,
                 status: "deposit_verified" as any,
-                updatedAt: nowDate,
+                updatedAt: now,
               })
               .where(eq(leads.id, leadId));
 
@@ -531,7 +531,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 remainingBalanceCents: Math.max(remaining, 0),
                 paymentStatus: remaining <= 0 ? "fully_paid" as any : "deposit_paid" as any,
                 clientPaid: remaining <= 0 ? 1 : 0,
-                updatedAt: nowDate,
+                updatedAt: now,
               }).where(eq(appointments.id, bookingId));
 
               // Ledger write
@@ -576,7 +576,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
               const nowDate = new Date();
 
               // 1. Update Order Status, Shipping Address, and Buyer Details
-              const shippingDetails = session.shipping_details;
+              const shippingDetails = (session as any).shipping_details;
               const customerDetails = session.customer_details;
 
               const buyerName = shippingDetails?.name || customerDetails?.name || null;

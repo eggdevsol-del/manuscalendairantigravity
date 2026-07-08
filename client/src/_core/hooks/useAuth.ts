@@ -72,6 +72,10 @@ export function useAuth(options?: UseAuthOptions) {
     return {
       user: meQuery.data ?? null,
       loading: meQuery.isLoading || logoutMutation.isPending,
+      // true once the me query has completed at least once (success or error)
+      // Use this instead of !loading to guard redirects — prevents the
+      // single-frame gap where loading=false but data hasn't populated yet.
+      isSessionChecked: meQuery.isFetched,
       error: meQuery.error ?? logoutMutation.error ?? null,
       isAuthenticated: Boolean(meQuery.data),
     };
@@ -79,6 +83,7 @@ export function useAuth(options?: UseAuthOptions) {
     meQuery.data,
     meQuery.error,
     meQuery.isLoading,
+    meQuery.isFetched,
     logoutMutation.error,
     logoutMutation.isPending,
   ]);

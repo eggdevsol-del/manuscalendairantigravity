@@ -38,7 +38,7 @@ export function SyncOverlay() {
       const interval = setInterval(() => {
         setProgress(p => {
           // If we can extract explicit progress from the backend message, use it
-          const match = syncStatus.message?.match(/\((\d+)\/(\d+)\)/);
+          const match = (syncStatus as any).message?.match(/\((\d+)\/(\d+)\)/);
           if (match) {
              const current = parseInt(match[1]);
              const total = parseInt(match[2]);
@@ -54,7 +54,7 @@ export function SyncOverlay() {
     } else if (syncStatus?.status === "complete") {
       setProgress(100);
     }
-  }, [syncStatus?.status, syncStatus?.message]);
+  }, [syncStatus?.status, (syncStatus as any)?.message]);
 
   if (!syncStatus || syncStatus.status === "complete" || syncStatus.status === "idle" || isDismissed) {
     return null;
@@ -89,13 +89,13 @@ export function SyncOverlay() {
 
             <AnimatePresence mode="wait">
               <motion.p
-                key={syncStatus.message || LOADING_STEPS[stepIndex]}
+                key={(syncStatus as any).message || LOADING_STEPS[stepIndex]}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 className="text-sm text-muted-foreground mb-8 text-center h-6"
               >
-                {syncStatus.message || LOADING_STEPS[stepIndex]}
+                {(syncStatus as any).message || LOADING_STEPS[stepIndex]}
               </motion.p>
             </AnimatePresence>
             
@@ -108,7 +108,7 @@ export function SyncOverlay() {
           <div className="flex flex-col items-center">
             <h2 className="text-xl font-bold text-red-400 mb-2">Import Failed</h2>
             <p className="text-sm text-muted-foreground mb-8 px-4 text-center max-w-sm">
-              {syncStatus.error || "We couldn't extract products from the provided URL."}
+              {(syncStatus as any).error || "We couldn't extract products from the provided URL."}
             </p>
             <button 
               onClick={() => setIsDismissed(true)}

@@ -64,7 +64,7 @@ export function ActionPanel() {
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className={cn(
-              "fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.15)]",
+              "fixed bottom-0 left-0 right-0 z-50 bg-[#0e0e0e] rounded-t-3xl shadow-[0_-20px_60px_-10px_rgba(0,0,0,0.6)]",
               isLargePanel
                 ? "max-h-[90dvh] h-[90dvh]"
                 : "max-h-[60dvh]"
@@ -73,7 +73,7 @@ export function ActionPanel() {
           >
             {/* Handle bar */}
             <div className="flex justify-center pt-3 pb-2">
-              <div className="w-10 h-1 rounded-full bg-gray-300" />
+              <div className="w-10 h-1 rounded-full bg-white/20" />
             </div>
 
             {/* If fabChildren is set (e.g. BookingWizardContent), render it directly */}

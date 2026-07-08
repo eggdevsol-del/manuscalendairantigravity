@@ -53,12 +53,12 @@ export async function syncInventoryFromAdmin(merchantId: number, userId: string,
       }
 
       // Check pagination (Shopify uses Link headers for cursor-based pagination)
-      const linkHeader = response.headers.get('Link');
+      const linkHeader: string | null = response.headers.get('Link');
       nextPageUrl = null;
       if (linkHeader) {
-        const links = linkHeader.split(',').map(a => a.trim());
+        const links: string[] = linkHeader.split(',').map((a: string) => a.trim());
         for (const link of links) {
-          const match = link.match(/<([^>]+)>;\s*rel="next"/);
+          const match: RegExpMatchArray | null = link.match(/<([^>]+)>;\s*rel="next"/);
           if (match && match[1]) {
             nextPageUrl = match[1];
             break;

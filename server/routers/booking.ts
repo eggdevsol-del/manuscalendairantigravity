@@ -216,6 +216,12 @@ export const bookingRouter = router({
           message: "Conversation not found",
         });
 
+      if (!conversation.artistId || !conversation.clientId)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Conversation is missing required artist or client references",
+        });
+
       // Validate Work Hours
       const artistSettings = await db.getArtistSettings(conversation.artistId);
       if (artistSettings) {

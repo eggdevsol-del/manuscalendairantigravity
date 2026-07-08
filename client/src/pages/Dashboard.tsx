@@ -466,7 +466,7 @@ export default function Dashboard() {
                         <EmptyState
                           category={TITLES[activeIndex]}
                           onAction={
-                            activeCategory === "contacts"
+                            (activeCategory as string) === "contacts"
                               ? () => setShowChallengeSheet(true)
                               : undefined
                           }
@@ -485,7 +485,7 @@ export default function Dashboard() {
 
       {/* Register FAB Actions */}
       <DashboardFABActions
-        activeCategory={activeCategory}
+        activeCategory={activeCategory as any}
         onShowChallenge={handleShowChallenge}
         selectedTask={selectedTask}
         onExecuteAction={executeAction}

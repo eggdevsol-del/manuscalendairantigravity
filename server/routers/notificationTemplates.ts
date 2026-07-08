@@ -29,6 +29,7 @@ export const notificationTemplatesRouter = router({
       return db.createNotificationTemplate({
         userId: ctx.user.id,
         ...input,
+        enabled: input.enabled ? 1 : 0,
       });
     }),
   update: artistProcedure
@@ -54,8 +55,11 @@ export const notificationTemplatesRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const { id, ...updates } = input;
-      return db.updateNotificationTemplate(id, updates);
+      const { id, enabled, ...rest } = input;
+      return db.updateNotificationTemplate(id, {
+        ...rest,
+        ...(enabled !== undefined ? { enabled: enabled ? 1 : 0 } : {}),
+      });
     }),
   delete: artistProcedure.input(z.number()).mutation(async ({ input }) => {
     return db.deleteNotificationTemplate(input);

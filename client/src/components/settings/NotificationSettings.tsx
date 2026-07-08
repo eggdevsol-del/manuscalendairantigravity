@@ -349,8 +349,8 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                         <Label htmlFor="type">Notification Type</Label>
                         <Select
                             value={formData.templateType}
-                            onValueChange={(value: TemplateType) =>
-                                setFormData({ ...formData, templateType: value })
+                            onValueChange={(value: string) =>
+                                setFormData({ ...formData, templateType: value as TemplateType })
                             }
                         >
                             <SelectTrigger className="bg-secondary/50 border-border">

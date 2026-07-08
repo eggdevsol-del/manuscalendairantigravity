@@ -83,7 +83,7 @@ export default function PolicyManagement() {
       if (existingPolicy) {
         setTitle(existingPolicy.title);
         setContent(existingPolicy.content);
-        setEnabled(existingPolicy.enabled ?? true);
+        setEnabled(Boolean(existingPolicy.enabled ?? 1));
       } else {
         const defaults = policyDefaults[selectedType];
         setTitle(defaults.title);

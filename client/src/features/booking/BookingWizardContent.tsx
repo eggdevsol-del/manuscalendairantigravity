@@ -725,6 +725,7 @@ export function BookingWizardContent({
               </h3>
             </motion.div>
 
+            {!checkoutClientSecret && (
             <motion.div
               variants={fab.animation.item}
               className={cn(
@@ -765,6 +766,7 @@ export function BookingWizardContent({
                 </div>
               ))}
             </motion.div>
+            )}
 
             {hasDiscount && (
               <motion.div
@@ -781,7 +783,7 @@ export function BookingWizardContent({
               </motion.div>
             )}
 
-            {proposalDates.length > 0 && (
+            {proposalDates.length > 0 && !checkoutClientSecret && (
               <motion.div variants={fab.animation.item} className="space-y-1">
                 <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
                   Schedule
