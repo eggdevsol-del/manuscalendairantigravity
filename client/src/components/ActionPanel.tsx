@@ -64,7 +64,8 @@ export function ActionPanel() {
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className={cn(
-              "fixed bottom-0 left-0 right-0 z-50 bg-[#0e0e0e] rounded-t-3xl shadow-[0_-20px_60px_-10px_rgba(0,0,0,0.6)]",
+              "fixed bottom-0 left-0 right-0 z-50 bg-popover rounded-t-3xl",
+              "shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.08)] dark:shadow-[0_-20px_60px_-10px_rgba(0,0,0,0.5)]",
               isLargePanel
                 ? "max-h-[90dvh] h-[90dvh]"
                 : "max-h-[60dvh]"
@@ -73,7 +74,7 @@ export function ActionPanel() {
           >
             {/* Handle bar */}
             <div className="flex justify-center pt-3 pb-2">
-              <div className="w-10 h-1 rounded-full bg-white/20" />
+              <div className="w-10 h-1 rounded-full bg-foreground/20" />
             </div>
 
             {/* If fabChildren is set (e.g. BookingWizardContent), render it directly */}
@@ -94,7 +95,7 @@ export function ActionPanel() {
                       }
                     }}
                     className={cn(
-                      "w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-colors hover:bg-gray-50 active:scale-[0.98]",
+                      "w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-colors hover:bg-accent active:scale-[0.98]",
                       action.className
                     )}
                   >
@@ -120,7 +121,7 @@ export function ActionPanel() {
         className={cn(
           "fixed z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 active:scale-90",
           isFABOpen
-            ? "bg-gray-200 text-gray-600 rotate-45"
+            ? "bg-secondary text-secondary-foreground rotate-45"
             : "bg-primary text-white"
         )}
         style={{

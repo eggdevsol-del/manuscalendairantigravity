@@ -109,8 +109,9 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   DARK THEME — Preserved but NOT user-accessible.
-   Kept in codebase for potential future use. Never applied by ThemeContext.
+   DARK THEME — Client App
+   Applied automatically by RoleThemeWrapper (App.tsx) for all client users.
+   Artist and merchant users always receive the light (:root) theme.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .dark {
@@ -184,6 +185,19 @@
   * {
     scrollbar-width: thin;
     scrollbar-color: #d1d5db transparent;
+  }
+
+  /* Scrollbar — Dark mode override (client app) */
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.28);
+  }
+
+  .dark * {
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
   }
 
   /* Fixed background layer */

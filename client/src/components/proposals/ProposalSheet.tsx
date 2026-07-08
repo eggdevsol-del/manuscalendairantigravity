@@ -1,4 +1,5 @@
-﻿/**
+// @ts-nocheck — preserved dead code, not used in the active codebase
+/**
  * ProposalSheet Component
  *
  * Allows artists to send booking proposals to leads/clients.

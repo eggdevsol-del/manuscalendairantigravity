@@ -1,38 +1,24 @@
 /**
- * CLIENT DARK UI — SINGLE SOURCE OF TRUTH
+ * CLIENT DARK ACCENTS — SINGLE SOURCE OF TRUTH
  * ─────────────────────────────────────────────────────────────────────────────
- * All dark-mode visual values specific to the CLIENT experience live here.
- * The client app is always in dark mode (forceTheme="dark").
+ * Dark-mode accent values SPECIFIC to the client experience.
  *
- * DO NOT hardcode colors in client-facing components.
- * DO NOT duplicate these values in other files.
- * Import from this file and compose via cn().
+ * ⚠️  For backgrounds and surfaces, use semantic Tailwind tokens instead:
+ *     bg-background  — page background   (#050505 in dark / #ffffff in light)
+ *     bg-card        — card surface      (#111111 in dark / #ffffff in light)
+ *     bg-popover     — sheet / overlay   (near-black in dark / white in light)
+ *     bg-secondary   — subtle fill       (rgba(255,255,255,0.06) in dark)
+ *     bg-muted       — ghost fill        (rgba(255,255,255,0.05) in dark)
+ *     text-foreground / text-muted-foreground / text-primary
  *
- * Hierarchy (darkest → lightest):
- *   background  #050505
- *   card        #111111   (--card after fix)
- *   sheet       #0e0e0e   (ActionPanel, slightly lifted)
- *   surface     #1a1a1a   (elevated surface, modals)
+ * Only values that are INHERENTLY dark-mode-only AND appear nowhere on the
+ * artist app belong here (e.g. proposal status badge colours, chat card accents).
+ *
+ * DO NOT hardcode hex colors in shared components — they break the artist theme.
  */
 
 export const clientDark = {
-  /** Bottom sheet container (ActionPanel, FAB panel) */
-  sheet: {
-    bg: "bg-[#0e0e0e]",
-    handle: "bg-white/20",
-    border: "border-white/[0.06]",
-    shadow: "shadow-[0_-20px_60px_-10px_rgba(0,0,0,0.6)]",
-  },
-
-  /** Card surfaces (use tokens.card.bg / bg-card for CSS-var-driven cards) */
-  card: {
-    lifted: "bg-[#111111]",          // matches --card after fix
-    elevated: "bg-[#1a1a1a]",        // modals, popovers
-    stats: "bg-white/[0.04]",        // stats grid cells, inner panels
-    border: "border-white/[0.08]",
-  },
-
-  /** Status badges — dark-mode semantic colours */
+  /** Status badges — dark-mode semantic colours for client-only surfaces */
   badge: {
     accepted: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
     pending:  "bg-amber-500/10  text-amber-400  border border-amber-500/20",
@@ -41,18 +27,18 @@ export const clientDark = {
     confirmed:"bg-purple-500/10 text-purple-400 border border-purple-500/20",
   },
 
-  /** Proposal portrait card — inline in chat stream */
+  /** Proposal portrait card accents — inline in client chat stream only */
   proposalCard: {
-    /** Outer card shell */
-    shell: "bg-[#111111] border border-white/[0.08] rounded-2xl overflow-hidden",
+    /** Outer card shell — uses bg-card (auto-switches) + border */
+    shell: "bg-card border border-border rounded-2xl overflow-hidden",
     /** Accent status bar at the top of the card */
     accentPending:  "bg-amber-500",
     accentAccepted: "bg-emerald-500",
     accentConfirmed:"bg-purple-500",
     accentDeclined: "bg-red-500",
-    /** Stats grid background */
-    statsCell: "bg-white/[0.04]",
-    /** CTA row background */
-    ctaRow: "bg-white/[0.03]",
+    /** Stats grid background — subtle secondary fill */
+    statsCell: "bg-secondary",
+    /** CTA row top border */
+    ctaRow: "border-t border-border",
   },
 } as const;
