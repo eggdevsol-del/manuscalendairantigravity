@@ -3,11 +3,21 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   TATTOI Design System v1.0 — @theme inline
+   Maps CSS custom properties to Tailwind utility classes.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 @theme inline {
-  --radius-sm: calc(var(--radius) - 2px);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 2px);
-  --radius-xl: calc(var(--radius) + 6px);
+  /* Radius scale — fixed per TATTOI DS v1.0 spec */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* Standard Tailwind semantic mappings */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -40,115 +50,197 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* TATTOI DS v1.0 — extended utilities (bg-surface, bg-elevated, bg-header, etc.) */
+  --color-surface: var(--color-bg-surface);
+  --color-elevated: var(--color-bg-elevated);
+  --color-header: var(--color-bg-header);
+  --color-disabled: var(--color-text-disabled);
+  --color-accent-violet: var(--color-accent-violet);
+  --color-accent-dim: var(--color-accent-dim);
+  --color-gold: var(--color-gold);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-danger: var(--color-danger);
+  --color-divider: var(--color-divider);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   CLEAN WHITE THEME — Single Visual Identity
-   Pure white surfaces, zero glassmorphism, purple primary.
+   TATTOI Design System v1.0 — Light Theme (Artist / Merchant App)
+   Default for all non-client roles.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  --radius: 6px;
+  --radius: 12px;
 
-  /* Base surfaces — Pure White */
-  --background: #ffffff;
-  --foreground: #1a1a2e;
+  /* Surface hierarchy */
+  --background: #F5F5F7;
+  --foreground: #1A1A1E;
 
-  /* Cards — White (#ffffff, same as bottom nav) */
-  --card: #ffffff;
-  --card-foreground: #1a1a2e;
+  /* Card / list row surface */
+  --card: #FFFFFF;
+  --card-foreground: #1A1A1E;
 
-  /* Popover */
-  --popover: #ffffff;
-  --popover-foreground: #1a1a2e;
+  /* Elevated surface — modals, sheets, popovers */
+  --popover: #EBEBEF;
+  --popover-foreground: #1A1A1E;
 
-  /* Primary — Deep Violet */
-  --primary: oklch(0.55 0.15 280);
-  --primary-foreground: #ffffff;
+  /* Primary — Violet accent */
+  --primary: #7B5CF5;
+  --primary-foreground: #FFFFFF;
 
-  /* Secondary */
-  --secondary: #f5f5f7;
-  --secondary-foreground: #1a1a2e;
+  /* Secondary surface */
+  --secondary: #EBEBEF;
+  --secondary-foreground: #1A1A1E;
 
   /* Muted */
-  --muted: #f0f0f2;
-  --muted-foreground: #6b7280;
+  --muted: #EBEBEF;
+  --muted-foreground: #6A6A72;
 
-  /* Accent — Softer purple tint */
-  --accent: #f0eef5;
-  --accent-foreground: #1a1a2e;
+  /* Accent — subtle violet tint */
+  --accent: #F0EDFF;
+  --accent-foreground: #7B5CF5;
 
   /* Destructive */
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
 
   /* Borders & Inputs */
-  --border: #e5e5ea;
-  --input: #e5e5ea;
-  --ring: oklch(0.55 0.15 280);
+  --border: #E0E0E8;
+  --input: #FFFFFF;
+  --ring: #7B5CF5;
 
   /* Charts */
-  --chart-1: oklch(0.55 0.15 280);
-  --chart-2: oklch(0.5 0.2 280);
-  --chart-3: #6b7280;
-  --chart-4: #9ca3af;
-  --chart-5: #d1d5db;
+  --chart-1: #7B5CF5;
+  --chart-2: #6448D4;
+  --chart-3: #6A6A72;
+  --chart-4: #AEAEB8;
+  --chart-5: #E0E0E8;
 
   /* Sidebar */
-  --sidebar: #ffffff;
-  --sidebar-foreground: #1a1a2e;
-  --sidebar-primary: oklch(0.55 0.15 280);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f5f5f7;
-  --sidebar-accent-foreground: #1a1a2e;
-  --sidebar-border: #e5e5ea;
-  --sidebar-ring: oklch(0.55 0.15 280);
+  --sidebar: #F8F8FA;
+  --sidebar-foreground: #1A1A1E;
+  --sidebar-primary: #7B5CF5;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F0EDFF;
+  --sidebar-accent-foreground: #1A1A1E;
+  --sidebar-border: #E0E0E8;
+  --sidebar-ring: #7B5CF5;
 
-  /* Background — Flat white, no gradient */
-  --bg-gradient: #ffffff;
+  /* ── TATTOI DS v1.0 — Extended tokens ── */
+  --color-bg-base: #F5F5F7;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-elevated: #EBEBEF;
+  --color-bg-header: #F8F8FA;
+  --color-text-primary: #1A1A1E;
+  --color-text-secondary: #6A6A72;
+  --color-text-disabled: #AEAEB8;
+  --color-accent-violet: #7B5CF5;
+  --color-accent-dim: #F0EDFF;
+  --color-success: #22A65E;
+  --color-warning: #D97706;
+  --color-danger: #EF4444;
+  --color-gold: #B8924A;
+  --color-border: #E0E0E8;
+  --color-divider: #EDEDF2;
+
+  /* Spacing */
+  --page-margin: 16px;
+  --section-gap: 24px;
+  --row-height: 56px;
+  --row-padding-v: 14px;
+  --row-padding-h: 16px;
+
+  --bg-gradient: #F5F5F7;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   DARK THEME — Client App
+   TATTOI Design System v1.0 — Dark Theme (Client App)
    Applied automatically by RoleThemeWrapper (App.tsx) for all client users.
-   Artist and merchant users always receive the light (:root) theme.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .dark {
-  --background: #050505;
-  --foreground: #f0f0f0;
-  --card: #111111;
-  --card-foreground: #e5e5e5;
-  --popover: rgba(15, 15, 15, 0.97);
-  --popover-foreground: #f0f0f0;
-  --primary: #a855f7;
-  --primary-foreground: #ffffff;
-  --secondary: rgba(255, 255, 255, 0.06);
-  --secondary-foreground: #e5e5e5;
-  --muted: rgba(255, 255, 255, 0.05);
-  --muted-foreground: #888888;
-  --accent: #7c3aed;
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.12);
-  --input: rgba(255, 255, 255, 0.08);
-  --ring: rgba(168, 85, 247, 0.4);
-  --chart-1: #a855f7;
-  --chart-2: #7c3aed;
-  --chart-3: #6366f1;
-  --chart-4: #3b82f6;
-  --chart-5: #ec4899;
-  --sidebar: rgba(10, 10, 10, 0.8);
-  --sidebar-foreground: #f0f0f0;
-  --sidebar-primary: #a855f7;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(255, 255, 255, 0.08);
-  --sidebar-accent-foreground: #e5e5e5;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: rgba(168, 85, 247, 0.4);
-  --bg-gradient: #050505;
-  --radius: 0.75rem;
+  --radius: 12px;
+
+  /* Surface hierarchy */
+  --background: #0E0E10;
+  --foreground: #F0EDE8;
+
+  /* Card / list row surface */
+  --card: #1A1A1E;
+  --card-foreground: #F0EDE8;
+
+  /* Elevated surface — modals, sheets, popovers */
+  --popover: #222228;
+  --popover-foreground: #F0EDE8;
+
+  /* Primary — Violet accent */
+  --primary: #7B5CF5;
+  --primary-foreground: #FFFFFF;
+
+  /* Secondary surface (elevated over card) */
+  --secondary: #222228;
+  --secondary-foreground: #F0EDE8;
+
+  /* Muted */
+  --muted: #1A1A1E;
+  --muted-foreground: #8A8A92;
+
+  /* Accent — accent-dim for hover/active tints */
+  --accent: #2A1F4A;
+  --accent-foreground: #7B5CF5;
+
+  /* Destructive */
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+
+  /* Borders & Inputs */
+  --border: #2A2A30;
+  --input: #1A1A1E;
+  --ring: #7B5CF5;
+
+  /* Charts */
+  --chart-1: #7B5CF5;
+  --chart-2: #6448D4;
+  --chart-3: #8A8A92;
+  --chart-4: #4A4A52;
+  --chart-5: #2A2A30;
+
+  /* Sidebar */
+  --sidebar: #141416;
+  --sidebar-foreground: #F0EDE8;
+  --sidebar-primary: #7B5CF5;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #2A1F4A;
+  --sidebar-accent-foreground: #F0EDE8;
+  --sidebar-border: #2A2A30;
+  --sidebar-ring: #7B5CF5;
+
+  /* ── TATTOI DS v1.0 — Extended tokens ── */
+  --color-bg-base: #0E0E10;
+  --color-bg-surface: #1A1A1E;
+  --color-bg-elevated: #222228;
+  --color-bg-header: #141416;
+  --color-text-primary: #F0EDE8;
+  --color-text-secondary: #8A8A92;
+  --color-text-disabled: #4A4A52;
+  --color-accent-violet: #7B5CF5;
+  --color-accent-dim: #2A1F4A;
+  --color-success: #34C77B;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-gold: #C9A96E;
+  --color-border: #2A2A30;
+  --color-divider: #1E1E24;
+
+  /* Spacing */
+  --page-margin: 16px;
+  --section-gap: 24px;
+  --row-height: 56px;
+  --row-padding-v: 14px;
+  --row-padding-h: 16px;
+
+  --bg-gradient: #0E0E10;
 }
 
 @layer base {
@@ -161,7 +253,7 @@
     background: var(--background);
   }
 
-  /* Scrollbar — Light mode optimized */
+  /* Scrollbar — Light mode */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -172,32 +264,19 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #d1d5db;
+    background: var(--border);
     border-radius: 9999px;
     transition: background-color 0.2s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
+    background: var(--muted-foreground);
   }
 
-  /* Firefox support */
+  /* Firefox */
   * {
     scrollbar-width: thin;
-    scrollbar-color: #d1d5db transparent;
-  }
-
-  /* Scrollbar — Dark mode override (client app) */
-  .dark ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-  }
-
-  .dark ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.28);
-  }
-
-  .dark * {
-    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    scrollbar-color: var(--border) transparent;
   }
 
   /* Fixed background layer */
@@ -215,6 +294,7 @@
 
   body {
     @apply bg-transparent text-foreground;
+    font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
     min-height: 100%;
     min-height: 100dvh;
     overflow: hidden;
@@ -222,7 +302,6 @@
     -moz-osx-font-smoothing: grayscale;
     touch-action: manipulation;
     overscroll-behavior-y: none;
-    /* Extend to safe areas */
     padding-top: calc(env(safe-area-inset-top) + 6px);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
@@ -243,9 +322,6 @@
 
 @layer components {
 
-  /**
-   * Container utility — centers content with responsive padding.
-   */
   .container {
     width: 100%;
     margin-left: auto;
@@ -269,17 +345,6 @@
     }
   }
 
-  /* Card surfaces — Solid white, no glass */
-  .liquid-glass,
-  .glass-card,
-  .card,
-  .floating-nav {
-    background: #ffffff;
-    border: 1px solid #f0f0f2;
-    border-radius: 12px;
-    box-shadow: none;
-  }
-
   /* Mobile-first utilities */
   .mobile-container {
     @apply w-full mx-auto p-0;
@@ -297,7 +362,9 @@
   }
 
   .mobile-bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border;
+    @apply fixed bottom-0 left-0 right-0 z-50;
+    background: var(--color-bg-header);
+    border-top: 1px solid var(--border);
     padding-bottom: env(safe-area-inset-bottom);
   }
 
@@ -310,19 +377,16 @@
     scrollbar-width: none;
   }
 
-  /* Touch-friendly tap targets */
   .tap-target {
     @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
   }
 
-  /* Smooth scrolling for mobile */
   .mobile-scroll {
     @apply overflow-y-auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
 
-  /* Hide scrollbar but keep functionality */
   .hide-scrollbar {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -334,153 +398,61 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   CLEAN UI GLOBAL OVERRIDES
-   These replace the variant-clean.css overrides that were previously loaded
-   as a separate stylesheet. They kill glassmorphism, backdrop-blur, and
-   dark-mode visual artifacts across all components.
+   PERFORMANCE — Kill backdrop-filter globally
+   Per TATTOI DS v1.0: No blurs — elevation via background layering only.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Kill backdrop-filter globally */
 [class*="backdrop-blur"],
 .liquid-glass,
 .glass-card,
-.floating-nav,
-.mobile-header,
-.mobile-bottom-nav {
+.floating-nav {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
 }
 
-/* Bottom nav — prevent CSS overrides from interfering */
+/* Bottom nav — no blur, no shadow */
 #bottom-nav * {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
 }
 
-/* Sheets & overlays — solid white, no blur */
-[class*="rounded-t-"][class*="backdrop-blur"] {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-  background: #ffffff !important;
-}
-
-[class*="rounded-t-[2.5rem]"] {
-  background: #ffffff !important;
-}
-
-[class*="bg-background/80"][class*="backdrop-blur"] {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-  background: rgba(255, 255, 255, 0.85) !important;
-}
-
-/* Sheet gradient highlights — hide */
-[class*="bg-gradient-to-l"][class*="from-white"] {
-  opacity: 0 !important;
-}
-[class*="bg-gradient-to-r"][class*="via-white"] {
-  opacity: 0 !important;
-}
-
-/* Sheet headers with backdrop blur */
-[class*="bg-secondary/50"][class*="backdrop-blur"] {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-  background: #f5f5f7 !important;
-}
-
-/* Cards — solid white */
-[class*="bg-card"] {
-  background: #ffffff !important;
-}
-
-/* Transparent cards (dark mode artifacts) — make white */
-[class*="bg-transparent"][class*="rounded-t-"] {
-  background: #ffffff !important;
-}
-
-/* Primary buttons — clean shadow */
-[class*="bg-primary"] {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
-}
-[class*="bg-primary"]:hover {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Destructive buttons — clean */
-[class*="bg-destructive"] {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
-}
-
-/* Secondary surfaces */
-[class*="bg-secondary"]:not([class*="bg-secondary/"]) {
-  background-color: #f5f5f7 !important;
-}
-
-/* Kill inset shadows (glass effect accents) */
+/* Inset shadows (glass effect accents) — removed per DS spec */
 [class*="shadow-[inset"] {
   box-shadow: none !important;
 }
 
-/* Badge ring color — white */
-[class*="ring-background"] {
-  --tw-ring-color: #ffffff !important;
-}
+/* ═══════════════════════════════════════════════════════════════════════════
+   TATTOI DS v1.0 — Motion tokens
+   --duration-fast: 150ms | --duration-base: 250ms | --duration-slow: 400ms
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Dashboard/widget shadows — clean */
-[class*="shadow-xl"] {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
-  border: 1px solid #e5e5ea !important;
-}
-
-/* Toast notifications — clean */
-[data-sonner-toaster] [data-sonner-toast] {
-  background: #ffffff !important;
-  border: 1px solid #e5e5ea !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
-}
-
-/* Amber/gold FAB accent — replace with purple primary */
-[class*="bg-[#E09F3E]"] {
-  background: oklch(0.55 0.15 280) !important;
-}
-
-/* Force dark-mode Tailwind text overrides back to light */
-[class*="dark:text-white"] {
-  color: #1a1a2e !important;
-}
-[class*="dark:text-muted-foreground"] {
-  color: #6b7280 !important;
-}
-[class*="noir:text-white"] {
-  color: #1a1a2e !important;
-}
-
-/* Force dark-mode bg overrides */
-[class*="dark:bg-slate-950"] {
-  background-color: #ffffff !important;
-}
-[class*="dark:bg-secondary"] {
-  background-color: #f5f5f7 !important;
-}
-
-/* Dark mode shadows/glows — kill */
-[class*="dark:shadow-"] {
-  box-shadow: none !important;
-}
-[class*="dark:drop-shadow-"],
-[class*="noir:drop-shadow-"] {
-  filter: none !important;
+:root {
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ARTIST CARDS — Preserve Dark Card Button Visibility
-   Artist cards use bg-[#111] with banner images. These overrides ensure
-   action buttons stay visible on dark card backgrounds.
+   TATTOI DS v1.0 — Toast overrides
+   Toasts use popover surface (elevated) so they appear above base bg.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Artist card action buttons — keep visible on dark bg */
+[data-sonner-toaster] [data-sonner-toast] {
+  background: var(--popover) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--foreground) !important;
+  box-shadow: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ARTIST PORTFOLIO CARDS — Dark card with imagery
+   Artist cards use bg-[#111] with banner images. Ensure action buttons
+   remain legible on dark card backgrounds within the light artist app.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 [class*="bg-[#111]"] [class*="bg-secondary"],
 [class*="bg-[#111]"] [class*="bg-secondary/50"] {
   background-color: rgba(255, 255, 255, 0.15) !important;
@@ -502,10 +474,4 @@
 
 [class*="bg-[#111]"] svg {
   color: rgba(255, 255, 255, 0.9) !important;
-}
-
-/* ═══ SETTINGS PAGE OVERRIDE ═══ */
-.dark .settings-card-override {
-  background-color: #111111 !important;
-  color: #e5e5e5;
 }

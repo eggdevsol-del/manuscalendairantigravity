@@ -5,39 +5,39 @@ export const tokens = {
     "fixed inset-0 w-full h-[100dvh] bg-[radial-gradient(circle_at_top_right,rgba(23,44,104,0.4),rgba(2,5,17,1)_60%)]",
 
   // 2. Sheets
-  // Main sheet (Dashboard, Calendar) - extends past bottom
+  // Main sheet (Dashboard, Calendar)
   sheetMain: {
     container:
-      "flex-1 z-20 flex flex-col bg-transparent backdrop-blur-[32px] rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative",
+      "flex-1 z-20 flex flex-col bg-popover rounded-t-[16px] overflow-hidden relative",
     highlight:
-      "absolute top-0 inset-x-0 h-px bg-gradient-to-l from-white/20 to-transparent opacity-50 pointer-events-none",
+      "hidden",
     content: "flex-1 relative w-full overflow-hidden",
   },
 
   // Secondary sheet (Modals, Booking Wizard)
   sheetSecondary: {
-    overlay: "fixed inset-0 z-[100] bg-background/80 backdrop-blur-md",
+    overlay: "fixed inset-0 z-[100] bg-background/80",
     content:
       "fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col gap-0 overflow-hidden",
     container:
-      "flex-1 z-20 flex flex-col bg-transparent rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] overflow-hidden relative will-change-transform",
+      "flex-1 z-20 flex flex-col bg-popover rounded-t-[16px] overflow-hidden relative will-change-transform",
     glass:
-      "bg-transparent rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)]",
+      "bg-popover rounded-t-[16px]",
     highlight:
-      "absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent",
+      "hidden",
     header:
-      "shrink-0 pt-6 pb-4 px-6 border-b border-border bg-secondary/50 backdrop-blur-md z-10 relative",
+      "shrink-0 pt-6 pb-4 px-4 border-b border-border bg-popover z-10 relative",
   },
 
   // 3. Cards
-  // Global App Card (Dashboard, Settings, etc.) - Rectangular SSOT (v1.0.319)
+  // TATTOI DS v1.0 — surface token (bg-card = #1A1A1E dark / #FFFFFF light)
   card: {
-    base: "group relative overflow-hidden transition-all duration-300 border border-border/20 dark:border dark:border-border/40 rounded-[6px]", // Global 6px radius, subtle border in both modes
-    bg: "bg-card text-card-foreground hover:bg-card/90", // Proper card surface — #fff in light, #111 in dark
+    base: "group relative overflow-hidden transition-all duration-[150ms] border border-border/30 rounded-[12px]", // radius-md = 12px
+    bg: "bg-card text-card-foreground hover:bg-card/90", // bg-surface in both themes
     bgAccent:
       "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
     interactive: "cursor-pointer active:scale-[0.98]",
-    leftAccent: "absolute left-0 top-0 bottom-0 w-2", // Shared left accent style
+    leftAccent: "absolute left-0 top-0 bottom-0 w-[3px]", // Shared left accent style
     glow: {
       high: { line: "bg-red-600", gradient: "from-red-600/20" },
       medium: { line: "bg-orange-500", gradient: "from-orange-500/20" },
@@ -46,57 +46,42 @@ export const tokens = {
     },
   },
 
-  // 4. Buttons
+  // 4. Buttons — TATTOI DS v1.0: 52px primary, 12px radius, violet accent
   button: {
     primary:
-      "shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-14 px-6 rounded-[6px] text-base font-semibold transition-all active:scale-[0.98]",
-    hero: "w-full h-14 rounded-[6px] font-bold text-base shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-all active:scale-[0.97]",
+      "bg-primary hover:bg-primary/90 active:bg-[#6448D4] text-primary-foreground h-[52px] px-6 rounded-[12px] text-[15px] font-semibold tracking-tight transition-all duration-[150ms] active:scale-[0.98] w-full",
+    hero: "w-full h-[52px] rounded-[12px] font-semibold text-[15px] tracking-tight bg-primary hover:bg-primary/90 active:bg-[#6448D4] text-primary-foreground flex items-center justify-center transition-all duration-[150ms] active:scale-[0.98]",
     secondary:
-      "bg-secondary hover:bg-secondary/80 text-secondary-foreground h-14 px-6 rounded-[6px] text-base font-semibold transition-all active:scale-[0.98]",
+      "bg-secondary hover:bg-secondary/80 text-secondary-foreground h-[52px] px-6 rounded-[12px] text-[15px] font-semibold transition-all duration-[150ms] active:scale-[0.98]",
     destructive:
-      "bg-destructive hover:bg-destructive/90 text-destructive-foreground h-14 px-6 rounded-[6px] text-base font-semibold transition-all active:scale-[0.98]",
+      "bg-destructive hover:bg-destructive/90 text-destructive-foreground h-[52px] px-6 rounded-[12px] text-[15px] font-semibold transition-all duration-[150ms] active:scale-[0.98]",
     outline:
-      "border border-border bg-transparent hover:bg-secondary text-foreground h-14 px-4 rounded-[6px] text-sm font-medium transition-all active:scale-[0.98]",
+      "border border-border bg-transparent hover:bg-secondary text-foreground h-[52px] px-4 rounded-[12px] text-[15px] font-medium transition-all duration-[150ms] active:scale-[0.98]",
     ghost:
-      "text-muted-foreground hover:text-foreground hover:bg-secondary rounded-[6px] transition-colors",
+      "text-muted-foreground hover:text-foreground hover:bg-secondary rounded-[12px] transition-colors duration-[150ms]",
     link: "text-primary underline-offset-4 hover:underline px-0 transition-opacity active:opacity-70",
-    icon: "rounded-[6px] bg-secondary hover:bg-secondary/80 text-foreground w-14 h-14 flex items-center justify-center transition-all active:scale-90",
-    auth: "w-full h-14 rounded-[4px] font-bold text-base shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-all active:scale-[0.97]",
-    authSecondary: "w-full h-14 rounded-[4px] border border-border font-bold text-base bg-secondary hover:bg-secondary/80 text-secondary-foreground flex items-center justify-center transition-all active:scale-[0.98]",
+    icon: "rounded-[12px] bg-secondary hover:bg-secondary/80 text-foreground w-[52px] h-[52px] flex items-center justify-center transition-all duration-[150ms] active:scale-90",
+    auth: "w-full h-[52px] rounded-[12px] font-semibold text-[15px] tracking-tight bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-all duration-[150ms] active:scale-[0.98]",
+    authSecondary: "w-full h-[52px] rounded-[12px] border border-border font-semibold text-[15px] bg-secondary hover:bg-secondary/80 text-secondary-foreground flex items-center justify-center transition-all duration-[150ms] active:scale-[0.98]",
   },
 
-  // 5. FAB Menu (Floating Action Button Menu) — SSOT for all FAB menus
+  // 5. FAB Menu — TATTOI DS v1.0: violet primary accent only
   fab: {
-    // Outer container positioning
     container:
       "fixed bottom-[176px] right-5 z-[55] flex flex-col items-end gap-3",
-
-    // The expanding glassmorphism panel — fixed dimensions, scroll if needed
     panel:
-      "mb-2 p-4 rounded-[2rem] border border-border shadow-2xl flex flex-col items-end gap-4 bg-[color-mix(in_srgb,var(--background)_95%,white)]/[0.85] dark:bg-[color-mix(in_srgb,var(--background)_95%,white)]/[0.85] backdrop-blur-[32px] w-[220px] max-h-[50vh] overflow-y-auto",
-
-    // Individual menu item row (label + button)
+      "mb-2 p-4 rounded-[16px] border border-border shadow-none flex flex-col items-end gap-4 bg-popover w-[220px] max-h-[50vh] overflow-y-auto",
     itemRow: "flex items-center justify-end gap-3 w-full",
-
-    // Menu item label text
     itemLabel: "text-xs font-medium text-muted-foreground",
-
-    // Menu item icon button (default)
     itemButton:
-      "h-10 w-10 rounded-full shadow-lg border border-border bg-card hover:bg-secondary flex items-center justify-center transition-all active:scale-95 text-foreground",
-
-    // Menu item icon button (highlighted / primary)
+      "h-10 w-10 rounded-full border border-border bg-card hover:bg-secondary flex items-center justify-center transition-all duration-[150ms] active:scale-95 text-foreground",
     itemButtonHighlight:
-      "h-10 w-10 rounded-full shadow-lg border border-border bg-[#E09F3E]/80 text-white hover:bg-[#C98B32]/80 flex items-center justify-center transition-all active:scale-95",
-
-    // Menu item button icon size
+      "h-10 w-10 rounded-full border border-primary/30 bg-primary text-white hover:bg-primary/90 flex items-center justify-center transition-all duration-[150ms] active:scale-95",
     itemIconSize: "h-4 w-4",
-
-    // Main toggle FAB button
     toggle:
-      "h-14 w-14 rounded-full shadow-2xl flex items-center justify-center transition-colors border border-border",
-    toggleOpen: "bg-foreground text-background dark:bg-foreground dark:text-background",
-    toggleClosed: "bg-[#E09F3E]/90 text-white",
+      "h-14 w-14 rounded-full flex items-center justify-center transition-colors duration-[150ms] border border-border",
+    toggleOpen: "bg-foreground text-background",
+    toggleClosed: "bg-primary text-white",
     toggleIconSize: "h-6 w-6",
 
     // Animation variants (used as framer-motion presets)
@@ -119,11 +104,11 @@ export const tokens = {
     },
   },
 
-  // 5b. Inputs (Text Fields)
+  // 5b. Inputs — TATTOI DS v1.0: 48px height, 12px radius, bg-card surface
   input: {
-    base: "flex w-full min-w-0 border bg-transparent px-4 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground",
-    default: "h-14 rounded-[6px]",
-    hero: "h-14 rounded-[6px] px-5 text-base border-border bg-transparent hover:bg-secondary focus-visible:border-primary/50 text-foreground",
+    base: "flex w-full min-w-0 border bg-card px-4 py-1 text-[15px] transition-[color,box-shadow] duration-[150ms] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm placeholder:text-disabled focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/15 aria-invalid:ring-destructive/20 aria-invalid:border-destructive file:text-foreground selection:bg-primary selection:text-primary-foreground",
+    default: "h-[48px] rounded-[12px]",
+    hero: "h-[48px] rounded-[12px] px-5 text-[15px] border-border bg-card hover:bg-card/90 focus-visible:border-primary text-foreground",
   },
 
   // 5c. Auth Flow Components
@@ -137,41 +122,52 @@ export const tokens = {
     toggleButtonActive: "flex-1 flex items-center justify-center text-sm font-bold rounded-[4px] transition-all bg-background text-foreground shadow-sm",
   },
 
-  // 6. Typography
+  // 6. Typography — TATTOI DS v1.0
   header: {
-    pageTitle: "text-2xl font-bold text-foreground",
-    pageSubtitle: "ml-2 text-sm font-medium text-muted-foreground/60",
+    pageTitle: "text-[24px] font-bold leading-[1.2] text-foreground tracking-tight",
+    pageSubtitle: "ml-2 text-[14px] font-normal text-muted-foreground",
     sectionTitle:
-      "text-xs font-bold text-muted-foreground tracking-widest uppercase",
-    sheetTitle: "text-2xl font-bold text-foreground",
-    sheetSubtitle: "text-muted-foreground mt-1",
-    contextTitle: "text-4xl font-light text-foreground/90 tracking-tight",
-    contextSubtitle: "text-muted-foreground text-lg font-medium mt-1",
+      "text-[11px] font-[500] text-muted-foreground tracking-[0.08em] uppercase",
+    sheetTitle: "text-[24px] font-bold leading-[1.2] text-foreground tracking-tight",
+    sheetSubtitle: "text-[14px] text-muted-foreground mt-1",
+    contextTitle: "text-[24px] font-bold text-foreground tracking-tight",
+    contextSubtitle: "text-muted-foreground text-[14px] font-normal mt-1",
   },
 
-  // 6. Layout
+  // 7. Layout — TATTOI DS v1.0 spacing
   spacing: {
-    pagePadding: "px-6 py-4",
-    sheetPadding: "px-6 pt-6 pb-2",
+    pagePadding: "px-4 py-4",
+    sheetPadding: "px-4 pt-6 pb-2",
     cardPadding: "p-4",
-    containerPadding: "px-6 pb-8",
+    containerPadding: "px-4 pb-8",
   },
 
-  // 7. Page Shell Logic
+  // 8. Page Shell
   shell: {
-    base: "fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden bg-transparent",
-    header: "px-6 py-4 z-10 shrink-0 flex items-center bg-transparent",
+    base: "fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden bg-background",
+    header: "px-4 py-4 z-10 shrink-0 flex items-center bg-[var(--color-bg-header)]",
   },
 
-  // 8. Navigation Actions
+  // 9. Navigation row — TATTOI DS v1.0: min-height 56px
+  row: {
+    base: "flex items-center gap-3 px-4 bg-card text-foreground transition-colors duration-[150ms] cursor-pointer hover:bg-secondary/50 active:bg-secondary",
+    height: "min-h-[56px] py-[14px]",
+    iconContainer: "w-9 h-9 rounded-[8px] flex items-center justify-center shrink-0",
+    label: "text-[15px] font-semibold text-foreground leading-[1.3]",
+    description: "text-[12px] text-muted-foreground mt-[2px]",
+    chevron: "ml-auto text-disabled",
+    divider: "border-t border-divider mx-0",
+  },
+
+  // 10. Navigation Actions — violet accent for active state
   navAction: {
-    base: "flex flex-col items-center justify-center h-full py-2 px-4 gap-1 min-w-[72px] shrink-0 bg-transparent border-0 rounded-xl transition-all duration-150 touch-none select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+    base: "flex flex-col items-center justify-center h-full py-2 px-4 gap-1 min-w-[72px] shrink-0 bg-transparent border-0 rounded-[12px] transition-all duration-[150ms] touch-none select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
     pressed: "scale-90 opacity-70",
-    idle: "opacity-90 hover:opacity-100 hover:bg-secondary dark:hover:bg-secondary",
+    idle: "opacity-90 hover:opacity-100 hover:bg-secondary",
     icon: {
-      primary: "text-blue-500 dark:text-blue-400 fill-current/10",
-      accent: "text-amber-500 dark:text-amber-400 fill-current/10",
-      idle: "text-foreground/80",
+      primary: "text-primary",
+      accent: "text-primary",
+      idle: "text-muted-foreground",
     },
   },
 
