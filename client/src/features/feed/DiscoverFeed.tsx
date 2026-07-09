@@ -75,7 +75,7 @@ export default function DiscoverFeed() {
   if (isLoading) {
     return (
       <div className="discover-feed-loading">
-        <Loader2 className="animate-spin" size={32} color="#666" />
+        <Loader2 className="animate-spin text-muted-foreground" size={32} />
       </div>
     );
   }
@@ -121,7 +121,7 @@ export default function DiscoverFeed() {
       {/* Infinite scroll trigger */}
       <div ref={loadMoreRef} className="discover-feed-load-more">
         {isFetchingNextPage && (
-          <Loader2 className="animate-spin" size={24} color="#666" />
+          <Loader2 className="animate-spin text-muted-foreground" size={24} />
         )}
       </div>
     </div>

@@ -150,7 +150,7 @@ export function PaymentSettings({ onBack }: PaymentSettingsProps) {
             <Button
               onClick={handleCreateAccount}
               disabled={connectStripe.isPending}
-              className="w-full mt-4 bg-[#E09F3E]/75 text-white hover:bg-[#E09F3E]"
+              className="w-full mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Setup Bank Account
             </Button>

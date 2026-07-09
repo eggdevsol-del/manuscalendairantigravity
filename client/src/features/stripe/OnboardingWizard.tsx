@@ -92,7 +92,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     }
   };
 
-  const inputClass = "w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#E09F3E]/50 focus:ring-1 focus:ring-[#E09F3E]/30 transition-colors text-sm";
+  const inputClass = "w-full px-4 py-3 rounded-[12px] bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors text-sm";
   const labelClass = "block text-xs font-medium text-muted-foreground mb-1.5";
   const selectClass = `${inputClass} appearance-none`;
 
@@ -102,8 +102,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       <div className="flex items-center gap-1 px-1">
         {STEPS.map((s, i) => (
           <div key={s} className="flex-1 flex flex-col items-center gap-1.5">
-            <div className={`h-1.5 w-full rounded-full transition-colors ${i <= step ? "bg-[#E09F3E]" : "bg-secondary/50"}`} />
-            <span className={`text-[10px] font-medium transition-colors ${i <= step ? "text-[#E09F3E]" : "text-muted-foreground/40"}`}>{STEP_LABELS[i]}</span>
+            <div className={`h-1.5 w-full rounded-full transition-colors ${i <= step ? "bg-primary" : "bg-secondary/50"}`} />
+            <span className={`text-[10px] font-medium transition-colors ${i <= step ? "text-primary" : "text-muted-foreground/40"}`}>{STEP_LABELS[i]}</span>
           </div>
         ))}
       </div>
@@ -187,7 +187,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-foreground">ID Verification</h2>
             <p className="text-xs text-muted-foreground">Upload a photo of your driver's licence or passport. This is required to enable payouts.</p>
-            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-border rounded-2xl cursor-pointer hover:border-[#E09F3E]/30 transition-colors bg-secondary/50">
+            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-border rounded-[12px] cursor-pointer hover:border-primary/30 transition-colors bg-secondary/50">
               {idFile ? (
                 <div className="flex flex-col items-center gap-2">
                   <Check className="w-8 h-8 text-emerald-400" />
@@ -232,7 +232,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             <div className="bg-secondary/50 rounded-xl p-3 mt-4">
               <p className="text-[11px] text-muted-foreground">
                 By submitting, you agree to Stripe's{" "}
-                <a href="https://stripe.com/connect-account/legal" target="_blank" rel="noreferrer" className="text-[#E09F3E] underline">Connected Account Agreement</a>{" "}
+                <a href="https://stripe.com/connect-account/legal" target="_blank" rel="noreferrer" className="text-primary underline">Connected Account Agreement</a>{" "}
                 and authorize Tattoi to process payments on your behalf.
               </p>
             </div>
@@ -248,7 +248,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           </Button>
         )}
         {step < STEPS.length - 1 ? (
-          <Button onClick={() => setStep(s => s + 1)} disabled={!canNext()} className="flex-1 gap-2 bg-[#E09F3E]/75 text-white hover:bg-[#E09F3E]">
+          <Button onClick={() => setStep(s => s + 1)} disabled={!canNext()} className="flex-1 gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
             Next <ChevronRight className="w-4 h-4" />
           </Button>
         ) : (

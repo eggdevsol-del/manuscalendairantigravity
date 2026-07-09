@@ -80,7 +80,7 @@ export default function DiscoverFeedContent() {
   if (isLoading) {
     return (
       <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-        <Loader2 className="animate-spin" size={32} color="#666" />
+        <Loader2 className="animate-spin text-muted-foreground" size={32} />
       </div>
     );
   }
@@ -121,7 +121,7 @@ export default function DiscoverFeedContent() {
       {/* Infinite scroll trigger */}
       <div ref={loadMoreRef} className="discover-feed-load-more">
         {isFetchingNextPage && (
-          <Loader2 className="animate-spin" size={24} color="#666" />
+          <Loader2 className="animate-spin text-muted-foreground" size={24} />
         )}
       </div>
     </>

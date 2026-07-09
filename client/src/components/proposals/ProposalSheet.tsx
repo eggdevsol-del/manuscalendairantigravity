@@ -1,4 +1,4 @@
-// @ts-nocheck — preserved dead code, not used in the active codebase
+﻿// @ts-nocheck — preserved dead code, not used in the active codebase
 /**
  * ProposalSheet Component
  *
@@ -145,7 +145,7 @@ export function ProposalSheet({
             {dateOptions.length < 3 && (
               <button
                 onClick={addDateOption}
-                className="text-[#7C5CFC] text-sm flex items-center gap-1"
+                className="text-[var(--color-accent-violet)] text-sm flex items-center gap-1"
               >
                 <Plus className="w-4 h-4" />
                 Add Option
@@ -225,7 +225,7 @@ export function ProposalSheet({
                 onClick={() => setDepositType("fixed")}
                 className={`flex-1 py-2 rounded-xl text-sm transition-colors ${
                   depositType === "fixed"
-                    ? "bg-[#7C5CFC] text-white"
+                    ? "bg-[var(--color-accent-violet)] text-white"
                     : "bg-secondary/50 text-muted-foreground"
                 }`}
               >
@@ -235,7 +235,7 @@ export function ProposalSheet({
                 onClick={() => setDepositType("percentage")}
                 className={`flex-1 py-2 rounded-xl text-sm transition-colors ${
                   depositType === "percentage"
-                    ? "bg-[#7C5CFC] text-white"
+                    ? "bg-[var(--color-accent-violet)] text-white"
                     : "bg-secondary/50 text-muted-foreground"
                 }`}
               >
@@ -294,7 +294,7 @@ export function ProposalSheet({
         <button
           onClick={handleSend}
           disabled={isSending}
-          className="w-full bg-[#7C5CFC] text-white py-4 rounded-2xl font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+          className="w-full bg-[var(--color-accent-violet)] text-white py-4 rounded-2xl font-medium flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {isSending ? (
             <LoadingState size="sm" />

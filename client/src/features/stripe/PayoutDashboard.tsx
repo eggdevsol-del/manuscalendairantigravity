@@ -51,7 +51,7 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
 
   const formatCents = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
-  const selectClass = "w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border text-foreground text-sm focus:outline-none focus:border-[#E09F3E]/50 appearance-none";
+  const selectClass = "w-full px-4 py-3 rounded-[12px] bg-secondary/50 border border-border text-foreground text-sm focus:outline-none focus:border-primary/50 appearance-none";
 
   return (
     <div className="space-y-5">
@@ -136,7 +136,7 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
                 </select>
               </div>
             )}
-            <Button onClick={handleSaveSchedule} disabled={updateSchedule.isPending} className="w-full bg-[#E09F3E]/75 text-white hover:bg-[#E09F3E]">
+            <Button onClick={handleSaveSchedule} disabled={updateSchedule.isPending} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
               {updateSchedule.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Schedule"}
             </Button>
           </div>

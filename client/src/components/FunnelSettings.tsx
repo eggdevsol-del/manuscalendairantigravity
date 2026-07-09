@@ -209,11 +209,11 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
               </div>
               <button
                 onClick={() => setFunnelEnabled(!funnelEnabled)}
-                className={`w-12 h-7 rounded-full transition-colors relative ${funnelEnabled ? "bg-[#7C5CFC]" : "bg-secondary/50"
+                className={`w-12 h-7 rounded-full transition-colors relative ${funnelEnabled ? "bg-primary" : "bg-secondary/50"
                   }`}
               >
                 <div
-                  className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-transform ${funnelEnabled ? "left-6" : "left-1"
+                  className={`absolute top-1 w-5 h-5 rounded-full bg-background transition-transform ${funnelEnabled ? "left-6" : "left-1"
                     }`}
                 />
               </button>
@@ -222,7 +222,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
 
           {/* Your Link */}
           <div>
-            <h3 className="text-white font-medium mb-3 flex items-center gap-2">
+            <h3 className="text-foreground font-medium mb-3 flex items-center gap-2">
               <Link2 className="w-4 h-4" />
               Your Link
             </h3>
@@ -244,7 +244,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
                       onChange={e => handleSlugChange(e.target.value)}
                       onBlur={handleCheckSlug}
                       placeholder="yourname"
-                      className="flex-1 bg-transparent border-0 py-3 pr-3 text-white placeholder:text-muted-foreground focus:outline-none"
+                      className="flex-1 bg-transparent border-0 py-3 pr-3 text-foreground placeholder:text-muted-foreground focus:outline-none"
                     />
                   </div>
                 </div>
@@ -265,7 +265,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
               {slug && !slugError && (
                 <div className="bg-secondary/50 rounded-xl p-3">
                   <p className="text-muted-foreground text-xs mb-1">Your booking link:</p>
-                  <p className="text-white font-mono text-sm break-all">
+                  <p className="text-foreground font-mono text-sm break-all">
                     {funnelUrl}
                   </p>
                 </div>
@@ -276,7 +276,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
                 <button
                   onClick={handleCopy}
                   disabled={!slug || !!slugError}
-                  className="flex-1 bg-secondary/50 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 bg-secondary/50 text-foreground py-3 rounded-[12px] font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {copied ? (
                     <Check className="w-4 h-4" />
@@ -288,7 +288,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
                 <button
                   onClick={handleShare}
                   disabled={!slug || !!slugError}
-                  className="flex-1 bg-secondary/50 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 bg-secondary/50 text-foreground py-3 rounded-[12px] font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <Share2 className="w-4 h-4" />
                   Share
@@ -296,7 +296,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
                 <button
                   onClick={handlePreview}
                   disabled={!slug || !!slugError}
-                  className="bg-secondary/50 text-white p-3 rounded-xl disabled:opacity-50"
+                  className="bg-secondary/50 text-foreground p-3 rounded-[12px] disabled:opacity-50"
                 >
                   <ExternalLink className="w-5 h-5" />
                 </button>
@@ -306,13 +306,13 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
 
           {/* Funnel Theme Toggle */}
           <div>
-            <h3 className="text-white font-medium mb-3">Booking Link Theme</h3>
+            <h3 className="text-foreground font-medium mb-3">Booking Link Theme</h3>
             <div className="bg-secondary/50 rounded-2xl p-2 flex gap-2">
               <button
                 onClick={() => setFunnelTheme("light")}
                 className={`flex-1 py-3 px-4 rounded-xl font-medium transition-colors ${funnelTheme === "light"
                   ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:text-white hover:bg-secondary/50"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                   }`}
               >
                 Light Theme
@@ -320,8 +320,8 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
               <button
                 onClick={() => setFunnelTheme("dark")}
                 className={`flex-1 py-3 px-4 rounded-xl font-medium transition-colors ${funnelTheme === "dark"
-                  ? "bg-[#1E1E1E] text-white border border-border"
-                  : "text-muted-foreground hover:text-white hover:bg-secondary/50"
+                  ? "bg-card text-foreground border border-border"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                   }`}
               >
                 Dark Theme
@@ -331,7 +331,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
 
           {/* Banner Image Upload */}
           <div>
-            <h3 className="text-white font-medium mb-3">Header Banner Image</h3>
+            <h3 className="text-foreground font-medium mb-3">Header Banner Image</h3>
             <div className="bg-secondary/50 rounded-2xl p-4">
               <ImageUpload
                 value={funnelBannerUrl || ""}
@@ -347,8 +347,8 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
           </div>
 
           {/* Tips */}
-          <div className="bg-[#7C5CFC]/10 rounded-2xl p-4">
-            <h4 className="text-[#7C5CFC] font-medium mb-2">
+          <div className="bg-primary/10 rounded-[12px] p-4">
+            <h4 className="text-primary font-medium mb-2">
               Tips for your link
             </h4>
             <ul className="text-muted-foreground text-sm space-y-2">
@@ -364,7 +364,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
             <button
               onClick={handleSave}
               disabled={updateSettings.isPending || !!slugError}
-              className="w-full bg-[#7C5CFC] text-white py-4 rounded-2xl font-medium disabled:opacity-50"
+              className="w-full bg-primary text-primary-foreground py-4 rounded-[12px] font-medium disabled:opacity-50"
             >
               {updateSettings.isPending ? "Saving..." : "Save Changes"}
             </button>

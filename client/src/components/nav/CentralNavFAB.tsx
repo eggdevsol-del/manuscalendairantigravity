@@ -10,6 +10,8 @@ import {
   LogOut,
   Camera,
   Clock,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { FABMenu, FABMenuItem } from "@/ui/FABMenu";
@@ -18,6 +20,7 @@ import { useBottomNav } from "@/contexts/BottomNavContext";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // Client-role settings panels (still served from the FAB for clients)
 import { ProfileSettings } from "../settings/ProfileSettings";
@@ -75,6 +78,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
     useBottomNav();
 
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const isArtist = user?.role === "artist" || user?.role === "admin";
   const isClient = user?.role === "client";
@@ -231,6 +235,13 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
 
     return [
       {
+        id: "theme-toggle",
+        label: theme === "dark" ? "Light Mode" : "Dark Mode",
+        icon: theme === "dark" ? Sun : Moon,
+        onClick: () => toggleTheme(),
+        closeOnClick: false,
+      },
+      {
         id: "copy-link",
         label: isArtist ? "Booking Link" : "Referral Link",
         icon: Link,
@@ -238,7 +249,7 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
       },
       settingsItem,
     ];
-  }, [isArtist, handleCopyLink, handleClientView, setFABOpen, setLocation]);
+  }, [isArtist, theme, toggleTheme, handleCopyLink, handleClientView, setFABOpen, setLocation]);
 
   // Merge page-registered contextual actions with permanent items
   const allItems = useMemo(

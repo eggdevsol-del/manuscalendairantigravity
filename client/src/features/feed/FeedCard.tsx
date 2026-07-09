@@ -116,7 +116,7 @@ export function FeedCard({ card, onLike, onShare, onArtistTap }: FeedCardProps) 
               exit={{ scale: 1.5, opacity: 0 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
             >
-              <Heart size={80} fill="#fff" color="#fff" />
+              <Heart size={80} fill="white" color="white" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -131,19 +131,20 @@ export function FeedCard({ card, onLike, onShare, onArtistTap }: FeedCardProps) 
           >
             <Heart
               size={24}
-              fill={liked ? "#ef4444" : "none"}
-              color={liked ? "#ef4444" : "#e5e5e5"}
+              fill={liked ? "var(--color-danger)" : "none"}
+              color={liked ? "var(--color-danger)" : "currentColor"}
+              className={liked ? "" : "text-foreground/70"}
             />
           </button>
           <button className="feed-card-action-btn feed-card-action-disabled" disabled>
-            <MessageCircle size={24} color="#555" />
+            <MessageCircle size={24} className="text-muted-foreground" />
           </button>
           <button className="feed-card-action-btn" onClick={handleShare}>
-            <Share2 size={22} color="#e5e5e5" />
+            <Share2 size={22} className="text-foreground/70" />
           </button>
         </div>
         <button className="feed-card-action-btn feed-card-action-disabled" disabled>
-          <Bookmark size={24} color="#555" />
+          <Bookmark size={24} className="text-muted-foreground" />
         </button>
       </div>
 

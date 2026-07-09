@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+ï»¿import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { triggerSWUpdate } from "@/lib/pwa";
 import { RefreshCw } from "lucide-react";
@@ -10,7 +10,7 @@ import { RefreshCw } from "lucide-react";
  * when a new service worker is waiting to activate.
  *
  * Shows a non-blocking banner at the bottom of the screen. The user chooses
- * when to apply the update — no mid-session surprises.
+ * when to apply the update â€” no mid-session surprises.
  *
  * Flow:
  *   new SW installed (waiting) ? pwa-update-available event
@@ -34,7 +34,7 @@ export function UpdateBanner() {
   const handleUpdate = async () => {
     setUpdating(true);
     triggerSWUpdate();
-    // Page will reload — no need to reset state
+    // Page will reload â€” no need to reset state
   };
 
   const handleDismiss = () => {
@@ -109,7 +109,7 @@ export function UpdateBanner() {
                 style={{
                   margin: 0,
                   fontSize: 12,
-                  color: "rgba(255,255,255,0.5)",
+                  color: "var(--color-text-secondary)",
                   lineHeight: 1.3,
                 }}
               >

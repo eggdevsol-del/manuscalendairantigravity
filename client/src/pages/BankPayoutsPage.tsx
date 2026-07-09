@@ -84,7 +84,7 @@ export default function BankPayoutsPage() {
             </div>
             <h3 className="text-lg font-bold">Connect Your Bank</h3>
             <p className="text-sm text-muted-foreground">Link a bank account to start receiving booking deposits. Takes about 2 minutes.</p>
-            <Button onClick={handleCreateAccount} disabled={connectStripe.isPending} className="w-full mt-4 bg-[#E09F3E]/75 text-white hover:bg-[#E09F3E]">
+            <Button onClick={handleCreateAccount} disabled={connectStripe.isPending} className="w-full mt-4 bg-primary text-primary-foreground hover:bg-primary/90">
               Get Started
             </Button>
           </div>
