@@ -1,18 +1,16 @@
 /**
  * CLIENT DARK ACCENTS — SINGLE SOURCE OF TRUTH
- * TATTOI × Travel App Design System v2.0
- * ===================================================================================
+ * ─────────────────────────────────────────────────────────────────────────────
  * Dark-mode accent values SPECIFIC to the client experience.
  *
- * ✅  For backgrounds and surfaces, use semantic Tailwind tokens instead:
- *     bg-background  — page background   (#1B1B1B in dark / #F5F5F7 in light)
- *     bg-card        — card surface      (#242424 in dark / #FFFFFF in light)
- *     bg-popover     — sheet / overlay   (#2A2A2A in dark / #EBEBEF in light)
- *     bg-secondary   — subtle fill       (#2A2A2A in dark)
- *     bg-muted       — ghost fill        (#242424 in dark)
+ * ⚠️  For backgrounds and surfaces, use semantic Tailwind tokens instead:
+ *     bg-background  — page background   (#050505 in dark / #ffffff in light)
+ *     bg-card        — card surface      (#111111 in dark / #ffffff in light)
+ *     bg-popover     — sheet / overlay   (near-black in dark / white in light)
+ *     bg-secondary   — subtle fill       (rgba(255,255,255,0.06) in dark)
+ *     bg-muted       — ghost fill        (rgba(255,255,255,0.05) in dark)
  *     text-foreground / text-muted-foreground / text-primary
  *
- * DS v2.0: --primary is now #F8D057 (yellow) with #1B1B1B foreground.
  * Only values that are INHERENTLY dark-mode-only AND appear nowhere on the
  * artist app belong here (e.g. proposal status badge colours, chat card accents).
  *
