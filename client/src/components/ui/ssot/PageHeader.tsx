@@ -17,6 +17,7 @@ import { ChevronLeft } from "lucide-react";
 import { Button } from "../button";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { type ReactNode } from "react";
+import { APP_TITLE } from "@/const";
 
 interface PageHeaderProps {
   /** Page title — displayed on the right side as the current page indicator */
@@ -67,7 +68,7 @@ export function PageHeader({
           <div className="flex flex-col">
             <h1 className={tokens.header.pageTitle}>{artistBranding}</h1>
             <span className="text-[10px] uppercase font-bold tracking-widest opacity-50">
-              by Tattoi
+              by {APP_TITLE}
             </span>
           </div>
         ) : (
