@@ -20,14 +20,19 @@ interface HalfSheetProps {
 }
 
 /**
- * HalfSheet - A bottom sheet that covers approximately half the screen
+ * HalfSheet — Option A: auto-height bottom sheet
  *
- * Used for quick actions and simple selections that don't require
- * full-screen navigation. Features:
- * - Slides up from bottom
- * - Drag handle indicator
- * - Same glass styling as FullScreenSheet
- * - Backdrop blur with tap-to-dismiss
+ * The sheet grows to fit its content with no fixed height.
+ * It caps at 90dvh (safe-area-aware) to never cover the full screen.
+ * If content still exceeds the cap, the content area scrolls gracefully.
+ *
+ * Layout contract:
+ *  - Drag handle:  shrink-0  (always visible)
+ *  - Header:       shrink-0  (always visible)
+ *  - Content:      flex-1 + min-h-0 + overflow-y-auto
+ *    → short content: sheet is naturally small
+ *    → tall content:  sheet grows to 90dvh, content scrolls within it
+ *  - Safe area:    shrink-0  (always present at bottom)
  */
 export function HalfSheet({
   open,
@@ -53,7 +58,7 @@ export function HalfSheet({
               />
             </DialogPrimitive.Overlay>
 
-            {/* Sheet */}
+            {/* Sheet — anchored bottom, grows upward with content */}
             <DialogPrimitive.Content asChild>
               <motion.div
                 className="fixed inset-x-0 bottom-0 z-[101] flex flex-col"
@@ -73,23 +78,32 @@ export function HalfSheet({
                 style={{ willChange: "transform" }}
                 layout
               >
-                {/* Glass container */}
+                {/*
+                 * Glass container:
+                 *  - overflow-hidden: clips child content to the rounded-t-[16px] corners
+                 *  - max-height: caps growth at 90dvh (safe-area-aware)
+                 *  - flex flex-col: lets children participate in flex sizing
+                 *
+                 * NOTE: overflow-hidden here does NOT prevent the container from
+                 * growing — it only clips content that exceeds the container bounds.
+                 * The container itself is sized by its flex children.
+                 */}
                 <div
                   className={cn(
                     "relative flex flex-col overflow-hidden",
                     tokens.sheetSecondary.glass
                   )}
+                  style={{
+                    maxHeight: "calc(90dvh - env(safe-area-inset-top, 0px))",
+                  }}
                 >
-                  {/* Top edge highlight */}
-                  <div className={tokens.sheetSecondary.highlight} />
-
-                  {/* Drag handle */}
-                  <div className="flex justify-center pt-3 pb-2">
-                    <div className="w-10 h-1 rounded-full bg-secondary/50" />
+                  {/* Drag handle — always at top, never compresses */}
+                  <div className="flex justify-center pt-3 pb-2 shrink-0">
+                    <div className="w-10 h-1 rounded-full bg-border/60" />
                   </div>
 
-                  {/* Header with title/subtitle */}
-                  <div className="px-6 pb-6">
+                  {/* Header — always visible, never scrolls away */}
+                  <div className="px-6 pb-4 shrink-0">
                     <DialogPrimitive.Title className={tokens.header.sheetTitle}>
                       {title}
                     </DialogPrimitive.Title>
@@ -102,16 +116,29 @@ export function HalfSheet({
                     )}
                   </div>
 
-                  {/* Content */}
+                  {/*
+                   * Content area:
+                   *  - flex-1:        takes all remaining space inside the glass container
+                   *  - min-h-0:       CRITICAL — without this, a flex child cannot shrink
+                   *                   below its content size, breaking overflow-y-auto
+                   *  - overflow-y-auto: scrolls only when content hits the 90dvh cap
+                   *  - -webkit-overflow-scrolling: momentum scroll on iOS
+                   */}
                   <div
-                    className={cn(tokens.spacing.containerPadding, className)}
+                    className={cn(
+                      "flex-1 min-h-0 overflow-y-auto",
+                      tokens.spacing.containerPadding,
+                      className
+                    )}
+                    style={{ WebkitOverflowScrolling: "touch" as const }}
                   >
                     {children}
                   </div>
 
-                  {/* Safe area padding for bottom */}
+                  {/* Safe area padding — always present at bottom, never scrolls */}
                   <div
-                    style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+                    className="shrink-0"
+                    style={{ paddingBottom: "env(safe-area-inset-bottom, 20px)" }}
                   />
                 </div>
               </motion.div>

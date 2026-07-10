@@ -19,12 +19,13 @@ export function EmbeddedStripeCheckout({ clientSecret, onComplete }: EmbeddedStr
   if (!clientSecret) return null;
 
   return (
-    <div className="w-full bg-secondary/50 rounded-xl border border-border overflow-hidden relative" style={{ minHeight: "500px" }}>
+    <div className="w-full rounded-[12px] border border-border overflow-hidden" style={{ minHeight: "500px" }}>
       <EmbeddedCheckoutProvider
         stripe={stripePromise}
         options={{ clientSecret, onComplete }}
       >
-        <EmbeddedCheckout className="w-full h-full" />
+        {/* EmbeddedCheckout renders a self-sizing iframe — do not constrain with h-full */}
+        <EmbeddedCheckout className="w-full" />
       </EmbeddedCheckoutProvider>
     </div>
   );
