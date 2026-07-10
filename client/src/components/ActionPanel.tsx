@@ -23,7 +23,6 @@ export function ActionPanel() {
     fabChildren,
     isFABOpen,
     setFABOpen,
-    isLargePanel,
   } = useBottomNav();
 
   const hasActions = fabActions.length > 0 || fabChildren !== null;
@@ -63,28 +62,26 @@ export function ActionPanel() {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className={cn(
-              "fixed bottom-0 left-0 right-0 z-50 bg-popover rounded-t-3xl",
-              "shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.08)] dark:shadow-[0_-20px_60px_-10px_rgba(0,0,0,0.5)]",
-              isLargePanel
-                ? "max-h-[90dvh] h-[90dvh]"
-                : "max-h-[60dvh]"
-            )}
-            style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+            className="fixed bottom-0 left-0 right-0 z-50 bg-popover rounded-t-3xl flex flex-col overflow-hidden shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.08)] dark:shadow-[0_-20px_60px_-10px_rgba(0,0,0,0.5)]"
+            style={{
+              maxHeight: "calc(90dvh - env(safe-area-inset-top, 0px))",
+              paddingBottom: "env(safe-area-inset-bottom, 20px)",
+            }}
           >
-            {/* Handle bar */}
-            <div className="flex justify-center pt-3 pb-2">
+            {/* Handle bar — always visible, never compresses */}
+            <div className="flex justify-center pt-3 pb-2 shrink-0">
               <div className="w-10 h-1 rounded-full bg-foreground/20" />
             </div>
 
-            {/* If fabChildren is set (e.g. BookingWizardContent), render it directly */}
+            {/* Content area: flex-1 + min-h-0 is critical — allows the container to shrink
+                 below its content height so overflow-y-auto actually triggers at 90dvh cap */}
             {fabChildren ? (
-              <div className="flex-1 overflow-y-auto overflow-x-hidden h-full" style={{ padding: 40 }}>
+              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden" style={{ padding: 40 }}>
                 {fabChildren}
               </div>
             ) : (
               /* Action items list */
-              <div className="overflow-y-auto max-h-[calc(60dvh-40px)]" style={{ padding: 40 }}>
+              <div className="flex-1 min-h-0 overflow-y-auto" style={{ padding: 40 }}>
                 {fabActions.map((action) => (
                   <button
                     key={action.id}
