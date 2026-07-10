@@ -1,3 +1,5 @@
+// TATTOI × Travel App Design System v2.0
+// Font: DM Sans (primary), system-ui fallback
 export const tokens = {
   // 1. Backgrounds
   // Exact match from Calendar/Dashboard
@@ -8,7 +10,7 @@ export const tokens = {
   // Main sheet (Dashboard, Calendar)
   sheetMain: {
     container:
-      "flex-1 z-20 flex flex-col bg-popover rounded-t-[16px] overflow-hidden relative",
+      "flex-1 z-20 flex flex-col bg-popover rounded-t-[24px] overflow-hidden relative",
     highlight:
       "hidden",
     content: "flex-1 relative w-full overflow-hidden",
@@ -20,9 +22,9 @@ export const tokens = {
     content:
       "fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col gap-0 overflow-hidden",
     container:
-      "flex-1 z-20 flex flex-col bg-popover rounded-t-[16px] overflow-hidden relative will-change-transform",
+      "flex-1 z-20 flex flex-col bg-popover rounded-t-[24px] overflow-hidden relative will-change-transform",
     glass:
-      "bg-popover rounded-t-[16px]",
+      "bg-popover rounded-t-[24px]",
     highlight:
       "hidden",
     header:
@@ -30,9 +32,9 @@ export const tokens = {
   },
 
   // 3. Cards
-  // TATTOI DS v1.0 — surface token (bg-card = #1A1A1E dark / #FFFFFF light)
+  // TATTOI × Travel App DS v2.0 — surface token (bg-card = #1A1A1E dark / #FFFFFF light)
   card: {
-    base: "group relative overflow-hidden transition-all duration-[150ms] border border-border/30 rounded-[12px]", // radius-md = 12px
+    base: "group relative overflow-hidden transition-all duration-[150ms] border border-border/30 rounded-[16px]", // radius-md = 16px
     bg: "bg-card text-card-foreground hover:bg-card/90", // bg-surface in both themes
     bgAccent:
       "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
@@ -46,26 +48,26 @@ export const tokens = {
     },
   },
 
-  // 4. Buttons — TATTOI DS v1.0: 52px primary, 12px radius, violet accent
+  // 4. Buttons — TATTOI × Travel App DS v2.0: 52px primary, 16px radius (inline) / 999px (CTA pills), yellow accent
   button: {
     primary:
-      "bg-primary hover:bg-primary/90 active:bg-[#6448D4] text-primary-foreground h-[52px] px-6 rounded-[12px] text-[15px] font-semibold tracking-tight transition-all duration-[150ms] active:scale-[0.98] w-full",
-    hero: "w-full h-[52px] rounded-[12px] font-semibold text-[15px] tracking-tight bg-primary hover:bg-primary/90 active:bg-[#6448D4] text-primary-foreground flex items-center justify-center transition-all duration-[150ms] active:scale-[0.98]",
+      "bg-primary hover:bg-primary/90 active:bg-[#D4AC2A] text-primary-foreground h-[52px] px-6 rounded-[999px] text-[15px] font-semibold tracking-tight transition-all duration-[150ms] active:scale-[0.98] w-full",
+    hero: "w-full h-[52px] rounded-[999px] font-semibold text-[15px] tracking-tight bg-primary hover:bg-primary/90 active:bg-[#D4AC2A] text-primary-foreground flex items-center justify-center transition-all duration-[150ms] active:scale-[0.98]",
     secondary:
-      "bg-secondary hover:bg-secondary/80 text-secondary-foreground h-[52px] px-6 rounded-[12px] text-[15px] font-semibold transition-all duration-[150ms] active:scale-[0.98]",
+      "bg-secondary hover:bg-secondary/80 text-secondary-foreground h-[52px] px-6 rounded-[16px] text-[15px] font-semibold transition-all duration-[150ms] active:scale-[0.98]",
     destructive:
-      "bg-destructive hover:bg-destructive/90 text-destructive-foreground h-[52px] px-6 rounded-[12px] text-[15px] font-semibold transition-all duration-[150ms] active:scale-[0.98]",
+      "bg-destructive hover:bg-destructive/90 text-destructive-foreground h-[52px] px-6 rounded-[16px] text-[15px] font-semibold transition-all duration-[150ms] active:scale-[0.98]",
     outline:
-      "border border-border bg-transparent hover:bg-secondary text-foreground h-[52px] px-4 rounded-[12px] text-[15px] font-medium transition-all duration-[150ms] active:scale-[0.98]",
+      "border border-border bg-transparent hover:bg-secondary text-foreground h-[52px] px-4 rounded-[16px] text-[15px] font-medium transition-all duration-[150ms] active:scale-[0.98]",
     ghost:
-      "text-muted-foreground hover:text-foreground hover:bg-secondary rounded-[12px] transition-colors duration-[150ms]",
+      "text-muted-foreground hover:text-foreground hover:bg-secondary rounded-[16px] transition-colors duration-[150ms]",
     link: "text-primary underline-offset-4 hover:underline px-0 transition-opacity active:opacity-70",
-    icon: "rounded-[12px] bg-secondary hover:bg-secondary/80 text-foreground w-[52px] h-[52px] flex items-center justify-center transition-all duration-[150ms] active:scale-90",
-    auth: "w-full h-[52px] rounded-[12px] font-semibold text-[15px] tracking-tight bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-all duration-[150ms] active:scale-[0.98]",
-    authSecondary: "w-full h-[52px] rounded-[12px] border border-border font-semibold text-[15px] bg-secondary hover:bg-secondary/80 text-secondary-foreground flex items-center justify-center transition-all duration-[150ms] active:scale-[0.98]",
+    icon: "rounded-[16px] bg-secondary hover:bg-secondary/80 text-foreground w-[52px] h-[52px] flex items-center justify-center transition-all duration-[150ms] active:scale-90",
+    auth: "w-full h-[52px] rounded-[999px] font-semibold text-[15px] tracking-tight bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-all duration-[150ms] active:scale-[0.98]",
+    authSecondary: "w-full h-[52px] rounded-[16px] border border-border font-semibold text-[15px] bg-secondary hover:bg-secondary/80 text-secondary-foreground flex items-center justify-center transition-all duration-[150ms] active:scale-[0.98]",
   },
 
-  // 5. FAB Menu — TATTOI DS v1.0: violet primary accent only
+  // 5. FAB Menu — TATTOI × Travel App DS v2.0: yellow primary accent only
   fab: {
     container:
       "fixed bottom-[176px] right-5 z-[55] flex flex-col items-end gap-3",
@@ -104,37 +106,37 @@ export const tokens = {
     },
   },
 
-  // 5b. Inputs — TATTOI DS v1.0: 48px height, 12px radius, bg-card surface
+  // 5b. Inputs — TATTOI × Travel App DS v2.0: 48px height, 16px radius, bg-card surface
   input: {
     base: "flex w-full min-w-0 border bg-card px-4 py-1 text-[15px] transition-[color,box-shadow] duration-[150ms] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm placeholder:text-disabled focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/15 aria-invalid:ring-destructive/20 aria-invalid:border-destructive file:text-foreground selection:bg-primary selection:text-primary-foreground",
-    default: "h-[48px] rounded-[12px]",
-    hero: "h-[48px] rounded-[12px] px-5 text-[15px] border-border bg-card hover:bg-card/90 focus-visible:border-primary text-foreground",
+    default: "h-[48px] rounded-[16px]",
+    hero: "h-[48px] rounded-[16px] px-5 text-[15px] border-border bg-card hover:bg-card/90 focus-visible:border-primary text-foreground",
   },
 
   // 5c. Auth Flow Components
   authFlow: {
-    iconContainer: "mx-auto w-16 h-16 rounded-[4px] bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.2)]",
+    iconContainer: "mx-auto w-16 h-16 rounded-[4px] bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(248,208,87,0.2)]",
     genderButton: "h-14 flex items-center justify-center px-3 rounded-[4px] border-2 text-sm font-medium transition-all outline-none border-border bg-secondary/50 text-foreground hover:bg-secondary/50",
-    genderButtonActive: "h-14 flex items-center justify-center px-3 rounded-[4px] border-2 text-sm font-medium transition-all outline-none border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.15)]",
+    genderButtonActive: "h-14 flex items-center justify-center px-3 rounded-[4px] border-2 text-sm font-medium transition-all outline-none border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(248,208,87,0.15)]",
     placesInput: "bg-secondary/50 border-border h-14 rounded-[4px] pl-3",
     toggleContainer: "flex bg-secondary/50 p-1 rounded-[4px] mb-6 h-14 items-stretch",
     toggleButton: "flex-1 flex items-center justify-center text-sm font-bold rounded-[4px] transition-all text-muted-foreground hover:text-foreground",
     toggleButtonActive: "flex-1 flex items-center justify-center text-sm font-bold rounded-[4px] transition-all bg-background text-foreground shadow-sm",
   },
 
-  // 6. Typography — TATTOI DS v1.0
+  // 6. Typography — TATTOI × Travel App DS v2.0
   header: {
-    pageTitle: "text-[24px] font-bold leading-[1.2] text-foreground tracking-tight",
+    pageTitle: "text-[28px] font-bold leading-[1.2] text-foreground tracking-tight",
     pageSubtitle: "ml-2 text-[14px] font-normal text-muted-foreground",
     sectionTitle:
       "text-[11px] font-[500] text-muted-foreground tracking-[0.08em] uppercase",
-    sheetTitle: "text-[24px] font-bold leading-[1.2] text-foreground tracking-tight",
+    sheetTitle: "text-[28px] font-bold leading-[1.2] text-foreground tracking-tight",
     sheetSubtitle: "text-[14px] text-muted-foreground mt-1",
-    contextTitle: "text-[24px] font-bold text-foreground tracking-tight",
+    contextTitle: "text-[28px] font-bold text-foreground tracking-tight",
     contextSubtitle: "text-muted-foreground text-[14px] font-normal mt-1",
   },
 
-  // 7. Layout — TATTOI DS v1.0 spacing
+  // 7. Layout — TATTOI DS v2.0 spacing
   spacing: {
     pagePadding: "px-4 py-4",
     sheetPadding: "px-4 pt-6 pb-2",
@@ -148,7 +150,7 @@ export const tokens = {
     header: "px-4 py-4 z-10 shrink-0 flex items-center bg-[var(--color-bg-header)]",
   },
 
-  // 9. Navigation row — TATTOI DS v1.0: min-height 56px
+  // 9. Navigation row — TATTOI DS v2.0: min-height 56px
   row: {
     base: "flex items-center gap-3 px-4 bg-card text-foreground transition-colors duration-[150ms] cursor-pointer hover:bg-secondary/50 active:bg-secondary",
     height: "min-h-[56px] py-[14px]",
@@ -159,13 +161,15 @@ export const tokens = {
     divider: "border-t border-divider mx-0",
   },
 
-  // 10. Navigation Actions — violet accent for active state
+  // 10. Navigation Actions — yellow accent for active state
   navAction: {
     base: "flex flex-col items-center justify-center h-full py-2 px-4 gap-1 min-w-[72px] shrink-0 bg-transparent border-0 rounded-[12px] transition-all duration-[150ms] touch-none select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
     pressed: "scale-90 opacity-70",
     idle: "opacity-90 hover:opacity-100 hover:bg-secondary",
+    activeCircle: "w-11 h-11 rounded-full bg-primary flex items-center justify-center",
+    activeIcon: "text-primary-foreground",
     icon: {
-      primary: "text-primary",
+      primary: "text-primary", // yellow accent
       accent: "text-primary",
       idle: "text-muted-foreground",
     },
@@ -210,6 +214,39 @@ export const tokens = {
       idle: "text-foreground group-hover:text-foreground",
     },
     description: "text-sm text-muted-foreground mt-1",
+  },
+
+  // NEW: Photography / Destination Card — DS v2.0
+  photographyCard: {
+    base: "relative overflow-hidden rounded-[24px] bg-black",
+    width: "w-[200px]",
+    height: "h-[260px]",
+    overlay: "absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60",
+    tag: "frosted-light rounded-[6px] px-2 py-1 text-[11px] font-[500] text-white absolute top-3 left-3",
+    name: "absolute bottom-10 left-3 right-3 text-[18px] font-bold text-white leading-tight",
+    price: "absolute bottom-3 left-3 text-[15px] font-bold text-white",
+    description: "text-[14px] text-muted-foreground mt-2 line-clamp-2",
+  },
+
+  // NEW: Filter Chip Row — DS v2.0
+  filterChip: {
+    container: "flex gap-2 overflow-x-auto no-scrollbar px-5 py-3",
+    idle: "bg-card border border-border/50 text-foreground rounded-[6px] px-3 py-1.5 text-[11px] font-[500] shrink-0 whitespace-nowrap transition-all duration-150",
+    active: "bg-primary text-primary-foreground rounded-[6px] px-3 py-1.5 text-[11px] font-[500] shrink-0 whitespace-nowrap transition-all duration-150",
+    frosted: "frosted-light text-white rounded-[6px] px-3 py-1.5 text-[11px] font-[500] shrink-0 whitespace-nowrap",
+  },
+
+  // NEW: See All pill — DS v2.0
+  seeAllPill: "bg-primary text-primary-foreground text-[13px] font-[600] px-[14px] py-[6px] rounded-[999px] h-[30px] flex items-center shrink-0",
+
+  // NEW: Display / Hero typography — DS v2.0
+  display: {
+    hero: "text-[48px] font-bold uppercase tracking-[-0.02em] leading-[1.05] text-white",
+    eyebrow: "text-[13px] font-normal text-muted-foreground",
+    destinationName: "text-[18px] font-bold text-foreground",
+    price: "text-[15px] font-bold text-foreground",
+    specLabel: "text-[11px] font-normal text-muted-foreground",
+    specValue: "text-[13px] font-[600] text-foreground",
   },
 
   // 12. Motion / Animations (Radix + Tailwind Animate)
@@ -330,7 +367,7 @@ export const tokens = {
       dayBtn:
         "flex flex-col items-center justify-center min-w-[60px] h-[80px] rounded-2xl transition-all duration-300 relative group shrink-0",
       dayBtnActive:
-        "bg-blue-500 text-white shadow-lg shadow-blue-500/30 scale-105",
+        "bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-105",
       dayBtnInactive: "bg-transparent text-foreground hover:bg-secondary",
       dayName: "text-xs font-medium mb-1",
       dayNumber: "text-xl font-bold",
@@ -455,7 +492,7 @@ export const tokens = {
 
     // Form Inputs
     inputHeight: "h-14",
-    inputRadius: "rounded-[6px]",
+    inputRadius: "rounded-[16px]",
     inputBg: "bg-background",
     inputBorder: "border-border",
     inputBorderHover: "hover:bg-secondary",
@@ -465,9 +502,9 @@ export const tokens = {
     cancelButton:
       "bg-transparent border-border hover:bg-secondary text-muted-foreground",
     createButton:
-      "bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-[0_0_20px_-5px_rgba(var(--primary-rgb),0.5)]",
+      "bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-[0_0_20px_-5px_rgba(248,208,87,0.4)]",
     buttonHeight: "h-14",
-    buttonRadius: "rounded-[6px]",
+    buttonRadius: "rounded-[16px]",
   },
 
   // Proposal Modal (Chat feature)
@@ -486,7 +523,7 @@ export const tokens = {
     // Cards
     cardBg: "bg-card hover:bg-secondary/50",
     cardBorder: "border-border",
-    cardRadius: "rounded-[6px]",
+    cardRadius: "rounded-[16px]",
     cardPadding: "p-4",
 
     // Typography
@@ -507,7 +544,7 @@ export const tokens = {
 
     // Buttons
     buttonHeight: "h-14",
-    buttonRadius: "rounded-[6px]",
+    buttonRadius: "rounded-[16px]",
     voucherButton:
       "border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold",
     declineButton:
@@ -524,7 +561,7 @@ export const tokens = {
     errorBorder: "border-red-500/20",
     statusPadding: "p-3",
     statusPaddingLarge: "p-4",
-    statusRadius: "rounded-[6px]",
+    statusRadius: "rounded-[16px]",
   },
 
   // Content Container (replaces GlassSheet)

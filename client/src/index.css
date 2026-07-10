@@ -1,20 +1,21 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TATTOI Design System v1.0 — @theme inline
+   TATTOI × Travel App Design System SSOT v2.0 — @theme inline
    Maps CSS custom properties to Tailwind utility classes.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @theme inline {
-  /* Radius scale — fixed per TATTOI DS v1.0 spec */
+  /* Radius scale — fixed per TATTOI DS v2.0 spec */
   --radius-xs: 6px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
   --radius-pill: 999px;
 
   /* Standard Tailwind semantic mappings */
@@ -51,27 +52,35 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* TATTOI DS v1.0 — extended utilities (bg-surface, bg-elevated, bg-header, etc.) */
+  /* TATTOI DS v2.0 — extended utilities (bg-surface, bg-elevated, bg-header, etc.) */
   --color-surface: var(--color-bg-surface);
   --color-elevated: var(--color-bg-elevated);
   --color-header: var(--color-bg-header);
   --color-disabled: var(--color-text-disabled);
   --color-accent-violet: var(--color-accent-violet);
+  --color-accent-yellow: var(--color-accent-yellow);
   --color-accent-dim: var(--color-accent-dim);
   --color-gold: var(--color-gold);
   --color-success: var(--color-success);
   --color-warning: var(--color-warning);
   --color-danger: var(--color-danger);
   --color-divider: var(--color-divider);
+  --color-frosted-light: var(--color-frosted-light);
+  --color-frosted-dark: var(--color-frosted-dark);
+  --color-bg-overlay: var(--color-bg-overlay);
+  --color-bg-frosted: var(--color-bg-frosted);
+  --color-text-on-accent: var(--color-text-on-accent);
+  --color-text-on-image: var(--color-text-on-image);
+  --color-divider-light: var(--color-divider-light);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TATTOI Design System v1.0 — Light Theme (Artist / Merchant App)
+   TATTOI × Travel App Design System SSOT v2.0 — Light Theme
    Default for all non-client roles.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  --radius: 12px;
+  --radius: 16px;
 
   /* Surface hierarchy */
   --background: #F5F5F7;
@@ -85,9 +94,9 @@
   --popover: #EBEBEF;
   --popover-foreground: #1A1A1E;
 
-  /* Primary — Violet accent */
-  --primary: #7B5CF5;
-  --primary-foreground: #FFFFFF;
+  /* Primary — Yellow accent */
+  --primary: #F8D057;
+  --primary-foreground: #1B1B1B;
 
   /* Secondary surface */
   --secondary: #EBEBEF;
@@ -97,9 +106,9 @@
   --muted: #EBEBEF;
   --muted-foreground: #6A6A72;
 
-  /* Accent — subtle violet tint */
-  --accent: #F0EDFF;
-  --accent-foreground: #7B5CF5;
+  /* Accent — subtle yellow tint */
+  --accent: #FEF9E7;
+  --accent-foreground: #F8D057;
 
   /* Destructive */
   --destructive: #EF4444;
@@ -108,11 +117,11 @@
   /* Borders & Inputs */
   --border: #E0E0E8;
   --input: #FFFFFF;
-  --ring: #7B5CF5;
+  --ring: #F8D057;
 
   /* Charts */
-  --chart-1: #7B5CF5;
-  --chart-2: #6448D4;
+  --chart-1: #F8D057;
+  --chart-2: #E6BF3A;
   --chart-3: #6A6A72;
   --chart-4: #AEAEB8;
   --chart-5: #E0E0E8;
@@ -120,14 +129,14 @@
   /* Sidebar */
   --sidebar: #F8F8FA;
   --sidebar-foreground: #1A1A1E;
-  --sidebar-primary: #7B5CF5;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F0EDFF;
+  --sidebar-primary: #F8D057;
+  --sidebar-primary-foreground: #1B1B1B;
+  --sidebar-accent: #FEF9E7;
   --sidebar-accent-foreground: #1A1A1E;
   --sidebar-border: #E0E0E8;
-  --sidebar-ring: #7B5CF5;
+  --sidebar-ring: #F8D057;
 
-  /* ── TATTOI DS v1.0 — Extended tokens ── */
+  /* ── TATTOI DS v2.0 — Extended tokens ── */
   --color-bg-base: #F5F5F7;
   --color-bg-surface: #FFFFFF;
   --color-bg-elevated: #EBEBEF;
@@ -135,8 +144,10 @@
   --color-text-primary: #1A1A1E;
   --color-text-secondary: #6A6A72;
   --color-text-disabled: #AEAEB8;
-  --color-accent-violet: #7B5CF5;
-  --color-accent-dim: #F0EDFF;
+  --color-accent-violet: #F8D057;
+  --color-accent-yellow: #F8D057;
+  --color-accent-dim: #FEF9E7;
+  --primary-rgb: 248, 208, 87;
   --color-success: #22A65E;
   --color-warning: #D97706;
   --color-danger: #EF4444;
@@ -144,9 +155,19 @@
   --color-border: #E0E0E8;
   --color-divider: #EDEDF2;
 
+  /* DS v2.0 — Frosted glass & overlay tokens */
+  --color-frosted-light: rgba(255, 255, 255, 0.18);
+  --color-frosted-dark: rgba(0, 0, 0, 0.30);
+  --color-bg-overlay: rgba(0, 0, 0, 0.40);
+  --color-bg-frosted: rgba(255, 255, 255, 0.18);
+  --color-text-on-accent: #1B1B1B;
+  --color-text-on-image: #FFFFFF;
+  --color-divider-light: #E8E8E8;
+
   /* Spacing */
-  --page-margin: 16px;
-  --section-gap: 24px;
+  --page-margin: 20px;
+  --section-gap: 28px;
+  --card-gap: 12px;
   --row-height: 56px;
   --row-padding-v: 14px;
   --row-padding-h: 16px;
@@ -155,92 +176,104 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TATTOI Design System v1.0 — Dark Theme (Client App)
+   TATTOI × Travel App Design System SSOT v2.0 — Dark Theme (Client App)
    Applied automatically by RoleThemeWrapper (App.tsx) for all client users.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .dark {
-  --radius: 12px;
+  --radius: 16px;
 
   /* Surface hierarchy */
-  --background: #0E0E10;
-  --foreground: #F0EDE8;
+  --background: #1B1B1B;
+  --foreground: #FFFFFF;
 
   /* Card / list row surface */
-  --card: #1A1A1E;
-  --card-foreground: #F0EDE8;
+  --card: #242424;
+  --card-foreground: #FFFFFF;
 
   /* Elevated surface — modals, sheets, popovers */
-  --popover: #222228;
-  --popover-foreground: #F0EDE8;
+  --popover: #2A2A2A;
+  --popover-foreground: #FFFFFF;
 
-  /* Primary — Violet accent */
-  --primary: #7B5CF5;
-  --primary-foreground: #FFFFFF;
+  /* Primary — Yellow accent */
+  --primary: #F8D057;
+  --primary-foreground: #1B1B1B;
 
   /* Secondary surface (elevated over card) */
-  --secondary: #222228;
-  --secondary-foreground: #F0EDE8;
+  --secondary: #2A2A2A;
+  --secondary-foreground: #FFFFFF;
 
   /* Muted */
-  --muted: #1A1A1E;
-  --muted-foreground: #8A8A92;
+  --muted: #242424;
+  --muted-foreground: #7A7A7A;
 
   /* Accent — accent-dim for hover/active tints */
-  --accent: #2A1F4A;
-  --accent-foreground: #7B5CF5;
+  --accent: #3A2F00;
+  --accent-foreground: #F8D057;
 
   /* Destructive */
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
 
   /* Borders & Inputs */
-  --border: #2A2A30;
-  --input: #1A1A1E;
-  --ring: #7B5CF5;
+  --border: rgba(255, 255, 255, 0.12);
+  --input: #242424;
+  --ring: #F8D057;
 
   /* Charts */
-  --chart-1: #7B5CF5;
-  --chart-2: #6448D4;
-  --chart-3: #8A8A92;
+  --chart-1: #F8D057;
+  --chart-2: #E6BF3A;
+  --chart-3: #7A7A7A;
   --chart-4: #4A4A52;
-  --chart-5: #2A2A30;
+  --chart-5: rgba(255, 255, 255, 0.12);
 
   /* Sidebar */
-  --sidebar: #141416;
-  --sidebar-foreground: #F0EDE8;
-  --sidebar-primary: #7B5CF5;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #2A1F4A;
-  --sidebar-accent-foreground: #F0EDE8;
-  --sidebar-border: #2A2A30;
-  --sidebar-ring: #7B5CF5;
+  --sidebar: #1B1B1B;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #F8D057;
+  --sidebar-primary-foreground: #1B1B1B;
+  --sidebar-accent: #3A2F00;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: #F8D057;
 
-  /* ── TATTOI DS v1.0 — Extended tokens ── */
-  --color-bg-base: #0E0E10;
-  --color-bg-surface: #1A1A1E;
-  --color-bg-elevated: #222228;
-  --color-bg-header: #141416;
-  --color-text-primary: #F0EDE8;
-  --color-text-secondary: #8A8A92;
+  /* ── TATTOI DS v2.0 — Extended tokens ── */
+  --color-bg-base: #1B1B1B;
+  --color-bg-surface: #242424;
+  --color-bg-elevated: #2A2A2A;
+  --color-bg-header: #1B1B1B;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #7A7A7A;
   --color-text-disabled: #4A4A52;
-  --color-accent-violet: #7B5CF5;
-  --color-accent-dim: #2A1F4A;
+  --color-accent-violet: #F8D057;
+  --color-accent-yellow: #F8D057;
+  --color-accent-dim: #3A2F00;
+  --primary-rgb: 248, 208, 87;
   --color-success: #34C77B;
   --color-warning: #F59E0B;
   --color-danger: #EF4444;
   --color-gold: #C9A96E;
-  --color-border: #2A2A30;
-  --color-divider: #1E1E24;
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-divider: rgba(255, 255, 255, 0.08);
+
+  /* DS v2.0 — Frosted glass & overlay tokens */
+  --color-frosted-light: rgba(255, 255, 255, 0.18);
+  --color-frosted-dark: rgba(0, 0, 0, 0.30);
+  --color-bg-overlay: rgba(0, 0, 0, 0.40);
+  --color-bg-frosted: rgba(255, 255, 255, 0.10);
+  --color-text-on-accent: #1B1B1B;
+  --color-text-on-image: #FFFFFF;
+  --color-divider-light: #E8E8E8;
 
   /* Spacing */
-  --page-margin: 16px;
-  --section-gap: 24px;
+  --page-margin: 20px;
+  --section-gap: 28px;
+  --card-gap: 12px;
   --row-height: 56px;
   --row-padding-v: 14px;
   --row-padding-h: 16px;
 
-  --bg-gradient: #0E0E10;
+  --bg-gradient: #1B1B1B;
 }
 
 @layer base {
@@ -294,7 +327,7 @@
 
   body {
     @apply bg-transparent text-foreground;
-    font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'DM Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
     min-height: 100%;
     min-height: 100dvh;
     overflow: hidden;
@@ -395,35 +428,25 @@
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
+  /* DS v2.0 — Frosted glass utilities */
+  .frosted-light {
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .frosted-dark {
+    background: rgba(0, 0, 0, 0.30);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .img-overlay {
+    background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.6));
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PERFORMANCE — Kill backdrop-filter globally
-   Per TATTOI DS v1.0: No blurs — elevation via background layering only.
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[class*="backdrop-blur"],
-.liquid-glass,
-.glass-card,
-.floating-nav {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-
-/* Bottom nav — no blur, no shadow */
-#bottom-nav * {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
-}
-
-/* Inset shadows (glass effect accents) — removed per DS spec */
-[class*="shadow-[inset"] {
-  box-shadow: none !important;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   TATTOI DS v1.0 — Motion tokens
+   TATTOI DS v2.0 — Motion tokens
    --duration-fast: 150ms | --duration-base: 250ms | --duration-slow: 400ms
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -436,7 +459,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TATTOI DS v1.0 — Toast overrides
+   TATTOI DS v2.0 — Toast overrides
    Toasts use popover surface (elevated) so they appear above base bg.
    ═══════════════════════════════════════════════════════════════════════════ */
 
