@@ -5,7 +5,8 @@ import { trpc } from "@/lib/trpc";
 import { getAssetUrl } from "@/lib/assets";
 import { Button, Input, Label, Textarea } from "@/components/ui";
 import { GooglePlacesInput } from "@/components/ui/GooglePlacesInput";
-import { ChevronLeft, User } from "lucide-react";
+import { User } from "lucide-react";
+import { PageHeader } from "@/components/ui/ssot";
 
 export function ProfileSettings({ onBack }: { onBack: () => void }) {
     const { user, logout } = useAuth();
@@ -135,16 +136,7 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
 
     return (
         <div className="w-full h-full flex flex-col overflow-hidden relative">
-            {/* 1. Page Header - Floating style */}
-            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
-                <button
-                    onClick={onBack}
-                    className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
-                >
-                    <ChevronLeft className="w-5 h-5 text-foreground" />
-                </button>
-                <h2 className="text-xl font-semibold text-foreground">Profile</h2>
-            </div>
+            <PageHeader title="Profile" onBack={onBack} />
 
             {/* 2. Scroll Container */}
             <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">

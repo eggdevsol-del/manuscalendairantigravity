@@ -5,7 +5,8 @@
  */
 
 import { useRef, useState } from "react";
-import { ChevronLeft, ImagePlus, Trash2, Loader2, Images } from "lucide-react";
+import { ImagePlus, Trash2, Loader2, Images } from "lucide-react";
+import { PageHeader } from "@/components/ui/ssot";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -79,25 +80,15 @@ export function PortfolioSettings({ onBack }: PortfolioSettingsProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-border shrink-0">
-        <button
-          onClick={onBack}
-          className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-        <div>
-          <h2 className="font-bold text-base">Portfolio</h2>
-          <p className="text-xs text-muted-foreground">
-            {portfolio.length} image{portfolio.length !== 1 ? "s" : ""} uploaded
-          </p>
-        </div>
-        <div className="ml-auto">
+      <PageHeader
+        title="Portfolio"
+        subtitle={`${portfolio.length} image${portfolio.length !== 1 ? "s" : ""} uploaded`}
+        onBack={onBack}
+        rightAction={
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary text-white text-xs font-semibold disabled:opacity-50"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50"
           >
             {uploading ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -106,17 +97,16 @@ export function PortfolioSettings({ onBack }: PortfolioSettingsProps) {
             )}
             {uploading ? "Uploading..." : "Add Photos"}
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={handleFilePick}
-          />
-        </div>
-      </div>
-
+        }
+      />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={handleFilePick}
+      />
       {/* Grid */}
       <div className="flex-1 overflow-y-auto p-4">
         {isLoading ? (

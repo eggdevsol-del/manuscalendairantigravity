@@ -3,7 +3,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useUIDebug } from "@/_core/contexts/UIDebugContext";
 import { getAssetUrl } from "@/lib/assets";
 import { Card, Switch } from "@/components/ui";
-import { LoadingState, PageShell } from "@/components/ui/ssot";
+import { LoadingState, PageShell, PageHeader } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import {
@@ -183,11 +183,7 @@ export default function Settings() {
 
   return (
     <PageShell>
-      {/* Header */}
-      <div className="px-4 pt-4 pb-2 shrink-0">
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">{`v${APP_VERSION}`}</p>
-      </div>
+      <PageHeader title="Settings" subtitle={`v${APP_VERSION}`} />
 
       {/* Scrollable list */}
       <div className="flex-1 overflow-y-auto mobile-scroll px-4 pt-2 pb-32">

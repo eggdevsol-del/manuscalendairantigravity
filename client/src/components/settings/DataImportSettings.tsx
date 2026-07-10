@@ -1,4 +1,5 @@
-import { ChevronLeft, UploadCloud, Database, CheckCircle2, AlertTriangle, Loader2, Link2 } from "lucide-react";
+import { UploadCloud, Database, CheckCircle2, AlertTriangle, Loader2, Link2 } from "lucide-react";
+import { PageHeader } from "@/components/ui/ssot";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -276,15 +277,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
 
     return (
         <div className="w-full h-full flex flex-col overflow-hidden relative">
-            <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
-                <button
-                    onClick={onBack}
-                    className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
-                >
-                    <ChevronLeft className="w-5 h-5 text-foreground" />
-                </button>
-                <h2 className="text-xl font-semibold text-foreground">Import Clients</h2>
-            </div>
+            <PageHeader title="Import Clients" onBack={onBack} />
 
             <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
                 <div className="pb-[180px] max-w-lg mx-auto space-y-6 px-4 pt-6">

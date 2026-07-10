@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "../button";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { type ReactNode } from "react";
 
 interface PageHeaderProps {
   /** Page title — displayed on the right side as the current page indicator */
@@ -26,6 +27,8 @@ interface PageHeaderProps {
   className?: string;
   /** Optional back action — renders a back button */
   onBack?: () => void;
+  /** Optional right-side action element (replaces default title display when provided) */
+  rightAction?: ReactNode;
 }
 
 /**
@@ -36,6 +39,7 @@ export function PageHeader({
   subtitle,
   className,
   onBack,
+  rightAction,
 }: PageHeaderProps) {
   const { user } = useAuth();
 
@@ -71,13 +75,17 @@ export function PageHeader({
         )}
       </div>
 
-      {/* Right side — current page name */}
+      {/* Right side — page name or custom right action */}
       <div className="flex flex-col items-end">
-        <span className="text-lg font-light text-foreground/60 tracking-tight">
-          {title}
-        </span>
-        {subtitle && (
-          <span className="text-xs text-muted-foreground/60">{subtitle}</span>
+        {rightAction ?? (
+          <>
+            <span className="text-lg font-light text-foreground/60 tracking-tight">
+              {title}
+            </span>
+            {subtitle && (
+              <span className="text-xs text-muted-foreground/60">{subtitle}</span>
+            )}
+          </>
         )}
       </div>
     </header>
