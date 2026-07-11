@@ -210,13 +210,15 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
 
                         <div className="space-y-2">
                             <Label htmlFor="birthday">Birthdate</Label>
-                            <Input
-                                id="birthday"
-                                type="date"
-                                value={profileBirthday}
-                                onChange={e => setProfileBirthday(e.target.value)}
-                                className="bg-secondary/50 border-border w-full [color-scheme:dark]"
-                            />
+                            <div className="w-full overflow-hidden">
+                                <Input
+                                    id="birthday"
+                                    type="date"
+                                    value={profileBirthday}
+                                    onChange={e => setProfileBirthday(e.target.value)}
+                                    className="bg-secondary/50 border-border w-full max-w-full box-border [color-scheme:dark]"
+                                />
+                            </div>
                         </div>
 
                         <div className="space-y-2">

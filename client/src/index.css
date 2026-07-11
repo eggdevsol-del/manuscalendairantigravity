@@ -427,6 +427,16 @@
     display: none;
   }
 
+  /* DS v3.0 — Force date inputs to match container width */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    max-width: 100%;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
   .tap-target {
     @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
   }
