@@ -25,9 +25,15 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
     const [profileCity, setProfileCity] = useState("");
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
+    const utils = trpc.useUtils();
+
     const updateProfileMutation = trpc.auth.updateProfile.useMutation({
         onSuccess: () => {
             toast.success("Profile updated successfully");
+            // Invalidate auth cache so user data refreshes everywhere
+            utils.auth.me.invalidate();
+            // Auto-exit back to main settings
+            onBack();
         },
         onError: error => {
             toast.error("Failed to update profile: " + error.message);
@@ -209,7 +215,7 @@ export function ProfileSettings({ onBack }: { onBack: () => void }) {
                                 type="date"
                                 value={profileBirthday}
                                 onChange={e => setProfileBirthday(e.target.value)}
-                                className="bg-secondary/50 border-border [color-scheme:dark]"
+                                className="bg-secondary/50 border-border w-full [color-scheme:dark]"
                             />
                         </div>
 

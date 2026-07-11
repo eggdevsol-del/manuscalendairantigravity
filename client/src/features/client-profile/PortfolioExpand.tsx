@@ -110,21 +110,35 @@ export function PortfolioExpand({
       <AnimatePresence>
         {lightboxIndex !== null && portfolio[lightboxIndex] && (
           <motion.div
-            className="fixed inset-0 z-[900] bg-black flex items-center justify-center"
+            className="fixed z-[900] bg-black/95 flex items-center justify-center"
+            style={{
+              top: 'env(safe-area-inset-top, 0px)',
+              left: 0,
+              right: 0,
+              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)',
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            {/* Close */}
+            {/* Back button — top left */}
             <button
               onClick={closeLightbox}
-              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"
+              className="absolute top-3 left-3 z-10 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-transform"
+            >
+              <ChevronLeft className="w-5 h-5 text-white" />
+            </button>
+
+            {/* Close button — top right */}
+            <button
+              onClick={closeLightbox}
+              className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-transform"
             >
               <X className="w-5 h-5 text-white" />
             </button>
 
             {/* Counter */}
-            <p className="absolute top-5 left-1/2 -translate-x-1/2 text-white/60 text-xs font-medium z-10">
+            <p className="absolute top-4 left-1/2 -translate-x-1/2 text-white/60 text-xs font-medium z-10">
               {lightboxIndex + 1} / {portfolio.length}
             </p>
 
@@ -133,7 +147,7 @@ export function PortfolioExpand({
               key={lightboxIndex}
               src={portfolio[lightboxIndex].imageUrl}
               alt=""
-              className="max-w-full max-h-full object-contain select-none"
+              className="max-w-full max-h-full object-contain select-none px-4"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
@@ -161,7 +175,7 @@ export function PortfolioExpand({
 
             {/* Caption */}
             {portfolio[lightboxIndex].description && (
-              <p className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/70 text-xs text-center max-w-[280px]">
+              <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-xs text-center max-w-[280px]">
                 {portfolio[lightboxIndex].description}
               </p>
             )}

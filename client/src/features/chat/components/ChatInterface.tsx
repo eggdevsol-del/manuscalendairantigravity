@@ -23,6 +23,7 @@ import {
   Calendar,
   Check,
   X as XIcon,
+  ChevronLeft,
 } from "lucide-react";
 import {
   Empty,
@@ -1003,15 +1004,31 @@ export function ChatInterface({
       {/* Media Image Lightbox */}
       {selectedMediaImage && (
         <div
-          className="fixed inset-0 z-[100] bg-background/80 flex items-center justify-center p-4"
+          className="fixed z-[100] bg-black/90 flex items-center justify-center p-4"
+          style={{
+            top: 'env(safe-area-inset-top, 0px)',
+            left: 0,
+            right: 0,
+            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)',
+          }}
           onClick={() => setSelectedMediaImage(null)}
         >
+          {/* Back button — top left */}
           <button
-            className="absolute top-4 right-4 text-muted-foreground hover:text-white text-sm px-3 py-1 rounded-lg bg-secondary/50"
+            className="absolute top-3 left-3 z-10 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-transform"
             onClick={() => setSelectedMediaImage(null)}
           >
-            Close
+            <ChevronLeft className="w-5 h-5 text-white" />
           </button>
+
+          {/* Close button — top right */}
+          <button
+            className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-transform"
+            onClick={() => setSelectedMediaImage(null)}
+          >
+            <XIcon className="w-5 h-5 text-white" />
+          </button>
+
           <img
             src={selectedMediaImage}
             alt="Full size"

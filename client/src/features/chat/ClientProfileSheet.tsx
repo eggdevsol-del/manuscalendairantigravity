@@ -14,6 +14,7 @@ import {
   Loader2,
   Calendar,
   X,
+  ChevronLeft,
   ChevronRight,
   Download,
   Trash,
@@ -491,28 +492,43 @@ export function ClientProfileSheet({
       {selectedImage &&
         createPortal(
           <div
-            className="fixed inset-0 z-[9999] bg-background/90 flex items-center justify-center p-4"
+            className="fixed z-[9999] bg-black/90 flex items-center justify-center p-4"
+            style={{
+              top: 'env(safe-area-inset-top, 0px)',
+              left: 0,
+              right: 0,
+              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)',
+            }}
             onClick={() => setSelectedImage(null)}
           >
             <div
-              className="relative w-[80vw] h-[80vh] flex flex-col items-center justify-center"
+              className="relative w-full h-full flex flex-col items-center justify-center"
               onClick={e => e.stopPropagation()}
             >
-              {/* Toolbar */}
-              <div className="absolute top-4 right-4 flex items-center gap-3 z-10">
+              {/* Back button — top left */}
+              <button
+                className="absolute top-3 left-3 z-10 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-transform"
+                onClick={() => setSelectedImage(null)}
+                title="Back"
+              >
+                <ChevronLeft className="w-5 h-5 text-white" />
+              </button>
+
+              {/* Toolbar — top right */}
+              <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
                 <button
-                  className="p-2.5 rounded-full bg-secondary/80 hover:bg-secondary text-foreground hover:text-primary transition-all active:scale-90"
+                  className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 flex items-center justify-center transition-all active:scale-90"
                   onClick={() => handleSaveToDevice(selectedImage)}
                   title="Save to Device"
                 >
-                  <Download className="w-5 h-5" />
+                  <Download className="w-5 h-5 text-white" />
                 </button>
                 <button
-                  className="p-2.5 rounded-full bg-secondary/80 hover:bg-secondary text-foreground hover:text-primary transition-all active:scale-90"
+                  className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 flex items-center justify-center transition-all active:scale-90"
                   onClick={() => setSelectedImage(null)}
                   title="Close"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5 text-white" />
                 </button>
               </div>
 
@@ -520,7 +536,7 @@ export function ClientProfileSheet({
               <img
                 src={getAssetUrl(selectedImage)}
                 alt="Full size media"
-                className="w-full h-full object-contain rounded-xl shadow-2xl"
+                className="max-w-full max-h-full object-contain rounded-xl"
               />
             </div>
           </div>,
