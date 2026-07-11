@@ -13,15 +13,16 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
-import { MessageCircle, Calendar } from "lucide-react";
+import { MessageCircle, Calendar, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tokens } from "@/ui/tokens";
-import { Button } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 
 export default function Conversations() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<"clients" | "contacts">("clients");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Merchant app only uses the "Contacts" tab
   const currentTab = user?.role === "merchant" ? "contacts" : activeTab;
@@ -72,6 +73,28 @@ export default function Conversations() {
       {/* Mobile: Full List */}
       <div className="md:hidden h-full flex flex-col">
         <PageHeader title="Messages" className="bg-transparent" />
+
+        {/* Search Bar */}
+        <div className="px-4 shrink-0 mb-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search conversations..."
+              className="pl-9 pr-9 bg-transparent border-none shadow-none focus:bg-secondary/30 transition-colors"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-muted flex items-center justify-center hover:bg-muted-foreground/20 transition-colors"
+              >
+                <X className="h-3 w-3 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+        </div>
         
         {/* Mobile Tabs */}
         {user?.role === "artist" && (
@@ -100,7 +123,7 @@ export default function Conversations() {
         )}
 
         <div className="flex-1 overflow-hidden">
-          <ConversationsList filter={currentTab} />
+          <ConversationsList filter={currentTab} searchQuery={searchQuery} />
         </div>
       </div>
 
@@ -109,6 +132,28 @@ export default function Conversations() {
         {/* Left Panel: List (50%) */}
         <div className="w-1/2 border-r border-border flex flex-col h-full">
           <PageHeader title="Messages" className="bg-transparent" />
+
+          {/* Search Bar */}
+          <div className="px-4 shrink-0 mb-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search conversations..."
+                className="pl-9 pr-9 bg-transparent border-none shadow-none focus:bg-secondary/30 transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-muted flex items-center justify-center hover:bg-muted-foreground/20 transition-colors"
+                >
+                  <X className="h-3 w-3 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+          </div>
           
           {/* Desktop Tabs */}
           {user?.role === "artist" && (
@@ -136,7 +181,7 @@ export default function Conversations() {
             </div>
           )}
 
-          <ConversationsList className="bg-transparent" filter={currentTab} />
+          <ConversationsList className="bg-transparent" filter={currentTab} searchQuery={searchQuery} />
         </div>
 
         {/* Right Panel: Placeholder */}

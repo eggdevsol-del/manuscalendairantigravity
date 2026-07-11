@@ -19,6 +19,7 @@ import {
   Download,
   Trash,
   Plus,
+  FileText,
 } from "lucide-react";
 import { format } from "date-fns";
 import { trpc } from "@/lib/trpc";
@@ -36,6 +37,7 @@ interface ClientProfileSheetProps {
   onClose: () => void;
   clientId?: string | null;
   client?: (Identity & { id: string }) | null | undefined;
+  conversationId?: number;
 }
 
 export function ClientProfileSheet({
@@ -43,6 +45,7 @@ export function ClientProfileSheet({
   onClose,
   clientId,
   client: propClient,
+  conversationId,
 }: ClientProfileSheetProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [newNoteText, setNewNoteText] = useState("");
@@ -116,6 +119,12 @@ export function ClientProfileSheet({
         enabled: isOpen && !!targetClientId,
       }
     );
+
+  // Fetch design brief for this conversation (artist-only context, always fetched when conversationId is available)
+  const { data: briefData } = trpc.designBrief.get.useQuery(
+    { conversationId: conversationId! },
+    { enabled: isOpen && !!conversationId }
+  );
 
   // Notes mutations
   const addNoteMutation = trpc.clientProfile.addClientNote.useMutation({
@@ -252,6 +261,24 @@ export function ClientProfileSheet({
                 </p>
               </div>
             </div>
+
+            {/* Design Brief */}
+            {briefData?.brief && (
+              <div className="px-0 py-4 border-b border-border">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5" />
+                  Design Brief
+                </h4>
+                <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                  {briefData.brief}
+                </p>
+                {briefData.messageCount ? (
+                  <p className="text-[10px] text-muted-foreground mt-2">
+                    Based on {briefData.messageCount} tagged message{briefData.messageCount !== 1 ? 's' : ''}
+                  </p>
+                ) : null}
+              </div>
+            )}
 
             {/* Media Strip */}
             {allMediaImages.length > 0 && (

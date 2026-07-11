@@ -24,6 +24,7 @@ import {
   Check,
   X as XIcon,
   ChevronLeft,
+  Tag,
 } from "lucide-react";
 import {
   Empty,
@@ -42,7 +43,7 @@ import {
   ChatAction,
 } from "@/features/chat/components/QuickActionsRow";
 import { useLocation } from "wouter";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { LoadingState } from "@/components/ui/ssot";
@@ -126,6 +127,77 @@ export function ChatInterface({
     handleConfirmDialogCancel,
     confirmDialog,
   } = useChatController(conversationId);
+
+  // ── Message tagging (artist-only) ─────────────────
+  const TAG_OPTIONS = ["design", "reference", "placement", "size", "colour", "budget", "scheduling"] as const;
+
+  const utils = trpc.useUtils();
+
+  const { data: messageTags } = trpc.messageTags.list.useQuery(
+    { conversationId },
+    { enabled: isArtist }
+  );
+
+  const toggleTagMutation = trpc.messageTags.toggle.useMutation({
+    onSuccess: () => {
+      utils.messageTags.list.invalidate({ conversationId });
+    },
+  });
+
+  // Build a map: messageId -> tag[]
+  const tagsByMessageId = useMemo(() => {
+    const map = new Map<number, string[]>();
+    if (!messageTags) return map;
+    for (const t of messageTags) {
+      const existing = map.get(t.messageId) || [];
+      existing.push(t.tag);
+      map.set(t.messageId, existing);
+    }
+    return map;
+  }, [messageTags]);
+
+  const [tagMenuMessageId, setTagMenuMessageId] = useState<number | null>(null);
+
+  const handleBubbleTap = useCallback((messageId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isArtist) return;
+
+    if (tagMenuMessageId === messageId) {
+      setTagMenuMessageId(null);
+      return;
+    }
+
+    setTagMenuMessageId(messageId);
+  }, [isArtist, tagMenuMessageId]);
+
+  const handleTagSelect = useCallback((messageId: number, tag: string) => {
+    toggleTagMutation.mutate({
+      messageId,
+      conversationId,
+      tag,
+    });
+    setTagMenuMessageId(null);
+  }, [conversationId, toggleTagMutation]);
+
+  // Close tag menu when clicking outside
+  const handleBackdropClick = useCallback(() => {
+    if (tagMenuMessageId !== null) setTagMenuMessageId(null);
+  }, [tagMenuMessageId]);
+
+  // ── Design Brief Panel ─────────────────────
+  const [showBriefPanel, setShowBriefPanel] = useState(false);
+
+  const { data: briefData, isLoading: briefLoading } = trpc.designBrief.get.useQuery(
+    { conversationId },
+    { enabled: isArtist && showBriefPanel }
+  );
+
+  const refreshBriefMutation = trpc.designBrief.refresh.useMutation({
+    onSuccess: () => {
+      utils.designBrief.get.invalidate({ conversationId });
+      toast.success("Brief refreshed");
+    },
+  });
 
   // Derive pinned proposals: pending + accepted with future dates
   const pinnedProposals = useMemo(() => {
@@ -502,7 +574,20 @@ export function ChatInterface({
               </div>
             </div>
 
-            <div className="w-9" />
+            {/* Design Brief Toggle (artist-only) */}
+            {isArtist && (
+              <button
+                onClick={() => setShowBriefPanel(!showBriefPanel)}
+                className={cn(
+                  "p-2 rounded-full transition-colors",
+                  showBriefPanel ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"
+                )}
+                title="Design Brief"
+              >
+                <FileText className="w-4 h-4" />
+              </button>
+            )}
+            {!isArtist && <div className="w-9" />}
           </div>
         </header>
 
@@ -721,6 +806,39 @@ export function ChatInterface({
         )}
       </div>
 
+      {/* Design Brief Panel */}
+      {isArtist && showBriefPanel && (
+        <div className="px-4 py-3 bg-secondary/30 border-b border-border animate-in fade-in slide-in-from-top-2 duration-200 shrink-0">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Design Brief</h4>
+            <button
+              onClick={() => refreshBriefMutation.mutate({ conversationId })}
+              disabled={refreshBriefMutation.isPending}
+              className="text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors"
+            >
+              {refreshBriefMutation.isPending ? "Refreshing..." : "Refresh"}
+            </button>
+          </div>
+          {briefLoading ? (
+            <p className="text-xs text-muted-foreground animate-pulse">Loading brief...</p>
+          ) : briefData?.brief ? (
+            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+              {briefData.brief}
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground italic">
+              No messages tagged yet. Tap client messages to build a design brief.
+            </p>
+          )}
+          {briefData?.messageCount ? (
+            <p className="text-[10px] text-muted-foreground mt-2">
+              Based on {briefData.messageCount} tagged message{briefData.messageCount !== 1 ? 's' : ''}
+              {briefData.isStale && ' · ⚠️ Stale'}
+            </p>
+          ) : null}
+        </div>
+      )}
+
       {/* Messages */}
       <div className="flex-1 min-h-0 relative">
         <ScrollArea
@@ -728,7 +846,7 @@ export function ChatInterface({
           viewportRef={viewportRef}
           onScroll={handleScroll}
         >
-          <div className="space-y-4 pb-[182px] md:pb-24">
+          <div className="space-y-4 pb-[182px] md:pb-24" onClick={handleBackdropClick}>
             {messages && messages.length > 0 ? (
               messages.map(message => {
                 const isOwn = message.senderId === user?.id;
@@ -808,48 +926,94 @@ export function ChatInterface({
                           />
                         </div>
                       ) : (
-                        <div
-                          className={`max-w-[85%] rounded-2xl px-4 py-2 overflow-hidden ${isOwn
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
-                            }`}
-                        >
-                          {isImage ? (
-                            <div className="space-y-2">
-                              <img
-                                src={message.content}
-                                alt="Uploaded image"
-                                className="rounded-lg max-w-full h-auto cursor-pointer"
-                                onClick={() =>
-                                  window.open(message.content, "_blank")
-                                }
-                                style={{ maxHeight: "300px" }}
-                              />
-                            </div>
-                          ) : (
-                            <p className="text-sm break-words whitespace-pre-wrap overflow-wrap-anywhere">
-                              {message.content}
+                        <div className="flex flex-col max-w-[85%]">
+                          <div
+                            className={cn(
+                              "rounded-2xl px-4 py-2 overflow-hidden relative",
+                              isOwn
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted",
+                              isArtist && !isOwn && "cursor-pointer active:scale-[0.98] transition-transform",
+                              tagsByMessageId.has(message.id) && !isOwn && "ring-1 ring-primary/30"
+                            )}
+                            onClick={isArtist && !isOwn ? (e: React.MouseEvent) => handleBubbleTap(message.id, e) : undefined}
+                          >
+                            {isImage ? (
+                              <div className="space-y-2">
+                                <img
+                                  src={message.content}
+                                  alt="Uploaded image"
+                                  className="rounded-lg max-w-full h-auto cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open(message.content, "_blank");
+                                  }}
+                                  style={{ maxHeight: "300px" }}
+                                />
+                              </div>
+                            ) : (
+                              <p className="text-sm break-words whitespace-pre-wrap overflow-wrap-anywhere">
+                                {message.content}
+                              </p>
+                            )}
+                            <p className="text-xs opacity-70 mt-1">
+                              {message.createdAt &&
+                                new Date(message.createdAt).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
                             </p>
-                          )}
-                          <p className="text-xs opacity-70 mt-1">
-                            {message.createdAt &&
-                              new Date(message.createdAt).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                          </p>
 
-                          {isArtist && isClientConfirmation && (
-                            <Button
-                              className="mt-2 w-full bg-background/20 hover:bg-background/30 text-inherit border-none"
-                              size="sm"
-                              onClick={() => handleArtistBookProject(metadata)}
-                              disabled={bookProjectMutation.isPending}
-                            >
-                              {bookProjectMutation.isPending
-                                ? "Booking..."
-                                : "Confirm & Book"}
-                            </Button>
+                            {isArtist && isClientConfirmation && (
+                              <Button
+                                className="mt-2 w-full bg-background/20 hover:bg-background/30 text-inherit border-none"
+                                size="sm"
+                                onClick={() => handleArtistBookProject(metadata)}
+                                disabled={bookProjectMutation.isPending}
+                              >
+                                {bookProjectMutation.isPending
+                                  ? "Booking..."
+                                  : "Confirm & Book"}
+                              </Button>
+                            )}
+                          </div>
+
+                          {/* Tag pills below bubble */}
+                          {isArtist && tagsByMessageId.has(message.id) && (
+                            <div className="flex flex-wrap gap-1 mt-1 px-1">
+                              {tagsByMessageId.get(message.id)!.map(tag => (
+                                <button
+                                  key={tag}
+                                  onClick={(e) => { e.stopPropagation(); handleTagSelect(message.id, tag); }}
+                                  className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/15 text-primary hover:bg-destructive/15 hover:text-destructive transition-colors"
+                                >
+                                  {tag} ×
+                                </button>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Tag selection menu */}
+                          {isArtist && tagMenuMessageId === message.id && (
+                            <div className="flex flex-wrap gap-1.5 mt-2 px-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                              {TAG_OPTIONS.map(tag => {
+                                const isActive = tagsByMessageId.get(message.id)?.includes(tag);
+                                return (
+                                  <button
+                                    key={tag}
+                                    onClick={(e) => { e.stopPropagation(); handleTagSelect(message.id, tag); }}
+                                    className={cn(
+                                      "text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-all active:scale-95",
+                                      isActive
+                                        ? "bg-primary text-primary-foreground border-primary"
+                                        : "bg-secondary/50 text-muted-foreground border-border hover:border-primary hover:text-primary"
+                                    )}
+                                  >
+                                    {tag}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           )}
                         </div>
                       )}
@@ -999,6 +1163,7 @@ export function ChatInterface({
         isOpen={showClientInfo}
         onClose={() => setShowClientInfo(false)}
         client={conversation?.otherUser as any}
+        conversationId={conversationId}
       />
 
       {/* Media Image Lightbox */}

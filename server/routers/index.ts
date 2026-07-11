@@ -34,6 +34,8 @@ import { storefrontRouter } from "./storefront";
 import { suppliersRouter } from "./suppliers";
 import { favouritesRouter } from "./favourites";
 import { feedRouter } from "./feed";
+import { messageTagsRouter } from "./messageTags";
+import { designBriefRouter } from "./designBrief";
 
 export const appRouter = router({
   appointments: appointmentsRouter,
@@ -70,6 +72,8 @@ export const appRouter = router({
   suppliers: suppliersRouter,
   favourites: favouritesRouter,
   feed: feedRouter,
+  messageTags: messageTagsRouter,
+  designBrief: designBriefRouter,
 });
 
 export type AppRouter = typeof appRouter;

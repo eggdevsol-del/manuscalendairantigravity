@@ -28,6 +28,7 @@ interface ConversationsListProps {
   onSelect?: () => void; // Callback when a conversation is selected (optional)
   activeId?: number; // Conversation ID to highlight
   filter?: "clients" | "contacts"; // Filter by role
+  searchQuery?: string; // Search query to filter conversations
 }
 
 export function ConversationsList({
@@ -35,6 +36,7 @@ export function ConversationsList({
   onSelect,
   activeId,
   filter = "clients",
+  searchQuery,
 }: ConversationsListProps) {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
@@ -74,17 +76,32 @@ export function ConversationsList({
 
   const filteredConversations = useMemo(() => {
     if (!conversations) return [];
+
+    let result = conversations;
+
     // Filter only applies to artist/admin inbox (clients vs contacts tabs)
     // For client users, show all conversations unfiltered
-    if (!filter || (user?.role !== "artist" && user?.role !== "admin")) return conversations;
+    if (filter && (user?.role === "artist" || user?.role === "admin")) {
+      result = result.filter(conv => {
+        const isClient = conv.otherUser?.role === "client";
+        if (filter === "clients") return isClient;
+        if (filter === "contacts") return !isClient;
+        return true;
+      });
+    }
 
-    return conversations.filter(conv => {
-      const isClient = conv.otherUser?.role === "client";
-      if (filter === "clients") return isClient;
-      if (filter === "contacts") return !isClient;
-      return true;
-    });
-  }, [conversations, filter, user?.role]);
+    // Search filter — stacks on top of role filter
+    const query = searchQuery?.trim().toLowerCase();
+    if (query) {
+      result = result.filter(conv => {
+        const nameMatch = conv.otherUser?.name?.toLowerCase().includes(query);
+        const msgMatch = (conv as any).lastMessage?.content?.toLowerCase().includes(query);
+        return nameMatch || msgMatch;
+      });
+    }
+
+    return result;
+  }, [conversations, filter, user?.role, searchQuery]);
 
   const filteredRequests = filter === "contacts" ? [] : requestItems;
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { trpc } from "@/lib/trpc";
 import {
   useRegisterFABActions,
   useBottomNav,
@@ -174,6 +175,19 @@ export default function Dashboard() {
   const [showTaskSheet, setShowTaskSheet] = useState(false);
   const [showChallengeSheet, setShowChallengeSheet] = useState(false);
   const [taskStartTime, setTaskStartTime] = useState<string | null>(null);
+
+  // Extract conversationId from selected task's deepLink (e.g. /chat/123)
+  const selectedTaskConversationId = useMemo(() => {
+    if (!selectedTask?._serverTask?.deepLink) return null;
+    const match = selectedTask._serverTask.deepLink.match(/\/chat\/(\d+)/);
+    return match ? parseInt(match[1]) : null;
+  }, [selectedTask]);
+
+  // Fetch LLM conversation context for the selected task
+  const { data: conversationState } = trpc.designBrief.conversationState.useQuery(
+    { conversationId: selectedTaskConversationId! },
+    { enabled: !!selectedTaskConversationId }
+  );
 
   // Clear selected task when FAB closes
   useEffect(() => {
@@ -443,6 +457,23 @@ export default function Dashboard() {
                     className="absolute top-0 left-0 w-full px-4 pt-4 touch-pan-y"
                   >
                     <div className="space-y-1 pb-32 max-w-lg mx-auto">
+                      {/* LLM Conversation Context Panel */}
+                      {selectedTask && conversationState?.summary && (
+                        <div className="mx-4 mb-3 p-3 rounded-xl bg-primary/5 border border-primary/10 animate-in fade-in slide-in-from-top-2 duration-200">
+                          <div className="flex items-start gap-2">
+                            <MessageSquare className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                            <div>
+                              <p className="text-xs font-semibold text-foreground mb-0.5">
+                                {selectedTask._serverTask?.clientName || 'Client'} — Conversation
+                              </p>
+                              <p className="text-xs text-muted-foreground leading-relaxed">
+                                {conversationState.summary}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Render Content Based on Active Category */}
                       {activeCategory === "contacts" ? (
                         <ContactsTab />

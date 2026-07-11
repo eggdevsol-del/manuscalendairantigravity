@@ -141,6 +141,13 @@
       "when": 1778558096986,
       "tag": "0019_purple_paibok",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "5",
+      "when": 1783758972202,
+      "tag": "0020_rapid_kree",
+      "breakpoints": true
     }
   ]
 }

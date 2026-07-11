@@ -2272,3 +2272,78 @@ export const favouriteArtists = mysqlTable(
 
 export type InsertFavouriteArtist = InferInsertModel<typeof favouriteArtists>;
 export type SelectFavouriteArtist = InferSelectModel<typeof favouriteArtists>;
+
+// ── Message Tagging & Design Briefs ──
+
+export const messageTags = mysqlTable(
+  "message_tags",
+  {
+    id: int().primaryKey().autoincrement(),
+    messageId: int("message_id")
+      .notNull()
+      .references(() => messages.id, { onDelete: "cascade" }),
+    conversationId: int("conversation_id")
+      .notNull()
+      .references(() => conversations.id, { onDelete: "cascade" }),
+    artistId: varchar("artist_id", { length: 64 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tag: varchar({ length: 30 }).notNull().default("design"),
+    createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
+  },
+  table => [
+    index("idx_conv_artist").on(table.conversationId, table.artistId),
+    index("idx_message").on(table.messageId),
+  ]
+);
+
+export const designBriefs = mysqlTable(
+  "design_briefs",
+  {
+    id: int().primaryKey().autoincrement(),
+    conversationId: int("conversation_id")
+      .notNull()
+      .references(() => conversations.id, { onDelete: "cascade" }),
+    artistId: varchar("artist_id", { length: 64 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    briefText: text("brief_text").notNull(),
+    messageCount: int("message_count").notNull(),
+    lastTaggedAt: timestamp("last_tagged_at", { mode: "string" }),
+    generatedAt: timestamp("generated_at", { mode: "string" }).defaultNow(),
+  },
+  table => [
+    index("idx_brief_conv_artist").on(table.conversationId, table.artistId),
+  ]
+);
+
+export const messageTagsRelations = relations(messageTags, ({ one }) => ({
+  message: one(messages, {
+    fields: [messageTags.messageId],
+    references: [messages.id],
+  }),
+  conversation: one(conversations, {
+    fields: [messageTags.conversationId],
+    references: [conversations.id],
+  }),
+  artist: one(users, {
+    fields: [messageTags.artistId],
+    references: [users.id],
+  }),
+}));
+
+export const designBriefsRelations = relations(designBriefs, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [designBriefs.conversationId],
+    references: [conversations.id],
+  }),
+  artist: one(users, {
+    fields: [designBriefs.artistId],
+    references: [users.id],
+  }),
+}));
+
+export type InsertMessageTag = InferInsertModel<typeof messageTags>;
+export type SelectMessageTag = InferSelectModel<typeof messageTags>;
+export type InsertDesignBrief = InferInsertModel<typeof designBriefs>;
+export type SelectDesignBrief = InferSelectModel<typeof designBriefs>;
