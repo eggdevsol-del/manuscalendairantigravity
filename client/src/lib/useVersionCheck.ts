@@ -18,10 +18,11 @@ import { forceUpdate } from "./pwa";
  */
 export function useVersionCheck() {
   const checking = useRef(false);
+  const notified = useRef(false);
 
   useEffect(() => {
     async function checkVersion() {
-      if (checking.current) return;
+      if (checking.current || notified.current) return;
       checking.current = true;
 
       try {
@@ -43,6 +44,8 @@ export function useVersionCheck() {
           console.log(
             `[VersionCheck] Client ${APP_VERSION} < Server ${serverVersion} — triggering update`
           );
+
+          notified.current = true; // Only notify once per session
 
           // Prefer the banner flow (user-consented update) if a SW is active.
           // Fall back to forceUpdate() only if no SW is present.

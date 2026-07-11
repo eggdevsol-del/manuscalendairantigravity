@@ -66,6 +66,9 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+// Flag to prevent version mismatch from firing update banner on every API call
+let versionMismatchNotified = false;
+
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
@@ -93,8 +96,14 @@ const trpcClient = trpc.createClient({
         // Every API response carries the server's current version.
         // If the server is ahead of this client bundle, show the update banner
         // immediately — no need to wait for the 30-second /api/version poll.
+        // Only dispatches once per page load to prevent the banner loop.
         const serverVersion = response.headers.get("X-App-Version");
-        if (serverVersion && compareVersions(APP_VERSION, serverVersion) < 0) {
+        if (
+          serverVersion &&
+          !versionMismatchNotified &&
+          compareVersions(APP_VERSION, serverVersion) < 0
+        ) {
+          versionMismatchNotified = true;
           console.log(
             `[VersionCheck] X-App-Version mismatch: client=${APP_VERSION} server=${serverVersion}`
           );

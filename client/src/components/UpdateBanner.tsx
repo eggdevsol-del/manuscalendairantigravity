@@ -21,24 +21,31 @@ import { RefreshCw } from "lucide-react";
 export function UpdateBanner() {
   const [visible, setVisible] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     const onUpdate = () => {
+      // Don't re-show if user already dismissed this session
+      if (dismissed) return;
       setVisible(true);
     };
 
     window.addEventListener("pwa-update-available", onUpdate);
     return () => window.removeEventListener("pwa-update-available", onUpdate);
-  }, []);
+  }, [dismissed]);
 
   const handleUpdate = async () => {
     setUpdating(true);
     triggerSWUpdate();
-    // Page will reload — no need to reset state
+    // If the page hasn't reloaded after 5 seconds, force a hard reload
+    setTimeout(() => {
+      window.location.href = window.location.href.split("?")[0] + "?_v=" + Date.now();
+    }, 5000);
   };
 
   const handleDismiss = () => {
     setVisible(false);
+    setDismissed(true);
   };
 
   return (

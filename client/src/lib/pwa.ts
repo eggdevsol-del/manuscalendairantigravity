@@ -129,9 +129,9 @@ export async function forceUpdate(): Promise<void> {
     );
   }
 
-  // Reload the page
+  // Reload with a cache-busting query param to bypass browser disk cache
   console.log("[PWA] Reloading page...");
-  window.location.reload();
+  window.location.href = window.location.href.split("?")[0] + "?_v=" + Date.now();
 }
 
 /**
