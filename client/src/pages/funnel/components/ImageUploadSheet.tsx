@@ -253,7 +253,7 @@ export default function ImageUploadSheet({
 
                     {/* Error overlay */}
                     {image.error && (
-                      <div className="absolute inset-0 bg-red-500/80 flex items-center justify-center p-2">
+                      <div className="absolute inset-0 bg-[var(--color-danger)] flex items-center justify-center p-2">
                         <p className="text-xs text-white text-center">
                           {image.error}
                         </p>

@@ -60,7 +60,7 @@ export function ShopifySyncTier() {
           <p className="text-sm text-muted-foreground mt-1">Connect your Tattoi storefront to Shopify.</p>
         </div>
         {isConnected ? (
-          <div className="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-xs font-bold rounded-full flex items-center gap-1">
+          <div className="px-3 py-1 bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] text-xs font-bold rounded-full flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3" /> Connected
           </div>
         ) : (
@@ -124,8 +124,8 @@ export function ShopifySyncTier() {
         ) : (
           <div className="bg-secondary/20 border border-border/50 rounded-md p-6">
             <div className="flex items-start gap-4 mb-6">
-              <div className="w-12 h-14 rounded-md bg-green-500/20 flex items-center justify-center shrink-0">
-                <Settings className="w-6 h-6 text-green-500" />
+              <div className="w-12 h-14 rounded-md bg-[var(--color-status-success-bg)] flex items-center justify-center shrink-0">
+                <Settings className="w-6 h-6 text-[var(--color-success)]" />
               </div>
               <div>
                 <h4 className="text-base font-bold text-foreground">Sync Status</h4>
@@ -144,12 +144,12 @@ export function ShopifySyncTier() {
                 <p className="text-xl font-light text-foreground">Live</p>
               </div>
               
-              <div className="flex items-center justify-between p-4 bg-background/50 rounded-md border border-amber-500/20">
+              <div className="flex items-center justify-between p-4 bg-background/50 rounded-md border border-[var(--color-status-warning-border)]">
                 <div className="flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-amber-500" />
+                  <AlertCircle className="w-5 h-5 text-[var(--color-status-warning-text)]" />
                   <div>
                     <p className="text-sm font-bold text-foreground">Webhooks Not Configured</p>
-                    <p className="text-xs text-amber-500/80">Configure webhooks in Shopify to enable real-time pushing.</p>
+                    <p className="text-xs text-[var(--color-status-warning-text)]/80">Configure webhooks in Shopify to enable real-time pushing.</p>
                   </div>
                 </div>
               </div>

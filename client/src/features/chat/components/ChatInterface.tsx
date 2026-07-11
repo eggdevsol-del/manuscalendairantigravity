@@ -494,7 +494,7 @@ export function ChatInterface({
                     {otherUserName}
                   </h1>
                   <p className="text-xs text-primary font-medium flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)] animate-pulse" />
                     Online
                   </p>
                 </div>
@@ -700,10 +700,10 @@ export function ChatInterface({
                     className={cn(
                       "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full",
                       appt.status === "confirmed"
-                        ? "bg-green-500/15 text-green-400"
+                        ? "bg-[var(--color-status-success-bg)] text-[var(--color-success)]"
                         : appt.status === "in-progress"
-                          ? "bg-blue-500/15 text-blue-400"
-                          : "bg-amber-500/15 text-amber-400"
+                          ? "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]"
+                          : "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
                     )}
                   >
                     {appt.status}
@@ -905,8 +905,8 @@ export function ChatInterface({
             const isIOS = /iPhone|iPad/.test(navigator.userAgent);
             const smsHref = `sms:${phone}${isIOS ? "&" : "?"}body=${smsBody}`;
             return (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-2 backdrop-blur-xl">
-                <span className="text-xs text-amber-200/80 flex-1">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--color-status-warning-bg)] border border-[var(--color-status-warning-border)] mb-2 backdrop-blur-xl">
+                <span className="text-xs text-[var(--color-status-warning-text)]/80 flex-1">
                   📱 <strong>{clientFirst}</strong> hasn't signed up yet
                 </span>
                 <a
@@ -925,7 +925,7 @@ export function ChatInterface({
             );
           })()}
 
-        <div className="flex items-center gap-2 p-2 rounded-2xl bg-gray-100/80 dark:bg-slate-950/80 backdrop-blur-xl border border-border shadow-lg" style={{ transform: 'translate(0px, 21px)' }}>
+        <div className="flex items-center gap-2 p-2 rounded-2xl bg-background/80 backdrop-blur-xl border border-border shadow-lg" style={{ transform: 'translate(0px, 21px)' }}>
           <label className="cursor-pointer p-2 hover:bg-secondary/50 rounded-xl transition-colors">
             <input
               type="file"

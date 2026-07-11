@@ -144,8 +144,8 @@ function ConsultationForm({
 
   if (done) return (
     <div className="flex flex-col items-center py-6 text-center gap-2">
-      <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mb-1">
-        <Check className="w-6 h-6 text-emerald-400" />
+      <div className="w-12 h-12 rounded-full bg-[var(--color-status-success-bg)] flex items-center justify-center mb-1">
+        <Check className="w-6 h-6 text-[var(--color-status-success-text)]" />
       </div>
       <p className="font-bold text-base">Request Sent!</p>
       <p className="text-muted-foreground text-xs">{displayName} will respond shortly.</p>
@@ -370,12 +370,12 @@ function DiscoverArtistCard({
                 </div>
               )}
               {artist.bookingCount !== undefined && artist.bookingCount > 0 && (
-                <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded shrink-0">
+                <span className="text-[10px] text-[var(--color-status-success-text)] font-bold bg-[var(--color-status-success-bg)] px-1.5 py-0.5 rounded shrink-0">
                   🔥 {artist.bookingCount} Booking{artist.bookingCount !== 1 ? "s" : ""}
                 </span>
               )}
               {artist.distance !== undefined && artist.distance !== null && artist.distance !== Infinity && (
-                <span className="text-[10px] text-blue-400 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded shrink-0">
+                <span className="text-[10px] text-[var(--color-status-info-text)] font-bold bg-[var(--color-status-info-bg)] px-1.5 py-0.5 rounded shrink-0">
                   📍 {artist.distance.toFixed(1)} km
                 </span>
               )}

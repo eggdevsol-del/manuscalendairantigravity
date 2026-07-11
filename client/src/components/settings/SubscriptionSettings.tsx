@@ -178,7 +178,7 @@ export function SubscriptionSettings({ onBack }: SubscriptionSettingsProps) {
               )}
             >
               Annually
-              <span className="bg-green-500/20 text-green-400 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+              <span className="bg-[var(--color-status-success-bg)] text-[var(--color-success)] text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
                 Save 20%
               </span>
             </span>
@@ -214,8 +214,8 @@ export function SubscriptionSettings({ onBack }: SubscriptionSettingsProps) {
                           className={cn(
                             "w-5 h-5",
                             plan.color === "blue"
-                              ? "text-blue-400"
-                              : "text-purple-400"
+                              ? "text-[var(--color-status-info-text)]"
+                              : "text-[var(--color-status-info-text)]"
                           )}
                         />
                         <h3 className="text-xl font-bold text-foreground">

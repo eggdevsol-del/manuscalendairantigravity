@@ -90,7 +90,7 @@ export default function PayoutHistory() {
                         >
                             <div className="flex items-center justify-between">
                                 <h2 className="font-semibold text-foreground flex items-center gap-2">
-                                    <Banknote className="w-5 h-5 text-emerald-400" />
+                                    <Banknote className="w-5 h-5 text-[var(--color-status-success-text)]" />
                                     Earnings Summary
                                 </h2>
                                 <div className="flex gap-1 bg-secondary/50 rounded-lg p-0.5">
@@ -121,11 +121,11 @@ export default function PayoutHistory() {
                                             {formatCents(earnings.grossCents)}
                                         </p>
                                     </div>
-                                    <div className="bg-emerald-500/10 rounded-lg p-3 border border-emerald-500/20">
-                                        <p className="text-[10px] text-emerald-400 uppercase font-bold">
+                                    <div className="bg-[var(--color-status-success-bg)] rounded-lg p-3 border border-[var(--color-status-success-border)]">
+                                        <p className="text-[10px] text-[var(--color-status-success-text)] uppercase font-bold">
                                             Net Earnings
                                         </p>
-                                        <p className="text-lg font-bold text-emerald-400 tabular-nums">
+                                        <p className="text-lg font-bold text-[var(--color-status-success-text)] tabular-nums">
                                             {formatCents(earnings.netCents)}
                                         </p>
                                     </div>
@@ -156,11 +156,11 @@ export default function PayoutHistory() {
                                         </button>
                                     </div>
                                     {earnings.refundsCents > 0 && (
-                                        <div className="col-span-2 bg-red-500/10 rounded-lg p-3 border border-red-500/20">
-                                            <p className="text-[10px] text-red-400 uppercase">
+                                        <div className="col-span-2 bg-[var(--color-status-danger-bg)] rounded-lg p-3 border border-[var(--color-status-danger-border)]">
+                                            <p className="text-[10px] text-[var(--color-status-danger-text)] uppercase">
                                                 Refunds
                                             </p>
-                                            <p className="text-sm font-medium text-red-400 tabular-nums">
+                                            <p className="text-sm font-medium text-[var(--color-status-danger-text)] tabular-nums">
                                                 -{formatCents(earnings.refundsCents)}
                                             </p>
                                         </div>
@@ -197,10 +197,10 @@ export default function PayoutHistory() {
                                                         className={cn(
                                                             "p-1.5 rounded-lg",
                                                             isIncome
-                                                                ? "bg-emerald-500/20 text-emerald-400"
+                                                                ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)]"
                                                                 : entry.type === "refund"
-                                                                    ? "bg-red-500/20 text-red-400"
-                                                                    : "bg-amber-500/20 text-amber-400"
+                                                                    ? "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]"
+                                                                    : "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
                                                         )}
                                                     >
                                                         {isIncome ? (
@@ -225,8 +225,8 @@ export default function PayoutHistory() {
                                                         className={cn(
                                                             "text-sm font-bold tabular-nums",
                                                             isIncome
-                                                                ? "text-emerald-400"
-                                                                : "text-red-400"
+                                                                ? "text-[var(--color-status-success-text)]"
+                                                                : "text-[var(--color-status-danger-text)]"
                                                         )}
                                                     >
                                                         {isIncome ? "+" : "-"}
@@ -241,7 +241,7 @@ export default function PayoutHistory() {
                                                                 e.stopPropagation();
                                                                 setSelectedRefundTransaction(entry);
                                                             }}
-                                                            className="text-[10px] font-medium text-red-400 hover:text-red-300 hover:underline transition-colors mt-0.5"
+                                                            className="text-[10px] font-medium text-[var(--color-status-danger-text)] hover:text-red-300 hover:underline transition-colors mt-0.5"
                                                         >
                                                             Refund
                                                         </button>
@@ -279,10 +279,10 @@ export default function PayoutHistory() {
                                                     className={cn(
                                                         "p-2 rounded-xl",
                                                         payout.status === "paid"
-                                                            ? "bg-emerald-500/20 text-emerald-400"
+                                                            ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)]"
                                                             : payout.status === "failed"
-                                                                ? "bg-red-500/20 text-red-400"
-                                                                : "bg-amber-500/20 text-amber-400"
+                                                                ? "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]"
+                                                                : "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
                                                     )}
                                                 >
                                                     {payout.status === "paid" ? (
@@ -306,10 +306,10 @@ export default function PayoutHistory() {
                                                 className={cn(
                                                     "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest",
                                                     payout.status === "paid"
-                                                        ? "bg-emerald-500/20 text-emerald-400"
+                                                        ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)]"
                                                         : payout.status === "failed"
-                                                            ? "bg-red-500/20 text-red-400"
-                                                            : "bg-amber-500/20 text-amber-400"
+                                                            ? "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]"
+                                                            : "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
                                                 )}
                                             >
                                                 {payout.status}

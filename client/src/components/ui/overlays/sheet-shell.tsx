@@ -50,7 +50,7 @@ export function SheetShell({
         )}
         data-overlay-id={overlayId}
       >
-        <div className="h-1 w-full bg-gradient-to-r from-primary via-accent to-primary animate-gradient-x" />
+        <div className="h-1 w-full bg-[rgba(255,255,255,0.12)]" />
         <SheetHeader className="p-6 pb-4 shrink-0 border-b border-border space-y-2 relative">
           <div className="flex items-center justify-center relative">
             <SheetTitle className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/80 text-center">

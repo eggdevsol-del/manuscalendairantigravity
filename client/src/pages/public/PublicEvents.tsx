@@ -35,7 +35,7 @@ export default function PublicEvents() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
       </div>
     );
@@ -43,7 +43,7 @@ export default function PublicEvents() {
 
   if (error || !seminars) {
     return (
-      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
         <h1 className="text-2xl font-bold text-white mb-2">Events Not Found</h1>
         <p className="text-muted-foreground mb-6">This artist may not have any upcoming events.</p>
         <button
@@ -57,9 +57,9 @@ export default function PublicEvents() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden font-sans pb-20">
+    <div className="min-h-screen bg-background text-white overflow-x-hidden font-sans pb-20">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-border px-4 py-4 flex items-center justify-between">
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border px-4 py-4 flex items-center justify-between">
         <button
           onClick={() => setLocation(`/${slug}`)}
           className="p-2 -ml-2 rounded-full hover:bg-secondary/50 transition-colors"
@@ -98,12 +98,12 @@ export default function PublicEvents() {
                   <div className="p-6">
                     {/* Type Badge */}
                     <div className="flex items-center gap-2 mb-3">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${isVirtual ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"}`}>
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${isVirtual ? "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] border border-purple-500/20" : "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] border border-[var(--color-status-info-border)]"}`}>
                         {isVirtual ? <Video className="w-3 h-3" /> : <MapPin className="w-3 h-3" />}
                         {isVirtual ? "Virtual" : "In Person"}
                       </span>
                       {isSoldOut && (
-                        <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20">
+                        <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)] border border-[var(--color-status-danger-border)]">
                           Sold Out
                         </span>
                       )}
@@ -131,14 +131,14 @@ export default function PublicEvents() {
                         ${(seminar.priceCents / 100).toFixed(2)}
                       </span>
                       {isSoldOut ? (
-                        <span className="text-red-400 font-semibold text-sm bg-red-500/10 px-5 py-2.5 rounded-full">
+                        <span className="text-[var(--color-status-danger-text)] font-semibold text-sm bg-[var(--color-status-danger-bg)] px-5 py-2.5 rounded-full">
                           Sold Out
                         </span>
                       ) : (
                         <button
                           onClick={() => handleRegister(seminar.id)}
                           disabled={isCheckingOut}
-                          className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2.5 px-6 rounded-full transition-all active:scale-95 text-sm flex items-center gap-2 disabled:opacity-50"
+                          className="bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-6 rounded-full transition-all active:scale-95 text-sm flex items-center gap-2 disabled:opacity-50"
                         >
                           {isCheckingOut ? (
                             <Loader2 className="w-4 h-4 animate-spin" />

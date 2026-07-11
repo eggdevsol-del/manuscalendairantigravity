@@ -82,7 +82,7 @@ export function UpcomingWidget({ upcoming }: UpcomingWidgetProps) {
                 item.paymentStatus !== "fully_paid" && (
                   <Button
                     onClick={() => setLocation(`/balance/${item.id}`)}
-                    className="w-full mt-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold tracking-wide"
+                    className="w-full mt-3 bg-[var(--color-success)] hover:bg-[var(--color-success)] text-white font-bold tracking-wide"
                     size="sm"
                   >
                     <DollarSign className="w-3.5 h-3.5 mr-1.5" />

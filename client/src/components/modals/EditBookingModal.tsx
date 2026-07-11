@@ -244,7 +244,7 @@ export function EditBookingModal({
                     </div>
                 </label>
 
-                <div className="flex items-start gap-2 px-3 py-2 bg-zinc-500/10 rounded-md">
+                <div className="flex items-start gap-2 px-3 py-2 bg-[var(--color-status-neutral-bg)] rounded-md">
                     <AlertCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
                     <p className="text-[9px] text-muted-foreground leading-tight">
                         Email addresses are strictly read-only to prevent broken logins and authentication mismatches.

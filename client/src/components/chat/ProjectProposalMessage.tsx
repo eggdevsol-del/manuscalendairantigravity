@@ -92,10 +92,10 @@ export function ProjectProposalMessage({
   const extraSessions = allDates.length > 1 ? allDates.length - 1 : 0;
 
   const badgeClass = isSuccessState || isFullyPaid
-    ? "bg-emerald-500/10 text-emerald-400"
+    ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)]"
     : effectiveStatus === "rejected"
-    ? "bg-red-500/10 text-red-400"
-    : "bg-amber-500/10 text-amber-400";
+    ? "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]"
+    : "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]";
 
   // -- PINNED ----------------------------------------------------------------
   if (variant === "pinned") {
@@ -114,7 +114,7 @@ export function ProjectProposalMessage({
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           {isFullyPaid ? (
-            <div className="w-2 h-2 rounded-full bg-emerald-500 flex items-center justify-center">
+            <div className="w-2 h-2 rounded-full bg-[var(--color-success)] flex items-center justify-center">
               <Check className="w-1.5 h-1.5 text-white" strokeWidth={4} />
             </div>
           ) : (
@@ -122,14 +122,14 @@ export function ProjectProposalMessage({
           )}
           <span className={cn(
             "text-[8px] font-bold uppercase tracking-wider",
-            isSuccessState || isFullyPaid ? "text-emerald-500" : status === "rejected" ? "text-red-500" : "text-orange-500"
+            isSuccessState || isFullyPaid ? "text-[var(--color-status-success-text)]" : status === "rejected" ? "text-[var(--color-status-danger-text)]" : "text-[var(--color-status-warning-text)]"
           )}>
             {statusLabel}
           </span>
         </div>
         {isArtist && isPending && onCancel && (
           <button
-            className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center bg-secondary/50 hover:bg-red-500/20 text-muted-foreground hover:text-red-500 transition-colors"
+            className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center bg-secondary/50 hover:bg-[var(--color-status-danger-bg)] text-muted-foreground hover:text-[var(--color-status-danger-text)] transition-colors"
             onClick={e => { e.stopPropagation(); onCancel(); }}
           >
             <XIcon className="w-3 h-3" />
@@ -206,7 +206,7 @@ export function ProjectProposalMessage({
 
         {isArtist && isPending && onCancel && (
           <button
-            className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center bg-secondary/50 hover:bg-red-500/20 text-muted-foreground hover:text-red-500 transition-colors z-10"
+            className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center bg-secondary/50 hover:bg-[var(--color-status-danger-bg)] text-muted-foreground hover:text-[var(--color-status-danger-text)] transition-colors z-10"
             onClick={e => { e.stopPropagation(); onCancel(); }}
           >
             <XIcon className="w-3 h-3" />
@@ -248,7 +248,7 @@ export function ProjectProposalMessage({
           <div className="flex items-center gap-2">
             {isArtist && isPending && onCancel && (
               <button
-                className="w-6 h-6 rounded-full flex items-center justify-center bg-secondary/50 hover:bg-red-500/20 text-muted-foreground hover:text-red-500 transition-colors"
+                className="w-6 h-6 rounded-full flex items-center justify-center bg-secondary/50 hover:bg-[var(--color-status-danger-bg)] text-muted-foreground hover:text-[var(--color-status-danger-text)] transition-colors"
                 onClick={e => { e.stopPropagation(); onCancel(); }}
               >
                 <XIcon className="w-3 h-3" />

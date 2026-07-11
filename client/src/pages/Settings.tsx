@@ -110,9 +110,9 @@ function PaymentProcessingRow() {
     <SettingsRow
       icon={Banknote}
       iconColor={
-        isConnected ? "bg-emerald-500/20 text-emerald-400"
-          : isPending ? "bg-amber-500/20 text-amber-400"
-            : "bg-rose-500/20 text-rose-400"
+        isConnected ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)]"
+          : isPending ? "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
+            : "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]"
       }
       title="Payment Processing"
       subtitle={
@@ -123,8 +123,8 @@ function PaymentProcessingRow() {
       onClick={() => setLocation("/bank-payouts")}
       trailing={
         <>
-          {isConnected && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />}
-          {isPending   && <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />}
+          {isConnected && <span className="w-2 h-2 rounded-full bg-[var(--color-success)] animate-pulse" />}
+          {isPending   && <span className="w-2 h-2 rounded-full bg-[var(--color-warning)] animate-pulse" />}
         </>
       }
     />
@@ -219,21 +219,21 @@ export default function Settings() {
                   <>
                     <SettingsRow
                       icon={Image}
-                      iconColor="bg-violet-500/20 text-violet-400"
+                      iconColor="bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]"
                       title="Portfolio"
                       subtitle="Manage your work gallery"
                       onClick={nav("portfolio")}
                     />
                     <SettingsRow
                       icon={Store}
-                      iconColor="bg-cyan-500/20 text-cyan-400"
+                      iconColor="bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]"
                       title="Storefront"
                       subtitle="Your public profile page"
                       onClick={nav("storefront")}
                     />
                     <SettingsRow
                       icon={Link2}
-                      iconColor="bg-purple-500/20 text-purple-400"
+                      iconColor="bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]"
                       title="Booking Link"
                       subtitle="Share your booking link"
                       onClick={nav("booking-link")}
@@ -254,49 +254,49 @@ export default function Settings() {
                 <div className="divide-y divide-border/30">
                   <SettingsRow
                     icon={MapPin}
-                    iconColor="bg-indigo-500/20 text-indigo-400"
+                    iconColor="bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]"
                     title="Business Info"
                     subtitle="Address & details"
                     onClick={nav("business")}
                   />
                   <SettingsRow
                     icon={Clock}
-                    iconColor="bg-pink-500/20 text-pink-400"
+                    iconColor="bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]"
                     title="Services & Hours"
                     subtitle="Manage schedule & pricing"
                     onClick={nav("work-hours")}
                   />
                   <SettingsRow
                     icon={Plane}
-                    iconColor="bg-sky-500/20 text-sky-400"
+                    iconColor="bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]"
                     title="Travel Dates"
                     subtitle="Guest spots & travel"
                     onClick={nav("travel")}
                   />
                   <SettingsRow
                     icon={Users}
-                    iconColor="bg-green-500/20 text-green-400"
+                    iconColor="bg-[var(--color-status-success-bg)] text-[var(--color-success)]"
                     title="Clients"
                     subtitle="Manage client list"
                     onClick={() => setLocation("/clients")}
                   />
                   <SettingsRow
                     icon={Database}
-                    iconColor="bg-orange-500/20 text-orange-400"
+                    iconColor="bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
                     title="Import Clients"
                     subtitle="Upload a CSV file"
                     onClick={nav("data-import")}
                   />
                   <SettingsRow
                     icon={FileText}
-                    iconColor="bg-teal-500/20 text-teal-400"
+                    iconColor="bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)]"
                     title="Regulation & Forms"
                     subtitle="Health & consent forms"
                     onClick={nav("regulation")}
                   />
                   <SettingsRow
                     icon={BookOpen}
-                    iconColor="bg-amber-500/20 text-amber-400"
+                    iconColor="bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
                     title="Consultations"
                     subtitle="Intake & consult settings"
                     onClick={nav("consultations")}
@@ -304,7 +304,7 @@ export default function Settings() {
                   {isStudio && (
                     <SettingsRow
                       icon={Users}
-                      iconColor="bg-rose-500/20 text-rose-400"
+                      iconColor="bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]"
                       title="Studio Headquarters"
                       subtitle="Manage your studio"
                       onClick={nav("studio")}
@@ -326,7 +326,7 @@ export default function Settings() {
                   <PaymentProcessingRow />
                   <SettingsRow
                     icon={CreditCard}
-                    iconColor="bg-blue-500/20 text-blue-400"
+                    iconColor="bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]"
                     title="Subscription & Billing"
                     subtitle="Manage your plan"
                     onClick={() => setLocation("/subscriptions")}
@@ -345,7 +345,7 @@ export default function Settings() {
               <div className="divide-y divide-border/30">
                 <SettingsRow
                   icon={Bell}
-                  iconColor="bg-yellow-500/20 text-yellow-400"
+                  iconColor="bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
                   title="Notifications"
                   subtitle="Push & alert preferences"
                   onClick={nav("notifications")}
@@ -353,7 +353,7 @@ export default function Settings() {
                 {/* UI Debug toggle */}
                 <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-slate-500/20 text-slate-400">
+                    <div className="p-2 rounded-xl bg-background0/20 text-muted-foreground">
                       <Zap className="w-5 h-5" />
                     </div>
                     <div className="text-left">
@@ -383,7 +383,7 @@ export default function Settings() {
                   }}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30 transition-colors">
+                    <div className="p-2 rounded-xl bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] group-hover:bg-blue-500/30 transition-colors">
                       <RefreshCw className="w-5 h-5" />
                     </div>
                     <div className="text-left">
@@ -395,7 +395,7 @@ export default function Settings() {
                 {/* Danger Zone */}
                 <SettingsRow
                   icon={AlertTriangle}
-                  iconColor="bg-red-500/10 text-red-400"
+                  iconColor="bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]"
                   title="Danger Zone"
                   subtitle="Delete account & data"
                   onClick={nav("danger-zone")}

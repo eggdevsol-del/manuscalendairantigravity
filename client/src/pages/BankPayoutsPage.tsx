@@ -103,10 +103,10 @@ export default function BankPayoutsPage() {
 
         {phase === "error" && (
           <div className="text-center p-6 mt-10 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4 border border-red-500/20">
-              <AlertCircle className="w-8 h-8 text-red-400" />
+            <div className="w-16 h-16 rounded-full bg-[var(--color-status-danger-bg)] flex items-center justify-center mx-auto mb-4 border border-[var(--color-status-danger-border)]">
+              <AlertCircle className="w-8 h-8 text-[var(--color-status-danger-text)]" />
             </div>
-            <h3 className="text-lg font-bold text-red-400">Connection Error</h3>
+            <h3 className="text-lg font-bold text-[var(--color-status-danger-text)]">Connection Error</h3>
             <p className="text-sm text-muted-foreground">{errorMsg}</p>
             <Button onClick={() => { setErrorMsg(null); connectStatus.refetch(); setPhase("loading"); }} variant="outline" className="mt-4 gap-2">
               <RefreshCw className="w-4 h-4" /> Try Again

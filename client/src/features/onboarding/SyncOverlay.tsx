@@ -106,7 +106,7 @@ export function SyncOverlay() {
 
         {syncStatus.status === "failed" && (
           <div className="flex flex-col items-center">
-            <h2 className="text-xl font-bold text-red-400 mb-2">Import Failed</h2>
+            <h2 className="text-xl font-bold text-[var(--color-status-danger-text)] mb-2">Import Failed</h2>
             <p className="text-sm text-muted-foreground mb-8 px-4 text-center max-w-sm">
               {(syncStatus as any).error || "We couldn't extract products from the provided URL."}
             </p>

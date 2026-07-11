@@ -319,7 +319,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
 
                             {isQLD && (
                                 <div className="space-y-1.5 pt-4 border-t border-border mt-4">
-                                    <Label className="text-xs font-bold text-red-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <Label className="text-xs font-bold text-[var(--color-status-danger-text)] uppercase tracking-wider flex items-center gap-1.5">
                                         ⚠️ QLD Legislative Compliance
                                     </Label>
                                     <p className="text-[11px] text-muted-foreground pb-2">
@@ -329,7 +329,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                         value={licenceNumber}
                                         onChange={(e) => setLicenceNumber(e.target.value)}
                                         placeholder="Licence Number (e.g. LQN-001245)"
-                                        className="bg-red-400/5 border-red-400/20 placeholder:text-red-400/30 text-red-50"
+                                        className="bg-[var(--color-status-danger-bg)] border-[var(--color-status-danger-border)] placeholder:text-[var(--color-status-danger-text)]/30 text-foreground"
                                     />
                                 </div>
                             )}
@@ -596,25 +596,25 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                         <span className="text-xs font-bold px-2 py-0.5 bg-secondary/50 rounded-full">$0/mo</span>
                                     </div>
                                     <ul className="text-[10px] space-y-1 mt-3">
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Tri-app proprietary booking app</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Calendar (client/artist)</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Revenue protection</span> <span className="text-red-400 font-bold">✗</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">In-app messages</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Booking link for bio</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Booking consult funnel</span> <span className="text-red-400 font-bold">✗</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Branded consult funnel</span> <span className="text-red-400 font-bold">✗</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Custom consult funnel</span> <span className="text-red-400 font-bold">✗</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Photos/reference storage</span> <span className="text-red-400 font-bold">✗</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Business / Social / Personal dashboard</span> <span className="text-red-400 font-bold">✗</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Tri-app proprietary booking app</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Calendar (client/artist)</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Revenue protection</span> <span className="text-[var(--color-status-danger-text)] font-bold">✗</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">In-app messages</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Booking link for bio</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Booking consult funnel</span> <span className="text-[var(--color-status-danger-text)] font-bold">✗</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Branded consult funnel</span> <span className="text-[var(--color-status-danger-text)] font-bold">✗</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Custom consult funnel</span> <span className="text-[var(--color-status-danger-text)] font-bold">✗</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Photos/reference storage</span> <span className="text-[var(--color-status-danger-text)] font-bold">✗</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Business / Social / Personal dashboard</span> <span className="text-[var(--color-status-danger-text)] font-bold">✗</span></li>
                                         <li className="flex justify-between"><span className="text-muted-foreground">Promotional items</span> <span className="text-foreground font-bold">5 max</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Client import/export data</span> <span className="text-red-400 font-bold">✗</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Maps link on appointments</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Auto medical release forms</span> <span className="text-red-400 font-bold">✗</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Auto consent forms</span> <span className="text-red-400 font-bold">✗</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">QLD Procedure Form 9</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Full client event history</span> <span className="text-red-400 font-bold">✗</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Customer support</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">One-on-one systems creation advice</span> <span className="text-red-400 font-bold">✗</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Client import/export data</span> <span className="text-[var(--color-status-danger-text)] font-bold">✗</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Maps link on appointments</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Auto medical release forms</span> <span className="text-[var(--color-status-danger-text)] font-bold">✗</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Auto consent forms</span> <span className="text-[var(--color-status-danger-text)] font-bold">✗</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">QLD Procedure Form 9</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Full client event history</span> <span className="text-[var(--color-status-danger-text)] font-bold">✗</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Customer support</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">One-on-one systems creation advice</span> <span className="text-[var(--color-status-danger-text)] font-bold">✗</span></li>
                                     </ul>
                                 </div>
 
@@ -629,25 +629,25 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                         <span className="text-xs font-bold px-2 py-0.5 bg-primary/20 text-primary rounded-full">$29/mo</span>
                                     </div>
                                     <ul className="text-[10px] space-y-1 mt-3">
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Tri-app proprietary booking app</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Calendar (client/artist)</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Revenue protection</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">In-app messages</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Booking link for bio</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Booking consult funnel</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Branded consult funnel</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Custom consult funnel</span> <span className="text-red-400 font-bold">✗</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Tri-app proprietary booking app</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Calendar (client/artist)</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Revenue protection</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">In-app messages</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Booking link for bio</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Booking consult funnel</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Branded consult funnel</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Custom consult funnel</span> <span className="text-[var(--color-status-danger-text)] font-bold">✗</span></li>
                                         <li className="flex justify-between"><span className="text-muted-foreground">Photos/reference storage</span> <span className="text-foreground font-bold">1 year storage</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Business / Social / Personal dashboard</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Business / Social / Personal dashboard</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
                                         <li className="flex justify-between"><span className="text-muted-foreground">Promotional items</span> <span className="text-foreground font-bold">100 max</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Client import/export data</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Maps link on appointments</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Auto medical release forms</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Auto consent forms</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">QLD Procedure Form 9</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Full client event history</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Customer support</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">One-on-one systems creation advice</span> <span className="text-red-400 font-bold">✗</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Client import/export data</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Maps link on appointments</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Auto medical release forms</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Auto consent forms</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">QLD Procedure Form 9</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Full client event history</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Customer support</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">One-on-one systems creation advice</span> <span className="text-[var(--color-status-danger-text)] font-bold">✗</span></li>
                                     </ul>
                                 </div>
 
@@ -661,25 +661,25 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                                         <span className="text-xs font-bold px-2 py-0.5 bg-secondary/50 rounded-full">$49/mo</span>
                                     </div>
                                     <ul className="text-[10px] space-y-1 mt-3">
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Tri-app proprietary booking app</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Calendar (client/artist)</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Revenue protection</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">In-app messages</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Booking link for bio</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Booking consult funnel</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Branded consult funnel</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Custom consult funnel</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Tri-app proprietary booking app</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Calendar (client/artist)</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Revenue protection</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">In-app messages</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Booking link for bio</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Booking consult funnel</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Branded consult funnel</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Custom consult funnel</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
                                         <li className="flex justify-between"><span className="text-muted-foreground">Photos/reference storage</span> <span className="text-foreground font-bold">unlimited</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Business / Social / Personal dashboard</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Business / Social / Personal dashboard</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
                                         <li className="flex justify-between"><span className="text-muted-foreground">Promotional items</span> <span className="text-foreground font-bold">unlimited</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Client import/export data</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Client import/export data</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
                                         <li className="flex justify-between"><span className="text-muted-foreground">Maps link on appointments</span> <span className="text-foreground font-bold text-right pl-2">customisable</span></li>
                                         <li className="flex justify-between"><span className="text-muted-foreground">Auto medical release forms</span> <span className="text-foreground font-bold text-right pl-2">customisable</span></li>
                                         <li className="flex justify-between"><span className="text-muted-foreground">Auto consent forms</span> <span className="text-foreground font-bold text-right pl-2">customisable</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">QLD Procedure Form 9</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Full client event history</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">Customer support</span> <span className="text-emerald-500 font-bold">✓</span></li>
-                                        <li className="flex justify-between"><span className="text-muted-foreground">One-on-one systems creation advice</span> <span className="text-emerald-500 font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">QLD Procedure Form 9</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Full client event history</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">Customer support</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
+                                        <li className="flex justify-between"><span className="text-muted-foreground">One-on-one systems creation advice</span> <span className="text-[var(--color-status-success-text)] font-bold">✓</span></li>
                                     </ul>
                                 </div>
                             </div>
@@ -696,8 +696,8 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                             className="space-y-6 pt-2 pb-8"
                         >
                             <div className="text-center space-y-2 mb-8">
-                                <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
-                                    <SettingsIcon className="w-8 h-8 text-emerald-500 animate-spin-slow" />
+                                <div className="w-16 h-16 rounded-full bg-[var(--color-status-success-bg)] flex items-center justify-center mx-auto mb-4">
+                                    <SettingsIcon className="w-8 h-8 text-[var(--color-status-success-text)] animate-spin-slow" />
                                 </div>
                                 <h2 className="text-2xl font-black">Platform Activated</h2>
                                 <p className="text-sm text-muted-foreground">

@@ -97,7 +97,7 @@ export default function ErrorDashboard() {
                             <button
                                 onClick={() => clearResolvedMutation.mutate()}
                                 disabled={clearResolvedMutation.isPending}
-                                className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                                className="text-xs px-3 py-1.5 rounded-lg bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)] hover:bg-[var(--color-status-danger-bg)] transition-colors"
                             >
                                 <Trash2 className="w-3 h-3 inline mr-1" />
                                 Clear Resolved
@@ -156,7 +156,7 @@ export default function ErrorDashboard() {
                             className={cn(
                                 tokens.card.base,
                                 "border-0 p-0 overflow-hidden transition-colors",
-                                !err.resolved && "border-l-2 border-l-red-500/50"
+                                !err.resolved && "border-l-2 border-l-[var(--color-status-danger-text)]/50"
                             )}
                             style={{ background: "rgba(255,255,255,0.03)" }}
                         >
@@ -170,7 +170,7 @@ export default function ErrorDashboard() {
                                 <AlertCircle
                                     className={cn(
                                         "w-4 h-4 shrink-0",
-                                        err.resolved ? "text-emerald-400" : "text-red-400"
+                                        err.resolved ? "text-[var(--color-status-success-text)]" : "text-[var(--color-status-danger-text)]"
                                     )}
                                 />
                                 <div className="flex-1 min-w-0">
@@ -235,7 +235,7 @@ export default function ErrorDashboard() {
                                             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-1">
                                                 Stack Trace
                                             </p>
-                                            <pre className="text-[11px] text-red-300/80 bg-background/80 rounded-lg p-3 overflow-x-auto max-h-48 whitespace-pre-wrap break-all">
+                                            <pre className="text-[11px] text-[var(--color-status-danger-text)]/80 bg-background/80 rounded-lg p-3 overflow-x-auto max-h-48 whitespace-pre-wrap break-all">
                                                 {err.stack}
                                             </pre>
                                         </div>
@@ -246,7 +246,7 @@ export default function ErrorDashboard() {
                                             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-1">
                                                 Component Stack
                                             </p>
-                                            <pre className="text-[11px] text-amber-300/80 bg-background/80 rounded-lg p-3 overflow-x-auto max-h-32 whitespace-pre-wrap break-all">
+                                            <pre className="text-[11px] text-[var(--color-status-warning-text)]/80 bg-background/80 rounded-lg p-3 overflow-x-auto max-h-32 whitespace-pre-wrap break-all">
                                                 {err.componentStack}
                                             </pre>
                                         </div>
@@ -256,7 +256,7 @@ export default function ErrorDashboard() {
                                         <button
                                             onClick={() => resolveMutation.mutate({ id: err.id })}
                                             disabled={resolveMutation.isPending}
-                                            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                                            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] hover:bg-[var(--color-status-success-bg)] transition-colors"
                                         >
                                             <Check className="w-3 h-3" />
                                             Mark Resolved

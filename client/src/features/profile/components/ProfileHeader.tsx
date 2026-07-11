@@ -97,8 +97,8 @@ export function ProfileHeader({
                   variant="secondary"
                   className={`
                                     text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 border
-                                    ${badge.type === "gold" ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 border-yellow-600/20 dark:border-yellow-500/20" : ""}
-                                    ${badge.type === "platinum" ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-600/20 dark:border-purple-500/20" : ""}
+                                    ${badge.type === "gold" ? "bg-[var(--color-status-warning-bg)] text-yellow-600 dark:text-yellow-500 border-yellow-600/20 dark:border-yellow-500/20" : ""}
+                                    ${badge.type === "platinum" ? "bg-[var(--color-status-info-bg)] text-purple-600 dark:text-[var(--color-status-info-text)] border-purple-600/20 dark:border-purple-500/20" : ""}
                                 `}
                 >
                   {badge.label}

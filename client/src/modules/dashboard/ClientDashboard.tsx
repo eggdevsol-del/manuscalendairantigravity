@@ -23,7 +23,7 @@ export function ClientDashboard() {
 
   if (error) {
     return (
-      <div className="p-6 text-center text-red-500">
+      <div className="p-6 text-center text-[var(--color-status-danger-text)]">
         Failed to load dashboard: {error.message}
       </div>
     );

@@ -185,7 +185,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {funnelEnabled ? (
-                  <Eye className="w-5 h-5 text-green-400" />
+                  <Eye className="w-5 h-5 text-[var(--color-success)]" />
                 ) : (
                   <EyeOff className="w-5 h-5 text-muted-foreground" />
                 )}
@@ -240,7 +240,7 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
                   </div>
                 </div>
                 {slugError && (
-                  <p className="text-red-400 text-sm mt-2 flex items-center gap-1">
+                  <p className="text-[var(--color-status-danger-text)] text-sm mt-2 flex items-center gap-1">
                     <AlertCircle className="w-4 h-4" />
                     {slugError}
                   </p>

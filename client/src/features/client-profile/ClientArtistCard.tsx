@@ -51,7 +51,7 @@ function ClientArtistCardStorefront({ artistId }: { artistId: string }) {
           {totalItems > 0 && (
             <button
               onClick={e => { e.stopPropagation(); setIsCartOpen(true); }}
-              className="text-xs bg-indigo-500 hover:bg-indigo-400 text-white px-3 py-1.5 rounded-full font-bold transition-colors shadow-lg"
+              className="text-xs bg-primary hover:bg-primary/80 text-white px-3 py-1.5 rounded-full font-bold transition-colors shadow-lg"
             >
               Checkout ({totalItems})
             </button>
@@ -168,7 +168,7 @@ export function ClientArtistCard({ conv, onShopToggle }: ClientArtistCardProps) 
               >
                 <MessageCircle className="w-4 h-4 text-white" />
                 {conv.unreadCount > 0 && (
-                  <div className="absolute -top-1 -right-1 z-20 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold shadow-lg ring-2 ring-black">
+                  <div className="absolute -top-1 -right-1 z-20 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--color-danger)] text-white text-[10px] font-bold shadow-lg ring-2 ring-black">
                     {conv.unreadCount > 9 ? "9+" : conv.unreadCount}
                   </div>
                 )}

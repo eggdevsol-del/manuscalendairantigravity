@@ -30,7 +30,7 @@ export function CalendarDateStrip7({
               className={cn(
                 "w-10 h-10 flex items-center justify-center rounded-xl text-lg font-bold transition-all duration-200",
                 isActive
-                  ? "bg-black text-white scale-110 shadow-lg"
+                  ? "bg-primary text-primary-foreground scale-110 shadow-lg"
                   : "text-foreground hover:bg-accent/50"
               )}
             >

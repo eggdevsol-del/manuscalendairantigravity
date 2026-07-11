@@ -282,7 +282,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => handleDelete(template.id)}
-                                                className="tap-target h-10 w-10 text-destructive hover:bg-destructive/20 hover:text-red-400 rounded-none rounded-r-lg"
+                                                className="tap-target h-10 w-10 text-destructive hover:bg-destructive/20 hover:text-[var(--color-status-danger-text)] rounded-none rounded-r-lg"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </Button>

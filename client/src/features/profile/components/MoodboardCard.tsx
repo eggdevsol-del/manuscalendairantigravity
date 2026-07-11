@@ -85,7 +85,7 @@ export function MoodboardCard({
             >
               <img src={img} className="w-full h-full object-cover" />
               {isEditMode && (
-                <button className="absolute top-1 right-1 bg-background/80 p-1.5 rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="absolute top-1 right-1 bg-background/80 p-1.5 rounded-full text-[var(--color-status-danger-text)] opacity-0 group-hover:opacity-100 transition-opacity">
                   <Trash2 className="w-3 h-3" />
                 </button>
               )}
@@ -170,7 +170,7 @@ export function MoodboardCard({
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="text-red-500 hover:bg-red-500/10 hover:text-red-500 z-10"
+                  className="text-[var(--color-status-danger-text)] hover:bg-[var(--color-status-danger-bg)] hover:text-[var(--color-status-danger-text)] z-10"
                   onClick={e => {
                     e.stopPropagation();
                     if (confirm("Delete this board?")) onDeleteBoard(board.id);

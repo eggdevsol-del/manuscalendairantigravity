@@ -37,7 +37,7 @@ export function StatCard({
               <span
                 className={cn(
                   "text-xs font-medium",
-                  trendUp ? "text-green-500" : "text-red-500"
+                  trendUp ? "text-[var(--color-success)]" : "text-[var(--color-status-danger-text)]"
                 )}
               >
                 {trend}

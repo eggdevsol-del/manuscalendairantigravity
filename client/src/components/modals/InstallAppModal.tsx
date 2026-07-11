@@ -70,20 +70,20 @@ export function InstallAppModal({ isOpen, onClose }: InstallAppModalProps) {
 
         <div className="bg-secondary/50 rounded-2xl p-4 w-full border border-border text-left space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
-              <span className="text-green-500 text-xs">✓</span>
+            <div className="w-8 h-8 rounded-full bg-[var(--color-status-success-bg)] flex items-center justify-center">
+              <span className="text-[var(--color-success)] text-xs">✓</span>
             </div>
             <span className="text-sm font-medium">Manage Appointments</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
-              <span className="text-green-500 text-xs">✓</span>
+            <div className="w-8 h-8 rounded-full bg-[var(--color-status-success-bg)] flex items-center justify-center">
+              <span className="text-[var(--color-success)] text-xs">✓</span>
             </div>
             <span className="text-sm font-medium">Access Promotions</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
-              <span className="text-green-500 text-xs">✓</span>
+            <div className="w-8 h-8 rounded-full bg-[var(--color-status-success-bg)] flex items-center justify-center">
+              <span className="text-[var(--color-success)] text-xs">✓</span>
             </div>
             <span className="text-sm font-medium">Instant Notifications</span>
           </div>

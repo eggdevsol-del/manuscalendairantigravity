@@ -15,8 +15,8 @@ export function InventoryTier() {
     <div className="pt-2">
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-card border border-border/50 rounded-md p-4 flex flex-col justify-between">
-          <div className="w-8 h-8 rounded-md bg-amber-500/10 flex items-center justify-center mb-3">
-            <AlertTriangle className="w-4 h-4 text-amber-500" />
+          <div className="w-8 h-8 rounded-md bg-[var(--color-status-warning-bg)] flex items-center justify-center mb-3">
+            <AlertTriangle className="w-4 h-4 text-[var(--color-status-warning-text)]" />
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">Low Stock Alerts</p>
@@ -25,8 +25,8 @@ export function InventoryTier() {
         </div>
 
         <div className="bg-card border border-border/50 rounded-md p-4 flex flex-col justify-between">
-          <div className="w-8 h-8 rounded-md bg-blue-500/10 flex items-center justify-center mb-3">
-            <Box className="w-4 h-4 text-blue-500" />
+          <div className="w-8 h-8 rounded-md bg-[var(--color-status-info-bg)] flex items-center justify-center mb-3">
+            <Box className="w-4 h-4 text-[var(--color-status-info-text)]" />
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">Total Products</p>

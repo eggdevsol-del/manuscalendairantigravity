@@ -70,11 +70,11 @@ export function StudioInviteMessage({
       <div className="pl-4 pr-3 py-3 space-y-3">
         {/* Header */}
         <div className="space-y-0.5">
-          <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-indigo-400">
+          <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-[var(--color-status-info-text)]">
             Studio Invitation
           </p>
           <h3 className="text-sm font-bold text-foreground leading-tight truncate flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-indigo-400" />
+            <Building2 className="w-4 h-4 text-[var(--color-status-info-text)]" />
             {studioName}
           </h3>
         </div>
@@ -92,10 +92,10 @@ export function StudioInviteMessage({
             className={cn(
               "flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider",
               isAccepted
-                ? "bg-emerald-500/10 text-emerald-500"
+                ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)]"
                 : status === "declined"
-                  ? "bg-red-500/10 text-red-500"
-                  : "bg-indigo-500/10 text-indigo-400"
+                  ? "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]"
+                  : "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]"
             )}
           >
             {isAccepted && <Check className="w-2.5 h-2.5" />}
@@ -105,7 +105,7 @@ export function StudioInviteMessage({
           <div className="flex items-center gap-2">
             {/* View details (Only when pending, or if we want to see it anytime) */}
             {isPending && isArtist && !isOwn && (
-              <div className="text-indigo-400 text-[10px] font-bold flex items-center gap-0.5 group-hover:text-indigo-300 transition-colors">
+              <div className="text-[var(--color-status-info-text)] text-[10px] font-bold flex items-center gap-0.5 group-hover:text-[var(--color-status-info-text)] transition-colors">
                 Respond <ArrowRight className="w-3 h-3" />
               </div>
             )}

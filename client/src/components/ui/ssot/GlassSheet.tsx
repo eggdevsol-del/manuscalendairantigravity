@@ -20,12 +20,12 @@ export function GlassSheet({ children, className }: GlassSheetProps) {
     <div
       className={cn(
         tokens.sheetMain.container,
-        "dark:bg-slate-950/40 border-t border-border",
+        "dark:bg-background/40 border-t border-border",
         className
       )}
     >
       {/* Light mode background gradient overlay (matches wrapper gradient at 90% opacity) */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-100/90 via-purple-50/90 to-cyan-50/90 dark:hidden pointer-events-none" />
+      <div className="absolute inset-0 bg-popover dark:hidden pointer-events-none" />
       {/* Top Highlight Line */}
       <div className={cn(tokens.sheetMain.highlight, "z-10")} />
       {/* Content wrapper with relative positioning to be above gradient */}

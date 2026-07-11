@@ -92,8 +92,8 @@ export default function StudioDashboard() {
         <div
           className={cn(tokens.contentContainer.base, "pt-12 text-center px-4")}
         >
-          <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
-            <ShieldAlert className="w-8 h-8 text-red-500" />
+          <div className="w-16 h-16 rounded-full bg-[var(--color-status-danger-bg)] flex items-center justify-center mx-auto mb-4">
+            <ShieldAlert className="w-8 h-8 text-[var(--color-status-danger-text)]" />
           </div>
           <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
           <p className="text-muted-foreground">
@@ -284,12 +284,12 @@ export default function StudioDashboard() {
                                 {member.user.email}
                               </span>
                               {member.role === "owner" && (
-                                <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 text-[10px] font-bold uppercase tracking-wider">
+                                <span className="px-2 py-0.5 rounded bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)] text-[10px] font-bold uppercase tracking-wider">
                                   Owner
                                 </span>
                               )}
                               {member.role === "manager" && (
-                                <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-500 text-[10px] font-bold uppercase tracking-wider">
+                                <span className="px-2 py-0.5 rounded bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] text-[10px] font-bold uppercase tracking-wider">
                                   Manager
                                 </span>
                               )}
@@ -302,7 +302,7 @@ export default function StudioDashboard() {
                           currentStudio.role === "owner" && (
                             <button
                               onClick={() => handleRemoveMember(member.user.id)}
-                              className="p-2.5 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                              className="p-2.5 text-muted-foreground hover:text-[var(--color-status-danger-text)] hover:bg-red-400/10 rounded-lg transition-colors"
                             >
                               <Trash2 className="w-5 h-5" />
                             </button>
@@ -349,7 +349,7 @@ export default function StudioDashboard() {
                           {currentStudio.role === "owner" && (
                             <button
                               onClick={() => handleRemoveMember(member.user.id)}
-                              className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                              className="p-2 text-muted-foreground hover:text-[var(--color-status-danger-text)] hover:bg-red-400/10 rounded-lg transition-colors"
                               title="Cancel Invite"
                             >
                               <Trash2 className="w-5 h-5" />

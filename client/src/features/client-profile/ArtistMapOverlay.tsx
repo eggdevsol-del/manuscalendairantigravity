@@ -316,7 +316,7 @@ export function ArtistMapOverlay({ onClose, conversations }: ArtistMapOverlayPro
             <span>My Artists</span>
           </div>
           <div className="flex items-center gap-2 text-xs">
-            <div className="w-3 h-3 rounded-full bg-emerald-500" />
+            <div className="w-3 h-3 rounded-full bg-[var(--color-success)]" />
             <span>Nearby</span>
           </div>
         </div>

@@ -233,7 +233,7 @@ export function MonthBreakdown({
 
           {/* Remaining Balance / Expected Revenue */}
           <div className="text-center">
-            <div className="text-xl font-medium text-green-400">
+            <div className="text-xl font-medium text-[var(--color-success)]">
               {new Intl.NumberFormat("en-US", {
                 style: "currency",
                 currency: "USD",
@@ -251,7 +251,7 @@ export function MonthBreakdown({
           {/* Months in Advance (Artist Only) */}
           {!isClient && (
             <div className="text-center">
-              <div className="text-xl font-medium text-blue-400">
+              <div className="text-xl font-medium text-[var(--color-status-info-text)]">
                 {monthsInAdvance}
               </div>
               <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">

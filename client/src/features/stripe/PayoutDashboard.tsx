@@ -57,10 +57,10 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
     <div className="space-y-5">
       {/* Status Banner */}
       {data.pendingVerification && (
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+        <div className="bg-[var(--color-status-warning-bg)] border border-[var(--color-status-warning-border)] rounded-xl p-3 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-[var(--color-status-warning-text)] shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs text-amber-400 font-semibold">ID Verification Pending</p>
+            <p className="text-xs text-[var(--color-status-warning-text)] font-semibold">ID Verification Pending</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">Your identity document is being reviewed. Payouts will be enabled once verified (usually within minutes).</p>
           </div>
         </div>
@@ -69,8 +69,8 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
       {/* Status Card */}
       <div className="bg-secondary/50 border border-border rounded-2xl p-4 space-y-4">
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${data.payoutsEnabled ? "bg-emerald-500/20 border border-emerald-500/40" : "bg-amber-500/20 border border-amber-500/40"}`}>
-            <Banknote className={`w-5 h-5 ${data.payoutsEnabled ? "text-emerald-400" : "text-amber-400"}`} />
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${data.payoutsEnabled ? "bg-[var(--color-status-success-bg)] border border-[var(--color-status-success-border)]" : "bg-[var(--color-status-warning-bg)] border border-[var(--color-status-warning-border)]"}`}>
+            <Banknote className={`w-5 h-5 ${data.payoutsEnabled ? "text-[var(--color-status-success-text)]" : "text-[var(--color-status-warning-text)]"}`} />
           </div>
           <div>
             <h3 className="font-bold text-foreground">{data.payoutsEnabled ? "Payouts Active" : "Payouts Pending"}</h3>
@@ -92,7 +92,7 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-secondary/50 rounded-xl p-3 text-center">
             <p className="text-[10px] text-muted-foreground mb-1">Available</p>
-            <p className="text-lg font-bold text-emerald-400">{formatCents(data.availableBalance)}</p>
+            <p className="text-lg font-bold text-[var(--color-status-success-text)]">{formatCents(data.availableBalance)}</p>
           </div>
           <div className="bg-secondary/50 rounded-xl p-3 text-center">
             <p className="text-[10px] text-muted-foreground mb-1">Pending</p>
@@ -154,14 +154,14 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
         {!confirmDisconnect ? (
           <button
             onClick={() => setConfirmDisconnect(true)}
-            className="w-full flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground/60 hover:text-red-400 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground/60 hover:text-[var(--color-status-danger-text)] transition-colors"
           >
             <Unlink className="w-3.5 h-3.5" />
             Disconnect Bank Account
           </button>
         ) : (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 space-y-3">
-            <p className="text-xs text-red-400 font-semibold">Are you sure?</p>
+          <div className="bg-[var(--color-status-danger-bg)] border border-[var(--color-status-danger-border)] rounded-xl p-4 space-y-3">
+            <p className="text-xs text-[var(--color-status-danger-text)] font-semibold">Are you sure?</p>
             <p className="text-[10px] text-muted-foreground">This will disconnect your bank account. You'll need to go through setup again to receive payouts.</p>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => setConfirmDisconnect(false)} className="flex-1 text-xs">
@@ -179,7 +179,7 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
                     toast.error(err.message || "Failed to disconnect.");
                   }
                 }}
-                className="flex-1 text-xs bg-red-500/80 text-white hover:bg-red-500"
+                className="flex-1 text-xs bg-[var(--color-danger)] text-white hover:bg-[var(--color-danger)]"
               >
                 {disconnectStripe.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Disconnect"}
               </Button>

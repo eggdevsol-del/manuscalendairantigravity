@@ -141,7 +141,7 @@ export function SupplierStorefront({
                 className={cn(
                   "snap-start shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-colors border",
                   showInStockOnly 
-                    ? "bg-emerald-500 text-white border-emerald-500" 
+                    ? "bg-[var(--color-success)] text-white border-emerald-500" 
                     : "bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary hover:text-foreground"
                 )}
               >
@@ -181,7 +181,7 @@ export function SupplierStorefront({
       <div className="w-full p-4 mt-2">
         {isProductsLoading && !products ? (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-            <Loader2 className="w-8 h-8 animate-spin mb-4 text-indigo-500" />
+            <Loader2 className="w-8 h-8 animate-spin mb-4 text-[var(--color-status-info-text)]" />
             <p>Loading catalog...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
@@ -229,8 +229,8 @@ export function SupplierStorefront({
                       <div className={cn(
                         "px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider backdrop-blur-md shadow-sm border",
                         isAvailable 
-                          ? "bg-emerald-500/90 text-white border-emerald-400/50" 
-                          : "bg-red-500/90 text-white border-red-400/50"
+                          ? "bg-[var(--color-success)] text-white border-[var(--color-status-success-border)]" 
+                          : "bg-[var(--color-danger)] text-white border-[var(--color-status-danger-border)]"
                       )}>
                         {isAvailable ? "In Stock" : "Sold Out"}
                       </div>

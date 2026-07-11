@@ -190,7 +190,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-border rounded-[12px] cursor-pointer hover:border-primary/30 transition-colors bg-secondary/50">
               {idFile ? (
                 <div className="flex flex-col items-center gap-2">
-                  <Check className="w-8 h-8 text-emerald-400" />
+                  <Check className="w-8 h-8 text-[var(--color-status-success-text)]" />
                   <span className="text-sm text-foreground font-medium">{idFile.name}</span>
                   <span className="text-[10px] text-muted-foreground">Tap to change</span>
                 </div>
@@ -252,7 +252,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             Next <ChevronRight className="w-4 h-4" />
           </Button>
         ) : (
-          <Button onClick={handleSubmit} disabled={submitting} className="flex-1 gap-2 bg-emerald-500/80 text-white hover:bg-emerald-500">
+          <Button onClick={handleSubmit} disabled={submitting} className="flex-1 gap-2 bg-[var(--color-success)] text-white hover:bg-[var(--color-success)]">
             {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</> : <><Check className="w-4 h-4" /> Submit & Enable Payouts</>}
           </Button>
         )}

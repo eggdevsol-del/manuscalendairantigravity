@@ -137,7 +137,7 @@ export default function BottomNav() {
                         backgroundColor: dangerColor,
                         fontSize: 9,
                         fontWeight: 700,
-                        color: "#ffffff",
+                        color: "var(--primary-foreground)",
                         boxShadow: `0 0 0 2px ${badgeBorder}`,
                       }}
                     >

@@ -58,17 +58,17 @@
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  color: #888;
-  background: #1a1a1a;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-surface);
 }
 
 /* ── Logo ── */
 .client-home-logo {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   font-size: 22px;
   font-weight: 400;
   letter-spacing: -1px;
-  color: #ffffff;
+  color: var(--foreground);
   text-transform: lowercase;
 }
 
@@ -88,7 +88,7 @@
   padding: 5px 8px;
   border-radius: 8px;
   cursor: pointer;
-  color: #555;
+  color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -98,14 +98,14 @@
 
 .client-home-toggle-btn.active {
   background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  color: var(--foreground);
 }
 
 /* ── Content area ── */
 .client-home-content {
   position: fixed;
   inset: 0;
-  background: #050505;
+  background: var(--color-bg-base);
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;

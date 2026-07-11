@@ -152,7 +152,7 @@ export function InlineFormSigning({
                                 className={cn(
                                   "flex-1 py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-widest border transition-all",
                                   checkedItems[itemNumber] === "yes"
-                                    ? "bg-orange-500/20 text-orange-500 border-orange-500/50"
+                                    ? "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)] border-[var(--color-status-warning-border)]"
                                     : "bg-transparent text-muted-foreground border-border hover:border-border hover:bg-secondary/50"
                                 )}
                               >
@@ -168,7 +168,7 @@ export function InlineFormSigning({
                                 className={cn(
                                   "flex-1 py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-widest border transition-all",
                                   checkedItems[itemNumber] === "no"
-                                    ? "bg-emerald-500/20 text-emerald-500 border-emerald-500/50"
+                                    ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border-[var(--color-status-success-border)]"
                                     : "bg-transparent text-muted-foreground border-border hover:border-border hover:bg-secondary/50"
                                 )}
                               >

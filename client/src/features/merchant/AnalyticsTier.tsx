@@ -16,8 +16,8 @@ export function AnalyticsTier() {
     <div className="pt-2">
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-card border border-border/50 rounded-md p-4 flex flex-col justify-between">
-          <div className="w-8 h-8 rounded-md bg-emerald-500/10 flex items-center justify-center mb-3">
-            <TrendingUp className="w-4 h-4 text-emerald-500" />
+          <div className="w-8 h-8 rounded-md bg-[var(--color-status-success-bg)] flex items-center justify-center mb-3">
+            <TrendingUp className="w-4 h-4 text-[var(--color-status-success-text)]" />
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">Verified Revenue</p>
@@ -26,8 +26,8 @@ export function AnalyticsTier() {
         </div>
 
         <div className="bg-card border border-border/50 rounded-md p-4 flex flex-col justify-between">
-          <div className="w-8 h-8 rounded-md bg-blue-500/10 flex items-center justify-center mb-3">
-            <Package className="w-4 h-4 text-blue-500" />
+          <div className="w-8 h-8 rounded-md bg-[var(--color-status-info-bg)] flex items-center justify-center mb-3">
+            <Package className="w-4 h-4 text-[var(--color-status-info-text)]" />
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">Fulfilled Orders</p>
@@ -36,8 +36,8 @@ export function AnalyticsTier() {
         </div>
 
         <div className="bg-card border border-border/50 rounded-md p-4 flex flex-col justify-between">
-          <div className="w-8 h-8 rounded-md bg-orange-500/10 flex items-center justify-center mb-3">
-            <Clock className="w-4 h-4 text-orange-500" />
+          <div className="w-8 h-8 rounded-md bg-[var(--color-status-warning-bg)] flex items-center justify-center mb-3">
+            <Clock className="w-4 h-4 text-[var(--color-status-warning-text)]" />
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">Pending Orders</p>
@@ -46,7 +46,7 @@ export function AnalyticsTier() {
         </div>
 
         <div className="bg-card border border-border/50 rounded-md p-4 flex flex-col justify-between">
-          <div className="w-8 h-8 rounded-md bg-purple-500/10 flex items-center justify-center mb-3">
+          <div className="w-8 h-8 rounded-md bg-[var(--color-status-info-bg)] flex items-center justify-center mb-3">
             <Activity className="w-4 h-4 text-purple-500" />
           </div>
           <div>

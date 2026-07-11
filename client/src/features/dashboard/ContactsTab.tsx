@@ -133,7 +133,7 @@ export function ContactsTab() {
                   {supplier.logoUrl ? (
                     <img src={supplier.logoUrl} alt={supplier.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
+                    <div className="w-full h-full bg-gradient-to-br from-[var(--color-status-info-bg)] to-purple-500/20 flex items-center justify-center">
                       <span className="text-4xl font-black text-white/30">{supplier.name.charAt(0)}</span>
                     </div>
                   )}
@@ -286,7 +286,7 @@ export function ContactsTab() {
                 <Plus className="w-4 h-4 rotate-45" />
               </button>
               
-              <div className="w-12 h-12 rounded-full bg-indigo-500/20 text-indigo-500 flex items-center justify-center mb-4">
+              <div className="w-12 h-12 rounded-full bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] flex items-center justify-center mb-4">
                 <LinkIcon className="w-6 h-6" />
               </div>
               

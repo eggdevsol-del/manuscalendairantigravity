@@ -200,7 +200,7 @@ export function ProposalFABMenu({
                       <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">
                         {promo.name}
                       </span>
-                      <span className="text-[10px] font-bold text-emerald-500">
+                      <span className="text-[10px] font-bold text-[var(--color-status-success-text)]">
                         {promo.valueType === "fixed"
                           ? `$${promo.value / 100}`
                           : `${promo.value}% OFF`}
@@ -266,7 +266,7 @@ export function ProposalFABMenu({
                     className={cn(
                       "text-xs font-bold",
                       hasDiscount && label === "Total"
-                        ? "text-emerald-500"
+                        ? "text-[var(--color-status-success-text)]"
                         : "text-foreground"
                     )}
                   >
@@ -280,10 +280,10 @@ export function ProposalFABMenu({
             {hasDiscount && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-emerald-500/10"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-[var(--color-status-success-bg)]"
               >
-                <Tag className="w-3 h-3 text-emerald-500" />
-                <span className="text-[9px] font-medium text-emerald-500">
+                <Tag className="w-3 h-3 text-[var(--color-status-success-text)]" />
+                <span className="text-[9px] font-medium text-[var(--color-status-success-text)]">
                   {displayPromotionName} −${displayDiscountAmount.toFixed(2)}
                 </span>
               </motion.div>
@@ -357,7 +357,7 @@ export function ProposalFABMenu({
                     disabled={isPendingAction}
                     className={cn(
                       "py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95",
-                      "bg-secondary/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                      "bg-secondary/50 text-muted-foreground hover:bg-[var(--color-status-danger-bg)] hover:text-[var(--color-status-danger-text)]"
                     )}
                   >
                     Decline
@@ -392,12 +392,12 @@ export function ProposalFABMenu({
                 variants={fab.animation.item}
                 className="space-y-2 pt-1"
               >
-                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] bg-orange-500/10">
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] bg-[var(--color-status-warning-bg)]">
                   <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-500 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500" />
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-warning)] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--color-warning)]" />
                   </span>
-                  <span className="text-[9px] font-medium text-orange-500">
+                  <span className="text-[9px] font-medium text-[var(--color-status-warning-text)]">
                     Awaiting client response
                   </span>
                 </div>
@@ -405,7 +405,7 @@ export function ProposalFABMenu({
                   onClick={onCancel}
                   className={cn(
                     "w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95",
-                    "bg-secondary/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                    "bg-secondary/50 text-muted-foreground hover:bg-[var(--color-status-danger-bg)] hover:text-[var(--color-status-danger-text)]"
                   )}
                 >
                   Cancel Proposal
@@ -419,9 +419,9 @@ export function ProposalFABMenu({
                 variants={fab.animation.item}
                 className="flex flex-col gap-2 w-full pt-1"
               >
-                <div className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-emerald-500/10">
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
-                  <span className="text-[10px] font-bold text-emerald-500">
+                <div className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-[var(--color-status-success-bg)]">
+                  <Check className="w-3.5 h-3.5 text-[var(--color-status-success-text)]" />
+                  <span className="text-[10px] font-bold text-[var(--color-status-success-text)]">
                     Accepted
                   </span>
                 </div>
@@ -431,7 +431,7 @@ export function ProposalFABMenu({
                     disabled={isPendingAction}
                     className={cn(
                       "w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95",
-                      "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/20 flex items-center justify-center gap-1.5"
+                      "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border border-[var(--color-status-success-border)] hover:bg-[var(--color-status-success-bg)] flex items-center justify-center gap-1.5"
                     )}
                   >
                     {isPendingAction ? (
@@ -450,10 +450,10 @@ export function ProposalFABMenu({
             {status === "rejected" && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-red-500/10"
+                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-[var(--color-status-danger-bg)]"
               >
-                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
-                <span className="text-[10px] font-bold text-red-500">
+                <AlertCircle className="w-3.5 h-3.5 text-[var(--color-status-danger-text)]" />
+                <span className="text-[10px] font-bold text-[var(--color-status-danger-text)]">
                   Declined
                 </span>
               </motion.div>

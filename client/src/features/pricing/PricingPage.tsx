@@ -154,7 +154,7 @@ export function PricingPage({
                         <div key={i} className="flex items-center gap-2.5">
                             {f.included ? (
                                 <div className="w-4 h-4 rounded-full bg-secondary/50 flex items-center justify-center shrink-0">
-                                    <Check className="w-2.5 h-2.5 text-emerald-400" />
+                                    <Check className="w-2.5 h-2.5 text-[var(--color-status-success-text)]" />
                                 </div>
                             ) : (
                                 <div className="w-4 h-4 rounded-full bg-secondary/50 flex items-center justify-center shrink-0">
@@ -166,7 +166,7 @@ export function PricingPage({
                                     "text-sm leading-tight",
                                     f.included
                                         ? f.highlight
-                                            ? "text-amber-400 font-medium"
+                                            ? "text-[var(--color-status-warning-text)] font-medium"
                                             : "text-foreground/80"
                                         : "text-muted-foreground/50 line-through"
                                 )}
@@ -221,7 +221,7 @@ export function PricingPage({
                                 className={cn(
                                     "text-sm leading-tight",
                                     f.highlight
-                                        ? "text-emerald-400 font-medium"
+                                        ? "text-[var(--color-status-success-text)] font-medium"
                                         : "text-foreground/80"
                                 )}
                             >
@@ -266,16 +266,16 @@ export function PricingPage({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: 0.2 }}
-                className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5"
+                className="bg-[var(--color-status-success-bg)] border border-[var(--color-status-success-border)] rounded-2xl p-5"
             >
                 <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-5 h-5 text-emerald-400" />
-                    <h3 className="font-bold text-emerald-400 text-sm">
+                    <TrendingUp className="w-5 h-5 text-[var(--color-status-success-text)]" />
+                    <h3 className="font-bold text-[var(--color-status-success-text)] text-sm">
                         Pro pays for itself
                     </h3>
                 </div>
                 <p className="text-sm text-foreground/80 leading-relaxed">
-                    At just <strong className="text-emerald-400">$3,000/month in bookings</strong>,
+                    At just <strong className="text-[var(--color-status-success-text)]">$3,000/month in bookings</strong>,
                     the {fmtRate(freeTier.artistFeeRate)} fee saving covers
                     the {proPrice}/month subscription.
                     After that, you keep every dollar.
@@ -335,7 +335,7 @@ export function PricingPage({
                                 <span className="text-foreground/70">
                                     You receive ({isPro ? `Pro ${proArtistFee}` : `Free ${freeArtistFee}`} fee)
                                 </span>
-                                <span className="font-bold text-emerald-400">
+                                <span className="font-bold text-[var(--color-status-success-text)]">
                                     ${((isPro ? exampleProNet : exampleFreeNet) / 100).toFixed(2)}
                                 </span>
                             </div>

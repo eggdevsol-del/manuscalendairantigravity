@@ -1,4 +1,4 @@
-ï»¿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Clock,
   Loader2,
@@ -56,7 +56,7 @@ interface BookingFABMenuProps {
   className?: string;
 }
 
-/** Collapsible policy dropdown Ã”Ã‡Ã¶ fetches policy content from server */
+/** Collapsible policy dropdown ÔÇö fetches policy content from server */
 function PolicyDropdown({
   label,
   artistId,
@@ -156,7 +156,7 @@ export function BookingFABMenu({
   const [startDate] = useState(new Date());
   const [calendarMonth, setCalendarMonth] = useState<Date>(startDate);
 
-  // Fetch calendar indicators for â”¬â–’1 month around the viewed calendar month
+  // Fetch calendar indicators for -¦1 month around the viewed calendar month
   const { data: dateIndicators } = trpc.booking.getCalendarIndicators.useQuery(
     {
       artistId: artistId || "",
@@ -406,7 +406,7 @@ export function BookingFABMenu({
                       <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">
                         {promo.name}
                       </span>
-                      <span className="text-[10px] font-bold text-emerald-500">
+                      <span className="text-[10px] font-bold text-[var(--color-status-success-text)]">
                         {promo.valueType === "fixed"
                           ? `$${promo.value / 100}`
                           : `${promo.value}% OFF`}
@@ -473,7 +473,7 @@ export function BookingFABMenu({
                   <span
                     className={cn(
                       "text-xs font-bold",
-                      accent ? "text-emerald-500" : "text-foreground"
+                      accent ? "text-[var(--color-status-success-text)]" : "text-foreground"
                     )}
                   >
                     {value}
@@ -486,10 +486,10 @@ export function BookingFABMenu({
             {hasDiscount && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-emerald-500/10"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-[var(--color-status-success-bg)]"
               >
-                <Tag className="w-3 h-3 text-emerald-500" />
-                <span className="text-[9px] font-medium text-emerald-500">
+                <Tag className="w-3 h-3 text-[var(--color-status-success-text)]" />
+                <span className="text-[9px] font-medium text-[var(--color-status-success-text)]">
                   {hasCurrentDiscount
                     ? appliedPromotion.name
                     : proposalMeta.promotionName || "Promotion"}{" "}
@@ -521,7 +521,7 @@ export function BookingFABMenu({
                         {format(new Date(dateStr), "EEE, MMM d")}
                       </p>
                       <p className="text-[8px] text-muted-foreground">
-                        {format(new Date(dateStr), "h:mm a")} â”¬Ã€{" "}
+                        {format(new Date(dateStr), "h:mm a")} -À{" "}
                         {proposalMeta.serviceDuration}m
                       </p>
                     </div>
@@ -530,7 +530,7 @@ export function BookingFABMenu({
               </motion.div>
             )}
 
-            {/* Client actions Ã”Ã‡Ã¶ pending */}
+            {/* Client actions ÔÇö pending */}
             {!isArtist && proposalMeta.status === "pending" && (
               <motion.div
                 variants={fab.animation.item}
@@ -579,7 +579,7 @@ export function BookingFABMenu({
                   <button
                     onClick={onRejectProposal}
                     disabled={isPendingProposalAction}
-                    className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                    className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-[var(--color-status-danger-bg)] hover:text-[var(--color-status-danger-text)]"
                   >
                     Decline
                   </button>
@@ -608,44 +608,44 @@ export function BookingFABMenu({
               </motion.div>
             )}
 
-            {/* Artist actions Ã”Ã‡Ã¶ pending */}
+            {/* Artist actions ÔÇö pending */}
             {isArtist && proposalMeta.status === "pending" && (
               <motion.div
                 variants={fab.animation.item}
                 className="space-y-2 pt-1"
               >
-                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] bg-orange-500/10">
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] bg-[var(--color-status-warning-bg)]">
                   <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-500 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500" />
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-warning)] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--color-warning)]" />
                   </span>
-                  <span className="text-[9px] font-medium text-orange-500">
+                  <span className="text-[9px] font-medium text-[var(--color-status-warning-text)]">
                     Awaiting client response
                   </span>
                 </div>
                 <button
                   onClick={onCancelProposal}
-                  className="w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                  className="w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-[var(--color-status-danger-bg)] hover:text-[var(--color-status-danger-text)]"
                 >
                   Cancel Proposal
                 </button>
               </motion.div>
             )}
 
-            {/* Status Ã”Ã‡Ã¶ accepted */}
+            {/* Status ÔÇö accepted */}
             {proposalMeta.status === "accepted" && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-emerald-500/10"
+                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-[var(--color-status-success-bg)]"
               >
-                <Check className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="text-[10px] font-bold text-emerald-500">
+                <Check className="w-3.5 h-3.5 text-[var(--color-status-success-text)]" />
+                <span className="text-[10px] font-bold text-[var(--color-status-success-text)]">
                   Accepted
                 </span>
               </motion.div>
             )}
 
-            {/* Open in Maps Ã”Ã‡Ã¶ client only, accepted */}
+            {/* Open in Maps ÔÇö client only, accepted */}
             {!isArtist &&
               proposalMeta.status === "accepted" &&
               artistSettings?.businessAddress && (
@@ -684,14 +684,14 @@ export function BookingFABMenu({
                 </motion.div>
               )}
 
-            {/* Status Ã”Ã‡Ã¶ rejected */}
+            {/* Status ÔÇö rejected */}
             {proposalMeta.status === "rejected" && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-red-500/10"
+                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-[var(--color-status-danger-bg)]"
               >
-                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
-                <span className="text-[10px] font-bold text-red-500">
+                <AlertCircle className="w-3.5 h-3.5 text-[var(--color-status-danger-text)]" />
+                <span className="text-[10px] font-bold text-[var(--color-status-danger-text)]">
                   Declined
                 </span>
               </motion.div>
@@ -702,7 +702,7 @@ export function BookingFABMenu({
         {/* ===== BOOKING WIZARD (hidden when proposal or voucher list is shown) ===== */}
         {!showProposal && !showVoucherList && (
           <>
-            {/* Panel Header Ã”Ã‡Ã¶ SSOT label style */}
+            {/* Panel Header ÔÇö SSOT label style */}
             <motion.div variants={fab.animation.item} className={fab.itemRow}>
               {step !== "service" && step !== "success" && (
                 <button onClick={goBack} className={fab.itemButton}>
@@ -721,7 +721,7 @@ export function BookingFABMenu({
               )}
             </motion.div>
 
-            {/* STEP: SERVICE Ã”Ã‡Ã¶ SSOT cards: transparent bg, 4px radius, no gap */}
+            {/* STEP: SERVICE ÔÇö SSOT cards: transparent bg, 4px radius, no gap */}
             {step === "service" && (
               <div className="flex flex-col -my-2 w-full">
                 {artistServices.map(service => (
@@ -750,7 +750,7 @@ export function BookingFABMenu({
                       </p>
                       <p className="text-[9px] text-muted-foreground font-mono flex items-center gap-1">
                         <Clock className="w-2.5 h-2.5 shrink-0" />
-                        {service.duration}m â”¬Ã€ ${service.price} â”¬Ã€{" "}
+                        {service.duration}m -À ${service.price} -À{" "}
                         {service.sittings || 1}s
                       </p>
                     </div>
@@ -768,7 +768,7 @@ export function BookingFABMenu({
               </motion.div>
             )}
 
-            {/* STEP: FREQUENCY Ã”Ã‡Ã¶ SSOT cards: transparent bg, 4px radius, no gap */}
+            {/* STEP: FREQUENCY ÔÇö SSOT cards: transparent bg, 4px radius, no gap */}
             {step === "frequency" && (
               <div className="flex flex-col -my-2 w-full">
                 {freqOptions.map(({ id, label, Icon }) => {
@@ -858,7 +858,7 @@ export function BookingFABMenu({
               </div>
             )}
 
-            {/* STEP: REVIEW Ã”Ã‡Ã¶ SSOT cards for data rows */}
+            {/* STEP: REVIEW ÔÇö SSOT cards for data rows */}
             {step === "review" && (
               <>
                 {isLoadingAvailability && (
@@ -1015,7 +1015,7 @@ export function BookingFABMenu({
               </>
             )}
 
-            {/* STEP: SUCCESS Ã”Ã‡Ã¶ SSOT cards */}
+            {/* STEP: SUCCESS ÔÇö SSOT cards */}
             {step === "success" && (
               <div className="flex flex-col -my-2 w-full">
                 <motion.div

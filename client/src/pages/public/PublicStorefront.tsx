@@ -17,9 +17,9 @@ function StorefrontContent({ slug, storefront }: { slug: string; storefront: any
   const { items, addItem, totalItems, setIsCartOpen } = useCart();
 
   return (
-    <div className="h-[100dvh] overflow-y-auto overflow-x-hidden bg-[#050505] text-white font-sans pb-32">
+    <div className="h-[100dvh] overflow-y-auto overflow-x-hidden bg-background text-white font-sans pb-32">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-[#050505]/80 backdrop-blur-xl border-b border-border px-4 py-4 flex items-center justify-between">
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border px-4 py-4 flex items-center justify-between">
         <button 
           onClick={() => setLocation(`/${slug}`)}
           className="p-2 -ml-2 rounded-full hover:bg-secondary/50 transition-colors"
@@ -33,7 +33,7 @@ function StorefrontContent({ slug, storefront }: { slug: string; storefront: any
         >
           <ShoppingCart className="w-5 h-5 text-muted-foreground" />
           {totalItems > 0 && (
-            <span className="absolute top-0 right-0 w-4 h-4 bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
+            <span className="absolute top-0 right-0 w-4 h-4 bg-primary text-white text-[10px] font-bold flex items-center justify-center rounded-full">
               {totalItems}
             </span>
           )}
@@ -98,7 +98,7 @@ export default function PublicStorefront() {
 
   if (isLoading) {
     return (
-      <div className="min-h-[100dvh] bg-[#050505] flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
       </div>
     );
@@ -106,7 +106,7 @@ export default function PublicStorefront() {
 
   if (error || !storefront) {
     return (
-      <div className="min-h-[100dvh] bg-[#050505] flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center p-6 text-center">
         <h1 className="text-2xl font-bold text-white mb-2">Store Not Found</h1>
         <p className="text-muted-foreground mb-6">This artist may not have their store set up.</p>
         <button 

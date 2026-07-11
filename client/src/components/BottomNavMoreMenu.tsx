@@ -104,7 +104,7 @@ export function BottomNavMoreMenu({
 
                 {/* Notification Badge */}
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white shadow-sm ring-1 ring-background">
+                  <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[var(--color-danger)] text-[9px] font-bold text-white shadow-sm ring-1 ring-background">
                     {unreadCount > 9 ? "!" : unreadCount}
                   </span>
                 )}

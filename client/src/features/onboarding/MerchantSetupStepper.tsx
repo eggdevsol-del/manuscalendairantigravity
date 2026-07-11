@@ -28,22 +28,22 @@ export function MerchantSetupStepper() {
     {
       label: "Account Created",
       status: "complete", // Assumed complete if they are seeing this component
-      icon: <CheckCircle2 className="w-5 h-5 text-emerald-500" />,
+      icon: <CheckCircle2 className="w-5 h-5 text-[var(--color-status-success-text)]" />,
     },
     {
       label: "Stripe Connected",
       status: isConnected ? "complete" : "pending",
       icon: isConnected ? (
-        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+        <CheckCircle2 className="w-5 h-5 text-[var(--color-status-success-text)]" />
       ) : (
-        <Loader2 className="w-5 h-5 text-amber-500 animate-spin" />
+        <Loader2 className="w-5 h-5 text-[var(--color-status-warning-text)] animate-spin" />
       ),
     },
     {
       label: "Store Live",
       status: isVerified ? "complete" : "pending",
       icon: isVerified ? (
-        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+        <CheckCircle2 className="w-5 h-5 text-[var(--color-status-success-text)]" />
       ) : (
         <Store className="w-5 h-5 text-muted-foreground" />
       ),
@@ -60,7 +60,7 @@ export function MerchantSetupStepper() {
         {/* Connection Line (desktop) */}
         <div className="hidden md:block absolute top-1/2 left-0 right-0 h-[2px] bg-border -z-10 -translate-y-1/2">
           <motion.div 
-            className="h-full bg-emerald-500/50" 
+            className="h-full bg-[var(--color-status-success-bg)]0" 
             initial={{ width: "0%" }}
             animate={{ width: isVerified ? "100%" : isConnected ? "50%" : "0%" }}
             transition={{ duration: 1 }}

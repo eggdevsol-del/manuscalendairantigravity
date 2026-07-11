@@ -62,31 +62,31 @@ export function ConversationCard({
         tokens.spacing.cardPadding,
         tokens.spacing.cardPadding,
         isActive && "bg-primary/10 border-primary/50",
-        isStudioInvite && "bg-indigo-500/10 border border-indigo-500/30",
+        isStudioInvite && "bg-[var(--color-status-info-bg)] border border-[var(--color-status-info-border)]",
         className
       )}
     >
       {isNew && !isStudioInvite && (
         <>
           {/* New Indicator: Left Edge Line (Emerald) */}
-          <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-emerald-500" />
+          <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--color-success)]" />
           {/* New Indicator: Soft Gradient Swath */}
-          <div className="absolute left-0 top-0 bottom-0 w-[20%] bg-gradient-to-r from-emerald-500/20 to-transparent pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-[20%] bg-gradient-to-r from-[var(--color-status-success-bg)] to-transparent pointer-events-none" />
         </>
       )}
 
       {isStudioInvite && (
         <>
           {/* Studio Invite Indicator: Left Edge Line (Indigo) */}
-          <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-indigo-500" />
+          <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary" />
           {/* Studio Invite Indicator: Soft Gradient Swath */}
-          <div className="absolute left-0 top-0 bottom-0 w-[20%] bg-gradient-to-r from-indigo-500/20 to-transparent pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-[20%] bg-gradient-to-r from-[var(--color-status-info-bg)] to-transparent pointer-events-none" />
         </>
       )}
 
       <div className="flex items-center gap-4 relative z-10">
         {/* Avatar */}
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-white/5">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-white/5">
           {avatar ? (
             <img
               src={avatar}
@@ -130,12 +130,12 @@ export function ConversationCard({
         {/* Right side: Unread badge / New badge + Chevron */}
         <div className="flex items-center gap-2 flex-shrink-0">
           {isStudioInvite && (
-            <div className="bg-indigo-500/20 text-indigo-400 border border-indigo-500/50 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(99,102,241,0.2)]">
+            <div className="bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] border border-[var(--color-status-info-border)] px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(var(--primary-rgb),0.15)]">
               Invite
             </div>
           )}
           {isNew && !isStudioInvite && (
-            <div className="bg-emerald-500/20 text-emerald-500 border border-emerald-500/50 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+            <div className="bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border border-[var(--color-status-success-border)] px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(var(--primary-rgb),0.15)]">
               New
             </div>
           )}

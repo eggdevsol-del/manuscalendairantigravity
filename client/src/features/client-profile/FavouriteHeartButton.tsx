@@ -35,8 +35,8 @@ export function FavouriteHeartButton({
         btnSize,
         "rounded-full border flex items-center justify-center transition-all",
         isFavourited
-          ? "bg-red-500/20 border-red-500/50 text-red-500"
-          : "bg-secondary/50 text-white/60 border-border hover:text-red-400 hover:border-red-400/50",
+          ? "bg-[var(--color-status-danger-bg)] border-[var(--color-status-danger-border)] text-[var(--color-status-danger-text)]"
+          : "bg-secondary/50 text-white/60 border-border hover:text-[var(--color-status-danger-text)] hover:border-[var(--color-status-danger-border)]",
         className
       )}
       aria-label={isFavourited ? "Remove from favourites" : "Add to favourites"}

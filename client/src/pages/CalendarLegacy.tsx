@@ -401,7 +401,7 @@ export default function Calendar() {
         {/* Stationary Highlight Box */}
         <div
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[70px] h-[86px] 
-                            border-2 border-blue-500 bg-blue-500/10 rounded-2xl z-20 pointer-events-none 
+                            border-2 border-blue-500 bg-[var(--color-status-info-bg)] rounded-2xl z-20 pointer-events-none 
                             shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300"
         />
 
@@ -545,7 +545,7 @@ export default function Calendar() {
         <div
           className="absolute top-1/2 left-[56px] -translate-x-1/2 -translate-y-1/2 
                            w-[70px] h-[86px] 
-                           border-2 border-blue-500 bg-blue-500/10 rounded-2xl z-0 pointer-events-none 
+                           border-2 border-blue-500 bg-[var(--color-status-info-bg)] rounded-2xl z-0 pointer-events-none 
                            shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300"
         />
 

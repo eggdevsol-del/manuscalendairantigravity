@@ -61,15 +61,15 @@ function formatTime(seconds: number): string {
 function getRatingColor(rating: string): string {
   switch (rating) {
     case "elite":
-      return "text-yellow-400";
+      return "text-[var(--color-status-warning-text)]";
     case "excellent":
-      return "text-green-400";
+      return "text-[var(--color-success)]";
     case "good":
-      return "text-blue-400";
+      return "text-[var(--color-status-info-text)]";
     case "average":
-      return "text-orange-400";
+      return "text-[var(--color-status-warning-text)]";
     default:
-      return "text-red-400";
+      return "text-[var(--color-status-danger-text)]";
   }
 }
 
@@ -105,9 +105,9 @@ function getRatingIcon(rating: string) {
 
 function ComparisonIndicator({ value }: { value: number }) {
   if (value > 110) {
-    return <ArrowUp className="w-4 h-4 text-green-400" />;
+    return <ArrowUp className="w-4 h-4 text-[var(--color-success)]" />;
   } else if (value < 90) {
-    return <ArrowDown className="w-4 h-4 text-red-400" />;
+    return <ArrowDown className="w-4 h-4 text-[var(--color-status-danger-text)]" />;
   }
   return <Minus className="w-4 h-4 text-muted-foreground" />;
 }
@@ -230,7 +230,7 @@ export function WeeklySnapshotModal({
 
                       <div className="bg-secondary/50 rounded-2xl p-4">
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                          <Zap className="w-4 h-4 text-red-400" />
+                          <Zap className="w-4 h-4 text-[var(--color-status-danger-text)]" />
                           <span className="text-xs">Critical Tasks</span>
                         </div>
                         <p className="text-2xl font-bold">
@@ -273,7 +273,7 @@ export function WeeklySnapshotModal({
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                            <div className="w-2 h-2 rounded-full bg-[var(--color-danger)]"></div>
                             <span className="text-sm">Tier 1 (Critical)</span>
                           </div>
                           <span className="font-medium">
@@ -282,7 +282,7 @@ export function WeeklySnapshotModal({
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                            <div className="w-2 h-2 rounded-full bg-[var(--color-warning)]"></div>
                             <span className="text-sm">Tier 2 (High)</span>
                           </div>
                           <span className="font-medium">
@@ -291,7 +291,7 @@ export function WeeklySnapshotModal({
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                            <div className="w-2 h-2 rounded-full bg-[var(--color-warning)]"></div>
                             <span className="text-sm">Tier 3 (Medium)</span>
                           </div>
                           <span className="font-medium">
@@ -300,7 +300,7 @@ export function WeeklySnapshotModal({
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                            <div className="w-2 h-2 rounded-full bg-[var(--color-success)]"></div>
                             <span className="text-sm">Tier 4 (Low)</span>
                           </div>
                           <span className="font-medium">

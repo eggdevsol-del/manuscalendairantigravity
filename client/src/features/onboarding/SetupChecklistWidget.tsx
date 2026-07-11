@@ -152,7 +152,7 @@ export function SetupChecklistWidget() {
                         >
                             <div className={cn(
                                 "flex items-center justify-center w-8 h-8 rounded-full shrink-0 transition-colors",
-                                task.isComplete ? "text-emerald-500 bg-emerald-500/10" : "text-muted-foreground bg-secondary group-hover:text-foreground"
+                                task.isComplete ? "text-[var(--color-status-success-text)] bg-[var(--color-status-success-bg)]" : "text-muted-foreground bg-secondary group-hover:text-foreground"
                             )}>
                                 {task.isComplete ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
                             </div>
@@ -178,12 +178,12 @@ export function SetupChecklistWidget() {
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
-                        className="p-4 bg-emerald-500/10 border-t border-emerald-500/20"
+                        className="p-4 bg-[var(--color-status-success-bg)] border-t border-[var(--color-status-success-border)]"
                     >
                         <Button
                             onClick={handleFinalizeSetup}
                             disabled={updateOnboardingMutation.isPending}
-                            className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all"
+                            className="w-full h-12 bg-[var(--color-success)] hover:bg-[var(--color-success)] text-white font-semibold rounded-xl transition-all"
                         >
                             {updateOnboardingMutation.isPending ? "Finalizing..." : "Complete Setup & Launch"}
                         </Button>

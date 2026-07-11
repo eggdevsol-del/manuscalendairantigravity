@@ -23,8 +23,8 @@ export function QuickActions() {
             variant="outline"
             className="flex-col h-auto py-3 px-1 gap-2 border-dashed border-border hover:border-primary/50 w-full"
           >
-            <div className="h-8 w-8 rounded-full bg-orange-500/10 flex items-center justify-center">
-              <Coffee className="w-4 h-4 text-orange-500" />
+            <div className="h-8 w-8 rounded-full bg-[var(--color-status-warning-bg)] flex items-center justify-center">
+              <Coffee className="w-4 h-4 text-[var(--color-status-warning-text)]" />
             </div>
             <span className="text-[10px] font-medium">Block Time</span>
           </Button>
@@ -37,8 +37,8 @@ export function QuickActions() {
             /* Toast would be good here but we'd need to useSonner or similar, assuming it's available globally or we import it */
           }}
         >
-          <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center">
-            <LinkIcon className="w-4 h-4 text-blue-500" />
+          <div className="h-8 w-8 rounded-full bg-[var(--color-status-info-bg)] flex items-center justify-center">
+            <LinkIcon className="w-4 h-4 text-[var(--color-status-info-text)]" />
           </div>
           <span className="text-[10px] font-medium">Share Link</span>
         </Button>
@@ -47,7 +47,7 @@ export function QuickActions() {
             variant="outline"
             className="flex-col h-auto py-3 px-1 gap-2 border-dashed border-border hover:border-primary/50 w-full"
           >
-            <div className="h-8 w-8 rounded-full bg-purple-500/10 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-full bg-[var(--color-status-info-bg)] flex items-center justify-center">
               <FileText className="w-4 h-4 text-purple-500" />
             </div>
             <span className="text-[10px] font-medium">Policies</span>

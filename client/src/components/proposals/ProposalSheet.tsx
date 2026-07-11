@@ -1,4 +1,4 @@
-﻿// @ts-nocheck — preserved dead code, not used in the active codebase
+// @ts-nocheck � preserved dead code, not used in the active codebase
 /**
  * ProposalSheet Component
  *
@@ -163,7 +163,7 @@ export function ProposalSheet({
                   {dateOptions.length > 1 && (
                     <button
                       onClick={() => removeDateOption(option.id)}
-                      className="text-red-400 p-1"
+                      className="text-[var(--color-status-danger-text)] p-1"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

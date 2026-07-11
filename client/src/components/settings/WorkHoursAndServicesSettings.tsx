@@ -687,7 +687,7 @@ export function WorkHoursAndServicesSettings({
                                             </div>
                                             <div className="flex flex-wrap gap-2 mt-2">
                                                 {service.showInFunnel !== false ? (
-                                                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-500 uppercase tracking-wider">
+                                                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[var(--color-status-success-bg)] border border-[var(--color-status-success-border)] text-[10px] font-bold text-[var(--color-status-success-text)] uppercase tracking-wider">
                                                         <Globe className="w-3 h-3" />
                                                         In Funnel
                                                     </div>

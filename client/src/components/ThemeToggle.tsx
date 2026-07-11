@@ -18,9 +18,9 @@ export function ThemeToggle() {
       className="rounded-full w-9 h-9 transition-colors hover:bg-accent"
       title={title}
     >
-      {theme === "dark" && <Moon className="h-4 w-4 text-purple-400" />}
-      {theme === "light" && <Sun className="h-4 w-4 text-amber-500" />}
-      {theme === "noir" && <Crown className="h-4 w-4 text-amber-400" />}
+      {theme === "dark" && <Moon className="h-4 w-4 text-[var(--color-status-info-text)]" />}
+      {theme === "light" && <Sun className="h-4 w-4 text-[var(--color-status-warning-text)]" />}
+      {theme === "noir" && <Crown className="h-4 w-4 text-[var(--color-status-warning-text)]" />}
       <span className="sr-only">Toggle theme</span>
     </Button>
   );

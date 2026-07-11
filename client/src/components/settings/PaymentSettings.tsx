@@ -128,8 +128,8 @@ export function PaymentSettings({ onBack }: PaymentSettingsProps) {
         {/* 2. Connected — All done */}
         {phase === "connected" && (
           <div className="text-center p-6 mt-10 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4 border border-emerald-500/40">
-              <Banknote className="w-8 h-8 text-emerald-400" />
+            <div className="w-16 h-16 rounded-full bg-[var(--color-status-success-bg)] flex items-center justify-center mx-auto mb-4 border border-[var(--color-status-success-border)]">
+              <Banknote className="w-8 h-8 text-[var(--color-status-success-text)]" />
             </div>
             <h3 className="text-xl font-bold mb-2">Payouts Enabled</h3>
             <p className="text-sm text-muted-foreground">Your bank account is successfully linked. You will now receive deposits automatically.</p>
@@ -177,10 +177,10 @@ export function PaymentSettings({ onBack }: PaymentSettingsProps) {
         {/* 6. Error state */}
         {phase === "error" && (
           <div className="text-center p-6 mt-10 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4 border border-red-500/20">
-              <AlertCircle className="w-8 h-8 text-red-400" />
+            <div className="w-16 h-16 rounded-full bg-[var(--color-status-danger-bg)] flex items-center justify-center mx-auto mb-4 border border-[var(--color-status-danger-border)]">
+              <AlertCircle className="w-8 h-8 text-[var(--color-status-danger-text)]" />
             </div>
-            <h3 className="text-lg font-bold text-red-400">Connection Error</h3>
+            <h3 className="text-lg font-bold text-[var(--color-status-danger-text)]">Connection Error</h3>
             <p className="text-sm text-muted-foreground">{errorMsg}</p>
             <Button
               onClick={handleRetry}

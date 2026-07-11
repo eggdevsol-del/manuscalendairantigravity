@@ -176,7 +176,7 @@ export function BalanceSheet() {
   if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-[#7C5CFC] border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -185,7 +185,7 @@ export function BalanceSheet() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1a] flex items-center justify-center p-4">
         <div className="bg-secondary/50 rounded-md p-6 text-center max-w-md">
-          <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          <AlertCircle className="w-12 h-12 text-[var(--color-status-danger-text)] mx-auto mb-4" />
           <h1 className="text-white text-xl font-semibold mb-2">
             Link Invalid
           </h1>
@@ -201,8 +201,8 @@ export function BalanceSheet() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1a] flex items-center justify-center p-4">
         <div className="bg-secondary/50 rounded-md p-6 text-center max-w-md">
-          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Check className="w-8 h-8 text-green-400" />
+          <div className="w-16 h-16 bg-[var(--color-status-success-bg)] rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check className="w-8 h-8 text-[var(--color-success)]" />
           </div>
           <h1 className="text-white text-xl font-semibold mb-2">
             Balance Confirmed!
@@ -232,8 +232,8 @@ export function BalanceSheet() {
               className="w-12 h-12 rounded-full object-cover"
             />
           ) : (
-            <div className="w-12 h-12 rounded-full bg-[#7C5CFC]/20 flex items-center justify-center">
-              <span className="text-[#7C5CFC] font-medium">
+            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+              <span className="text-primary font-medium">
                 {balanceInfo.artistName.charAt(0)}
               </span>
             </div>
@@ -273,7 +273,7 @@ export function BalanceSheet() {
             <div className="border-t border-border pt-2 mt-2">
               <div className="flex justify-between">
                 <span className="text-white font-medium">Balance</span>
-                <span className="text-[#7C5CFC] font-semibold">
+                <span className="text-primary font-semibold">
                   ${(balanceInfo.clientTotalCents / 100).toFixed(2)}
                 </span>
               </div>
@@ -288,11 +288,11 @@ export function BalanceSheet() {
             <button
               onClick={() => setSelectedMethod("stripe")}
               className={`w-full p-4 rounded-md flex items-center gap-3 transition-colors ${selectedMethod === "stripe"
-                ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
+                ? "bg-primary/20 border-2 border-primary"
                 : "bg-secondary/50 border-2 border-transparent"
                 }`}
             >
-              <CreditCard className="w-5 h-5 text-[#7C5CFC]" />
+              <CreditCard className="w-5 h-5 text-primary" />
               <div className="text-left">
                 <p className="text-white font-medium">Card Payment</p>
                 <p className="text-muted-foreground text-sm">
@@ -306,11 +306,11 @@ export function BalanceSheet() {
             <button
               onClick={() => setSelectedMethod("paypal")}
               className={`w-full p-4 rounded-md flex items-center gap-3 transition-colors ${selectedMethod === "paypal"
-                ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
+                ? "bg-primary/20 border-2 border-primary"
                 : "bg-secondary/50 border-2 border-transparent"
                 }`}
             >
-              <Smartphone className="w-5 h-5 text-[#7C5CFC]" />
+              <Smartphone className="w-5 h-5 text-primary" />
               <div className="text-left">
                 <p className="text-white font-medium">PayPal</p>
                 <p className="text-muted-foreground text-sm">Pay with PayPal account</p>
@@ -322,11 +322,11 @@ export function BalanceSheet() {
             <button
               onClick={() => setSelectedMethod("bank")}
               className={`w-full p-4 rounded-md flex items-center gap-3 transition-colors ${selectedMethod === "bank"
-                ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
+                ? "bg-primary/20 border-2 border-primary"
                 : "bg-secondary/50 border-2 border-transparent"
                 }`}
             >
-              <Building2 className="w-5 h-5 text-[#7C5CFC]" />
+              <Building2 className="w-5 h-5 text-primary" />
               <div className="text-left">
                 <p className="text-white font-medium">Bank Transfer</p>
                 <p className="text-muted-foreground text-sm">Direct bank transfer</p>
@@ -338,11 +338,11 @@ export function BalanceSheet() {
             <button
               onClick={() => setSelectedMethod("cash")}
               className={`w-full p-4 rounded-md flex items-center gap-3 transition-colors ${selectedMethod === "cash"
-                ? "bg-[#7C5CFC]/20 border-2 border-[#7C5CFC]"
+                ? "bg-primary/20 border-2 border-primary"
                 : "bg-secondary/50 border-2 border-transparent"
                 }`}
             >
-              <span className="w-5 h-5 text-[#7C5CFC] font-bold">$</span>
+              <span className="w-5 h-5 text-primary font-bold">$</span>
               <div className="text-left">
                 <p className="text-white font-medium">Cash</p>
                 <p className="text-muted-foreground text-sm">Pay in person</p>
@@ -388,7 +388,7 @@ export function BalanceSheet() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Amount</span>
-                <span className="text-[#7C5CFC] font-semibold">
+                <span className="text-primary font-semibold">
                   ${(balanceInfo.clientTotalCents / 100).toFixed(2)}
                 </span>
               </div>
@@ -410,12 +410,12 @@ export function BalanceSheet() {
               <label className="block">
                 <div
                   className={`border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition-colors ${screenshotFile
-                    ? "border-green-500 bg-green-500/10"
+                    ? "border-green-500 bg-[var(--color-status-success-bg)]"
                     : "border-border hover:border-border"
                     }`}
                 >
                   {screenshotFile ? (
-                    <div className="flex items-center justify-center gap-2 text-green-400">
+                    <div className="flex items-center justify-center gap-2 text-[var(--color-success)]">
                       <Check className="w-5 h-5" />
                       <span>{screenshotFile.name}</span>
                     </div>
@@ -442,7 +442,7 @@ export function BalanceSheet() {
             <p className="text-muted-foreground text-sm">
               By selecting cash payment, you confirm that you will pay the
               balance of{" "}
-              <span className="text-[#7C5CFC] font-semibold">
+              <span className="text-primary font-semibold">
                 ${(balanceInfo.clientTotalCents / 100).toFixed(2)}
               </span>{" "}
               in person before your appointment.
@@ -463,7 +463,7 @@ export function BalanceSheet() {
               disabled={
                 isSubmitting || (selectedMethod === "bank" && !screenshotFile)
               }
-              className="w-full bg-[#7C5CFC] text-white py-4 rounded-md font-medium disabled:opacity-50"
+              className="w-full bg-primary text-white py-4 rounded-md font-medium disabled:opacity-50"
             >
               {isSubmitting
                 ? "Processing..."

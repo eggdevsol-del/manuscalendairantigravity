@@ -73,7 +73,7 @@ export function DashboardFABActions({
           label: "Mark Completed",
           icon: Check,
           onClick: () => onMarkDone?.(selectedTask),
-          className: "text-green-400",
+          className: "text-[var(--color-success)]",
         });
 
         // 4. Go to Messages

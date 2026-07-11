@@ -43,7 +43,7 @@ export function FormSigningDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="max-w-xl p-0 overflow-hidden bg-slate-950 border-border h-[90vh] flex flex-col">
+      <DialogContent className="max-w-xl p-0 overflow-hidden bg-background border-border h-[90vh] flex flex-col">
         <DialogHeader className="p-6 border-b border-border shrink-0">
           <DialogTitle className="text-xl font-bold">{formTitle}</DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm">

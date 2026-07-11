@@ -343,12 +343,12 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
         <div className="pb-[180px] max-w-lg mx-auto px-5 pt-5 space-y-5">
           {/* Stripe Connect Warning */}
           {!hasStripeConnect && (
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-[var(--color-status-warning-bg)] border border-[var(--color-status-warning-border)]">
+              <AlertTriangle className="w-5 h-5 text-[var(--color-status-warning-text)] shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-amber-500">Payouts Not Connected</p>
+                <p className="text-sm font-semibold text-[var(--color-status-warning-text)]">Payouts Not Connected</p>
                 <p className="text-xs text-muted-foreground mt-1">Set up Stripe Connect in Bank Payouts to receive store payments.</p>
-                <button onClick={() => { onClose(); setLocation("/bank-payouts"); }} className="mt-2 text-xs font-bold text-amber-500 underline underline-offset-2">
+                <button onClick={() => { onClose(); setLocation("/bank-payouts"); }} className="mt-2 text-xs font-bold text-[var(--color-status-warning-text)] underline underline-offset-2">
                   Set Up Now →
                 </button>
               </div>
@@ -410,7 +410,7 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
                         ${(product.priceCents / 100).toFixed(2)} · {product.inventoryCount} in stock
                       </p>
                     </div>
-                    <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${product.inventoryCount > 0 ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"}`}>
+                    <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${product.inventoryCount > 0 ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)]" : "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]"}`}>
                       {product.inventoryCount > 0 ? "Active" : "Out"}
                     </span>
                   </div>
@@ -450,9 +450,9 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
                     <div key={seminar.id} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-border hover:bg-secondary/50 transition-colors">
                       <div className="w-12 h-12 rounded-lg bg-secondary/50 overflow-hidden shrink-0 flex items-center justify-center">
                         {seminar.type === "virtual" ? (
-                          <Video className="w-5 h-5 text-purple-400/50" />
+                          <Video className="w-5 h-5 text-[var(--color-status-info-text)]/50" />
                         ) : (
-                          <MapPin className="w-5 h-5 text-blue-400/50" />
+                          <MapPin className="w-5 h-5 text-[var(--color-status-info-text)]/50" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -461,7 +461,7 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
                           {eventDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })} · ${(seminar.priceCents / 100).toFixed(2)} · {spotsLeft} spots
                         </p>
                       </div>
-                      <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${spotsLeft > 0 ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"}`}>
+                      <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${spotsLeft > 0 ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)]" : "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]"}`}>
                         {spotsLeft > 0 ? "Live" : "Full"}
                       </span>
                     </div>

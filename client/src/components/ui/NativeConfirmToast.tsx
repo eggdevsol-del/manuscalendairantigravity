@@ -129,7 +129,7 @@ export function NativeConfirmToast({
                                         "active:bg-secondary/50",
                                         "disabled:opacity-40",
                                         variant === "destructive"
-                                            ? "text-red-500"
+                                            ? "text-[var(--color-status-danger-text)]"
                                             : "text-[#0a84ff]"
                                     )}
                                 >

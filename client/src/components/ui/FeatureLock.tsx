@@ -36,7 +36,7 @@ export function FeatureLock({
             <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent opacity-50" />
             <div className="flex flex-col items-center justify-center text-center space-y-4 py-8">
                 <div className="rounded-full bg-secondary/50 p-4 border border-border shadow-inner">
-                    <Lock className="w-8 h-8 text-amber-500/80" />
+                    <Lock className="w-8 h-8 text-[var(--color-status-warning-text)]/80" />
                 </div>
                 <div className="space-y-2 max-w-sm">
                     <h3 className="text-xl font-light text-white tracking-wide">

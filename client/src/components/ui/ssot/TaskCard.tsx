@@ -76,7 +76,7 @@ export function TaskCard({
         {/* Right Chevron / Check */}
         <div className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground group-hover:border-border group-hover:text-foreground transition-colors">
           {status === "completed" ? (
-            <Check className="w-4 h-4 text-green-500" />
+            <Check className="w-4 h-4 text-[var(--color-success)]" />
           ) : (
             <ChevronRight className="w-4 h-4" />
           )}

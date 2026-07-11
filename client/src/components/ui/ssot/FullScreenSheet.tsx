@@ -164,7 +164,7 @@ export function FullScreenSheet({
                   )}
                 >
                   {/* Light mode background gradient overlay (matches wrapper gradient at 90% opacity) */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-slate-100/90 via-purple-50/90 to-cyan-50/90 dark:hidden pointer-events-none" />
+                  <div className="absolute inset-0 bg-popover dark:hidden pointer-events-none" />
                   {/* Top Edge Highlight */}
                   <div
                     className={cn(

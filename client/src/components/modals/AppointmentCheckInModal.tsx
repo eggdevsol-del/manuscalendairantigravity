@@ -354,8 +354,8 @@ export function AppointmentCheckInModal({
       case "arrival_no":
         return (
           <StepContainer stepKey={step}>
-            <div className="w-14 h-14 rounded-full bg-orange-500/10 flex items-center justify-center">
-              <Clock className="w-7 h-7 text-orange-500" />
+            <div className="w-14 h-14 rounded-full bg-[var(--color-status-warning-bg)] flex items-center justify-center">
+              <Clock className="w-7 h-7 text-[var(--color-status-warning-text)]" />
             </div>
             <h3 className="text-lg font-bold text-foreground">
               Client hasn't arrived
@@ -373,8 +373,8 @@ export function AppointmentCheckInModal({
       case "arrival_fail":
         return (
           <StepContainer stepKey={step}>
-            <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
-              <XCircle className="w-7 h-7 text-red-500" />
+            <div className="w-14 h-14 rounded-full bg-[var(--color-status-danger-bg)] flex items-center justify-center">
+              <XCircle className="w-7 h-7 text-[var(--color-status-danger-text)]" />
             </div>
             <h3 className="text-lg font-bold text-foreground">
               Client still hasn't arrived?
@@ -397,8 +397,8 @@ export function AppointmentCheckInModal({
       case "no_show_confirm":
         return (
           <StepContainer stepKey={step}>
-            <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
-              <XCircle className="w-7 h-7 text-red-500" />
+            <div className="w-14 h-14 rounded-full bg-[var(--color-status-danger-bg)] flex items-center justify-center">
+              <XCircle className="w-7 h-7 text-[var(--color-status-danger-text)]" />
             </div>
             <h3 className="text-lg font-bold text-foreground">
               Record as No-Show?
@@ -423,8 +423,8 @@ export function AppointmentCheckInModal({
       case "completion":
         return (
           <StepContainer stepKey={step}>
-            <div className="w-14 h-14 rounded-full bg-emerald-500/10 flex items-center justify-center">
-              <CheckCircle2 className="w-7 h-7 text-emerald-500" />
+            <div className="w-14 h-14 rounded-full bg-[var(--color-status-success-bg)] flex items-center justify-center">
+              <CheckCircle2 className="w-7 h-7 text-[var(--color-status-success-text)]" />
             </div>
             <h3 className="text-lg font-bold text-foreground">Client done?</h3>
             <p className="text-xs text-muted-foreground">
@@ -549,8 +549,8 @@ export function AppointmentCheckInModal({
       case "payment_link_sent":
         return (
           <StepContainer stepKey={step}>
-            <div className="w-14 h-14 rounded-full bg-emerald-500/10 flex items-center justify-center">
-              <CheckCircle2 className="w-7 h-7 text-emerald-500" />
+            <div className="w-14 h-14 rounded-full bg-[var(--color-status-success-bg)] flex items-center justify-center">
+              <CheckCircle2 className="w-7 h-7 text-[var(--color-status-success-text)]" />
             </div>
             <h3 className="text-lg font-bold text-foreground">
               Payment Link Sent!
@@ -614,8 +614,8 @@ export function AppointmentCheckInModal({
       case "done":
         return (
           <StepContainer stepKey={step}>
-            <div className="w-14 h-14 rounded-full bg-emerald-500/10 flex items-center justify-center">
-              <CheckCircle2 className="w-7 h-7 text-emerald-500" />
+            <div className="w-14 h-14 rounded-full bg-[var(--color-status-success-bg)] flex items-center justify-center">
+              <CheckCircle2 className="w-7 h-7 text-[var(--color-status-success-text)]" />
             </div>
             <h3 className="text-lg font-bold text-foreground">All done!</h3>
             <p className="text-xs text-muted-foreground">Session data saved.</p>

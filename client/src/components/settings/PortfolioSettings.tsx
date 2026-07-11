@@ -151,7 +151,7 @@ export function PortfolioSettings({ onBack }: PortfolioSettingsProps) {
                     <button
                       onClick={() => handleDelete(item.id)}
                       disabled={deletingId === item.id}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity w-9 h-9 rounded-full bg-red-500/90 flex items-center justify-center shadow-lg"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity w-9 h-9 rounded-full bg-[var(--color-danger)] flex items-center justify-center shadow-lg"
                     >
                       {deletingId === item.id ? (
                         <Loader2 className="w-4 h-4 text-white animate-spin" />

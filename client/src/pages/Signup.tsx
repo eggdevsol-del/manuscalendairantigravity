@@ -511,7 +511,7 @@ export default function Signup() {
             {/* Full Name */}
             <div className="space-y-2">
               <Label htmlFor="name">
-                Full Name <span className="text-red-400">*</span>
+                Full Name <span className="text-[var(--color-status-danger-text)]">*</span>
               </Label>
               <div className="relative">
                 <User className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
@@ -532,7 +532,7 @@ export default function Signup() {
             {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email">
-                Email <span className="text-red-400">*</span>
+                Email <span className="text-[var(--color-status-danger-text)]">*</span>
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
@@ -554,7 +554,7 @@ export default function Signup() {
               <>
                 <div className="space-y-2">
                   <Label htmlFor="businessName">
-                    Business Name <span className="text-red-400">*</span>
+                    Business Name <span className="text-[var(--color-status-danger-text)]">*</span>
                   </Label>
                   <div className="relative">
                     <Store className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
@@ -574,7 +574,7 @@ export default function Signup() {
                 
                 <div className="space-y-2">
                   <Label htmlFor="websiteUrl">
-                    Store Website URL <span className="text-red-400">*</span>
+                    Store Website URL <span className="text-[var(--color-status-danger-text)]">*</span>
                   </Label>
                   <div className="relative">
                     <Globe className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
@@ -702,7 +702,7 @@ export default function Signup() {
             {/* Password */}
             <div className="space-y-2">
               <Label htmlFor="password">
-                Password <span className="text-red-400">*</span>
+                Password <span className="text-[var(--color-status-danger-text)]">*</span>
               </Label>
               <div className="relative">
                 <Input
@@ -735,7 +735,7 @@ export default function Signup() {
             {/* Confirm Password */}
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">
-                Confirm Password <span className="text-red-400">*</span>
+                Confirm Password <span className="text-[var(--color-status-danger-text)]">*</span>
               </Label>
               <div className="relative">
                 <Input

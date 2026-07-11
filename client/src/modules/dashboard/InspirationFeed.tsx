@@ -55,7 +55,7 @@ export function InspirationFeed({ likes }: InspirationFeedProps) {
             </div>
             <div className="absolute top-2 right-2">
               <div className="bg-background/80 backdrop-blur-sm p-1.5 rounded-full">
-                <Heart className="w-3 h-3 text-red-500 fill-red-500" />
+                <Heart className="w-3 h-3 text-[var(--color-status-danger-text)] fill-red-500" />
               </div>
             </div>
           </div>

@@ -23,14 +23,14 @@ export default function FunnelSuccessStep({
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", duration: 0.6 }}
-        className="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mb-6"
+        className="w-24 h-24 rounded-full bg-[var(--color-status-success-bg)] flex items-center justify-center mb-6"
       >
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring" }}
         >
-          <CheckCircle2 className="w-12 h-12 text-green-500" />
+          <CheckCircle2 className="w-12 h-12 text-[var(--color-success)]" />
         </motion.div>
       </motion.div>
 

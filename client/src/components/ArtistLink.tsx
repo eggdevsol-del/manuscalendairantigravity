@@ -150,7 +150,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
+            <div className="p-2 rounded-xl bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]">
               <Link2 className="w-5 h-5" />
             </div>
             <div>
@@ -201,16 +201,16 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
               </p>
             )}
             {!checkingSlug && slugIsTaken && (
-              <p className="text-xs text-red-400">This URL is already taken</p>
+              <p className="text-xs text-[var(--color-status-danger-text)]">This URL is already taken</p>
             )}
             {!checkingSlug && slugIsValid && hasChanges && (
-              <p className="text-xs text-green-400 flex items-center gap-1">
+              <p className="text-xs text-[var(--color-success)] flex items-center gap-1">
                 <Check className="w-3 h-3" />
                 Available!
               </p>
             )}
             {slug.length > 0 && slug.length < 3 && (
-              <p className="text-xs text-amber-400">
+              <p className="text-xs text-[var(--color-status-warning-text)]">
                 URL must be at least 3 characters
               </p>
             )}
@@ -248,7 +248,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
                   className="shrink-0"
                 >
                   {copied ? (
-                    <Check className="w-4 h-4 text-green-600" />
+                    <Check className="w-4 h-4 text-[var(--color-success)]" />
                   ) : (
                     <Copy className="w-4 h-4" />
                   )}
@@ -275,7 +275,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
             </div>
 
             {!isEnabled && (
-              <p className="text-xs text-amber-400 text-center">
+              <p className="text-xs text-[var(--color-status-warning-text)] text-center">
                 Your booking link is currently disabled
               </p>
             )}

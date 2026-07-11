@@ -95,17 +95,17 @@ export default function Consultations() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.4)]";
+        return "bg-[var(--color-warning)] shadow-[0_0_10px_rgba(var(--primary-rgb),0.3)]";
       case "responded":
-        return "bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.4)]";
+        return "bg-primary shadow-[0_0_10px_rgba(99,102,241,0.4)]";
       case "scheduled":
         return "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.4)]";
       case "completed":
-        return "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]";
+        return "bg-[var(--color-success)] shadow-[0_0_10px_rgba(16,185,129,0.4)]";
       case "cancelled":
-        return "bg-slate-500";
+        return "bg-background0";
       default:
-        return "bg-slate-500";
+        return "bg-background0";
     }
   };
 

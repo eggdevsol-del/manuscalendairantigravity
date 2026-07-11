@@ -18,21 +18,21 @@ export function ArtistStatsRow({ stats }: ArtistStatsRowProps) {
         label="Today"
         value={stats.appointmentsToday}
         icon={Calendar}
-        className="col-span-1 bg-blue-500/10"
+        className="col-span-1 bg-[var(--color-status-info-bg)]"
       />
       <Link to="/conversations">
         <StatCard
           label="Requests"
           value={stats.pendingRequests}
           icon={MessageSquare}
-          className="col-span-1 bg-orange-500/10 hover:bg-orange-500/20 cursor-pointer transition-colors"
+          className="col-span-1 bg-[var(--color-status-warning-bg)] hover:bg-[var(--color-status-warning-bg)] cursor-pointer transition-colors"
         />
       </Link>
       <StatCard
         label="Total Revenue"
         value={`$${stats.totalRevenue.toLocaleString()}`}
         icon={DollarSign}
-        className="col-span-2 bg-green-500/10"
+        className="col-span-2 bg-[var(--color-status-success-bg)]"
       />
     </div>
   );

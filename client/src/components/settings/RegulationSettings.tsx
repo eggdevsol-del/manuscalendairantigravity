@@ -153,7 +153,7 @@ export function RegulationSettings({ onBack }: { onBack: () => void }) {
                             <td className="p-3 text-muted-foreground whitespace-nowrap">
                               {log.artistLicenceNumber}
                             </td>
-                            <td className="p-3 text-green-400 font-bold whitespace-nowrap">
+                            <td className="p-3 text-[var(--color-success)] font-bold whitespace-nowrap">
                               ${log.amountPaid.toFixed(2)}
                             </td>
                             <td className="p-3 text-muted-foreground whitespace-nowrap">

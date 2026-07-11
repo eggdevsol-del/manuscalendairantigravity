@@ -106,8 +106,8 @@ export function AgendaDayList({
               {/* Events List (Split by Artist) */}
               <div className="flex flex-col gap-2">
                 {isDesign && (
-                  <div className="py-2 px-3 bg-purple-500/10 border border-purple-500/20 rounded-md">
-                    <span className="text-xs font-bold text-purple-400 uppercase tracking-widest">
+                  <div className="py-2 px-3 bg-[var(--color-status-info-bg)] border border-purple-500/20 rounded-md">
+                    <span className="text-xs font-bold text-[var(--color-status-info-text)] uppercase tracking-widest">
                       Design Day
                     </span>
                   </div>
@@ -163,16 +163,16 @@ export function AgendaDayList({
 
                                     {/* Status Overlay */}
                                     {apt.status === "completed" ? (
-                                      <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-0.5 bg-zinc-500/20 text-zinc-400 rounded-full border border-zinc-500/50 z-20">
+                                      <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-0.5 bg-[var(--color-status-neutral-bg)] text-[var(--color-status-neutral-text)] rounded-full border border-[var(--color-status-neutral-border)] z-20">
                                         <CheckCircle2 className="w-3 h-3" />
                                       </div>
                                     ) : (
                                       (apt.clientArrived === 1 ||
                                         apt.clientArrived === true) && (
-                                        <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)] z-20">
+                                        <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-0.5 bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] rounded-full border border-[var(--color-status-success-border)] shadow-[0_0_10px_rgba(var(--primary-rgb),0.15)] z-20">
                                           <span className="relative flex h-1.5 w-1.5">
-                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-success)] opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--color-success)]"></span>
                                           </span>
                                         </div>
                                       )

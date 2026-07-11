@@ -44,40 +44,40 @@ export function HistoryCard({ history }: { history: any[] }) {
 
             // Map actions to icons/colors
             const getIcon = () => {
-              if (isOrder) return <Package className="w-3 h-3 text-indigo-400" />;
-              if (isForm) return <FileText className="w-3 h-3 text-orange-500" />;
-              if (isAppt) return <Check className="w-3 h-3 text-emerald-500" />;
+              if (isOrder) return <Package className="w-3 h-3 text-[var(--color-status-info-text)]" />;
+              if (isForm) return <FileText className="w-3 h-3 text-[var(--color-status-warning-text)]" />;
+              if (isAppt) return <Check className="w-3 h-3 text-[var(--color-status-success-text)]" />;
               switch (item.action) {
                 case "created":
                   return <Clock className="w-3 h-3 text-primary" />;
                 case "rescheduled":
-                  return <Clock className="w-3 h-3 text-orange-400" />;
+                  return <Clock className="w-3 h-3 text-[var(--color-status-warning-text)]" />;
                 case "cancelled":
                 case "proposal_revoked":
-                  return <AlertCircle className="w-3 h-3 text-red-500" />;
+                  return <AlertCircle className="w-3 h-3 text-[var(--color-status-danger-text)]" />;
                 case "confirmed":
-                  return <Check className="w-3 h-3 text-emerald-500" />;
+                  return <Check className="w-3 h-3 text-[var(--color-status-success-text)]" />;
                 case "completed":
-                  return <Check className="w-3 h-3 text-indigo-500" />;
+                  return <Check className="w-3 h-3 text-[var(--color-status-info-text)]" />;
                 default:
                   return <Check className="w-3 h-3 text-muted-foreground" />;
               }
             };
 
             const getStatusColor = () => {
-              if (isOrder) return "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
-              if (isForm) return "bg-orange-500/10 text-orange-500 border-orange-500/20";
-              if (isAppt) return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+              if (isOrder) return "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] border-[var(--color-status-info-border)]";
+              if (isForm) return "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)] border-[var(--color-status-warning-border)]";
+              if (isAppt) return "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border-[var(--color-status-success-border)]";
               switch (item.action) {
                 case "cancelled":
                 case "proposal_revoked":
-                  return "bg-red-500/10 text-red-500 border-red-500/20";
+                  return "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)] border-[var(--color-status-danger-border)]";
                 case "rescheduled":
-                  return "bg-orange-500/10 text-orange-400 border-orange-500/20";
+                  return "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)] border-[var(--color-status-warning-border)]";
                 case "confirmed":
-                  return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+                  return "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border-[var(--color-status-success-border)]";
                 case "completed":
-                  return "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
+                  return "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] border-[var(--color-status-info-border)]";
                 default:
                   return "bg-secondary/50 text-muted-foreground border-border";
               }
@@ -101,11 +101,11 @@ export function HistoryCard({ history }: { history: any[] }) {
                     className={cn(
                       "w-1.5 h-1.5 rounded-full",
                       (!isLog && !isForm && !isOrder)
-                        ? "bg-emerald-500"
+                        ? "bg-[var(--color-success)]"
                         : isOrder
-                          ? "bg-indigo-400"
+                          ? "bg-primary"
                         : isForm
-                          ? "bg-orange-500"
+                          ? "bg-[var(--color-warning)]"
                           : "bg-muted-foreground"
                     )}
                   />
@@ -124,12 +124,12 @@ export function HistoryCard({ history }: { history: any[] }) {
                       </span>
                     )}
                     {isForm && (
-                      <span className="text-[10px] text-orange-500/80 italic">
+                      <span className="text-[10px] text-[var(--color-status-warning-text)]/80 italic">
                         Legal Record
                       </span>
                     )}
                     {isOrder && (
-                      <span className="text-[10px] text-indigo-400/80 italic">
+                      <span className="text-[10px] text-[var(--color-status-info-text)]/80 italic">
                         Store Order
                       </span>
                     )}
@@ -249,7 +249,7 @@ export function UpcomingCard({ upcoming }: { upcoming: any[] }) {
                   {item.remainingBalanceCents > 0 && item.paymentStatus !== "fully_paid" && (
                     <Button 
                       onClick={() => setLocation(`/balance/${item.id}`)}
-                      className="w-full mt-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold tracking-wide"
+                      className="w-full mt-3 bg-[var(--color-success)] hover:bg-[var(--color-success)] text-white font-bold tracking-wide"
                       size="sm"
                     >
                       <DollarSign className="w-3.5 h-3.5 mr-1.5" />
@@ -364,8 +364,8 @@ export function FormsCard({ forms }: { forms: any[] }) {
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                   form.status === "signed"
-                    ? "bg-emerald-500/10 text-emerald-500"
-                    : "bg-orange-500/10 text-orange-500"
+                    ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)]"
+                    : "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
                 }`}
               >
                 {form.status === "signed" ? (
@@ -388,7 +388,7 @@ export function FormsCard({ forms }: { forms: any[] }) {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="shrink-0 text-xs border-orange-500/20 text-orange-400 hover:text-orange-300 hover:bg-orange-500/10"
+                  className="shrink-0 text-xs border-[var(--color-status-warning-border)] text-[var(--color-status-warning-text)] hover:text-orange-300 hover:bg-[var(--color-status-warning-bg)]"
                   onClick={() => handleSignClick(form)}
                 >
                   Sign Now

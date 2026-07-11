@@ -108,7 +108,7 @@ export function PayoutWidget({
                 )}
             >
                 <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-xl bg-rose-500/20 text-rose-400">
+                    <div className="p-2 rounded-xl bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]">
                         <Banknote className="w-5 h-5" />
                     </div>
                     <h3 className="font-semibold text-foreground">Payouts</h3>
@@ -140,8 +140,8 @@ export function PayoutWidget({
                 )}
             >
                 <div className="flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 text-amber-400" />
-                    <span className="text-sm text-amber-400">{error}</span>
+                    <AlertCircle className="w-5 h-5 text-[var(--color-status-warning-text)]" />
+                    <span className="text-sm text-[var(--color-status-warning-text)]">{error}</span>
                 </div>
             </div>
         );
@@ -158,7 +158,7 @@ export function PayoutWidget({
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+                    <div className="p-2 rounded-xl bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)]">
                         <Banknote className="w-5 h-5" />
                     </div>
                     <h3 className="font-semibold text-foreground">Payouts</h3>
@@ -184,7 +184,7 @@ export function PayoutWidget({
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-1">
                         Available for Withdrawal
                     </p>
-                    <p className="text-xl font-bold text-emerald-400 tabular-nums">
+                    <p className="text-xl font-bold text-[var(--color-status-success-text)] tabular-nums">
                         {formatCents(availableAmountCents ?? 0)}
                     </p>
                 </div>
@@ -243,10 +243,10 @@ export function PayoutWidget({
                                                         className={cn(
                                                             "p-1.5 rounded-lg",
                                                             isIncome
-                                                                ? "bg-emerald-500/20 text-emerald-400"
+                                                                ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)]"
                                                                 : entry.type === "refund"
-                                                                    ? "bg-red-500/20 text-red-400"
-                                                                    : "bg-amber-500/20 text-amber-400"
+                                                                    ? "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]"
+                                                                    : "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
                                                         )}
                                                     >
                                                         {isIncome ? (
@@ -271,8 +271,8 @@ export function PayoutWidget({
                                                         className={cn(
                                                             "text-xs font-bold tabular-nums",
                                                             isIncome
-                                                                ? "text-emerald-400"
-                                                                : "text-red-400"
+                                                                ? "text-[var(--color-status-success-text)]"
+                                                                : "text-[var(--color-status-danger-text)]"
                                                         )}
                                                     >
                                                         {isIncome ? "+" : "-"}
@@ -287,7 +287,7 @@ export function PayoutWidget({
                                                                 e.stopPropagation();
                                                                 onRefundRequest(entry);
                                                             }}
-                                                            className="text-[9px] font-medium text-red-400 hover:text-red-300 hover:underline transition-colors mt-0.5"
+                                                            className="text-[9px] font-medium text-[var(--color-status-danger-text)] hover:text-red-300 hover:underline transition-colors mt-0.5"
                                                         >
                                                             Refund
                                                         </button>

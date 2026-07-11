@@ -68,7 +68,7 @@ export function ClientUpcoming({ appointment }: ClientUpcomingProps) {
             {needsBalancePayment && (
               <Button 
                 onClick={() => setLocation(`/balance/${appointment.id}`)}
-                className="flex-1 shadow-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold tracking-wide"
+                className="flex-1 shadow-lg bg-[var(--color-success)] hover:bg-[var(--color-success)] text-white font-bold tracking-wide"
               >
                 <DollarSign className="w-4 h-4 mr-1.5" />
                 Pay Balance

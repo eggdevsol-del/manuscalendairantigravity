@@ -146,8 +146,8 @@ export function OnboardingClientFlow({ onComplete }: OnboardingClientFlowProps) 
                             exit="exit"
                             className="flex flex-col items-center justify-center text-center space-y-4 py-8"
                         >
-                            <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mb-2">
-                                <RefreshCw className="w-8 h-8 text-emerald-500" />
+                            <div className="w-16 h-16 rounded-full bg-[var(--color-status-success-bg)] flex items-center justify-center mb-2">
+                                <RefreshCw className="w-8 h-8 text-[var(--color-status-success-text)]" />
                             </div>
 
                             <p className="text-sm text-muted-foreground">

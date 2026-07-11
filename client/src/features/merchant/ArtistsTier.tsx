@@ -14,8 +14,8 @@ export function ArtistsTier() {
         <div className="bg-secondary/20 border border-border/50 rounded-md p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                <Users className="w-6 h-6 text-emerald-400" />
+              <div className="w-14 h-14 rounded-full bg-[var(--color-status-success-bg)] flex items-center justify-center">
+                <Users className="w-6 h-6 text-[var(--color-status-success-text)]" />
               </div>
               <div>
                 <h4 className="text-lg font-bold text-foreground">Sarah Tattoo</h4>
@@ -53,8 +53,8 @@ export function ArtistsTier() {
         <div className="bg-secondary/20 border border-border/50 rounded-md p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-400" />
+              <div className="w-14 h-14 rounded-full bg-[var(--color-status-info-bg)] flex items-center justify-center">
+                <Users className="w-6 h-6 text-[var(--color-status-info-text)]" />
               </div>
               <div>
                 <h4 className="text-lg font-bold text-foreground">Mike Ink</h4>

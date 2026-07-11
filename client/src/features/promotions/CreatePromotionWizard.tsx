@@ -602,7 +602,7 @@ function RulesConfigStep({
       {/* Auto-Apply Section */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold flex items-center gap-2">
-          <Zap className="w-5 h-5 text-yellow-400" />
+          <Zap className="w-5 h-5 text-[var(--color-status-warning-text)]" />
           Automation Rules
         </h3>
 

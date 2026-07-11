@@ -109,7 +109,7 @@ export default function IOSInstallPrompt({
           className="w-full max-w-sm max-h-[70vh] overflow-y-auto rounded-2xl p-6"
           style={{
             background:
-              "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)",
+              "var(--background)",
             boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
           }}
         >
@@ -124,7 +124,7 @@ export default function IOSInstallPrompt({
             </Button>
 
             <div className="text-center mb-6">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary flex items-center justify-center">
                 <Smartphone className="h-8 w-8 text-white" />
               </div>
               <h2 className="text-xl font-bold text-white mb-2">
@@ -137,8 +137,8 @@ export default function IOSInstallPrompt({
 
             <div className="space-y-3 mb-6">
               <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
-                <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                  <MessageCircle className="w-5 h-5 text-purple-400" />
+                <div className="w-10 h-10 rounded-full bg-[var(--color-status-info-bg)] flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5 text-[var(--color-status-info-text)]" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">
@@ -151,8 +151,8 @@ export default function IOSInstallPrompt({
               </div>
 
               <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
-                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                  <Gift className="w-5 h-5 text-blue-400" />
+                <div className="w-10 h-10 rounded-full bg-[var(--color-status-info-bg)] flex items-center justify-center">
+                  <Gift className="w-5 h-5 text-[var(--color-status-info-text)]" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">
@@ -165,8 +165,8 @@ export default function IOSInstallPrompt({
               </div>
 
               <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
-                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-green-400" />
+                <div className="w-10 h-10 rounded-full bg-[var(--color-status-success-bg)] flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-[var(--color-success)]" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">
@@ -179,8 +179,8 @@ export default function IOSInstallPrompt({
               </div>
 
               <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
-                <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
-                  <Bell className="w-5 h-5 text-orange-400" />
+                <div className="w-10 h-10 rounded-full bg-[var(--color-status-warning-bg)] flex items-center justify-center">
+                  <Bell className="w-5 h-5 text-[var(--color-status-warning-text)]" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">
@@ -200,7 +200,7 @@ export default function IOSInstallPrompt({
                 Maybe Later
               </Button>
               <Button
-                className="flex-1 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white"
+                className="flex-1 bg-gradient-to-r from-purple-500 to-blue-600 hover:bg-primary/90 text-white"
                 onClick={() => (window.location.href = "/signup")}
               >
                 Create Account
@@ -223,7 +223,7 @@ export default function IOSInstallPrompt({
         className="w-full max-w-sm max-h-[70vh] overflow-y-auto rounded-2xl p-6"
         style={{
           background:
-            "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)",
+            "var(--background)",
           boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
         }}
       >
@@ -238,7 +238,7 @@ export default function IOSInstallPrompt({
           </Button>
 
           <div className="text-center mb-6">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary flex items-center justify-center">
               <Smartphone className="h-8 w-8 text-white" />
             </div>
             <h2 className="text-xl font-bold text-white mb-2">
@@ -252,15 +252,15 @@ export default function IOSInstallPrompt({
           {/* iOS Install Steps */}
           <div className="space-y-4 mb-6 p-4 rounded-xl bg-secondary/50">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0">
-                <span className="text-purple-400 font-bold text-sm">1</span>
+              <div className="w-8 h-8 rounded-full bg-[var(--color-status-info-bg)] flex items-center justify-center shrink-0">
+                <span className="text-[var(--color-status-info-text)] font-bold text-sm">1</span>
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-white">
                   Tap the Share button
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <Share className="w-4 h-4 text-purple-400" />
+                  <Share className="w-4 h-4 text-[var(--color-status-info-text)]" />
                   <p className="text-xs text-muted-foreground">
                     At the bottom of Safari
                   </p>
@@ -269,15 +269,15 @@ export default function IOSInstallPrompt({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0">
-                <span className="text-purple-400 font-bold text-sm">2</span>
+              <div className="w-8 h-8 rounded-full bg-[var(--color-status-info-bg)] flex items-center justify-center shrink-0">
+                <span className="text-[var(--color-status-info-text)] font-bold text-sm">2</span>
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-white">
                   Select "Add to Home Screen"
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <Plus className="w-4 h-4 text-purple-400" />
+                  <Plus className="w-4 h-4 text-[var(--color-status-info-text)]" />
                   <p className="text-xs text-muted-foreground">
                     Scroll down in the share menu
                   </p>
@@ -286,8 +286,8 @@ export default function IOSInstallPrompt({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0">
-                <span className="text-purple-400 font-bold text-sm">3</span>
+              <div className="w-8 h-8 rounded-full bg-[var(--color-status-info-bg)] flex items-center justify-center shrink-0">
+                <span className="text-[var(--color-status-info-text)] font-bold text-sm">3</span>
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-white">
@@ -307,19 +307,19 @@ export default function IOSInstallPrompt({
             </p>
             <div className="grid grid-cols-2 gap-2">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <MessageCircle className="w-3 h-3 text-purple-400" />
+                <MessageCircle className="w-3 h-3 text-[var(--color-status-info-text)]" />
                 <span>Instant chat</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Gift className="w-3 h-3 text-blue-400" />
+                <Gift className="w-3 h-3 text-[var(--color-status-info-text)]" />
                 <span>Vouchers</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Calendar className="w-3 h-3 text-green-400" />
+                <Calendar className="w-3 h-3 text-[var(--color-success)]" />
                 <span>Appointments</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Bell className="w-3 h-3 text-orange-400" />
+                <Bell className="w-3 h-3 text-[var(--color-status-warning-text)]" />
                 <span>Notifications</span>
               </div>
             </div>
@@ -334,7 +334,7 @@ export default function IOSInstallPrompt({
               Maybe Later
             </Button>
             <Button
-              className="flex-1 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white"
+              className="flex-1 bg-gradient-to-r from-purple-500 to-blue-600 hover:bg-primary/90 text-white"
               onClick={handleGotIt}
             >
               Got It!

@@ -87,7 +87,7 @@ export function SignaturePad({
 
   return (
     <div className={cn("flex flex-col gap-4", className)}>
-      <div className="relative aspect-[3/2] w-full bg-slate-900 border border-border rounded-2xl overflow-hidden touch-none">
+      <div className="relative aspect-[3/2] w-full bg-background border border-border rounded-2xl overflow-hidden touch-none">
         <canvas
           ref={canvasRef}
           onPointerDown={startDrawing}

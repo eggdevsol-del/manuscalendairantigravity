@@ -345,9 +345,9 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                         </Button>
                                     </div>
                                     {artistSettings?.appleCalendarUrl && (
-                                        <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/5 border border-emerald-500/20 rounded-md mt-2">
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                            <p className="text-[10px] text-emerald-400 font-medium">Currently receiving active syncs from external calendar.</p>
+                                        <div className="flex items-center gap-2 px-3 py-2 bg-[var(--color-status-success-bg)] border border-[var(--color-status-success-border)] rounded-md mt-2">
+                                            <CheckCircle2 className="w-4 h-4 text-[var(--color-status-success-text)]" />
+                                            <p className="text-[10px] text-[var(--color-status-success-text)] font-medium">Currently receiving active syncs from external calendar.</p>
                                         </div>
                                     )}
                                 </div>
@@ -366,7 +366,7 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                 <div className="flex items-center justify-between px-4 py-3 bg-secondary/50 border border-border rounded-md">
                                     <div>
                                         <p className="font-semibold text-sm flex items-center gap-2">
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                            <CheckCircle2 className="w-4 h-4 text-[var(--color-status-success-text)]" />
                                             {file.name}
                                         </p>
                                         <p className="text-[11px] text-muted-foreground mt-1">{csvData.length} records parsed securely.</p>
@@ -394,8 +394,8 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                             <div>
                                                 <h3 className="text-sm font-semibold text-foreground">Ready to Import {importMode === "clients" ? "Clients" : "Appointments"}</h3>
                                                 <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                                                    We found <strong className="text-emerald-500 font-bold">{reviewStats.valid}</strong> valid records to import. {"\n"}
-                                                    {reviewStats.skipped > 0 && <span className="text-orange-400 font-medium">{reviewStats.skipped} records will be safely skipped due to missing or invalid data.</span>}
+                                                    We found <strong className="text-[var(--color-status-success-text)] font-bold">{reviewStats.valid}</strong> valid records to import. {"\n"}
+                                                    {reviewStats.skipped > 0 && <span className="text-[var(--color-status-warning-text)] font-medium">{reviewStats.skipped} records will be safely skipped due to missing or invalid data.</span>}
                                                 </p>
                                             </div>
                                         </div>
@@ -598,14 +598,14 @@ export function DataImportSettings({ onBack }: DataImportSettingsProps) {
                                         </div>
 
                                         {importMode === "clients" ? (
-                                            <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-md mt-4 flex items-start gap-3">
+                                            <div className="p-4 bg-[var(--color-status-warning-bg)] border border-yellow-500/20 rounded-md mt-4 flex items-start gap-3">
                                                 <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
                                                 <p className="text-xs text-yellow-200/80 leading-snug">
                                                     Clients must have either an email or a phone number to be imported. Records missing both will be safely skipped.
                                                 </p>
                                             </div>
                                         ) : (
-                                            <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-md mt-4 flex items-start gap-3">
+                                            <div className="p-4 bg-[var(--color-status-warning-bg)] border border-yellow-500/20 rounded-md mt-4 flex items-start gap-3">
                                                 <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
                                                 <p className="text-xs text-yellow-200/80 leading-snug">
                                                     Dates and Start Times must be correctly formatted to be ingested. A client profile will be generated automatically if the client isn't already registered.

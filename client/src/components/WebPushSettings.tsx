@@ -35,12 +35,12 @@ export function WebPushSettings({
           className={cn(
             "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border",
             status === "granted" && subscription
-              ? "bg-green-500/10 text-green-400 border-green-500/20"
+              ? "bg-[var(--color-status-success-bg)] text-[var(--color-success)] border-[var(--color-status-success-border)]"
               : status === "denied"
-                ? "bg-red-500/10 text-red-400 border-red-500/20"
+                ? "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)] border-[var(--color-status-danger-border)]"
                 : status === "unsupported"
-                  ? "bg-gray-500/10 text-gray-400 border-gray-500/20"
-                  : "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+                  ? "bg-[var(--color-status-neutral-bg)] text-[var(--color-status-neutral-text)] border-[var(--color-status-neutral-border)]"
+                  : "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)] border-yellow-500/20"
           )}
         >
           {status === "granted" && subscription

@@ -72,7 +72,7 @@ export function StripeExpressOnboarding({
     if (!publishableKey) {
         return (
             <div className="text-center p-6">
-                <p className="text-sm text-red-400">
+                <p className="text-sm text-[var(--color-status-danger-text)]">
                     Stripe configuration missing. Please contact support.
                 </p>
             </div>
@@ -82,7 +82,7 @@ export function StripeExpressOnboarding({
     if (completed) {
         return (
             <div className="text-center p-6 space-y-3">
-                <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
+                <CheckCircle2 className="w-10 h-10 text-[var(--color-status-success-text)] mx-auto" />
                 <h3 className="font-bold text-foreground">Onboarding Complete</h3>
                 <p className="text-sm text-muted-foreground">
                     Your Stripe account is now set up. Payouts will begin automatically.
@@ -105,7 +105,7 @@ export function StripeExpressOnboarding({
     if (fetchError) {
         return (
             <div className="text-center p-6 mt-10">
-                <p className="text-sm text-red-500 font-semibold mb-2">Connection Error</p>
+                <p className="text-sm text-[var(--color-status-danger-text)] font-semibold mb-2">Connection Error</p>
                 <p className="text-xs text-muted-foreground">{fetchError}</p>
             </div>
         );
@@ -114,8 +114,8 @@ export function StripeExpressOnboarding({
     return (
         <div className="space-y-3 w-full">
             {isResuming && (
-                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
-                    <p className="text-xs text-amber-400 font-semibold">
+                <div className="bg-[var(--color-status-warning-bg)] border border-[var(--color-status-warning-border)] rounded-xl p-3">
+                    <p className="text-xs text-[var(--color-status-warning-text)] font-semibold">
                         Your onboarding is incomplete. Please finish the
                         remaining steps below.
                     </p>

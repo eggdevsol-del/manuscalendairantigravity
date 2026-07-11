@@ -122,7 +122,7 @@ export default function Portfolio() {
                     <Button
                       size="icon"
                       variant="ghost"
-                      className={`rounded-full h-9 w-9 bg-secondary/50 hover:bg-secondary/50 ${item.isLiked ? "text-red-500" : "text-white"}`}
+                      className={`rounded-full h-9 w-9 bg-secondary/50 hover:bg-secondary/50 ${item.isLiked ? "text-[var(--color-status-danger-text)]" : "text-white"}`}
                     >
                       <Heart
                         className={`w-5 h-5 ${item.isLiked ? "fill-current" : ""}`}

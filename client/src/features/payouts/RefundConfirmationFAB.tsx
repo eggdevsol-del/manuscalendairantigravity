@@ -52,14 +52,14 @@ export function RefundConfirmationFAB({
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
-      toggleIcon={<AlertTriangle className="h-6 w-6 text-red-500" />}
+      toggleIcon={<AlertTriangle className="h-6 w-6 text-[var(--color-status-danger-text)]" />}
       hideToggle={true}
       className="fixed bottom-[80px] right-5 z-[55] flex flex-col items-start gap-3"
       panelClassName="w-[320px] max-w-[calc(100vw-40px)]"
     >
       <div className="flex items-center gap-3 w-full pb-2 mb-2 border-b border-border">
-        <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
-          <AlertTriangle className="w-4 h-4 text-red-500" />
+        <div className="w-8 h-8 rounded-full bg-[var(--color-status-danger-bg)] flex items-center justify-center shrink-0">
+          <AlertTriangle className="w-4 h-4 text-[var(--color-status-danger-text)]" />
         </div>
         <div>
           <h2 className="text-sm font-bold text-foreground leading-tight">
@@ -84,7 +84,7 @@ export function RefundConfirmationFAB({
         
         <div className="flex justify-between items-center text-sm border-t border-border pt-2 mt-1">
           <span className="font-bold text-foreground">Refund Amount</span>
-          <span className="font-black text-red-400">
+          <span className="font-black text-[var(--color-status-danger-text)]">
             {formatCents(transaction.amountCents)}
           </span>
         </div>
@@ -99,7 +99,7 @@ export function RefundConfirmationFAB({
         disabled={isRefunding}
         className={cn(
           "w-full flex items-center justify-center py-3 rounded-[4px] text-xs font-bold uppercase tracking-wider transition-all active:scale-95",
-          "bg-red-500/20 text-red-500 border border-red-500/30 hover:bg-red-500/30 disabled:opacity-50"
+          "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)] border border-[var(--color-status-danger-border)] hover:bg-[var(--color-status-danger-bg)] disabled:opacity-50"
         )}
       >
         {isRefunding ? (

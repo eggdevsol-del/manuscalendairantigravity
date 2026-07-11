@@ -76,7 +76,7 @@ export function ImageUpload({
                 <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <button
                         onClick={onRemove}
-                        className="p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-full transition-colors"
+                        className="p-2 bg-[var(--color-danger)] hover:bg-[var(--color-danger)] text-white rounded-full transition-colors"
                         title="Remove image"
                     >
                         <X className="w-5 h-5" />

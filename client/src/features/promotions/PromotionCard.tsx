@@ -343,9 +343,9 @@ export function PromotionCard({
               className={cn(
                 "px-2 py-0.5 rounded-full text-xs font-medium",
                 data.status === "partially_used" &&
-                "bg-yellow-500/80 text-yellow-900",
-                data.status === "fully_used" && "bg-gray-500/80 text-white",
-                data.status === "expired" && "bg-red-500/80 text-white",
+                "bg-primary text-primary-foreground",
+                data.status === "fully_used" && "bg-secondary text-white",
+                data.status === "expired" && "bg-[var(--color-danger)] text-white",
                 data.status === "revoked" && "bg-red-700/80 text-white"
               )}
             >

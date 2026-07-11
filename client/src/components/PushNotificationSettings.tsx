@@ -242,7 +242,7 @@ export default function PushNotificationSettings() {
         )}
 
         {isEnabled && (
-          <div className="text-sm text-muted-foreground bg-green-50 dark:bg-green-950 p-3 rounded-md">
+          <div className="text-sm text-muted-foreground bg-[var(--color-status-success-bg)] dark:bg-[var(--color-status-success-bg)] p-3 rounded-md">
             ✓ You'll receive push notifications for new messages and
             appointments
           </div>

@@ -91,7 +91,7 @@ export function OrdersTab() {
                       <span className="font-bold text-lg">Order #{order.id}</span>
                       <span className={cn(
                         "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
-                        isFulfilled ? "bg-green-500/20 text-green-400" : "bg-orange-500/20 text-orange-400"
+                        isFulfilled ? "bg-[var(--color-status-success-bg)] text-[var(--color-success)]" : "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
                       )}>
                         {isFulfilled ? "Dispatched" : "Pending"}
                       </span>
@@ -101,7 +101,7 @@ export function OrdersTab() {
                       <span>•</span>
                       <span>{order.buyerName || "Guest"}</span>
                       <span>•</span>
-                      <span className="font-semibold text-indigo-400">${(order.totalAmountCents / 100).toFixed(2)}</span>
+                      <span className="font-semibold text-[var(--color-status-info-text)]">${(order.totalAmountCents / 100).toFixed(2)}</span>
                     </div>
                   </div>
                   <ChevronDown className={cn("w-5 h-5 text-muted-foreground transition-transform", isExpanded && "rotate-180")} />
@@ -165,7 +165,7 @@ export function OrdersTab() {
                             <button
                               onClick={(e) => { e.stopPropagation(); handleDispatch(order.id); }}
                               disabled={updateStatusMutation.isPending}
-                              className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 rounded-xl font-bold flex justify-center items-center gap-2 transition-colors disabled:opacity-50"
+                              className="w-full py-3 bg-primary hover:bg-primary/90 rounded-xl font-bold flex justify-center items-center gap-2 transition-colors disabled:opacity-50"
                             >
                               {updateStatusMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
                               Mark as Dispatched

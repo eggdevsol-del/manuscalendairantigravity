@@ -985,9 +985,9 @@ function PreviewStep({
             can issue it to clients directly from your dashboard."
           </p>
         </div>
-        <div className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[4px] bg-emerald-500/10">
-          <Check className="w-3.5 h-3.5 text-emerald-500" />
-          <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+        <div className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[4px] bg-[var(--color-status-success-bg)]">
+          <Check className="w-3.5 h-3.5 text-[var(--color-status-success-text)]" />
+          <span className="text-[10px] font-bold text-[var(--color-status-success-text)] uppercase tracking-widest">
             Validated
           </span>
         </div>

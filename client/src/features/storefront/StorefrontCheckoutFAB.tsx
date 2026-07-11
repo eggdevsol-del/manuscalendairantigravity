@@ -90,7 +90,7 @@ export function StorefrontCheckoutFAB({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="fixed inset-0 z-[100] bg-[#050505] flex flex-col sm:p-4"
+          className="fixed inset-0 z-[100] bg-background flex flex-col sm:p-4"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
@@ -134,7 +134,7 @@ export function StorefrontCheckoutFAB({
                               </button>
                             </div>
                             <div className="flex items-center justify-between mt-2">
-                              <span className="font-bold text-indigo-400">${(item.priceCents / 100).toFixed(2)}</span>
+                              <span className="font-bold text-[var(--color-status-info-text)]">${(item.priceCents / 100).toFixed(2)}</span>
                               
                               <div className="flex items-center gap-3 bg-background/80 rounded-full px-2 py-1 border border-border">
                                 <button
@@ -158,7 +158,7 @@ export function StorefrontCheckoutFAB({
                       ))}
                     </div>
 
-                    <div className="p-5 rounded-[20px] bg-indigo-500/10 border border-indigo-500/20 space-y-3">
+                    <div className="p-5 rounded-[20px] bg-[var(--color-status-info-bg)] border border-[var(--color-status-info-border)] space-y-3">
                       <div className="flex justify-between text-muted-foreground">
                         <span>Subtotal</span>
                         <span>${(subtotalCents / 100).toFixed(2)}</span>
@@ -167,7 +167,7 @@ export function StorefrontCheckoutFAB({
                         <span>Shipping ({fulfillmentMethod === "pickup" ? "Pickup" : "Standard"})</span>
                         <span>{totalShippingCents > 0 ? `$${(totalShippingCents / 100).toFixed(2)}` : "Free"}</span>
                       </div>
-                      <div className="border-t border-indigo-500/20 pt-3 flex justify-between font-bold text-lg">
+                      <div className="border-t border-[var(--color-status-info-border)] pt-3 flex justify-between font-bold text-lg">
                         <span>Total</span>
                         <span>${(totalCents / 100).toFixed(2)}</span>
                       </div>
@@ -196,7 +196,7 @@ export function StorefrontCheckoutFAB({
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", bounce: 0.5 }}
                 >
-                  <CheckCircle2 className="w-24 h-24 text-green-400" />
+                  <CheckCircle2 className="w-24 h-24 text-[var(--color-success)]" />
                 </motion.div>
                 <div className="space-y-2">
                   <h2 className="text-3xl font-black">Order Confirmed!</h2>
@@ -234,7 +234,7 @@ export function StorefrontCheckoutFAB({
 
           {/* Footer Actions */}
           {step === "review" && items.length > 0 && (
-            <div className="p-4 border-t border-border bg-[#050505] shrink-0 pb-safe">
+            <div className="p-4 border-t border-border bg-background shrink-0 pb-safe">
               <button
                 onClick={handleContinueToPayment}
                 disabled={isGenerating}

@@ -46,7 +46,7 @@ export default function Wallet() {
                   <p className="font-medium text-foreground">Account Created</p>
                   <p className="text-xs text-muted-foreground">Just now</p>
                 </div>
-                <span className="text-emerald-500 font-medium">+$0.00</span>
+                <span className="text-[var(--color-status-success-text)] font-medium">+$0.00</span>
               </div>
             </Card>
             <div className="p-12 text-center text-muted-foreground/40 text-sm">

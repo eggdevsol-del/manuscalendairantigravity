@@ -149,11 +149,11 @@ export function TeaserRegistrationForm({
                 </span>
               ) : emailStatus?.exists ? (
                 emailStatus.isFunnelClient ? (
-                  <span className="absolute right-3 top-2.5 text-xs text-green-600 font-medium">
+                  <span className="absolute right-3 top-2.5 text-xs text-[var(--color-success)] font-medium">
                     Complete Setup
                   </span>
                 ) : (
-                  <span className="absolute right-3 top-2.5 text-xs text-amber-600 font-medium">
+                  <span className="absolute right-3 top-2.5 text-xs text-[var(--color-status-warning-text)] font-medium">
                     Account Exists
                   </span>
                 )

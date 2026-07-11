@@ -32,7 +32,7 @@ const URGENCY_OPTIONS = [
     id: "flexible",
     label: "Flexible",
     description: "I can wait for the right time",
-    color: "text-green-500",
+    color: "text-[var(--color-success)]",
   },
   {
     id: "moderate",
@@ -44,7 +44,7 @@ const URGENCY_OPTIONS = [
     id: "urgent",
     label: "Urgent",
     description: "Need it done soon (special occasion, etc.)",
-    color: "text-red-500",
+    color: "text-[var(--color-status-danger-text)]",
   },
 ];
 

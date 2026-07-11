@@ -361,12 +361,12 @@ export default function LeadDetail() {
                   className={cn(
                     "px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide",
                     lead.status === "new"
-                      ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                      ? "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] border border-[var(--color-status-info-border)]"
                       : lead.status === "contacted"
-                        ? "bg-green-500/10 text-green-400 border border-green-500/20"
+                        ? "bg-[var(--color-status-success-bg)] text-[var(--color-success)] border border-[var(--color-status-success-border)]"
                         : lead.status === "archived"
-                          ? "bg-gray-500/10 text-gray-400 border border-gray-500/20"
-                          : "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                          ? "bg-[var(--color-status-neutral-bg)] text-[var(--color-status-neutral-text)] border border-[var(--color-status-neutral-border)]"
+                          : "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] border border-purple-500/20"
                   )}
                 >
                   {lead.status.replace(/_/g, " ")}
@@ -413,7 +413,7 @@ export default function LeadDetail() {
               {lead.status !== "archived" && (
                 <Button
                   variant="ghost"
-                  className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  className="w-full text-[var(--color-status-danger-text)] hover:text-red-300 hover:bg-[var(--color-status-danger-bg)]"
                   onClick={handleArchive}
                   disabled={updateStatusMutation.isPending}
                 >

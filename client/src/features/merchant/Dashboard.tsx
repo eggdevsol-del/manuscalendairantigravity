@@ -88,7 +88,7 @@ export function MerchantDashboard() {
           </button>
           <div className="text-right">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Total Revenue</p>
-            <p className="text-xl font-bold text-emerald-500">{stats ? formatCurrency(stats.revenueCents) : "$0.00"}</p>
+            <p className="text-xl font-bold text-[var(--color-status-success-text)]">{stats ? formatCurrency(stats.revenueCents) : "$0.00"}</p>
           </div>
         </div>
       </div>

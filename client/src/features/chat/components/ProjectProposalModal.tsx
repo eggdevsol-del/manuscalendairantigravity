@@ -220,12 +220,12 @@ export function ProjectProposalModal({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-green-500" />
-                  <span className="text-sm font-medium text-green-500">
+                  <Tag className="w-4 h-4 text-[var(--color-success)]" />
+                  <span className="text-sm font-medium text-[var(--color-success)]">
                     {appliedPromotion.name} applied
                   </span>
                 </div>
-                <span className="text-sm font-bold text-green-500">
+                <span className="text-sm font-bold text-[var(--color-success)]">
                   -${(appliedPromotion.discountAmount / 100).toFixed(2)}
                 </span>
               </div>
@@ -306,15 +306,15 @@ export function ProjectProposalModal({
           </Button>
           <div
             className={cn(
-              "flex items-center justify-center gap-2 text-amber-500 text-xs font-medium border rounded-lg",
+              "flex items-center justify-center gap-2 text-[var(--color-status-warning-text)] text-xs font-medium border rounded-lg",
               tokens.proposalModal.statusPadding,
               tokens.proposalModal.warningBg,
               tokens.proposalModal.warningBorder
             )}
           >
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-warning)] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-warning)]"></span>
             </span>
             Waiting for client response
           </div>
@@ -335,12 +335,12 @@ export function ProjectProposalModal({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-green-500" />
-                  <span className="text-sm font-medium text-green-500">
+                  <Tag className="w-4 h-4 text-[var(--color-success)]" />
+                  <span className="text-sm font-medium text-[var(--color-success)]">
                     {displayPromotionName} applied
                   </span>
                 </div>
-                <span className="text-sm font-bold text-green-500">
+                <span className="text-sm font-bold text-[var(--color-success)]">
                   -${displayDiscountAmount.toFixed(2)}
                 </span>
               </div>
@@ -355,13 +355,13 @@ export function ProjectProposalModal({
               tokens.proposalModal.successBorder
             )}
           >
-            <p className="text-green-500 font-bold flex items-center justify-center gap-2">
+            <p className="text-[var(--color-success)] font-bold flex items-center justify-center gap-2">
               <Check className="w-5 h-5" /> Proposal Accepted
             </p>
             {isArtist && onRequestBalance && (
               <Button
                 variant="outline"
-                className="w-full bg-background/50 border-green-500/20 text-green-500 hover:bg-green-500/10 hover:text-green-400"
+                className="w-full bg-background/50 border-[var(--color-status-success-border)] text-[var(--color-success)] hover:bg-[var(--color-status-success-bg)] hover:text-[var(--color-success)]"
                 onClick={onRequestBalance}
                 disabled={isPendingAction}
               >
@@ -387,7 +387,7 @@ export function ProjectProposalModal({
             tokens.proposalModal.errorBorder
           )}
         >
-          <p className="text-red-500 font-bold flex items-center justify-center gap-2">
+          <p className="text-[var(--color-status-danger-text)] font-bold flex items-center justify-center gap-2">
             <AlertCircle className="w-5 h-5" /> Proposal Declined
           </p>
         </div>
@@ -500,7 +500,7 @@ export function ProjectProposalModal({
                               <span className="font-bold text-foreground">
                                 {promo.name}
                               </span>
-                              <span className="text-emerald-500 font-bold">
+                              <span className="text-[var(--color-status-success-text)] font-bold">
                                 {promo.valueType === "fixed"
                                   ? `$${promo.value / 100}`
                                   : `${promo.value}% OFF`}
@@ -550,7 +550,7 @@ export function ProjectProposalModal({
                               <span className="text-lg line-through text-muted-foreground">
                                 ${totalCost}
                               </span>
-                              <span className="text-2xl font-bold text-green-500 tracking-tight">
+                              <span className="text-2xl font-bold text-[var(--color-success)] tracking-tight">
                                 ${displayTotal}
                               </span>
                             </>

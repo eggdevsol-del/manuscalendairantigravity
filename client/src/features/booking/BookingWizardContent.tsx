@@ -758,7 +758,7 @@ export function BookingWizardContent({
                   <span
                     className={cn(
                       "text-xs font-bold",
-                      accent ? "text-emerald-500" : "text-foreground"
+                      accent ? "text-[var(--color-status-success-text)]" : "text-foreground"
                     )}
                   >
                     {value}
@@ -771,10 +771,10 @@ export function BookingWizardContent({
             {hasDiscount && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-emerald-500/10"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-[var(--color-status-success-bg)]"
               >
-                <Tag className="w-3 h-3 text-emerald-500" />
-                <span className="text-[9px] font-medium text-emerald-500">
+                <Tag className="w-3 h-3 text-[var(--color-status-success-text)]" />
+                <span className="text-[9px] font-medium text-[var(--color-status-success-text)]">
                   {hasCurrentDiscount
                     ? appliedPromotion.name
                     : proposalMeta.promotionName || "Promotion"}{" "}
@@ -862,7 +862,7 @@ export function BookingWizardContent({
                   <button
                     onClick={onRejectProposal}
                     disabled={isPendingProposalAction}
-                    className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                    className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-[var(--color-status-danger-bg)] hover:text-[var(--color-status-danger-text)]"
                   >
                     Decline
                   </button>
@@ -898,18 +898,18 @@ export function BookingWizardContent({
                 variants={fab.animation.item}
                 className="space-y-2 pt-1"
               >
-                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] bg-orange-500/10">
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] bg-[var(--color-status-warning-bg)]">
                   <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-500 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500" />
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-warning)] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--color-warning)]" />
                   </span>
-                  <span className="text-[9px] font-medium text-orange-500">
+                  <span className="text-[9px] font-medium text-[var(--color-status-warning-text)]">
                     Awaiting client response
                   </span>
                 </div>
                 <button
                   onClick={onCancelProposal}
-                  className="w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                  className="w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-[var(--color-status-danger-bg)] hover:text-[var(--color-status-danger-text)]"
                 >
                   Cancel Proposal
                 </button>
@@ -918,8 +918,8 @@ export function BookingWizardContent({
 
             {(!isArtist && (proposalMeta.status === "accepted" || (proposalMeta.status === "pending" && isClientPaying))) && (
               <motion.div variants={fab.animation.item} className="flex flex-col gap-3 py-2">
-                <div className="p-3 bg-indigo-500/10 rounded-[8px] border border-indigo-500/20">
-                  <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><Tag className="w-3 h-3" /> Deposit Required</h4>
+                <div className="p-3 bg-[var(--color-status-info-bg)] rounded-[8px] border border-[var(--color-status-info-border)]">
+                  <h4 className="text-[10px] font-bold text-[var(--color-status-info-text)] uppercase tracking-widest mb-2 flex items-center gap-1.5"><Tag className="w-3 h-3" /> Deposit Required</h4>
                   {(() => {
                     // depositAmount in metadata is stored in dollars — fee is rolled in for clean client UX
                     const depositDollars = Number(proposalMeta.depositAmount || 0);
@@ -1012,10 +1012,10 @@ export function BookingWizardContent({
             {isArtist && proposalMeta.status === "accepted" && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-emerald-500/10"
+                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-[var(--color-status-success-bg)]"
               >
                 <div className="w-3.5 h-3.5 rounded-full border border-emerald-500 border-t-transparent animate-spin" />
-                <span className="text-[10px] font-bold text-emerald-500">
+                <span className="text-[10px] font-bold text-[var(--color-status-success-text)]">
                   Awaiting Client Remittance...
                 </span>
               </motion.div>
@@ -1023,10 +1023,10 @@ export function BookingWizardContent({
 
             {isArtist && proposalMeta.status === "remittance_uploaded" && (
               <motion.div variants={fab.animation.item} className="flex flex-col gap-3 pt-2">
-                <div className="flex flex-col gap-2 p-3 bg-indigo-500/10 rounded-[8px] border border-indigo-500/20">
+                <div className="flex flex-col gap-2 p-3 bg-[var(--color-status-info-bg)] rounded-[8px] border border-[var(--color-status-info-border)]">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <CheckCircle2 className="w-4 h-4 text-indigo-400" />
-                    <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">
+                    <CheckCircle2 className="w-4 h-4 text-[var(--color-status-info-text)]" />
+                    <span className="text-[10px] font-bold text-[var(--color-status-info-text)] uppercase tracking-widest">
                       Client Uploaded Receipt
                     </span>
                   </div>
@@ -1092,7 +1092,7 @@ export function BookingWizardContent({
                       }
                     }}
                     disabled={updateMetadataMutation.isPending || updateAppointmentMutation.isPending}
-                    className="w-full py-3 mt-1 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500 text-white hover:bg-emerald-600 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                    className="w-full py-3 mt-1 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-[var(--color-success)] text-white hover:bg-[var(--color-success)] flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary-rgb),0.15)]"
                   >
                     {updateMetadataMutation.isPending || updateAppointmentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                     Confirm Deposit
@@ -1104,10 +1104,10 @@ export function BookingWizardContent({
             {!isArtist && proposalMeta.status === "remittance_uploaded" && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-2 px-3 py-2 rounded-[4px] bg-indigo-500/10 border border-indigo-500/20"
+                className="flex items-center gap-2 px-3 py-2 rounded-[4px] bg-[var(--color-status-info-bg)] border border-[var(--color-status-info-border)]"
               >
                 <div className="w-3.5 h-3.5 rounded-full border border-indigo-400 border-t-transparent animate-spin" />
-                <span className="text-[10px] font-bold text-indigo-400">
+                <span className="text-[10px] font-bold text-[var(--color-status-info-text)]">
                   Awaiting Artist Confirmation...
                 </span>
               </motion.div>
@@ -1122,8 +1122,8 @@ export function BookingWizardContent({
                   // Client view: Balance is due, show Pay Balance button directly instead of "Deposit Paid"
                   <div className="flex flex-col w-full gap-2">
                     <div className="flex items-center gap-1.5 justify-center pb-1">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                      <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+                      <CheckCircle2 className="w-4 h-4 text-[var(--color-status-success-text)]" />
+                      <span className="text-[10px] font-bold text-[var(--color-status-success-text)] uppercase tracking-widest">
                         Deposit Paid & Project Booked!
                       </span>
                     </div>
@@ -1152,7 +1152,7 @@ export function BookingWizardContent({
                           }
                         }}
                         disabled={isClientPayingBalance}
-                        className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500 text-white hover:bg-emerald-600 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:opacity-70"
+                        className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-[var(--color-success)] text-white hover:bg-[var(--color-success)] flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary-rgb),0.15)] disabled:opacity-70"
                       >
                         {isClientPayingBalance ? <Loader2 className="w-4 h-4 animate-spin" /> : <DollarSign className="w-4 h-4" />}
                         {isClientPayingBalance ? "Preparing..." : `Pay Balance ($${(selectedAppointmentRaw.remainingBalanceCents / 100).toFixed(2)})`}
@@ -1165,9 +1165,9 @@ export function BookingWizardContent({
                   </div>
                 ) : (
                   // Normal "Deposit Paid" block (for artists, or fully paid clients)
-                  <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-[4px] bg-emerald-500/10 border border-emerald-500/20">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+                  <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-[4px] bg-[var(--color-status-success-bg)] border border-[var(--color-status-success-border)]">
+                    <CheckCircle2 className="w-4 h-4 text-[var(--color-status-success-text)]" />
+                    <span className="text-[10px] font-bold text-[var(--color-status-success-text)] uppercase tracking-widest">
                       {selectedAppointmentRaw?.paymentStatus === "fully_paid" ? "Project Fully Paid!" : "Deposit Paid & Project Booked!"}
                     </span>
                   </div>
@@ -1198,7 +1198,7 @@ export function BookingWizardContent({
                       }
                     }}
                     disabled={requestBalanceMutation.isPending || requestAdditionalMutation.isPending}
-                    className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500/20 flex items-center justify-center gap-2"
+                    className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border border-[var(--color-status-success-border)] hover:bg-[var(--color-status-success-bg)] flex items-center justify-center gap-2"
                   >
                     {(requestBalanceMutation.isPending || requestAdditionalMutation.isPending) ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -1253,10 +1253,10 @@ export function BookingWizardContent({
             {proposalMeta.status === "rejected" && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-red-500/10"
+                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-[var(--color-status-danger-bg)]"
               >
-                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
-                <span className="text-[10px] font-bold text-red-500">
+                <AlertCircle className="w-3.5 h-3.5 text-[var(--color-status-danger-text)]" />
+                <span className="text-[10px] font-bold text-[var(--color-status-danger-text)]">
                   Declined
                 </span>
               </motion.div>
@@ -1264,7 +1264,7 @@ export function BookingWizardContent({
 
             {isArtist && selectedAppointmentRaw?.status === "completed" && (
               <motion.div variants={fab.animation.item} className="pt-1">
-                <div className="flex items-center gap-2 px-3 py-2 bg-zinc-500/10 text-zinc-400 rounded-[4px] border border-zinc-500/20 justify-center">
+                <div className="flex items-center gap-2 px-3 py-2 bg-[var(--color-status-neutral-bg)] text-[var(--color-status-neutral-text)] rounded-[4px] border border-[var(--color-status-neutral-border)] justify-center">
                   <CheckCircle2 className="w-4 h-4" />
                   <span className="text-[10px] font-bold uppercase tracking-widest">
                     Project Complete
@@ -1287,17 +1287,17 @@ export function BookingWizardContent({
                   ) ? (
                     <button
                       onClick={() => setShowCheckInModal("arrival")}
-                      className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 flex items-center justify-center gap-2"
+                      className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border border-[var(--color-status-success-border)] hover:bg-[var(--color-status-success-bg)] flex items-center justify-center gap-2"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       Client Check-in
                     </button>
                   ) : (
                     <>
-                      <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/10 text-emerald-500 rounded-[4px] border border-emerald-500/20 justify-center">
+                      <div className="flex items-center gap-2 px-3 py-2 bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] rounded-[4px] border border-[var(--color-status-success-border)] justify-center">
                         <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-success)] opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-success)]"></span>
                         </span>
                         <span className="text-[10px] font-bold uppercase tracking-widest">
                           In Progress
@@ -1365,22 +1365,22 @@ export function BookingWizardContent({
                   onClick={() => setActiveForm(pendingForms[0])}
                   className={cn(
                     card.base,
-                    "bg-orange-500/10 text-orange-500 hover:bg-orange-500/20",
+                    "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)] hover:bg-[var(--color-status-warning-bg)]",
                     card.interactive,
-                    "flex items-center gap-2 p-2 w-full rounded-[4px] border border-orange-500/20"
+                    "flex items-center gap-2 p-2 w-full rounded-[4px] border border-[var(--color-status-warning-border)]"
                   )}
                 >
                   <div
                     className={cn(
                       fab.itemButton,
-                      "shrink-0 !w-7 !h-7 bg-orange-500/20 text-orange-500"
+                      "shrink-0 !w-7 !h-7 bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
                     )}
                   >
                     <FileSignature className="w-3.5 h-3.5" />
                   </div>
                   <div className="flex-1 flex justify-between items-center text-[10px] font-bold">
                     <span>Sign Required Forms</span>
-                    <span className="w-4 h-4 bg-orange-500 text-white rounded-full flex items-center justify-center text-[8px]">
+                    <span className="w-4 h-4 bg-[var(--color-warning)] text-white rounded-full flex items-center justify-center text-[8px]">
                       {pendingForms.length}
                     </span>
                   </div>
@@ -1450,7 +1450,7 @@ export function BookingWizardContent({
                     <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">
                       {promo.name}
                     </span>
-                    <span className="text-[10px] font-bold text-emerald-500">
+                    <span className="text-[10px] font-bold text-[var(--color-status-success-text)]">
                       {promo.valueType === "fixed"
                         ? `$${promo.value / 100}`
                         : `${promo.value}% OFF`}
@@ -1502,7 +1502,7 @@ export function BookingWizardContent({
           {/* Mystery String Resolver */}
           {isArtist && selectedAppointmentRaw.serviceName && effectiveServices && !effectiveServices.some((s: any) => s.name === selectedAppointmentRaw.serviceName) && (
             <motion.div variants={fab.animation.item} className="mt-2 pt-2 border-t border-border space-y-2">
-              <div className="flex items-start gap-2 px-2 py-1.5 bg-yellow-500/10 rounded-[4px]">
+              <div className="flex items-start gap-2 px-2 py-1.5 bg-[var(--color-status-warning-bg)] rounded-[4px]">
                 <AlertCircle className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest">
@@ -1540,7 +1540,7 @@ export function BookingWizardContent({
 
           {isArtist && selectedAppointmentRaw.status === "completed" && (
             <motion.div variants={fab.animation.item} className="pt-1">
-              <div className="flex items-center gap-2 px-3 py-2 bg-zinc-500/10 text-zinc-400 rounded-[4px] border border-zinc-500/20 justify-center">
+              <div className="flex items-center gap-2 px-3 py-2 bg-[var(--color-status-neutral-bg)] text-[var(--color-status-neutral-text)] rounded-[4px] border border-[var(--color-status-neutral-border)] justify-center">
                 <CheckCircle2 className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-widest">
                   Project Complete
@@ -1557,17 +1557,17 @@ export function BookingWizardContent({
               ) ? (
                 <button
                   onClick={() => setShowCheckInModal("arrival")}
-                  className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 flex items-center justify-center gap-2"
+                  className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border border-[var(--color-status-success-border)] hover:bg-[var(--color-status-success-bg)] flex items-center justify-center gap-2"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   Client Check-in
                 </button>
               ) : (
                 <>
-                  <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/10 text-emerald-500 rounded-[4px] border border-emerald-500/20 justify-center">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] rounded-[4px] border border-[var(--color-status-success-border)] justify-center">
                     <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-success)] opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-success)]"></span>
                     </span>
                     <span className="text-[10px] font-bold uppercase tracking-widest">
                       In Progress
@@ -2016,7 +2016,7 @@ export function BookingWizardContent({
                       </span>
                     </div>
                   ) : availabilityError ? (
-                    <div className="p-2 rounded-[4px] bg-red-500/10 border border-red-500/20 text-red-500 flex items-center gap-2">
+                    <div className="p-2 rounded-[4px] bg-[var(--color-status-danger-bg)] border border-[var(--color-status-danger-border)] text-[var(--color-status-danger-text)] flex items-center gap-2">
                       <AlertCircle className="w-3 h-3" />
                       <span className="text-[9px] font-bold uppercase tracking-wider">
                         No availability found
@@ -2124,7 +2124,7 @@ export function BookingWizardContent({
                                 onClose();
                               }
                             }}
-                            className="w-full text-red-500 hover:bg-red-500/10 h-12 rounded-[4px] uppercase tracking-wider font-bold text-[10px]"
+                            className="w-full text-[var(--color-status-danger-text)] hover:bg-[var(--color-status-danger-bg)] h-12 rounded-[4px] uppercase tracking-wider font-bold text-[10px]"
                           >
                             Delete Imported Booking
                           </button>
@@ -2138,8 +2138,8 @@ export function BookingWizardContent({
                     animate={{ opacity: 1, scale: 1 }}
                     className="flex flex-col items-center justify-center py-10 gap-4"
                   >
-                    <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                      <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                    <div className="w-16 h-16 rounded-full bg-[var(--color-status-success-bg)] flex items-center justify-center">
+                      <CheckCircle2 className="w-8 h-8 text-[var(--color-status-success-text)]" />
                     </div>
                     <div className="text-center">
                       <h3 className="text-sm font-bold text-foreground uppercase tracking-widest mb-1">

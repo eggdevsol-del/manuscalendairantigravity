@@ -202,7 +202,7 @@ export function ClientProfileSheet({
             <div>
               <h3 className="font-bold text-lg flex items-center gap-1.5 text-foreground">
                 {client.name || "Unknown Client"}
-                <BadgeCheck className="w-4 h-4 text-blue-500" />
+                <BadgeCheck className="w-4 h-4 text-[var(--color-status-info-text)]" />
               </h3>
               <p className="text-xs text-muted-foreground">
                 Client Profile
@@ -298,7 +298,7 @@ export function ClientProfileSheet({
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-bold text-primary">${appt.price}</p>
-                          <span className="inline-block text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 capitalize font-bold mt-1">
+                          <span className="inline-block text-[9px] px-2 py-0.5 rounded-full bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border border-[var(--color-status-success-border)] capitalize font-bold mt-1">
                             {appt.status}
                           </span>
                         </div>
@@ -344,8 +344,8 @@ export function ClientProfileSheet({
                         <span className={cn(
                           "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border",
                           form.status === "signed"
-                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                            : "bg-orange-500/10 text-orange-500 border-orange-500/20"
+                            ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border-[var(--color-status-success-border)]"
+                            : "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)] border-[var(--color-status-warning-border)]"
                         )}>
                           {form.status}
                         </span>
