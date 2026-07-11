@@ -87,7 +87,8 @@ export const designBriefRouter = router({
           generatedAt: new Date().toISOString(),
         };
       } catch (error) {
-        console.error("Failed to generate design brief:", error);
+        const errMsg = error instanceof Error ? error.message : String(error);
+        console.error("Failed to generate design brief:", errMsg);
         // Count how many tags actually exist
         const tagCount = await database.query.messageTags.findMany({
           where: and(
@@ -95,6 +96,19 @@ export const designBriefRouter = router({
             eq(messageTags.artistId, ctx.user.id)
           ),
         });
+
+        // Build a user-friendly error message from the LLM error
+        let userError = "Failed to generate brief.";
+        if (errMsg.includes("insufficient_quota") || errMsg.includes("429")) {
+          userError = "LLM quota exceeded — please top up your OpenAI billing or use a different API key.";
+        } else if (errMsg.includes("401") || errMsg.includes("Unauthorized")) {
+          userError = "LLM API key is invalid — check OPENAI_API_KEY in your .env file.";
+        } else if (errMsg.includes("OPENAI_API_KEY is not configured")) {
+          userError = "No LLM API key configured — add OPENAI_API_KEY to your .env file.";
+        } else {
+          userError = `LLM error: ${errMsg.substring(0, 120)}`;
+        }
+
         // Return cached version if available, even if stale
         if (cached) {
           return {
@@ -102,14 +116,14 @@ export const designBriefRouter = router({
             messageCount: cached.messageCount,
             isStale: true,
             generatedAt: cached.generatedAt,
-            error: "Brief refresh failed — showing cached version.",
+            error: `Brief refresh failed — showing cached version. (${userError})`,
           };
         }
         return {
           brief: null,
           messageCount: tagCount.length,
           isStale: false,
-          error: "Failed to generate brief. Check LLM configuration.",
+          error: userError,
         };
       }
     }),
