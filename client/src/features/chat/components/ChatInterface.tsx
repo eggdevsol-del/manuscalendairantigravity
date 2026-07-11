@@ -820,17 +820,28 @@ export function ChatInterface({
             </button>
           </div>
           {briefLoading ? (
-            <p className="text-xs text-muted-foreground animate-pulse">Loading brief...</p>
+            <p className="text-xs text-muted-foreground animate-pulse">Generating brief...</p>
           ) : briefData?.brief ? (
             <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
               {briefData.brief}
             </p>
+          ) : (briefData as any)?.error ? (
+            <div>
+              <p className="text-xs text-destructive/80 italic mb-1">
+                {(briefData as any).error}
+              </p>
+              {briefData?.messageCount ? (
+                <p className="text-[10px] text-muted-foreground">
+                  {briefData.messageCount} tagged message{briefData.messageCount !== 1 ? 's' : ''} found — tap Refresh to retry.
+                </p>
+              ) : null}
+            </div>
           ) : (
             <p className="text-xs text-muted-foreground italic">
               No messages tagged yet. Tap client messages to build a design brief.
             </p>
           )}
-          {briefData?.messageCount ? (
+          {briefData?.brief && briefData?.messageCount ? (
             <p className="text-[10px] text-muted-foreground mt-2">
               Based on {briefData.messageCount} tagged message{briefData.messageCount !== 1 ? 's' : ''}
               {briefData.isStale && ' · ⚠️ Stale'}

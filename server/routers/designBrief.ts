@@ -88,6 +88,13 @@ export const designBriefRouter = router({
         };
       } catch (error) {
         console.error("Failed to generate design brief:", error);
+        // Count how many tags actually exist
+        const tagCount = await database.query.messageTags.findMany({
+          where: and(
+            eq(messageTags.conversationId, input.conversationId),
+            eq(messageTags.artistId, ctx.user.id)
+          ),
+        });
         // Return cached version if available, even if stale
         if (cached) {
           return {
@@ -95,9 +102,15 @@ export const designBriefRouter = router({
             messageCount: cached.messageCount,
             isStale: true,
             generatedAt: cached.generatedAt,
+            error: "Brief refresh failed — showing cached version.",
           };
         }
-        return { brief: null, messageCount: 0, isStale: false };
+        return {
+          brief: null,
+          messageCount: tagCount.length,
+          isStale: false,
+          error: "Failed to generate brief. Check LLM configuration.",
+        };
       }
     }),
 
