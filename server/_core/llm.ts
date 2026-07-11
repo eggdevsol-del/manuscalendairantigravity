@@ -71,6 +71,8 @@ export type InvokeParams = {
   output_schema?: OutputSchema;
   responseFormat?: ResponseFormat;
   response_format?: ResponseFormat;
+  /** Skip thinking/CoT for simple tasks — returns plain string content */
+  disableThinking?: boolean;
 };
 
 export type ToolCall = {
@@ -301,10 +303,12 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 32768;
-  payload.thinking = {
-    budget_tokens: 128,
-  };
+  payload.max_tokens = params.maxTokens || params.max_tokens || 32768;
+  if (!params.disableThinking) {
+    payload.thinking = {
+      budget_tokens: 128,
+    };
+  }
 
   const normalizedResponseFormat = normalizeResponseFormat({
     responseFormat,

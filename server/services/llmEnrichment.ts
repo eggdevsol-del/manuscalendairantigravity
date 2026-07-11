@@ -1,8 +1,27 @@
-import { invokeLLM } from "../_core/llm";
+import { invokeLLM, type InvokeResult } from "../_core/llm";
 import { messageTags, messages, designBriefs } from "../../drizzle/schema";
 import { and, eq, desc, asc } from "drizzle-orm";
 import type { MySql2Database } from "drizzle-orm/mysql2";
 import * as schema from "../../drizzle/schema";
+
+/**
+ * Extract text content from an LLM response.
+ * Handles both plain string content and array content
+ * (e.g. when thinking mode returns [{type:"thinking",...}, {type:"text", text:"..."}])
+ */
+function extractTextContent(result: InvokeResult): string | null {
+  const content = result.choices[0]?.message?.content;
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) {
+    // Find the first text part (skip thinking parts)
+    for (const part of content) {
+      if (typeof part === "object" && "text" in part && part.type === "text") {
+        return part.text;
+      }
+    }
+  }
+  return null;
+}
 
 const DESIGN_BRIEF_SYSTEM_PROMPT = `You are a design brief compiler for a tattoo booking app.
 Given tagged chat messages between an artist and their client, produce a concise design brief.
@@ -86,11 +105,10 @@ export async function compileDesignBrief(
       { role: "user", content: userPrompt },
     ],
     maxTokens: 500,
+    disableThinking: true,
   });
 
-  const briefText = typeof result.choices[0]?.message?.content === "string"
-    ? result.choices[0].message.content
-    : "Failed to generate brief.";
+  const briefText = extractTextContent(result) || "Failed to generate brief.";
 
   return { briefText, messageCount: tags.length };
 }
@@ -137,11 +155,11 @@ export async function generatePersonalisedMessage(
       { role: "user", content: userPrompt },
     ],
     maxTokens: channel === "sms" ? 100 : 300,
+    disableThinking: true,
   });
 
-  return typeof result.choices[0]?.message?.content === "string"
-    ? result.choices[0].message.content
-    : `Hey ${clientName}, just checking in — let me know if you have any questions.`;
+  return extractTextContent(result)
+    || `Hey ${clientName}, just checking in — let me know if you have any questions.`;
 }
 
 const SUMMARY_TTL_MS = 30 * 60 * 1000; // 30 minutes
@@ -223,11 +241,10 @@ export async function summariseConversationState(
       { role: "user", content: contextParts.join("\n\n") },
     ],
     maxTokens: 80,
+    disableThinking: true,
   });
 
-  const summary = typeof result.choices[0]?.message?.content === "string"
-    ? result.choices[0].message.content
-    : "Conversation in progress.";
+  const summary = extractTextContent(result) || "Conversation in progress.";
 
   // Cache the summary via upsert into designBriefs
   try {
