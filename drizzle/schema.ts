@@ -2311,6 +2311,8 @@ export const designBriefs = mysqlTable(
     messageCount: int("message_count").notNull(),
     lastTaggedAt: timestamp("last_tagged_at", { mode: "string" }),
     generatedAt: timestamp("generated_at", { mode: "string" }).defaultNow(),
+    conversationSummary: text("conversation_summary"),
+    summaryGeneratedAt: timestamp("summary_generated_at", { mode: "string" }),
   },
   table => [
     index("idx_brief_conv_artist").on(table.conversationId, table.artistId),

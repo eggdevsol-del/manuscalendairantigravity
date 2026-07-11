@@ -1,6 +1,6 @@
 import { invokeLLM } from "../_core/llm";
-import { messageTags, messages } from "../../drizzle/schema";
-import { and, eq, desc } from "drizzle-orm";
+import { messageTags, messages, designBriefs } from "../../drizzle/schema";
+import { and, eq, desc, asc } from "drizzle-orm";
 import type { MySql2Database } from "drizzle-orm/mysql2";
 import * as schema from "../../drizzle/schema";
 
@@ -38,10 +38,12 @@ STRICT RULES:
 - Tone: warm, professional, concise
 - The message should feel like a natural check-in or follow-up, not a delivery notification`;
 
-const CONVERSATION_STATE_SYSTEM_PROMPT = `You summarise the current state of a tattoo artist-client conversation in ONE sentence (max 25 words).
-Focus on: what's being discussed and what decision/action is pending.
-NEVER imply the artist has done any work or prepared anything.
-Only reference what the client has communicated.`;
+const CONVERSATION_STATE_SYSTEM_PROMPT = `You summarise the current state of a tattoo artist-client conversation in 1-2 sentences (max 40 words).
+You are given a SAMPLED conversation: the first few messages (showing original intent) and the most recent messages (showing current state).
+Focus on: what the client wants, what's currently being discussed, and what decision or action is pending.
+NEVER imply the artist has done any work, created designs, drawn sketches, or prepared anything.
+Only reference what the client has communicated.
+If the conversation is just starting, note the client's initial enquiry.`;
 
 export async function compileDesignBrief(
   database: MySql2Database<typeof schema>,
@@ -142,45 +144,116 @@ export async function generatePersonalisedMessage(
     : `Hey ${clientName}, just checking in — let me know if you have any questions.`;
 }
 
+const SUMMARY_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
 export async function summariseConversationState(
   database: MySql2Database<typeof schema>,
   conversationId: number,
   artistId: string
 ): Promise<string> {
-  // Get brief if exists
-  const brief = await database.query.designBriefs.findFirst({
+  // Check for cached summary in designBriefs table
+  const cached = await database.query.designBriefs.findFirst({
     where: and(
       eq(schema.designBriefs.conversationId, conversationId),
       eq(schema.designBriefs.artistId, artistId)
     ),
   });
 
-  // Get last 3 messages
-  const recentMessages = await database.query.messages.findMany({
-    where: eq(messages.conversationId, conversationId),
-    orderBy: [desc(messages.createdAt)],
-    limit: 3,
-  });
+  // If cached summary exists and is within TTL, return it
+  if (
+    cached?.conversationSummary &&
+    cached.summaryGeneratedAt &&
+    Date.now() - new Date(cached.summaryGeneratedAt).getTime() < SUMMARY_TTL_MS
+  ) {
+    return cached.conversationSummary;
+  }
 
-  if (!brief && recentMessages.length === 0) {
+  // Smart sampling: first 3 messages (original intent) + last 10 messages (current state)
+  const [firstMessages, recentMessages] = await Promise.all([
+    database.query.messages.findMany({
+      where: eq(messages.conversationId, conversationId),
+      orderBy: [asc(messages.createdAt)],
+      limit: 3,
+    }),
+    database.query.messages.findMany({
+      where: eq(messages.conversationId, conversationId),
+      orderBy: [desc(messages.createdAt)],
+      limit: 10,
+    }),
+  ]);
+
+  // Deduplicate in case conversation has < 13 messages total
+  const seenIds = new Set<number>();
+  const allSampled: typeof firstMessages = [];
+  for (const m of firstMessages) {
+    if (!seenIds.has(m.id)) { seenIds.add(m.id); allSampled.push(m); }
+  }
+  // Add a separator indicator
+  const hasGap = recentMessages.length > 0 && firstMessages.length > 0 &&
+    !seenIds.has(recentMessages[recentMessages.length - 1]?.id);
+  // Recent messages are in desc order, reverse them for chronological
+  const recentChronological = [...recentMessages].reverse();
+  for (const m of recentChronological) {
+    if (!seenIds.has(m.id)) { seenIds.add(m.id); allSampled.push(m); }
+  }
+
+  if (allSampled.length === 0) {
     return "No conversation history.";
   }
 
+  // Build context with design brief if available
   const contextParts: string[] = [];
-  if (brief?.briefText) contextParts.push(`Brief: ${brief.briefText}`);
-  if (recentMessages.length > 0) {
-    contextParts.push(`Recent messages:\n${recentMessages.map(m => `- ${m.content}`).join("\n")}`);
+
+  if (cached?.briefText) {
+    contextParts.push(`Design Brief (from tagged messages):\n${cached.briefText}`);
   }
+
+  // Format sampled messages
+  const formattedMessages = allSampled.map((m, i) => {
+    const role = m.senderId === artistId ? "Artist" : "Client";
+    const separator = hasGap && i === firstMessages.length ? "\n--- (earlier messages omitted) ---\n" : "";
+    return `${separator}${role}: ${m.content}`;
+  }).join("\n");
+
+  contextParts.push(`Conversation (sampled):\n${formattedMessages}`);
 
   const result = await invokeLLM({
     messages: [
       { role: "system", content: CONVERSATION_STATE_SYSTEM_PROMPT },
       { role: "user", content: contextParts.join("\n\n") },
     ],
-    maxTokens: 60,
+    maxTokens: 80,
   });
 
-  return typeof result.choices[0]?.message?.content === "string"
+  const summary = typeof result.choices[0]?.message?.content === "string"
     ? result.choices[0].message.content
     : "Conversation in progress.";
+
+  // Cache the summary via upsert into designBriefs
+  try {
+    if (cached) {
+      await database
+        .update(designBriefs)
+        .set({
+          conversationSummary: summary,
+          summaryGeneratedAt: new Date().toISOString(),
+        })
+        .where(eq(designBriefs.id, cached.id));
+    } else {
+      // Create a minimal designBriefs row just for the summary cache
+      await database.insert(designBriefs).values({
+        conversationId,
+        artistId,
+        briefText: "",
+        messageCount: 0,
+        conversationSummary: summary,
+        summaryGeneratedAt: new Date().toISOString(),
+      });
+    }
+  } catch (e) {
+    // Non-critical — caching failure shouldn't break the response
+    console.error("Failed to cache conversation summary:", e);
+  }
+
+  return summary;
 }
