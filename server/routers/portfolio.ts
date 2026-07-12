@@ -56,7 +56,7 @@ export const portfolioRouter = router({
 
       const items = await db.query.portfolios.findMany({
         where,
-        orderBy: desc(schema.portfolios.createdAt),
+        orderBy: [schema.portfolios.sortOrder, desc(schema.portfolios.createdAt)],
         with: {
           likes: true, // Simplification, ideally we count them
         },
@@ -132,6 +132,45 @@ export const portfolioRouter = router({
       await db
         .delete(schema.portfolios)
         .where(eq(schema.portfolios.id, input.id));
+      return { success: true };
+    }),
+
+  reorder: protectedProcedure
+    .input(
+      z.object({
+        items: z.array(
+          z.object({
+            id: z.number(),
+            sortOrder: z.number(),
+          })
+        ),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      const db = await getDb();
+      if (!db)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database connection failed",
+        });
+
+      // Batch update sort orders
+      for (const item of input.items) {
+        await db
+          .update(schema.portfolios)
+          .set({ sortOrder: item.sortOrder })
+          .where(
+            and(
+              eq(schema.portfolios.id, item.id),
+              eq(schema.portfolios.artistId, ctx.user.id)
+            )
+          );
+      }
+
       return { success: true };
     }),
 });

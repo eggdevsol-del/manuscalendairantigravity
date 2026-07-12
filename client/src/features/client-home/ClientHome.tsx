@@ -18,6 +18,7 @@ import { AnimatePresence, motion } from "framer-motion";
 // Discovery feed (reused)
 import DiscoverFeedContent from "./DiscoverFeedContent";
 import ArtistPortfolioFeed from "./ArtistPortfolioFeed";
+import ArtistProfileOverlay from "./ArtistProfileOverlay";
 import { FeedCardData } from "../feed/FeedCard";
 
 // Home view components (reused from client-profile)
@@ -50,6 +51,7 @@ export default function ClientHome() {
 
   // Artist focus mode
   const [focusedArtist, setFocusedArtist] = useState<FocusedArtist | null>(null);
+  const [showProfile, setShowProfile] = useState(false);
   const mainFeedScrollPos = useRef(0);
 
   // Home view data
@@ -85,6 +87,7 @@ export default function ClientHome() {
   // Exit artist focus mode
   const handleExitFocus = useCallback(() => {
     setFocusedArtist(null);
+    setShowProfile(false);
     setHeaderHidden(false);
     setBottomNavHidden(false);
     // Restore scroll position
@@ -149,43 +152,45 @@ export default function ClientHome() {
     <>
       {/* ── Auto-hide Header ── */}
       <header className={`client-home-header ${headerHidden ? "header-hidden" : ""}`}>
-        {/* Profile avatar / Back button */}
         {focusedArtist ? (
-          <button
-            className="artist-focus-back-btn"
-            onClick={handleExitFocus}
-          >
-            back
-          </button>
-        ) : (
-          <div
-            className="client-home-avatar"
-            onClick={() => setLocation("/settings")}
-          >
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="Profile" />
-            ) : (
-              <div className="client-home-avatar-fallback">{initials}</div>
-            )}
-          </div>
-        )}
-
-        {/* Center — artist name when focused */}
-        <span className="client-home-logo">
-          {focusedArtist ? focusedArtist.name : ""}
-        </span>
-
-        {/* View toggle */}
-        <div className="client-home-toggle">
-          {focusedArtist ? (
+          /* Focus mode header — mirrors the pill layout */
+          <div className="artist-focus-header-row">
             <button
-              className="artist-focus-book-btn"
-              onClick={() => focusedArtist.slug && setLocation(`/${focusedArtist.slug}`)}
+              className="artist-focus-pill-back"
+              onClick={handleExitFocus}
             >
-              Book Consult
+              back
             </button>
-          ) : (
-            <>
+            <div className="artist-focus-pill-avatar">
+              {focusedArtist.avatar ? (
+                <img src={focusedArtist.avatar} alt={focusedArtist.name} />
+              ) : (
+                <span>{focusedArtist.name.charAt(0).toUpperCase()}</span>
+              )}
+            </div>
+            <span className="artist-focus-pill-name">{focusedArtist.name}</span>
+            <button
+              className="artist-focus-pill-book"
+              onClick={() => setShowProfile(true)}
+            >
+              View Profile
+            </button>
+          </div>
+        ) : (
+          /* Normal header */
+          <>
+            <div
+              className="client-home-avatar"
+              onClick={() => setLocation("/settings")}
+            >
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Profile" />
+              ) : (
+                <div className="client-home-avatar-fallback">{initials}</div>
+              )}
+            </div>
+            <span className="client-home-logo"></span>
+            <div className="client-home-toggle">
               <button
                 className={`client-home-toggle-btn ${view === "discovery" ? "active" : ""}`}
                 onClick={() => setView("discovery")}
@@ -200,9 +205,9 @@ export default function ClientHome() {
               >
                 <Home size={18} />
               </button>
-            </>
-          )}
-        </div>
+            </div>
+          </>
+        )}
       </header>
 
       {/* ── Floating Artist Pill (visible when scrolling in focus mode) ── */}
@@ -231,9 +236,9 @@ export default function ClientHome() {
             <span className="artist-focus-pill-name">{focusedArtist.name}</span>
             <button
               className="artist-focus-pill-book"
-              onClick={() => focusedArtist.slug && setLocation(`/${focusedArtist.slug}`)}
+              onClick={() => setShowProfile(true)}
             >
-              Book Consult
+              View Profile
             </button>
           </motion.div>
         )}
@@ -272,6 +277,19 @@ export default function ClientHome() {
           )}
         </div>
       </div>
+
+      {/* ── Full-screen Artist Profile Overlay ── */}
+      <AnimatePresence>
+        {showProfile && focusedArtist && (
+          <ArtistProfileOverlay
+            artistId={focusedArtist.id}
+            artistName={focusedArtist.name}
+            artistAvatar={focusedArtist.avatar}
+            artistSlug={focusedArtist.slug}
+            onClose={() => setShowProfile(false)}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

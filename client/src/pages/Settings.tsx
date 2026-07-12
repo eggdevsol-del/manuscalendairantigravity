@@ -154,7 +154,7 @@ export default function Settings() {
     const panel = (() => {
       switch (section) {
         case "profile":       return <ProfileSettings onBack={handleBack} />;
-        case "portfolio":     return <PortfolioSettings onBack={handleBack} />;
+        case "portfolio":     return <ProfileSettings onBack={handleBack} />;
         case "storefront":    return <StorefrontSetupWizard onClose={handleBack} />;
         case "booking-link":  return <FunnelSettings onBack={handleBack} />;
         case "business":      return <BusinessSettings onBack={handleBack} />;

@@ -1,305 +1,427 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { useState, useRef, useEffect } from "react";
-import { toast } from "sonner";
-import { trpc } from "@/lib/trpc";
-import { getAssetUrl } from "@/lib/assets";
-import { Button, Input, Label, Textarea } from "@/components/ui";
-import { GooglePlacesInput } from "@/components/ui/GooglePlacesInput";
-import { User } from "lucide-react";
+/**
+ * ProfileSettings — Artist profile editor (replaces PortfolioSettings)
+ * ─────────────────────────────────────────────────────────────────────
+ * Shows the artist's profile exactly as clients see it, but editable.
+ * - Editable: avatar, display name, handle, bio, contact toggles
+ * - Drag-and-drop portfolio grid with delete + add
+ * - WYSIWYG: matches ArtistProfileOverlay layout
+ */
+import { useRef, useState, useCallback, useEffect } from "react";
+import {
+  ImagePlus, Trash2, Loader2, GripVertical,
+  Camera, Mail, Phone, MapPin, Globe,
+} from "lucide-react";
 import { PageHeader } from "@/components/ui/ssot";
+import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { toast } from "sonner";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  rectSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import "../../features/client-home/artistProfile.css";
 
-export function ProfileSettings({ onBack }: { onBack: () => void }) {
-    const { user, logout } = useAuth();
+interface ProfileSettingsProps {
+  onBack: () => void;
+}
 
-    // Danger Zone state for clients
-    const [activeAction, setActiveAction] = useState<"account" | null>(null);
-    const [confirmText, setConfirmText] = useState("");
+function SortablePortfolioItem({
+  item,
+  onDelete,
+  deletingId,
+}: {
+  item: { id: number; imageUrl: string; description: string | null };
+  onDelete: (id: number) => void;
+  deletingId: number | null;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
 
-    // Profile state
-    const [profileName, setProfileName] = useState("");
-    const [profilePhone, setProfilePhone] = useState("");
-    const [profileBio, setProfileBio] = useState("");
-    const [profileAvatar, setProfileAvatar] = useState("");
-    const [profileBirthday, setProfileBirthday] = useState("");
-    const [profileAddress, setProfileAddress] = useState("");
-    const [profileCity, setProfileCity] = useState("");
-    const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : 1,
+    position: "relative" as const,
+    aspectRatio: "1",
+    overflow: "hidden" as const,
+  };
 
-    const utils = trpc.useUtils();
+  return (
+    <div ref={setNodeRef} style={style} className="artist-profile-grid-item">
+      <img
+        src={item.imageUrl}
+        alt={item.description || "Portfolio"}
+        loading="lazy"
+      />
+      <div
+        {...attributes}
+        {...listeners}
+        style={{
+          position: "absolute",
+          top: 4,
+          left: 4,
+          width: 24,
+          height: 24,
+          borderRadius: "50%",
+          background: "rgba(0,0,0,0.6)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "grab",
+          touchAction: "none",
+        }}
+      >
+        <GripVertical size={12} color="white" />
+      </div>
+      <button
+        onClick={() => onDelete(item.id)}
+        disabled={deletingId === item.id}
+        style={{
+          position: "absolute",
+          top: 4,
+          right: 4,
+          width: 24,
+          height: 24,
+          borderRadius: "50%",
+          background: "rgba(220,50,50,0.85)",
+          border: "none",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+        }}
+      >
+        {deletingId === item.id ? (
+          <Loader2 size={12} color="white" className="animate-spin" />
+        ) : (
+          <Trash2 size={12} color="white" />
+        )}
+      </button>
+    </div>
+  );
+}
 
-    const updateProfileMutation = trpc.auth.updateProfile.useMutation({
-        onSuccess: () => {
-            toast.success("Profile updated successfully");
-            // Invalidate auth cache so user data refreshes everywhere
-            utils.auth.me.invalidate();
-            // Auto-exit back to main settings
-            onBack();
-        },
-        onError: error => {
-            toast.error("Failed to update profile: " + error.message);
-        },
-    });
+export function ProfileSettings({ onBack }: ProfileSettingsProps) {
+  const { user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
 
-    const uploadImageMutation = trpc.upload.uploadImage.useMutation({
-        onSuccess: () => {
-            toast.success("Image uploaded successfully");
-        },
-        onError: error => {
-            toast.error("Failed to upload image: " + error.message);
-            setUploadingAvatar(false);
-        },
-    });
+  const utils = trpc.useUtils();
 
-    const deleteAccountMutation = trpc.auth.deleteAccount.useMutation({
-        onSuccess: async () => {
-            toast.success("Your account has been permanently deleted.");
-            await logout();
-            window.location.href = "/";
-        },
-        onError: error => {
-            toast.error("Failed to delete account: " + error.message);
-        }
-    });
+  const { data: portfolio = [], isLoading: portfolioLoading } =
+    trpc.portfolio.list.useQuery(undefined, { staleTime: 30000 });
 
-    const initializedProfileRef = useRef(false);
+  const { data: settings } = trpc.artistSettings.get.useQuery(undefined, {
+    staleTime: 30000,
+  });
 
-    // Initialize Profile state once, inside useEffect (not render body)
-    // to avoid setState-during-render which causes React error #185.
-    useEffect(() => {
-        if (user && !initializedProfileRef.current) {
-            initializedProfileRef.current = true;
-            setProfileName(user.name || "");
-            setProfilePhone(user.phone || "");
-            setProfileBio(user.bio || "");
-            setProfileAvatar(user.avatar || "");
-            setProfileBirthday(user.birthday || "");
-            setProfileAddress(user.address || "");
-            setProfileCity(user.city || "");
-        }
-    }, [user]);
+  const [displayName, setDisplayName] = useState("");
+  const [bio, setBio] = useState("");
+  const [slug, setSlug] = useState("");
+  const [showEmail, setShowEmail] = useState(true);
+  const [showPhone, setShowPhone] = useState(true);
+  const [showCity, setShowCity] = useState(true);
+  const [showWebsite, setShowWebsite] = useState(false);
+  const [websiteUrl, setWebsiteUrl] = useState("");
 
-    const handleSaveProfile = () => {
-        updateProfileMutation.mutate({
-            name: profileName,
-            phone: profilePhone,
-            bio: profileBio,
-            avatar: profileAvatar,
-            birthday: profileBirthday,
-            address: profileAddress,
-            city: profileCity,
-        });
-    };
+  useEffect(() => {
+    if (settings) {
+      setDisplayName(settings.displayName || user?.name || "");
+      setBio((user as any)?.bio || "");
+      setSlug(settings.publicSlug || "");
+      setShowEmail((settings as any).showEmail ?? true);
+      setShowPhone((settings as any).showPhone ?? true);
+      setShowCity((settings as any).showCity ?? true);
+      setShowWebsite((settings as any).showWebsite ?? false);
+      setWebsiteUrl((settings as any).websiteUrl || "");
+    }
+  }, [settings, user]);
 
-    const handleExecuteDelete = () => {
-        if (confirmText !== "DELETE") {
-            toast.error("You must type exactly 'DELETE' to confirm.");
-            return;
-        }
-        deleteAccountMutation.mutate();
-    };
+  const uploadImage = trpc.upload.uploadImage.useMutation();
+  const createItem = trpc.portfolio.create.useMutation({
+    onSuccess: () => {
+      utils.portfolio.list.invalidate();
+      toast.success("Image added");
+    },
+    onError: () => toast.error("Failed to upload"),
+  });
+  const deleteItem = trpc.portfolio.delete.useMutation({
+    onSuccess: () => {
+      utils.portfolio.list.invalidate();
+      toast.success("Image removed");
+    },
+    onError: () => toast.error("Failed to remove"),
+    onSettled: () => setDeletingId(null),
+  });
+  const reorderMutation = trpc.portfolio.reorder.useMutation({
+    onSuccess: () => utils.portfolio.list.invalidate(),
+  });
+  const upsertSettings = trpc.artistSettings.upsert.useMutation({
+    onSuccess: () => {
+      utils.artistSettings.get.invalidate();
+      toast.success("Profile saved");
+      setSavingProfile(false);
+    },
+    onError: () => {
+      toast.error("Failed to save");
+      setSavingProfile(false);
+    },
+  });
 
-    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
+  );
 
-        if (!file.type.startsWith("image/")) {
-            toast.error("Please upload an image file");
-            return;
-        }
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
 
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error("Image must be less than 5MB");
-            return;
-        }
+      const oldIndex = portfolio.findIndex((p: any) => p.id === active.id);
+      const newIndex = portfolio.findIndex((p: any) => p.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return;
 
-        setUploadingAvatar(true);
+      const reordered = [...portfolio];
+      const [moved] = reordered.splice(oldIndex, 1);
+      reordered.splice(newIndex, 0, moved);
 
+      const items = reordered.map((item: any, i: number) => ({
+        id: item.id,
+        sortOrder: i,
+      }));
+
+      reorderMutation.mutate({ items });
+    },
+    [portfolio, reorderMutation]
+  );
+
+  const handleFilePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      for (const file of files.slice(0, 10)) {
         const reader = new FileReader();
-        reader.onload = async e => {
-            const base64Data = e.target?.result as string;
+        const base64 = await new Promise<string>((res) => {
+          reader.onload = () => res(reader.result as string);
+          reader.readAsDataURL(file);
+        });
+        const result = await uploadImage.mutateAsync({
+          base64,
+          filename: file.name,
+          folder: "portfolio",
+        });
+        if (result.url) {
+          await createItem.mutateAsync({ imageUrl: result.url });
+        }
+      }
+    } catch {
+      toast.error("One or more images failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
-            try {
-                const result = await uploadImageMutation.mutateAsync({
-                    fileName: file.name,
-                    fileData: base64Data,
-                    contentType: file.type,
-                });
+  const handleDelete = (id: number) => {
+    setDeletingId(id);
+    deleteItem.mutate({ id });
+  };
 
-                setProfileAvatar(result.url);
-                setUploadingAvatar(false);
-            } catch (error) {
-                console.error(error);
-            }
-        };
+  const handleSaveProfile = () => {
+    setSavingProfile(true);
+    upsertSettings.mutate({
+      displayName,
+      publicSlug: slug,
+      showEmail: showEmail ? 1 : 0,
+      showPhone: showPhone ? 1 : 0,
+      showCity: showCity ? 1 : 0,
+      showWebsite: showWebsite ? 1 : 0,
+      websiteUrl,
+    });
+  };
 
-        reader.onerror = () => {
-            toast.error("Failed to read image file");
-            setUploadingAvatar(false);
-        };
+  const portfolioIds = portfolio.map((p: any) => p.id);
 
-        reader.readAsDataURL(file);
-    };
+  return (
+    <div className="flex flex-col h-full">
+      <PageHeader
+        title="Profile"
+        subtitle="Edit how clients see you"
+        onBack={onBack}
+        rightAction={
+          <button
+            onClick={handleSaveProfile}
+            disabled={savingProfile}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50"
+          >
+            {savingProfile ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+            Save
+          </button>
+        }
+      />
 
-    return (
-        <div className="w-full h-full flex flex-col overflow-hidden relative">
-            <PageHeader title="Profile" onBack={onBack} />
-
-            {/* 2. Scroll Container */}
-            <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
-                <div className="pb-[180px] max-w-lg mx-auto space-y-6 px-4 pt-6">
-                    {/* Avatar Display */}
-                    <div className="flex flex-col items-center justify-center mb-6">
-                        <div className="w-24 h-24 rounded-full bg-secondary/50 flex items-center justify-center overflow-hidden mb-4 shadow-xl border border-border">
-                            {profileAvatar ? (
-                                <img
-                                    src={getAssetUrl(profileAvatar)}
-                                    alt="Profile"
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <User className="w-12 h-12 text-muted-foreground" />
-                            )}
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <Label>Profile Picture</Label>
-                            <div className="flex items-center gap-4">
-                                <input
-                                    type="file"
-                                    id="avatar-upload"
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={handleAvatarUpload}
-                                    disabled={uploadingAvatar}
-                                />
-                                <Button
-                                    variant="outline"
-                                    onClick={() =>
-                                        document.getElementById("avatar-upload")?.click()
-                                    }
-                                    disabled={uploadingAvatar}
-                                    className="bg-transparent border-border hover:bg-secondary/50"
-                                >
-                                    {uploadingAvatar ? "Uploading..." : "Upload New Photo"}
-                                </Button>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="name">Name</Label>
-                            <Input
-                                id="name"
-                                value={profileName}
-                                onChange={e => setProfileName(e.target.value)}
-                                placeholder="Your name"
-                                className="bg-secondary/50 border-border"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="phone">Phone</Label>
-                            <Input
-                                id="phone"
-                                value={profilePhone}
-                                onChange={e => setProfilePhone(e.target.value)}
-                                placeholder="Your phone number"
-                                className="bg-secondary/50 border-border"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="birthday">Birthdate</Label>
-                            <div className="w-full overflow-hidden">
-                                <Input
-                                    id="birthday"
-                                    type="date"
-                                    value={profileBirthday}
-                                    onChange={e => setProfileBirthday(e.target.value)}
-                                    className="bg-secondary/50 border-border w-full max-w-full box-border [color-scheme:dark]"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="address">Address</Label>
-                            <Textarea
-                                id="address"
-                                value={profileAddress}
-                                onChange={e => setProfileAddress(e.target.value)}
-                                placeholder="E.g. 123 Main St"
-                                rows={2}
-                                className="bg-secondary/50 border-border"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="city">City</Label>
-                            <GooglePlacesInput
-                                placeholder="Search city..."
-                                defaultValue={profileCity}
-                                onPlaceSelected={(place) => {
-                                    const cityComp = place.address_components.find(c => c.types.includes("locality"));
-                                    setProfileCity(cityComp?.long_name || place.name || "");
-                                }}
-                                className="bg-secondary/50 border-border"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="bio">Bio</Label>
-                            <Textarea
-                                id="bio"
-                                value={profileBio}
-                                onChange={e => setProfileBio(e.target.value)}
-                                placeholder="Tell us about yourself"
-                                rows={4}
-                                className="bg-secondary/50 border-border"
-                            />
-                        </div>
-                    </div>
-
-                    <Button
-                        onClick={handleSaveProfile}
-                        disabled={updateProfileMutation.isPending}
-                        className="w-full shadow-lg shadow-primary/20"
-                    >
-                        {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
-                    </Button>
-
-                    {/* Delete Account — available to all users for regulatory compliance */}
-                    <div className="pt-8 text-center pb-8">
-                        <button
-                            onClick={() => setActiveAction(activeAction === "account" ? null : "account")}
-                            className="text-[10px] text-muted-foreground/30 hover:text-[var(--color-status-danger-text)]/80 transition-colors uppercase tracking-widest"
-                        >
-                            delete account
-                        </button>
-
-                        {activeAction === "account" && (
-                            <div className="mt-4 p-4 border border-[var(--color-status-danger-border)] bg-[var(--color-status-danger-bg)] rounded-md animate-in fade-in slide-in-from-top-2 text-left">
-                                <p className="text-xs text-[var(--color-status-danger-text)] mb-2 font-medium">Type <strong>DELETE</strong> below to permanently delete your account and all data.</p>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={confirmText}
-                                        onChange={(e) => setConfirmText(e.target.value)}
-                                        placeholder="DELETE"
-                                        className="bg-background border border-[var(--color-status-danger-border)] rounded-md px-3 py-2 text-xs text-foreground w-full outline-none focus:border-red-500 flex-1"
-                                    />
-                                    <button
-                                        onClick={handleExecuteDelete}
-                                        disabled={confirmText !== "DELETE" || deleteAccountMutation.isPending}
-                                        className="bg-[var(--color-danger)] text-white font-bold text-xs uppercase tracking-wider px-3 rounded-md disabled:opacity-50 transition-all active:scale-95"
-                                    >
-                                        Confirm
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="artist-profile-info">
+          {/* Avatar */}
+          <div
+            className="artist-profile-avatar-large"
+            style={{ cursor: "pointer", position: "relative" }}
+            onClick={() => avatarInputRef.current?.click()}
+          >
+            {user?.avatar ? (
+              <img src={user.avatar} alt="Profile" />
+            ) : (
+              <span>{(user?.name || "?").charAt(0).toUpperCase()}</span>
+            )}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 0,
+                right: 0,
+                width: 24,
+                height: 24,
+                borderRadius: "50%",
+                background: "var(--color-primary)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Camera size={12} color="var(--color-bg-base)" />
             </div>
+          </div>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={() => {}}
+          />
+
+          {/* Name */}
+          <input
+            className="booking-form-input"
+            style={{ textAlign: "center", fontSize: 18, fontWeight: 700, maxWidth: 280, marginTop: 8 }}
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            placeholder="Display Name"
+          />
+
+          {/* Handle */}
+          <div style={{ display: "flex", alignItems: "center", gap: 2, marginTop: 4 }}>
+            <span style={{ color: "var(--color-text-secondary)", fontSize: 13 }}>@</span>
+            <input
+              className="booking-form-input"
+              style={{ fontSize: 13, padding: "4px 8px", width: 160 }}
+              value={slug}
+              onChange={(e) => setSlug(e.target.value.replace(/[^a-z0-9_-]/gi, "").toLowerCase())}
+              placeholder="handle"
+            />
+          </div>
+
+          {/* Bio */}
+          <textarea
+            className="booking-form-input"
+            style={{ marginTop: 10, width: "100%", maxWidth: 320, minHeight: 60, fontSize: 13, textAlign: "center", resize: "none", fontFamily: "inherit" }}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Write a short bio..."
+          />
+
+          {/* Contact toggles */}
+          <div style={{ marginTop: 16, width: "100%", maxWidth: 320, display: "flex", flexDirection: "column", gap: 8 }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: "var(--color-text-secondary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              Contact visibility
+            </span>
+            {([
+              { label: "Email", icon: Mail, value: showEmail, set: setShowEmail },
+              { label: "Phone", icon: Phone, value: showPhone, set: setShowPhone },
+              { label: "City", icon: MapPin, value: showCity, set: setShowCity },
+              { label: "Website", icon: Globe, value: showWebsite, set: setShowWebsite },
+            ] as const).map(({ label, icon: Icon, value, set }) => (
+              <label
+                key={label}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "8px 12px", borderRadius: 10, background: "rgba(255,255,255,0.04)", cursor: "pointer",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Icon size={14} color="var(--color-text-secondary)" />
+                  <span style={{ fontSize: 13, color: "var(--foreground)" }}>Show {label}</span>
+                </div>
+                <input type="checkbox" checked={!!value} onChange={(e) => set(e.target.checked)} style={{ accentColor: "var(--color-primary)" }} />
+              </label>
+            ))}
+            {showWebsite && (
+              <input
+                className="booking-form-input"
+                style={{ fontSize: 13, marginTop: 4 }}
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+                placeholder="https://yourwebsite.com"
+              />
+            )}
+          </div>
         </div>
-    );
+
+        {/* Portfolio grid */}
+        <div style={{ padding: "0 2px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px 8px" }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-secondary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              Portfolio ({portfolio.length})
+            </span>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              style={{ display: "flex", alignItems: "center", gap: 4, background: "var(--color-primary)", color: "var(--color-bg-base)", border: "none", borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+            >
+              {uploading ? <Loader2 size={12} className="animate-spin" /> : <ImagePlus size={12} />}
+              Add
+            </button>
+          </div>
+          <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={handleFilePick} />
+
+          {portfolioLoading ? (
+            <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
+              <Loader2 className="animate-spin" size={24} />
+            </div>
+          ) : (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={portfolioIds} strategy={rectSortingStrategy}>
+                <div className="artist-profile-grid">
+                  {portfolio.map((item: any) => (
+                    <SortablePortfolioItem key={item.id} item={item} onDelete={handleDelete} deletingId={deletingId} />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }

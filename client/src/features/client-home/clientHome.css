@@ -151,6 +151,14 @@
   color: var(--foreground);
 }
 
+/* ── Focus header row (mirrors pill layout) ── */
+.artist-focus-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
 /* ── Book Consult button in header ── */
 .artist-focus-book-btn {
   background: var(--color-primary);

@@ -116,6 +116,11 @@ export const artistSettingsRouter = router({
         appleCalendarUrl: z.string().optional(),
         travelDates: z.string().optional(),
         keywords: z.string().optional(),
+        showEmail: z.number().optional(),
+        showPhone: z.number().optional(),
+        showCity: z.number().optional(),
+        showWebsite: z.number().optional(),
+        websiteUrl: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {

@@ -182,6 +182,12 @@ export const artistSettings = mysqlTable(
     // ── Geo Location ──
     lat: decimal({ precision: 10, scale: 7 }),  // Latitude for map pin
     lng: decimal({ precision: 10, scale: 7 }),  // Longitude for map pin
+    // ── Contact Visibility Toggles ──
+    showEmail: tinyint().default(1),
+    showPhone: tinyint().default(1),
+    showCity: tinyint().default(1),
+    showWebsite: tinyint().default(0),
+    websiteUrl: text(),
   },
   table => [unique("artistSettings_publicSlug_unique").on(table.publicSlug)]
 );
@@ -442,6 +448,7 @@ export const portfolios = mysqlTable(
       .references(() => users.id, { onDelete: "cascade" }),
     imageUrl: text().notNull(),
     description: text(),
+    sortOrder: int().default(0),
     createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
     updatedAt: timestamp({ mode: "string" }).default(sql`(now())`),
   },

@@ -1,7 +1,7 @@
 import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import * as schema from "../../drizzle/schema";
-import { eq, and, desc, sql, isNotNull } from "drizzle-orm";
+import { eq, and, asc, desc, sql, isNotNull } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 
@@ -225,5 +225,112 @@ export const feedRouter = router({
       }));
 
       return { cards };
+    }),
+
+  /**
+   * Get full artist public profile data for the profile overlay.
+   */
+  getArtistPublicProfile: protectedProcedure
+    .input(z.object({ artistId: z.string() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database connection failed",
+        });
+
+      // 1. Artist info: user + settings
+      const rows = await db
+        .select({
+          id: schema.users.id,
+          name: schema.users.name,
+          avatar: schema.users.avatar,
+          city: schema.users.city,
+          bio: schema.users.bio,
+          phone: schema.users.phone,
+          displayName: schema.artistSettings.displayName,
+          publicSlug: schema.artistSettings.publicSlug,
+          keywords: schema.artistSettings.keywords,
+          showEmail: schema.artistSettings.showEmail,
+          showPhone: schema.artistSettings.showPhone,
+          showCity: schema.artistSettings.showCity,
+          showWebsite: schema.artistSettings.showWebsite,
+          websiteUrl: schema.artistSettings.websiteUrl,
+          businessEmail: schema.artistSettings.businessEmail,
+        })
+        .from(schema.users)
+        .innerJoin(
+          schema.artistSettings,
+          eq(schema.users.id, schema.artistSettings.userId)
+        )
+        .where(eq(schema.users.id, input.artistId))
+        .limit(1);
+
+      if (rows.length === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Artist not found",
+        });
+      }
+
+      const artist = rows[0];
+
+      // 2. Portfolio items ordered by sortOrder ASC, createdAt DESC
+      const portfolioItems = await db
+        .select({
+          id: schema.portfolios.id,
+          imageUrl: schema.portfolios.imageUrl,
+          description: schema.portfolios.description,
+          sortOrder: schema.portfolios.sortOrder,
+        })
+        .from(schema.portfolios)
+        .where(eq(schema.portfolios.artistId, input.artistId))
+        .orderBy(
+          asc(schema.portfolios.sortOrder),
+          desc(schema.portfolios.createdAt)
+        );
+
+      // 3. Total like count across all of this artist's portfolio items
+      const likeCountResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.portfolioLikes)
+        .innerJoin(
+          schema.portfolios,
+          eq(schema.portfolioLikes.portfolioId, schema.portfolios.id)
+        )
+        .where(eq(schema.portfolios.artistId, input.artistId));
+
+      const totalLikes = likeCountResult[0]?.count ?? 0;
+
+      // 4. Build response — conditionally expose contact fields
+      const keywordsArray: string[] = artist.keywords
+        ? artist.keywords
+            .split(",")
+            .map((k: string) => k.trim())
+            .filter(Boolean)
+        : [];
+
+      return {
+        id: artist.id,
+        displayName: artist.displayName || artist.name || "Artist",
+        avatar: artist.avatar,
+        slug: artist.publicSlug,
+        city: artist.showCity ? artist.city : null,
+        bio: artist.bio,
+        email: artist.showEmail ? artist.businessEmail : null,
+        phone: artist.showPhone ? artist.phone : null,
+        website: artist.showWebsite ? (artist.websiteUrl ?? null) : null,
+        showCity: !!artist.showCity,
+        keywords: keywordsArray,
+        portfolio: portfolioItems.map((p) => ({
+          id: p.id,
+          imageUrl: p.imageUrl,
+          description: p.description,
+          sortOrder: p.sortOrder ?? 0,
+        })),
+        postCount: portfolioItems.length,
+        totalLikes,
+      };
     }),
 });
