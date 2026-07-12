@@ -43,6 +43,8 @@ export interface TaskCardProps {
   actions?: TaskCardAction[];
   /** Whether the conversation brief is currently loading */
   briefLoading?: boolean;
+  /** ID of the action button currently loading (shows spinner) */
+  loadingActionId?: string | null;
 }
 
 export function TaskCard({
@@ -57,6 +59,7 @@ export function TaskCard({
   clientName,
   actions,
   briefLoading = false,
+  loadingActionId = null,
 }: TaskCardProps) {
   // SSOT Rules:
   // - Left-edge glow for priority (not full-card tint)
@@ -153,25 +156,34 @@ export function TaskCard({
               {/* Action Buttons — SSOT: primary yellow, 16px radius, equal spacing */}
               {actions && actions.length > 0 && (
                 <div className="flex gap-2">
-                  {actions.map(action => (
-                    <button
-                      key={action.id}
-                      onClick={e => {
-                        e.stopPropagation();
-                        action.onClick();
-                      }}
-                      className={cn(
-                        "flex-1 flex items-center justify-center gap-1.5 h-10 rounded-[16px] text-xs font-semibold tracking-tight",
-                        "transition-all duration-[150ms] active:scale-[0.97]",
-                        action.className
-                          ? action.className
-                          : "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80"
-                      )}
-                    >
-                      <action.icon className="w-4 h-4" />
-                      {action.label}
-                    </button>
-                  ))}
+                  {actions.map(action => {
+                    const isActionLoading = loadingActionId === action.id;
+                    return (
+                      <button
+                        key={action.id}
+                        disabled={isActionLoading}
+                        onClick={e => {
+                          e.stopPropagation();
+                          if (!isActionLoading) action.onClick();
+                        }}
+                        className={cn(
+                          "flex-1 flex items-center justify-center gap-1.5 h-10 rounded-[16px] text-xs font-semibold tracking-tight",
+                          "transition-all duration-[150ms] active:scale-[0.97]",
+                          isActionLoading && "opacity-80 cursor-wait",
+                          action.className
+                            ? action.className
+                            : "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80"
+                        )}
+                      >
+                        {isActionLoading ? (
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <action.icon className="w-4 h-4" />
+                        )}
+                        {action.label}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
