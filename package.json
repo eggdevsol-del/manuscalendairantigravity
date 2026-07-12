@@ -1,6 +1,6 @@
 {
   "name": "tattoi-app",
-  "version": "1.9.14",
+  "version": "1.9.15",
   "type": "module",
   "license": "MIT",
   "scripts": {

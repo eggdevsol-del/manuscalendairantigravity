@@ -92,7 +92,7 @@ export default function ClientHome() {
         </div>
 
         {/* Logo */}
-        <span className="client-home-logo">FETCH</span>
+        <span className="client-home-logo"></span>
 
         {/* View toggle */}
         <div className="client-home-toggle">
