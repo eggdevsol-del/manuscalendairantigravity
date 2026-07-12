@@ -120,7 +120,7 @@ export function TaskCard({
             transition={{ type: "spring", stiffness: 400, damping: 35 }}
             className="overflow-hidden z-10 relative"
           >
-            <div className="pt-3 space-y-3">
+            <div className="mt-4 pt-4 space-y-4 border-t border-border/30">
               {/* Conversation Brief — loading state */}
               {briefLoading && !conversationSummary && (
                 <div className="p-3 rounded-xl bg-primary/5 border border-primary/10">

@@ -14,7 +14,6 @@
   z-index: 40;
 }
 
-/* ── Header ── */
 .discover-feed-header {
   position: sticky;
   top: 0;
@@ -22,7 +21,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 16px;
+  padding: 6px 16px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 6px);
   background: rgba(5, 5, 5, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -31,10 +31,14 @@
 
 .discover-feed-logo {
   font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 24px;
-  font-weight: 400;
-  letter-spacing: -0.5px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
   color: var(--foreground);
+  text-transform: uppercase;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* ── Loading / Empty states ── */
