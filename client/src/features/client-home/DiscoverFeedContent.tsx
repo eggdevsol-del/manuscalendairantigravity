@@ -12,7 +12,11 @@ import { useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-export default function DiscoverFeedContent() {
+interface DiscoverFeedContentProps {
+  onImageTap?: (card: FeedCardData) => void;
+}
+
+export default function DiscoverFeedContent({ onImageTap }: DiscoverFeedContentProps) {
   const [, setLocation] = useLocation();
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -114,6 +118,7 @@ export default function DiscoverFeedContent() {
             onLike={handleLike}
             onShare={handleShare}
             onArtistTap={handleArtistTap}
+            onImageTap={onImageTap}
           />
         ))}
       </div>

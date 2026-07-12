@@ -153,4 +153,77 @@ export const feedRouter = router({
 
       return { cards: page, nextCursor };
     }),
+
+  /**
+   * Get all portfolio items for a specific artist (for artist focus mode).
+   */
+  getArtistFeed: protectedProcedure
+    .input(
+      z.object({
+        artistId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database connection failed",
+        });
+
+      // Get artist info
+      const artistInfo = await db
+        .select({
+          userId: schema.users.id,
+          name: schema.users.name,
+          avatar: schema.users.avatar,
+          city: schema.users.city,
+          displayName: schema.artistSettings.displayName,
+          publicSlug: schema.artistSettings.publicSlug,
+          keywords: schema.artistSettings.keywords,
+        })
+        .from(schema.users)
+        .innerJoin(
+          schema.artistSettings,
+          eq(schema.users.id, schema.artistSettings.userId)
+        )
+        .where(eq(schema.users.id, input.artistId))
+        .limit(1);
+
+      if (artistInfo.length === 0) {
+        return { cards: [] };
+      }
+
+      const artist = artistInfo[0];
+
+      // Get all portfolio items for this artist
+      const portfolios = await db.query.portfolios.findMany({
+        where: eq(schema.portfolios.artistId, input.artistId),
+        orderBy: desc(schema.portfolios.createdAt),
+        with: {
+          likes: true,
+        },
+      });
+
+      const cards = portfolios.map((item) => ({
+        id: item.id,
+        artistId: artist.userId,
+        artistName: artist.displayName || artist.name || "Artist",
+        artistAvatar: artist.avatar,
+        artistCity: artist.city,
+        artistSlug: artist.publicSlug,
+        keywords: artist.keywords
+          ? artist.keywords.split(",").map((k: string) => k.trim())
+          : [],
+        imageUrl: item.imageUrl,
+        description: item.description,
+        createdAt: item.createdAt,
+        likeCount: item.likes.length,
+        isLiked: item.likes.some(
+          (l: { userId: string }) => l.userId === ctx.user.id
+        ),
+      }));
+
+      return { cards };
+    }),
 });

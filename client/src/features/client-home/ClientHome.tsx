@@ -6,15 +6,19 @@
  * - Home: My Artists, Upcoming, Discover Artists cards
  *
  * Header auto-hides on scroll down, reappears on scroll up.
+ * Tapping an image enters Artist Focus mode with a floating pill.
  */
 import "./clientHome.css";
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Compass, Home } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 // Discovery feed (reused)
 import DiscoverFeedContent from "./DiscoverFeedContent";
+import ArtistPortfolioFeed from "./ArtistPortfolioFeed";
+import { FeedCardData } from "../feed/FeedCard";
 
 // Home view components (reused from client-profile)
 import { MyArtistsSection } from "@/features/client-profile/MyArtistsSection";
@@ -27,6 +31,14 @@ import { useBottomNav } from "@/contexts/BottomNavContext";
 
 type ViewMode = "discovery" | "home";
 
+interface FocusedArtist {
+  id: string;
+  name: string;
+  avatar: string | null;
+  slug: string | null;
+  tappedImageId: number;
+}
+
 export default function ClientHome() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
@@ -36,6 +48,10 @@ export default function ClientHome() {
   const [headerHidden, setHeaderHidden] = useState(false);
   const { setBottomNavHidden } = useBottomNav();
 
+  // Artist focus mode
+  const [focusedArtist, setFocusedArtist] = useState<FocusedArtist | null>(null);
+  const mainFeedScrollPos = useRef(0);
+
   // Home view data
   const { upcoming } = useClientProfileController();
   const { favouriteIds, isFavourited, toggleFavourite } = useFavourites();
@@ -43,6 +59,41 @@ export default function ClientHome() {
     staleTime: 30000,
   });
   const [isShopExpanded, setIsShopExpanded] = useState(false);
+
+  // Enter artist focus mode
+  const handleImageTap = useCallback((card: FeedCardData) => {
+    // Save scroll position
+    if (scrollRef.current) {
+      mainFeedScrollPos.current = scrollRef.current.scrollTop;
+    }
+    setFocusedArtist({
+      id: card.artistId,
+      name: card.artistName,
+      avatar: card.artistAvatar,
+      slug: card.artistSlug,
+      tappedImageId: card.id,
+    });
+    // Hide header, show immersive view
+    setHeaderHidden(true);
+    setBottomNavHidden(true);
+    // Scroll to top for the artist feed
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+    }
+  }, [setBottomNavHidden]);
+
+  // Exit artist focus mode
+  const handleExitFocus = useCallback(() => {
+    setFocusedArtist(null);
+    setHeaderHidden(false);
+    setBottomNavHidden(false);
+    // Restore scroll position
+    requestAnimationFrame(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = mainFeedScrollPos.current;
+      }
+    });
+  }, [setBottomNavHidden]);
 
   // Auto-hide header + bottom nav on scroll
   const handleScroll = useCallback(() => {
@@ -59,19 +110,25 @@ export default function ClientHome() {
         setHeaderHidden(true);
         setBottomNavHidden(true);
       } else {
-        // Scrolling up — show both
-        setHeaderHidden(false);
-        setBottomNavHidden(false);
+        // Scrolling up — show both (unless in artist focus)
+        if (!focusedArtist) {
+          setHeaderHidden(false);
+          setBottomNavHidden(false);
+        } else {
+          // In focus mode: header shows on scroll up, pill hides
+          setHeaderHidden(false);
+        }
       }
     }
 
     lastScrollY.current = currentY;
-  }, [setBottomNavHidden]);
+  }, [setBottomNavHidden, focusedArtist]);
 
   // Reset header + bottom nav when switching views
   useEffect(() => {
     setHeaderHidden(false);
     setBottomNavHidden(false);
+    setFocusedArtist(null);
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
@@ -85,43 +142,102 @@ export default function ClientHome() {
   const avatarUrl = user?.avatar;
   const initials = (user?.name || "?").charAt(0).toUpperCase();
 
+  // Pill is visible when in focus mode AND header is hidden
+  const showPill = focusedArtist !== null && headerHidden;
+
   return (
     <>
       {/* ── Auto-hide Header ── */}
       <header className={`client-home-header ${headerHidden ? "header-hidden" : ""}`}>
-        {/* Profile avatar */}
-        <div
-          className="client-home-avatar"
-          onClick={() => setLocation("/settings")}
-        >
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="Profile" />
-          ) : (
-            <div className="client-home-avatar-fallback">{initials}</div>
-          )}
-        </div>
+        {/* Profile avatar / Back button */}
+        {focusedArtist ? (
+          <button
+            className="artist-focus-back-btn"
+            onClick={handleExitFocus}
+          >
+            back
+          </button>
+        ) : (
+          <div
+            className="client-home-avatar"
+            onClick={() => setLocation("/settings")}
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Profile" />
+            ) : (
+              <div className="client-home-avatar-fallback">{initials}</div>
+            )}
+          </div>
+        )}
 
-        {/* Logo */}
-        <span className="client-home-logo"></span>
+        {/* Center — artist name when focused */}
+        <span className="client-home-logo">
+          {focusedArtist ? focusedArtist.name : ""}
+        </span>
 
         {/* View toggle */}
         <div className="client-home-toggle">
-          <button
-            className={`client-home-toggle-btn ${view === "discovery" ? "active" : ""}`}
-            onClick={() => setView("discovery")}
-            title="Discovery"
-          >
-            <Compass size={18} />
-          </button>
-          <button
-            className={`client-home-toggle-btn ${view === "home" ? "active" : ""}`}
-            onClick={() => setView("home")}
-            title="Home"
-          >
-            <Home size={18} />
-          </button>
+          {focusedArtist ? (
+            <button
+              className="artist-focus-book-btn"
+              onClick={() => focusedArtist.slug && setLocation(`/${focusedArtist.slug}`)}
+            >
+              Book Consult
+            </button>
+          ) : (
+            <>
+              <button
+                className={`client-home-toggle-btn ${view === "discovery" ? "active" : ""}`}
+                onClick={() => setView("discovery")}
+                title="Discovery"
+              >
+                <Compass size={18} />
+              </button>
+              <button
+                className={`client-home-toggle-btn ${view === "home" ? "active" : ""}`}
+                onClick={() => setView("home")}
+                title="Home"
+              >
+                <Home size={18} />
+              </button>
+            </>
+          )}
         </div>
       </header>
+
+      {/* ── Floating Artist Pill (visible when scrolling in focus mode) ── */}
+      <AnimatePresence>
+        {showPill && focusedArtist && (
+          <motion.div
+            className="artist-focus-pill"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+          >
+            <button
+              className="artist-focus-pill-back"
+              onClick={handleExitFocus}
+            >
+              back
+            </button>
+            <div className="artist-focus-pill-avatar">
+              {focusedArtist.avatar ? (
+                <img src={focusedArtist.avatar} alt={focusedArtist.name} />
+              ) : (
+                <span>{focusedArtist.name.charAt(0).toUpperCase()}</span>
+              )}
+            </div>
+            <span className="artist-focus-pill-name">{focusedArtist.name}</span>
+            <button
+              className="artist-focus-pill-book"
+              onClick={() => focusedArtist.slug && setLocation(`/${focusedArtist.slug}`)}
+            >
+              Book Consult
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Content ── */}
       <div
@@ -130,8 +246,14 @@ export default function ClientHome() {
         onScroll={handleScroll}
       >
         <div className="client-home-content-inner">
-          {view === "discovery" ? (
-            <DiscoverFeedContent />
+          {focusedArtist ? (
+            <ArtistPortfolioFeed
+              artistId={focusedArtist.id}
+              tappedImageId={focusedArtist.tappedImageId}
+              onExit={handleExitFocus}
+            />
+          ) : view === "discovery" ? (
+            <DiscoverFeedContent onImageTap={handleImageTap} />
           ) : (
             <div className="client-home-view">
               <MyArtistsSection

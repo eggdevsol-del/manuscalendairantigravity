@@ -22,9 +22,11 @@ interface FeedCardProps {
   onLike: (id: number) => void;
   onShare: (card: FeedCardData) => void;
   onArtistTap: (slug: string) => void;
+  onImageTap?: (card: FeedCardData) => void;
+  compact?: boolean;
 }
 
-export function FeedCard({ card, onLike, onShare, onArtistTap }: FeedCardProps) {
+export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compact }: FeedCardProps) {
   const [liked, setLiked] = useState(card.isLiked);
   const [likeCount, setLikeCount] = useState(card.likeCount);
   const [showHeart, setShowHeart] = useState(false);
@@ -39,14 +41,26 @@ export function FeedCard({ card, onLike, onShare, onArtistTap }: FeedCardProps) 
   const handleDoubleTap = useCallback(() => {
     const now = Date.now();
     if (now - lastTap.current < 300) {
+      // Double tap — like
       if (!liked) {
         handleLike();
       }
       setShowHeart(true);
       setTimeout(() => setShowHeart(false), 800);
+    } else {
+      // Single tap — enter artist focus (after delay to check for double)
+      if (onImageTap) {
+        const tapTime = now;
+        setTimeout(() => {
+          if (Date.now() - lastTap.current >= 280) {
+            // No second tap came — it's a single tap
+            onImageTap(card);
+          }
+        }, 300);
+      }
     }
     lastTap.current = now;
-  }, [liked, handleLike]);
+  }, [liked, handleLike, onImageTap, card]);
 
   const handleShare = useCallback(async () => {
     if (navigator.share) {
@@ -68,34 +82,36 @@ export function FeedCard({ card, onLike, onShare, onArtistTap }: FeedCardProps) 
 
   return (
     <div className="feed-card">
-      {/* Artist header */}
-      <div
-        className="feed-card-header"
-        onClick={() => card.artistSlug && onArtistTap(card.artistSlug)}
-      >
-        <div className="feed-card-avatar">
-          {card.artistAvatar ? (
-            <img
-              src={card.artistAvatar}
-              alt={card.artistName}
-              className="feed-card-avatar-img"
-            />
-          ) : (
-            <span className="feed-card-avatar-fallback">
-              {card.artistName.charAt(0).toUpperCase()}
-            </span>
-          )}
+      {/* Artist header — hidden in compact/focus mode */}
+      {!compact && (
+        <div
+          className="feed-card-header"
+          onClick={() => card.artistSlug && onArtistTap(card.artistSlug)}
+        >
+          <div className="feed-card-avatar">
+            {card.artistAvatar ? (
+              <img
+                src={card.artistAvatar}
+                alt={card.artistName}
+                className="feed-card-avatar-img"
+              />
+            ) : (
+              <span className="feed-card-avatar-fallback">
+                {card.artistName.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div className="feed-card-artist-info">
+            <span className="feed-card-artist-name">{card.artistName}</span>
+            {card.artistCity && (
+              <span className="feed-card-artist-location">
+                <MapPin size={10} />
+                {card.artistCity}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="feed-card-artist-info">
-          <span className="feed-card-artist-name">{card.artistName}</span>
-          {card.artistCity && (
-            <span className="feed-card-artist-location">
-              <MapPin size={10} />
-              {card.artistCity}
-            </span>
-          )}
-        </div>
-      </div>
+      )}
 
       {/* Image */}
       <div className="feed-card-image-container" onClick={handleDoubleTap}>
@@ -174,13 +190,15 @@ export function FeedCard({ card, onLike, onShare, onArtistTap }: FeedCardProps) 
         </div>
       )}
 
-      {/* Book CTA */}
-      <button
-        className="feed-card-book-btn"
-        onClick={() => card.artistSlug && onArtistTap(card.artistSlug)}
-      >
-        Book Consult
-      </button>
+      {/* Book CTA — hidden in compact/focus mode */}
+      {!compact && (
+        <button
+          className="feed-card-book-btn"
+          onClick={() => card.artistSlug && onArtistTap(card.artistSlug)}
+        >
+          Book Consult
+        </button>
+      )}
     </div>
   );
 }
