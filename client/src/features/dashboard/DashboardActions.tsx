@@ -1,136 +1,25 @@
 import { useMemo } from "react";
 import { useRegisterFABActions } from "@/contexts/BottomNavContext";
-import {
-  Plus,
-  Send,
-  Mail,
-  MessageSquare,
-  Check,
-  ExternalLink,
-  Play,
-  Clock,
-  Trash2,
-  Smartphone,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 import { type FABMenuItem } from "@/ui/FABMenu";
-import type { ExtendedTask } from "@/pages/Dashboard";
 
 interface DashboardFABActionsProps {
   activeCategory: "business" | "social" | "personal";
   onShowChallenge: () => void;
-  selectedTask?: ExtendedTask | null;
-  onExecuteAction?: (task: ExtendedTask) => void;
-  onMarkDone?: (task: ExtendedTask) => void;
-  onSnooze?: (task: ExtendedTask) => void;
-  onGoToChat?: (task: ExtendedTask) => void;
 }
 
+/**
+ * DashboardFABActions — Global FAB actions for the Dashboard page.
+ *
+ * Task-specific actions (Email, SMS, Mark Done, Go to Messages) are now
+ * rendered inline inside the expandable TaskCard, not in the FAB.
+ */
 export function DashboardFABActions({
   activeCategory,
   onShowChallenge,
-  selectedTask,
-  onExecuteAction,
-  onMarkDone,
-  onSnooze,
-  onGoToChat,
 }: DashboardFABActionsProps) {
   const fabContent = useMemo<FABMenuItem[]>(() => {
     const items: FABMenuItem[] = [];
-
-    // If a task is selected, show Task Actions instead of Global Dashboard actions
-    if (selectedTask) {
-      if (selectedTask._serverTask) {
-        // FOUR FIXED ACTIONS FOR BUSINESS TASKS
-
-        // 1. Send Email
-        items.push({
-          id: "task-action-email",
-          label: "Send Email",
-          icon: Mail,
-          onClick: () => {
-            // Mutate action payload temporarily to map to email just in case
-            const tempTask = { ...selectedTask, actionType: "email" as const };
-            onExecuteAction?.(tempTask);
-          },
-        });
-
-        // 2. Send SMS
-        if (selectedTask._serverTask.smsNumber) {
-          items.push({
-            id: "task-action-sms",
-            label: "Send SMS",
-            icon: Smartphone,
-            onClick: () => {
-              const tempTask = { ...selectedTask, actionType: "sms" as const };
-              onExecuteAction?.(tempTask);
-            },
-          });
-        }
-
-        // 3. Mark Completed (Green)
-        items.push({
-          id: "task-mark-done",
-          label: "Mark Completed",
-          icon: Check,
-          onClick: () => onMarkDone?.(selectedTask),
-          className: "text-[var(--color-success)]",
-        });
-
-        // 4. Go to Messages
-        if (selectedTask._serverTask.clientId) {
-          items.push({
-            id: "task-goto-chat",
-            label: "Go to Messages",
-            icon: MessageSquare,
-            onClick: () => onGoToChat?.(selectedTask),
-          });
-        }
-      } else {
-        // LEGACY TASKS (Personal / Social)
-        // 1. Primary Action
-        if (selectedTask.actionType !== "none") {
-          if (selectedTask.actionType === "email") {
-            items.push({
-              id: "task-action-primary",
-              label: "Send Email",
-              icon: Mail,
-              onClick: () => onExecuteAction?.(selectedTask),
-              highlight: true,
-            });
-          } else {
-            let IconItem = Play;
-            if (selectedTask.actionType === "sms") IconItem = MessageSquare;
-            if (selectedTask.actionType === "social") IconItem = ExternalLink;
-
-            items.push({
-              id: "task-action-primary",
-              label: "Execute Action",
-              icon: IconItem,
-              onClick: () => onExecuteAction?.(selectedTask),
-              highlight: true,
-            });
-          }
-        }
-
-        // 2. Mark Completed Action
-        items.push({
-          id: "task-mark-done",
-          label: "Mark Completed",
-          icon: Check,
-          onClick: () => onMarkDone?.(selectedTask),
-        });
-
-        // 3. Snooze
-        items.push({
-          id: "task-snooze",
-          label: "Snooze 24h",
-          icon: Clock,
-          onClick: () => onSnooze?.(selectedTask),
-        });
-      }
-
-      return items;
-    }
 
     // New challenge for personal
     if (activeCategory === "personal") {
@@ -144,16 +33,10 @@ export function DashboardFABActions({
     }
 
     return items;
-  }, [
-    activeCategory,
-    onShowChallenge,
-    selectedTask,
-    onExecuteAction,
-    onMarkDone,
-    onSnooze,
-  ]);
+  }, [activeCategory, onShowChallenge]);
 
   useRegisterFABActions("dashboard", fabContent);
 
   return null;
 }
+

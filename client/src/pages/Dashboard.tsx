@@ -1,9 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
-import {
-  useRegisterFABActions,
-  useBottomNav,
-} from "@/contexts/BottomNavContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,6 +30,7 @@ import {
   TaskCard,
   SegmentedHeader,
 } from "@/components/ui/ssot";
+import type { TaskCardAction } from "@/components/ui/ssot/TaskCard";
 import { tokens } from "@/ui/tokens";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
@@ -60,7 +57,6 @@ import { cn } from "@/lib/utils";
 import { SetupChecklistWidget } from "@/features/onboarding/SetupChecklistWidget";
 import { MerchantSetupStepper } from "@/features/onboarding/MerchantSetupStepper";
 
-import { type FABMenuItem } from "@/ui/FABMenu";
 import { DashboardFABActions } from "@/features/dashboard/DashboardActions";
 import { PayoutWidgetContainer } from "@/features/payouts/PayoutWidgetContainer";
 import { OrdersTab } from "@/features/dashboard/OrdersTab";
@@ -140,7 +136,7 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [activeIndex, setActiveIndex] = useState(0);
   const selectedDate = new Date();
-  const { isFABOpen, setFABOpen } = useBottomNav();
+
 
   // Redirect Studio users
   useEffect(() => {
@@ -171,30 +167,10 @@ export default function Dashboard() {
   const [showInstallModal, setShowInstallModal] = useState(false);
 
   // UI State
-  const [selectedTask, setSelectedTask] = useState<ExtendedTask | null>(null);
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [showTaskSheet, setShowTaskSheet] = useState(false);
   const [showChallengeSheet, setShowChallengeSheet] = useState(false);
   const [taskStartTime, setTaskStartTime] = useState<string | null>(null);
-
-  // Extract conversationId from selected task's deepLink (e.g. /chat/123)
-  const selectedTaskConversationId = useMemo(() => {
-    if (!selectedTask?._serverTask?.deepLink) return null;
-    const match = selectedTask._serverTask.deepLink.match(/\/chat\/(\d+)/);
-    return match ? parseInt(match[1]) : null;
-  }, [selectedTask]);
-
-  // Fetch LLM conversation context for the selected task
-  const { data: conversationState } = trpc.designBrief.conversationState.useQuery(
-    { conversationId: selectedTaskConversationId! },
-    { enabled: !!selectedTaskConversationId }
-  );
-
-  // Clear selected task when FAB closes
-  useEffect(() => {
-    if (!isFABOpen) {
-      setSelectedTask(null);
-    }
-  }, [isFABOpen]);
 
   // Derived State
   const activeCategory = TITLES[activeIndex].toLowerCase() as
@@ -242,20 +218,43 @@ export default function Dashboard() {
 
   const currentTasks = getCurrentTasks();
 
+  // Find the currently expanded task object
+  const expandedTask = useMemo(() => {
+    if (!expandedTaskId) return null;
+    return currentTasks.find(t => t.id === expandedTaskId) ?? null;
+  }, [expandedTaskId, currentTasks]);
+
+  // Extract conversationId from expanded task's deepLink (e.g. /chat/123)
+  const expandedTaskConversationId = useMemo(() => {
+    if (!expandedTask?._serverTask?.deepLink) return null;
+    const match = expandedTask._serverTask.deepLink.match(/\/chat\/(\d+)/);
+    return match ? parseInt(match[1]) : null;
+  }, [expandedTask]);
+
+  // Fetch LLM conversation context for the expanded task
+  const { data: conversationState } = trpc.designBrief.conversationState.useQuery(
+    { conversationId: expandedTaskConversationId! },
+    { enabled: !!expandedTaskConversationId }
+  );
+
   // Handlers
   const handleTaskClick = useCallback(
     (task: ExtendedTask) => {
-      setSelectedTask(task);
+      // Toggle: collapse if already expanded, expand if different
+      if (expandedTaskId === task.id) {
+        setExpandedTaskId(null);
+        return;
+      }
+
+      setExpandedTaskId(task.id);
 
       // Start tracking time for business tasks
       if (task._serverTask) {
         const startTime = businessActions.startTask(task._serverTask);
         setTaskStartTime(startTime);
       }
-
-      setFABOpen(true);
     },
-    [businessActions, setFABOpen]
+    [expandedTaskId, businessActions]
   );
 
   const executeAction = useCallback(
@@ -309,9 +308,9 @@ export default function Dashboard() {
         // Legacy task completion
         legacyActions.markDone(task.id);
       }
-      setFABOpen(false);
+      setExpandedTaskId(null);
     },
-    [businessActions, legacyActions, setFABOpen]
+    [businessActions, legacyActions]
   );
 
   const handleSnooze = useCallback(
@@ -320,9 +319,9 @@ export default function Dashboard() {
         legacyActions.snooze(task.id);
       }
       // Note: Server tasks don't have snooze - they regenerate based on data
-      setFABOpen(false);
+      setExpandedTaskId(null);
     },
-    [legacyActions, setFABOpen]
+    [legacyActions]
   );
 
   const handleDismiss = useCallback(
@@ -331,9 +330,9 @@ export default function Dashboard() {
         legacyActions.dismiss(task.id);
       }
       // Note: Server tasks don't have dismiss - they regenerate based on data
-      setFABOpen(false);
+      setExpandedTaskId(null);
     },
-    [legacyActions, setFABOpen]
+    [legacyActions]
   );
 
   const handleShowChallenge = useCallback(
@@ -341,7 +340,13 @@ export default function Dashboard() {
     []
   );
   const handleGoToChat = useCallback(
-    () => setLocation("/conversations"),
+    (task: ExtendedTask) => {
+      if (task._serverTask?.deepLink) {
+        setLocation(task._serverTask.deepLink);
+      } else {
+        setLocation("/conversations");
+      }
+    },
     [setLocation]
   );
 
@@ -457,23 +462,6 @@ export default function Dashboard() {
                     className="absolute top-0 left-0 w-full px-4 pt-4 touch-pan-y"
                   >
                     <div className="space-y-1 pb-32 max-w-lg mx-auto">
-                      {/* LLM Conversation Context Panel */}
-                      {selectedTask && conversationState?.summary && (
-                        <div className="mx-4 mb-3 p-3 rounded-xl bg-primary/5 border border-primary/10 animate-in fade-in slide-in-from-top-2 duration-200">
-                          <div className="flex items-start gap-2">
-                            <MessageSquare className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                            <div>
-                              <p className="text-xs font-semibold text-foreground mb-0.5">
-                                {selectedTask._serverTask?.clientName || 'Client'} — Conversation
-                              </p>
-                              <p className="text-xs text-muted-foreground leading-relaxed">
-                                {conversationState.summary}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
                       {/* Render Content Based on Active Category */}
                       {activeCategory === "contacts" ? (
                         <ContactsTab />
@@ -482,17 +470,61 @@ export default function Dashboard() {
                       ) : activeCategory === "business" && businessLoading ? (
                         <LoadingState />
                       ) : (currentTasks || []).length > 0 ? (
-                        (currentTasks || []).map(task => (
-                          <TaskCard
-                            key={task.id}
-                            title={task.title}
-                            context={task.context}
-                            priority={task.priority}
-                            status={task.status}
-                            actionType={task.actionType as any}
-                            onClick={() => handleTaskClick(task)}
-                          />
-                        ))
+                        (currentTasks || []).map(task => {
+                          const isExpanded = expandedTaskId === task.id;
+
+                          // Build inline action buttons for expanded cards
+                          const actions: TaskCardAction[] = [];
+                          if (isExpanded && task._serverTask) {
+                            if (task._serverTask.emailRecipient) {
+                              actions.push({
+                                id: "email",
+                                label: "Email",
+                                icon: Mail,
+                                onClick: () => executeAction({ ...task, actionType: "email" }),
+                              });
+                            }
+                            if (task._serverTask.smsNumber) {
+                              actions.push({
+                                id: "sms",
+                                label: "SMS",
+                                icon: Smartphone,
+                                onClick: () => executeAction({ ...task, actionType: "sms" }),
+                              });
+                            }
+                            actions.push({
+                              id: "done",
+                              label: "Complete",
+                              icon: Check,
+                              onClick: () => handleMarkDone(task),
+                              className: "text-[var(--color-success)]",
+                            });
+                            if (task._serverTask.clientId) {
+                              actions.push({
+                                id: "chat",
+                                label: "Messages",
+                                icon: MessageSquare,
+                                onClick: () => handleGoToChat(task),
+                              });
+                            }
+                          }
+
+                          return (
+                            <TaskCard
+                              key={task.id}
+                              title={task.title}
+                              context={task.context}
+                              priority={task.priority}
+                              status={task.status}
+                              actionType={task.actionType as any}
+                              onClick={() => handleTaskClick(task)}
+                              isExpanded={isExpanded}
+                              conversationSummary={isExpanded ? conversationState?.summary : undefined}
+                              clientName={task._serverTask?.clientName ?? undefined}
+                              actions={actions}
+                            />
+                          );
+                        })
                       ) : (
                         <EmptyState
                           category={TITLES[activeIndex]}
@@ -514,15 +546,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Register FAB Actions */}
+      {/* Register FAB Actions (global only — task actions are now inline) */}
       <DashboardFABActions
         activeCategory={activeCategory as any}
         onShowChallenge={handleShowChallenge}
-        selectedTask={selectedTask}
-        onExecuteAction={executeAction}
-        onMarkDone={handleMarkDone}
-        onSnooze={handleSnooze}
-        onGoToChat={handleGoToChat}
       />
 
       {/* --- CHALLENGE SHEET (FullScreenSheet) --- */}
