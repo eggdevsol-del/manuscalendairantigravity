@@ -24,7 +24,7 @@ import { Lock } from "lucide-react";
 export default function BottomNav() {
   const [location] = useLocation();
   const totalUnreadCount = useTotalUnreadCount();
-  const { navItems } = useBottomNav();
+  const { navItems, bottomNavHidden } = useBottomNav();
   const { isTeaserClient } = useTeaser();
   const { user } = useAuth();
 
@@ -58,6 +58,9 @@ export default function BottomNav() {
         userSelect: "none",
         backgroundColor: bgColor,
         borderTop: `1px solid ${borderColor}`,
+        transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        willChange: "transform",
+        transform: bottomNavHidden ? "translateY(100%)" : "translateY(0)",
       }}
     >
       {/* Tab row — 62px icon area */}

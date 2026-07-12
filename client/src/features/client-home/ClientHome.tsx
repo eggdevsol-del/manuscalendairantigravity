@@ -23,6 +23,7 @@ import { ClientFeedTab } from "@/features/client-profile/ClientFeedTab";
 import { useClientProfileController } from "@/features/profile/useClientProfileController";
 import { useFavourites } from "@/features/client-profile/useFavourites";
 import { trpc } from "@/lib/trpc";
+import { useBottomNav } from "@/contexts/BottomNavContext";
 
 type ViewMode = "discovery" | "home";
 
@@ -33,6 +34,7 @@ export default function ClientHome() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastScrollY = useRef(0);
   const [headerHidden, setHeaderHidden] = useState(false);
+  const { setBottomNavHidden } = useBottomNav();
 
   // Home view data
   const { upcoming } = useClientProfileController();
@@ -42,7 +44,7 @@ export default function ClientHome() {
   });
   const [isShopExpanded, setIsShopExpanded] = useState(false);
 
-  // Auto-hide header on scroll
+  // Auto-hide header + bottom nav on scroll
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -53,24 +55,32 @@ export default function ClientHome() {
     // Only trigger after meaningful scroll
     if (Math.abs(delta) > 8) {
       if (delta > 0 && currentY > 60) {
-        // Scrolling down — hide
+        // Scrolling down — hide both
         setHeaderHidden(true);
+        setBottomNavHidden(true);
       } else {
-        // Scrolling up — show
+        // Scrolling up — show both
         setHeaderHidden(false);
+        setBottomNavHidden(false);
       }
     }
 
     lastScrollY.current = currentY;
-  }, []);
+  }, [setBottomNavHidden]);
 
-  // Reset header when switching views
+  // Reset header + bottom nav when switching views
   useEffect(() => {
     setHeaderHidden(false);
+    setBottomNavHidden(false);
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
-  }, [view]);
+  }, [view, setBottomNavHidden]);
+
+  // Ensure bottom nav is visible when leaving this page
+  useEffect(() => {
+    return () => setBottomNavHidden(false);
+  }, [setBottomNavHidden]);
 
   const avatarUrl = user?.avatar;
   const initials = (user?.name || "?").charAt(0).toUpperCase();

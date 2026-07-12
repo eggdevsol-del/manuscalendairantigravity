@@ -47,6 +47,10 @@ interface BottomNavContextType {
   registerRow: (scope: Scope, id: string, content: ReactNode) => () => void;
   setContextualVisible: (visible: boolean) => void;
   rowIndex: number;
+
+  // ── Scroll-aware hide/show ──────────────────────────────
+  bottomNavHidden: boolean;
+  setBottomNavHidden: (hidden: boolean) => void;
 }
 
 const BottomNavContext = createContext<BottomNavContextType | undefined>(
@@ -84,6 +88,12 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
   const [fabChildren, setFabChildren] = useState<ReactNode | null>(null);
   const [isFABOpen, setFABOpenState] = useState(false);
   const [isLargePanel, setLargePanelState] = useState(false);
+
+  // ── Scroll-aware bottom nav hide/show ───────────────────
+  const [bottomNavHidden, setBottomNavHiddenState] = useState(false);
+  const setBottomNavHidden = useCallback((hidden: boolean) => {
+    setBottomNavHiddenState(hidden);
+  }, []);
 
   // Track registered action sets by id
   const actionsRegistry = useRef<Map<string, FABMenuItem[]>>(new Map());
@@ -149,12 +159,16 @@ export function BottomNavProvider({ children }: { children: React.ReactNode }) {
       registerRow,
       setContextualVisible,
       rowIndex: 0,
+      // Scroll-aware hide
+      bottomNavHidden,
+      setBottomNavHidden,
     }),
     [
       navItems, scope,
       fabActions, registerFABActions, fabChildren,
       isFABOpen, setFABOpen, isLargePanel, setLargePanel,
       registerRow, setContextualVisible,
+      bottomNavHidden, setBottomNavHidden,
     ]
   );
 
