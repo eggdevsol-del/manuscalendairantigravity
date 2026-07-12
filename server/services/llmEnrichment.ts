@@ -183,7 +183,7 @@ export async function generatePersonalisedMessage(
   // Strip any "Subject:" line the LLM might include despite instructions
   draft = draft.replace(/^subject:.*\n?/i, "").trim();
   // Strip any trailing sign-offs
-  draft = draft.replace(/\n\n?(best regards|kind regards|regards|cheers|thanks|sincerely|warm regards)[,.]?\n?.*/is, "").trim();
+  draft = draft.replace(/\n\n?(best regards|kind regards|regards|cheers|thanks|sincerely|warm regards)[,.]?[\s\S]*/i, "").trim();
 
   return draft;
 }

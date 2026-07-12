@@ -237,9 +237,7 @@ export default function Dashboard() {
     { enabled: !!expandedTaskConversationId }
   );
 
-  // LLM draft generation for Email/SMS
-  const generateDraft = trpc.designBrief.generateDraft.useMutation();
-  const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
+
 
   // Handlers
   const handleTaskClick = useCallback(
@@ -301,103 +299,6 @@ export default function Dashboard() {
       }
     },
     [businessActions, legacyActions, setLocation]
-  );
-
-  // LLM-enriched Email handler
-  const handleLLMEmail = useCallback(
-    async (task: ExtendedTask) => {
-      const serverTask = task._serverTask;
-      if (!serverTask?.emailRecipient) return;
-
-      // Extract conversationId from deepLink
-      const convMatch = serverTask.deepLink?.match(/\/chat\/(\d+)/);
-      const convId = convMatch ? parseInt(convMatch[1]) : null;
-
-      if (convId) {
-        // Has conversation — use LLM draft
-        setLoadingActionId("email");
-        try {
-          const { draft } = await generateDraft.mutateAsync({
-            conversationId: convId,
-            channel: "email",
-            clientName: serverTask.clientName || "there",
-            taskContext: task.context,
-            taskType: serverTask.taskType,
-          });
-
-          // Construct mailto with LLM draft
-          const bName = businessSettings?.businessName || "My Business";
-          const subject = encodeURIComponent(`Message from ${bName}`);
-          const body = encodeURIComponent(draft);
-          const emailUrl = `mailto:${serverTask.emailRecipient}?subject=${subject}&body=${body}`;
-
-          const a = document.createElement("a");
-          a.href = emailUrl;
-          a.target = "_top";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        } catch {
-          // Fallback to static template
-          businessActions.openEmail(serverTask);
-        } finally {
-          setLoadingActionId(null);
-        }
-      } else {
-        // No conversation — use static template
-        businessActions.openEmail(serverTask);
-      }
-    },
-    [generateDraft, businessActions, businessSettings]
-  );
-
-  // LLM-enriched SMS handler
-  const handleLLMSms = useCallback(
-    async (task: ExtendedTask) => {
-      const serverTask = task._serverTask;
-      if (!serverTask?.smsNumber) return;
-
-      // Extract conversationId from deepLink
-      const convMatch = serverTask.deepLink?.match(/\/chat\/(\d+)/);
-      const convId = convMatch ? parseInt(convMatch[1]) : null;
-
-      if (convId) {
-        // Has conversation — use LLM draft
-        setLoadingActionId("sms");
-        try {
-          const { draft } = await generateDraft.mutateAsync({
-            conversationId: convId,
-            channel: "sms",
-            clientName: serverTask.clientName || "there",
-            taskContext: task.context,
-            taskType: serverTask.taskType,
-          });
-
-          // Construct SMS URL with LLM draft
-          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-          const number = serverTask.smsNumber.replace(/\D/g, "");
-          const body = encodeURIComponent(draft);
-          const separator = isIOS ? "&" : "?";
-          const smsUrl = `sms:${number}${separator}body=${body}`;
-
-          const a = document.createElement("a");
-          a.href = smsUrl;
-          a.target = "_top";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        } catch {
-          // Fallback to static template
-          businessActions.openSms(serverTask);
-        } finally {
-          setLoadingActionId(null);
-        }
-      } else {
-        // No conversation — use static template
-        businessActions.openSms(serverTask);
-      }
-    },
-    [generateDraft, businessActions]
   );
 
   const handleMarkDone = useCallback(
@@ -582,7 +483,7 @@ export default function Dashboard() {
                                 id: "email",
                                 label: "Email",
                                 icon: Mail,
-                                onClick: () => handleLLMEmail(task),
+                                onClick: () => executeAction({ ...task, actionType: "email" }),
                               });
                             }
                             if (task._serverTask.smsNumber) {
@@ -590,7 +491,7 @@ export default function Dashboard() {
                                 id: "sms",
                                 label: "SMS",
                                 icon: Smartphone,
-                                onClick: () => handleLLMSms(task),
+                                onClick: () => executeAction({ ...task, actionType: "sms" }),
                               });
                             }
                             actions.push({
@@ -624,7 +525,6 @@ export default function Dashboard() {
                               briefLoading={isExpanded && !!expandedTaskConversationId && briefLoading}
                               clientName={task._serverTask?.clientName ?? undefined}
                               actions={actions}
-                              loadingActionId={isExpanded ? loadingActionId : null}
                             />
                           );
                         })

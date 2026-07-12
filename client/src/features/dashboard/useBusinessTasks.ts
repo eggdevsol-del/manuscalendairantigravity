@@ -145,66 +145,81 @@ export function useBusinessTasks() {
   );
 
   // Professional Email Templates mapping
+  // Server-generated emailBody/emailSubject are preferred when available
+  // (they contain real data: dates, deposit amounts, bank details).
+  // These client-side templates are fallbacks only.
   const getProfessionalEmail = useCallback(
     (task: BusinessTask, businessName: string | null) => {
-      const bName = businessName || "My Business";
-      const cName = task.clientName || "there";
+      const cFirst = (task.clientName || "there").split(" ")[0];
 
-      // Default fallback (using what's already in the task if available)
-      let subject = task.emailSubject || `Message from ${bName}`;
-      let body =
-        task.emailBody ||
-        `Hi ${cName},\n\nI'm reaching out regarding our project at ${bName}.\n\nRegards,\n\n${bName}`;
-
-      // Task-specific templates
-      switch (task.taskType) {
-        case "lead_follow_up":
-          subject = `Follow up: Your inquiry with ${bName}`;
-          body = `Hi ${cName},\n\nJust wanted to follow up on your project inquiry with ${bName}. Did you have any more thoughts or questions?\n\nLooking forward to hearing from you!\n\nRegards,\n\n${bName}`;
-          break;
-        case "deposit_collection":
-          subject = `Secure your booking with ${bName}`;
-          body = `Hi ${cName},\n\nTo finalize your booking with ${bName}, please send through your deposit. This secures your spot in my calendar!\n\nOnce received, I'll send through a final confirmation.\n\nRegards,\n\n${bName}`;
-          break;
-        case "appointment_confirmation":
-          subject = `Confirming your appointment with ${bName}`;
-          body = `Hi ${cName},\n\nI'm confirming your appointment with ${bName}. I'm looking forward to working on your project!\n\nRegards,\n\n${bName}`;
-          break;
-        case "post_appointment_thankyou":
-          subject = `Thank you from ${bName}`;
-          body = `Hi ${cName},\n\nThank you so much for coming in! It was a pleasure working with you. I hope you're happy with the results.\n\nPlease let me know if you have any questions about the healing process.\n\nRegards,\n\n${bName}`;
-          break;
-        case "healed_photo_request":
-          subject = `Healed photos for ${bName}`;
-          body = `Hi ${cName},\n\nI hope your tattoo is healing well! If you have a moment, I'd love to see some healed photos of our project for my portfolio.\n\nRegards,\n\n${bName}`;
-          break;
-        case "birthday_outreach":
-          subject = `Happy Birthday from ${bName}!`;
-          body = `Hi ${cName},\n\nHappy Birthday! Wishing you a fantastic day from everyone at ${bName}.\n\nRegards,\n\n${bName}`;
-          break;
-        case "new_lead":
-          subject = `Inquiry received: ${bName}`;
-          body = `Hi ${cName},\n\nThanks for reaching out to ${bName}! I've received your inquiry and will be in touch shortly to discuss your project.\n\nRegards,\n\n${bName}`;
-          break;
-        case "new_consultation":
-          subject = `Consultation request: ${bName}`;
-          body = `Hi ${cName},\n\nThanks for your consultation request with ${bName}. I've received all the details and will get back to you with some possible dates/times soon.\n\nRegards,\n\n${bName}`;
-          break;
-        case "follow_up_responded":
-          subject = `Re: Your project with ${bName}`;
-          body = `Hi ${cName},\n\nThanks for getting back to me! I've seen your latest message and will review it shortly.\n\nRegards,\n\n${bName}`;
-          break;
-        case "stale_conversation":
-          subject = `Checking in: Your project with ${bName}`;
-          body = `Hi ${cName},\n\nIt's been a little while since we last spoke about your project. I wanted to check in and see if you were still interested in moving forward?\n\nRegards,\n\n${bName}`;
-          break;
-        case "tattoo_anniversary":
-          subject = `Happy Tattoo Anniversary from ${bName}!`;
-          body = `Hi ${cName},\n\nHappy Tattoo Anniversary! It's been a year since our project together. Hope it's still looking great!\n\nRegards,\n\n${bName}`;
-          break;
+      // If the server provided a pre-built email, use it directly
+      if (task.emailBody && task.emailSubject) {
+        return { subject: task.emailSubject, body: task.emailBody };
       }
 
-      return { subject, body };
+      // Fallback: client-side templates (no sign-offs — artist has email signature)
+      switch (task.taskType) {
+        case "lead_follow_up":
+          return {
+            subject: `Following up on your enquiry`,
+            body: `Hi ${cFirst},\n\nJust following up on your project enquiry. Have you had a chance to think about what we discussed?\n\nLet me know if you have any questions or would like to move forward.`,
+          };
+        case "deposit_collection":
+          return {
+            subject: `Deposit reminder for your upcoming appointment`,
+            body: `Hi ${cFirst},\n\nJust a reminder that a deposit is required to secure your booking. Once received, I'll send through a confirmation.\n\nPlease let me know if you have any questions.`,
+          };
+        case "appointment_confirmation":
+          return {
+            subject: `Confirming your upcoming appointment`,
+            body: `Hi ${cFirst},\n\nJust confirming your upcoming appointment. Looking forward to seeing you.\n\nPlease let me know if anything changes.`,
+          };
+        case "post_appointment_thankyou":
+          return {
+            subject: `Thank you for coming in`,
+            body: `Hi ${cFirst},\n\nThank you for coming in today. I hope you're happy with how it turned out.\n\nLet me know if you have any questions about the healing process.`,
+          };
+        case "healed_photo_request":
+          return {
+            subject: `Would love to see your healed result`,
+            body: `Hi ${cFirst},\n\nHope your tattoo has healed nicely. If you get a chance, I'd love to see a healed photo for my portfolio.\n\nNo pressure at all — only if you're happy to.`,
+          };
+        case "birthday_outreach":
+          return {
+            subject: `Happy Birthday!`,
+            body: `Hi ${cFirst},\n\nJust wanted to wish you a Happy Birthday! Hope you have a great day.`,
+          };
+        case "new_lead":
+          return {
+            subject: `Thanks for your enquiry`,
+            body: `Hi ${cFirst},\n\nThanks for reaching out. I've received your enquiry and will get back to you shortly to discuss your project.`,
+          };
+        case "new_consultation":
+          return {
+            subject: `Consultation request received`,
+            body: `Hi ${cFirst},\n\nThanks for your consultation request. I'll review the details and get back to you with some availability shortly.`,
+          };
+        case "follow_up_responded":
+          return {
+            subject: `Re: Your project`,
+            body: `Hi ${cFirst},\n\nThanks for getting back to me. I've seen your message and will follow up shortly.`,
+          };
+        case "stale_conversation":
+          return {
+            subject: `Checking in`,
+            body: `Hi ${cFirst},\n\nIt's been a little while since we last spoke. I wanted to check in and see if you're still interested in moving forward with your project.\n\nNo rush — just let me know.`,
+          };
+        case "tattoo_anniversary":
+          return {
+            subject: `Happy Tattoo Anniversary!`,
+            body: `Hi ${cFirst},\n\nHappy anniversary! It's been a year since we did your piece. Hope it's still looking great.`,
+          };
+        default:
+          return {
+            subject: task.emailSubject || `Following up`,
+            body: task.emailBody || `Hi ${cFirst},\n\nJust reaching out regarding your project. Let me know if you have any questions.`,
+          };
+      }
     },
     []
   );

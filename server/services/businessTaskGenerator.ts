@@ -249,7 +249,7 @@ async function generateLeadFollowUpTasks(
       baseScore += 50;
     }
 
-    const followUpMessage = `Hey ${firstName(lead.clientName)}, just following up on your ${lead.projectType?.replace(/-/g, " ") || "tattoo"} inquiry. Let me know if you have any questions or want to lock in a booking.`;
+    const followUpMessage = `Hi ${firstName(lead.clientName)}, just following up on your ${lead.projectType?.replace(/-/g, " ") || "tattoo"} enquiry. Let me know if you have any questions or would like to go ahead with booking.`;
 
     tasks.push({
       taskType: "lead_follow_up",
@@ -417,10 +417,10 @@ async function generateDepositTasks(
 
     const clientFirst = firstName((appt as any).client?.name);
     const smsPayMsg = (appt as any).client?.phone
-      ? `Hey ${clientFirst}, just a reminder about the ${depositFormatted} deposit for your appointment on ${dateFormatted}. You can pay here: https://tattoi.com/pay/${appt.id}`
+      ? `Hi ${clientFirst}, just a reminder about the ${depositFormatted} deposit for your appointment on ${dateFormatted}. You can pay here: https://tattoi.com/pay/${appt.id}`
       : null;
 
-    let emailMsgBody = `Hey ${clientFirst},\n\nJust a quick reminder about the deposit for your upcoming appointment on ${dateFormatted}.\n\nYou can pay securely here: https://tattoi.com/pay/${appt.id}\n\n`;
+    let emailMsgBody = `Hi ${clientFirst},\n\nJust a reminder about the ${depositFormatted} deposit for your upcoming appointment on ${dateFormatted}.\n\nYou can pay securely here: https://tattoi.com/pay/${appt.id}\n\n`;
 
     const artistSettings = await db.query.artistSettings.findFirst({
       where: eq(schema.artistSettings.userId, appt.artistId)
@@ -438,7 +438,7 @@ async function generateDepositTasks(
       if (accountValue) emailMsgBody += `${labels.accountLabel}: ${accountValue}\n`;
     }
 
-    emailMsgBody += '\nThanks!';
+    // No sign-off — artist has email signature
 
     tasks.push({
       taskType: "deposit_collection",
@@ -506,7 +506,7 @@ async function generateConfirmationTasks(
     const tz = (appt as any).timeZone || getBusinessTimezone();
     const timeFormatted = formatLocalTime(appt.startTime, tz, "h:mm a");
 
-    const confirmationMessage = `Hey ${firstName(appt.client?.name)}, just confirming your appointment tomorrow at ${timeFormatted}. See you then! 🎨`;
+    const confirmationMessage = `Hi ${firstName(appt.client?.name)}, confirming your appointment tomorrow at ${timeFormatted}. See you then.`;
 
     tasks.push({
       taskType: "appointment_confirmation",
@@ -526,8 +526,8 @@ async function generateConfirmationTasks(
       smsNumber: appt.client?.phone || null,
       smsBody: confirmationMessage,
       emailRecipient: appt.client?.email || null,
-      emailSubject: `Appointment confirmed — ${timeFormatted}`,
-      emailBody: confirmationMessage,
+      emailSubject: `Confirming your appointment — ${timeFormatted}`,
+      emailBody: `Hi ${firstName(appt.client?.name)},\n\nJust confirming your appointment tomorrow at ${timeFormatted}.\n\nPlease let me know if anything changes.`,
       deepLink: appt.conversationId
         ? `/chat/${appt.conversationId}`
         : `/conversations`,
@@ -602,10 +602,10 @@ async function generateFollowUpTasks(
       clientName: consult.client?.name || null,
       actionType: "in_app", // Default to in_app, but UI shows secondary actions
       smsNumber: consult.client?.phone || null,
-      smsBody: `Hey ${firstName(consult.client?.name)}, just following up on your consultation. Let me know if you have any questions or want to go ahead with booking.`,
+      smsBody: `Hi ${firstName(consult.client?.name)}, following up on your consultation. Let me know if you have any questions or would like to go ahead with booking.`,
       emailRecipient: consult.client?.email || null,
       emailSubject: `Following up on your consultation`,
-      emailBody: `Hey ${firstName(consult.client?.name)}, just following up on your consultation. Let me know if you have any questions or want to go ahead with booking.`,
+      emailBody: `Hi ${firstName(consult.client?.name)},\n\nFollowing up on your consultation. Let me know if you have any questions or would like to go ahead with booking.`,
       deepLink: conversationId ? `/chat/${conversationId}` : `/conversations`,
       dueAt: null,
       expiresAt: null,
@@ -670,10 +670,10 @@ async function generateStaleConversationTasks(
       clientName: conv.client?.name || null,
       actionType: "in_app",
       smsNumber: conv.client?.phone || null,
-      smsBody: `Hey ${firstName(conv.client?.name)}, just checking in — been a while since we last chatted. Let me know if there's anything I can help with!`,
+      smsBody: `Hi ${firstName(conv.client?.name)}, just checking in — it's been a while since we last spoke. Let me know if you'd still like to move forward.`,
       emailRecipient: conv.client?.email || null,
       emailSubject: `Checking in`,
-      emailBody: `Hey ${firstName(conv.client?.name)}, just checking in — been a while since we last chatted. Let me know if there's anything I can help with!`,
+      emailBody: `Hi ${firstName(conv.client?.name)},\n\nJust checking in — it's been a while since we last spoke. Let me know if you're still interested in moving forward with your project.`,
       deepLink: `/chat/${conv.id}`,
       dueAt: null,
       expiresAt: null,
@@ -739,7 +739,7 @@ async function generateBirthdayTasks(
     });
 
     const clientFirst = firstName(client.name);
-    const birthdayMessage = `Happy Birthday ${clientFirst}! 🎂 Hope you have an awesome day. If you're keen for your next piece, I'd love to work on something for you.`;
+    const birthdayMessage = `Happy Birthday ${clientFirst}! Hope you have a great day.`;
 
     tasks.push({
       taskType: "birthday_outreach",
@@ -756,8 +756,8 @@ async function generateBirthdayTasks(
       smsNumber: client.phone || null,
       smsBody: birthdayMessage,
       emailRecipient: client.email || null,
-      emailSubject: `Happy Birthday ${clientFirst}! 🎂`,
-      emailBody: birthdayMessage,
+      emailSubject: `Happy Birthday ${clientFirst}!`,
+      emailBody: `Hi ${clientFirst},\n\nJust wanted to wish you a Happy Birthday! Hope you have a great day.`,
       deepLink: `/conversations`,
       dueAt: thisYearBirthday,
       expiresAt: new Date(thisYearBirthday.getTime() + 24 * 60 * 60 * 1000),
@@ -813,7 +813,7 @@ async function generateAnniversaryTasks(
     else baseScore = 320;
 
     const clientFirst = firstName(appt.client?.name);
-    const anniversaryMessage = `Hey ${clientFirst}! 🎨 It's been ${yearsAgo} year${yearsAgo > 1 ? "s" : ""} since your ${appt.title} — hope it's still looking great. Would love to see how it's healed, and if you're keen for more work, let me know!`;
+    const anniversaryMessage = `Hi ${clientFirst}, it's been ${yearsAgo} year${yearsAgo > 1 ? "s" : ""} since your ${appt.title}. Hope it's still looking great. Would love to see how it's healed.`;
 
     tasks.push({
       taskType: "tattoo_anniversary",
@@ -830,8 +830,8 @@ async function generateAnniversaryTasks(
       smsNumber: appt.client?.phone || null,
       smsBody: anniversaryMessage,
       emailRecipient: appt.client?.email || null,
-      emailSubject: `${yearsAgo} Year Tattoo Anniversary! 🎨`,
-      emailBody: anniversaryMessage,
+      emailSubject: `${yearsAgo} Year Tattoo Anniversary`,
+      emailBody: `Hi ${clientFirst},\n\nIt's been ${yearsAgo} year${yearsAgo > 1 ? "s" : ""} since your ${appt.title}. Hope it's still looking great — would love to see how it's healed.`,
       deepLink: `/conversations`,
       dueAt: anniversaryDate,
       expiresAt: new Date(anniversaryDate.getTime() + 24 * 60 * 60 * 1000),
@@ -876,7 +876,7 @@ async function generateHealedPhotoTasks(
     else if (days < 25) baseScore = 300;
     else baseScore = 250;
 
-    const healedPhotoMessage = `Hey ${firstName(appt.client?.name)}! 📸 Your ${appt.title} should be nicely healed by now. Would love to see how it turned out — send me a pic when you get a chance!`;
+    const healedPhotoMessage = `Hi ${firstName(appt.client?.name)}, your ${appt.title} should be nicely healed by now. Would love to see how it turned out if you get a chance to send a photo.`;
 
     tasks.push({
       taskType: "healed_photo_request",
@@ -937,7 +937,7 @@ async function generateThankYouTasks(
   });
 
   for (const appt of todayCompletedAppointments) {
-    const thankYouMessage = `Thanks heaps ${firstName(appt.client?.name)}! 🙏 Loved working on your ${appt.title} today. Take care of it while it heals and reach out if you need anything.`;
+    const thankYouMessage = `Hi ${firstName(appt.client?.name)}, thank you for coming in today. Take care of your ${appt.title} while it heals and reach out if you need anything.`;
 
     tasks.push({
       taskType: "post_appointment_thankyou",
