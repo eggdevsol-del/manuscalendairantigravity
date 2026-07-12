@@ -232,7 +232,7 @@ export default function Dashboard() {
   }, [expandedTask]);
 
   // Fetch LLM conversation context for the expanded task
-  const { data: conversationState } = trpc.designBrief.conversationState.useQuery(
+  const { data: conversationState, isLoading: briefLoading } = trpc.designBrief.conversationState.useQuery(
     { conversationId: expandedTaskConversationId! },
     { enabled: !!expandedTaskConversationId }
   );
@@ -520,6 +520,7 @@ export default function Dashboard() {
                               onClick={() => handleTaskClick(task)}
                               isExpanded={isExpanded}
                               conversationSummary={isExpanded ? conversationState?.summary : undefined}
+                              briefLoading={isExpanded && !!expandedTaskConversationId && briefLoading}
                               clientName={task._serverTask?.clientName ?? undefined}
                               actions={actions}
                             />

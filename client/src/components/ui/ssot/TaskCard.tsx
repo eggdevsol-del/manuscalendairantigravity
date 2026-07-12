@@ -15,7 +15,7 @@ import { Card } from "../card";
  */
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
-import { Check, ChevronRight, ChevronDown, MessageSquare } from "lucide-react";
+import { Check, ChevronRight, ChevronDown, MessageSquare, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface TaskCardAction {
@@ -41,6 +41,8 @@ export interface TaskCardProps {
   clientName?: string;
   /** Action buttons to render when expanded */
   actions?: TaskCardAction[];
+  /** Whether the conversation brief is currently loading */
+  briefLoading?: boolean;
 }
 
 export function TaskCard({
@@ -54,6 +56,7 @@ export function TaskCard({
   conversationSummary,
   clientName,
   actions,
+  briefLoading = false,
 }: TaskCardProps) {
   // SSOT Rules:
   // - Left-edge glow for priority (not full-card tint)
@@ -118,7 +121,19 @@ export function TaskCard({
             className="overflow-hidden z-10 relative"
           >
             <div className="pt-3 space-y-3">
-              {/* Conversation Brief */}
+              {/* Conversation Brief — loading state */}
+              {briefLoading && !conversationSummary && (
+                <div className="p-3 rounded-xl bg-primary/5 border border-primary/10">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-[var(--radius-sm)] bg-primary flex items-center justify-center shrink-0">
+                      <RefreshCw size={14} className="text-primary-foreground animate-spin" />
+                    </div>
+                    <p className="text-xs text-muted-foreground">Loading conversation context…</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Conversation Brief — loaded */}
               {conversationSummary && (
                 <div className="p-3 rounded-xl bg-primary/5 border border-primary/10">
                   <div className="flex items-start gap-2">

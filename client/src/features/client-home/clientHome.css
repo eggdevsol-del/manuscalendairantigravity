@@ -13,8 +13,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
+  padding: 6px 16px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 6px);
   background: rgba(5, 5, 5, 0.88);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
@@ -65,11 +65,14 @@
 /* ── Logo ── */
 .client-home-logo {
   font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-  font-size: 22px;
-  font-weight: 400;
-  letter-spacing: -1px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
   color: var(--foreground);
-  text-transform: lowercase;
+  text-transform: uppercase;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* ── View toggle ── */
@@ -113,7 +116,7 @@
 
 /* Padding top for header */
 .client-home-content-inner {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 52px);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 44px);
   padding-bottom: 80px;
   min-height: 100%;
 }
