@@ -148,19 +148,25 @@ registerRoute(
   })
 );
 
-// 4. Navigation requests (Network First) - ensures fresh HTML
-registerRoute(
-  ({ request }) => request.mode === "navigate",
-  new NetworkFirst({
-    cacheName: `pages-v${APP_VERSION}`,
-    networkTimeoutSeconds: 5,
-    plugins: [
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
+import { NavigationRoute } from "workbox-routing";
+import { createHandlerBoundToURL } from "workbox-precaching";
+
+// 4. Navigation requests (SPA) - use precached index.html for instant loading
+try {
+  // Use the precached index.html for all navigation requests.
+  // This enables true offline SPA support and instant loading,
+  // bypassing the network and avoiding blank screens on deep links.
+  const handler = createHandlerBoundToURL('index.html');
+  const navigationRoute = new NavigationRoute(handler, {
+    denylist: [
+      /^\/api\//,
+      /^\/onesignal\//,
     ],
-  })
-);
+  });
+  registerRoute(navigationRoute);
+} catch (e) {
+  console.warn("[SW] Navigation route registration failed", e);
+}
 
 // -- Message Handler for Manual Updates --
 self.addEventListener("message", event => {

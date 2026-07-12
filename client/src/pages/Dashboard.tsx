@@ -497,7 +497,7 @@ export default function Dashboard() {
                               label: "Complete",
                               icon: Check,
                               onClick: () => handleMarkDone(task),
-                              className: "text-[var(--color-success)]",
+                              className: "bg-[var(--color-success)] text-white hover:bg-[var(--color-success)]/90 active:bg-[var(--color-success)]/80",
                             });
                             if (task._serverTask.clientId) {
                               actions.push({
