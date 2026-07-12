@@ -322,6 +322,7 @@ export default function Dashboard() {
             channel: "email",
             clientName: serverTask.clientName || "there",
             taskContext: task.context,
+            taskType: serverTask.taskType,
           });
 
           // Construct mailto with LLM draft
@@ -369,6 +370,7 @@ export default function Dashboard() {
             channel: "sms",
             clientName: serverTask.clientName || "there",
             taskContext: task.context,
+            taskType: serverTask.taskType,
           });
 
           // Construct SMS URL with LLM draft

@@ -191,6 +191,7 @@ export const designBriefRouter = router({
         channel: z.enum(["sms", "email"]),
         taskContext: z.string().optional(),
         clientName: z.string(),
+        taskType: z.string().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -203,7 +204,8 @@ export const designBriefRouter = router({
         ctx.user.id,
         input.channel,
         input.clientName,
-        input.taskContext
+        input.taskContext,
+        input.taskType
       );
 
       return { draft };

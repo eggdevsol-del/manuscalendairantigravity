@@ -47,15 +47,31 @@ Output format (only include categories that have relevant data):
 
 const PERSONALISED_MESSAGE_SYSTEM_PROMPT = `You are drafting a message on behalf of a tattoo artist to their client. The artist will review and edit before sending.
 
-STRICT RULES:
-- NEVER state or imply the artist has completed any work, created designs, drawn sketches, started drawing, or prepared anything
-- NEVER make promises about deliverables or timelines the artist hasn't explicitly committed to
-- NEVER fabricate details not present in the conversation data
-- You may ONLY reference:
-  • What the client has communicated (design preferences, questions, decisions)
-  • Open questions the client hasn't answered yet
-- Tone: warm, professional, concise
-- The message should feel like a natural check-in or follow-up, not a delivery notification`;
+STRICT OUTPUT RULES:
+- Output ONLY the message body text. Nothing else.
+- NEVER include "Subject:" or any subject line.
+- NEVER include a sign-off (no "Best regards", "Kind regards", "Cheers", "Thanks", "Sincerely", etc.).
+- NEVER include the artist's name, business name, or bracketed placeholders like [Your Name] or [Studio Name].
+- The artist already has an email signature — do NOT add one.
+- Be extremely concise. Every word must earn its place.
+
+CONTENT RULES:
+- NEVER state or imply the artist has completed any work, created designs, drawn sketches, or prepared anything.
+- NEVER make promises about deliverables or timelines the artist hasn't explicitly committed to.
+- NEVER fabricate details not present in the conversation.
+- You may ONLY reference what the client has communicated.
+- Tone: professional, direct, warm but not chatty.
+
+TASK-TYPE GUIDANCE — match the message purpose to the task type:
+- lead_follow_up / stale_conversation / follow_up_responded: Follow-up message. Check in, reference their project briefly, ask if they'd like to move forward.
+- deposit_collection: Deposit reminder. Politely remind them a deposit is needed to secure their booking.
+- appointment_confirmation / new_consultation: Confirmation message. Confirm the upcoming appointment, keep it brief and clear.
+- post_appointment_thankyou: Thank you. Thank them for coming in, mention aftercare briefly if relevant.
+- healed_photo_request: Photo request. Ask if they'd be willing to share healed photos for portfolio.
+- birthday_outreach / tattoo_anniversary: Celebratory outreach. Brief warm message marking the occasion.
+- new_lead: Welcome message. Acknowledge their enquiry, let them know you'll review it.
+
+If the task type doesn't match any of the above, write a professional check-in relevant to the conversation context.`;
 
 const CONVERSATION_STATE_SYSTEM_PROMPT = `You summarise the current state of a tattoo artist-client conversation in 1-2 sentences (max 40 words).
 You are given a SAMPLED conversation: the first few messages (showing original intent) and the most recent messages (showing current state).
@@ -119,7 +135,8 @@ export async function generatePersonalisedMessage(
   artistId: string,
   channel: "sms" | "email",
   clientName: string,
-  taskContext?: string
+  taskContext?: string,
+  taskType?: string
 ): Promise<string> {
   // Fetch the cached brief
   const brief = await database.query.designBriefs.findFirst({
@@ -137,10 +154,11 @@ export async function generatePersonalisedMessage(
   });
 
   const channelGuidance = channel === "sms"
-    ? "Write a SHORT SMS message (max 160 characters). Casual, friendly tone. No greeting formalities."
-    : "Write a brief email (1-2 short paragraphs). Warm but slightly more formal. Include a greeting.";
+    ? "Write a SHORT SMS (max 160 characters). Direct and professional. No greeting, no sign-off. Just the message."
+    : "Write a brief email body (2-3 sentences max). Professional tone. Start with 'Hi [client name],' then the message. No sign-off, no signature, no subject line.";
 
   const contextParts: string[] = [];
+  if (taskType) contextParts.push(`Task Type: ${taskType}`);
   if (brief?.briefText) contextParts.push(`Design Brief:\n${brief.briefText}`);
   if (taskContext) contextParts.push(`Task Context: ${taskContext}`);
   if (recentMessages.length > 0) {
@@ -158,8 +176,16 @@ export async function generatePersonalisedMessage(
     disableThinking: true,
   });
 
-  return extractTextContent(result)
-    || `Hey ${clientName}, just checking in — let me know if you have any questions.`;
+  // Clean up any residual formatting the LLM might add
+  let draft = extractTextContent(result)
+    || `Hi ${clientName}, just checking in — let me know if you have any questions.`;
+
+  // Strip any "Subject:" line the LLM might include despite instructions
+  draft = draft.replace(/^subject:.*\n?/i, "").trim();
+  // Strip any trailing sign-offs
+  draft = draft.replace(/\n\n?(best regards|kind regards|regards|cheers|thanks|sincerely|warm regards)[,.]?\n?.*/is, "").trim();
+
+  return draft;
 }
 
 const SUMMARY_TTL_MS = 30 * 60 * 1000; // 30 minutes
