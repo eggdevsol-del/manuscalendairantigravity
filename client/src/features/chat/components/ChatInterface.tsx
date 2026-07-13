@@ -965,7 +965,7 @@ export function ChatInterface({
               (/iPad/.test(navigator.userAgent) ||
                 (navigator.userAgent.includes("Macintosh") &&
                   "ontouchend" in document));
-            const base = isContextualVisible ? 187 : 110;
+            const base = isContextualVisible ? 207 : 130;
             return isIPad ? `${base - 40}px` : `${base}px`;
           })(),
         }}
