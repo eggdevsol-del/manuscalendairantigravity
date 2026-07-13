@@ -238,7 +238,7 @@ export default function Dashboard() {
     {
       enabled: !!expandedTask,
       retry: 1,
-      staleTime: 60_000, // Cache brief for 60s
+      staleTime: 0, // Always refetch — server cache handles dedup
     }
   );
 

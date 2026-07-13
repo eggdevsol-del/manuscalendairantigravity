@@ -73,12 +73,12 @@ TASK-TYPE GUIDANCE — match the message purpose to the task type:
 
 If the task type doesn't match any of the above, write a professional check-in relevant to the conversation context.`;
 
-const CONVERSATION_STATE_SYSTEM_PROMPT = `You summarise the current state of a tattoo artist-client conversation in 1-2 sentences (max 40 words).
-You are given a SAMPLED conversation: the first few messages (showing original intent) and the most recent messages (showing current state).
-Focus on: what the client wants, what's currently being discussed, and what decision or action is pending.
-NEVER imply the artist has done any work, created designs, drawn sketches, or prepared anything.
-Only reference what the client has communicated.
-If the conversation is just starting, note the client's initial enquiry.`;
+const CONVERSATION_STATE_SYSTEM_PROMPT = `You summarise the current state of a tattoo artist-client conversation in 1-3 sentences (max 60 words).
+You are given the FULL conversation with timestamps. Weight recent messages most heavily — they reflect the current state.
+Focus on: what the client wants, what's been agreed, current status, and what action is pending.
+NEVER imply the artist has done any work, created designs, drawn sketches, or prepared anything unless explicitly stated in the conversation.
+If the conversation is just starting, note the client's initial enquiry.
+Note any time-sensitive context (e.g. upcoming appointments, deadlines).`;
 
 export async function compileDesignBrief(
   database: MySql2Database<typeof schema>,
@@ -188,13 +188,18 @@ export async function generatePersonalisedMessage(
   return draft;
 }
 
-const SUMMARY_TTL_MS = 30 * 60 * 1000; // 30 minutes
+const SUMMARY_TTL_MS = 30 * 60 * 1000; // 30 minutes (fallback)
 
 export async function summariseConversationState(
   database: MySql2Database<typeof schema>,
   conversationId: number,
   artistId: string
 ): Promise<string> {
+  // Get conversation to check lastMessageAt for cache invalidation
+  const conversation = await database.query.conversations.findFirst({
+    where: eq(schema.conversations.id, conversationId),
+  });
+
   // Check for cached summary in designBriefs table
   const cached = await database.query.designBriefs.findFirst({
     where: and(
@@ -203,70 +208,57 @@ export async function summariseConversationState(
     ),
   });
 
-  // If cached summary exists and is within TTL, return it
+  // Cache is valid if: exists, within TTL, AND no new messages since generation
   if (
     cached?.conversationSummary &&
-    cached.summaryGeneratedAt &&
-    Date.now() - new Date(cached.summaryGeneratedAt).getTime() < SUMMARY_TTL_MS
+    cached.summaryGeneratedAt
   ) {
-    return cached.conversationSummary;
+    const summaryAge = Date.now() - new Date(cached.summaryGeneratedAt).getTime();
+    const lastMsg = conversation?.lastMessageAt
+      ? new Date(conversation.lastMessageAt).getTime()
+      : 0;
+    const summaryTime = new Date(cached.summaryGeneratedAt).getTime();
+
+    // Return cached if within TTL AND no new messages since summary was generated
+    if (summaryAge < SUMMARY_TTL_MS && lastMsg <= summaryTime) {
+      return cached.conversationSummary;
+    }
   }
 
-  // Smart sampling: first 3 messages (original intent) + last 10 messages (current state)
-  const [firstMessages, recentMessages] = await Promise.all([
-    database.query.messages.findMany({
-      where: eq(messages.conversationId, conversationId),
-      orderBy: [asc(messages.createdAt)],
-      limit: 3,
-    }),
-    database.query.messages.findMany({
-      where: eq(messages.conversationId, conversationId),
-      orderBy: [desc(messages.createdAt)],
-      limit: 10,
-    }),
-  ]);
+  // Fetch the entire conversation (up to 100 messages) in chronological order
+  const allMessages = await database.query.messages.findMany({
+    where: eq(messages.conversationId, conversationId),
+    orderBy: [asc(messages.createdAt)],
+    limit: 100,
+  });
 
-  // Deduplicate in case conversation has < 13 messages total
-  const seenIds = new Set<number>();
-  const allSampled: typeof firstMessages = [];
-  for (const m of firstMessages) {
-    if (!seenIds.has(m.id)) { seenIds.add(m.id); allSampled.push(m); }
-  }
-  // Add a separator indicator
-  const hasGap = recentMessages.length > 0 && firstMessages.length > 0 &&
-    !seenIds.has(recentMessages[recentMessages.length - 1]?.id);
-  // Recent messages are in desc order, reverse them for chronological
-  const recentChronological = [...recentMessages].reverse();
-  for (const m of recentChronological) {
-    if (!seenIds.has(m.id)) { seenIds.add(m.id); allSampled.push(m); }
-  }
-
-  if (allSampled.length === 0) {
+  if (allMessages.length === 0) {
     return "No conversation history.";
   }
 
-  // Build context with design brief if available
-  const contextParts: string[] = [];
-
-  if (cached?.briefText) {
-    contextParts.push(`Design Brief (from tagged messages):\n${cached.briefText}`);
-  }
-
-  // Format sampled messages
-  const formattedMessages = allSampled.map((m, i) => {
+  // Format all messages with timestamps for the LLM
+  const formattedMessages = allMessages.map((m) => {
     const role = m.senderId === artistId ? "Artist" : "Client";
-    const separator = hasGap && i === firstMessages.length ? "\n--- (earlier messages omitted) ---\n" : "";
-    return `${separator}${role}: ${m.content}`;
+    const timestamp = m.createdAt
+      ? new Date(m.createdAt).toLocaleString("en-NZ", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        })
+      : "unknown time";
+    return `[${timestamp}] ${role}: ${m.content}`;
   }).join("\n");
 
-  contextParts.push(`Conversation (sampled):\n${formattedMessages}`);
+  // Build context
+  const contextParts: string[] = [
+    `Full conversation (${allMessages.length} messages):\n${formattedMessages}`,
+  ];
 
   const result = await invokeLLM({
     messages: [
       { role: "system", content: CONVERSATION_STATE_SYSTEM_PROMPT },
       { role: "user", content: contextParts.join("\n\n") },
     ],
-    maxTokens: 80,
+    maxTokens: 120,
     disableThinking: true,
   });
 
