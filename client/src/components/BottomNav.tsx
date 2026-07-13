@@ -69,7 +69,7 @@ export default function BottomNav() {
           display: "flex",
           alignItems: "center",
           height: 62,
-          paddingTop: 8,
+          paddingTop: 14,
         }}
       >
         {navItems.map((item) => {

@@ -15,10 +15,9 @@
   justify-content: space-between;
   padding: 6px 16px;
   padding-top: calc(env(safe-area-inset-top, 0px) + 6px);
-  background: rgba(5, 5, 5, 0.88);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: transparent;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
 }

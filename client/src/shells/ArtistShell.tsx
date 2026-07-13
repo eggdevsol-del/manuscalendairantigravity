@@ -3,6 +3,7 @@ import { Route, Switch } from "wouter";
 import BottomNav from "@/components/BottomNav";
 import { ActionPanel } from "@/components/ActionPanel";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { AnimatedSwitch } from "@/components/AnimatedSwitch";
 import Dashboard from "@/pages/Dashboard";
 import Conversations from "@/pages/Conversations";
 import Chat from "@/pages/Chat";
@@ -23,22 +24,24 @@ import { AppointmentCheckInModal } from "@/components/modals/AppointmentCheckInM
 export default function ArtistShell() {
   return (
     <div className="min-h-screen pb-16">
-      <Switch>
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/conversations" component={Conversations} />
-        <Route path="/chat/:id" component={Chat} />
-        <Route path="/calendar" component={Calendar} />
-        <Route path="/settings" component={Settings} />
-        <Route path="/work-hours" component={WorkHours} />
-        <Route path="/clients" component={Clients} />
-        <Route path="/bank-payouts" component={BankPayoutsPage} />
-        <Route path="/payout-history" component={PayoutHistory} />
-        <Route path="/notifications-management" component={NotificationsManagement} />
-        <Route path="/subscriptions" component={Subscriptions} />
-        <Route path="/lead/:id" component={LeadDetail} />
-        <Route path="/admin/errors" component={ErrorDashboard} />
-        <Route component={NotFound} />
-      </Switch>
+      <AnimatedSwitch>
+        <Switch>
+          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/conversations" component={Conversations} />
+          <Route path="/chat/:id" component={Chat} />
+          <Route path="/calendar" component={Calendar} />
+          <Route path="/settings" component={Settings} />
+          <Route path="/work-hours" component={WorkHours} />
+          <Route path="/clients" component={Clients} />
+          <Route path="/bank-payouts" component={BankPayoutsPage} />
+          <Route path="/payout-history" component={PayoutHistory} />
+          <Route path="/notifications-management" component={NotificationsManagement} />
+          <Route path="/subscriptions" component={Subscriptions} />
+          <Route path="/lead/:id" component={LeadDetail} />
+          <Route path="/admin/errors" component={ErrorDashboard} />
+          <Route component={NotFound} />
+        </Switch>
+      </AnimatedSwitch>
 
       <ErrorBoundary boundary="fab">
         <BottomNav />
