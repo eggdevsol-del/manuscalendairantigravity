@@ -326,7 +326,7 @@ export default function PublicBookingPage() {
 
   if (artistLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="h-screen overflow-y-auto bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
       </div>
     );
@@ -334,7 +334,7 @@ export default function PublicBookingPage() {
 
   if (artistError || !artist) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+      <div className="h-screen overflow-y-auto bg-background flex flex-col items-center justify-center p-6 text-center">
         <h1 className={`${typography.h1} text-foreground mb-2`}>Artist Not Found</h1>
         <p className={`${typography.body} text-muted-foreground mb-6`}>
           The link you followed may be broken or the artist is no longer accepting bookings.
@@ -355,7 +355,7 @@ export default function PublicBookingPage() {
 
   if (pageState === "success") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="h-screen overflow-y-auto bg-background flex items-center justify-center p-4">
         <motion.div
           className="w-full max-w-lg"
           initial={{ opacity: 0, y: 30 }}
@@ -455,7 +455,7 @@ export default function PublicBookingPage() {
   // ══════════════════════════════════════════════════════════════════
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen overflow-y-auto bg-background">
       <motion.div
         className="w-full max-w-lg mx-auto px-4 py-8 space-y-6"
         variants={staggerContainer}

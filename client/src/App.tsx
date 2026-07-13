@@ -2,8 +2,7 @@ import React, { Suspense } from "react";
 import { Toaster, TooltipProvider } from "@/components/ui";
 import { UIDebugProvider } from "@/_core/contexts/UIDebugContext";
 import { BottomNavProvider } from "@/contexts/BottomNavContext";
-import InstallPrompt from "./components/InstallPrompt";
-import IOSInstallPrompt from "./components/IOSInstallPrompt";
+
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -210,16 +209,16 @@ function Router() {
   );
 }
 
-function ConditionalIOSInstallPrompt() {
-  const [location] = useLocation();
-  const isPublicFunnel =
-    location.startsWith("/start/") || location.startsWith("/deposit/");
-
-  if (isPublicFunnel) {
-    return null;
-  }
-
-  return <IOSInstallPrompt />;
+/** Only show UpdateBanner + InstallAppBanner when user is signed in */
+function AuthOnlyBanners() {
+  const { user } = useAuth();
+  if (!user) return null;
+  return (
+    <>
+      <UpdateBanner />
+      <InstallAppBanner />
+    </>
+  );
 }
 
 /**
@@ -247,10 +246,7 @@ function App() {
           <BottomNavProvider>
             <TooltipProvider>
               <Toaster />
-              <InstallPrompt />
-              <ConditionalIOSInstallPrompt />
-              <UpdateBanner />
-              <InstallAppBanner />
+              <AuthOnlyBanners />
               <ErrorBoundary boundary="app-root">
                 <Router />
               </ErrorBoundary>
