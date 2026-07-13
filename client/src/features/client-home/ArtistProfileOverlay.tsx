@@ -44,10 +44,10 @@ export default function ArtistProfileOverlay({
     <>
       <motion.div
         className="artist-profile-overlay"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 30 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
+        initial={{ x: "100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "100%" }}
+        transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
       >
         {/* Header bar */}
         <div className="artist-profile-header">

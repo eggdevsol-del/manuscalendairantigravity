@@ -251,30 +251,56 @@ export default function ClientHome() {
         onScroll={handleScroll}
       >
         <div className="client-home-content-inner">
-          {focusedArtist ? (
-            <ArtistPortfolioFeed
-              artistId={focusedArtist.id}
-              tappedImageId={focusedArtist.tappedImageId}
-              onExit={handleExitFocus}
-            />
-          ) : view === "discovery" ? (
-            <DiscoverFeedContent onImageTap={handleImageTap} />
-          ) : (
-            <div className="client-home-view">
-              <MyArtistsSection
-                conversations={conversations || []}
-                favouriteIds={favouriteIds}
-                isFavourited={isFavourited}
-                toggleFavourite={toggleFavourite}
-                onShopToggle={setIsShopExpanded}
-              />
-              <UpcomingWidget upcoming={upcoming || []} />
-              <ClientFeedTab
-                conversations={conversations || []}
-                setIsShopExpanded={setIsShopExpanded}
-              />
-            </div>
-          )}
+          <AnimatePresence mode="wait" initial={false}>
+            {focusedArtist ? (
+              <motion.div
+                key="artist-focus"
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+                <ArtistPortfolioFeed
+                  artistId={focusedArtist.id}
+                  tappedImageId={focusedArtist.tappedImageId}
+                  onExit={handleExitFocus}
+                />
+              </motion.div>
+            ) : view === "discovery" ? (
+              <motion.div
+                key="discovery"
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+                <DiscoverFeedContent onImageTap={handleImageTap} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="home"
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+                <div className="client-home-view">
+                  <MyArtistsSection
+                    conversations={conversations || []}
+                    favouriteIds={favouriteIds}
+                    isFavourited={isFavourited}
+                    toggleFavourite={toggleFavourite}
+                    onShopToggle={setIsShopExpanded}
+                  />
+                  <UpcomingWidget upcoming={upcoming || []} />
+                  <ClientFeedTab
+                    conversations={conversations || []}
+                    setIsShopExpanded={setIsShopExpanded}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

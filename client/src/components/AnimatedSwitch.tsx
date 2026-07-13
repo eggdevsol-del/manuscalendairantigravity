@@ -1,14 +1,10 @@
 /**
  * AnimatedSwitch — App-wide slide page transitions
  *
- * Wraps wouter's Switch to add Instagram-style slide-in/slide-out
- * animations on every route change.
+ * Instagram-style: new page slides in from right edge,
+ * exiting page slides out to right edge. No fade.
  *
- * - Enter: slides in from right (x: 60 → 0)
- * - Exit: slides out to right (x: 0 → 60)
- * - Uses framer-motion AnimatePresence for mount/unmount coordination
- *
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 import { useLocation } from "wouter";
@@ -17,24 +13,20 @@ import React from "react";
 
 const PAGE_VARIANTS = {
   initial: {
-    x: 60,
-    opacity: 0,
+    x: "100%",
   },
   animate: {
     x: 0,
-    opacity: 1,
   },
   exit: {
-    x: 60,
-    opacity: 0,
+    x: "100%",
   },
 };
 
 const PAGE_TRANSITION = {
-  type: "spring" as const,
-  stiffness: 400,
-  damping: 35,
-  mass: 0.8,
+  type: "tween" as const,
+  duration: 0.3,
+  ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
 };
 
 interface AnimatedSwitchProps {
