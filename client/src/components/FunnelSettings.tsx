@@ -17,7 +17,8 @@ import {
   EyeOff,
   ExternalLink,
   AlertCircle,
-  ChevronLeft
+  ChevronLeft,
+  Instagram
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -131,6 +132,9 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
   const funnelUrl = `${baseUrl}/${slug}`;
+  const bookingUrl = `${baseUrl}/book/${slug}`;
+
+  const [copiedBooking, setCopiedBooking] = useState(false);
 
   const handleCopy = async () => {
     try {
@@ -294,6 +298,76 @@ export function FunnelSettings({ onBack }: FunnelSettingsProps) {
               </div>
             </div>
           </div>
+
+          {/* ═══ LINK IN BIO — Standalone card ═══ */}
+          {slug && !slugError && (
+            <div>
+              <h3 className="text-foreground font-medium mb-3 flex items-center gap-2">
+                <Instagram className="w-4 h-4 text-pink-500" />
+                Link in Bio
+              </h3>
+
+              <div className="bg-secondary/50 rounded-2xl p-4 space-y-3">
+                <p className="text-muted-foreground text-sm">
+                  Paste this in your Instagram bio. Clients go straight to your
+                  booking form — no sign-in required.
+                </p>
+
+                {/* Booking URL display */}
+                <div className="bg-secondary/50 rounded-xl p-3">
+                  <p className="text-muted-foreground text-xs mb-1">Direct booking link:</p>
+                  <p className="text-foreground font-mono text-sm break-all">
+                    {bookingUrl}
+                  </p>
+                </div>
+
+                {/* Copy + Share */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(bookingUrl);
+                        setCopiedBooking(true);
+                        toast.success("Booking link copied!");
+                        setTimeout(() => setCopiedBooking(false), 2000);
+                      } catch {
+                        toast.error("Failed to copy");
+                      }
+                    }}
+                    className="flex-1 bg-primary text-primary-foreground py-3 rounded-[12px] font-medium flex items-center justify-center gap-2"
+                  >
+                    {copiedBooking ? (
+                      <Check className="w-4 h-4" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                    {copiedBooking ? "Copied!" : "Copy Booking Link"}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (navigator.share) {
+                        try {
+                          await navigator.share({
+                            title: "Book with me",
+                            text: "Book your tattoo consultation!",
+                            url: bookingUrl,
+                          });
+                        } catch {
+                          // cancelled
+                        }
+                      } else {
+                        await navigator.clipboard.writeText(bookingUrl);
+                        toast.success("Link copied!");
+                      }
+                    }}
+                    className="bg-secondary/50 text-foreground p-3 rounded-[12px]"
+                  >
+                    <Share2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Funnel Theme Toggle */}
           <div>
