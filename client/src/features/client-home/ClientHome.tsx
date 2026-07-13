@@ -241,65 +241,57 @@ export default function ClientHome() {
 
       {/* ── Content ── */}
       <div
-        className={`client-home-content${focusedArtist ? " snap-scroll" : ""}`}
-        ref={scrollRef}
-        onScroll={handleScroll}
+        className="client-home-content"
+        ref={!focusedArtist ? scrollRef : undefined}
+        onScroll={!focusedArtist ? handleScroll : undefined}
       >
         <div className="client-home-content-inner">
-          <AnimatePresence mode="wait" initial={false}>
-            {focusedArtist ? (
-              <motion.div
-                key="artist-focus"
-                initial={{ scale: 0.92, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.92, opacity: 0 }}
-                transition={{ type: "tween", duration: 0.25, ease: [0.12, 0, 0.04, 1] }}
-              >
-                <ArtistPortfolioFeed
-                  artistId={focusedArtist.id}
-                  tappedImageId={focusedArtist.tappedImageId}
-                  onExit={handleExitFocus}
-                />
-              </motion.div>
-            ) : view === "discovery" ? (
-              <motion.div
-                key="discovery"
-                initial={{ x: "-100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "-100%" }}
-                transition={{ type: "tween", duration: 0.25, ease: [0.12, 0, 0.04, 1] }}
-              >
-                <DiscoverFeedContent onImageTap={handleImageTap} />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="home"
-                initial={{ x: "-100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "-100%" }}
-                transition={{ type: "tween", duration: 0.25, ease: [0.12, 0, 0.04, 1] }}
-              >
-                <div className="client-home-view">
-                  <MyArtistsSection
-                    conversations={conversations || []}
-                    favouriteIds={favouriteIds}
-                    isFavourited={isFavourited}
-                    toggleFavourite={toggleFavourite}
-                    onShopToggle={setIsShopExpanded}
-                  />
-                  <UpcomingWidget upcoming={upcoming || []} />
-                  <ClientFeedTab
-                    conversations={conversations || []}
-                    setIsShopExpanded={setIsShopExpanded}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Base layer: always rendered (discovery or home) */}
+          {view === "discovery" ? (
+            <DiscoverFeedContent onImageTap={handleImageTap} />
+          ) : (
+            <div className="client-home-view">
+              <MyArtistsSection
+                conversations={conversations || []}
+                favouriteIds={favouriteIds}
+                isFavourited={isFavourited}
+                toggleFavourite={toggleFavourite}
+                onShopToggle={setIsShopExpanded}
+              />
+              <UpcomingWidget upcoming={upcoming || []} />
+              <ClientFeedTab
+                conversations={conversations || []}
+                setIsShopExpanded={setIsShopExpanded}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ── Full-screen Artist Profile Overlay ── */}
+      {/* ── Focus view overlay (slides in on top, slides out to reveal beneath) ── */}
+      <AnimatePresence>
+        {focusedArtist && (
+          <motion.div
+            key="artist-focus-overlay"
+            className="client-home-content snap-scroll"
+            ref={scrollRef}
+            onScroll={handleScroll}
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "tween", duration: 0.25, ease: [0.12, 0, 0.04, 1] }}
+            style={{ zIndex: 2 }}
+          >
+            <ArtistPortfolioFeed
+              artistId={focusedArtist.id}
+              tappedImageId={focusedArtist.tappedImageId}
+              onExit={handleExitFocus}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Full-screen Artist Profile Overlay (slides in on top of focus) ── */}
       <AnimatePresence>
         {showProfile && focusedArtist && (
           <ArtistProfileOverlay
