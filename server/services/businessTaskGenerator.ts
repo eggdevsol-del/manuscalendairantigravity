@@ -55,6 +55,7 @@ export interface BusinessTask {
   emailSubject: string | null;
   emailBody: string | null;
   deepLink: string | null;
+  conversationId: number | null;
   dueAt: Date | null;
   expiresAt: Date | null;
 }
@@ -195,6 +196,7 @@ async function generateNewLeadTasks(
       emailSubject: null,
       emailBody: null,
       deepLink: `/conversations?leadId=${lead.id}`,
+      conversationId: null,
       dueAt: new Date(new Date(lead.createdAt!).getTime() + 60 * 60 * 1000), // 1 hour after creation
       expiresAt: null,
     });
@@ -271,6 +273,7 @@ async function generateLeadFollowUpTasks(
         : `Following up on your tattoo inquiry`,
       emailBody: lead.clientPhone ? null : followUpMessage,
       deepLink: `/conversations?leadId=${lead.id}`,
+      conversationId: null,
       dueAt: null,
       expiresAt: null,
     });
@@ -344,6 +347,7 @@ async function generateNewConsultationTasks(
       emailSubject: null,
       emailBody: null,
       deepLink: `/conversations?consultationId=${consult.id}`,
+      conversationId: consult.conversationId ?? null,
       dueAt: new Date(new Date(consult.createdAt!).getTime() + 60 * 60 * 1000), // 1 hour after creation
       expiresAt: null,
     });
@@ -460,6 +464,7 @@ async function generateDepositTasks(
       deepLink: appt.conversationId
         ? `/chat/${appt.conversationId}`
         : `/conversations`,
+      conversationId: appt.conversationId ?? null,
       dueAt: new Date(new Date(appt.startTime).getTime() - 72 * 60 * 60 * 1000), // 72 hours before
       expiresAt: new Date(appt.startTime),
     });
@@ -531,6 +536,7 @@ async function generateConfirmationTasks(
       deepLink: appt.conversationId
         ? `/chat/${appt.conversationId}`
         : `/conversations`,
+      conversationId: appt.conversationId ?? null,
       dueAt: new Date(new Date(appt.startTime).getTime() - 24 * 60 * 60 * 1000), // 24 hours before
       expiresAt: new Date(appt.startTime),
     });
@@ -607,6 +613,7 @@ async function generateFollowUpTasks(
       emailSubject: `Following up on your consultation`,
       emailBody: `Hi ${firstName(consult.client?.name)},\n\nFollowing up on your consultation. Let me know if you have any questions or would like to go ahead with booking.`,
       deepLink: conversationId ? `/chat/${conversationId}` : `/conversations`,
+      conversationId: conversationId ?? null,
       dueAt: null,
       expiresAt: null,
     });
@@ -675,6 +682,7 @@ async function generateStaleConversationTasks(
       emailSubject: `Checking in`,
       emailBody: `Hi ${firstName(conv.client?.name)},\n\nJust checking in — it's been a while since we last spoke. Let me know if you're still interested in moving forward with your project.`,
       deepLink: `/chat/${conv.id}`,
+      conversationId: conv.id,
       dueAt: null,
       expiresAt: null,
     });
@@ -759,6 +767,7 @@ async function generateBirthdayTasks(
       emailSubject: `Happy Birthday ${clientFirst}!`,
       emailBody: `Hi ${clientFirst},\n\nJust wanted to wish you a Happy Birthday! Hope you have a great day.`,
       deepLink: `/conversations`,
+      conversationId: null,
       dueAt: thisYearBirthday,
       expiresAt: new Date(thisYearBirthday.getTime() + 24 * 60 * 60 * 1000),
     });
@@ -833,6 +842,7 @@ async function generateAnniversaryTasks(
       emailSubject: `${yearsAgo} Year Tattoo Anniversary`,
       emailBody: `Hi ${clientFirst},\n\nIt's been ${yearsAgo} year${yearsAgo > 1 ? "s" : ""} since your ${appt.title}. Hope it's still looking great — would love to see how it's healed.`,
       deepLink: `/conversations`,
+      conversationId: appt.conversationId ?? null,
       dueAt: anniversaryDate,
       expiresAt: new Date(anniversaryDate.getTime() + 24 * 60 * 60 * 1000),
     });
@@ -898,6 +908,7 @@ async function generateHealedPhotoTasks(
       deepLink: appt.conversationId
         ? `/chat/${appt.conversationId}`
         : `/conversations`,
+      conversationId: appt.conversationId ?? null,
       dueAt: null,
       expiresAt: null,
     });
@@ -959,6 +970,7 @@ async function generateThankYouTasks(
       deepLink: appt.conversationId
         ? `/chat/${appt.conversationId}`
         : `/conversations`,
+      conversationId: appt.conversationId ?? null,
       dueAt: null,
       expiresAt: new Date(endOfToday),
     });
@@ -1036,6 +1048,7 @@ async function generateUpcomingWarningTasks(
       emailSubject: null,
       emailBody: null,
       deepLink: appt.conversationId ? `/chat/${appt.conversationId}` : `/conversations`,
+      conversationId: appt.conversationId ?? null,
       dueAt: null,
       expiresAt: new Date(appt.startTime),
     });

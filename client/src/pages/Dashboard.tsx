@@ -86,6 +86,7 @@ export interface ExtendedTask {
   actionPayload?: string;
   domain: "business" | "social" | "personal";
   _serverTask?: ServerBusinessTask;
+  _conversationId?: number | null;
 }
 
 // --- Components ---
@@ -205,6 +206,7 @@ export default function Dashboard() {
             actionType: task.actionType as ExtendedTask["actionType"],
             domain: "business" as const,
             _serverTask: task._serverTask,
+            _conversationId: task._conversationId,
           }) as ExtendedTask
       );
     }
@@ -224,11 +226,10 @@ export default function Dashboard() {
     return currentTasks.find(t => t.id === expandedTaskId) ?? null;
   }, [expandedTaskId, currentTasks]);
 
-  // Extract conversationId from expanded task's deepLink (e.g. /chat/123)
+  // Get conversationId directly from the expanded task (set by server)
   const expandedTaskConversationId = useMemo(() => {
-    if (!expandedTask?._serverTask?.deepLink) return null;
-    const match = expandedTask._serverTask.deepLink.match(/\/chat\/(\d+)/);
-    return match ? parseInt(match[1]) : null;
+    if (!expandedTask?._conversationId) return null;
+    return expandedTask._conversationId;
   }, [expandedTask]);
 
   // Fetch LLM conversation context for the expanded task

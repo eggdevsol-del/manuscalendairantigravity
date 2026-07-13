@@ -26,6 +26,7 @@ export interface BusinessTask {
   emailSubject: string | null;
   emailBody: string | null;
   deepLink: string | null;
+  conversationId: number | null;
   dueAt: string | null;
   expiresAt: string | null;
 }
@@ -307,6 +308,7 @@ export function useBusinessTasks() {
     domain: "business" as const,
     // Original task data for actions
     _serverTask: task,
+    _conversationId: task.conversationId ?? null,
   }));
 
   return {
