@@ -113,19 +113,14 @@ export default function ClientHome() {
         setHeaderHidden(true);
         setBottomNavHidden(true);
       } else {
-        // Scrolling up — show both (unless in artist focus)
-        if (!focusedArtist) {
-          setHeaderHidden(false);
-          setBottomNavHidden(false);
-        } else {
-          // In focus mode: header shows on scroll up, pill hides
-          setHeaderHidden(false);
-        }
+        // Scrolling up — show both
+        setHeaderHidden(false);
+        setBottomNavHidden(false);
       }
     }
 
     lastScrollY.current = currentY;
-  }, [setBottomNavHidden, focusedArtist]);
+  }, [setBottomNavHidden]);
 
   // Reset header + bottom nav when switching views
   useEffect(() => {
@@ -255,10 +250,10 @@ export default function ClientHome() {
             {focusedArtist ? (
               <motion.div
                 key="artist-focus"
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                initial={{ scale: 0.92, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.92, opacity: 0 }}
+                transition={{ type: "tween", duration: 0.25, ease: [0.12, 0, 0.04, 1] }}
               >
                 <ArtistPortfolioFeed
                   artistId={focusedArtist.id}
@@ -272,7 +267,7 @@ export default function ClientHome() {
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
-                transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ type: "tween", duration: 0.25, ease: [0.12, 0, 0.04, 1] }}
               >
                 <DiscoverFeedContent onImageTap={handleImageTap} />
               </motion.div>
@@ -282,7 +277,7 @@ export default function ClientHome() {
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
-                transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ type: "tween", duration: 0.25, ease: [0.12, 0, 0.04, 1] }}
               >
                 <div className="client-home-view">
                   <MyArtistsSection

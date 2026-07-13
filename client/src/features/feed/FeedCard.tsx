@@ -24,9 +24,10 @@ interface FeedCardProps {
   onArtistTap: (slug: string) => void;
   onImageTap?: (card: FeedCardData) => void;
   compact?: boolean;
+  focusMode?: boolean;
 }
 
-export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compact }: FeedCardProps) {
+export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compact, focusMode }: FeedCardProps) {
   const [liked, setLiked] = useState(card.isLiked);
   const [likeCount, setLikeCount] = useState(card.likeCount);
   const [showHeart, setShowHeart] = useState(false);
@@ -114,13 +115,30 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
       )}
 
       {/* Image */}
-      <div className="feed-card-image-container" onClick={handleDoubleTap}>
+      <div
+        className={`feed-card-image-container${focusMode ? " focus-mode" : ""}`}
+        onClick={handleDoubleTap}
+      >
         <img
           src={card.imageUrl}
           alt={card.description || "Portfolio piece"}
           className="feed-card-image"
           loading="lazy"
         />
+
+        {/* Artist overlay — visible in focus mode */}
+        {focusMode && (
+          <div className="feed-card-artist-overlay">
+            <div className="feed-card-artist-overlay-avatar">
+              {card.artistAvatar ? (
+                <img src={card.artistAvatar} alt={card.artistName} />
+              ) : (
+                <span>{card.artistName.charAt(0).toUpperCase()}</span>
+              )}
+            </div>
+            <span className="feed-card-artist-overlay-name">{card.artistName}</span>
+          </div>
+        )}
 
         {/* Double-tap heart animation */}
         <AnimatePresence>

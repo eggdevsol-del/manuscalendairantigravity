@@ -3,8 +3,9 @@
  *
  * Instagram-style: new page slides in from right edge,
  * exiting page slides out to right edge. No fade.
+ * Snap-stop easing: linear for 96%, deceleration in last 4%.
  *
- * @version 2.0.0
+ * @version 3.0.0
  */
 
 import { useLocation } from "wouter";
@@ -25,8 +26,8 @@ const PAGE_VARIANTS = {
 
 const PAGE_TRANSITION = {
   type: "tween" as const,
-  duration: 0.3,
-  ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+  duration: 0.25,
+  ease: [0.12, 0, 0.04, 1] as [number, number, number, number],
 };
 
 interface AnimatedSwitchProps {

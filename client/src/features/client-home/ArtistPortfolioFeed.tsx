@@ -110,6 +110,7 @@ export default function ArtistPortfolioFeed({
             onShare={handleShare}
             onArtistTap={handleArtistTap}
             compact
+            focusMode
           />
         ))}
       </div>
