@@ -83,8 +83,8 @@ async function main() {
 
     for (let i = 0; i < imagesToInsert; i++) {
       const seed = `${slug}-portfolio-${i + existing.length}`;
-      // Portrait aspect ratio (4:5) — 480x600
-      const imageUrl = `https://picsum.photos/seed/${seed}/480/600`;
+      // 9:16 portrait aspect ratio — 450x800
+      const imageUrl = `https://picsum.photos/seed/${seed}/450/800?grayscale`;
       const description = DESCRIPTIONS[(totalInserted + i) % DESCRIPTIONS.length];
 
       await db.insert(portfolios).values({
