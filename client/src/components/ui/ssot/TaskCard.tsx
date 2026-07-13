@@ -131,7 +131,7 @@ export function TaskCard({
                     <div className="w-7 h-7 rounded-[var(--radius-sm)] bg-primary flex items-center justify-center shrink-0">
                       <RefreshCw size={14} className="text-primary-foreground animate-spin" />
                     </div>
-                    <p className="text-xs text-muted-foreground">Loading conversation context…</p>
+                    <p className="text-xs text-muted-foreground">Loading Brief</p>
                   </div>
                 </div>
               )}
@@ -143,7 +143,7 @@ export function TaskCard({
                     <MessageSquare className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                     <div>
                       <p className="text-xs font-semibold text-foreground mb-0.5">
-                        {clientName || "Client"} — Conversation
+                        Brief
                       </p>
                       <p className="text-xs text-muted-foreground leading-relaxed">
                         {conversationSummary}

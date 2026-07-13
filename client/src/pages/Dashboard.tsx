@@ -233,9 +233,13 @@ export default function Dashboard() {
   }, [expandedTask]);
 
   // Fetch LLM conversation context for the expanded task
-  const { data: conversationState, isLoading: briefLoading } = trpc.designBrief.conversationState.useQuery(
+  const { data: conversationState, isFetching: briefLoading } = trpc.designBrief.conversationState.useQuery(
     { conversationId: expandedTaskConversationId! },
-    { enabled: !!expandedTaskConversationId }
+    {
+      enabled: !!expandedTaskConversationId,
+      retry: 1,
+      staleTime: 60_000, // Cache brief for 60s to avoid re-fetching on collapse/expand
+    }
   );
 
 
@@ -512,6 +516,20 @@ export default function Dashboard() {
                             }
                           }
 
+                          // Derive brief: LLM summary if conversation exists, else task's own context
+                          const taskBrief = (() => {
+                            if (!isExpanded) return undefined;
+                            // If we have an LLM summary from the conversation, use it
+                            if (conversationState?.summary) return conversationState.summary;
+                            // If the LLM is still loading, show nothing (spinner handles it)
+                            if (expandedTaskConversationId && briefLoading) return undefined;
+                            // No conversation — show the task's context as the brief
+                            if (!expandedTaskConversationId && task.context) return task.context;
+                            return undefined;
+                          })();
+
+                          const isBriefLoading = isExpanded && !!expandedTaskConversationId && briefLoading;
+
                           return (
                             <TaskCard
                               key={task.id}
@@ -522,8 +540,8 @@ export default function Dashboard() {
                               actionType={task.actionType as any}
                               onClick={() => handleTaskClick(task)}
                               isExpanded={isExpanded}
-                              conversationSummary={isExpanded ? conversationState?.summary : undefined}
-                              briefLoading={isExpanded && !!expandedTaskConversationId && briefLoading}
+                              conversationSummary={taskBrief}
+                              briefLoading={isBriefLoading}
                               clientName={task._serverTask?.clientName ?? undefined}
                               actions={actions}
                             />
