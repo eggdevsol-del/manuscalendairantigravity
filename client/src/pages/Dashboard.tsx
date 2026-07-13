@@ -226,19 +226,19 @@ export default function Dashboard() {
     return currentTasks.find(t => t.id === expandedTaskId) ?? null;
   }, [expandedTaskId, currentTasks]);
 
-  // Get conversationId directly from the expanded task (set by server)
-  const expandedTaskConversationId = useMemo(() => {
-    if (!expandedTask?._conversationId) return null;
-    return expandedTask._conversationId;
-  }, [expandedTask]);
-
-  // Fetch LLM conversation context for the expanded task
-  const { data: conversationState, isFetching: briefLoading } = trpc.designBrief.conversationState.useQuery(
-    { conversationId: expandedTaskConversationId! },
+  // Fetch LLM brief for the expanded task (works for ALL tasks)
+  const { data: taskBriefData, isFetching: briefLoading } = trpc.dashboardTasks.getTaskBrief.useQuery(
     {
-      enabled: !!expandedTaskConversationId,
+      taskType: expandedTask?._serverTask?.taskType || "",
+      title: expandedTask?.title || "",
+      context: expandedTask?.context || "",
+      clientName: expandedTask?._serverTask?.clientName || null,
+      conversationId: expandedTask?._conversationId || null,
+    },
+    {
+      enabled: !!expandedTask,
       retry: 1,
-      staleTime: 60_000, // Cache brief for 60s to avoid re-fetching on collapse/expand
+      staleTime: 60_000, // Cache brief for 60s
     }
   );
 
@@ -516,20 +516,6 @@ export default function Dashboard() {
                             }
                           }
 
-                          // Derive brief: LLM summary if conversation exists, else task's own context
-                          const taskBrief = (() => {
-                            if (!isExpanded) return undefined;
-                            // If we have an LLM summary from the conversation, use it
-                            if (conversationState?.summary) return conversationState.summary;
-                            // If the LLM is still loading, show nothing (spinner handles it)
-                            if (expandedTaskConversationId && briefLoading) return undefined;
-                            // No conversation — show the task's context as the brief
-                            if (!expandedTaskConversationId && task.context) return task.context;
-                            return undefined;
-                          })();
-
-                          const isBriefLoading = isExpanded && !!expandedTaskConversationId && briefLoading;
-
                           return (
                             <TaskCard
                               key={task.id}
@@ -540,8 +526,8 @@ export default function Dashboard() {
                               actionType={task.actionType as any}
                               onClick={() => handleTaskClick(task)}
                               isExpanded={isExpanded}
-                              conversationSummary={taskBrief}
-                              briefLoading={isBriefLoading}
+                              conversationSummary={isExpanded ? taskBriefData?.brief : undefined}
+                              briefLoading={isExpanded && briefLoading}
                               clientName={task._serverTask?.clientName ?? undefined}
                               actions={actions}
                             />

@@ -16,6 +16,8 @@ import {
   BENCHMARKS,
   type BusinessTask,
 } from "../services/businessTaskGenerator";
+import { summariseConversationState } from "../services/llmEnrichment";
+import { invokeLLM, type InvokeResult } from "../_core/llm";
 
 export const dashboardTasksRouter = router({
   /**
@@ -663,6 +665,88 @@ export const dashboardTasksRouter = router({
       monthLabel: now.toLocaleDateString("en-US", { month: "long" }),
     };
   }),
+
+  /**
+   * Generate an LLM brief for any task card.
+   * For tasks with a conversation: summarises the conversation.
+   * For tasks without: generates a brief from the task's own data.
+   */
+  getTaskBrief: protectedProcedure
+    .input(
+      z.object({
+        taskType: z.string(),
+        title: z.string(),
+        context: z.string(),
+        clientName: z.string().nullable(),
+        conversationId: z.number().nullable(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { user } = ctx;
+      if (user.role !== "artist" && user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database connection failed",
+        });
+      }
+
+      // If task has a conversation, use the conversation summariser
+      if (input.conversationId) {
+        try {
+          const summary = await summariseConversationState(
+            db,
+            input.conversationId,
+            user.id
+          );
+          return { brief: summary };
+        } catch (e) {
+          console.error("Conversation summary failed, falling back to task brief:", e);
+          // Fall through to task-based brief
+        }
+      }
+
+      // Generate a brief from the task's own data via LLM
+      try {
+        const result = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: `You are a concise business assistant for a tattoo artist. Generate a 1-2 sentence actionable brief for a dashboard task card. Be direct and helpful. Max 40 words. Do NOT include greetings, sign-offs, or filler. Focus on: what needs to happen, why it matters, and any time sensitivity.`,
+            },
+            {
+              role: "user",
+              content: `Task: ${input.title}\nType: ${input.taskType.replace(/_/g, " ")}\nClient: ${input.clientName || "Unknown"}\nContext: ${input.context}`,
+            },
+          ],
+          maxTokens: 80,
+          disableThinking: true,
+        });
+
+        const content = result.choices[0]?.message?.content;
+        let brief: string | null = null;
+        if (typeof content === "string") {
+          brief = content;
+        } else if (Array.isArray(content)) {
+          for (const part of content) {
+            if (typeof part === "object" && "type" in part && part.type === "text" && "text" in part) {
+              brief = (part as any).text;
+              break;
+            }
+          }
+        }
+
+        return { brief: brief || input.context };
+      } catch (e) {
+        console.error("Task brief LLM call failed:", e);
+        // Fallback: return the task context
+        return { brief: input.context };
+      }
+    }),
 });
 
 /**
