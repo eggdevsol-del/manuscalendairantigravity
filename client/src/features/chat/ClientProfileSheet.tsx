@@ -262,21 +262,16 @@ export function ClientProfileSheet({
               </div>
             </div>
 
-            {/* Design Brief */}
+            {/* Conversation Brief */}
             {briefData?.brief && (
               <div className="px-0 py-4 border-b border-border">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
                   <FileText className="w-3.5 h-3.5" />
-                  Design Brief
+                  Conversation Brief
                 </h4>
                 <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
                   {briefData.brief}
                 </p>
-                {briefData.messageCount ? (
-                  <p className="text-[10px] text-muted-foreground mt-2">
-                    Based on {briefData.messageCount} tagged message{briefData.messageCount !== 1 ? 's' : ''}
-                  </p>
-                ) : null}
               </div>
             )}
 

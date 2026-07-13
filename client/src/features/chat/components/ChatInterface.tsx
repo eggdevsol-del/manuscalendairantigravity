@@ -128,68 +128,14 @@ export function ChatInterface({
     confirmDialog,
   } = useChatController(conversationId);
 
-  // ── Message tagging (artist-only) ─────────────────
-  const TAG_OPTIONS = ["design", "reference", "placement", "size", "colour", "budget", "scheduling"] as const;
-
   const utils = trpc.useUtils();
-
-  const { data: messageTags } = trpc.messageTags.list.useQuery(
-    { conversationId },
-    { enabled: isArtist }
-  );
-
-  const toggleTagMutation = trpc.messageTags.toggle.useMutation({
-    onSuccess: () => {
-      utils.messageTags.list.invalidate({ conversationId });
-    },
-  });
-
-  // Build a map: messageId -> tag[]
-  const tagsByMessageId = useMemo(() => {
-    const map = new Map<number, string[]>();
-    if (!messageTags) return map;
-    for (const t of messageTags) {
-      const existing = map.get(t.messageId) || [];
-      existing.push(t.tag);
-      map.set(t.messageId, existing);
-    }
-    return map;
-  }, [messageTags]);
-
-  const [tagMenuMessageId, setTagMenuMessageId] = useState<number | null>(null);
-
-  const handleBubbleTap = useCallback((messageId: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!isArtist) return;
-
-    if (tagMenuMessageId === messageId) {
-      setTagMenuMessageId(null);
-      return;
-    }
-
-    setTagMenuMessageId(messageId);
-  }, [isArtist, tagMenuMessageId]);
-
-  const handleTagSelect = useCallback((messageId: number, tag: string) => {
-    toggleTagMutation.mutate({
-      messageId,
-      conversationId,
-      tag,
-    });
-    setTagMenuMessageId(null);
-  }, [conversationId, toggleTagMutation]);
-
-  // Close tag menu when clicking outside
-  const handleBackdropClick = useCallback(() => {
-    if (tagMenuMessageId !== null) setTagMenuMessageId(null);
-  }, [tagMenuMessageId]);
 
   // ── Design Brief Panel ─────────────────────
   const [showBriefPanel, setShowBriefPanel] = useState(false);
 
   const { data: briefData, isLoading: briefLoading } = trpc.designBrief.get.useQuery(
     { conversationId },
-    { enabled: isArtist && showBriefPanel }
+    { enabled: isArtist && showBriefPanel, staleTime: 0 }
   );
 
   const refreshBriefMutation = trpc.designBrief.refresh.useMutation({
@@ -807,10 +753,11 @@ export function ChatInterface({
       </div>
 
       {/* Design Brief Panel */}
+      {/* Conversation Brief Panel */}
       {isArtist && showBriefPanel && (
         <div className="px-4 py-3 bg-secondary/30 border-b border-border animate-in fade-in slide-in-from-top-2 duration-200 shrink-0">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Design Brief</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Conversation Brief</h4>
             <button
               onClick={() => refreshBriefMutation.mutate({ conversationId })}
               disabled={refreshBriefMutation.isPending}
@@ -820,33 +767,25 @@ export function ChatInterface({
             </button>
           </div>
           {briefLoading ? (
-            <p className="text-xs text-muted-foreground animate-pulse">Generating brief...</p>
+            <p className="text-xs text-muted-foreground animate-pulse">Analysing conversation...</p>
           ) : briefData?.brief ? (
-            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-              {briefData.brief}
-            </p>
-          ) : (briefData as any)?.error ? (
             <div>
-              <p className="text-xs text-destructive/80 italic mb-1">
-                {(briefData as any).error}
+              <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                {briefData.brief}
               </p>
-              {briefData?.messageCount ? (
-                <p className="text-[10px] text-muted-foreground">
-                  {briefData.messageCount} tagged message{briefData.messageCount !== 1 ? 's' : ''} found — tap Refresh to retry.
-                </p>
-              ) : null}
+              {briefData.isStale && (
+                <p className="text-[10px] text-muted-foreground mt-2">⚠️ Showing cached version</p>
+              )}
             </div>
+          ) : (briefData as any)?.error ? (
+            <p className="text-xs text-destructive/80 italic">
+              {(briefData as any).error}
+            </p>
           ) : (
             <p className="text-xs text-muted-foreground italic">
-              No messages tagged yet. Tap client messages to build a design brief.
+              Send some messages to generate a conversation brief.
             </p>
           )}
-          {briefData?.brief && briefData?.messageCount ? (
-            <p className="text-[10px] text-muted-foreground mt-2">
-              Based on {briefData.messageCount} tagged message{briefData.messageCount !== 1 ? 's' : ''}
-              {briefData.isStale && ' · ⚠️ Stale'}
-            </p>
-          ) : null}
         </div>
       )}
 
@@ -857,7 +796,7 @@ export function ChatInterface({
           viewportRef={viewportRef}
           onScroll={handleScroll}
         >
-          <div className="space-y-4 pb-[182px] md:pb-24" onClick={handleBackdropClick}>
+          <div className="space-y-4 pb-[182px] md:pb-24">
             {messages && messages.length > 0 ? (
               messages.map(message => {
                 const isOwn = message.senderId === user?.id;
@@ -945,9 +884,9 @@ export function ChatInterface({
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-muted",
                               isArtist && !isOwn && "cursor-pointer active:scale-[0.98] transition-transform",
-                              tagsByMessageId.has(message.id) && !isOwn && "ring-1 ring-primary/30"
+
                             )}
-                            onClick={isArtist && !isOwn ? (e: React.MouseEvent) => handleBubbleTap(message.id, e) : undefined}
+
                           >
                             {isImage ? (
                               <div className="space-y-2">
@@ -989,43 +928,7 @@ export function ChatInterface({
                             )}
                           </div>
 
-                          {/* Tag pills below bubble */}
-                          {isArtist && tagsByMessageId.has(message.id) && (
-                            <div className="flex flex-wrap gap-1 mt-1 px-1">
-                              {tagsByMessageId.get(message.id)!.map(tag => (
-                                <button
-                                  key={tag}
-                                  onClick={(e) => { e.stopPropagation(); handleTagSelect(message.id, tag); }}
-                                  className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/15 text-primary hover:bg-destructive/15 hover:text-destructive transition-colors"
-                                >
-                                  {tag} ×
-                                </button>
-                              ))}
-                            </div>
-                          )}
 
-                          {/* Tag selection menu */}
-                          {isArtist && tagMenuMessageId === message.id && (
-                            <div className="flex flex-wrap gap-1.5 mt-2 px-1 animate-in fade-in slide-in-from-top-1 duration-200">
-                              {TAG_OPTIONS.map(tag => {
-                                const isActive = tagsByMessageId.get(message.id)?.includes(tag);
-                                return (
-                                  <button
-                                    key={tag}
-                                    onClick={(e) => { e.stopPropagation(); handleTagSelect(message.id, tag); }}
-                                    className={cn(
-                                      "text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-all active:scale-95",
-                                      isActive
-                                        ? "bg-primary text-primary-foreground border-primary"
-                                        : "bg-secondary/50 text-muted-foreground border-border hover:border-primary hover:text-primary"
-                                    )}
-                                  >
-                                    {tag}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
                         </div>
                       )}
                   </div>

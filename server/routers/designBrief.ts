@@ -1,13 +1,16 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "../_core/trpc";
-import { designBriefs, messageTags, messages } from "../../drizzle/schema";
-import { and, eq, desc } from "drizzle-orm";
+import { designBriefs } from "../../drizzle/schema";
+import { and, eq } from "drizzle-orm";
 import * as db from "../db";
-import { compileDesignBrief, generatePersonalisedMessage, summariseConversationState } from "../services/llmEnrichment";
+import { generatePersonalisedMessage, summariseConversationState } from "../services/llmEnrichment";
 
 export const designBriefRouter = router({
-  // Get cached brief for a conversation (or generate if stale)
+  /**
+   * Get conversation brief — analyses the full conversation via LLM.
+   * No tags required. Cache invalidates when a new message arrives.
+   */
   get: protectedProcedure
     .input(
       z.object({
@@ -18,86 +21,29 @@ export const designBriefRouter = router({
       const database = await db.getDb();
       if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
 
-      // Get the cached brief
-      const cached = await database.query.designBriefs.findFirst({
-        where: and(
-          eq(designBriefs.conversationId, input.conversationId),
-          eq(designBriefs.artistId, ctx.user.id)
-        ),
-      });
-
-      // Get latest tag timestamp
-      const latestTag = await database.query.messageTags.findFirst({
-        where: and(
-          eq(messageTags.conversationId, input.conversationId),
-          eq(messageTags.artistId, ctx.user.id)
-        ),
-        orderBy: [desc(messageTags.createdAt)],
-      });
-
-      // If no tags exist, return null
-      if (!latestTag) {
-        return { brief: null, messageCount: 0, isStale: false };
-      }
-
-      // If cached brief exists and is not stale, return it
-      if (
-        cached &&
-        cached.lastTaggedAt &&
-        latestTag.createdAt &&
-        new Date(cached.lastTaggedAt) >= new Date(latestTag.createdAt)
-      ) {
-        return {
-          brief: cached.briefText,
-          messageCount: cached.messageCount,
-          isStale: false,
-          generatedAt: cached.generatedAt,
-        };
-      }
-
-      // Brief is stale or doesn't exist — generate a new one
       try {
-        const result = await compileDesignBrief(database, input.conversationId, ctx.user.id);
-
-        // Upsert the brief
-        if (cached) {
-          await database
-            .update(designBriefs)
-            .set({
-              briefText: result.briefText,
-              messageCount: result.messageCount,
-              lastTaggedAt: latestTag.createdAt,
-              generatedAt: new Date().toISOString(),
-            })
-            .where(eq(designBriefs.id, cached.id));
-        } else {
-          await database.insert(designBriefs).values({
-            conversationId: input.conversationId,
-            artistId: ctx.user.id,
-            briefText: result.briefText,
-            messageCount: result.messageCount,
-            lastTaggedAt: latestTag.createdAt,
-          });
-        }
+        const summary = await summariseConversationState(
+          database,
+          input.conversationId,
+          ctx.user.id
+        );
 
         return {
-          brief: result.briefText,
-          messageCount: result.messageCount,
+          brief: summary,
           isStale: false,
-          generatedAt: new Date().toISOString(),
         };
       } catch (error) {
         const errMsg = error instanceof Error ? error.message : String(error);
-        console.error("Failed to generate design brief:", errMsg);
-        // Count how many tags actually exist
-        const tagCount = await database.query.messageTags.findMany({
+        console.error("Failed to generate conversation brief:", errMsg);
+
+        // Return cached version if available
+        const cached = await database.query.designBriefs.findFirst({
           where: and(
-            eq(messageTags.conversationId, input.conversationId),
-            eq(messageTags.artistId, ctx.user.id)
+            eq(designBriefs.conversationId, input.conversationId),
+            eq(designBriefs.artistId, ctx.user.id)
           ),
         });
 
-        // Build a user-friendly error message from the LLM error
         let userError = "Failed to generate brief.";
         if (errMsg.includes("insufficient_quota") || errMsg.includes("429")) {
           userError = "LLM quota exceeded — please top up your OpenAI billing or use a different API key.";
@@ -109,26 +55,25 @@ export const designBriefRouter = router({
           userError = `LLM error: ${errMsg.substring(0, 120)}`;
         }
 
-        // Return cached version if available, even if stale
-        if (cached) {
+        if (cached?.conversationSummary) {
           return {
-            brief: cached.briefText,
-            messageCount: cached.messageCount,
+            brief: cached.conversationSummary,
             isStale: true,
-            generatedAt: cached.generatedAt,
             error: `Brief refresh failed — showing cached version. (${userError})`,
           };
         }
         return {
           brief: null,
-          messageCount: tagCount.length,
           isStale: false,
           error: userError,
         };
       }
     }),
 
-  // Force regenerate the brief
+  /**
+   * Force regenerate the conversation brief.
+   * Clears the cached summaryGeneratedAt to force a fresh LLM call.
+   */
   refresh: protectedProcedure
     .input(
       z.object({
@@ -139,17 +84,7 @@ export const designBriefRouter = router({
       const database = await db.getDb();
       if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
 
-      const result = await compileDesignBrief(database, input.conversationId, ctx.user.id);
-
-      const latestTag = await database.query.messageTags.findFirst({
-        where: and(
-          eq(messageTags.conversationId, input.conversationId),
-          eq(messageTags.artistId, ctx.user.id)
-        ),
-        orderBy: [desc(messageTags.createdAt)],
-      });
-
-      // Upsert
+      // Clear cached summary to force regeneration
       const existing = await database.query.designBriefs.findFirst({
         where: and(
           eq(designBriefs.conversationId, input.conversationId),
@@ -160,27 +95,18 @@ export const designBriefRouter = router({
       if (existing) {
         await database
           .update(designBriefs)
-          .set({
-            briefText: result.briefText,
-            messageCount: result.messageCount,
-            lastTaggedAt: latestTag?.createdAt || null,
-            generatedAt: new Date().toISOString(),
-          })
+          .set({ summaryGeneratedAt: null })
           .where(eq(designBriefs.id, existing.id));
-      } else {
-        await database.insert(designBriefs).values({
-          conversationId: input.conversationId,
-          artistId: ctx.user.id,
-          briefText: result.briefText,
-          messageCount: result.messageCount,
-          lastTaggedAt: latestTag?.createdAt || null,
-        });
       }
 
-      return {
-        brief: result.briefText,
-        messageCount: result.messageCount,
-      };
+      // Now generate fresh
+      const summary = await summariseConversationState(
+        database,
+        input.conversationId,
+        ctx.user.id
+      );
+
+      return { brief: summary };
     }),
 
   // Generate a personalised SMS/email draft for a task
