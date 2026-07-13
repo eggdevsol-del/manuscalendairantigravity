@@ -157,7 +157,7 @@ export const tokens = {
   // 5. FAB Menu — CalendAIr DS v3.0: yellow primary accent only
   fab: {
     container:
-      "fixed bottom-[176px] right-5 z-[55] flex flex-col items-end gap-3",
+      "fixed bottom-[196px] right-5 z-[55] flex flex-col items-end gap-3",
     panel:
       "mb-2 p-4 rounded-[24px] border border-border shadow-none flex flex-col items-end gap-4 bg-popover w-[220px] max-h-[50vh] overflow-y-auto",
     itemRow: "flex items-center justify-end gap-3 w-full",
