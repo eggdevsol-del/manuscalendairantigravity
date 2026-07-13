@@ -120,6 +120,12 @@
   min-height: 100%;
 }
 
+/* In focus/snap mode: no padding, cards fill viewport edge-to-edge */
+.snap-scroll .client-home-content-inner {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 /* ── Home view content ── */
 .client-home-view {
   padding: 12px 16px 0;

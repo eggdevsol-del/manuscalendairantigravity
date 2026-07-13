@@ -31,6 +31,7 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
   const [liked, setLiked] = useState(card.isLiked);
   const [likeCount, setLikeCount] = useState(card.likeCount);
   const [showHeart, setShowHeart] = useState(false);
+  const [descExpanded, setDescExpanded] = useState(false);
   const lastTap = useRef(0);
 
   const handleLike = useCallback(() => {
@@ -51,7 +52,6 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
     } else {
       // Single tap — enter artist focus (after delay to check for double)
       if (onImageTap) {
-        const tapTime = now;
         setTimeout(() => {
           if (Date.now() - lastTap.current >= 280) {
             // No second tap came — it's a single tap
@@ -81,9 +81,100 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
     }
   }, [card, onShare]);
 
+  /* ── Focus mode: full-screen immersive layout ── */
+  if (focusMode) {
+    return (
+      <div className="feed-card feed-card-focus" onClick={handleDoubleTap}>
+        {/* Full-bleed image */}
+        <img
+          src={card.imageUrl}
+          alt={card.description || "Portfolio piece"}
+          className="feed-card-focus-image"
+          loading="lazy"
+        />
+
+        {/* Watermark: artist avatar + name (top-left) */}
+        <div className="feed-card-watermark">
+          <div className="feed-card-watermark-avatar">
+            {card.artistAvatar ? (
+              <img src={card.artistAvatar} alt={card.artistName} />
+            ) : (
+              <span>{card.artistName.charAt(0).toUpperCase()}</span>
+            )}
+          </div>
+          <span className="feed-card-watermark-name">{card.artistName}</span>
+        </div>
+
+        {/* Bottom overlay: actions + description + tags */}
+        <div className="feed-card-focus-bottom">
+          {/* Action row */}
+          <div className="feed-card-focus-actions">
+            <button
+              className={`feed-card-focus-action-btn ${liked ? "feed-card-liked" : ""}`}
+              onClick={(e) => { e.stopPropagation(); handleLike(); }}
+            >
+              <Heart
+                size={22}
+                fill={liked ? "var(--color-danger)" : "none"}
+                color={liked ? "var(--color-danger)" : "#fff"}
+              />
+            </button>
+            <button
+              className="feed-card-focus-action-btn"
+              onClick={(e) => { e.stopPropagation(); handleShare(); }}
+            >
+              <Share2 size={20} color="#fff" />
+            </button>
+            {likeCount > 0 && (
+              <span className="feed-card-focus-like-count">
+                {likeCount} {likeCount === 1 ? "like" : "likes"}
+              </span>
+            )}
+          </div>
+
+          {/* Description (collapsed by default, tap to expand) */}
+          {card.description && (
+            <div
+              className={`feed-card-focus-desc ${descExpanded ? "expanded" : ""}`}
+              onClick={(e) => { e.stopPropagation(); setDescExpanded(!descExpanded); }}
+            >
+              <span className="feed-card-focus-desc-name">{card.artistName}</span>{" "}
+              {card.description}
+            </div>
+          )}
+
+          {/* Tags (only visible when expanded) */}
+          {descExpanded && card.keywords.length > 0 && (
+            <div className="feed-card-focus-tags">
+              {card.keywords.slice(0, 4).map((tag, i) => (
+                <span key={i} className="feed-card-focus-tag">{tag}</span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Double-tap heart animation */}
+        <AnimatePresence>
+          {showHeart && (
+            <motion.div
+              className="feed-card-heart-overlay"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 1.5, opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            >
+              <Heart size={80} fill="white" color="white" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  /* ── Standard mode: discovery feed layout ── */
   return (
     <div className="feed-card">
-      {/* Artist header — hidden in compact/focus mode */}
+      {/* Artist header — hidden in compact mode */}
       {!compact && (
         <div
           className="feed-card-header"
@@ -115,30 +206,13 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
       )}
 
       {/* Image */}
-      <div
-        className={`feed-card-image-container${focusMode ? " focus-mode" : ""}`}
-        onClick={handleDoubleTap}
-      >
+      <div className="feed-card-image-container" onClick={handleDoubleTap}>
         <img
           src={card.imageUrl}
           alt={card.description || "Portfolio piece"}
           className="feed-card-image"
           loading="lazy"
         />
-
-        {/* Artist overlay — visible in focus mode */}
-        {focusMode && (
-          <div className="feed-card-artist-overlay">
-            <div className="feed-card-artist-overlay-avatar">
-              {card.artistAvatar ? (
-                <img src={card.artistAvatar} alt={card.artistName} />
-              ) : (
-                <span>{card.artistName.charAt(0).toUpperCase()}</span>
-              )}
-            </div>
-            <span className="feed-card-artist-overlay-name">{card.artistName}</span>
-          </div>
-        )}
 
         {/* Double-tap heart animation */}
         <AnimatePresence>
