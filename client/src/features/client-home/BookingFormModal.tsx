@@ -13,6 +13,7 @@ import { X, Send, Check } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const STYLE_OPTIONS = [
   "Traditional", "Neo-Traditional", "Realism", "Black & Grey",
@@ -82,6 +83,7 @@ export default function BookingFormModal({
   const [showSuccess, setShowSuccess] = useState(false);
 
   const uploadMutation = trpc.upload.uploadImage.useMutation();
+  const uploadPublicMutation = trpc.funnel.uploadPublicImage.useMutation();
   const createConsultation = trpc.consultations.create.useMutation();
   const submitPublicBooking = trpc.funnel.submitPublicBooking.useMutation();
 
@@ -159,24 +161,18 @@ export default function BookingFormModal({
       const refUrls: string[] = [];
       for (const img of referenceImages) {
         const base64 = await fileToBase64(img.file);
-        const result = await uploadMutation.mutateAsync({
-          base64,
-          filename: img.file.name,
-          contentType: img.file.type,
-          folder: "consultations",
-        });
+        const result = isPublic && !user
+          ? await uploadPublicMutation.mutateAsync({ base64, filename: img.file.name, folder: "consultations" })
+          : await uploadMutation.mutateAsync({ base64, filename: img.file.name, contentType: img.file.type, folder: "consultations" });
         if (result.url) refUrls.push(result.url);
       }
 
       const placeUrls: string[] = [];
       for (const img of placementImages) {
         const base64 = await fileToBase64(img.file);
-        const result = await uploadMutation.mutateAsync({
-          base64,
-          filename: img.file.name,
-          contentType: img.file.type,
-          folder: "consultations",
-        });
+        const result = isPublic && !user
+          ? await uploadPublicMutation.mutateAsync({ base64, filename: img.file.name, folder: "consultations" })
+          : await uploadMutation.mutateAsync({ base64, filename: img.file.name, contentType: img.file.type, folder: "consultations" });
         if (result.url) placeUrls.push(result.url);
       }
 
@@ -233,12 +229,13 @@ export default function BookingFormModal({
       }, 3000);
     } catch (err) {
       console.error("Booking submission failed:", err);
+      toast.error("Failed to submit booking. Please try again.");
       setSubmitting(false);
     }
   }, [
     canSubmit, description, selectedStyles, selectedSize, placement,
     timeframe, referenceImages, placementImages, artistId, user,
-    uploadMutation, createConsultation, onSubmitted, isPublic,
+    uploadMutation, uploadPublicMutation, createConsultation, onSubmitted, isPublic,
     firstName, lastName, email, phone, birthdate, gender,
     artistSlug, submitPublicBooking, onPublicSubmitted,
   ]);

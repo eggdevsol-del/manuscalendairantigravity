@@ -333,4 +333,101 @@ export const feedRouter = router({
         totalLikes,
       };
     }),
+
+  /**
+   * Public (unauthenticated) artist profile looked up by slug.
+   * Returns the same shape as getArtistPublicProfile but omits
+   * sensitive contact fields (email, phone, website).
+   */
+  getPublicArtistProfile: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database connection failed",
+        });
+
+      // 1. Resolve slug → artistSettings row
+      const settingsRows = await db
+        .select()
+        .from(schema.artistSettings)
+        .where(
+          eq(schema.artistSettings.publicSlug, input.slug.toLowerCase())
+        )
+        .limit(1);
+
+      if (settingsRows.length === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Artist not found",
+        });
+      }
+
+      const settings = settingsRows[0];
+
+      // 2. Fetch user row
+      const userRows = await db
+        .select({
+          id: schema.users.id,
+          name: schema.users.name,
+          avatar: schema.users.avatar,
+          city: schema.users.city,
+          bio: schema.users.bio,
+        })
+        .from(schema.users)
+        .where(eq(schema.users.id, settings.userId))
+        .limit(1);
+
+      if (userRows.length === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Artist not found",
+        });
+      }
+
+      const user = userRows[0];
+
+      // 3. Portfolio items ordered by sortOrder ASC
+      const portfolioItems = await db
+        .select({
+          id: schema.portfolios.id,
+          imageUrl: schema.portfolios.imageUrl,
+          description: schema.portfolios.description,
+          sortOrder: schema.portfolios.sortOrder,
+        })
+        .from(schema.portfolios)
+        .where(eq(schema.portfolios.artistId, settings.userId))
+        .orderBy(
+          asc(schema.portfolios.sortOrder),
+          desc(schema.portfolios.createdAt)
+        );
+
+      // 4. Build response — no sensitive contact fields
+      const keywordsArray: string[] = settings.keywords
+        ? settings.keywords
+            .split(",")
+            .map((k: string) => k.trim())
+            .filter(Boolean)
+        : [];
+
+      return {
+        id: user.id,
+        displayName: settings.displayName || user.name || "Artist",
+        avatar: user.avatar,
+        slug: settings.publicSlug,
+        city: settings.showCity ? user.city : null,
+        bio: user.bio,
+        showCity: !!settings.showCity,
+        keywords: keywordsArray,
+        portfolio: portfolioItems.map((p) => ({
+          id: p.id,
+          imageUrl: p.imageUrl,
+          description: p.description,
+          sortOrder: p.sortOrder ?? 0,
+        })),
+        postCount: portfolioItems.length,
+      };
+    }),
 });

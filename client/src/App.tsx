@@ -13,6 +13,7 @@ import { SplashScreen } from "@/components/SplashScreen";
 import { UpdateBanner } from "@/components/UpdateBanner";
 import { InstallAppBanner } from "@/components/InstallAppBanner";
 import { useVersionCheck } from "@/lib/useVersionCheck";
+import PublicArtistProfile from "@/pages/public/PublicArtistProfile";
 
 
 import Login from "./pages/Login";
@@ -194,7 +195,7 @@ function Router() {
         <Route path="/studio/:slug" component={PublicStudioFunnel} />
         <Route path="/start/:slug" component={PublicFunnel} />
         <Route path="/book/:slug">
-          <ArtistHub bookingMode />
+          <PublicArtistProfile />
         </Route>
         <Route path="/deposit/:token" component={DepositSheet} />
         <Route path="/balance/:id" component={BalanceSheet} />
