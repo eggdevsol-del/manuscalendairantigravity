@@ -1,19 +1,40 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Loader2, Instagram, Facebook, ArrowRight, Store, CalendarDays, Link as LinkIcon, CalendarPlus } from "lucide-react";
-import { motion, Variants } from "framer-motion";
+import { motion, Variants, AnimatePresence } from "framer-motion";
 import { UserAvatar } from "@/components/ui/ssot";
+import BookingFormModal from "@/features/client-home/BookingFormModal";
 
-export default function ArtistHub() {
-  const [, params] = useRoute("/:slug");
+interface ArtistHubProps {
+  bookingMode?: boolean;
+}
+
+export default function ArtistHub({ bookingMode }: ArtistHubProps) {
+  const [, hubParams] = useRoute("/:slug");
+  const [, bookParams] = useRoute("/book/:slug");
   const [, setLocation] = useLocation();
-  const slug = params?.slug;
+  const slug = hubParams?.slug || bookParams?.slug;
 
   const { data: artist, isLoading, error } = trpc.funnel.getArtistBySlug.useQuery(
     { slug: slug || "" },
     { enabled: !!slug, retry: false }
   );
+
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [leadToken, setLeadToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (bookingMode && artist && !showBookingForm && !leadToken) {
+      setShowBookingForm(true);
+    }
+  }, [bookingMode, artist]);
+
+  const handlePublicSubmitted = (token: string) => {
+    setLeadToken(token);
+    setShowBookingForm(false);
+    setLocation(`/signup?leadToken=${token}`);
+  };
 
   if (isLoading) {
     return (
@@ -223,6 +244,26 @@ export default function ArtistHub() {
           </span>
         </motion.div>
       </div>
+
+      {/* Booking Form Modal */}
+      <AnimatePresence>
+        {showBookingForm && artist && (
+          <BookingFormModal
+            artistId={artist.id}
+            artistName={artist.displayName}
+            artistSlug={slug || null}
+            onClose={() => {
+              setShowBookingForm(false);
+              if (bookingMode) {
+                // If opened via /book/ link, closing goes back to hub
+              }
+            }}
+            onSubmitted={() => setShowBookingForm(false)}
+            isPublic={bookingMode}
+            onPublicSubmitted={handlePublicSubmitted}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

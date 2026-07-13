@@ -37,6 +37,10 @@ interface BookingFormModalProps {
   artistSlug: string | null;
   onClose: () => void;
   onSubmitted: () => void;
+  /** If true, show personal info fields for unauthenticated users */
+  isPublic?: boolean;
+  /** Callback after public booking submission with leadToken */
+  onPublicSubmitted?: (leadToken: string) => void;
 }
 
 interface UploadedImage {
@@ -51,6 +55,8 @@ export default function BookingFormModal({
   artistSlug,
   onClose,
   onSubmitted,
+  isPublic,
+  onPublicSubmitted,
 }: BookingFormModalProps) {
   const { user } = useAuth();
   const refImageInput = useRef<HTMLInputElement>(null);
@@ -65,10 +71,19 @@ export default function BookingFormModal({
   const [referenceImages, setReferenceImages] = useState<UploadedImage[]>([]);
   const [placementImages, setPlacementImages] = useState<UploadedImage[]>([]);
   const [submitting, setSubmitting] = useState(false);
+
+  // Personal info state (public unauthenticated flow)
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [birthdate, setBirthdate] = useState("");
+  const [gender, setGender] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
 
   const uploadMutation = trpc.upload.uploadImage.useMutation();
   const createConsultation = trpc.consultations.create.useMutation();
+  const submitPublicBooking = trpc.funnel.submitPublicBooking.useMutation();
 
   const toggleStyle = useCallback((style: string) => {
     setSelectedStyles((prev) =>
@@ -131,10 +146,9 @@ export default function BookingFormModal({
       reader.readAsDataURL(file);
     });
 
-  const canSubmit =
-    description.length >= 10 &&
-    selectedStyles.length > 0 &&
-    !submitting;
+  const canSubmit = isPublic && !user
+    ? description.length >= 10 && selectedStyles.length > 0 && !submitting && firstName.trim() !== "" && lastName.trim() !== "" && email.includes("@") && phone.trim() !== "" && birthdate !== "" && gender !== ""
+    : description.length >= 10 && selectedStyles.length > 0 && !submitting;
 
   const handleSubmit = useCallback(async () => {
     if (!canSubmit) return;
@@ -164,6 +178,33 @@ export default function BookingFormModal({
           folder: "consultations",
         });
         if (result.url) placeUrls.push(result.url);
+      }
+
+      // Public booking flow (unauthenticated)
+      if (isPublic && !user) {
+        const result = await submitPublicBooking.mutateAsync({
+          artistSlug: artistSlug || "",
+          firstName,
+          lastName,
+          email,
+          phone,
+          birthdate,
+          gender: gender as "male" | "female" | "other",
+          description,
+          styles: selectedStyles,
+          size: selectedSize || undefined,
+          placement: placement || undefined,
+          timeframe: timeframe || undefined,
+          referenceUrls: refUrls,
+          placementUrls: placeUrls,
+        });
+
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+          onPublicSubmitted?.(result.leadToken);
+        }, 2500);
+        return;
       }
 
       // Build description with all details
@@ -197,7 +238,9 @@ export default function BookingFormModal({
   }, [
     canSubmit, description, selectedStyles, selectedSize, placement,
     timeframe, referenceImages, placementImages, artistId, user,
-    uploadMutation, createConsultation, onSubmitted,
+    uploadMutation, createConsultation, onSubmitted, isPublic,
+    firstName, lastName, email, phone, birthdate, gender,
+    artistSlug, submitPublicBooking, onPublicSubmitted,
   ]);
 
   return (
@@ -227,6 +270,40 @@ export default function BookingFormModal({
 
           {/* Form */}
           <div className="booking-form-scroll">
+            {/* Personal info for unauthenticated public users */}
+            {isPublic && !user && (
+              <>
+                <div className="booking-form-group">
+                  <label>First Name *</label>
+                  <input className="booking-form-input" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                </div>
+                <div className="booking-form-group">
+                  <label>Last Name *</label>
+                  <input className="booking-form-input" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                </div>
+                <div className="booking-form-group">
+                  <label>Email *</label>
+                  <input type="email" className="booking-form-input" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+                </div>
+                <div className="booking-form-group">
+                  <label>Phone *</label>
+                  <input type="tel" className="booking-form-input" placeholder="+1 (555) 123-4567" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                </div>
+                <div className="booking-form-group">
+                  <label>Date of Birth *</label>
+                  <input type="date" className="booking-form-input" value={birthdate} onChange={(e) => setBirthdate(e.target.value)} />
+                </div>
+                <div className="booking-form-group">
+                  <label>Gender *</label>
+                  <div className="booking-form-chips">
+                    {[{value: "male", label: "Male"}, {value: "female", label: "Female"}].map((opt) => (
+                      <button key={opt.value} type="button" className={`booking-form-chip ${gender === opt.value ? "selected" : ""}`} onClick={() => setGender(opt.value)}>{opt.label}</button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
             {/* Description */}
             <div className="booking-form-group">
               <label>Describe your idea *</label>

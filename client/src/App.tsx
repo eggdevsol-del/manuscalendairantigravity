@@ -14,7 +14,6 @@ import { UpdateBanner } from "@/components/UpdateBanner";
 import { InstallAppBanner } from "@/components/InstallAppBanner";
 import { useVersionCheck } from "@/lib/useVersionCheck";
 
-const PublicBookingPage = React.lazy(() => import("@/pages/public/PublicBookingPage"));
 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -195,7 +194,7 @@ function Router() {
         <Route path="/studio/:slug" component={PublicStudioFunnel} />
         <Route path="/start/:slug" component={PublicFunnel} />
         <Route path="/book/:slug">
-          <Suspense fallback={null}><PublicBookingPage /></Suspense>
+          <ArtistHub bookingMode />
         </Route>
         <Route path="/deposit/:token" component={DepositSheet} />
         <Route path="/balance/:id" component={BalanceSheet} />
