@@ -123,7 +123,7 @@ export function ActionPanel() {
         )}
         style={{
           right: 20,
-          bottom: "calc(44px + env(safe-area-inset-bottom, 0px) + 96px)",
+          bottom: "calc(44px + env(safe-area-inset-bottom, 0px) + 116px)",
         }}
         aria-label={isFABOpen ? "Close actions" : "Open actions"}
       >
