@@ -39,6 +39,7 @@ import { useLocation } from "wouter";
 import { tokens } from "@/ui/tokens";
 import { InlineFormSigning } from "./components/InlineFormSigning";
 import { EmbeddedStripeCheckout } from "@/features/stripe/EmbeddedStripeCheckout";
+import { UserAvatar } from "@/components/ui/ssot";
 
 type BookingStep =
   | "artist"
@@ -1676,19 +1677,7 @@ export function BookingWizardContent({
                     }}
                   >
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex flex-col items-center justify-center overflow-hidden">
-                        {member.user?.avatar ? (
-                          <img
-                            src={member.user.avatar}
-                            alt={member.user.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-[10px] font-bold text-primary">
-                            {member.user?.name?.charAt(0) || "?"}
-                          </span>
-                        )}
-                      </div>
+                      <UserAvatar name={member.user?.name} avatar={member.user?.avatar} size="sm" />
                       <div className="flex-1 min-w-0">
                         <p className="text-[11px] font-bold text-foreground uppercase tracking-wider truncate">
                           {member.user?.name}

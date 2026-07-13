@@ -1314,4 +1314,274 @@ export const funnelRouter = router({
         : [],
     };
   }),
+
+  /**
+   * Upload an image without auth (for public booking form)
+   * PUBLIC - rate limited at route level
+   */
+  uploadPublicImage: publicProcedure
+    .input(
+      z.object({
+        base64: z.string(),
+        filename: z.string(),
+        folder: z.string().default("consultations"),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { MediaService } = await import("../services/media.service");
+
+      let fileData = input.base64;
+      let contentType = "image/png";
+
+      if (fileData.startsWith("data:")) {
+        const match = fileData.match(/^data:([^;]+);base64,/);
+        if (match) {
+          contentType = match[1];
+          fileData = fileData.replace(/^data:[^;]+;base64,/, "");
+        }
+      }
+
+      if (!MediaService.isValidType(contentType)) {
+        throw new Error("Invalid file type. Only images are allowed.");
+      }
+
+      const fileName = `${input.folder}/${Date.now()}-${input.filename}`;
+      const url = await MediaService.saveBase64(fileData, fileName, contentType);
+      return { url, success: true };
+    }),
+
+  /**
+   * Submit a public booking form (link in bio / Instagram flow)
+   * PUBLIC - no auth required
+   *
+   * Creates: lead + consultation + conversation + LLM summary message
+   * Returns a leadToken (signed JWT) for claiming during auth
+   */
+  submitPublicBooking: publicProcedure
+    .input(
+      z.object({
+        artistSlug: z.string(),
+        // Personal info
+        firstName: z.string().min(1),
+        lastName: z.string().min(1),
+        phone: z.string().min(1),
+        email: z.string().email(),
+        birthdate: z.string().optional(),
+        gender: z.enum(["male", "female", "other"]).optional(),
+        // Booking details
+        description: z.string().min(10),
+        styles: z.array(z.string()).min(1),
+        placement: z.string().optional(),
+        size: z.string().optional(),
+        timeframe: z.string().optional(),
+        referenceUrls: z.array(z.string()).optional(),
+        placementUrls: z.array(z.string()).optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database unavailable");
+
+      const jwt = (await import("jsonwebtoken")).default;
+      const JWT_SECRET =
+        process.env.JWT_SECRET || "your-secret-key-change-in-production";
+
+      // 1. Look up artist by slug
+      const settings = await db.query.artistSettings.findFirst({
+        where: eq(
+          schema.artistSettings.publicSlug,
+          input.artistSlug.toLowerCase()
+        ),
+      });
+      if (!settings) {
+        throw new Error("Artist not found");
+      }
+      const artistId = settings.userId;
+
+      // 2. Check if email already has an account
+      const existingUser = await db.query.users.findFirst({
+        where: eq(schema.users.email, input.email.toLowerCase()),
+      });
+
+      const now = new Date();
+      const nowFormatted = formatDateForMySQL(now);
+      const fullName = `${input.firstName} ${input.lastName}`;
+
+      // 3. Build lead data
+      const flatData = {
+        name: fullName,
+        email: input.email.toLowerCase(),
+        phone: input.phone,
+        projectType: "Tattoo Consultation",
+        projectDescription: input.description,
+        stylePreferences: input.styles,
+        placement: input.placement,
+        estimatedSize: input.size,
+        preferredTimeframe: input.timeframe,
+        urgency: "flexible" as const,
+      };
+
+      const derivedTags = deriveTagLabels(flatData);
+      const priorityScore = calculatePriorityScore({
+        ...flatData,
+        createdAt: now,
+      });
+      const priorityTier = getPriorityTier(priorityScore);
+      const estimatedValue = estimateLeadValue(flatData);
+
+      // 4. Create lead
+      const [newLead] = await db.insert(schema.leads).values({
+        artistId,
+        source: "funnel",
+        sourceDetails: `/book/${input.artistSlug}`,
+        status: "new",
+        clientId: existingUser?.id || null,
+        clientName: fullName,
+        clientFirstName: input.firstName,
+        clientLastName: input.lastName,
+        clientEmail: input.email.toLowerCase(),
+        clientPhone: input.phone,
+        clientBirthdate: input.birthdate || null,
+        projectType: "Tattoo Consultation",
+        projectDescription: input.description,
+        stylePreferences: JSON.stringify(input.styles),
+        referenceImages: input.referenceUrls?.length
+          ? JSON.stringify(input.referenceUrls)
+          : null,
+        bodyPlacementImages: input.placementUrls?.length
+          ? JSON.stringify(input.placementUrls)
+          : null,
+        placement: input.placement || null,
+        estimatedSize: input.size || null,
+        preferredTimeframe: input.timeframe || null,
+        urgency: "flexible",
+        derivedTags: JSON.stringify(derivedTags),
+        priorityScore,
+        priorityTier,
+        estimatedValue,
+        createdAt: nowFormatted,
+        updatedAt: nowFormatted,
+      });
+
+      const leadId = newLead.insertId;
+
+      // 5. Create consultation
+      const [consultation] = await db.insert(schema.consultations).values({
+        artistId,
+        clientId: existingUser?.id || null,
+        leadId,
+        subject: `Booking request from ${fullName}`,
+        description: input.description,
+        status: "pending",
+        createdAt: nowFormatted,
+        updatedAt: nowFormatted,
+      });
+
+      // 6. Create conversation
+      const [conversation] = await db.insert(schema.conversations).values({
+        artistId,
+        clientId: existingUser?.id || null,
+        leadId,
+        pinnedConsultationId: consultation.insertId,
+        createdAt: nowFormatted,
+      });
+
+      const conversationId = conversation.insertId;
+
+      // Update lead with conversation and consultation IDs
+      await db
+        .update(schema.leads)
+        .set({
+          conversationId,
+          consultationId: consultation.insertId,
+        })
+        .where(eq(schema.leads.id, leadId));
+
+      // 7. Generate LLM summary
+      let summaryText = `New consultation request via booking link:\n\n` +
+        `**Client:** ${fullName}\n` +
+        `**Description:** ${input.description}\n` +
+        `**Style:** ${input.styles.join(", ")}\n` +
+        `**Placement:** ${input.placement || "Not specified"}\n` +
+        `**Size:** ${input.size || "Not specified"}\n` +
+        `**Timeframe:** ${input.timeframe || "Flexible"}\n` +
+        `**Contact:** ${input.email} | ${input.phone}`;
+
+      try {
+        const { invokeLLM } = await import("../_core/llm");
+        const llmResult = await invokeLLM({
+          messages: [
+            {
+              role: "system" as const,
+              content: "You are a tattoo studio assistant. Summarise this booking request in natural language for the artist. Be concise, accurate, and professional. Include: what they want, style, size, placement, timeframe. Max 80 words. Do not include contact details.",
+            },
+            {
+              role: "user" as const,
+              content: `Client: ${fullName}\nDescription: ${input.description}\nStyle: ${input.styles.join(", ")}\nPlacement: ${input.placement || "Not specified"}\nSize: ${input.size || "Not specified"}\nTimeframe: ${input.timeframe || "Flexible"}\nReferences: ${input.referenceUrls?.length || 0} images\nPlacement photos: ${input.placementUrls?.length || 0} images`,
+            },
+          ],
+          maxTokens: 200,
+        });
+        const llmContent = llmResult.choices?.[0]?.message?.content;
+        if (typeof llmContent === "string" && llmContent.trim()) {
+          summaryText = llmContent.trim();
+        }
+      } catch (e) {
+        console.error("[PublicBooking] LLM summary failed, using fallback:", e);
+      }
+
+      // 8. Post summary as system message
+      await db.insert(schema.messages).values({
+        conversationId,
+        senderId: artistId,
+        messageType: "system",
+        content: summaryText,
+        createdAt: nowFormatted,
+      });
+
+      // 9. Post reference images as a grid message
+      if (input.referenceUrls?.length) {
+        await db.insert(schema.messages).values({
+          conversationId,
+          senderId: artistId,
+          messageType: "system",
+          content: JSON.stringify({
+            type: "reference_grid",
+            images: input.referenceUrls,
+            label: "Reference Images",
+          }),
+          createdAt: nowFormatted,
+        });
+      }
+
+      // 10. Post placement images as a grid message
+      if (input.placementUrls?.length) {
+        await db.insert(schema.messages).values({
+          conversationId,
+          senderId: artistId,
+          messageType: "system",
+          content: JSON.stringify({
+            type: "placement_grid",
+            images: input.placementUrls,
+            label: "Placement Photos",
+          }),
+          createdAt: nowFormatted,
+        });
+      }
+
+      // 11. Sign a lead token
+      const leadToken = jwt.sign(
+        { leadId, email: input.email.toLowerCase(), conversationId },
+        JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      return {
+        success: true,
+        leadId,
+        conversationId,
+        leadToken,
+        existingUser: !!existingUser,
+      };
+    }),
 });

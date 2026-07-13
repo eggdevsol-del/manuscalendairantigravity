@@ -2,6 +2,7 @@ import { Button, Input, Label, ScrollArea, DialogTitle } from "@/components/ui";
 import { useChatController } from "@/features/chat/useChatController";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "@/components/ui/ssot";
+import { UserAvatar } from "@/components/ui/ssot/UserAvatar";
 import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
 // ProposalSheet removed - not needed
 import { ProjectProposalMessage } from "@/components/chat/ProjectProposalMessage";
@@ -495,19 +496,7 @@ export function ChatInterface({
                 className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer group"
                 onClick={() => isArtist && setShowClientInfo(true)}
               >
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center overflow-hidden flex-shrink-0 ring-2 ring-background shadow-md transition-transform group-active:scale-95">
-                  {conversation.otherUser?.avatar ? (
-                    <img
-                      src={conversation.otherUser.avatar}
-                      alt={otherUserName}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-white font-semibold">
-                      {otherUserName.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
+                <UserAvatar name={otherUserName} avatar={conversation?.otherUser?.avatar} size="md" ring className="transition-transform group-active:scale-95" />
                 <div className="flex-1 min-w-0">
                   <h1 className="font-bold text-xl leading-tight truncate text-foreground group-hover:text-primary transition-colors">
                     {otherUserName}
@@ -815,6 +804,15 @@ export function ChatInterface({
                 const isPaymentRequest = metadata?.type === "payment_request";
                 const isStudioInvite = message.messageType === "studio_invite";
 
+                // Try to parse as image grid (reference_grid / placement_grid)
+                let gridData: { type: string; images: string[]; label: string } | null = null;
+                try {
+                  const parsed = JSON.parse(message.content);
+                  if (parsed.type === 'reference_grid' || parsed.type === 'placement_grid') {
+                    gridData = parsed;
+                  }
+                } catch {}
+
                 return (
                   <div
                     key={message.id}
@@ -874,6 +872,56 @@ export function ChatInterface({
                               handleCancelProposal(message, metadata)
                             }
                           />
+                        </div>
+                      ) : gridData ? (
+                        <div className="flex flex-col max-w-[280px]">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                            {gridData.label}
+                          </p>
+                          {(() => {
+                            const images = gridData.images;
+                            const showOverlay = images.length > 9;
+                            const displayImages = showOverlay ? images.slice(0, 8) : images;
+                            const remaining = images.length - 8;
+                            const allDisplay = showOverlay ? [...displayImages, images[images.length - 1]] : displayImages;
+                            const count = allDisplay.length;
+                            const cols = count === 1 ? 'grid-cols-1' : count === 2 ? 'grid-cols-2' : count === 3 ? 'grid-cols-3' : count <= 4 ? 'grid-cols-2' : 'grid-cols-3';
+                            return (
+                              <div className={`grid ${cols} gap-1 rounded-xl overflow-hidden`}>
+                                {allDisplay.map((img, idx) => (
+                                  <div key={idx} className="relative">
+                                    <img
+                                      src={img}
+                                      alt={`${gridData!.label} ${idx + 1}`}
+                                      className="aspect-square object-cover cursor-pointer rounded-none w-full"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedMediaImage(img);
+                                      }}
+                                    />
+                                    {showOverlay && idx === allDisplay.length - 1 && (
+                                      <div
+                                        className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setSelectedMediaImage(img);
+                                        }}
+                                      >
+                                        <span className="text-white text-sm font-semibold">+{remaining} more</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })()}
+                          <p className="text-xs opacity-70 mt-1">
+                            {message.createdAt &&
+                              new Date(message.createdAt).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                          </p>
                         </div>
                       ) : (
                         <div className="flex flex-col max-w-[85%]">

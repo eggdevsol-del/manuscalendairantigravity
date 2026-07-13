@@ -13,6 +13,7 @@ import { trpc } from "@/lib/trpc";
 import { Loader2 } from "lucide-react";
 import { FeedCard, FeedCardData } from "@/features/feed/FeedCard";
 import BookingFormModal from "./BookingFormModal";
+import { UserAvatar } from "@/components/ui/ssot";
 import "./artistProfile.css";
 
 interface ArtistProfileOverlayProps {
@@ -150,11 +151,7 @@ export default function ArtistProfileOverlay({
                   <div className="artist-profile-info">
                     {/* Avatar */}
                     <div className="artist-profile-avatar-large">
-                      {profile.avatar ? (
-                        <img src={profile.avatar} alt={profile.displayName} />
-                      ) : (
-                        <span>{profile.displayName.charAt(0).toUpperCase()}</span>
-                      )}
+                      <UserAvatar name={profile.displayName} avatar={profile.avatar} size="lg" />
                     </div>
 
                     {/* Name & handle */}

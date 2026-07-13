@@ -743,5 +743,162 @@ export const authRouter = router({
         isNewUser,
       };
     }),
+
+  /**
+   * Claim a lead from a public booking form — creates user account
+   * PUBLIC - uses signed leadToken for verification
+   */
+  claimLead: publicProcedure
+    .input(
+      z.object({
+        leadToken: z.string(),
+        password: z.string().min(8).optional(),
+        googleAuthCode: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const jwt = (await import("jsonwebtoken")).default;
+      const JWT_SECRET =
+        process.env.JWT_SECRET || "your-secret-key-change-in-production";
+
+      // 1. Verify lead token
+      let payload: { leadId: number; email: string; conversationId: number };
+      try {
+        payload = jwt.verify(input.leadToken, JWT_SECRET) as any;
+      } catch {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Invalid or expired booking token",
+        });
+      }
+
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+
+      const drizzleSchema = await import("../../drizzle/schema");
+
+      // 2. Fetch lead
+      const lead = await drizzleDb.query.leads.findFirst({
+        where: eq(drizzleSchema.leads.id, payload.leadId),
+      });
+      if (!lead) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Lead not found" });
+      }
+
+      // 3. Check if user already exists with this email
+      const existingUser = await getUserByEmail(payload.email);
+      if (existingUser) {
+        // Auto-link: update lead + conversation + consultation with existing user ID
+        await drizzleDb.update(drizzleSchema.leads).set({ clientId: existingUser.id }).where(eq(drizzleSchema.leads.id, lead.id));
+        if (lead.conversationId) {
+          await drizzleDb.update(drizzleSchema.conversations).set({ clientId: existingUser.id }).where(eq(drizzleSchema.conversations.id, lead.conversationId));
+        }
+        if (lead.consultationId) {
+          await drizzleDb.update(drizzleSchema.consultations).set({ clientId: existingUser.id }).where(eq(drizzleSchema.consultations.id, lead.consultationId));
+        }
+
+        const authToken = generateToken({ id: existingUser.id, email: existingUser.email || "" });
+        return {
+          user: {
+            id: existingUser.id,
+            email: existingUser.email,
+            name: existingUser.name,
+            role: existingUser.role,
+            hasCompletedOnboarding: existingUser.hasCompletedOnboarding,
+          },
+          token: authToken,
+          isNewUser: false,
+        };
+      }
+
+      // 4. Create new user
+      let userEmail = payload.email;
+      let userName = lead.clientName || "Client";
+      let userAvatar: string | null = null;
+      let loginMethod = "email";
+      let hashedPw: string | undefined;
+
+      if (input.password) {
+        // Password flow
+        hashedPw = await hashPassword(input.password);
+      } else if (input.googleAuthCode) {
+        // Google flow — exchange code for user info
+        loginMethod = "google";
+        try {
+          const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              code: input.googleAuthCode,
+              client_id: process.env.GOOGLE_CLIENT_ID || "",
+              client_secret: process.env.GOOGLE_CLIENT_SECRET || "",
+              redirect_uri: "postmessage",
+              grant_type: "authorization_code",
+            }),
+          });
+          if (tokenRes.ok) {
+            const tokens = (await tokenRes.json()) as { access_token: string };
+            const userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+              headers: { Authorization: `Bearer ${tokens.access_token}` },
+            });
+            if (userInfoRes.ok) {
+              const gProfile = (await userInfoRes.json()) as { email?: string; name?: string; picture?: string };
+              if (gProfile.email) userEmail = gProfile.email;
+              if (gProfile.name) userName = gProfile.name;
+              if (gProfile.picture) userAvatar = gProfile.picture;
+            }
+          }
+        } catch (e) {
+          console.error("[ClaimLead] Google auth exchange failed:", e);
+        }
+      } else {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Either password or googleAuthCode is required",
+        });
+      }
+
+      const userId = `user_${randomBytes(16).toString("hex")}`;
+      const user = await createUser({
+        id: userId,
+        email: userEmail,
+        password: hashedPw,
+        name: userName,
+        role: "client",
+        loginMethod,
+        hasCompletedOnboarding: 0,
+        phone: lead.clientPhone || undefined,
+        birthday: lead.clientBirthdate || undefined,
+        ...(userAvatar ? { avatar: userAvatar } : {}),
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create user" });
+      }
+
+      // 5. Link lead, conversation, consultation to new user
+      await drizzleDb.update(drizzleSchema.leads).set({ clientId: userId }).where(eq(drizzleSchema.leads.id, lead.id));
+      if (lead.conversationId) {
+        await drizzleDb.update(drizzleSchema.conversations).set({ clientId: userId }).where(eq(drizzleSchema.conversations.id, lead.conversationId));
+      }
+      if (lead.consultationId) {
+        await drizzleDb.update(drizzleSchema.consultations).set({ clientId: userId }).where(eq(drizzleSchema.consultations.id, lead.consultationId));
+      }
+
+      const authToken = generateToken({ id: user.id, email: user.email || "" });
+
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          hasCompletedOnboarding: user.hasCompletedOnboarding,
+        },
+        token: authToken,
+        isNewUser: true,
+      };
+    }),
 });
 

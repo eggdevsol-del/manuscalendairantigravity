@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { PageHeader, PageShell } from "@/components/ui/ssot";
+import { UserAvatar } from "@/components/ui/ssot/UserAvatar";
 import { Button, Card, Input } from "@/components/ui";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
@@ -287,17 +288,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
                           className="p-4 rounded-md bg-secondary/50 border border-border flex items-center justify-between hover:bg-secondary/50 transition-colors"
                         >
                           <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-secondary/50 overflow-hidden flex items-center justify-center border border-border">
-                              {member.user.avatar ? (
-                                <img
-                                  src={member.user.avatar}
-                                  alt={member.user.name || "Member"}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <User className="w-6 h-6 text-muted-foreground" />
-                              )}
-                            </div>
+                            <UserAvatar name={member.user.name} avatar={member.user.avatar} size="lg" />
                             <div>
                               <p className="font-semibold text-lg text-foreground">
                                 {member.user.name}

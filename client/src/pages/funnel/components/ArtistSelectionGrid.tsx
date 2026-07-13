@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui";
-import { User } from "lucide-react";
+import { UserAvatar } from "@/components/ui/ssot";
 
 interface Artist {
   id: string;
@@ -36,17 +36,7 @@ export default function ArtistSelectionGrid({
           onClick={() => onSelectArtist(artist.id)}
         >
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-background/80 border border-border overflow-hidden flex items-center justify-center shrink-0">
-              {artist.avatar ? (
-                <img
-                  src={artist.avatar}
-                  alt={artist.name || "Artist"}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                />
-              ) : (
-                <User className="w-8 h-8 text-muted-foreground" />
-              )}
-            </div>
+            <UserAvatar name={artist.name} avatar={artist.avatar} size="xl" />
             <div>
               <h3 className="font-semibold text-foreground text-lg">
                 {artist.name || "Unknown Artist"}

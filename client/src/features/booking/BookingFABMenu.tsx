@@ -56,7 +56,7 @@ interface BookingFABMenuProps {
   className?: string;
 }
 
-/** Collapsible policy dropdown ÔÇö fetches policy content from server */
+/** Collapsible policy dropdown ï¿½ï¿½ï¿½ fetches policy content from server */
 function PolicyDropdown({
   label,
   artistId,
@@ -156,7 +156,7 @@ export function BookingFABMenu({
   const [startDate] = useState(new Date());
   const [calendarMonth, setCalendarMonth] = useState<Date>(startDate);
 
-  // Fetch calendar indicators for -¦1 month around the viewed calendar month
+  // Fetch calendar indicators for -ï¿½1 month around the viewed calendar month
   const { data: dateIndicators } = trpc.booking.getCalendarIndicators.useQuery(
     {
       artistId: artistId || "",
@@ -521,7 +521,7 @@ export function BookingFABMenu({
                         {format(new Date(dateStr), "EEE, MMM d")}
                       </p>
                       <p className="text-[8px] text-muted-foreground">
-                        {format(new Date(dateStr), "h:mm a")} -À{" "}
+                        {format(new Date(dateStr), "h:mm a")} -ï¿½{" "}
                         {proposalMeta.serviceDuration}m
                       </p>
                     </div>
@@ -530,7 +530,7 @@ export function BookingFABMenu({
               </motion.div>
             )}
 
-            {/* Client actions ÔÇö pending */}
+            {/* Client actions ï¿½ï¿½ï¿½ pending */}
             {!isArtist && proposalMeta.status === "pending" && (
               <motion.div
                 variants={fab.animation.item}
@@ -608,7 +608,7 @@ export function BookingFABMenu({
               </motion.div>
             )}
 
-            {/* Artist actions ÔÇö pending */}
+            {/* Artist actions ï¿½ï¿½ï¿½ pending */}
             {isArtist && proposalMeta.status === "pending" && (
               <motion.div
                 variants={fab.animation.item}
@@ -632,7 +632,7 @@ export function BookingFABMenu({
               </motion.div>
             )}
 
-            {/* Status ÔÇö accepted */}
+            {/* Status ï¿½ï¿½ï¿½ accepted */}
             {proposalMeta.status === "accepted" && (
               <motion.div
                 variants={fab.animation.item}
@@ -645,7 +645,7 @@ export function BookingFABMenu({
               </motion.div>
             )}
 
-            {/* Open in Maps ÔÇö client only, accepted */}
+            {/* Open in Maps ï¿½ï¿½ï¿½ client only, accepted */}
             {!isArtist &&
               proposalMeta.status === "accepted" &&
               artistSettings?.businessAddress && (
@@ -684,7 +684,7 @@ export function BookingFABMenu({
                 </motion.div>
               )}
 
-            {/* Status ÔÇö rejected */}
+            {/* Status ï¿½ï¿½ï¿½ rejected */}
             {proposalMeta.status === "rejected" && (
               <motion.div
                 variants={fab.animation.item}
@@ -702,7 +702,7 @@ export function BookingFABMenu({
         {/* ===== BOOKING WIZARD (hidden when proposal or voucher list is shown) ===== */}
         {!showProposal && !showVoucherList && (
           <>
-            {/* Panel Header ÔÇö SSOT label style */}
+            {/* Panel Header ï¿½ï¿½ï¿½ SSOT label style */}
             <motion.div variants={fab.animation.item} className={fab.itemRow}>
               {step !== "service" && step !== "success" && (
                 <button onClick={goBack} className={fab.itemButton}>
@@ -721,18 +721,15 @@ export function BookingFABMenu({
               )}
             </motion.div>
 
-            {/* STEP: SERVICE ÔÇö SSOT cards: transparent bg, 4px radius, no gap */}
+            {/* STEP: SERVICE ï¿½ï¿½ï¿½ SSOT cards: transparent bg, 4px radius, no gap */}
             {step === "service" && (
-              <div className="flex flex-col -my-2 w-full">
+              <div className="flex flex-col gap-2 w-full">
                 {artistServices.map(service => (
                   <motion.div
                     key={service.id || service.name}
                     variants={fab.animation.item}
                     className={cn(
-                      card.base,
-                      card.bg,
-                      card.interactive,
-                      "p-2 flex items-center gap-2 w-full"
+                      "rounded-2xl p-4 border border-border bg-card","hover:bg-secondary/50 active:scale-[0.98] transition-all cursor-pointer w-full"
                     )}
                     onClick={() => {
                       setSelectedService(service);
@@ -745,12 +742,12 @@ export function BookingFABMenu({
                     }}
                   >
                     <div className="flex-1 min-w-0 text-left">
-                      <p className="text-xs font-semibold text-foreground truncate">
+                      <p className="text-sm font-semibold text-foreground truncate">
                         {service.name}
                       </p>
-                      <p className="text-[9px] text-muted-foreground font-mono flex items-center gap-1">
-                        <Clock className="w-2.5 h-2.5 shrink-0" />
-                        {service.duration}m -À ${service.price} -À{" "}
+                      <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
+                        <Clock className="w-3 h-3 shrink-0" />
+                        {service.duration}m -ï¿½ ${service.price} -ï¿½{" "}
                         {service.sittings || 1}s
                       </p>
                     </div>
@@ -768,9 +765,9 @@ export function BookingFABMenu({
               </motion.div>
             )}
 
-            {/* STEP: FREQUENCY ÔÇö SSOT cards: transparent bg, 4px radius, no gap */}
+            {/* STEP: FREQUENCY ï¿½ï¿½ï¿½ SSOT cards: transparent bg, 4px radius, no gap */}
             {step === "frequency" && (
-              <div className="flex flex-col -my-2 w-full">
+              <div className="flex flex-col gap-2 w-full">
                 {freqOptions.map(({ id, label, Icon }) => {
                   const isSelected = frequency === id;
                   return (
@@ -778,10 +775,7 @@ export function BookingFABMenu({
                       key={id}
                       variants={fab.animation.item}
                       className={cn(
-                        card.base,
-                        card.bg,
-                        card.interactive,
-                        "p-2 flex items-center gap-2 w-full"
+                        "rounded-2xl p-4 border border-border bg-card","hover:bg-secondary/50 active:scale-[0.98] transition-all cursor-pointer w-full"
                       )}
                       onClick={() => {
                         setFrequency(id as any);
@@ -858,7 +852,7 @@ export function BookingFABMenu({
               </div>
             )}
 
-            {/* STEP: REVIEW ÔÇö SSOT cards for data rows */}
+            {/* STEP: REVIEW ï¿½ï¿½ï¿½ SSOT cards for data rows */}
             {step === "review" && (
               <>
                 {isLoadingAvailability && (
@@ -890,7 +884,7 @@ export function BookingFABMenu({
                 )}
 
                 {availability && (
-                  <div className="flex flex-col -my-2 w-full">
+                  <div className="flex flex-col gap-2 w-full">
                     {/* Metrics */}
                     <motion.div
                       variants={fab.animation.item}
@@ -1015,9 +1009,9 @@ export function BookingFABMenu({
               </>
             )}
 
-            {/* STEP: SUCCESS ÔÇö SSOT cards */}
+            {/* STEP: SUCCESS ï¿½ï¿½ï¿½ SSOT cards */}
             {step === "success" && (
-              <div className="flex flex-col -my-2 w-full">
+              <div className="flex flex-col gap-2 w-full">
                 <motion.div
                   variants={fab.animation.item}
                   className={cn(
@@ -1036,10 +1030,7 @@ export function BookingFABMenu({
                 <motion.div
                   variants={fab.animation.item}
                   className={cn(
-                    card.base,
-                    card.bg,
-                    card.interactive,
-                    "p-2 flex items-center gap-2 w-full"
+                    "rounded-2xl p-4 border border-border bg-card","hover:bg-secondary/50 active:scale-[0.98] transition-all cursor-pointer w-full"
                   )}
                   onClick={handleClose}
                 >

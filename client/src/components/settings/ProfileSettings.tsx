@@ -12,6 +12,7 @@ import {
   Camera, Mail, Phone, MapPin, Globe,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/ssot";
+import { UserAvatar } from "@/components/ui/ssot/UserAvatar";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
@@ -291,11 +292,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
             style={{ cursor: "pointer", position: "relative" }}
             onClick={() => avatarInputRef.current?.click()}
           >
-            {user?.avatar ? (
-              <img src={user.avatar} alt="Profile" />
-            ) : (
-              <span>{(user?.name || "?").charAt(0).toUpperCase()}</span>
-            )}
+            <UserAvatar name={user?.name} avatar={user?.avatar} size="xl" />
             <div
               style={{
                 position: "absolute",

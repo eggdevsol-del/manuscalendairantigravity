@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Toaster, TooltipProvider } from "@/components/ui";
 import { UIDebugProvider } from "@/_core/contexts/UIDebugContext";
 import { BottomNavProvider } from "@/contexts/BottomNavContext";
@@ -12,7 +12,10 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { TeaserProvider } from "@/contexts/TeaserContext";
 import { SplashScreen } from "@/components/SplashScreen";
 import { UpdateBanner } from "@/components/UpdateBanner";
+import { InstallAppBanner } from "@/components/InstallAppBanner";
 import { useVersionCheck } from "@/lib/useVersionCheck";
+
+const PublicBookingPage = React.lazy(() => import("@/pages/public/PublicBookingPage"));
 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -176,7 +179,8 @@ function Router() {
     location.startsWith("/start/") ||
     location.startsWith("/deposit/") ||
     location.startsWith("/balance/") ||
-    location.startsWith("/studio/");
+    location.startsWith("/studio/") ||
+    location.startsWith("/book/");
 
   return (
     <div className="min-h-screen">
@@ -191,6 +195,9 @@ function Router() {
         {/* Public funnel - no auth required */}
         <Route path="/studio/:slug" component={PublicStudioFunnel} />
         <Route path="/start/:slug" component={PublicFunnel} />
+        <Route path="/book/:slug">
+          <Suspense fallback={null}><PublicBookingPage /></Suspense>
+        </Route>
         <Route path="/deposit/:token" component={DepositSheet} />
         <Route path="/balance/:id" component={BalanceSheet} />
 
@@ -243,6 +250,7 @@ function App() {
               <InstallPrompt />
               <ConditionalIOSInstallPrompt />
               <UpdateBanner />
+              <InstallAppBanner />
               <ErrorBoundary boundary="app-root">
                 <Router />
               </ErrorBoundary>

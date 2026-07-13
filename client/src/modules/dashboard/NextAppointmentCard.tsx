@@ -1,17 +1,14 @@
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
   Button,
   Card,
   CardContent,
 } from "@/components/ui";
+import { UserAvatar } from "@/components/ui/ssot";
 import { Clock, MapPin, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { tokens } from "@/ui/tokens";
-import { getAssetUrl } from "@/lib/assets";
 
 interface NextAppointmentCardProps {
   appointment: any; // Using any for simplicity in wiring, ideally typed from TRPC router output
@@ -57,10 +54,7 @@ export function NextAppointmentCard({ appointment }: NextAppointmentCardProps) {
             {/* pl-7 to clear the w-2 (0.5rem) border + spacing */}
             <div className="flex justify-between items-start mb-4">
               <div className="flex gap-3 items-center">
-                <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
-                  <AvatarImage src={getAssetUrl(client?.avatar)} />
-                  <AvatarFallback>{client?.name?.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <UserAvatar name={client?.name} avatar={client?.avatar} size="lg" ring />
                 <div>
                   <h3 className="font-bold text-lg leading-tight">
                     {client?.name}

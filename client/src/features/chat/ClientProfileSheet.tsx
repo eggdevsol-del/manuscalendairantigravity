@@ -1,4 +1,5 @@
 import { BottomSheet } from "@/components/ui/ssot";
+import { UserAvatar } from "@/components/ui/ssot/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -196,19 +197,7 @@ export function ClientProfileSheet({
         {/* Sticky Header */}
         <div className="shrink-0 pt-6 pb-4 px-6 border-b border-border/50 bg-background/80 backdrop-blur-md flex items-center justify-between z-10 relative">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center overflow-hidden">
-              {client.avatar ? (
-                <img
-                  src={getAssetUrl(client.avatar)}
-                  alt={client.name || "Client"}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-white font-bold text-lg">
-                  {(client.name || "?")[0].toUpperCase()}
-                </span>
-              )}
-            </div>
+            <UserAvatar name={client.name} avatar={client.avatar} size="lg" />
             <div>
               <h3 className="font-bold text-lg flex items-center gap-1.5 text-foreground">
                 {client.name || "Unknown Client"}

@@ -43,7 +43,8 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   const isPublic = publicPaths.includes(normalizedPath) || 
                    normalizedPath.startsWith("/start/") ||
                    normalizedPath.startsWith("/deposit/") ||
-                   normalizedPath.startsWith("/studio/");
+                   normalizedPath.startsWith("/studio/") ||
+                   normalizedPath.startsWith("/book/");
 
   if (!isPublic) {
     window.location.href = "/login";

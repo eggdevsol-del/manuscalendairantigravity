@@ -1,9 +1,8 @@
 import React from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useUIDebug } from "@/_core/contexts/UIDebugContext";
-import { getAssetUrl } from "@/lib/assets";
 import { Card, Switch } from "@/components/ui";
-import { LoadingState, PageShell, PageHeader } from "@/components/ui/ssot";
+import { LoadingState, PageShell, PageHeader, UserAvatar } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import {
@@ -23,7 +22,7 @@ import {
   Plane,
   RefreshCw,
   Store,
-  User,
+
   Users,
   Zap,
 } from "lucide-react";
@@ -201,13 +200,7 @@ export default function Settings() {
                   className="p-4 flex items-center gap-4 cursor-pointer hover:bg-secondary/50 transition-colors"
                   onClick={nav("profile")}
                 >
-                  <div className="w-14 h-14 rounded-full bg-secondary/50 flex items-center justify-center overflow-hidden border border-border">
-                    {user?.avatar ? (
-                      <img src={getAssetUrl(user.avatar)} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      <User className="w-7 h-7 text-muted-foreground" />
-                    )}
-                  </div>
+                  <UserAvatar name={user?.name} avatar={user?.avatar} size="xl" />
                   <div className="flex-1">
                     <p className="text-base font-bold text-foreground">{user?.name || "User"}</p>
                     <p className="text-sm text-muted-foreground capitalize">{user?.role || "Account"}</p>

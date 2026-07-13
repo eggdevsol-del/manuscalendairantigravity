@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { UserAvatar } from "@/components/ui/ssot/UserAvatar";
 /**
  * UI SINGLE SOURCE OF TRUTH (SSOT)
  * -------------------------------
@@ -38,6 +39,10 @@ export interface ConversationCardProps {
   isActive?: boolean;
   /** Whether this conversation is a studio invite */
   isStudioInvite?: boolean;
+  /** Whether client is waiting for artist to respond (locked state) */
+  isWaitingForResponse?: boolean;
+  /** LLM-generated booking summary (shown in expanded waiting state) */
+  bookingSummary?: string;
 }
 
 export function ConversationCard({
@@ -51,21 +56,31 @@ export function ConversationCard({
   isNew,
   isActive,
   isStudioInvite,
+  isWaitingForResponse,
+  bookingSummary,
 }: ConversationCardProps) {
   return (
     <Card
-      onClick={onClick}
+      onClick={isWaitingForResponse ? undefined : onClick}
       className={cn(
         tokens.card.base,
         tokens.card.bg,
-        tokens.card.interactive,
+        !isWaitingForResponse && tokens.card.interactive,
         tokens.spacing.cardPadding,
         tokens.spacing.cardPadding,
         isActive && "bg-primary/10 border-primary/50",
         isStudioInvite && "bg-[var(--color-status-info-bg)] border border-[var(--color-status-info-border)]",
+        isWaitingForResponse && "opacity-80 cursor-default",
         className
       )}
     >
+      {isWaitingForResponse && (
+        <>
+          {/* Waiting Indicator: Left Edge Line (Amber) */}
+          <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-amber-500" />
+          <div className="absolute left-0 top-0 bottom-0 w-[20%] bg-gradient-to-r from-amber-500/10 to-transparent pointer-events-none" />
+        </>
+      )}
       {isNew && !isStudioInvite && (
         <>
           {/* New Indicator: Left Edge Line (Emerald) */}
@@ -86,19 +101,7 @@ export function ConversationCard({
 
       <div className="flex items-center gap-4 relative z-10">
         {/* Avatar */}
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-white/5">
-          {avatar ? (
-            <img
-              src={avatar}
-              alt={name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="text-white font-bold text-lg">
-              {name?.charAt(0).toUpperCase() || "?"}
-            </span>
-          )}
-        </div>
+        <UserAvatar name={name} avatar={avatar} size="lg" ring />
 
         {/* Content */}
         <div className="flex-1 min-w-0">
@@ -113,7 +116,19 @@ export function ConversationCard({
             )}
           </div>
 
-          {subject ? (
+          {isWaitingForResponse && bookingSummary ? (
+            <>
+              <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                {bookingSummary}
+              </p>
+              <div className="mt-1.5">
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 inline-flex items-center gap-1 animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                  Waiting for artist to respond
+                </span>
+              </div>
+            </>
+          ) : subject ? (
             <p className="text-sm font-medium text-foreground/90 truncate flex items-center gap-2">
               {subject}
             </p>
@@ -145,9 +160,11 @@ export function ConversationCard({
               {unreadCount}
             </div>
           )}
-          <div className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground group-hover:border-border group-hover:text-foreground transition-colors">
-            <ChevronRight className="w-4 h-4" />
-          </div>
+          {!isWaitingForResponse && (
+            <div className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground group-hover:border-border group-hover:text-foreground transition-colors">
+              <ChevronRight className="w-4 h-4" />
+            </div>
+          )}
         </div>
       </div>
     </Card>

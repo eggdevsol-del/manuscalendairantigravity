@@ -216,29 +216,48 @@ export function ConversationsList({
                   ))}
 
                 {/* 2. Standard Conversations */}
-                {filteredConversations?.map(conv => (
-                  <ConversationCard
-                    key={conv.id}
-                    name={conv.otherUser?.name || "Unknown User"}
-                    avatar={conv.otherUser?.avatar}
-                    timestamp={new Date(conv.createdAt!).toLocaleDateString(
-                      "en-US",
-                      {
-                        month: "short",
-                        day: "numeric",
+                {filteredConversations?.map(conv => {
+                  // Derive waiting state: client is waiting if conversation has a lead
+                  // and the artist hasn't sent a non-system message yet
+                  const isClientWaiting =
+                    user?.role === "client" &&
+                    !!(conv as any).leadId &&
+                    (!(conv as any).lastMessage ||
+                      (conv as any).lastMessage?.messageType === "system" ||
+                      (conv as any).lastMessage?.senderId === user?.id);
+
+                  const waitingSummary = isClientWaiting
+                    ? (conv as any).lastMessage?.content?.startsWith("{")
+                      ? undefined // JSON grid data, skip
+                      : (conv as any).lastMessage?.content || "Booking request sent"
+                    : undefined;
+
+                  return (
+                    <ConversationCard
+                      key={conv.id}
+                      name={conv.otherUser?.name || "Unknown User"}
+                      avatar={conv.otherUser?.avatar}
+                      timestamp={new Date(conv.createdAt!).toLocaleDateString(
+                        "en-US",
+                        {
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )}
+                      unreadCount={conv.unreadCount}
+                      isActive={activeId === conv.id}
+                      isStudioInvite={
+                        (conv as any).lastMessage?.messageType === "studio_invite"
                       }
-                    )}
-                    unreadCount={conv.unreadCount}
-                    isActive={activeId === conv.id}
-                    isStudioInvite={
-                      (conv as any).lastMessage?.messageType === "studio_invite"
-                    }
-                    onClick={() => {
-                      setLocation(`/chat/${conv.id}`);
-                      onSelect?.();
-                    }}
-                  />
-                ))}
+                      isWaitingForResponse={isClientWaiting}
+                      bookingSummary={waitingSummary}
+                      onClick={() => {
+                        setLocation(`/chat/${conv.id}`);
+                        onSelect?.();
+                      }}
+                    />
+                  );
+                })}
               </div>
             ) : (
               <Empty>

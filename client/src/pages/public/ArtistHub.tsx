@@ -3,6 +3,7 @@ import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Loader2, Instagram, Facebook, ArrowRight, Store, CalendarDays, Link as LinkIcon, CalendarPlus } from "lucide-react";
 import { motion, Variants } from "framer-motion";
+import { UserAvatar } from "@/components/ui/ssot";
 
 export default function ArtistHub() {
   const [, params] = useRoute("/:slug");
@@ -75,19 +76,7 @@ export default function ArtistHub() {
           className="relative mb-6 group"
         >
           <div className="w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-primary via-purple-500 to-pink-500 shadow-[0_0_40px_rgba(var(--primary-rgb),0.3)]">
-            <div className="w-full h-full rounded-full overflow-hidden bg-background/80 backdrop-blur-sm relative">
-              {artist.profileImage ? (
-                <img 
-                  src={artist.profileImage} 
-                  alt={artist.displayName} 
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-secondary/50 text-muted-foreground text-3xl font-light">
-                  {artist.displayName.charAt(0).toUpperCase()}
-                </div>
-              )}
-            </div>
+            <UserAvatar name={artist.displayName} avatar={artist.profileImage} size="2xl" ring />
           </div>
         </motion.div>
 
@@ -159,7 +148,7 @@ export default function ArtistHub() {
           {/* Primary CTA: Book Consult */}
           <motion.button
             variants={itemVariants}
-            onClick={() => setLocation(`/start/${slug}`)}
+            onClick={() => setLocation(`/book/${slug}`)}
             className="group relative w-full overflow-hidden rounded-[20px] p-[1px] transition-all active:scale-[0.98]"
           >
             <span className="absolute inset-0 bg-gradient-to-r from-primary via-purple-500 to-pink-500 opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
