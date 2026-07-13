@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Instagram } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -76,7 +77,8 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
 
   // Generate the booking link
   const baseUrl = window.location.origin;
-  const bookingLink = slug ? `${baseUrl}/${slug}` : null;
+  const bookingLink = slug ? `${baseUrl}/book/${slug}` : null;
+  const profileLink = slug ? `${baseUrl}/${slug}` : null;
 
   const handleCopy = async () => {
     if (!bookingLink) return;
@@ -96,7 +98,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
       try {
         await navigator.share({
           title: `Book with ${artistName}`,
-          text: `Start your tattoo consultation with me!`,
+          text: `Book your tattoo consultation with me!`,
           url: bookingLink,
         });
       } catch (error) {
@@ -104,6 +106,19 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
       }
     } else {
       handleCopy();
+    }
+  };
+
+  const [copiedBooking, setCopiedBooking] = useState(false);
+  const handleCopyBookingLink = async () => {
+    if (!bookingLink) return;
+    try {
+      await navigator.clipboard.writeText(bookingLink);
+      setCopiedBooking(true);
+      toast.success("Booking link copied!");
+      setTimeout(() => setCopiedBooking(false), 2000);
+    } catch (error) {
+      toast.error("Failed to copy link");
     }
   };
 
@@ -176,7 +191,7 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
           <div className="flex items-center gap-2">
             <div className="flex-1 flex items-center bg-muted/50 rounded-lg overflow-hidden">
               <span className="px-3 py-2 text-sm text-muted-foreground bg-muted/30 border-r border-border/50 whitespace-nowrap">
-                /start/
+                /book/
               </span>
               <Input
                 value={slug}
@@ -280,6 +295,40 @@ export default function ArtistLink({ artistId, artistName }: ArtistLinkProps) {
               </p>
             )}
           </>
+        )}
+
+        {/* Instagram Link in Bio — direct booking link */}
+        {bookingLink && settings?.publicSlug && (
+          <div className="border-t border-border/30 pt-4 space-y-2">
+            <div className="flex items-center gap-2 mb-2">
+              <Instagram className="w-4 h-4 text-pink-500" />
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Link in Bio
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Paste this in your Instagram bio. Clients go straight to your booking form — no sign-in needed.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                value={bookingLink}
+                readOnly
+                className="bg-muted/30 font-mono text-xs"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleCopyBookingLink}
+                className="shrink-0"
+              >
+                {copiedBooking ? (
+                  <Check className="w-4 h-4 text-[var(--color-success)]" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+          </div>
         )}
 
         {!settings?.publicSlug && (
