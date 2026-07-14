@@ -133,6 +133,39 @@ export const appointmentsRouter = router({
 
       return db.getAppointmentsByConversation(input);
     }),
+
+  /**
+   * Create a personal reminder/appointment (client use).
+   * No conversationId, artistId, or clientId required — uses authenticated user.
+   */
+  createPersonal: protectedProcedure
+    .input(z.object({
+      title: z.string().min(1),
+      startTime: z.string(),
+      endTime: z.string(),
+      description: z.string().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const timezone = getBusinessTimezone();
+      const startTimeUTC = localToUTC(input.startTime, timezone);
+      const endTimeUTC = localToUTC(input.endTime, timezone);
+
+      const newAppt = await db.createAppointment({
+        studioId: null,
+        conversationId: 0, // Personal reminders don't belong to a conversation
+        artistId: ctx.user.id,
+        clientId: ctx.user.id, // Self-referencing
+        title: input.title,
+        description: input.description || null,
+        startTime: new Date(startTimeUTC).toISOString().slice(0, 19).replace("T", " "),
+        endTime: new Date(endTimeUTC).toISOString().slice(0, 19).replace("T", " "),
+        timeZone: timezone,
+        status: "confirmed",
+        serviceName: "personal",
+      });
+
+      return newAppt;
+    }),
   create: protectedProcedure
     .input(
       z.object({

@@ -7,6 +7,7 @@ import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
 // ProposalSheet removed - not needed
 import { ProjectProposalMessage } from "@/components/chat/ProjectProposalMessage";
 import { PaymentRequestCard } from "@/components/chat/PaymentRequestCard";
+import { RescheduleDepositCard } from "@/components/chat/RescheduleDepositCard";
 import {
   StudioInviteMessage,
   StudioInviteMetadata,
@@ -820,6 +821,7 @@ export function ChatInterface({
                 const isClientConfirmation =
                   metadata?.type === "project_client_confirmation";
                 const isPaymentRequest = metadata?.type === "payment_request";
+                const isRescheduleDeposit = metadata?.type === "reschedule_deposit";
                 const isStudioInvite = message.messageType === "studio_invite";
 
                 // Try to parse as image grid (reference_grid / placement_grid)
@@ -835,9 +837,23 @@ export function ChatInterface({
                   <div
                     key={message.id}
                     id={`message-${message.id}`}
-                    className={`flex ${(isProjectProposal || isPaymentRequest) ? "justify-center w-full" : isOwn ? "justify-end" : "justify-start"}`}
+                    className={`flex ${(isProjectProposal || isPaymentRequest || isRescheduleDeposit) ? "justify-center w-full" : isOwn ? "justify-end" : "justify-start"}`}
                   >
-                    {isPaymentRequest ? (
+                    {isRescheduleDeposit ? (
+                      <div className="w-full flex justify-center">
+                        <RescheduleDepositCard
+                          metadata={metadata}
+                          isArtist={isArtist}
+                          onPress={() => {
+                            const appt = conversationAppointments?.find((a: any) => a.id === metadata.appointmentId);
+                            if (appt) {
+                              setSelectedAppointment(appt);
+                              setFABOpen(true);
+                            }
+                          }}
+                        />
+                      </div>
+                    ) : isPaymentRequest ? (
                       <div className="w-full flex justify-center">
                         <PaymentRequestCard
                           metadata={metadata}

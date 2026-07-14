@@ -36,7 +36,7 @@ export const PersonalReminderForm: React.FC<PersonalReminderFormProps> = ({
   const inputClass = cn(tokens.input.base, tokens.input.hero);
 
   // ── mutation ─────────────────────────────────────────────────────────────
-  const createMutation = trpc.appointments.create.useMutation({
+  const createMutation = trpc.appointments.createPersonal.useMutation({
     onSuccess: () => {
       toast.success("Reminder saved");
       onSuccess();
@@ -73,11 +73,6 @@ export const PersonalReminderForm: React.FC<PersonalReminderFormProps> = ({
       startTime: startISO,
       endTime: endISO,
       description: notes || undefined,
-      // Personal reminder fields — the endpoint may need to be extended to
-      // accept these without requiring conversationId / artistId / clientId.
-      conversationId: 0,
-      artistId: "",
-      clientId: "",
     });
   };
 
