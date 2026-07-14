@@ -1,8 +1,6 @@
 import { format, addMonths, subMonths, startOfMonth } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui";
-import { cn } from "@/lib/utils";
-import { tokens } from "@/ui/tokens";
 
 export interface CalendarMonthHeaderProps {
   activeDate: Date;
@@ -17,7 +15,6 @@ export function CalendarMonthHeader({
   isBreakdownOpen,
   onDateChange,
 }: CalendarMonthHeaderProps) {
-  const vt = tokens.calendar.viewToggle;
 
   return (
     <header className="flex items-center justify-between px-4 py-3 z-20 sticky top-0 bg-transparent">
@@ -66,22 +63,16 @@ export function CalendarMonthHeader({
         </Button>
       </div>
 
-      {/* Right: Week/Month toggle — balanced with Today button */}
-      <div className={vt.container}>
-        <button
-          type="button"
-          className={cn(vt.button, !isBreakdownOpen ? vt.active : vt.inactive)}
-          onClick={() => { if (isBreakdownOpen) onToggleBreakdown(); }}
+      {/* Right: View toggle — mirrors Today button dimensions */}
+      <div className="flex items-center">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-xs font-semibold text-primary hover:bg-primary/10 h-8 px-3"
+          onClick={onToggleBreakdown}
         >
-          Week
-        </button>
-        <button
-          type="button"
-          className={cn(vt.button, isBreakdownOpen ? vt.active : vt.inactive)}
-          onClick={() => { if (!isBreakdownOpen) onToggleBreakdown(); }}
-        >
-          Month
-        </button>
+          {isBreakdownOpen ? "Week" : "Month"}
+        </Button>
       </div>
     </header>
   );
