@@ -561,6 +561,7 @@ export const funnelRouter = router({
       z.object({
         conversationId: z.number(),
         messageId: z.number().optional(),
+        appointmentId: z.number().optional(), // For rescheduled appointments — reads per-sitting deposit
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -629,12 +630,23 @@ export const funnelRouter = router({
         lead = getNewLead;
       }
 
-      // Derive deposit amount from proposal metadata (SSOT) → percentage engine → existing lead value → flat fallback
+      // Derive deposit amount from: appointment record (reschedule) → proposal metadata → percentage engine → flat fallback
       {
         let depositCents: number | null = null;
 
-        // Priority 1: Read from the proposal message metadata (always re-derive when messageId present)
-        if (input.messageId) {
+        // Priority 0: For rescheduled appointments, use the per-sitting deposit stored on the appointment record
+        if (input.appointmentId) {
+          const appt = await db.query.appointments.findFirst({
+            where: eq(schema.appointments.id, input.appointmentId),
+          });
+          if (appt?.depositAmount && Number(appt.depositAmount) > 0) {
+            // appointmentService allocates per-sitting deposit in dollars
+            depositCents = Math.round(Number(appt.depositAmount) * 100);
+          }
+        }
+
+        // Priority 1: Read from the proposal message metadata (full project deposit)
+        if (!depositCents && input.messageId) {
           const proposalMsg = await db.query.messages.findFirst({
             where: eq(schema.messages.id, input.messageId),
           });

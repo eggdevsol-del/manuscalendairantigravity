@@ -899,8 +899,13 @@ export function BookingWizardContent({
                 <div className="p-3 bg-[var(--color-status-info-bg)] rounded-[8px] border border-[var(--color-status-info-border)]">
                   <h4 className="text-[10px] font-bold text-[var(--color-status-info-text)] uppercase tracking-widest mb-2 flex items-center gap-1.5"><Tag className="w-3 h-3" /> Deposit Required</h4>
                   {(() => {
-                    // depositAmount in metadata is stored in dollars — fee is rolled in for clean client UX
-                    const depositDollars = Number(proposalMeta.depositAmount || 0);
+                    // For rescheduled appointments, use the per-sitting deposit stored on the appointment record
+                    // instead of the full project deposit from proposal metadata
+                    const perSittingDeposit = selectedAppointmentRaw?.depositAmount;
+                    const isRescheduledDeposit = selectedAppointmentRaw?.paymentStatus === "pending_deposit" && perSittingDeposit;
+                    const depositDollars = isRescheduledDeposit
+                      ? Number(perSittingDeposit)
+                      : Number(proposalMeta.depositAmount || 0);
                     const depositCents = Math.round(depositDollars * 100);
                     const feeCents = Math.max(Math.round(depositCents * 0.034), 500);
                     const totalDollars = (depositCents + feeCents) / 100;
@@ -928,9 +933,11 @@ export function BookingWizardContent({
                         toast.info("Preparing secure checkout...");
                         // Step 1: Ensure lead exists and get deposit token URL
                         const msgId = selectedProposal?.message?.id;
+                        const aptId = selectedAppointmentRaw?.id;
                         const linkResult = await utils.client.funnel.getClientDepositLink.mutate({
                           conversationId: convoId,
                           ...(msgId ? { messageId: msgId } : {}),
+                          ...(aptId ? { appointmentId: aptId } : {}),
                         });
                         if (!linkResult?.url) {
                           toast.error("Could not generate deposit link");
