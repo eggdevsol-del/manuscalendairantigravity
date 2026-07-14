@@ -24,6 +24,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
     const [licenceNumber, setLicenceNumber] = useState("");
     const [depositAmount, setDepositAmount] = useState("");
     const [autoSendDepositInfo, setAutoSendDepositInfo] = useState(false);
+    const [rescheduleNoticePeriodHours, setRescheduleNoticePeriodHours] = useState(72);
     const [keywords, setKeywords] = useState("");
 
     const debouncedAddress = useDebounce(businessAddress, 1000);
@@ -64,6 +65,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
             setLicenceNumber(artistSettings.licenceNumber || "");
             setDepositAmount(artistSettings.depositAmount?.toString() || "");
             setAutoSendDepositInfo(!!artistSettings.autoSendDepositInfo);
+            setRescheduleNoticePeriodHours((artistSettings as any).rescheduleNoticePeriodHours ?? 72);
             setKeywords((artistSettings as any).keywords || "");
         }
     }, [artistSettings]);
@@ -81,6 +83,7 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                 licenceNumber,
                 depositAmount: depositAmount ? parseInt(depositAmount) : undefined,
                 autoSendDepositInfo: autoSendDepositInfo,
+                rescheduleNoticePeriodHours,
                 keywords,
                 workSchedule: artistSettings.workSchedule,
                 services: artistSettings.services,
@@ -319,6 +322,31 @@ export function BusinessSettings({ onBack }: { onBack: () => void }) {
                                     </p>
                                 </>
                             )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="rescheduleNoticePeriod">
+                                Reschedule Notice Period
+                            </Label>
+                            <Select
+                                value={String(rescheduleNoticePeriodHours)}
+                                onValueChange={(v) => setRescheduleNoticePeriodHours(Number(v))}
+                            >
+                                <SelectTrigger className="w-full bg-secondary/50 border-border">
+                                    <SelectValue placeholder="Select notice period" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="24">24 hours</SelectItem>
+                                    <SelectItem value="48">48 hours</SelectItem>
+                                    <SelectItem value="72">72 hours</SelectItem>
+                                    <SelectItem value="168">7 days</SelectItem>
+                                    <SelectItem value="336">14 days</SelectItem>
+                                    <SelectItem value="672">4 weeks</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">
+                                How much notice must clients provide to reschedule without forfeiting their deposit?
+                            </p>
                         </div>
                     </div>
 

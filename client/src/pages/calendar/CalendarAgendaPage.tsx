@@ -75,6 +75,12 @@ export default function CalendarAgendaPage() {
           }
           artistId={controller.user?.id}
           initialDate={controller.bookingInitialDate}
+          onReschedule={(apt: any) => controller.startReschedule(apt)}
+          onNoShow={(apt: any) => {
+            // Mark as no-show immediately
+            controller.refetch();
+            setFABOpen(false);
+          }}
         />
       );
     }
@@ -175,6 +181,21 @@ export default function CalendarAgendaPage() {
   return (
     <PageShell>
       <PageHeader title="Calendar" />
+
+      {/* Reschedule mode banner */}
+      {controller.isRescheduling && (
+        <div className="flex items-center justify-between px-4 py-2 bg-primary/10 border-b border-primary/20">
+          <span className="text-xs font-semibold text-primary">
+            Tap a date to reschedule
+          </span>
+          <button
+            onClick={controller.cancelReschedule}
+            className="text-xs font-medium text-muted-foreground hover:text-foreground"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
       <div
         className="relative flex flex-col md:flex-row flex-1 overflow-hidden"
         onTouchStart={handleTouchStart}
@@ -234,6 +255,7 @@ export default function CalendarAgendaPage() {
               onAppointmentTap={controller.handleAppointmentTap}
               onDateTap={controller.startBooking}
               activeArtists={controller.activeArtists}
+              rescheduleAppointmentId={controller.rescheduleAppointment?.id}
             />
           </div>
 

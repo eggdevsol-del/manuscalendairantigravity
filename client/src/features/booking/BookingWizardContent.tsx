@@ -21,15 +21,17 @@ import {
   CreditCard,
   DollarSign,
   ChevronRight,
+  CalendarClock,
+  UserX,
 } from "lucide-react";
 import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import {
   formatLocalTime,
   getBusinessTimezone,
 } from "../../../../shared/utils/timezone";
-import { AppointmentCheckInModal } from "@/components/modals/AppointmentCheckInModal";
+
 import { EditBookingModal } from "@/components/modals/EditBookingModal";
-import type { CheckInPhase } from "@/features/appointments/useAppointmentCheckIn";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
@@ -80,6 +82,8 @@ interface BookingWizardContentProps {
   showGoToChat?: boolean;
   onGoToChat?: () => void;
   initialDate?: Date;
+  onReschedule?: (appointment: any) => void;
+  onNoShow?: (appointment: any) => void;
 }
 
 function PolicyDropdown({
@@ -162,6 +166,8 @@ export function BookingWizardContent({
   showGoToChat,
   onGoToChat,
   initialDate,
+  onReschedule,
+  onNoShow,
 }: BookingWizardContentProps) {
   const [, setLocation] = useLocation();
   const { data: currentUser } = trpc.auth.me.useQuery();
@@ -258,9 +264,7 @@ export function BookingWizardContent({
     phone: "",
   });
   const [isCreatingClient, setIsCreatingClient] = useState(false);
-  const [showCheckInModal, setShowCheckInModal] = useState<CheckInPhase | null>(
-    null
-  );
+
   const [showEditBookingModal, setShowEditBookingModal] = useState(false);
   const [mysteryMapSelectedServiceId, setMysteryMapSelectedServiceId] = useState("");
 
@@ -656,40 +660,7 @@ export function BookingWizardContent({
   const balanceFeeCents = balanceCents > 0 ? Math.max(Math.round(balanceCents * 0.034), 500) : 0;
   const balanceTotalDollars = ((balanceCents + balanceFeeCents) / 100).toFixed(2);
 
-  if (showCheckInModal && selectedAppointmentRaw) {
-    return (
-      <div className="flex flex-col w-full min-h-[50vh] pt-2 pb-6 px-1">
-        <motion.div variants={fab.animation.item} className={fab.itemRow}>
-          <button
-            onClick={() => setShowCheckInModal(null)}
-            className={fab.itemButton}
-          >
-            <ArrowLeft className={fab.itemIconSize} />
-          </button>
-          <span
-            className={cn(
-              fab.itemLabel,
-              "uppercase tracking-widest font-bold flex-1"
-            )}
-          >
-            Checkout
-          </span>
-        </motion.div>
 
-        <div className="flex-1 overflow-y-auto mt-4 px-2">
-          <AppointmentCheckInModal
-            isOpen={!!showCheckInModal}
-            checkIn={{
-              appointment: selectedAppointmentRaw,
-              phase: showCheckInModal,
-            }}
-            onDismiss={() => setShowCheckInModal(null)}
-            updateAppointment={updateAppointmentMutation}
-          />
-        </div>
-      </div>
-    );
-  }
 
   // Find the exact client object associated with this appointment/conversation if available in filteredClients
   const matchedClient = filteredClients.find(
@@ -1281,44 +1252,26 @@ export function BookingWizardContent({
             )}
 
             {isArtist &&
-              proposalMeta.status === "accepted" &&
               selectedAppointmentRaw &&
-              selectedAppointmentRaw.status !== "completed" && (
+              selectedAppointmentRaw.status !== "completed" &&
+              selectedAppointmentRaw.status !== "no-show" &&
+              selectedAppointmentRaw.status !== "cancelled" && (
                 <motion.div
                   variants={fab.animation.item}
                   className="pt-1 flex flex-col gap-2"
                 >
-                  {!(
-                    selectedAppointmentRaw.clientArrived === 1 ||
-                    selectedAppointmentRaw.clientArrived === true
-                  ) ? (
-                    <button
-                      onClick={() => setShowCheckInModal("arrival")}
-                      className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border border-[var(--color-status-success-border)] hover:bg-[var(--color-status-success-bg)] flex items-center justify-center gap-2"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      Client Check-in
-                    </button>
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-2 px-3 py-2 bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] rounded-[4px] border border-[var(--color-status-success-border)] justify-center">
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-success)] opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-success)]"></span>
-                        </span>
-                        <span className="text-[10px] font-bold uppercase tracking-widest">
-                          In Progress
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setShowCheckInModal("completion")}
-                        className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 mt-1"
-                      >
-                        <CheckCircle2 className="w-4 h-4" />
-                        Finish Project
-                      </button>
-                    </>
-                  )}
+                  <button
+                    onClick={() => onReschedule?.(selectedAppointmentRaw)}
+                    className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-secondary/60 border border-border text-foreground text-sm font-medium active:scale-[0.98] transition-all"
+                  >
+                    <CalendarClock className="w-4 h-4" /> Reschedule
+                  </button>
+                  <button
+                    onClick={() => onNoShow?.(selectedAppointmentRaw)}
+                    className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-sm font-medium active:scale-[0.98] transition-all"
+                  >
+                    <UserX className="w-4 h-4" /> Mark No-Show
+                  </button>
                 </motion.div>
               )}
 
@@ -1556,39 +1509,23 @@ export function BookingWizardContent({
             </motion.div>
           )}
 
-          {isArtist && selectedAppointmentRaw.status !== "completed" && (
+          {isArtist &&
+            selectedAppointmentRaw.status !== "completed" &&
+            selectedAppointmentRaw.status !== "no-show" &&
+            selectedAppointmentRaw.status !== "cancelled" && (
             <motion.div variants={fab.animation.item} className="pt-1 flex flex-col gap-2">
-              {!(
-                selectedAppointmentRaw.clientArrived === 1 ||
-                selectedAppointmentRaw.clientArrived === true
-              ) ? (
-                <button
-                  onClick={() => setShowCheckInModal("arrival")}
-                  className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border border-[var(--color-status-success-border)] hover:bg-[var(--color-status-success-bg)] flex items-center justify-center gap-2"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  Client Check-in
-                </button>
-              ) : (
-                <>
-                  <div className="flex items-center gap-2 px-3 py-2 bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] rounded-[4px] border border-[var(--color-status-success-border)] justify-center">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-success)] opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-success)]"></span>
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest">
-                      In Progress
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setShowCheckInModal("completion")}
-                    className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 mt-1"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    Finish Project
-                  </button>
-                </>
-              )}
+              <button
+                onClick={() => onReschedule?.(selectedAppointmentRaw)}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-secondary/60 border border-border text-foreground text-sm font-medium active:scale-[0.98] transition-all"
+              >
+                <CalendarClock className="w-4 h-4" /> Reschedule
+              </button>
+              <button
+                onClick={() => onNoShow?.(selectedAppointmentRaw)}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-sm font-medium active:scale-[0.98] transition-all"
+              >
+                <UserX className="w-4 h-4" /> Mark No-Show
+              </button>
             </motion.div>
           )}
 

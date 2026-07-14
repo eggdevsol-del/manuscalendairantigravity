@@ -2,6 +2,7 @@ import { useBottomNav } from "@/contexts/BottomNavContext";
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
   addDays,
@@ -301,6 +302,22 @@ export function useCalendarAgendaController() {
   const [bookingInitialDate, setBookingInitialDate] = useState<
     Date | undefined
   >(undefined);
+  // ── Reschedule mode ──────────────────────────────────────────────────
+  const [rescheduleAppointment, setRescheduleAppointment] = useState<any>(null);
+  const reschedule = trpc.appointments.reschedule.useMutation({
+    onSuccess: (result) => {
+      if (result.depositForfeited) {
+        toast.info("Appointment rescheduled. New deposit required from client.");
+      } else {
+        toast.success("Appointment rescheduled successfully.");
+      }
+      setRescheduleAppointment(null);
+      refetch();
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to reschedule");
+    },
+  });
 
   const { data: proposalData, isPending } =
     trpc.appointments.getProposalForAppointment.useQuery(
@@ -312,22 +329,56 @@ export function useCalendarAgendaController() {
 
   const handleAppointmentTap = useCallback(
     (apt: any) => {
+      // If in reschedule mode, ignore appointment taps
+      if (rescheduleAppointment) return;
       setIsBookingStarted(false);
       setSelectedAppointment(apt);
       setFABOpen(true);
     },
-    [setFABOpen]
+    [setFABOpen, rescheduleAppointment]
   );
 
   const startBooking = useCallback(
     (date?: Date) => {
+      // If in reschedule mode, complete the reschedule to this date
+      if (rescheduleAppointment) {
+        const originalStart = new Date(rescheduleAppointment.startTime);
+        const originalEnd = new Date(rescheduleAppointment.endTime);
+        const duration = originalEnd.getTime() - originalStart.getTime();
+        const newStart = date || new Date();
+        const newEnd = new Date(newStart.getTime() + duration);
+        // Keep original time, just change the date
+        newStart.setHours(originalStart.getHours(), originalStart.getMinutes(), 0, 0);
+        newEnd.setHours(originalEnd.getHours(), originalEnd.getMinutes(), 0, 0);
+
+        reschedule.mutate({
+          appointmentId: rescheduleAppointment.id,
+          newStartTime: newStart.toISOString(),
+          newEndTime: newEnd.toISOString(),
+        });
+        return;
+      }
       setSelectedAppointment(null);
       setBookingInitialDate(date);
       setIsBookingStarted(true);
       setFABOpen(true);
     },
+    [setFABOpen, rescheduleAppointment, reschedule]
+  );
+
+  const startReschedule = useCallback(
+    (appointment: any) => {
+      setSelectedAppointment(null);
+      setFABOpen(false);
+      setRescheduleAppointment(appointment);
+      toast.info(`Tap a new date to reschedule ${appointment.clientName || appointment.title}`);
+    },
     [setFABOpen]
   );
+
+  const cancelReschedule = useCallback(() => {
+    setRescheduleAppointment(null);
+  }, []);
 
   return {
     user,
@@ -348,7 +399,6 @@ export function useCalendarAgendaController() {
     setSelectedAppointment,
     proposalData,
     isLoadingProposal,
-    // No handleScroll anymore, handled by hook
     refetch,
     weeklyIncome,
     isBreakdownOpen,
@@ -358,5 +408,10 @@ export function useCalendarAgendaController() {
     artistSettings,
     setActiveDate,
     activeArtists,
+    // Reschedule
+    rescheduleAppointment,
+    startReschedule,
+    cancelReschedule,
+    isRescheduling: !!rescheduleAppointment,
   };
 }

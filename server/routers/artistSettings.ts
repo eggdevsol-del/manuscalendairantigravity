@@ -32,6 +32,7 @@ export const artistSettingsRouter = router({
           businessCountry: "AU", // Safe fallback
           depositAmount: null,
           depositPercentage: 25,
+          rescheduleNoticePeriodHours: 72,
           autoSendDepositInfo: false,
           sendAutomatedReminders: true,
           workSchedule: JSON.stringify({}),
@@ -76,6 +77,7 @@ export const artistSettingsRouter = router({
         businessAddress: settings.businessAddress,
         depositAmount: settings.depositAmount,
         depositPercentage: settings.depositPercentage ?? 25,
+        rescheduleNoticePeriodHours: settings.rescheduleNoticePeriodHours ?? 72,
         services: settings.services,
         bsb: settings.bsb,
         accountNumber: settings.accountNumber,
@@ -121,6 +123,7 @@ export const artistSettingsRouter = router({
         showCity: z.number().optional(),
         showWebsite: z.number().optional(),
         websiteUrl: z.string().optional(),
+        rescheduleNoticePeriodHours: z.number().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {

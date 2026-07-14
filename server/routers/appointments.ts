@@ -315,6 +315,101 @@ export const appointmentsRouter = router({
 
       return db.updateAppointment(id, processedUpdates, ctx.user.id);
     }),
+
+  /**
+   * Reschedule an appointment to a new date.
+   * Checks the artist's notice period setting to determine if the deposit
+   * carries over or is forfeited (requiring a new deposit from the client).
+   */
+  reschedule: artistProcedure
+    .input(z.object({
+      appointmentId: z.number(),
+      newStartTime: z.string(), // ISO string
+      newEndTime: z.string(),   // ISO string
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const appointment = await db.getAppointment(input.appointmentId);
+      if (!appointment) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+      }
+      if (appointment.artistId !== ctx.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Not your appointment" });
+      }
+
+      // Get artist's reschedule notice period
+      const settings = await db.getArtistSettings(ctx.user.id);
+      const noticePeriodHours = settings?.rescheduleNoticePeriodHours ?? 72;
+
+      // Check if reschedule is within notice period
+      const now = new Date();
+      const originalStart = new Date(appointment.startTime);
+      const hoursUntilAppointment = (originalStart.getTime() - now.getTime()) / (1000 * 60 * 60);
+      const sufficientNotice = hoursUntilAppointment >= noticePeriodHours;
+
+      const nowStr = new Date().toISOString().slice(0, 19).replace("T", " ");
+
+      if (sufficientNotice) {
+        // Deposit carries over — simple date move
+        await db.updateAppointment(input.appointmentId, {
+          startTime: input.newStartTime,
+          endTime: input.newEndTime,
+          status: "confirmed" as any,
+          updatedAt: nowStr,
+        }, ctx.user.id);
+
+        // Send reschedule confirmation message to conversation
+        if (appointment.conversationId) {
+          await db.createMessage({
+            conversationId: appointment.conversationId,
+            senderId: ctx.user.id,
+            content: `Appointment rescheduled to ${new Date(input.newStartTime).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}. Your existing deposit has been transferred.`,
+            messageType: "system" as any,
+          });
+        }
+
+        return { success: true, depositForfeited: false };
+      } else {
+        // Insufficient notice — deposit forfeited, new deposit required
+        const depositAmountCents = appointment.depositAmount || 0;
+        const servicePriceCents = appointment.price || 0;
+
+        // Update appointment to new date, reset payment status for new deposit
+        await db.updateAppointment(input.appointmentId, {
+          startTime: input.newStartTime,
+          endTime: input.newEndTime,
+          status: "pending" as any,
+          depositPaid: 0,
+          totalPaidAmountCents: 0,
+          remainingBalanceCents: appointment.totalExpectedAmountCents || servicePriceCents,
+          paymentStatus: "pending_deposit" as any,
+          updatedAt: nowStr,
+        }, ctx.user.id);
+
+        // Create reschedule chat card requiring new deposit
+        if (appointment.conversationId) {
+          const meta = {
+            type: "reschedule_deposit",
+            appointmentId: input.appointmentId,
+            originalDate: appointment.startTime,
+            newDate: input.newStartTime,
+            depositAmount: depositAmountCents, // in cents or dollars depending on source
+            serviceName: appointment.serviceName || appointment.title,
+            forfeitedDepositAmount: depositAmountCents,
+            status: "pending", // pending → confirmed when new deposit paid
+          };
+
+          await db.createMessage({
+            conversationId: appointment.conversationId,
+            senderId: ctx.user.id,
+            content: `Your appointment has been rescheduled. As this was within the ${noticePeriodHours}-hour notice period, a new deposit is required to confirm the new date.`,
+            messageType: "system" as any,
+            metadata: JSON.stringify(meta),
+          });
+        }
+
+        return { success: true, depositForfeited: true, forfeitedAmount: depositAmountCents };
+      }
+    }),
   delete: protectedProcedure
     .input(z.number())
     .mutation(async ({ input, ctx }) => {

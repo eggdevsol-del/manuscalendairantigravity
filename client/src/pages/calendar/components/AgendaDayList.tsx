@@ -19,6 +19,7 @@ interface AgendaDayListProps {
   onAppointmentTap?: (apt: any) => void;
   onDateTap?: (date: Date) => void;
   activeArtists?: any[];
+  rescheduleAppointmentId?: number;
 }
 
 const dayKeys = [
@@ -41,6 +42,7 @@ export function AgendaDayList({
   onAppointmentTap,
   onDateTap,
   activeArtists = [],
+  rescheduleAppointmentId,
 }: AgendaDayListProps) {
   return (
     <div
@@ -131,7 +133,8 @@ export function AgendaDayList({
                           )}
                           {artistEvents.length > 0
                             ? artistEvents.map((apt: any) => {
-                                const style = getEventStyle(apt);
+                                  const style = getEventStyle(apt);
+                                const isBeingRescheduled = rescheduleAppointmentId === apt.id;
                                 return (
                                   <div
                                     key={apt.id}
@@ -142,7 +145,8 @@ export function AgendaDayList({
                                       tokens.calendar.eventCard.interactive,
                                       tokens.calendar.eventCard.padding,
                                       "shadow-sm flex flex-col gap-1 cursor-pointer active:scale-[0.98] transition-transform",
-                                      style.className
+                                      style.className,
+                                      isBeingRescheduled && "opacity-30 border-dashed pointer-events-none"
                                     )}
                                   >
                                     <div className="font-bold text-sm z-10 relative truncate">
