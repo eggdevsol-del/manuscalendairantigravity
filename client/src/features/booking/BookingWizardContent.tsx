@@ -20,6 +20,7 @@ import {
   Upload,
   CreditCard,
   DollarSign,
+  ChevronRight,
 } from "lucide-react";
 import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import {
@@ -36,7 +37,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
 import { useLocation } from "wouter";
-import { tokens } from "@/ui/tokens";
+import { tokens, typography } from "@/ui/tokens";
 import { InlineFormSigning } from "./components/InlineFormSigning";
 import { EmbeddedStripeCheckout } from "@/features/stripe/EmbeddedStripeCheckout";
 import { UserAvatar } from "@/components/ui/ssot";
@@ -1777,9 +1778,9 @@ export function BookingWizardContent({
             )}
 
             {step === "service" && (
-              <div className="flex flex-col gap-1.5 pt-1">
+              <div className="flex flex-col gap-2 pt-1">
                 {(!effectiveServices || effectiveServices.length === 0) && (
-                  <p className="text-[10px] text-muted-foreground p-4 text-center">
+                  <p className={cn(typography.pico, "text-muted-foreground p-4 text-center")}>
                     No services found for this artist.
                   </p>
                 )}
@@ -1791,8 +1792,9 @@ export function BookingWizardContent({
                       card.base,
                       card.bg,
                       card.interactive,
-                      "p-3 flex items-center justify-between gap-3 w-full text-left relative overflow-hidden"
+                      "p-4 flex items-center justify-between gap-3 w-full text-left relative overflow-hidden"
                     )}
+                    style={{ '--service-accent': service.color || 'var(--primary)' } as React.CSSProperties}
                     onClick={() => {
                       setSelectedService(service);
                       const sittings = Number(service.sittings) || 1;
@@ -1805,28 +1807,26 @@ export function BookingWizardContent({
                       }
                     }}
                   >
-                    {service.color && (
-                      <>
-                        <div
-                          className="absolute inset-y-0 left-0 w-1.5 pointer-events-none z-0 brightness-110 saturate-50 opacity-60"
-                          style={{ backgroundColor: service.color }}
-                        />
-                        <div
-                          className="absolute inset-y-0 left-0 w-1/4 pointer-events-none opacity-20 z-0 saturate-50"
-                          style={{
-                            background: `linear-gradient(to right, ${service.color}, transparent)`,
-                          }}
-                        />
-                      </>
-                    )}
+                    {/* Left accent — SSOT card.leftAccent */}
+                    <div
+                      className={cn(card.leftAccent, "rounded-r-sm")}
+                      style={{ backgroundColor: 'var(--service-accent)' }}
+                    />
+                    {/* Subtle glow gradient */}
+                    <div
+                      className="absolute inset-y-0 left-0 w-1/3 pointer-events-none opacity-[0.08] z-0"
+                      style={{ background: 'linear-gradient(to right, var(--service-accent), transparent)' }}
+                    />
                     <div className="flex-1 min-w-0 relative z-10">
-                      <p className="text-[11px] font-bold text-foreground uppercase tracking-wider truncate">
+                      <p className={cn(typography.nano, "text-foreground truncate")}>
                         {service.name}
                       </p>
-                      <p className="text-[9px] text-muted-foreground">
+                      <p className={cn(typography.pico, "text-muted-foreground mt-0.5")}>
                         {service.duration} mins · ${service.price}
+                        {Number(service.sittings) > 1 && ` · ${service.sittings} sittings`}
                       </p>
                     </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 relative z-10" />
                   </motion.button>
                 ))}
               </div>
