@@ -26,7 +26,9 @@ export const authRouter = router({
         savedSignature: z.string().max(50000).optional(),
         address: z.string().max(300).optional(),
         city: z.string().max(100).optional(),
+        country: z.string().max(100).optional(),
         birthday: z.string().max(20).optional(),
+        gender: z.enum(["male", "female", "other", "prefer_not_to_say"]).optional(),
         instagramUsername: z.string().max(60).optional(),
       })
     )

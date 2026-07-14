@@ -84,6 +84,20 @@ export default function ClientHome() {
     }
   }, [setBottomNavHidden]);
 
+  // Open artist profile directly (from tapping artist name/avatar in feed)
+  const handleArtistProfileTap = useCallback((card: FeedCardData) => {
+    setFocusedArtist({
+      id: card.artistId,
+      name: card.artistName,
+      avatar: card.artistAvatar,
+      slug: card.artistSlug,
+      tappedImageId: card.id,
+    });
+    setShowProfile(true);
+    setHeaderHidden(true);
+    setBottomNavHidden(true);
+  }, [setBottomNavHidden]);
+
   // Exit artist focus mode
   const handleExitFocus = useCallback(() => {
     setFocusedArtist(null);
@@ -176,7 +190,7 @@ export default function ClientHome() {
           <>
             <div
               className="client-home-avatar"
-              onClick={() => setLocation("/settings")}
+              onClick={() => setLocation("/profile")}
             >
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Profile" />
@@ -248,7 +262,7 @@ export default function ClientHome() {
         <div className="client-home-content-inner">
           {/* Base layer: always rendered (discovery or home) */}
           {view === "discovery" ? (
-            <DiscoverFeedContent onImageTap={handleImageTap} />
+            <DiscoverFeedContent onImageTap={handleImageTap} onArtistProfileTap={handleArtistProfileTap} />
           ) : (
             <div className="client-home-view">
               <MyArtistsSection

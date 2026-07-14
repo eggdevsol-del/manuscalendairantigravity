@@ -1236,6 +1236,7 @@ export const leads = mysqlTable(
     clientBirthdate: varchar({ length: 20 }),
     clientEmail: varchar({ length: 320 }).notNull(),
     clientPhone: varchar({ length: 20 }),
+    clientGender: mysqlEnum(["male", "female", "other", "prefer_not_to_say"]),
 
     // Lead source tracking
     source: mysqlEnum([

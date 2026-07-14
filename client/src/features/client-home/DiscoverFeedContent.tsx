@@ -14,9 +14,10 @@ import { toast } from "sonner";
 
 interface DiscoverFeedContentProps {
   onImageTap?: (card: FeedCardData) => void;
+  onArtistProfileTap?: (card: FeedCardData) => void;
 }
 
-export default function DiscoverFeedContent({ onImageTap }: DiscoverFeedContentProps) {
+export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: DiscoverFeedContentProps) {
   const [, setLocation] = useLocation();
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -72,14 +73,23 @@ export default function DiscoverFeedContent({ onImageTap }: DiscoverFeedContentP
     toast.success("Link copied to clipboard");
   }, []);
 
+  const allCards = data?.pages.flatMap((page) => page.cards) ?? [];
+
   const handleArtistTap = useCallback(
     (slug: string) => {
+      // Find the card for this slug so we can pass full artist data to the profile overlay
+      if (onArtistProfileTap) {
+        const card = allCards.find(c => c.artistSlug === slug);
+        if (card) {
+          onArtistProfileTap(card);
+          return;
+        }
+      }
+      // Fallback: navigate (shouldn't normally reach here)
       setLocation(`/${slug}`);
     },
-    [setLocation]
+    [setLocation, onArtistProfileTap, allCards]
   );
-
-  const allCards = data?.pages.flatMap((page) => page.cards) ?? [];
 
   if (isLoading) {
     return (

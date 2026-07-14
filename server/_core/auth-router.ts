@@ -821,9 +821,12 @@ export const authRouter = router({
         };
       }
 
-      // 4. Create new user
+      // 4. Create new user — populate from lead data
       let userEmail = payload.email;
-      let userName = lead.clientName || "Client";
+      // Prefer firstName + lastName for cleaner display name
+      let userName = (lead.clientFirstName && lead.clientLastName)
+        ? `${lead.clientFirstName} ${lead.clientLastName}`
+        : lead.clientName || "Client";
       let userAvatar: string | null = null;
       let loginMethod = "email";
       let hashedPw: string | undefined;
@@ -879,6 +882,7 @@ export const authRouter = router({
         hasCompletedOnboarding: 0,
         phone: lead.clientPhone || undefined,
         birthday: lead.clientBirthdate || undefined,
+        gender: (lead as any).clientGender || undefined,
         ...(userAvatar ? { avatar: userAvatar } : {}),
       });
 

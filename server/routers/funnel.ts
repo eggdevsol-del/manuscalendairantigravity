@@ -1454,6 +1454,7 @@ export const funnelRouter = router({
         clientEmail: input.email.toLowerCase(),
         clientPhone: input.phone,
         clientBirthdate: input.birthdate || null,
+        clientGender: input.gender || null,
         projectType: "Tattoo Consultation",
         projectDescription: input.description,
         stylePreferences: JSON.stringify(input.styles),

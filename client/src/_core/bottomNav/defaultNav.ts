@@ -27,7 +27,7 @@ export const ARTIST_NAV_ITEMS: BottomNavButton[] = [
 ];
 
 export const CLIENT_NAV_ITEMS: BottomNavButton[] = [
-  { id: "discover", path: "/profile", label: "Discover", icon: Search },
+  { id: "discover", path: "/discover", label: "Discover", icon: Search },
   {
     id: "messages",
     path: "/conversations",
@@ -35,7 +35,7 @@ export const CLIENT_NAV_ITEMS: BottomNavButton[] = [
     icon: MessageCircle,
   },
   { id: "bookings", path: "/calendar", label: "Bookings", icon: Calendar },
-  { id: "profile", path: "/settings", label: "Profile", icon: User },
+  { id: "profile", path: "/profile", label: "Profile", icon: User },
 ];
 
 export const STUDIO_NAV_ITEMS: BottomNavButton[] = [
