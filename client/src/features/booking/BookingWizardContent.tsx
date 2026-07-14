@@ -1778,7 +1778,7 @@ export function BookingWizardContent({
             )}
 
             {step === "service" && (
-              <div className="flex flex-col gap-2 pt-1">
+              <div className="flex flex-col gap-2.5 pt-1">
                 {(!effectiveServices || effectiveServices.length === 0) && (
                   <p className={cn(typography.pico, "text-muted-foreground p-4 text-center")}>
                     No services found for this artist.
@@ -1789,10 +1789,10 @@ export function BookingWizardContent({
                     key={service.id}
                     variants={fab.animation.item}
                     className={cn(
-                      card.base,
-                      card.bg,
-                      card.interactive,
-                      "p-4 flex items-center justify-between gap-3 w-full text-left relative overflow-hidden"
+                      "group relative overflow-hidden transition-all duration-[150ms] rounded-[16px]",
+                      "border border-border bg-secondary/40 hover:bg-secondary/60",
+                      "cursor-pointer active:scale-[0.98]",
+                      "p-4 flex items-center justify-between gap-3 w-full text-left"
                     )}
                     style={{ '--service-accent': service.color || 'var(--primary)' } as React.CSSProperties}
                     onClick={() => {
@@ -1812,9 +1812,9 @@ export function BookingWizardContent({
                       className={cn(card.leftAccent, "rounded-r-sm")}
                       style={{ backgroundColor: 'var(--service-accent)' }}
                     />
-                    {/* Subtle glow gradient */}
+                    {/* Glow gradient — visible accent wash */}
                     <div
-                      className="absolute inset-y-0 left-0 w-1/3 pointer-events-none opacity-[0.08] z-0"
+                      className="absolute inset-y-0 left-0 w-1/3 pointer-events-none opacity-[0.15] z-0"
                       style={{ background: 'linear-gradient(to right, var(--service-accent), transparent)' }}
                     />
                     <div className="flex-1 min-w-0 relative z-10">
@@ -1826,7 +1826,7 @@ export function BookingWizardContent({
                         {Number(service.sittings) > 1 && ` · ${service.sittings} sittings`}
                       </p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 relative z-10" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground shrink-0 relative z-10 transition-colors" />
                   </motion.button>
                 ))}
               </div>
