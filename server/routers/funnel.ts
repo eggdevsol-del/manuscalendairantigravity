@@ -1497,77 +1497,84 @@ export const funnelRouter = router({
         })
         .where(eq(schema.leads.id, leadId));
 
-      // 7. Generate LLM summary
-      let summaryText = `New consultation request via booking link:\n\n` +
-        `**Client:** ${fullName}\n` +
-        `**Description:** ${input.description}\n` +
-        `**Style:** ${input.styles.join(", ")}\n` +
-        `**Placement:** ${input.placement || "Not specified"}\n` +
-        `**Size:** ${input.size || "Not specified"}\n` +
-        `**Timeframe:** ${input.timeframe || "Flexible"}\n` +
-        `**Contact:** ${input.email} | ${input.phone}`;
+      // 7-10. Generate LLM summary + post messages (async, non-blocking)
+      // Fire-and-forget so the client gets the response immediately
+      (async () => {
+        try {
+          let summaryText = `New consultation request via booking link:\n\n` +
+            `**Client:** ${fullName}\n` +
+            `**Description:** ${input.description}\n` +
+            `**Style:** ${input.styles.join(", ")}\n` +
+            `**Placement:** ${input.placement || "Not specified"}\n` +
+            `**Size:** ${input.size || "Not specified"}\n` +
+            `**Timeframe:** ${input.timeframe || "Flexible"}\n` +
+            `**Contact:** ${input.email} | ${input.phone}`;
 
-      try {
-        const { invokeLLM } = await import("../_core/llm");
-        const llmResult = await invokeLLM({
-          messages: [
-            {
-              role: "system" as const,
-              content: "You are a tattoo studio assistant. Summarise this booking request in natural language for the artist. Be concise, accurate, and professional. Include: what they want, style, size, placement, timeframe. Max 80 words. Do not include contact details.",
-            },
-            {
-              role: "user" as const,
-              content: `Client: ${fullName}\nDescription: ${input.description}\nStyle: ${input.styles.join(", ")}\nPlacement: ${input.placement || "Not specified"}\nSize: ${input.size || "Not specified"}\nTimeframe: ${input.timeframe || "Flexible"}\nReferences: ${input.referenceUrls?.length || 0} images\nPlacement photos: ${input.placementUrls?.length || 0} images`,
-            },
-          ],
-          maxTokens: 200,
-        });
-        const llmContent = llmResult.choices?.[0]?.message?.content;
-        if (typeof llmContent === "string" && llmContent.trim()) {
-          summaryText = llmContent.trim();
+          try {
+            const { invokeLLM } = await import("../_core/llm");
+            const llmResult = await invokeLLM({
+              messages: [
+                {
+                  role: "system" as const,
+                  content: "You are a tattoo studio assistant. Summarise this booking request in natural language for the artist. Be concise, accurate, and professional. Include: what they want, style, size, placement, timeframe. Max 80 words. Do not include contact details.",
+                },
+                {
+                  role: "user" as const,
+                  content: `Client: ${fullName}\nDescription: ${input.description}\nStyle: ${input.styles.join(", ")}\nPlacement: ${input.placement || "Not specified"}\nSize: ${input.size || "Not specified"}\nTimeframe: ${input.timeframe || "Flexible"}\nReferences: ${input.referenceUrls?.length || 0} images\nPlacement photos: ${input.placementUrls?.length || 0} images`,
+                },
+              ],
+              maxTokens: 200,
+            });
+            const llmContent = llmResult.choices?.[0]?.message?.content;
+            if (typeof llmContent === "string" && llmContent.trim()) {
+              summaryText = llmContent.trim();
+            }
+          } catch (e) {
+            console.error("[PublicBooking] LLM summary failed, using fallback:", e);
+          }
+
+          // Post summary as system message
+          await db.insert(schema.messages).values({
+            conversationId,
+            senderId: artistId,
+            messageType: "system",
+            content: summaryText,
+            createdAt: nowFormatted,
+          });
+
+          // Post reference images as a grid message
+          if (input.referenceUrls?.length) {
+            await db.insert(schema.messages).values({
+              conversationId,
+              senderId: artistId,
+              messageType: "system",
+              content: JSON.stringify({
+                type: "reference_grid",
+                images: input.referenceUrls,
+                label: "Reference Images",
+              }),
+              createdAt: nowFormatted,
+            });
+          }
+
+          // Post placement images as a grid message
+          if (input.placementUrls?.length) {
+            await db.insert(schema.messages).values({
+              conversationId,
+              senderId: artistId,
+              messageType: "system",
+              content: JSON.stringify({
+                type: "placement_grid",
+                images: input.placementUrls,
+                label: "Placement Photos",
+              }),
+              createdAt: nowFormatted,
+            });
+          }
+        } catch (bgErr) {
+          console.error("[PublicBooking] Background message posting failed:", bgErr);
         }
-      } catch (e) {
-        console.error("[PublicBooking] LLM summary failed, using fallback:", e);
-      }
-
-      // 8. Post summary as system message
-      await db.insert(schema.messages).values({
-        conversationId,
-        senderId: artistId,
-        messageType: "system",
-        content: summaryText,
-        createdAt: nowFormatted,
-      });
-
-      // 9. Post reference images as a grid message
-      if (input.referenceUrls?.length) {
-        await db.insert(schema.messages).values({
-          conversationId,
-          senderId: artistId,
-          messageType: "system",
-          content: JSON.stringify({
-            type: "reference_grid",
-            images: input.referenceUrls,
-            label: "Reference Images",
-          }),
-          createdAt: nowFormatted,
-        });
-      }
-
-      // 10. Post placement images as a grid message
-      if (input.placementUrls?.length) {
-        await db.insert(schema.messages).values({
-          conversationId,
-          senderId: artistId,
-          messageType: "system",
-          content: JSON.stringify({
-            type: "placement_grid",
-            images: input.placementUrls,
-            label: "Placement Photos",
-          }),
-          createdAt: nowFormatted,
-        });
-      }
+      })();
 
       // 11. Sign a lead token
       const leadToken = jwt.sign(

@@ -40,8 +40,8 @@ interface BookingFormModalProps {
   onSubmitted: () => void;
   /** If true, show personal info fields for unauthenticated users */
   isPublic?: boolean;
-  /** Callback after public booking submission with leadToken */
-  onPublicSubmitted?: (leadToken: string) => void;
+  /** Callback after public booking submission with leadToken and email */
+  onPublicSubmitted?: (leadToken: string, email: string) => void;
 }
 
 interface UploadedImage {
@@ -198,7 +198,7 @@ export default function BookingFormModal({
         setShowSuccess(true);
         setTimeout(() => {
           setShowSuccess(false);
-          onPublicSubmitted?.(result.leadToken);
+          onPublicSubmitted?.(result.leadToken, email);
         }, 2500);
         return;
       }
