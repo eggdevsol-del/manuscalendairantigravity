@@ -13,6 +13,7 @@ import { trpc } from "@/lib/trpc";
 import { UserAvatar } from "@/components/ui/ssot";
 import BookingFormModal from "@/features/client-home/BookingFormModal";
 import { toast } from "sonner";
+import { activateWaitingSWForPublicPage } from "@/lib/pwa";
 import "@/features/client-home/artistProfile.css";
 
 export default function PublicArtistProfile() {
@@ -32,6 +33,11 @@ export default function PublicArtistProfile() {
     { slug: slug || "" },
     { enabled: !!slug, retry: false, staleTime: 60_000 }
   );
+
+  // Auto-activate any waiting SW on public pages (no UpdateBanner here)
+  useEffect(() => {
+    activateWaitingSWForPublicPage();
+  }, []);
 
   const claimLead = trpc.auth.claimLead.useMutation();
 
