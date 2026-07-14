@@ -5,7 +5,8 @@ import { getUserById } from "../db";
 
 const JWT_SECRET =
   process.env.JWT_SECRET || "your-secret-key-change-in-production";
-const JWT_EXPIRES_IN = "7d"; // Token expires in 7 days
+// 90 days — user stays signed in as long as they open the app within this window
+const JWT_EXPIRES_IN = "90d";
 
 export interface AuthUser {
   id: string;

@@ -1,7 +1,7 @@
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { setErrorUser } from "@/lib/errorReporter";
 
 type UseAuthOptions = {
@@ -24,6 +24,10 @@ export function useAuth(options?: UseAuthOptions) {
       utils.auth.me.setData(undefined, null);
     },
   });
+
+  // Silent token refresh — extends session on each app load
+  const refreshTokenMutation = trpc.auth.refreshToken.useMutation();
+  const hasRefreshed = useRef(false);
 
   const logout = useCallback(async () => {
     try {
@@ -87,6 +91,25 @@ export function useAuth(options?: UseAuthOptions) {
     logoutMutation.error,
     logoutMutation.isPending,
   ]);
+
+  // Silent token refresh — re-mint JWT once per mount when session is valid
+  useEffect(() => {
+    if (!meQuery.data || hasRefreshed.current) return;
+    hasRefreshed.current = true;
+
+    refreshTokenMutation.mutate(undefined, {
+      onSuccess: (result) => {
+        if (result.token) {
+          if (localStorage.getItem('authToken')) {
+            localStorage.setItem('authToken', result.token);
+          } else if (sessionStorage.getItem('authToken')) {
+            sessionStorage.setItem('authToken', result.token);
+          }
+        }
+      },
+      onError: () => {},  // Silent failure — old token still works until expiry
+    });
+  }, [meQuery.data]);
 
   useEffect(() => {
     if (!redirectOnUnauthenticated) return;

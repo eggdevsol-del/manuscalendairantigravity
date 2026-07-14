@@ -745,6 +745,15 @@ export const authRouter = router({
     }),
 
   /**
+   * Silently re-mint a JWT — called once per app load to create a rolling session
+   */
+  refreshToken: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      const token = generateToken({ id: ctx.user.id, email: ctx.user.email || "" });
+      return { token };
+    }),
+
+  /**
    * Claim a lead from a public booking form — creates user account
    * PUBLIC - uses signed leadToken for verification
    */

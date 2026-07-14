@@ -25,7 +25,10 @@ import {
   Check,
   X as XIcon,
   ChevronLeft,
+  ChevronDown,
+  ChevronUp,
   Tag,
+  RefreshCw,
 } from "lucide-react";
 import {
   Empty,
@@ -132,11 +135,22 @@ export function ChatInterface({
   const utils = trpc.useUtils();
 
   // ── Design Brief Panel ─────────────────────
-  const [showBriefPanel, setShowBriefPanel] = useState(false);
+  // Persist collapsed/expanded state per conversation in localStorage
+  const briefStorageKey = `brief-collapsed-${conversationId}`;
+  const [briefCollapsed, setBriefCollapsed] = useState(() => {
+    return localStorage.getItem(briefStorageKey) === 'true';
+  });
+  const toggleBrief = useCallback(() => {
+    setBriefCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem(briefStorageKey, String(next));
+      return next;
+    });
+  }, [briefStorageKey]);
 
   const { data: briefData, isLoading: briefLoading } = trpc.designBrief.get.useQuery(
     { conversationId },
-    { enabled: isArtist && showBriefPanel, staleTime: 0 }
+    { enabled: isArtist, staleTime: 0 }
   );
 
   const refreshBriefMutation = trpc.designBrief.refresh.useMutation({
@@ -333,25 +347,8 @@ export function ChatInterface({
       ];
     }
 
-    const items = [];
-    if (isArtist) {
-      items.push({
-        id: "book",
-        label: "Book Project",
-        icon: Calendar,
-        onClick: () => setShowBookingWizard(true),
-        highlight: true,
-        closeOnClick: false,
-      });
-      items.push({
-        id: "client-info",
-        label: showClientInfo ? "Hide Client Info" : "View Client Info",
-        icon: FileText,
-        onClick: () => setShowClientInfo(!showClientInfo),
-        closeOnClick: false,
-      });
-    }
-    return items;
+    // "Book Project" and "View Client Info" moved to header — FAB is empty by default
+    return [];
   }, [
     authLoading,
     convLoading,
@@ -509,17 +506,13 @@ export function ChatInterface({
               </div>
             </div>
 
-            {/* Design Brief Toggle (artist-only) */}
+            {/* BOOK button (artist-only) */}
             {isArtist && (
               <button
-                onClick={() => setShowBriefPanel(!showBriefPanel)}
-                className={cn(
-                  "p-2 rounded-full transition-colors",
-                  showBriefPanel ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"
-                )}
-                title="Design Brief"
+                onClick={() => setShowBookingWizard(true)}
+                className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold tracking-wide hover:bg-primary/90 active:scale-95 transition-all"
               >
-                <FileText className="w-4 h-4" />
+                BOOK
               </button>
             )}
             {!isArtist && <div className="w-9" />}
@@ -566,6 +559,62 @@ export function ChatInterface({
                 </span>
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Design Brief — collapsible, under media bar */}
+        {isArtist && (
+          <div className="border-t border-border bg-secondary/20 shrink-0">
+            {/* Brief header — always visible */}
+            <button
+              onClick={toggleBrief}
+              className="w-full px-4 py-2 flex items-center justify-between hover:bg-secondary/40 transition-colors"
+            >
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Design Brief
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    refreshBriefMutation.mutate({ conversationId });
+                  }}
+                  disabled={refreshBriefMutation.isPending}
+                  className="p-1 rounded-md text-primary hover:bg-primary/10 transition-colors"
+                  title="Refresh brief"
+                >
+                  <RefreshCw className={cn("w-3 h-3", refreshBriefMutation.isPending && "animate-spin")} />
+                </button>
+                {briefCollapsed ? (
+                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                ) : (
+                  <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" />
+                )}
+              </div>
+            </button>
+            {/* Brief content — collapsible */}
+            {!briefCollapsed && (
+              <div className="px-4 pb-3 animate-in fade-in slide-in-from-top-1 duration-150">
+                {briefLoading ? (
+                  <p className="text-xs text-muted-foreground animate-pulse">Analysing conversation...</p>
+                ) : briefData?.brief ? (
+                  <div>
+                    <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                      {briefData.brief}
+                    </p>
+                    {briefData.isStale && (
+                      <p className="text-[10px] text-muted-foreground mt-2">⚠️ Showing cached version</p>
+                    )}
+                  </div>
+                ) : (briefData as any)?.error ? (
+                  <p className="text-xs text-destructive/80 italic">{(briefData as any).error}</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">
+                    Send some messages to generate a conversation brief.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -741,42 +790,7 @@ export function ChatInterface({
         )}
       </div>
 
-      {/* Design Brief Panel */}
-      {/* Conversation Brief Panel */}
-      {isArtist && showBriefPanel && (
-        <div className="px-4 py-3 bg-secondary/30 border-b border-border animate-in fade-in slide-in-from-top-2 duration-200 shrink-0">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Conversation Brief</h4>
-            <button
-              onClick={() => refreshBriefMutation.mutate({ conversationId })}
-              disabled={refreshBriefMutation.isPending}
-              className="text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors"
-            >
-              {refreshBriefMutation.isPending ? "Refreshing..." : "Refresh"}
-            </button>
-          </div>
-          {briefLoading ? (
-            <p className="text-xs text-muted-foreground animate-pulse">Analysing conversation...</p>
-          ) : briefData?.brief ? (
-            <div>
-              <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                {briefData.brief}
-              </p>
-              {briefData.isStale && (
-                <p className="text-[10px] text-muted-foreground mt-2">⚠️ Showing cached version</p>
-              )}
-            </div>
-          ) : (briefData as any)?.error ? (
-            <p className="text-xs text-destructive/80 italic">
-              {(briefData as any).error}
-            </p>
-          ) : (
-            <p className="text-xs text-muted-foreground italic">
-              Send some messages to generate a conversation brief.
-            </p>
-          )}
-        </div>
-      )}
+      {/* Design Brief Panel — moved to header area under media bar */}
 
       {/* Messages */}
       <div className="flex-1 min-h-0 relative">
