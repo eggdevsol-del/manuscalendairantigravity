@@ -150,9 +150,13 @@ export default function ArtistProfileOverlay({
                   {/* Profile info section */}
                   <div className="artist-profile-info">
                     {/* Avatar */}
-                    <div className="artist-profile-avatar-large">
-                      <UserAvatar name={profile.displayName} avatar={profile.avatar} size="lg" />
-                    </div>
+                    <UserAvatar
+                      name={profile.displayName}
+                      avatar={profile.avatar}
+                      size="2xl"
+                      ring
+                      className="w-[88px] h-[88px] mb-3"
+                    />
 
                     {/* Name & handle */}
                     <h2 className="artist-profile-name">{profile.displayName}</h2>
