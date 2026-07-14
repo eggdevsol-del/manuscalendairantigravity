@@ -19,7 +19,7 @@ import LeadDetail from "@/pages/LeadDetail";
 import ErrorDashboard from "@/pages/admin/ErrorDashboard";
 import NotFound from "@/pages/NotFound";
 import { useAppointmentCheckIn } from "@/features/appointments/useAppointmentCheckIn";
-import { AppointmentCheckInModal } from "@/components/modals/AppointmentCheckInModal";
+import { ArrivalToast } from "@/components/ArrivalToast";
 
 export default function ArtistShell() {
   return (
@@ -48,12 +48,12 @@ export default function ArtistShell() {
         <ActionPanel />
       </ErrorBoundary>
       
-      <AppointmentCheckInOverlay />
+      <ArrivalOverlay />
     </div>
   );
 }
 
-function AppointmentCheckInOverlay() {
+function ArrivalOverlay() {
   const [dismissed, setDismissed] = React.useState<number | null>(null);
   const { activeCheckIn, updateAppointment } = useAppointmentCheckIn();
 
@@ -65,20 +65,34 @@ function AppointmentCheckInOverlay() {
     }
   }, [activeId, dismissed]);
 
-  if (!activeCheckIn || dismissed === activeCheckIn.appointment.id) return null;
+  // Only show for arrival phase — completion is handled by Stripe balance payment
+  if (!activeCheckIn || activeCheckIn.phase !== "arrival" || dismissed === activeCheckIn.appointment.id) {
+    return null;
+  }
+
+  const appointment = activeCheckIn.appointment;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[60] flex justify-center px-4 pt-[env(safe-area-inset-top,12px)] pointer-events-none">
-      <div className="w-full max-w-md pointer-events-auto">
-        <AppointmentCheckInModal
-          isOpen={true}
-          checkIn={activeCheckIn}
-          onDismiss={() => {
-            setDismissed(activeCheckIn.appointment.id);
-          }}
-          updateAppointment={updateAppointment}
-        />
-      </div>
-    </div>
+    <ArrivalToast
+      isOpen={true}
+      clientName={appointment.clientName || appointment.client?.name || "Client"}
+      onArrived={() => {
+        updateAppointment.mutate({
+          id: appointment.id,
+          clientArrived: 1,
+          actualStartTime: new Date().toISOString(),
+          status: "confirmed",
+        });
+        setDismissed(appointment.id);
+      }}
+      onNoShow={() => {
+        updateAppointment.mutate({
+          id: appointment.id,
+          status: "no-show",
+        });
+        setDismissed(appointment.id);
+      }}
+      onDismiss={() => setDismissed(appointment.id)}
+    />
   );
 }

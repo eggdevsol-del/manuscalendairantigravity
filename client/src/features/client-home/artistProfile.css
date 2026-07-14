@@ -430,9 +430,9 @@ textarea.booking-form-input {
 /* ── Success popup (update-available style) ── */
 .booking-success-popup {
   position: fixed;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   z-index: 9999;
   width: calc(100% - 32px);
   max-width: 420px;

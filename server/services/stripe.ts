@@ -524,15 +524,33 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             if (booking) {
               const newPaid = (booking.totalPaidAmountCents || 0) + baseAmountCents;
               const remaining = (booking.totalExpectedAmountCents || 0) - newPaid;
+              const isFullyPaid = remaining <= 0;
 
               await db.update(appointments).set({
                 balancePaymentId: session.payment_intent as string || session.id,
                 totalPaidAmountCents: newPaid,
                 remainingBalanceCents: Math.max(remaining, 0),
-                paymentStatus: remaining <= 0 ? "fully_paid" as any : "deposit_paid" as any,
-                clientPaid: remaining <= 0 ? 1 : 0,
+                paymentStatus: isFullyPaid ? "fully_paid" as any : "deposit_paid" as any,
+                clientPaid: isFullyPaid ? 1 : 0,
+                // Set completion time automatically when fully paid
+                ...(isFullyPaid ? {
+                  actualEndTime: now,
+                  status: "completed" as any,
+                  paymentMethod: "electronic transfer" as any,
+                } : {}),
                 updatedAt: now,
               }).where(eq(appointments.id, bookingId));
+
+              // Auto-generate QLD procedure log on full payment
+              if (isFullyPaid) {
+                const { createProcedureLog } = await import("./appointmentService");
+                try {
+                  await createProcedureLog(bookingId);
+                  console.log(`[Stripe] Procedure log created for Booking ${bookingId}`);
+                } catch (e) {
+                  console.error(`[Stripe] Failed to create procedure log for Booking ${bookingId}`, e);
+                }
+              }
 
               // Ledger write
               const balanceArtistFeeCents = session.metadata.artistFeeCents
@@ -551,7 +569,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 stripePaymentId: session.payment_intent as string || session.id,
                 stripeConnectAccountId: balanceConnectAccountId,
                 tier: (session.metadata.tier as any) || "free",
-                paymentMethod: session.payment_method_types?.[0] || "card",
+                paymentMethod: "electronic transfer",
               });
 
               console.log(`[Stripe] Balance paid for Booking ${bookingId}, remaining: ${remaining}`);

@@ -342,6 +342,7 @@ export function useCalendarAgendaController() {
     handleAppointmentTap,
     startBooking,
     isBookingStarted,
+    setIsBookingStarted,
     bookingInitialDate,
     selectedAppointment,
     setSelectedAppointment,

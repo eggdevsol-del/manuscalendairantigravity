@@ -651,6 +651,11 @@ export function BookingWizardContent({
       ? proposalMeta.finalAmount / 100
       : proposalMeta?.totalCost || 0;
 
+  // Balance payment: include platform fee (3.4%, min $5) in display
+  const balanceCents = selectedAppointmentRaw?.remainingBalanceCents || 0;
+  const balanceFeeCents = balanceCents > 0 ? Math.max(Math.round(balanceCents * 0.034), 500) : 0;
+  const balanceTotalDollars = ((balanceCents + balanceFeeCents) / 100).toFixed(2);
+
   if (showCheckInModal && selectedAppointmentRaw) {
     return (
       <div className="flex flex-col w-full min-h-[50vh] pt-2 pb-6 px-1">
@@ -1157,7 +1162,7 @@ export function BookingWizardContent({
                         className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-[var(--color-success)] text-white hover:bg-[var(--color-success)] flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary-rgb),0.15)] disabled:opacity-70"
                       >
                         {isClientPayingBalance ? <Loader2 className="w-4 h-4 animate-spin" /> : <DollarSign className="w-4 h-4" />}
-                        {isClientPayingBalance ? "Preparing..." : `Pay Balance ($${(selectedAppointmentRaw.remainingBalanceCents / 100).toFixed(2)})`}
+                        {isClientPayingBalance ? "Preparing..." : `Pay Balance ($${balanceTotalDollars})`}
                       </button>
                     ) : (
                       <div className="mt-2 animate-in fade-in slide-in-from-bottom-2 duration-300">

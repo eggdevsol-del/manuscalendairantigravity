@@ -11,6 +11,7 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { useMemo } from "react";
 import { type FABMenuItem } from "@/ui/FABMenu";
 import { BookingWizardContent } from "@/features/booking/BookingWizardContent";
+import { PersonalReminderForm } from "@/features/calendar/PersonalReminderForm";
 import { useLocation } from "wouter";
 import { useEffect, useRef } from "react";
 import { useBottomNav } from "@/contexts/BottomNavContext";
@@ -32,6 +33,22 @@ export default function CalendarAgendaPage() {
 
   // Register FAB Actions
   const fabActions = useMemo<any>(() => {
+    // Client role: show personal reminder form instead of booking wizard
+    if (isClient && controller.isBookingStarted) {
+      return (
+        <PersonalReminderForm
+          initialDate={controller.bookingInitialDate}
+          onClose={() => {
+            controller.setIsBookingStarted(false);
+            setFABOpen(false);
+          }}
+          onSuccess={() => {
+            controller.refetch();
+          }}
+        />
+      );
+    }
+
     if (controller.selectedAppointment || controller.isBookingStarted) {
       return (
         <BookingWizardContent

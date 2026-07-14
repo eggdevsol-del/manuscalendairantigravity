@@ -663,8 +663,8 @@ export async function createProcedureLog(appointmentId: number) {
     clientName: appt.client?.name || "Unknown",
     clientDob: appt.client?.birthday,
     artistLicenceNumber: settings?.licenceNumber || "000000000",
-    amountPaid: appt.amountPaid || appt.price || 0,
-    paymentMethod: appt.paymentMethod || "cash",
+    amountPaid: appt.price || 0,
+    paymentMethod: "electronic",
   });
 }
 
