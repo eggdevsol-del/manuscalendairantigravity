@@ -7,7 +7,7 @@ import { PageShell, PageHeader } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { useRegisterFABActions } from "@/contexts/BottomNavContext";
-import { Calendar as CalendarIcon } from "lucide-react";
+
 import { useMemo } from "react";
 import { type FABMenuItem } from "@/ui/FABMenu";
 import { BookingWizardContent } from "@/features/booking/BookingWizardContent";
@@ -85,16 +85,7 @@ export default function CalendarAgendaPage() {
       );
     }
 
-    const items: FABMenuItem[] = [
-      {
-        id: "toggle-month",
-        label: controller.isBreakdownOpen ? "Close Month" : "Month View",
-        icon: CalendarIcon,
-        onClick: controller.toggleBreakdown,
-        highlight: controller.isBreakdownOpen,
-        closeOnClick: true,
-      },
-    ];
+    const items: FABMenuItem[] = [];
 
     if (controller.user?.role === "artist" || controller.user?.role === "admin") {
       // Match Chat's "Book Project" button
@@ -126,8 +117,6 @@ export default function CalendarAgendaPage() {
 
     return items;
   }, [
-    controller.isBreakdownOpen,
-    controller.toggleBreakdown,
     controller.selectedAppointment,
     controller.isBookingStarted,
     controller.proposalData,

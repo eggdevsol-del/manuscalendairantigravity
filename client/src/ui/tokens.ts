@@ -452,6 +452,14 @@ export const tokens = {
       },
     },
 
+    // View Toggle (segmented control in CalendarMonthHeader)
+    viewToggle: {
+      container: "flex bg-secondary/50 p-0.5 rounded-[8px] h-8 items-stretch",
+      button: "flex items-center justify-center text-xs font-semibold rounded-[6px] px-3 transition-all duration-[150ms] select-none",
+      active: "bg-primary text-primary-foreground shadow-sm",
+      inactive: "text-muted-foreground hover:text-foreground",
+    },
+
     // Date Strip (New Design)
     dateStrip: {
       container: "flex gap-2 w-full overflow-x-auto no-scrollbar px-4 py-4",

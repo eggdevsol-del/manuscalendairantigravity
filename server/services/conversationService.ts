@@ -77,9 +77,28 @@ export async function getConversationsForUser(userId: string, role: string) {
         .orderBy(desc(messages.createdAt))
         .limit(1);
 
+      // Check if the artist has ever sent a non-system message in this conversation.
+      // Used by client UI to determine if the "waiting for artist" lock should show.
+      let artistHasReplied = false;
+      if (conv.artistId) {
+        const artistMsg = await db
+          .select({ id: messages.id })
+          .from(messages)
+          .where(
+            and(
+              eq(messages.conversationId, conv.id),
+              eq(messages.senderId, conv.artistId),
+              not(eq(messages.messageType, "system"))
+            )
+          )
+          .limit(1);
+        artistHasReplied = artistMsg.length > 0;
+      }
+
       return {
         ...conv,
         lastMessage: lastMessageResult.length > 0 ? lastMessageResult[0] : null,
+        artistHasReplied,
       };
     })
   );

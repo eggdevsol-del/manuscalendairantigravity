@@ -1,7 +1,8 @@
 import { format, addMonths, subMonths, startOfMonth } from "date-fns";
-import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { tokens } from "@/ui/tokens";
 
 export interface CalendarMonthHeaderProps {
   activeDate: Date;
@@ -16,6 +17,8 @@ export function CalendarMonthHeader({
   isBreakdownOpen,
   onDateChange,
 }: CalendarMonthHeaderProps) {
+  const vt = tokens.calendar.viewToggle;
+
   return (
     <header className="flex items-center justify-between px-4 py-3 z-20 sticky top-0 bg-transparent">
       {/* Left: Today Button */}
@@ -63,8 +66,23 @@ export function CalendarMonthHeader({
         </Button>
       </div>
 
-      {/* Right: Spacer to balance the Left Today button (hidden on desktop if needed, or just empty) */}
-      <div className="w-16" />
+      {/* Right: Week/Month toggle — balanced with Today button */}
+      <div className={vt.container}>
+        <button
+          type="button"
+          className={cn(vt.button, !isBreakdownOpen ? vt.active : vt.inactive)}
+          onClick={() => { if (isBreakdownOpen) onToggleBreakdown(); }}
+        >
+          Week
+        </button>
+        <button
+          type="button"
+          className={cn(vt.button, isBreakdownOpen ? vt.active : vt.inactive)}
+          onClick={() => { if (!isBreakdownOpen) onToggleBreakdown(); }}
+        >
+          Month
+        </button>
+      </div>
     </header>
   );
 }

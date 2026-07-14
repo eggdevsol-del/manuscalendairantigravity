@@ -217,14 +217,13 @@ export function ConversationsList({
 
                 {/* 2. Standard Conversations */}
                 {filteredConversations?.map(conv => {
-                  // Derive waiting state: client is waiting if conversation has a lead
-                  // and the artist hasn't sent a non-system message yet
+                  // Derive waiting state: client is waiting only if the conversation
+                  // originated from a lead AND the artist has never sent a real message.
+                  // artistHasReplied is computed server-side (any non-system message from artist).
                   const isClientWaiting =
                     user?.role === "client" &&
                     !!(conv as any).leadId &&
-                    (!(conv as any).lastMessage ||
-                      (conv as any).lastMessage?.messageType === "system" ||
-                      (conv as any).lastMessage?.senderId === user?.id);
+                    !(conv as any).artistHasReplied;
 
                   const waitingSummary = isClientWaiting
                     ? (conv as any).lastMessage?.content?.startsWith("{")
