@@ -10,29 +10,27 @@ let _pendingUpdateSW: ((reloadPage?: boolean) => Promise<void>) | null = null;
 /**
  * Called by the UpdateBanner when the user taps the update button.
  *
+ * With skipWaiting() in the SW, the new SW is already active by the time
+ * the user sees the banner. We just need to reload to pick up the new JS.
+ *
  * Priority order:
- *  1. _pendingUpdateSW — set by onNeedRefresh when a new SW is waiting (preferred).
- *     Sends SKIP_WAITING via workbox-window, new SW activates, page reloads cleanly.
- *  2. registration.waiting — direct send for cases where waiting SW exists but
- *     onNeedRefresh raced with the banner (X-App-Version detected first).
- *  3. forceUpdate() — nuclear fallback: clears all caches, unregisters SW, hard
- *     reload from network. Guarantees the user gets the new version.
+ *  1. _pendingUpdateSW — set by onNeedRefresh (edge case, workbox internal)
+ *  2. registration.waiting — direct send if a waiting SW exists
+ *  3. Simple reload — new SW is already active, just reload for new JS
  */
 export async function triggerSWUpdate() {
   if (_pendingUpdateSW) {
-    // Preferred: workbox-window handles SKIP_WAITING + controllerchange + reload
+    // Workbox-window handles SKIP_WAITING + controllerchange + reload
     _pendingUpdateSW(true);
     return;
   }
 
-  // Check if a waiting SW is already installed but onNeedRefresh raced
+  // Check if a waiting SW exists (edge case)
   try {
     const registration = await navigator.serviceWorker?.getRegistration();
     if (registration?.waiting) {
       console.log("[PWA] Found waiting SW — sending SKIP_WAITING directly");
-      // Tell the waiting SW to skip waiting and take control
       registration.waiting.postMessage({ type: "SKIP_WAITING" });
-      // When the new SW claims control, reload the page
       navigator.serviceWorker.addEventListener(
         "controllerchange",
         () => window.location.reload(),
@@ -41,36 +39,50 @@ export async function triggerSWUpdate() {
       return;
     }
   } catch {
-    // getRegistration failed — fall through to forceUpdate
+    // getRegistration failed — fall through
   }
 
-  // Last resort: X-App-Version mismatch was detected but no new SW has installed yet.
-  // Clear everything and reload from the network to guarantee new code.
-  console.log("[PWA] No waiting SW — using forceUpdate() to load fresh from network");
-  await forceUpdate();
+  // Most common case with skipWaiting: new SW is already active.
+  // Just reload the page to load the new JS bundle.
+  console.log("[PWA] New SW already active — reloading to pick up new JS");
+  window.location.reload();
 }
 
 /**
  * Register service worker for PWA functionality.
  *
- * Update strategy (industry best-practice):
- * - New SW installs silently in the background
- * - When ready, dispatches "pwa-update-available" DOM event
- * - React UpdateBanner listens for this event and shows a non-blocking banner
- * - User taps "Update" → SKIP_WAITING → new SW activates → page reloads
- * - This prevents the app from reloading mid-session without user consent
+ * Update strategy:
+ * - New SW installs and immediately calls self.skipWaiting()
+ * - The new SW activates, triggering a "controllerchange" event
+ * - We detect this and dispatch "pwa-update-available" DOM event
+ * - React UpdateBanner shows a non-blocking banner
+ * - User taps "Update" → page reloads to load the new JS bundle
  */
 export async function registerServiceWorker() {
   if ("serviceWorker" in navigator) {
     console.log("[PWA] Registering service worker...");
 
+    // Detect when a new SW activates via skipWaiting() and takes control.
+    // Since the SW calls self.skipWaiting() immediately, onNeedRefresh never fires.
+    // Instead, we listen for controllerchange — this means a new SW is now active
+    // and the page needs to reload to load the new JS bundle.
+    let isFirstController = true;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      // Skip the initial controller assignment on first page load
+      if (isFirstController) {
+        isFirstController = false;
+        return;
+      }
+      console.log("[PWA] New SW activated via skipWaiting — showing update banner");
+      window.dispatchEvent(new CustomEvent("pwa-update-available"));
+    });
+
     const updateSW = registerSW({
       immediate: true,
       onNeedRefresh() {
-        console.log("[PWA] New version available — showing update banner");
-        // Store the update function for the banner to call
+        // This may still fire in some edge cases (e.g., workbox internal detection)
+        console.log("[PWA] New version available (onNeedRefresh) — showing update banner");
         _pendingUpdateSW = updateSW;
-        // Dispatch a DOM event so the React banner can listen without coupling
         window.dispatchEvent(new CustomEvent("pwa-update-available"));
       },
       onOfflineReady() {
