@@ -1,0 +1,188 @@
+/**
+ * Client Terminal Signup — Department of Tattoo Services
+ * ──────────────────────────────────────────────────────────
+ * Step-by-step prompt form overlaid on the shared CRT terminal shell.
+ * Extends login.css base classes; all text uses SSOT primary (#F8D057).
+ */
+
+/* ── Override center area for scrollable signup ────── */
+.login-terminal-root .terminal-signup-scroll {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  padding: 16px 24px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Current step container ─────────────────────────── */
+.terminal-signup-step {
+  max-width: 460px;
+  width: 100%;
+  margin-bottom: 16px;
+  animation: section-fade-in 0.3s ease-out;
+}
+
+.terminal-signup-prompt {
+  font-size: 10px;
+  font-weight: 700;
+  color: #F8D057;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  text-shadow: 0 0 10px rgba(248, 208, 87, 0.2);
+}
+
+/* ── Input row: field + CONFIRM + optional SKIP ────── */
+.terminal-signup-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.terminal-signup-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(248, 208, 87, 0.4);
+  color: #F8D057;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  font-weight: 400;
+  padding: 8px 0;
+  outline: none;
+  letter-spacing: 0.5px;
+  caret-color: #F8D057;
+}
+
+.terminal-signup-input:focus {
+  border-bottom-color: #F8D057;
+}
+
+.terminal-signup-input::placeholder {
+  color: rgba(248, 208, 87, 0.25);
+}
+
+/* Password dots should also be yellow */
+.terminal-signup-input[type="password"] {
+  letter-spacing: 3px;
+}
+
+/* ── Action buttons ─────────────────────────────────── */
+.terminal-signup-confirm,
+.terminal-signup-skip {
+  background: transparent;
+  border: 1px solid rgba(248, 208, 87, 0.3);
+  color: #F8D057;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 8px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.terminal-signup-confirm:hover {
+  background: rgba(248, 208, 87, 0.1);
+  border-color: #F8D057;
+}
+
+.terminal-signup-skip {
+  border-color: rgba(248, 208, 87, 0.15);
+  color: rgba(248, 208, 87, 0.5);
+}
+
+.terminal-signup-skip:hover {
+  border-color: rgba(248, 208, 87, 0.3);
+  color: rgba(248, 208, 87, 0.8);
+}
+
+/* ── Completed field ────────────────────────────────── */
+.terminal-signup-completed {
+  max-width: 460px;
+  width: 100%;
+  margin-bottom: 8px;
+  opacity: 0.6;
+}
+
+.terminal-signup-completed-line {
+  font-size: 9.5px;
+  line-height: 1.7;
+  color: #F8D057;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+.terminal-signup-completed-check {
+  color: #F8D057;
+  margin-left: 8px;
+}
+
+.terminal-signup-completed-skipped {
+  color: rgba(248, 208, 87, 0.3);
+  margin-left: 8px;
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+
+/* ── Google Places dropdown override in terminal mode ── */
+.terminal-places-wrapper .relative > .absolute.z-50 {
+  background-color: #000 !important;
+  border-color: rgba(248, 208, 87, 0.3) !important;
+}
+
+.terminal-places-wrapper .relative > .absolute.z-50 button {
+  font-family: "JetBrains Mono", monospace;
+  color: #F8D057 !important;
+}
+
+.terminal-places-wrapper .relative > .absolute.z-50 button:hover,
+.terminal-places-wrapper .relative > .absolute.z-50 button.bg-primary\/15 {
+  background-color: rgba(248, 208, 87, 0.1) !important;
+}
+
+.terminal-places-wrapper .relative > .absolute.z-50 .text-muted-foreground {
+  color: rgba(248, 208, 87, 0.4) !important;
+}
+
+.terminal-places-wrapper .relative > .absolute.z-50 .text-primary {
+  color: #F8D057 !important;
+}
+
+/* Override GooglePlacesInput styling in terminal mode */
+.terminal-places-input {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(248, 208, 87, 0.4) !important;
+  border-radius: 0 !important;
+  color: #F8D057 !important;
+  font-family: "JetBrains Mono", monospace !important;
+  font-size: 12px !important;
+  height: auto !important;
+  padding: 8px 0 !important;
+  box-shadow: none !important;
+}
+
+.terminal-places-input:focus {
+  border-bottom-color: #F8D057 !important;
+  ring: none !important;
+  outline: none !important;
+}
+
+.terminal-places-input::placeholder {
+  color: rgba(248, 208, 87, 0.25) !important;
+}
+
+/* ── Validation error ───────────────────────────────── */
+.terminal-signup-error {
+  font-size: 9px;
+  color: #ff4444;
+  margin-top: 6px;
+  letter-spacing: 0.5px;
+  font-weight: 400;
+}

@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useGoogleAuthReady } from "@/lib/google-auth";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import ClientTerminalSignup from "./ClientTerminalSignup";
 
 type Step = "form" | "complete-profile";
 
@@ -438,6 +439,11 @@ export default function Signup() {
   }
 
   // ------- STEP: MAIN SIGNUP FORM -------
+
+  // Client signup uses the CRT terminal-style form
+  if (isClientRole) {
+    return <ClientTerminalSignup />;
+  }
 
   return (
     <PageShell className="items-center px-4 py-8 !overflow-y-auto mobile-scroll">

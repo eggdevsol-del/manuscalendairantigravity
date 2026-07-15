@@ -53,6 +53,7 @@ export default function ClientHome() {
   const [focusedArtist, setFocusedArtist] = useState<FocusedArtist | null>(null);
   const [showProfile, setShowProfile] = useState(false);
   const mainFeedScrollPos = useRef(0);
+  const isExitingRef = useRef(false);
 
   // Home view data
   const { upcoming } = useClientProfileController();
@@ -100,6 +101,8 @@ export default function ClientHome() {
 
   // Exit artist focus mode
   const handleExitFocus = useCallback(() => {
+    // Guard: suppress handleScroll during exit animation
+    isExitingRef.current = true;
     setFocusedArtist(null);
     setShowProfile(false);
     setHeaderHidden(false);
@@ -110,12 +113,17 @@ export default function ClientHome() {
         scrollRef.current.scrollTop = mainFeedScrollPos.current;
       }
     });
+    // Reset guard after exit animation completes (~300ms)
+    setTimeout(() => {
+      isExitingRef.current = false;
+    }, 350);
   }, [setBottomNavHidden]);
 
   // Auto-hide header + bottom nav on scroll
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
+    if (isExitingRef.current) return;
 
     const currentY = el.scrollTop;
     const delta = currentY - lastScrollY.current;

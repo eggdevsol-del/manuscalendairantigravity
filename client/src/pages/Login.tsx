@@ -187,10 +187,16 @@ function TerminalSection({
 
   useEffect(() => {
     if (done) {
-      const t = setTimeout(onComplete, 1000);
+      const t = setTimeout(onComplete, 1500);
       return () => clearTimeout(t);
     }
   }, [done, onComplete]);
+
+  // Auto-scroll the terminal container as lines type out
+  useEffect(() => {
+    const el = document.querySelector('.login-terminal-center');
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [visibleLines]);
 
   if (!active) return null;
 
@@ -326,18 +332,34 @@ export default function Login() {
       {/* CRT scanline overlay */}
       <div className="login-terminal-scanlines" />
 
-      {/* ── Center: cycling sections ── */}
+      {/* ── Center: stacking sections ── */}
       <div className="login-terminal-center">
-        {!sequenceComplete ? (
-          SECTIONS.map((section, i) => (
+        {SECTIONS.map((section, i) => {
+          if (i > currentSection && !sequenceComplete) return null;
+          if (i < currentSection || sequenceComplete) {
+            // Completed section — render static
+            return (
+              <div key={i} className="terminal-section terminal-section-complete">
+                <div className="terminal-section-header">{section.header}</div>
+                <div className="terminal-section-lines">
+                  {section.lines.map((line, j) => (
+                    <div key={j} className="terminal-section-line">{line}</div>
+                  ))}
+                </div>
+              </div>
+            );
+          }
+          // Current section — typing animation
+          return (
             <TerminalSection
               key={i}
               section={section}
-              active={i === currentSection}
+              active={true}
               onComplete={handleSectionComplete}
             />
-          ))
-        ) : (
+          );
+        })}
+        {sequenceComplete && (
           <div className="terminal-final">
             <div className="terminal-final-line">
               INITIALISING D.O.T.S........................... READY
