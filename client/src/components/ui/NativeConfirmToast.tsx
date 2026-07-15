@@ -85,7 +85,7 @@ export function NativeConfirmToast({
                                     </span>
                                 </div>
                                 <span className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide leading-none">
-                                    tattoi
+                                    d.o.t.s
                                 </span>
                                 <span className="text-[11px] text-muted-foreground ml-auto leading-none">
                                     now

@@ -284,7 +284,7 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
             </div>
             <div>
               <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Title</label>
-              <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Tattoi Aftercare Cream" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
+              <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. d.o.t.s Aftercare Cream" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
             </div>
             <div>
               <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Description</label>

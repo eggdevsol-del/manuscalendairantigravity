@@ -233,7 +233,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
               <p className="text-[11px] text-muted-foreground">
                 By submitting, you agree to Stripe's{" "}
                 <a href="https://stripe.com/connect-account/legal" target="_blank" rel="noreferrer" className="text-primary underline">Connected Account Agreement</a>{" "}
-                and authorize Tattoi to process payments on your behalf.
+                and authorize d.o.t.s to process payments on your behalf.
               </p>
             </div>
           </div>

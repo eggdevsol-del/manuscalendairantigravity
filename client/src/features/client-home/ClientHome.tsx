@@ -198,7 +198,7 @@ export default function ClientHome() {
                 <div className="client-home-avatar-fallback">{initials}</div>
               )}
             </div>
-            <span className="client-home-logo">TATTOI</span>
+            <span className="client-home-logo">d.o.t.s</span>
             <div className="client-home-toggle">
               <button
                 className={`client-home-toggle-btn ${view === "discovery" ? "active" : ""}`}

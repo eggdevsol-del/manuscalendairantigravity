@@ -98,7 +98,7 @@ export function PricingPage({
         { label: `Deposit locked at ${freeTier.defaultDepositPercent}%`, included: true },
         { label: "Customisable deposit %", included: false },
         { label: "Upfront payment option", included: false },
-        { label: "Remove Tattoi branding", included: false },
+        { label: "Remove d.o.t.s branding", included: false },
     ];
 
     const PRO_FEATURES = [
@@ -107,7 +107,7 @@ export function PricingPage({
         { label: "Customisable deposit %", included: true },
         { label: "Upfront payment option", included: true },
         { label: "Automated reminders", included: true },
-        { label: "Remove Tattoi branding", included: true },
+        { label: "Remove d.o.t.s branding", included: true },
         { label: "Custom booking funnel theme", included: true },
         { label: "Priority support", included: true },
     ];

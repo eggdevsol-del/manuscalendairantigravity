@@ -220,7 +220,7 @@ export default function ArtistHub() {
           className="mt-16 text-center"
         >
           <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-muted-foreground">
-            Powered by Tattoi
+            Powered by d.o.t.s
           </span>
         </motion.div>
       </div>

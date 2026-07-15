@@ -1,7 +1,7 @@
 {
-  "name": "TATTOI Artist",
-  "short_name": "TATTOI Artist",
-  "description": "TATTOI Artist — manage bookings, clients & payments",
+  "name": "DOTS Artist",
+  "short_name": "DOTS Artist",
+  "description": "DOTS Artist — manage bookings, clients & payments",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

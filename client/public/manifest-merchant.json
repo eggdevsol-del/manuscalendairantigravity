@@ -1,7 +1,7 @@
 {
-  "name": "TATTOI Merchant",
-  "short_name": "TATTOI Merchant",
-  "description": "TATTOI Merchant — manage your supply storefront",
+  "name": "DOTS Merchant",
+  "short_name": "DOTS Merchant",
+  "description": "DOTS Merchant — manage your supply storefront",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

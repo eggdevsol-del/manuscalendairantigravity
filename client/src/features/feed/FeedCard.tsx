@@ -67,7 +67,7 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${card.artistName} on TATTOI`,
+          title: `${card.artistName} on d.o.t.s`,
           url: `${window.location.origin}/${card.artistSlug}`,
         });
       } catch {

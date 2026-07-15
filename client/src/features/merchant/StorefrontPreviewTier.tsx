@@ -7,7 +7,7 @@ export function StorefrontPreviewTier() {
       <div className="p-6 border-b border-border/50 flex items-center justify-between">
         <div>
           <h3 className="text-xl font-bold text-foreground">Storefront Preview</h3>
-          <p className="text-sm text-muted-foreground mt-1">Live preview of your Tattoi storefront.</p>
+          <p className="text-sm text-muted-foreground mt-1">Live preview of your d.o.t.s storefront.</p>
         </div>
         <button className="px-4 py-2 bg-secondary text-foreground text-sm font-bold rounded-full flex items-center gap-2 hover:bg-secondary/80 transition-colors">
           View Live <ExternalLink className="w-4 h-4" />

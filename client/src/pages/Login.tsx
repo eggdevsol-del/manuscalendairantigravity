@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import "./login.css";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import {
@@ -18,26 +19,112 @@ import { APP_VERSION } from "@/lib/version";
 import { useGoogleAuthReady } from "@/lib/google-auth";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 
+// ── Terminal boot sequence lines ─────────────────────────────
+const BOOT_LINES = [
+  { text: "> DEPARTMENT OF TATTOO SERVICES", delay: 0, style: "title" },
+  { text: `> SYSTEM BOOT v${typeof APP_VERSION === "string" ? APP_VERSION : "2.7"}`, delay: 400, style: "dim" },
+  { text: `> ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })} — ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`, delay: 800, style: "dim" },
+  { text: "> ", delay: 1200, style: "blank" },
+  { text: "> Loading client database.............. OK", delay: 1400, style: "normal" },
+  { text: "> Synchronising appointment schedule... OK", delay: 1800, style: "normal" },
+  { text: "> Checking needle inventory............ OK", delay: 2200, style: "normal" },
+  { text: "> Verifying ink supply chain........... ADEQUATE", delay: 2600, style: "normal" },
+  { text: "> Calibrating tattoo precision AI...... 99.97%", delay: 3000, style: "normal" },
+  { text: "> Running background checks on artists. CLASSIFIED", delay: 3400, style: "warning" },
+  { text: "> Humour module....................... LOADED (USE WITH CAUTION)", delay: 3800, style: "warning" },
+  { text: "> ", delay: 4200, style: "blank" },
+  { text: "> All systems nominal.", delay: 4400, style: "success" },
+  { text: "> ", delay: 4800, style: "blank" },
+];
+
+// Final static text after animation
+const FINAL_TITLE = "Department of Tattoo Services";
+const FINAL_READY = "ready";
+
+// ── Typing animation hook ────────────────────────────────────
+function useTypingAnimation(text: string, startDelay: number, charDelay = 30) {
+  const [displayed, setDisplayed] = useState("");
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    let charIndex = 0;
+    let startTimer: ReturnType<typeof setTimeout>;
+    let charTimer: ReturnType<typeof setInterval>;
+
+    startTimer = setTimeout(() => {
+      charTimer = setInterval(() => {
+        charIndex++;
+        setDisplayed(text.slice(0, charIndex));
+        if (charIndex >= text.length) {
+          clearInterval(charTimer);
+          setDone(true);
+        }
+      }, charDelay);
+    }, startDelay);
+
+    return () => {
+      clearTimeout(startTimer);
+      clearInterval(charTimer);
+    };
+  }, [text, startDelay, charDelay]);
+
+  return { displayed, done };
+}
+
+// ── Terminal line component ──────────────────────────────────
+function TerminalLine({ text, delay, style }: { text: string; delay: number; style: string }) {
+  const { displayed, done } = useTypingAnimation(text, delay, 18);
+
+  const colorClass =
+    style === "title" ? "terminal-line-title" :
+    style === "success" ? "terminal-line-success" :
+    style === "warning" ? "terminal-line-warning" :
+    style === "dim" ? "terminal-line-dim" :
+    "terminal-line-normal";
+
+  return (
+    <div className={`terminal-line ${colorClass}`}>
+      {displayed}
+      {!done && <span className="terminal-cursor">▌</span>}
+    </div>
+  );
+}
+
 export default function Login() {
   const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true); // Fix B: default true — token in localStorage, survives PWA session flush
+  const [rememberMe, setRememberMe] = useState(true);
   const [showOtherMethods, setShowOtherMethods] = useState(false);
+  const [bootComplete, setBootComplete] = useState(false);
   const { user, loading: authLoading } = useAuth();
   const utils = trpc.useUtils();
+  const terminalRef = useRef<HTMLDivElement>(null);
+
+  // Final title typing (starts after boot sequence)
+  const titleStart = 5200;
+  const { displayed: titleText, done: titleDone } = useTypingAnimation(FINAL_TITLE, titleStart, 40);
+  const { displayed: readyText, done: readyDone } = useTypingAnimation(FINAL_READY, titleStart + FINAL_TITLE.length * 40 + 400, 80);
+
+  // Mark boot as complete once "ready" is done typing
+  useEffect(() => {
+    if (readyDone) {
+      const t = setTimeout(() => setBootComplete(true), 600);
+      return () => clearTimeout(t);
+    }
+  }, [readyDone]);
+
+  // Auto-scroll terminal during boot
+  useEffect(() => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  });
 
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: data => {
-      // Write token to storage BEFORE navigating.
-      // Use window.location.href (hard reload) — mirrors the Google login path.
-      // setLocation() is a soft navigation that leaves the React tree alive;
-      // the me query (previously errored with 401) can briefly show user=null
-      // in GuardedShell, triggering a redirect back to /login before the
-      // refetch resolves. A hard reload re-initialises the tree with the
-      // token already in localStorage so the me query succeeds first time.
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
       sessionStorage.removeItem("authToken");
@@ -73,8 +160,6 @@ export default function Login() {
     try {
       const result = await googleLoginMutation.mutateAsync({
         code,
-        // Any new user created here is assumed to be an artist.
-        // Existing users (clients or artists) will simply log in, ignoring this flag.
         role: "artist",
       });
 
@@ -87,11 +172,10 @@ export default function Login() {
       storage.setItem("authToken", result.token);
       storage.setItem("user", JSON.stringify(result.user));
 
-      // Invalidate the auth.me cache so the new token is used
       await utils.auth.me.invalidate();
 
       if (result.isNewUser) {
-        toast.success("Welcome to Tattoi! Let's get you set up.");
+        toast.success("Welcome to d.o.t.s! Let's get you set up.");
         window.location.href = "/calendar";
       } else {
         toast.success("Welcome back!");
@@ -121,36 +205,39 @@ export default function Login() {
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        display: "flex",
-        flexDirection: "column",
-        background: "#ffffff",
-      }}
-    >
-      {/* Background image — fills the screen, logo centered upper area */}
-      <div
-        style={{
-          flex: 1,
-          backgroundImage: "url(/tattoi-login-bg.png)",
-          backgroundSize: "contain",
-          backgroundPosition: "center 30%",
-          backgroundRepeat: "no-repeat",
-        }}
-      />
+    <div className="login-terminal-root">
+      {/* ── Terminal background ── */}
+      <div className="login-terminal-bg" ref={terminalRef}>
+        {/* CRT scanline overlay */}
+        <div className="login-terminal-scanlines" />
 
-      {/* Bottom action area — pinned to bottom */}
+        {/* Boot sequence lines */}
+        <div className="login-terminal-output">
+          {BOOT_LINES.map((line, i) => (
+            <TerminalLine key={i} text={line.text} delay={line.delay} style={line.style} />
+          ))}
+        </div>
+
+        {/* Final branding — typed then static */}
+        <div className={`login-terminal-brand ${bootComplete ? "brand-complete" : ""}`}>
+          {titleText && (
+            <h1 className="login-terminal-brand-title">
+              {titleText}
+              {!titleDone && <span className="terminal-cursor">▌</span>}
+            </h1>
+          )}
+          {readyText && (
+            <span className="login-terminal-brand-ready">
+              {readyText}
+              {!readyDone && <span className="terminal-cursor">▌</span>}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* ── Bottom action area — same layout as before ── */}
       <div
-        style={{
-          padding: "0 32px",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 40px)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 12,
-        }}
+        className={`login-terminal-actions ${bootComplete ? "actions-visible" : ""}`}
       >
         {/* Other methods panel — slides in when toggled */}
         {showOtherMethods && (

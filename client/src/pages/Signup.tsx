@@ -448,7 +448,7 @@ export default function Signup() {
           </div>
           <CardTitle className="text-3xl font-bold tracking-tight text-foreground">
             {isClientRole 
-              ? "Create Tattoi Account" 
+              ? "Create d.o.t.s Account" 
               : accountType === "supplier" 
                 ? "Create Supplier Account" 
                 : "Create Artist Account"}
@@ -591,7 +591,7 @@ export default function Signup() {
                     />
                   </div>
                   <p className="text-[11px] text-muted-foreground/70">
-                    We'll use this to automatically build your Tattoi storefront!
+                    We'll use this to automatically build your d.o.t.s storefront!
                   </p>
                 </div>
               </>

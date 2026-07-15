@@ -73,7 +73,7 @@ export function InstallAppBanner() {
             {/* Message */}
             <div className="flex-1 min-w-0">
               <p className="m-0 text-[13px] font-semibold text-foreground leading-[1.3]">
-                Get TATTOI for the best experience
+                Get d.o.t.s for the best experience
               </p>
             </div>
 

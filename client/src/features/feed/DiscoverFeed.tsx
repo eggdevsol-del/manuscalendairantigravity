@@ -102,7 +102,7 @@ export default function DiscoverFeed() {
     <div className="discover-feed">
       {/* Header */}
       <div className="discover-feed-header">
-        <span className="discover-feed-logo">tattoi</span>
+        <span className="discover-feed-logo">d.o.t.s</span>
       </div>
 
       {/* Feed cards */}

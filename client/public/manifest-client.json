@@ -1,7 +1,7 @@
 {
-  "name": "TATTOI Discover",
-  "short_name": "TATTOI",
-  "description": "TATTOI Discover — find and book tattoo artists",
+  "name": "Department of Tattoo Services",
+  "short_name": "DOTS",
+  "description": "Department of Tattoo Services — find and book tattoo artists",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

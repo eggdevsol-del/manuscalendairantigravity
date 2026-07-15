@@ -187,7 +187,7 @@ export default function PublicArtistProfile() {
               fontWeight: 700,
               color: "var(--muted-foreground)",
             }}>
-              Powered by Tattoi
+              Powered by d.o.t.s
             </span>
           </div>
         </div>

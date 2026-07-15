@@ -57,7 +57,7 @@ export function ShopifySyncTier() {
       <div className="p-6 border-b border-border/50 flex items-center justify-between">
         <div>
           <h3 className="text-xl font-bold text-foreground">Shopify Integration</h3>
-          <p className="text-sm text-muted-foreground mt-1">Connect your Tattoi storefront to Shopify.</p>
+          <p className="text-sm text-muted-foreground mt-1">Connect your d.o.t.s storefront to Shopify.</p>
         </div>
         {isConnected ? (
           <div className="px-3 py-1 bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] text-xs font-bold rounded-full flex items-center gap-1">

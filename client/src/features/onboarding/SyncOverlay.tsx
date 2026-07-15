@@ -70,13 +70,13 @@ export function SyncOverlay() {
         {/* TATTOI Header with Fill Animation */}
         <div className="relative mb-16">
           <h1 className="text-4xl md:text-5xl font-light tracking-widest text-foreground opacity-10 select-none">
-            TATTOI
+            d.o.t.s
           </h1>
           <h1 
             className="text-4xl md:text-5xl font-light tracking-widest text-foreground absolute inset-0 select-none transition-all duration-75 ease-linear"
             style={{ clipPath: `inset(${100 - progress}% 0 0 0)` }}
           >
-            TATTOI
+            d.o.t.s
           </h1>
         </div>
 
