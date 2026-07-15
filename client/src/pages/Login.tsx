@@ -183,7 +183,7 @@ function TerminalSection({
   active: boolean;
   onComplete: () => void;
 }) {
-  const { visibleLines, done } = useTypedLines(section.lines, active, 10, 60);
+  const { visibleLines, done } = useTypedLines(section.lines, active, 13, 75);
 
   useEffect(() => {
     if (done) {
@@ -326,17 +326,6 @@ export default function Login() {
       {/* CRT scanline overlay */}
       <div className="login-terminal-scanlines" />
 
-      {/* ── Top: date/time + title ── */}
-      <div className="login-terminal-top">
-        <div className="login-terminal-datetime">
-          {now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-          {" — "}
-          {now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-        </div>
-        <h1 className="login-terminal-title">DEPARTMENT OF TATTOO SERVICES</h1>
-        <div className="login-terminal-version">SYSTEM BOOT V{APP_VERSION}</div>
-      </div>
-
       {/* ── Center: cycling sections ── */}
       <div className="login-terminal-center">
         {!sequenceComplete ? (
@@ -355,6 +344,17 @@ export default function Login() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* ── Header: date/time + title (below sections) ── */}
+      <div className="login-terminal-top">
+        <div className="login-terminal-datetime">
+          {now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+          {" — "}
+          {now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+        </div>
+        <h1 className="login-terminal-title">DEPARTMENT OF TATTOO SERVICES</h1>
+        <div className="login-terminal-version">SYSTEM BOOT V{APP_VERSION}</div>
       </div>
 
       {/* ── Bottom: auth buttons (always visible) ── */}
