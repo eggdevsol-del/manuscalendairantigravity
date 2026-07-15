@@ -236,9 +236,7 @@ export default function Login() {
       </div>
 
       {/* ── Bottom action area — same layout as before ── */}
-      <div
-        className={`login-terminal-actions ${bootComplete ? "actions-visible" : ""}`}
-      >
+      <div className="login-terminal-actions">
         {/* Other methods panel — slides in when toggled */}
         {showOtherMethods && (
           <div
