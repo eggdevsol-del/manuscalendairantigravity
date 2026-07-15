@@ -1,5 +1,5 @@
 import "./login.css";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import {
@@ -19,73 +19,194 @@ import { APP_VERSION } from "@/lib/version";
 import { useGoogleAuthReady } from "@/lib/google-auth";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 
-// ── Terminal boot sequence lines ─────────────────────────────
-const BOOT_LINES = [
-  { text: "> DEPARTMENT OF TATTOO SERVICES", delay: 0, style: "title" },
-  { text: `> SYSTEM BOOT v${typeof APP_VERSION === "string" ? APP_VERSION : "2.7"}`, delay: 400, style: "dim" },
-  { text: `> ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })} — ${new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`, delay: 800, style: "dim" },
-  { text: "> ", delay: 1200, style: "blank" },
-  { text: "> Loading client database.............. OK", delay: 1400, style: "normal" },
-  { text: "> Synchronising appointment schedule... OK", delay: 1800, style: "normal" },
-  { text: "> Checking needle inventory............ OK", delay: 2200, style: "normal" },
-  { text: "> Verifying ink supply chain........... ADEQUATE", delay: 2600, style: "normal" },
-  { text: "> Calibrating tattoo precision AI...... 99.97%", delay: 3000, style: "normal" },
-  { text: "> Running background checks on artists. CLASSIFIED", delay: 3400, style: "warning" },
-  { text: "> Humour module....................... LOADED (USE WITH CAUTION)", delay: 3800, style: "warning" },
-  { text: "> ", delay: 4200, style: "blank" },
-  { text: "> All systems nominal.", delay: 4400, style: "success" },
-  { text: "> ", delay: 4800, style: "blank" },
+// ── Terminal sections ────────────────────────────────
+// Each section renders one at a time, centered, typed line by line.
+const SECTIONS: { header: string; lines: string[] }[] = [
+  {
+    header: "[ DESIGN OPERATIONS ]",
+    lines: [
+      "Designs due this week.......................... 5",
+      "Designs completed.............................. 0",
+      "Hours until first appointment................. 12",
+      "Opening Procreate.............................. PENDING",
+    ],
+  },
+  {
+    header: "[ ARTIST VITALS ]",
+    lines: [
+      "Checking artist blood supply................... DETECTED",
+      "Water content.................................. MINIMAL",
+      "Caffeine content............................... HIGH",
+      "Nicotine content............................... PRESENT",
+      "Cortisol dependency............................ CONFIRMED",
+    ],
+  },
+  {
+    header: "[ DIGITAL ASSET MANAGEMENT ]",
+    lines: [
+      "Checking device storage........................ 28,416 IMAGES",
+      "Tattoo photos detected......................... 15,482",
+      "Tattoo photos edited........................... 63",
+      "Tattoo photos posted........................... 3",
+      "Available storage.............................. 241 MB",
+    ],
+  },
+  {
+    header: "[ PROJECT & BOOKING MANAGEMENT ]",
+    lines: [
+      "Checking current projects...................... 23",
+      "Projects booked until completion............... 2",
+      "Empty days next month.......................... 14",
+      "Slow season detected........................... YES",
+      "Books permanently open......................... YES",
+    ],
+  },
+  {
+    header: "[ ARTIST PRICING & SACRIFICE ]",
+    lines: [
+      "Checking artist pricing........................ COMPLETE",
+      "Years tattooing................................ 12",
+      "Price increase in last 3 years................. $0",
+      "Free extras detected........................... 37",
+      '"Don\'t worry about it bro" incidents............ 19',
+      "Time away from children........................ 900 HOURS",
+      "Refunding design time taken from family......... NON-REFUNDABLE",
+    ],
+  },
+  {
+    header: "[ SOCIAL MEDIA COMPLIANCE ]",
+    lines: [
+      "Analysing artist Instagram..................... COMPLETE",
+      "Tattoo ability................................. 99%",
+      "Organic reach.................................. 256",
+      "Dancing videos posted.......................... 0",
+      "Personal trauma shared......................... 0",
+      "Trade knowledge given away for free............ 0",
+      "Algorithm cooperation.......................... NIL",
+    ],
+  },
+  {
+    header: "[ OCCUPATIONAL RECOGNITION ]",
+    lines: [
+      "Checking occupation status..................... NOT A REAL JOB",
+      "Checking government tax status................. VERY REAL JOB",
+      "Tax payable.................................... $84,217",
+    ],
+  },
+  {
+    header: "[ CLIENT ATTENDANCE & REVENUE ]",
+    lines: [
+      "Checking missed appointments................... 13",
+      "Revenue lost................................... $15,600",
+      'Deposit policy................................. "I TRUST THEM"',
+    ],
+  },
+  {
+    header: "[ LONG-TERM ARTIST VIABILITY ]",
+    lines: [
+      "Checking retirement plan....................... NOT FOUND",
+      "Checking lower back............................ DAMAGED",
+      "Mike Tyson lower back damage level............. SPINAL",
+      "Checking tattoo expertise...................... EXCEPTIONAL",
+      "Current financial plan......................... TATTOO MORE",
+    ],
+  },
+  {
+    header: "[ ALTERNATIVE REVENUE CONTINGENCY ]",
+    lines: [
+      "Loading OnlyFans backup revenue model........... READY",
+    ],
+  },
 ];
 
-// Final static text after animation
-const FINAL_TITLE = "Department of Tattoo Services";
-const FINAL_READY = "ready";
-
-// ── Typing animation hook ────────────────────────────────────
-function useTypingAnimation(text: string, startDelay: number, charDelay = 30) {
-  const [displayed, setDisplayed] = useState("");
+// ── Typing engine hook ───────────────────────────────
+// Types out an array of lines one character at a time, returns visible lines.
+function useTypedLines(
+  lines: string[],
+  active: boolean,
+  charDelay = 12,
+  lineDelay = 80,
+) {
+  const [visibleLines, setVisibleLines] = useState<string[]>([]);
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    let charIndex = 0;
-    let startTimer: ReturnType<typeof setTimeout>;
-    let charTimer: ReturnType<typeof setInterval>;
+    if (!active) {
+      setVisibleLines([]);
+      setDone(false);
+      return;
+    }
 
-    startTimer = setTimeout(() => {
-      charTimer = setInterval(() => {
-        charIndex++;
-        setDisplayed(text.slice(0, charIndex));
-        if (charIndex >= text.length) {
-          clearInterval(charTimer);
-          setDone(true);
-        }
-      }, charDelay);
-    }, startDelay);
+    let cancelled = false;
+    let lineIdx = 0;
+    let charIdx = 0;
+    const result: string[] = [];
 
-    return () => {
-      clearTimeout(startTimer);
-      clearInterval(charTimer);
-    };
-  }, [text, startDelay, charDelay]);
+    function tick() {
+      if (cancelled) return;
 
-  return { displayed, done };
+      if (lineIdx >= lines.length) {
+        setDone(true);
+        return;
+      }
+
+      const currentLine = lines[lineIdx];
+      charIdx++;
+
+      if (charIdx > currentLine.length) {
+        // Line complete — move to next
+        lineIdx++;
+        charIdx = 0;
+        setTimeout(tick, lineDelay);
+        return;
+      }
+
+      result[lineIdx] = currentLine.slice(0, charIdx);
+      setVisibleLines([...result]);
+      setTimeout(tick, charDelay);
+    }
+
+    tick();
+    return () => { cancelled = true; };
+  }, [lines, active, charDelay, lineDelay]);
+
+  return { visibleLines, done };
 }
 
-// ── Terminal line component ──────────────────────────────────
-function TerminalLine({ text, delay, style }: { text: string; delay: number; style: string }) {
-  const { displayed, done } = useTypingAnimation(text, delay, 18);
+// ── Section display component ────────────────────────
+function TerminalSection({
+  section,
+  active,
+  onComplete,
+}: {
+  section: { header: string; lines: string[] };
+  active: boolean;
+  onComplete: () => void;
+}) {
+  const { visibleLines, done } = useTypedLines(section.lines, active, 10, 60);
 
-  const colorClass =
-    style === "title" ? "terminal-line-title" :
-    style === "success" ? "terminal-line-success" :
-    style === "warning" ? "terminal-line-warning" :
-    style === "dim" ? "terminal-line-dim" :
-    "terminal-line-normal";
+  useEffect(() => {
+    if (done) {
+      const t = setTimeout(onComplete, 1000);
+      return () => clearTimeout(t);
+    }
+  }, [done, onComplete]);
+
+  if (!active) return null;
 
   return (
-    <div className={`terminal-line ${colorClass}`}>
-      {displayed}
-      {!done && <span className="terminal-cursor">▌</span>}
+    <div className="terminal-section">
+      <div className="terminal-section-header">{section.header}</div>
+      <div className="terminal-section-lines">
+        {visibleLines.map((line, i) => (
+          <div key={i} className="terminal-section-line">
+            {line}
+            {i === visibleLines.length - 1 && !done && (
+              <span className="terminal-cursor">▌</span>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -98,30 +219,30 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [showOtherMethods, setShowOtherMethods] = useState(false);
-  const [bootComplete, setBootComplete] = useState(false);
   const { user, loading: authLoading } = useAuth();
   const utils = trpc.useUtils();
-  const terminalRef = useRef<HTMLDivElement>(null);
 
-  // Final title typing (starts after boot sequence)
-  const titleStart = 5200;
-  const { displayed: titleText, done: titleDone } = useTypingAnimation(FINAL_TITLE, titleStart, 40);
-  const { displayed: readyText, done: readyDone } = useTypingAnimation(FINAL_READY, titleStart + FINAL_TITLE.length * 40 + 400, 80);
+  // Terminal sequence state
+  const [currentSection, setCurrentSection] = useState(0);
+  const [sequenceComplete, setSequenceComplete] = useState(false);
 
-  // Mark boot as complete once "ready" is done typing
+  const handleSectionComplete = useCallback(() => {
+    setCurrentSection((prev) => {
+      const next = prev + 1;
+      if (next >= SECTIONS.length) {
+        setSequenceComplete(true);
+        return prev;
+      }
+      return next;
+    });
+  }, []);
+
+  // Live clock
+  const [now, setNow] = useState(new Date());
   useEffect(() => {
-    if (readyDone) {
-      const t = setTimeout(() => setBootComplete(true), 600);
-      return () => clearTimeout(t);
-    }
-  }, [readyDone]);
-
-  // Auto-scroll terminal during boot
-  useEffect(() => {
-    if (terminalRef.current) {
-      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
-    }
-  });
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: data => {
@@ -150,10 +271,8 @@ export default function Login() {
     },
   });
 
-  // --- Google Sign-In ---
   const isGoogleReady = useGoogleAuthReady();
   const googleLoginMutation = trpc.auth.googleLogin.useMutation();
-
 
   const handleGoogleSuccess = async (code: string) => {
     setIsLoading(true);
@@ -194,58 +313,54 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!email || !password) {
       toast.error("Please fill in all fields");
       return;
     }
-
     setIsLoading(true);
     loginMutation.mutate({ email, password });
   };
 
   return (
     <div className="login-terminal-root">
-      {/* ── Terminal background ── */}
-      <div className="login-terminal-bg" ref={terminalRef}>
-        {/* CRT scanline overlay */}
-        <div className="login-terminal-scanlines" />
+      {/* CRT scanline overlay */}
+      <div className="login-terminal-scanlines" />
 
-        {/* Boot sequence lines */}
-        <div className="login-terminal-output">
-          {BOOT_LINES.map((line, i) => (
-            <TerminalLine key={i} text={line.text} delay={line.delay} style={line.style} />
-          ))}
+      {/* ── Top: date/time + title ── */}
+      <div className="login-terminal-top">
+        <div className="login-terminal-datetime">
+          {now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+          {" — "}
+          {now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
         </div>
-
-        {/* Final branding — typed then static */}
-        <div className={`login-terminal-brand ${bootComplete ? "brand-complete" : ""}`}>
-          {titleText && (
-            <h1 className="login-terminal-brand-title">
-              {titleText}
-              {!titleDone && <span className="terminal-cursor">▌</span>}
-            </h1>
-          )}
-          {readyText && (
-            <span className="login-terminal-brand-ready">
-              {readyText}
-              {!readyDone && <span className="terminal-cursor">▌</span>}
-            </span>
-          )}
-        </div>
+        <h1 className="login-terminal-title">DEPARTMENT OF TATTOO SERVICES</h1>
+        <div className="login-terminal-version">SYSTEM BOOT V{APP_VERSION}</div>
       </div>
 
-      {/* ── Bottom action area — same layout as before ── */}
+      {/* ── Center: cycling sections ── */}
+      <div className="login-terminal-center">
+        {!sequenceComplete ? (
+          SECTIONS.map((section, i) => (
+            <TerminalSection
+              key={i}
+              section={section}
+              active={i === currentSection}
+              onComplete={handleSectionComplete}
+            />
+          ))
+        ) : (
+          <div className="terminal-final">
+            <div className="terminal-final-line">
+              INITIALISING D.O.T.S........................... READY
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Bottom: auth buttons (always visible) ── */}
       <div className="login-terminal-actions">
-        {/* Other methods panel — slides in when toggled */}
         {showOtherMethods && (
-          <div
-            style={{
-              width: "100%",
-              maxWidth: 400,
-              marginBottom: 8,
-            }}
-          >
+          <div style={{ width: "100%", maxWidth: 400, marginBottom: 8 }}>
             <Card className="border-0 shadow-none bg-transparent p-0">
               <CardContent className="p-0 space-y-4">
                 <form onSubmit={handleSubmit} className="space-y-3">
@@ -289,11 +404,7 @@ export default function Login() {
                         className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground outline-none"
                         disabled={isLoading}
                       >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
                   </div>
@@ -306,46 +417,23 @@ export default function Login() {
                         onCheckedChange={checked => setRememberMe(checked === true)}
                         disabled={isLoading}
                       />
-                      <label
-                        htmlFor="remember"
-                        className="text-sm leading-none cursor-pointer text-muted-foreground"
-                        style={{ fontWeight: 300 }}
-                      >
+                      <label htmlFor="remember" className="text-sm leading-none cursor-pointer text-muted-foreground" style={{ fontWeight: 300 }}>
                         Remember me
                       </label>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setLocation("/forgot-password")}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                      style={{ fontWeight: 300 }}
-                    >
+                    <button type="button" onClick={() => setLocation("/forgot-password")} className="text-sm text-muted-foreground hover:text-foreground transition-colors" style={{ fontWeight: 300 }}>
                       Forgot password?
                     </button>
                   </div>
 
-                  <Button
-                    type="submit"
-                    className={cn(tokens.button.auth, "w-full h-12 rounded-full")}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Signing in...
-                      </>
-                    ) : (
-                      "Sign In"
-                    )}
+                  <Button type="submit" className={cn(tokens.button.auth, "w-full h-12 rounded-full")} disabled={isLoading}>
+                    {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Signing in...</>) : "Sign In"}
                   </Button>
                 </form>
 
                 <div className="flex justify-center gap-1 text-sm text-muted-foreground" style={{ fontWeight: 300 }}>
                   <span>Don't have an account?</span>
-                  <button
-                    onClick={() => setLocation("/signup?role=client")}
-                    className="text-primary font-medium hover:underline"
-                  >
+                  <button onClick={() => setLocation("/signup?role=client")} className="text-primary font-medium hover:underline">
                     Sign up
                   </button>
                 </div>
@@ -354,7 +442,6 @@ export default function Login() {
           </div>
         )}
 
-        {/* Google Sign-In — primary CTA */}
         {isGoogleReady && (
           <div style={{ width: "100%", maxWidth: 400 }}>
             <GoogleLoginButton
@@ -365,7 +452,6 @@ export default function Login() {
           </div>
         )}
 
-        {/* Other sign-in options toggle */}
         <button
           onClick={() => setShowOtherMethods(!showOtherMethods)}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -374,11 +460,7 @@ export default function Login() {
           {showOtherMethods ? "Hide other options" : "Other sign-in options"}
         </button>
 
-        {/* Version */}
-        <span
-          className="text-xs text-muted-foreground/50"
-          style={{ fontWeight: 300 }}
-        >
+        <span className="text-xs text-muted-foreground/50" style={{ fontWeight: 300 }}>
           v{APP_VERSION}
         </span>
       </div>
