@@ -15,7 +15,7 @@
  *     }]
  *   });
  */
-import { storagePut } from "server/storage";
+import { MediaService } from "../services/media.service";
 import { ENV } from "./env";
 
 export type GenerateImageOptions = {
@@ -80,10 +80,10 @@ export async function generateImage(
   const base64Data = result.image.b64Json;
   const buffer = Buffer.from(base64Data, "base64");
 
-  // Save to S3
-  const { url } = await storagePut(
-    `generated/${Date.now()}.png`,
-    buffer,
+  // Save to R2
+  const url = await MediaService.saveBase64(
+    base64Data,
+    `generated-${Date.now()}.png`,
     result.image.mimeType
   );
   return {

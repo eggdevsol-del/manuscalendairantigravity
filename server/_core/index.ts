@@ -12,7 +12,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { verifyAndFixDatabase } from "../verify-and-fix-db";
-import { storageGetData } from "../storage";
+// storage.ts no longer used — /api/files/* now redirects to R2
 import { startOutboxWorker } from "../workers/outboxProcessor";
 import { registerPublicFunnelRoutes } from "./publicFunnelRoutes";
 import { handleStripeWebhook } from "../services/stripe";
@@ -214,25 +214,14 @@ async function startServer() {
     res.json({ clientId: process.env.GOOGLE_CLIENT_ID || "" });
   });
 
-  // File serving endpoint - handle full paths with subdirectories
-  app.get("/api/files/*", async (req, res) => {
-    try {
-      // Get the full path after /api/files/
-      const key = (req.params as any)[0];
-      const file = await storageGetData(key);
-
-      if (!file) {
-        console.warn(`[File Serving] File not found for key: ${key}`);
-        return res.status(404).json({ error: "File not found" });
-      }
-
-      res.setHeader("Content-Type", file.mimeType);
-      res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
-      res.send(file.data);
-    } catch (error) {
-      console.error("[File Serving] Error:", error);
-      res.status(500).json({ error: "Failed to retrieve file" });
+  // File serving endpoint — redirects to R2 CDN (migrated from MySQL base64)
+  app.get("/api/files/*", (req, res) => {
+    const key = (req.params as any)[0];
+    const r2PublicUrl = process.env.R2_PUBLIC_URL?.replace(/\/$/, "") || "";
+    if (!r2PublicUrl) {
+      return res.status(500).json({ error: "R2_PUBLIC_URL not configured" });
     }
+    res.redirect(301, `${r2PublicUrl}/${key}`);
   });
   // ── Map image proxy ───────────────────────────────────────────
   // Direct Express route that streams Google Maps Static images as PNG.
