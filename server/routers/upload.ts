@@ -1,8 +1,44 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { MediaService } from "../services/media.service";
+import { generateObjectKey, getPresignedUploadUrl } from "../lib/r2";
 
 export const uploadRouter = router({
+  /**
+   * Get a presigned URL for direct client-to-R2 upload.
+   * Client uploads the file directly to R2 via HTTP PUT,
+   * bypassing the server for the actual file bytes.
+   */
+  getUploadUrl: protectedProcedure
+    .input(
+      z.object({
+        filename: z.string(),
+        contentType: z.string(),
+        folder: z.string().default("uploads"),
+      })
+    )
+    .mutation(async ({ input }) => {
+      // Validate file type
+      if (!MediaService.isValidType(input.contentType)) {
+        throw new Error(
+          "Invalid file type. Only images and videos are allowed."
+        );
+      }
+
+      // Generate a unique key and get presigned URL
+      const key = generateObjectKey(input.folder, input.filename);
+      const { uploadUrl, publicUrl } = await getPresignedUploadUrl(
+        key,
+        input.contentType
+      );
+
+      return { uploadUrl, publicUrl, key };
+    }),
+
+  /**
+   * Legacy: Upload image via base64 through the server.
+   * Kept for backward compatibility — new code should use getUploadUrl.
+   */
   uploadImage: protectedProcedure
     .input(
       z.object({
@@ -47,7 +83,7 @@ export const uploadRouter = router({
         fileName = `${input.folder}/${Date.now()}-${fileName}`;
       }
 
-      // Save file
+      // Save file (now uploads to R2)
       const url = await MediaService.saveBase64(
         fileData,
         fileName,

@@ -198,7 +198,7 @@ export default function Settings() {
                 {/* Avatar summary row */}
                 <div
                   className="p-4 flex items-center gap-4 cursor-pointer hover:bg-secondary/50 transition-colors"
-                  onClick={nav("profile")}
+                  onClick={isArtist ? nav("profile") : () => setLocation("/profile")}
                 >
                   <UserAvatar name={user?.name} avatar={user?.avatar} size="xl" />
                   <div className="flex-1">

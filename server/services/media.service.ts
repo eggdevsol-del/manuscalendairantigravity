@@ -1,14 +1,16 @@
-import path from "path";
 import { randomUUID } from "crypto";
-import { storagePut } from "../storage";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { r2Client, BUCKET_NAME, getPublicUrl } from "../lib/r2";
 
 export class MediaService {
   /**
-   * Save a base64 string as a file using DB storage
+   * Save a base64 string by uploading to Cloudflare R2.
+   * Returns the public CDN URL.
+   *
    * @param base64Data content of the file (can be raw base64 or Data URL)
    * @param filename original filename
    * @param mimeType optional mime type if not using Data URL
-   * @returns public URL path
+   * @returns public URL on R2 CDN
    */
   static async saveBase64(
     base64Data: string,
@@ -35,23 +37,27 @@ export class MediaService {
     }
 
     if (!actualMimeType) {
-      // Default to image/png if we can't determine it
       actualMimeType = "image/png";
     }
 
     const buffer = Buffer.from(data, "base64");
-    const extension =
-      path.extname(filename) ||
-      (actualMimeType.split("/")[1]
-        ? `.${actualMimeType.split("/")[1]}`
-        : ".png");
-    const uniqueName = `${randomUUID()}${extension}`;
+    const ext =
+      filename.split(".").pop()?.toLowerCase() ||
+      actualMimeType.split("/")[1] ||
+      "png";
+    const key = `uploads/${randomUUID()}.${ext}`;
 
-    // Ensure key is URL safe and structured
-    const key = `uploads/${uniqueName}`;
+    // Upload to R2
+    const command = new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+      Body: buffer,
+      ContentType: actualMimeType,
+    });
 
-    const result = await storagePut(key, buffer, actualMimeType);
-    return result.url;
+    await r2Client.send(command);
+
+    return getPublicUrl(key);
   }
 
   /**

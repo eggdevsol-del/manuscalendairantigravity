@@ -23,10 +23,12 @@ import {
   Calendar,
   User,
   Loader2,
+  Camera,
 } from "lucide-react";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
+import { useImageUpload } from "@/lib/useImageUpload";
 
 // ── Types ──────────────────────────────────────────────────
 type Mode = "edit" | "preview";
@@ -129,6 +131,11 @@ export default function ClientProfilePage() {
 
   // ── Mode ───────────────────────────────────────────────
   const [mode, setMode] = useState<Mode>("edit");
+
+  // ── Image upload ──────────────────────────────────────
+  const { pickAndUpload, isUploading: isUploadingAvatar } = useImageUpload({
+    resize: { maxWidth: 512, maxHeight: 512, quality: 0.85 },
+  });
 
   // ── Form state ─────────────────────────────────────────
   const [name, setName] = useState("");
@@ -249,9 +256,28 @@ export default function ClientProfilePage() {
               exit="exit"
               className="px-4 pb-32"
             >
-              {/* Avatar */}
+              {/* Avatar — editable with Camera overlay */}
               <div className="flex flex-col items-center py-6 gap-2">
-                <UserAvatar name={name || user?.name} avatar={avatar || user?.avatar} size="2xl" ring />
+                <div
+                  className="relative cursor-pointer group"
+                  onClick={async () => {
+                    const url = await pickAndUpload("avatars");
+                    if (url) {
+                      setAvatar(url);
+                      toast.success("Photo updated! Tap Save to keep it.");
+                    }
+                  }}
+                >
+                  <UserAvatar name={name || user?.name} avatar={avatar || user?.avatar} size="2xl" ring />
+                  {/* Camera overlay — always visible in edit mode */}
+                  <div className="absolute inset-0 rounded-full bg-background/60 flex items-center justify-center transition-opacity opacity-70 group-hover:opacity-100">
+                    {isUploadingAvatar ? (
+                      <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                    ) : (
+                      <Camera className="w-8 h-8 text-primary" />
+                    )}
+                  </div>
+                </div>
                 <h2 className="text-lg font-bold text-foreground mt-2">
                   {name || user?.name || "Your Name"}
                 </h2>
