@@ -28,7 +28,6 @@ export const appointments = mysqlTable(
     id: int().primaryKey().autoincrement(),
     studioId: varchar({ length: 64 }), // Added later via relations, avoiding circular ref if studios is defined below
     conversationId: int()
-      .notNull()
       .references(() => conversations.id, { onDelete: "cascade" }),
     artistId: varchar({ length: 64 })
       .notNull()

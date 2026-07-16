@@ -152,7 +152,7 @@ export const appointmentsRouter = router({
 
       const newAppt = await db.createAppointment({
         studioId: null,
-        conversationId: 0, // Personal reminders don't belong to a conversation
+        conversationId: null, // Personal reminders don't belong to a conversation
         artistId: ctx.user.id,
         clientId: ctx.user.id, // Self-referencing
         title: input.title,
