@@ -75,6 +75,7 @@ export function PortfolioSettings({ onBack }: PortfolioSettingsProps) {
 
   const handleDelete = (id: number) => {
     setDeletingId(id);
+    deleteItem.reset();
     deleteItem.mutate({ id });
   };
 

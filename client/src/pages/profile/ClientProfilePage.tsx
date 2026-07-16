@@ -28,7 +28,7 @@ import {
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
-import { useImageUpload } from "@/lib/useImageUpload";
+import { useRef } from "react";
 
 // ── Types ──────────────────────────────────────────────────
 type Mode = "edit" | "preview";
@@ -132,10 +132,10 @@ export default function ClientProfilePage() {
   // ── Mode ───────────────────────────────────────────────
   const [mode, setMode] = useState<Mode>("edit");
 
-  // ── Image upload ──────────────────────────────────────
-  const { pickAndUpload, isUploading: isUploadingAvatar } = useImageUpload({
-    resize: { maxWidth: 512, maxHeight: 512, quality: 0.85 },
-  });
+  // ── Avatar upload (server-side via tRPC) ───────────────
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const uploadImage = trpc.upload.uploadImage.useMutation();
 
   // ── Form state ─────────────────────────────────────────
   const [name, setName] = useState("");
@@ -257,16 +257,10 @@ export default function ClientProfilePage() {
               className="px-4 pb-32"
             >
               {/* Avatar — editable with Camera overlay */}
-              <div className="flex flex-col items-center py-6 gap-2">
+              <div className="flex flex-col items-center justify-center py-6 gap-2 w-full">
                 <div
-                  className="relative cursor-pointer group"
-                  onClick={async () => {
-                    const url = await pickAndUpload("avatars");
-                    if (url) {
-                      setAvatar(url);
-                      toast.success("Photo updated! Tap Save to keep it.");
-                    }
-                  }}
+                  className="relative cursor-pointer group mx-auto"
+                  onClick={() => avatarInputRef.current?.click()}
                 >
                   <UserAvatar name={name || user?.name} avatar={avatar || user?.avatar} size="2xl" ring />
                   {/* Camera overlay — always visible in edit mode */}
@@ -278,6 +272,44 @@ export default function ClientProfilePage() {
                     )}
                   </div>
                 </div>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  hidden
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const inputEl = e.target;
+                    setIsUploadingAvatar(true);
+                    try {
+                      const reader = new FileReader();
+                      reader.onload = async () => {
+                        try {
+                          const base64 = reader.result as string;
+                          const result = await uploadImage.mutateAsync({
+                            base64,
+                            filename: file.name,
+                            folder: "avatars",
+                          });
+                          if (result.url) {
+                            setAvatar(result.url);
+                            toast.success("Photo updated! Tap Save to keep it.");
+                          }
+                        } catch (err: any) {
+                          toast.error(err.message || "Upload failed");
+                        } finally {
+                          setIsUploadingAvatar(false);
+                          inputEl.value = "";
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    } catch {
+                      setIsUploadingAvatar(false);
+                      inputEl.value = "";
+                    }
+                  }}
+                />
                 <h2 className="text-lg font-bold text-foreground mt-2">
                   {name || user?.name || "Your Name"}
                 </h2>

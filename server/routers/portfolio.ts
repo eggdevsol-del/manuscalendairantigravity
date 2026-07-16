@@ -129,6 +129,11 @@ export const portfolioRouter = router({
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
+      // Explicitly delete likes first (guards against missing CASCADE in DB)
+      await db
+        .delete(schema.portfolioLikes)
+        .where(eq(schema.portfolioLikes.portfolioId, input.id));
+
       await db
         .delete(schema.portfolios)
         .where(eq(schema.portfolios.id, input.id));

@@ -125,6 +125,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
 
@@ -160,6 +161,9 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   }, [settings, user]);
 
   const uploadImage = trpc.upload.uploadImage.useMutation();
+  const updateProfile = trpc.auth.updateProfile.useMutation({
+    onSuccess: () => utils.auth.me.invalidate(),
+  });
   const createItem = trpc.portfolio.create.useMutation({
     onSuccess: () => {
       utils.portfolio.list.invalidate();
@@ -248,6 +252,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
 
   const handleDelete = (id: number) => {
     setDeletingId(id);
+    deleteItem.reset();
     deleteItem.mutate({ id });
   };
 
@@ -289,7 +294,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           {/* Avatar */}
           <div
             className="artist-profile-avatar-large"
-            style={{ cursor: "pointer", position: "relative" }}
+            style={{ cursor: "pointer", position: "relative", display: "flex", justifyContent: "center", alignItems: "center", margin: "0 auto" }}
             onClick={() => avatarInputRef.current?.click()}
           >
             <UserAvatar name={user?.name} avatar={user?.avatar} size="xl" />
@@ -307,15 +312,50 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
                 justifyContent: "center",
               }}
             >
-              <Camera size={12} color="var(--color-bg-base)" />
+              {uploadingAvatar ? (
+                <Loader2 size={12} color="var(--color-bg-base)" className="animate-spin" />
+              ) : (
+                <Camera size={12} color="var(--color-bg-base)" />
+              )}
             </div>
           </div>
           <input
             ref={avatarInputRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             hidden
-            onChange={() => {}}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const inputEl = e.target;
+              setUploadingAvatar(true);
+              try {
+                const reader = new FileReader();
+                reader.onload = async () => {
+                  try {
+                    const base64 = reader.result as string;
+                    const result = await uploadImage.mutateAsync({
+                      base64,
+                      filename: file.name,
+                      folder: "avatars",
+                    });
+                    if (result.url) {
+                      await updateProfile.mutateAsync({ avatar: result.url });
+                      toast.success("Profile photo updated!");
+                    }
+                  } catch (err: any) {
+                    toast.error(err.message || "Upload failed");
+                  } finally {
+                    setUploadingAvatar(false);
+                    inputEl.value = "";
+                  }
+                };
+                reader.readAsDataURL(file);
+              } catch {
+                setUploadingAvatar(false);
+                inputEl.value = "";
+              }
+            }}
           />
 
           {/* Name */}
