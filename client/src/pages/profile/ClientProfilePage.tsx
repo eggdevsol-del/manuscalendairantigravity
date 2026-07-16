@@ -29,6 +29,7 @@ import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { useRef } from "react";
+import { resizeImage } from "@/lib/resizeImage";
 
 // ── Types ──────────────────────────────────────────────────
 type Mode = "edit" | "preview";
@@ -275,7 +276,7 @@ export default function ClientProfilePage() {
                 <input
                   ref={avatarInputRef}
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                  accept="image/*"
                   hidden
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
@@ -283,28 +284,23 @@ export default function ClientProfilePage() {
                     const inputEl = e.target;
                     setIsUploadingAvatar(true);
                     try {
-                      const reader = new FileReader();
-                      reader.onload = async () => {
-                        try {
-                          const base64 = reader.result as string;
-                          const result = await uploadImage.mutateAsync({
-                            base64,
-                            filename: file.name,
-                            folder: "avatars",
-                          });
-                          if (result.url) {
-                            setAvatar(result.url);
-                            toast.success("Photo updated! Tap Save to keep it.");
-                          }
-                        } catch (err: any) {
-                          toast.error(err.message || "Upload failed");
-                        } finally {
-                          setIsUploadingAvatar(false);
-                          inputEl.value = "";
-                        }
-                      };
-                      reader.readAsDataURL(file);
-                    } catch {
+                      const base64 = await resizeImage(file, {
+                        maxWidth: 512,
+                        maxHeight: 512,
+                        quality: 0.85,
+                      });
+                      const result = await uploadImage.mutateAsync({
+                        base64,
+                        filename: file.name,
+                        folder: "avatars",
+                      });
+                      if (result.url) {
+                        setAvatar(result.url);
+                        toast.success("Photo updated! Tap Save to keep it.");
+                      }
+                    } catch (err: any) {
+                      toast.error(err.message || "Upload failed");
+                    } finally {
                       setIsUploadingAvatar(false);
                       inputEl.value = "";
                     }

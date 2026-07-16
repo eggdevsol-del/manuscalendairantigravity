@@ -176,9 +176,9 @@ async function startServer() {
     handleStripeWebhook
   );
 
-  // 2. Configure body parsers (5mb is generous for JSON + base64 images)
-  app.use(express.json({ limit: "5mb" }));
-  app.use(express.urlencoded({ limit: "5mb", extended: true }));
+  // 2. Configure body parsers (25mb to support iPhone camera photos as base64)
+  app.use(express.json({ limit: "25mb" }));
+  app.use(express.urlencoded({ limit: "25mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
