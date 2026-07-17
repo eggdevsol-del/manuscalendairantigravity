@@ -12,6 +12,7 @@ import { useMemo } from "react";
 import { type FABMenuItem } from "@/ui/FABMenu";
 import { BookingWizardContent } from "@/features/booking/BookingWizardContent";
 import { PersonalReminderForm } from "@/features/calendar/PersonalReminderForm";
+import { QuickBookingSheet } from "@/features/calendar/QuickBookingSheet";
 import { useLocation } from "wouter";
 import { useEffect, useRef } from "react";
 import { useBottomNav } from "@/contexts/BottomNavContext";
@@ -49,7 +50,24 @@ export default function CalendarAgendaPage() {
       );
     }
 
-    if (controller.selectedAppointment || controller.isBookingStarted) {
+    // Artist role: new booking via "+" → show QuickBookingSheet
+    if (!isClient && controller.isBookingStarted && !controller.selectedAppointment) {
+      return (
+        <QuickBookingSheet
+          initialDate={controller.bookingInitialDate}
+          onClose={() => {
+            controller.setIsBookingStarted(false);
+            setFABOpen(false);
+          }}
+          onSuccess={() => {
+            controller.refetch();
+          }}
+        />
+      );
+    }
+
+    // Artist role: tapped existing appointment → show full BookingWizardContent
+    if (controller.selectedAppointment) {
       return (
         <BookingWizardContent
           conversationId={controller.selectedAppointment?.conversationId}
@@ -127,6 +145,7 @@ export default function CalendarAgendaPage() {
     controller.artistServices,
     controller.artistSettings,
     controller.refetch,
+    isClient,
   ]);
 
   useRegisterFABActions("calendar", fabActions);
