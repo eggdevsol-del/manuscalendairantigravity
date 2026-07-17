@@ -286,10 +286,9 @@
   }
 
   html {
-    height: 100%;
-    overflow: hidden;
     position: fixed;
-    width: 100%;
+    inset: 0;
+    overflow: hidden;
     background: var(--background);
   }
 
@@ -335,10 +334,8 @@
   body {
     @apply bg-transparent text-foreground;
     font-family: 'DM Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-    height: 100dvh;
+    height: 100%;
     overflow: hidden;
-    position: fixed;
-    width: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     touch-action: manipulation;
