@@ -10,6 +10,7 @@ export const bookingRouter = router({
     .input(
       z.object({
         conversationId: z.number(),
+        artistId: z.string().optional(),
         serviceName: z.string(),
         serviceDuration: z.number(),
         sittings: z.number(),
@@ -29,19 +30,23 @@ export const bookingRouter = router({
       const { conversationId, frequency, sittings, serviceDuration } = input;
 
       try {
+        // Determine artistId: use direct artistId if provided, else look up from conversation
+        let resolvedArtistId = input.artistId;
 
-        const conversation = await db.getConversationById(conversationId);
-
-        if (!conversation) {
-          console.error("[BookingRouter] Conversation not found");
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Conversation not found",
-          });
+        if (!resolvedArtistId) {
+          const conversation = await db.getConversationById(conversationId);
+          if (!conversation) {
+            console.error("[BookingRouter] Conversation not found");
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Conversation not found",
+            });
+          }
+          resolvedArtistId = conversation.artistId;
         }
 
         const artistSettings = await db.getArtistSettings(
-          conversation.artistId
+          resolvedArtistId
         );
 
         if (!artistSettings) {
@@ -74,7 +79,7 @@ export const bookingRouter = router({
         searchStart.setHours(0, 0, 0, 0);
 
         const rawAppointments = await db.getArtistCalendar(
-          conversation.artistId,
+          resolvedArtistId,
           searchStart
         );
 
