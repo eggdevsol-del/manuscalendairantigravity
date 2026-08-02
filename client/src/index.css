@@ -286,7 +286,8 @@
   }
 
   html {
-    height: 100%;
+    min-height: 100%;
+    min-height: -webkit-fill-available;
     overflow: hidden;
     background: var(--background);
   }
@@ -317,24 +318,25 @@
     scrollbar-color: var(--border) transparent;
   }
 
-  /* Fixed background layer */
+  /* Fixed background layer — extends past safe areas so home indicator area is painted */
   html::before {
     content: "";
     position: fixed;
-    top: 0;
+    top: -env(safe-area-inset-top, 0px);
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: -env(safe-area-inset-bottom, 0px);
     z-index: -1;
     background: var(--bg-gradient);
     pointer-events: none;
   }
 
   body {
-    @apply bg-transparent text-foreground;
+    @apply text-foreground;
     font-family: 'DM Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-    height: 100%;
+    min-height: 100%;
     overflow: hidden;
+    background: var(--background);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     touch-action: manipulation;
