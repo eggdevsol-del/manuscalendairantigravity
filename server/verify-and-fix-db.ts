@@ -59,11 +59,35 @@ async function verifyAndFixDatabase() {
       console.log(`[DB Verify] Missing tables: ${missingTables.join(", ")}`);
     }
 
+    // ── Safe column additions (idempotent — skips if column already exists) ──
+    const columnAdditions = [
+      `ALTER TABLE artistSettings ADD COLUMN notification_mode ENUM('manual','automatic') DEFAULT 'manual'`,
+      `ALTER TABLE artistSettings ADD COLUMN googlePlaceId VARCHAR(255) DEFAULT NULL`,
+      `ALTER TABLE artistSettings ADD COLUMN quietHoursEnabled TINYINT DEFAULT 0`,
+      `ALTER TABLE artistSettings ADD COLUMN quietHoursStart INT DEFAULT 21`,
+      `ALTER TABLE artistSettings ADD COLUMN quietHoursEnd INT DEFAULT 7`,
+    ];
+
+    for (const alterSql of columnAdditions) {
+      try {
+        await connection.query(alterSql);
+        const colName = alterSql.match(/ADD COLUMN (\S+)/)?.[1];
+        console.log(`[DB Verify] ✓ Added column: ${colName}`);
+      } catch (e: any) {
+        if (e.code === "ER_DUP_FIELDNAME") {
+          // Column already exists — safe to skip
+        } else {
+          console.error(`[DB Verify] ✗ ALTER failed:`, e.message);
+        }
+      }
+    }
+
     console.log(
       `[DB Verify] ⚠ Missing ${missingTables.length} tables:`,
       missingTables.join(", ")
     );
     console.log("[DB Verify] Running migrations to create missing tables...");
+
 
     // Find drizzle migrations directory
     let drizzlePath = path.join(process.cwd(), "drizzle");
