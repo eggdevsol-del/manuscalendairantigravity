@@ -189,12 +189,6 @@ export const artistSettings = mysqlTable(
     showCity: tinyint().default(1),
     showWebsite: tinyint().default(0),
     websiteUrl: text(),
-    // ── Notification & Automation Settings ──
-    notificationMode: mysqlEnum("notification_mode", ["manual", "automatic"]).default("manual"),
-    googlePlaceId: varchar({ length: 255 }),
-    quietHoursEnabled: tinyint().default(0),
-    quietHoursStart: int().default(21),
-    quietHoursEnd: int().default(7),
   },
   table => [unique("artistSettings_publicSlug_unique").on(table.publicSlug)]
 );

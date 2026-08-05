@@ -198,7 +198,7 @@ async function generateNewLeadTasks(
       deepLink: `/conversations?leadId=${lead.id}`,
       conversationId: null,
       dueAt: new Date(new Date(lead.createdAt!).getTime() + 60 * 60 * 1000), // 1 hour after creation
-      expiresAt: new Date(new Date(lead.createdAt!).getTime() + 14 * 24 * 60 * 60 * 1000), // Hard expiry at 14 days
+      expiresAt: null,
     });
   }
 
@@ -227,12 +227,16 @@ async function generateLeadFollowUpTasks(
       ? daysSince(lead.lastContactedAt)
       : daysSince(lead.createdAt!);
 
-    // Only create follow-up task if it's between 2 and 30 days since contact
-    if (daysSinceContact < 2 || daysSinceContact > 30) continue;
+    // Only create follow-up task if it's been more than 2 days since contact
+    if (daysSinceContact < 2) continue;
 
     // TIME GROWTH LOGIC:
     // Base 400. Increases by 40 points every day it's left unanswered.
     // Cap at 900 (Critical).
+    // Example:
+    // Day 3: 400 + (1 * 40) = 440
+    // Day 5: 400 + (3 * 40) = 520
+    // Day 14: 400 + (12 * 40) = 880
 
     const daysOverdue = Math.max(0, daysSinceContact - 2);
     let baseScore = 400 + daysOverdue * 40;
@@ -248,8 +252,6 @@ async function generateLeadFollowUpTasks(
     }
 
     const followUpMessage = `Hi ${firstName(lead.clientName)}, just following up on your ${lead.projectType?.replace(/-/g, " ") || "tattoo"} enquiry. Let me know if you have any questions or would like to go ahead with booking.`;
-
-    const contactDate = lead.lastContactedAt ? new Date(lead.lastContactedAt) : new Date(lead.createdAt!);
 
     tasks.push({
       taskType: "lead_follow_up",
@@ -273,7 +275,7 @@ async function generateLeadFollowUpTasks(
       deepLink: `/conversations?leadId=${lead.id}`,
       conversationId: null,
       dueAt: null,
-      expiresAt: new Date(contactDate.getTime() + 30 * 24 * 60 * 60 * 1000), // Hard expiry at 30 days
+      expiresAt: null,
     });
   }
 
@@ -347,7 +349,7 @@ async function generateNewConsultationTasks(
       deepLink: `/conversations?consultationId=${consult.id}`,
       conversationId: consult.conversationId ?? null,
       dueAt: new Date(new Date(consult.createdAt!).getTime() + 60 * 60 * 1000), // 1 hour after creation
-      expiresAt: new Date(new Date(consult.createdAt!).getTime() + 14 * 24 * 60 * 60 * 1000), // 14-day expiry
+      expiresAt: null,
     });
   }
 
@@ -573,7 +575,7 @@ async function generateFollowUpTasks(
 
   for (const consult of respondedConsultations) {
     const days = daysSince(consult.updatedAt!);
-    if (days < 1 || days > 21) continue; // Skip if too soon or past 21 days
+    if (days < 1) continue; // Too soon to follow up
 
     let baseScore: number;
 
@@ -613,7 +615,7 @@ async function generateFollowUpTasks(
       deepLink: conversationId ? `/chat/${conversationId}` : `/conversations`,
       conversationId: conversationId ?? null,
       dueAt: null,
-      expiresAt: new Date(new Date(consult.updatedAt!).getTime() + 21 * 24 * 60 * 60 * 1000),
+      expiresAt: null,
     });
   }
 
@@ -648,7 +650,7 @@ async function generateStaleConversationTasks(
     if (lastMessage.senderId !== artistId) continue; // Client sent last message
 
     const days = daysSince(lastMessage.createdAt!);
-    if (days < 2 || days > 30) continue; // Skip if too soon or past 30 days
+    if (days < 2) continue; // Too soon
 
     let baseScore: number;
 
@@ -682,7 +684,7 @@ async function generateStaleConversationTasks(
       deepLink: `/chat/${conv.id}`,
       conversationId: conv.id,
       dueAt: null,
-      expiresAt: new Date(new Date(lastMessage.createdAt!).getTime() + 30 * 24 * 60 * 60 * 1000),
+      expiresAt: null,
     });
   }
 
@@ -850,7 +852,7 @@ async function generateAnniversaryTasks(
 }
 
 /**
- * TIER 3: Healed Photo Request (28 Days Post-Session)
+ * TIER 3: Healed Photo Request
  */
 async function generateHealedPhotoTasks(
   db: MySql2Database<typeof schema>,
@@ -859,15 +861,15 @@ async function generateHealedPhotoTasks(
   const tasks: BusinessTask[] = [];
 
   const now = new Date();
-  const twentyEightDaysAgo = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000);
-  const fortyFiveDaysAgo = new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000);
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
   const recentlyCompletedAppointments = await db.query.appointments.findMany({
     where: and(
       eq(schema.appointments.artistId, artistId),
       eq(schema.appointments.status, "completed"),
-      gte(schema.appointments.endTime, fortyFiveDaysAgo.toISOString()),
-      lte(schema.appointments.endTime, twentyEightDaysAgo.toISOString()),
+      gte(schema.appointments.endTime, thirtyDaysAgo.toISOString()),
+      lte(schema.appointments.endTime, fourteenDaysAgo.toISOString()),
       eq(schema.appointments.followUpSent, 0)
     ),
     with: {
@@ -878,15 +880,19 @@ async function generateHealedPhotoTasks(
 
   for (const appt of recentlyCompletedAppointments) {
     const days = daysSince(appt.endTime!);
-    let baseScore = 350;
+    let baseScore: number;
 
-    const healedPhotoMessage = `Hi ${firstName(appt.client?.name)}, your ${appt.title} should be nicely healed by now. Would love to see how it turned out if you get a chance to send a photo!`;
+    if (days < 18) baseScore = 350;
+    else if (days < 25) baseScore = 300;
+    else baseScore = 250;
+
+    const healedPhotoMessage = `Hi ${firstName(appt.client?.name)}, your ${appt.title} should be nicely healed by now. Would love to see how it turned out if you get a chance to send a photo.`;
 
     tasks.push({
       taskType: "healed_photo_request",
       taskTier: "tier3",
       title: "Request healed photo",
-      context: `${appt.client?.name}'s ${appt.title} - 28 days healed`,
+      context: `${appt.client?.name}'s ${appt.title} should be healed`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
       relatedEntityType: "appointment",
@@ -904,7 +910,7 @@ async function generateHealedPhotoTasks(
         : `/conversations`,
       conversationId: appt.conversationId ?? null,
       dueAt: null,
-      expiresAt: new Date(new Date(appt.endTime!).getTime() + 45 * 24 * 60 * 60 * 1000),
+      expiresAt: null,
     });
   }
 
@@ -912,7 +918,7 @@ async function generateHealedPhotoTasks(
 }
 
 /**
- * TIER 4: Thank You & Google Review Request (Day 1 SMS & Day 28 Email)
+ * TIER 4: Thank You / Review Request
  */
 async function generateThankYouTasks(
   db: MySql2Database<typeof schema>,
@@ -928,14 +934,6 @@ async function generateThankYouTasks(
   );
   const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
 
-  // Fetch artist settings for Google Place ID
-  const artistSettings = await db.query.artistSettings.findFirst({
-    where: eq(schema.artistSettings.userId, artistId),
-  });
-  const googleReviewLink = artistSettings?.googlePlaceId
-    ? `https://search.google.com/local/writereview?placeid=${artistSettings.googlePlaceId}`
-    : null;
-
   const todayCompletedAppointments = await db.query.appointments.findMany({
     where: and(
       eq(schema.appointments.artistId, artistId),
@@ -950,16 +948,13 @@ async function generateThankYouTasks(
   });
 
   for (const appt of todayCompletedAppointments) {
-    let thankYouMessage = `Hi ${firstName(appt.client?.name)}, thank you for coming in today. Take care of your ${appt.title} while it heals and reach out if you need anything.`;
-    if (googleReviewLink) {
-      thankYouMessage += ` If you loved your experience, a Google review means the world: ${googleReviewLink}`;
-    }
+    const thankYouMessage = `Hi ${firstName(appt.client?.name)}, thank you for coming in today. Take care of your ${appt.title} while it heals and reach out if you need anything.`;
 
     tasks.push({
       taskType: "post_appointment_thankyou",
       taskTier: "tier3",
       title: `Thank ${appt.client?.name}`,
-      context: "Session completed today - send thank you & review ask",
+      context: "Session completed today - send thank you",
       priorityScore: 400,
       priorityLevel: "medium",
       relatedEntityType: "appointment",
@@ -969,9 +964,9 @@ async function generateThankYouTasks(
       actionType: "sms",
       smsNumber: appt.client?.phone || null,
       smsBody: thankYouMessage,
-      emailRecipient: appt.client?.email || null,
-      emailSubject: `Thank you for your session today!`,
-      emailBody: thankYouMessage,
+      emailRecipient: null,
+      emailSubject: null,
+      emailBody: null,
       deepLink: appt.conversationId
         ? `/chat/${appt.conversationId}`
         : `/conversations`,
@@ -1164,16 +1159,8 @@ export async function generateBusinessTasks(
     allTasks.map(t => `${t.taskType}-${t.relatedEntityId || "none"}`)
   );
 
-  // Filter out recently completed tasks & expired tasks
+  // Filter out recently completed tasks
   const filteredTasks = allTasks.filter(task => {
-    // Hard expiry check: if task.expiresAt is in the past, drop it
-    if (task.expiresAt && task.expiresAt.getTime() < Date.now()) {
-      console.log(
-        `[BusinessTaskGenerator] Filtering out expired task: ${task.taskType}-${task.relatedEntityId}`
-      );
-      return false;
-    }
-
     const taskKey = `${task.taskType}-${task.relatedEntityId || "none"}`;
     const isCompleted = completedTaskKeys.has(taskKey);
     if (isCompleted) {

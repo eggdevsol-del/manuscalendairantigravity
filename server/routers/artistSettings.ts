@@ -60,11 +60,6 @@ export const artistSettingsRouter = router({
           stripeConnectAccountType: "standard" as const,
           stripeConnectDetailsSubmitted: 0,
           expressOnboardingEnabled: expressEnabled,
-          notificationMode: "manual" as const,
-          googlePlaceId: null,
-          quietHoursEnabled: 0,
-          quietHoursStart: 21,
-          quietHoursEnd: 7,
           createdAt: new Date(),
           updatedAt: new Date(),
         }
@@ -129,11 +124,6 @@ export const artistSettingsRouter = router({
         showWebsite: z.number().optional(),
         websiteUrl: z.string().optional(),
         rescheduleNoticePeriodHours: z.number().optional(),
-        notificationMode: z.enum(["manual", "automatic"]).optional(),
-        googlePlaceId: z.string().optional(),
-        quietHoursEnabled: z.number().optional(),
-        quietHoursStart: z.number().optional(),
-        quietHoursEnd: z.number().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {

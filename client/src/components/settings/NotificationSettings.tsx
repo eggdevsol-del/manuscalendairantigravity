@@ -185,22 +185,6 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
         // setPushDialog({ isOpen: false, template: null });
     };
 
-    // Query & Mutation for Artist Automation Settings
-    const { data: artistSettingsData, refetch: refetchArtistSettings } = trpc.artistSettings.get.useQuery(
-        undefined,
-        { enabled: !!user }
-    );
-
-    const updateArtistSettings = trpc.artistSettings.upsert.useMutation({
-        onSuccess: () => {
-            toast.success("Settings updated");
-            refetchArtistSettings();
-        },
-        onError: (err: any) => {
-            toast.error("Failed to update settings: " + err.message);
-        },
-    });
-
     if (loading) {
         return <LoadingState message="Loading..." fullScreen />;
     }
@@ -214,118 +198,9 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                 <div className="pb-[180px] max-w-lg mx-auto space-y-4 px-4 pt-6">
                     <div className="mb-2">
                         <p className="text-muted-foreground text-sm font-medium">
-                            Automated client messaging & automation controls
+                            Automated client messaging
                         </p>
                     </div>
-
-                    {/* Automation Mode Card */}
-                    <Card className="bg-card border border-border p-4 rounded-xl space-y-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h3 className="font-semibold text-foreground text-base">Automation Mode</h3>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                    {artistSettingsData?.notificationMode === "automatic"
-                                        ? "D.O.T.S. automatically sends confirmations, reminders & aftercare"
-                                        : "Manual mode: Approvals and sends are managed via your Dashboard"}
-                                </p>
-                            </div>
-                            <Switch
-                                checked={artistSettingsData?.notificationMode === "automatic"}
-                                onCheckedChange={(checked) => {
-                                    updateArtistSettings.mutate({
-                                        notificationMode: checked ? "automatic" : "manual",
-                                    });
-                                }}
-                            />
-                        </div>
-                    </Card>
-
-                    {/* Google Review Integration */}
-                    <Card className="bg-card border border-border p-4 rounded-xl space-y-3">
-                        <div>
-                            <h3 className="font-semibold text-foreground text-base">Google Review Link</h3>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                                Enter your Google Place ID to include direct review links in post-session follow-ups.
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Input
-                                placeholder="e.g. ChIJN1t_tDeuEmsRUsoyG83frY4"
-                                defaultValue={artistSettingsData?.googlePlaceId || ""}
-                                onBlur={(e) => {
-                                    const val = e.target.value.trim();
-                                    if (val !== (artistSettingsData?.googlePlaceId || "")) {
-                                        updateArtistSettings.mutate({ googlePlaceId: val });
-                                    }
-                                }}
-                                className="h-11 text-sm"
-                            />
-                        </div>
-                    </Card>
-
-                    {/* Quiet Hours Card */}
-                    <Card className="bg-card border border-border p-4 rounded-xl space-y-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h3 className="font-semibold text-foreground text-base">Quiet Hours</h3>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                    Suppress non-critical notifications during rest hours
-                                </p>
-                            </div>
-                            <Switch
-                                checked={!!artistSettingsData?.quietHoursEnabled}
-                                onCheckedChange={(checked) => {
-                                    updateArtistSettings.mutate({
-                                        quietHoursEnabled: checked ? 1 : 0,
-                                    });
-                                }}
-                            />
-                        </div>
-
-                        {!!artistSettingsData?.quietHoursEnabled && (
-                            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
-                                <div>
-                                    <Label className="text-xs text-muted-foreground mb-1 block">Start Time</Label>
-                                    <Select
-                                        value={String(artistSettingsData?.quietHoursStart ?? 21)}
-                                        onValueChange={(val) => {
-                                            updateArtistSettings.mutate({ quietHoursStart: parseInt(val, 10) });
-                                        }}
-                                    >
-                                        <SelectTrigger className="h-10 text-xs">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="19">7:00 PM</SelectItem>
-                                            <SelectItem value="20">8:00 PM</SelectItem>
-                                            <SelectItem value="21">9:00 PM</SelectItem>
-                                            <SelectItem value="22">10:00 PM</SelectItem>
-                                            <SelectItem value="23">11:00 PM</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <Label className="text-xs text-muted-foreground mb-1 block">End Time</Label>
-                                    <Select
-                                        value={String(artistSettingsData?.quietHoursEnd ?? 7)}
-                                        onValueChange={(val) => {
-                                            updateArtistSettings.mutate({ quietHoursEnd: parseInt(val, 10) });
-                                        }}
-                                    >
-                                        <SelectTrigger className="h-10 text-xs">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="6">6:00 AM</SelectItem>
-                                            <SelectItem value="7">7:00 AM</SelectItem>
-                                            <SelectItem value="8">8:00 AM</SelectItem>
-                                            <SelectItem value="9">9:00 AM</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                        )}
-                    </Card>
 
                     {/* Web Push Test Controls */}
                     <WebPushSettings />
