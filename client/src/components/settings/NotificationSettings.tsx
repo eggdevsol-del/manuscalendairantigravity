@@ -15,8 +15,8 @@ import { SafeSwitch as Switch } from "@/components/ui/safe-switch";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
 import { LoadingState, PageHeader } from "@/components/ui/ssot";
 import { trpc } from "@/lib/trpc";
-import { Bell, Edit, Plus, Trash2, Send, ChevronLeft } from "lucide-react";
-import { useState } from "react";
+import { Bell, Edit, Plus, Trash2, Send, ChevronLeft, Zap, Star, Moon } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { WebPushSettings } from "@/components/WebPushSettings";
@@ -185,6 +185,42 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
         // setPushDialog({ isOpen: false, template: null });
     };
 
+    // ── Automation Settings ──
+    const { data: artistSettings } = trpc.artistSettings.get.useQuery(undefined, {
+        enabled: !!user && (user.role === "artist" || user.role === "admin"),
+    });
+    const upsertSettings = trpc.artistSettings.upsert.useMutation({
+        onSuccess: () => toast.success("Settings saved"),
+        onError: (e: any) => toast.error("Failed to save: " + e.message),
+    });
+
+    const [notificationMode, setNotificationMode] = useState<"manual" | "automatic">("manual");
+    const [googlePlaceId, setGooglePlaceId] = useState("");
+    const [quietHoursEnabled, setQuietHoursEnabled] = useState(false);
+    const [quietHoursStart, setQuietHoursStart] = useState(21);
+    const [quietHoursEnd, setQuietHoursEnd] = useState(7);
+
+    useEffect(() => {
+        if (artistSettings) {
+            setNotificationMode(artistSettings.notificationMode || "manual");
+            setGooglePlaceId(artistSettings.googlePlaceId || "");
+            setQuietHoursEnabled(!!artistSettings.quietHoursEnabled);
+            setQuietHoursStart(artistSettings.quietHoursStart ?? 21);
+            setQuietHoursEnd(artistSettings.quietHoursEnd ?? 7);
+        }
+    }, [artistSettings]);
+
+    const saveAutomationSettings = (overrides: Record<string, any> = {}) => {
+        upsertSettings.mutate({
+            notificationMode,
+            googlePlaceId: googlePlaceId || undefined,
+            quietHoursEnabled: quietHoursEnabled ? 1 : 0,
+            quietHoursStart,
+            quietHoursEnd,
+            ...overrides,
+        });
+    };
+
     if (loading) {
         return <LoadingState message="Loading..." fullScreen />;
     }
@@ -201,6 +237,162 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                             Automated client messaging
                         </p>
                     </div>
+
+                    {/* ── Automation Mode ── */}
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <div className="flex items-center gap-2">
+                                <Zap className="w-4 h-4 text-primary" />
+                                <CardTitle className="text-base">Automation Mode</CardTitle>
+                            </div>
+                            <CardDescription className="text-xs">
+                                Choose how notifications are sent to clients
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            <div className="grid grid-cols-2 gap-2">
+                                <button
+                                    onClick={() => {
+                                        setNotificationMode("manual");
+                                        saveAutomationSettings({ notificationMode: "manual" });
+                                    }}
+                                    className={cn(
+                                        "p-3 rounded-lg border text-left transition-all",
+                                        notificationMode === "manual"
+                                            ? "border-primary bg-primary/10 text-primary"
+                                            : "border-border text-muted-foreground hover:border-primary/50"
+                                    )}
+                                >
+                                    <p className="font-medium text-sm">Manual</p>
+                                    <p className="text-xs mt-1 opacity-70">Use dashboard to send</p>
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setNotificationMode("automatic");
+                                        saveAutomationSettings({ notificationMode: "automatic" });
+                                    }}
+                                    className={cn(
+                                        "p-3 rounded-lg border text-left transition-all",
+                                        notificationMode === "automatic"
+                                            ? "border-primary bg-primary/10 text-primary"
+                                            : "border-border text-muted-foreground hover:border-primary/50"
+                                    )}
+                                >
+                                    <p className="font-medium text-sm">Automatic</p>
+                                    <p className="text-xs mt-1 opacity-70">Send via email/SMS</p>
+                                </button>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* ── Google Review Link ── */}
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <div className="flex items-center gap-2">
+                                <Star className="w-4 h-4 text-yellow-500" />
+                                <CardTitle className="text-base">Google Review Link</CardTitle>
+                            </div>
+                            <CardDescription className="text-xs">
+                                Automatically include your Google review link in thank-you messages
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2">
+                                <Label className="text-xs">Google Place ID</Label>
+                                <Input
+                                    value={googlePlaceId}
+                                    onChange={(e) => setGooglePlaceId(e.target.value)}
+                                    placeholder="ChIJ..."
+                                    className="h-10"
+                                    onBlur={() => saveAutomationSettings()}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Find yours at{" "}
+                                    <a
+                                        href="https://developers.google.com/maps/documentation/places/web-service/place-id"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-primary underline"
+                                    >
+                                        Google Place ID Finder
+                                    </a>
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* ── Quiet Hours ── */}
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <div className="flex items-center gap-2">
+                                <Moon className="w-4 h-4 text-indigo-400" />
+                                <CardTitle className="text-base">Quiet Hours</CardTitle>
+                            </div>
+                            <CardDescription className="text-xs">
+                                Pause automated notifications during set hours
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <Label className="text-sm">Enable quiet hours</Label>
+                                <Switch
+                                    checked={quietHoursEnabled}
+                                    onCheckedChange={(checked) => {
+                                        setQuietHoursEnabled(checked);
+                                        saveAutomationSettings({ quietHoursEnabled: checked ? 1 : 0 });
+                                    }}
+                                />
+                            </div>
+                            {quietHoursEnabled && (
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <Label className="text-xs">Start</Label>
+                                        <Select
+                                            value={String(quietHoursStart)}
+                                            onValueChange={(v) => {
+                                                const val = Number(v);
+                                                setQuietHoursStart(val);
+                                                saveAutomationSettings({ quietHoursStart: val });
+                                            }}
+                                        >
+                                            <SelectTrigger className="h-10 mt-1">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {Array.from({ length: 24 }, (_, i) => (
+                                                    <SelectItem key={i} value={String(i)}>
+                                                        {i === 0 ? "12:00 AM" : i < 12 ? `${i}:00 AM` : i === 12 ? "12:00 PM" : `${i - 12}:00 PM`}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div>
+                                        <Label className="text-xs">End</Label>
+                                        <Select
+                                            value={String(quietHoursEnd)}
+                                            onValueChange={(v) => {
+                                                const val = Number(v);
+                                                setQuietHoursEnd(val);
+                                                saveAutomationSettings({ quietHoursEnd: val });
+                                            }}
+                                        >
+                                            <SelectTrigger className="h-10 mt-1">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {Array.from({ length: 24 }, (_, i) => (
+                                                    <SelectItem key={i} value={String(i)}>
+                                                        {i === 0 ? "12:00 AM" : i < 12 ? `${i}:00 AM` : i === 12 ? "12:00 PM" : `${i - 12}:00 PM`}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
 
                     {/* Web Push Test Controls */}
                     <WebPushSettings />

@@ -198,7 +198,7 @@ async function generateNewLeadTasks(
       deepLink: `/conversations?leadId=${lead.id}`,
       conversationId: null,
       dueAt: new Date(new Date(lead.createdAt!).getTime() + 60 * 60 * 1000), // 1 hour after creation
-      expiresAt: null,
+      expiresAt: new Date(new Date(lead.createdAt!).getTime() + 14 * 24 * 60 * 60 * 1000), // Hard expiry at 14 days
     });
   }
 
@@ -227,16 +227,12 @@ async function generateLeadFollowUpTasks(
       ? daysSince(lead.lastContactedAt)
       : daysSince(lead.createdAt!);
 
-    // Only create follow-up task if it's been more than 2 days since contact
-    if (daysSinceContact < 2) continue;
+    // Only create follow-up task if it's between 2 and 30 days since contact
+    if (daysSinceContact < 2 || daysSinceContact > 30) continue;
 
     // TIME GROWTH LOGIC:
     // Base 400. Increases by 40 points every day it's left unanswered.
     // Cap at 900 (Critical).
-    // Example:
-    // Day 3: 400 + (1 * 40) = 440
-    // Day 5: 400 + (3 * 40) = 520
-    // Day 14: 400 + (12 * 40) = 880
 
     const daysOverdue = Math.max(0, daysSinceContact - 2);
     let baseScore = 400 + daysOverdue * 40;
@@ -252,6 +248,8 @@ async function generateLeadFollowUpTasks(
     }
 
     const followUpMessage = `Hi ${firstName(lead.clientName)}, just following up on your ${lead.projectType?.replace(/-/g, " ") || "tattoo"} enquiry. Let me know if you have any questions or would like to go ahead with booking.`;
+
+    const contactDate = lead.lastContactedAt ? new Date(lead.lastContactedAt) : new Date(lead.createdAt!);
 
     tasks.push({
       taskType: "lead_follow_up",
@@ -275,7 +273,7 @@ async function generateLeadFollowUpTasks(
       deepLink: `/conversations?leadId=${lead.id}`,
       conversationId: null,
       dueAt: null,
-      expiresAt: null,
+      expiresAt: new Date(contactDate.getTime() + 30 * 24 * 60 * 60 * 1000), // Hard expiry at 30 days
     });
   }
 
@@ -349,7 +347,7 @@ async function generateNewConsultationTasks(
       deepLink: `/conversations?consultationId=${consult.id}`,
       conversationId: consult.conversationId ?? null,
       dueAt: new Date(new Date(consult.createdAt!).getTime() + 60 * 60 * 1000), // 1 hour after creation
-      expiresAt: null,
+      expiresAt: new Date(new Date(consult.createdAt!).getTime() + 14 * 24 * 60 * 60 * 1000), // 14-day expiry
     });
   }
 
@@ -575,7 +573,7 @@ async function generateFollowUpTasks(
 
   for (const consult of respondedConsultations) {
     const days = daysSince(consult.updatedAt!);
-    if (days < 1) continue; // Too soon to follow up
+    if (days < 1 || days > 21) continue; // Skip if too soon or past 21 days
 
     let baseScore: number;
 
@@ -615,7 +613,7 @@ async function generateFollowUpTasks(
       deepLink: conversationId ? `/chat/${conversationId}` : `/conversations`,
       conversationId: conversationId ?? null,
       dueAt: null,
-      expiresAt: null,
+      expiresAt: new Date(new Date(consult.updatedAt!).getTime() + 21 * 24 * 60 * 60 * 1000),
     });
   }
 
@@ -650,7 +648,7 @@ async function generateStaleConversationTasks(
     if (lastMessage.senderId !== artistId) continue; // Client sent last message
 
     const days = daysSince(lastMessage.createdAt!);
-    if (days < 2) continue; // Too soon
+    if (days < 2 || days > 30) continue; // Skip if too soon or past 30 days
 
     let baseScore: number;
 
@@ -684,7 +682,7 @@ async function generateStaleConversationTasks(
       deepLink: `/chat/${conv.id}`,
       conversationId: conv.id,
       dueAt: null,
-      expiresAt: null,
+      expiresAt: new Date(new Date(lastMessage.createdAt!).getTime() + 30 * 24 * 60 * 60 * 1000),
     });
   }
 
@@ -861,15 +859,15 @@ async function generateHealedPhotoTasks(
   const tasks: BusinessTask[] = [];
 
   const now = new Date();
-  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const twentyEightDaysAgo = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000);
+  const twentyOneDaysAgo = new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000);
 
   const recentlyCompletedAppointments = await db.query.appointments.findMany({
     where: and(
       eq(schema.appointments.artistId, artistId),
       eq(schema.appointments.status, "completed"),
-      gte(schema.appointments.endTime, thirtyDaysAgo.toISOString()),
-      lte(schema.appointments.endTime, fourteenDaysAgo.toISOString()),
+      gte(schema.appointments.endTime, twentyEightDaysAgo.toISOString()),
+      lte(schema.appointments.endTime, twentyOneDaysAgo.toISOString()),
       eq(schema.appointments.followUpSent, 0)
     ),
     with: {
@@ -880,11 +878,8 @@ async function generateHealedPhotoTasks(
 
   for (const appt of recentlyCompletedAppointments) {
     const days = daysSince(appt.endTime!);
-    let baseScore: number;
-
-    if (days < 18) baseScore = 350;
-    else if (days < 25) baseScore = 300;
-    else baseScore = 250;
+    // Score peaks around day 28
+    const baseScore = days >= 26 ? 400 : 350;
 
     const healedPhotoMessage = `Hi ${firstName(appt.client?.name)}, your ${appt.title} should be nicely healed by now. Would love to see how it turned out if you get a chance to send a photo.`;
 
@@ -892,7 +887,7 @@ async function generateHealedPhotoTasks(
       taskType: "healed_photo_request",
       taskTier: "tier3",
       title: "Request healed photo",
-      context: `${appt.client?.name}'s ${appt.title} should be healed`,
+      context: `${appt.client?.name}'s ${appt.title} should be healed (~${Math.floor(days)} days)`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
       relatedEntityType: "appointment",
@@ -910,7 +905,7 @@ async function generateHealedPhotoTasks(
         : `/conversations`,
       conversationId: appt.conversationId ?? null,
       dueAt: null,
-      expiresAt: null,
+      expiresAt: new Date(new Date(appt.endTime!).getTime() + 35 * 24 * 60 * 60 * 1000), // Expires 35 days after session
     });
   }
 
@@ -947,14 +942,28 @@ async function generateThankYouTasks(
     },
   });
 
+  // Fetch artist's googlePlaceId for review link
+  const artistSettings = await db.query.artistSettings.findFirst({
+    where: eq(schema.artistSettings.userId, artistId),
+  });
+  const googlePlaceId = artistSettings?.googlePlaceId;
+  const reviewUrl = googlePlaceId
+    ? `https://search.google.com/local/writereview?placeid=${googlePlaceId}`
+    : null;
+
   for (const appt of todayCompletedAppointments) {
-    const thankYouMessage = `Hi ${firstName(appt.client?.name)}, thank you for coming in today. Take care of your ${appt.title} while it heals and reach out if you need anything.`;
+    let thankYouMessage = `Hi ${firstName(appt.client?.name)}, thank you for coming in today. Take care of your ${appt.title} while it heals and reach out if you need anything.`;
+    if (reviewUrl) {
+      thankYouMessage += ` If you have a moment, I'd really appreciate a review: ${reviewUrl}`;
+    }
 
     tasks.push({
       taskType: "post_appointment_thankyou",
       taskTier: "tier3",
       title: `Thank ${appt.client?.name}`,
-      context: "Session completed today - send thank you",
+      context: reviewUrl
+        ? "Session completed today - send thank you + review link"
+        : "Session completed today - send thank you",
       priorityScore: 400,
       priorityLevel: "medium",
       relatedEntityType: "appointment",
@@ -1171,15 +1180,22 @@ export async function generateBusinessTasks(
     return !isCompleted;
   });
 
+  // Hard expiry enforcement — drop tasks whose expiresAt is in the past
+  const now = new Date();
+  const activeTasks = filteredTasks.filter(task => {
+    if (task.expiresAt && task.expiresAt < now) return false;
+    return true;
+  });
+
   console.log(
-    `[BusinessTaskGenerator] After filtering completed: ${filteredTasks.length} tasks`
+    `[BusinessTaskGenerator] After filtering: ${activeTasks.length} tasks (${allTasks.length} generated, ${allTasks.length - filteredTasks.length} completed, ${filteredTasks.length - activeTasks.length} expired)`
   );
 
   // Sort by priority score (descending)
-  filteredTasks.sort((a, b) => b.priorityScore - a.priorityScore);
+  activeTasks.sort((a, b) => b.priorityScore - a.priorityScore);
 
   // Return top N tasks
-  return filteredTasks.slice(0, maxTasks);
+  return activeTasks.slice(0, maxTasks);
 }
 
 export { BENCHMARKS };
