@@ -128,3 +128,4 @@ check_*.ts
 create-test-session.ts
 test_*.ts
 test-*.ts
+pnpm-workspace.yaml
