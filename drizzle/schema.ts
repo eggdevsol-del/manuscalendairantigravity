@@ -456,6 +456,18 @@ export const portfolios = mysqlTable(
     imageUrl: text().notNull(),
     description: text(),
     sortOrder: int().default(0),
+    // ── Instagram import fields ──
+    source: varchar({ length: 20 }).default("upload"),           // "upload" | "instagram"
+    mediaType: varchar({ length: 20 }).default("image"),          // "image" | "video" | "carousel"
+    externalMediaId: varchar({ length: 64 }),                      // Instagram media ID (dedup key)
+    externalPermalink: text(),                                     // Instagram post URL
+    cdnUrl: text(),                                                // Current Instagram CDN URL (refreshed)
+    cdnUrlExpiresAt: timestamp({ mode: "string" }),                // Parsed expiry from oe param
+    thumbnailUrl: text(),                                          // R2 thumbnail URL
+    caption: text(),                                               // Original Instagram caption
+    publishedAt: timestamp({ mode: "string" }),                    // Original publish date
+    availabilityState: varchar({ length: 20 }).default("available"), // "available" | "removed" | "restricted"
+    importBatchId: int(),                                          // FK to instagram_imports
     createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
     updatedAt: timestamp({ mode: "string" }).default(sql`(now())`),
   },
@@ -842,6 +854,11 @@ export const portfoliosRelations = relations(portfolios, ({ one, many }) => ({
     references: [users.id],
   }),
   likes: many(portfolioLikes),
+  classifications: many(portfolioClassifications),
+  importBatch: one(instagramImports, {
+    fields: [portfolios.importBatchId],
+    references: [instagramImports.id],
+  }),
 }));
 
 export const portfolioLikesRelations = relations(portfolioLikes, ({ one }) => ({
@@ -2364,3 +2381,66 @@ export type InsertMessageTag = InferInsertModel<typeof messageTags>;
 export type SelectMessageTag = InferSelectModel<typeof messageTags>;
 export type InsertDesignBrief = InferInsertModel<typeof designBriefs>;
 export type SelectDesignBrief = InferSelectModel<typeof designBriefs>;
+
+// ══════════════════════════════════════════════
+// INSTAGRAM PORTFOLIO IMPORT
+// ══════════════════════════════════════════════
+
+export const instagramImports = mysqlTable(
+  "instagram_imports",
+  {
+    id: int().primaryKey().autoincrement(),
+    artistId: varchar({ length: 64 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    instagramUsername: varchar({ length: 100 }).notNull(),
+    status: varchar({ length: 20 }).default("in_progress"),  // "in_progress" | "completed" | "failed"
+    totalDiscovered: int().default(0),
+    totalProcessed: int().default(0),
+    totalAdded: int().default(0),
+    totalSkipped: int().default(0),
+    totalFailed: int().default(0),
+    lastSyncCursor: text(),
+    errorMessage: text(),
+    createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
+    updatedAt: timestamp({ mode: "string" }).default(sql`(now())`),
+  },
+  table => []
+);
+
+export const portfolioClassifications = mysqlTable(
+  "portfolio_classifications",
+  {
+    id: int().primaryKey().autoincrement(),
+    portfolioItemId: int()
+      .notNull()
+      .references(() => portfolios.id, { onDelete: "cascade" }),
+    category: varchar({ length: 30 }).notNull(),   // "style" | "subject" | "placement" | "state" | "mediaType"
+    value: varchar({ length: 100 }).notNull(),       // e.g. "realism", "forearm", "lion"
+    confidence: decimal({ precision: 3, scale: 2 }), // AI confidence 0.00–1.00
+    source: varchar({ length: 20 }).default("ai"),   // "ai" | "artist"
+    status: varchar({ length: 20 }).default("suggested"), // "suggested" | "accepted" | "rejected"
+    createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
+  },
+  table => []
+);
+
+export const instagramImportsRelations = relations(instagramImports, ({ one, many }) => ({
+  artist: one(users, {
+    fields: [instagramImports.artistId],
+    references: [users.id],
+  }),
+  portfolioItems: many(portfolios),
+}));
+
+export const portfolioClassificationsRelations = relations(portfolioClassifications, ({ one }) => ({
+  portfolioItem: one(portfolios, {
+    fields: [portfolioClassifications.portfolioItemId],
+    references: [portfolios.id],
+  }),
+}));
+
+export type InsertInstagramImport = InferInsertModel<typeof instagramImports>;
+export type SelectInstagramImport = InferSelectModel<typeof instagramImports>;
+export type InsertPortfolioClassification = InferInsertModel<typeof portfolioClassifications>;
+export type SelectPortfolioClassification = InferSelectModel<typeof portfolioClassifications>;

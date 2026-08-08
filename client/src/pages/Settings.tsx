@@ -16,6 +16,7 @@ import {
   Database,
   FileText,
   Image,
+  Instagram,
   Link2,
   LogOut,
   MapPin,
@@ -46,6 +47,7 @@ import { DangerZoneSettings } from "@/components/settings/DangerZoneSettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { StudioDashboardSettings } from "@/components/settings/StudioDashboardSettings";
 import StorefrontSetupWizard from "@/features/storefront/StorefrontSetupWizard";
+import { InstagramImportSettings } from "@/components/settings/InstagramImportSettings";
 
 // ── Valid section keys ───────────────────────────────────────────────────────
 type SettingsSection =
@@ -61,6 +63,7 @@ type SettingsSection =
   | "consultations"
   | "studio"
   | "notifications"
+  | "instagram"
   | "danger-zone";
 
 // ── Reusable row ─────────────────────────────────────────────────────────────
@@ -164,6 +167,7 @@ export default function Settings() {
         case "consultations": return <ConsultationSettings onBack={handleBack} />;
         case "studio":        return (isStudio) ? <StudioDashboardSettings onBack={handleBack} /> : null;
         case "notifications": return <NotificationSettings onBack={handleBack} />;
+        case "instagram":     return <InstagramImportSettings onBack={handleBack} />;
         case "danger-zone":   return <DangerZoneSettings onBack={handleBack} />;
         default:              return null;
       }
@@ -286,6 +290,13 @@ export default function Settings() {
                     title="Regulation & Forms"
                     subtitle="Health & consent forms"
                     onClick={nav("regulation")}
+                  />
+                  <SettingsRow
+                    icon={Instagram}
+                    iconColor="bg-gradient-to-br from-[#833AB4]/30 via-[#E1306C]/30 to-[#F77737]/30 text-[#E1306C]"
+                    title="Instagram Import"
+                    subtitle="Import portfolio from Instagram"
+                    onClick={nav("instagram")}
                   />
                   <SettingsRow
                     icon={BookOpen}

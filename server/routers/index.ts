@@ -36,6 +36,7 @@ import { favouritesRouter } from "./favourites";
 import { feedRouter } from "./feed";
 import { messageTagsRouter } from "./messageTags";
 import { designBriefRouter } from "./designBrief";
+import { instagramRouter } from "./instagram";
 
 export const appRouter = router({
   appointments: appointmentsRouter,
@@ -74,6 +75,7 @@ export const appRouter = router({
   feed: feedRouter,
   messageTags: messageTagsRouter,
   designBrief: designBriefRouter,
+  instagram: instagramRouter,
 });
 
 export type AppRouter = typeof appRouter;

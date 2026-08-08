@@ -38,7 +38,7 @@ export const portfolioRouter = router({
     .input(
       z
         .object({
-          artistId: z.string().optional(), // If provided, view specific artist, else view all (feed)
+          artistId: z.string().optional(),
         })
         .optional()
     )
@@ -50,24 +50,33 @@ export const portfolioRouter = router({
           message: "Database connection failed",
         });
 
-      const where = input?.artistId
-        ? eq(schema.portfolios.artistId, input.artistId)
-        : undefined; // TODO: For feed, maybe limit to random or recent
+      const conditions = [];
+      if (input?.artistId) {
+        conditions.push(eq(schema.portfolios.artistId, input.artistId));
+      }
+      // Only show available items
+      conditions.push(eq(schema.portfolios.availabilityState, "available"));
+
+      const where = conditions.length > 1
+        ? and(...conditions)
+        : conditions[0];
 
       const items = await db.query.portfolios.findMany({
         where,
         orderBy: [schema.portfolios.sortOrder, desc(schema.portfolios.createdAt)],
         with: {
-          likes: true, // Simplification, ideally we count them
+          likes: true,
+          classifications: true,
         },
-        limit: 50,
+        limit: 100,
       });
 
-      // Map to add isLiked and likeCount
+      // Map to add isLiked, likeCount, and display URL
       return items.map(item => ({
         ...item,
         likeCount: item.likes.length,
         isLiked: item.likes.some(l => l.userId === ctx.user.id),
+        displayUrl: item.thumbnailUrl || item.imageUrl,
       }));
     }),
 
