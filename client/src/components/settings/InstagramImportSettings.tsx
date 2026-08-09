@@ -109,7 +109,7 @@ export function InstagramImportSettings({ onBack }: Props) {
   const isFailed = status?.status === "failed" && !showConnectForm;
 
   const progress = status
-    ? Math.round(((status.totalProcessed || 0) / Math.max(status.totalDiscovered || 1, 1)) * 100)
+    ? Math.min(100, Math.round(((status.totalProcessed || 0) / Math.max(status.totalDiscovered || 1, 1)) * 100))
     : 0;
 
   return (

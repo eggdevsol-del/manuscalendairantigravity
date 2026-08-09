@@ -86,6 +86,8 @@ function parseMediaType(item: any): "image" | "video" | "carousel" {
 }
 
 function getBestImageUrl(item: any): string {
+  // Prefer embed-safe URL from url_embed_safe=true flag
+  if (item.thumbnail_url) return item.thumbnail_url;
   const versions = item.image_versions?.items || [];
   if (versions.length === 0) return "";
   // Pick the largest version
@@ -94,6 +96,8 @@ function getBestImageUrl(item: any): string {
 }
 
 function getBestVideoUrl(item: any): string | undefined {
+  // Prefer embed-safe URL from url_embed_safe=true flag
+  if (item.video_url) return item.video_url;
   const versions = item.video_versions || [];
   if (versions.length === 0) return undefined;
   // Pick highest quality
@@ -209,8 +213,9 @@ export class RapidApiInstagramProvider implements InstagramProvider {
 
     const media = items.map(parseItem);
 
-    // Resolve total count — check multiple possible fields
-    const totalEstimate = d.count || d.media_count || d.edge_owner_to_timeline_media?.count;
+    // Resolve total count — don't use d.count if it matches page size (it's the page count, not total)
+    const rawCount = d.count || d.media_count || d.edge_owner_to_timeline_media?.count;
+    const totalEstimate = (rawCount && rawCount > items.length) ? rawCount : undefined;
 
     return {
       media,

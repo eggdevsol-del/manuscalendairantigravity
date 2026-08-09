@@ -170,6 +170,9 @@ export async function processInstagramImport(
       }
     } while (cursor);
 
+    // Set accurate total discovered count
+    totalDiscovered = totalProcessed;
+
     // Mark as completed
     await db
       .update(schema.instagramImports)

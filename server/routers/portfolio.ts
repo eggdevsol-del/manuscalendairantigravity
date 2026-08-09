@@ -1,7 +1,7 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import * as schema from "../../drizzle/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 
@@ -68,7 +68,7 @@ export const portfolioRouter = router({
           likes: true,
           classifications: true,
         },
-        limit: 100,
+        limit: 500,
       });
 
       // Map to add isLiked, likeCount, and display URL
@@ -147,6 +147,51 @@ export const portfolioRouter = router({
         .delete(schema.portfolios)
         .where(eq(schema.portfolios.id, input.id));
       return { success: true };
+    }),
+
+  bulkDelete: protectedProcedure
+    .input(
+      z.object({
+        ids: z.array(z.number()).min(1).max(500),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database connection failed",
+        });
+
+      if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      // Verify ownership of all items
+      const items = await db.query.portfolios.findMany({
+        where: inArray(schema.portfolios.id, input.ids),
+        columns: { id: true, artistId: true },
+      });
+
+      const ownedIds = items
+        .filter(item => item.artistId === ctx.user.id || ctx.user.role === "admin")
+        .map(item => item.id);
+
+      if (ownedIds.length === 0) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "No matching items found" });
+      }
+
+      // Delete likes first
+      await db
+        .delete(schema.portfolioLikes)
+        .where(inArray(schema.portfolioLikes.portfolioId, ownedIds));
+
+      // Delete portfolio items
+      await db
+        .delete(schema.portfolios)
+        .where(inArray(schema.portfolios.id, ownedIds));
+
+      return { success: true, deletedCount: ownedIds.length };
     }),
 
   reorder: protectedProcedure
