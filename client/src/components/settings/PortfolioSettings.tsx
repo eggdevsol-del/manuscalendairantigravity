@@ -159,14 +159,13 @@ export function PortfolioSettings({ onBack }: PortfolioSettingsProps) {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              {portfolio.length > 0 && (
-                <button
-                  onClick={() => setSelectMode(true)}
-                  className="px-3 py-1.5 rounded-full bg-secondary text-foreground text-xs font-semibold"
-                >
-                  Select
-                </button>
-              )}
+              <button
+                onClick={() => setSelectMode(true)}
+                disabled={portfolio.length === 0}
+                className="px-3 py-1.5 rounded-full bg-secondary text-foreground text-xs font-semibold disabled:opacity-30"
+              >
+                Select
+              </button>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}

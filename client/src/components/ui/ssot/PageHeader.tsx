@@ -77,16 +77,14 @@ export function PageHeader({
       </div>
 
       {/* Right side — page name or custom right action */}
-      <div className="flex flex-col items-end">
+      <div className="flex flex-col items-end gap-0.5">
         {rightAction ?? (
-          <>
-            <span className="text-lg font-light text-foreground/60 tracking-tight">
-              {title}
-            </span>
-            {subtitle && (
-              <span className="text-xs text-muted-foreground/60">{subtitle}</span>
-            )}
-          </>
+          <span className="text-lg font-light text-foreground/60 tracking-tight">
+            {title}
+          </span>
+        )}
+        {subtitle && (
+          <span className="text-xs text-muted-foreground/60">{subtitle}</span>
         )}
       </div>
     </header>
