@@ -5,7 +5,7 @@
  */
 
 import { useRef, useState, useCallback } from "react";
-import { ImagePlus, Trash2, Loader2, Images, CheckCircle2, X, Play } from "lucide-react";
+import { ImagePlus, Trash2, Loader2, Images, CheckCircle2, Play } from "lucide-react";
 import { PageHeader } from "@/components/ui/ssot";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -126,13 +126,6 @@ export function PortfolioSettings({ onBack }: PortfolioSettingsProps) {
     }
   };
 
-  const handleItemLongPress = (item: any) => {
-    if (!selectMode) {
-      setSelectMode(true);
-      setSelectedIds(new Set([item.id]));
-    }
-  };
-
   return (
     <div className="flex flex-col h-full">
       <PageHeader
@@ -149,7 +142,7 @@ export function PortfolioSettings({ onBack }: PortfolioSettingsProps) {
                 onClick={selectAll}
                 className="px-3 py-1.5 rounded-full bg-secondary text-foreground text-xs font-semibold"
               >
-                Select All
+                All
               </button>
               <button
                 onClick={handleBulkDelete}
@@ -161,22 +154,32 @@ export function PortfolioSettings({ onBack }: PortfolioSettingsProps) {
                 ) : (
                   <Trash2 className="w-3.5 h-3.5" />
                 )}
-                Delete {selectedIds.size > 0 ? `(${selectedIds.size})` : ""}
+                {selectedIds.size > 0 ? `Delete (${selectedIds.size})` : "Delete"}
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50"
-            >
-              {uploading ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <ImagePlus className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2">
+              {portfolio.length > 0 && (
+                <button
+                  onClick={() => setSelectMode(true)}
+                  className="px-3 py-1.5 rounded-full bg-secondary text-foreground text-xs font-semibold"
+                >
+                  Select
+                </button>
               )}
-              {uploading ? "Uploading..." : "Add Photos"}
-            </button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50"
+              >
+                {uploading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <ImagePlus className="w-3.5 h-3.5" />
+                )}
+                {uploading ? "Uploading..." : "Add"}
+              </button>
+            </div>
           )
         }
       />
@@ -189,23 +192,6 @@ export function PortfolioSettings({ onBack }: PortfolioSettingsProps) {
         onChange={handleFilePick}
       />
 
-      {/* Select mode hint */}
-      {!selectMode && portfolio.length > 1 && (
-        <div className="px-4 py-2">
-          <button
-            onClick={() => setSelectMode(true)}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Long-press or tap <span className="font-semibold">Select</span> to multi-select
-          </button>
-          <button
-            onClick={() => setSelectMode(true)}
-            className="ml-2 text-xs font-semibold text-primary"
-          >
-            Select
-          </button>
-        </div>
-      )}
 
       {/* Grid */}
       <div className="flex-1 overflow-y-auto p-4">
@@ -246,27 +232,6 @@ export function PortfolioSettings({ onBack }: PortfolioSettingsProps) {
                       isSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
                     }`}
                     onClick={() => handleItemTap(item)}
-                    onContextMenu={(e) => { e.preventDefault(); handleItemLongPress(item); }}
-                    onTouchStart={() => {
-                      const timer = setTimeout(() => handleItemLongPress(item), 500);
-                      const el = document.getElementById(`portfolio-item-${item.id}`);
-                      if (el) {
-                        el.dataset.longPressTimer = String(timer);
-                      }
-                    }}
-                    onTouchEnd={() => {
-                      const el = document.getElementById(`portfolio-item-${item.id}`);
-                      if (el?.dataset.longPressTimer) {
-                        clearTimeout(Number(el.dataset.longPressTimer));
-                      }
-                    }}
-                    onTouchMove={() => {
-                      const el = document.getElementById(`portfolio-item-${item.id}`);
-                      if (el?.dataset.longPressTimer) {
-                        clearTimeout(Number(el.dataset.longPressTimer));
-                      }
-                    }}
-                    id={`portfolio-item-${item.id}`}
                   >
                     <img
                       src={item.displayUrl || item.imageUrl}
