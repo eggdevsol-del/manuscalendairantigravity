@@ -12,7 +12,7 @@
  */
 
 import { useState } from "react";
-import { Images, X, ChevronLeft, ChevronRight, MessageCircle, Loader2 } from "lucide-react";
+import { Images, X, ChevronLeft, ChevronRight, MessageCircle, Loader2, Play } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -84,11 +84,18 @@ export function PortfolioExpand({
                 className="relative aspect-square rounded-xl overflow-hidden bg-secondary/30 active:scale-95 transition-transform"
               >
                 <img
-                  src={item.imageUrl}
+                  src={item.displayUrl || item.imageUrl}
                   alt={item.description || `Portfolio ${index + 1}`}
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
+                {item.mediaType === "video" && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                      <Play className="w-4 h-4 text-white fill-white" />
+                    </div>
+                  </div>
+                )}
               </button>
             ))}
           </div>
@@ -142,18 +149,35 @@ export function PortfolioExpand({
               {lightboxIndex + 1} / {portfolio.length}
             </p>
 
-            {/* Image */}
-            <motion.img
-              key={lightboxIndex}
-              src={portfolio[lightboxIndex].imageUrl}
-              alt=""
-              className="max-w-full max-h-full object-contain select-none px-4"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.18 }}
-              draggable={false}
-            />
+            {/* Media — video or image */}
+            {portfolio[lightboxIndex].mediaType === "video" && portfolio[lightboxIndex].cdnUrl ? (
+              <motion.video
+                key={lightboxIndex}
+                src={portfolio[lightboxIndex].cdnUrl}
+                poster={portfolio[lightboxIndex].imageUrl}
+                className="max-w-full max-h-full object-contain select-none px-4"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
+                autoPlay
+                loop
+                playsInline
+                controls
+              />
+            ) : (
+              <motion.img
+                key={lightboxIndex}
+                src={portfolio[lightboxIndex].imageUrl}
+                alt=""
+                className="max-w-full max-h-full object-contain select-none px-4"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
+                draggable={false}
+              />
+            )}
 
             {/* Prev / Next — only show when multiple images */}
             {portfolio.length > 1 && (

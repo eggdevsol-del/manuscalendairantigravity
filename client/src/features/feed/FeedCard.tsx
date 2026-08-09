@@ -15,6 +15,8 @@ export interface FeedCardData {
   createdAt: string | null;
   likeCount: number;
   isLiked: boolean;
+  mediaType?: string | null;
+  videoUrl?: string | null;
 }
 
 interface FeedCardProps {
@@ -85,13 +87,25 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
   if (focusMode) {
     return (
       <div className="feed-card feed-card-focus" onClick={handleDoubleTap}>
-        {/* Full-bleed image */}
-        <img
-          src={card.imageUrl}
-          alt={card.description || "Portfolio piece"}
-          className="feed-card-focus-image"
-          loading="lazy"
-        />
+        {/* Full-bleed media */}
+        {card.mediaType === "video" && card.videoUrl ? (
+          <video
+            src={card.videoUrl}
+            poster={card.imageUrl}
+            className="feed-card-focus-image"
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        ) : (
+          <img
+            src={card.imageUrl}
+            alt={card.description || "Portfolio piece"}
+            className="feed-card-focus-image"
+            loading="lazy"
+          />
+        )}
 
         {/* Watermark: artist avatar + name (top-left) */}
         <div className="feed-card-watermark">
@@ -205,14 +219,26 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
         </div>
       )}
 
-      {/* Image */}
+      {/* Media */}
       <div className="feed-card-image-container" onClick={handleDoubleTap}>
-        <img
-          src={card.imageUrl}
-          alt={card.description || "Portfolio piece"}
-          className="feed-card-image"
-          loading="lazy"
-        />
+        {card.mediaType === "video" && card.videoUrl ? (
+          <video
+            src={card.videoUrl}
+            poster={card.imageUrl}
+            className="feed-card-image"
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        ) : (
+          <img
+            src={card.imageUrl}
+            alt={card.description || "Portfolio piece"}
+            className="feed-card-image"
+            loading="lazy"
+          />
+        )}
 
         {/* Double-tap heart animation */}
         <AnimatePresence>

@@ -73,7 +73,10 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: 
     toast.success("Link copied to clipboard");
   }, []);
 
-  const allCards = data?.pages.flatMap((page) => page.cards) ?? [];
+  const allCards = data?.pages.flatMap((page) => page.cards.map(card => ({
+    ...card,
+    videoUrl: (card as any).cdnUrl || null,
+  }))) ?? [];
 
   const handleArtistTap = useCallback(
     (slug: string) => {

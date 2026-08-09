@@ -99,6 +99,8 @@ export const feedRouter = router({
         createdAt: string | null;
         likeCount: number;
         isLiked: boolean;
+        mediaType: string | null;
+        cdnUrl: string | null;
       }> = [];
 
       // Determine max portfolio length for round-robin cycles
@@ -135,6 +137,8 @@ export const feedRouter = router({
             imageUrl: item.imageUrl,
             description: item.description,
             createdAt: item.createdAt,
+            mediaType: item.mediaType,
+            cdnUrl: item.cdnUrl,
             likeCount: item.likes.length,
             isLiked: item.likes.some(
               (l: { userId: string }) => l.userId === ctx.user.id
@@ -218,6 +222,8 @@ export const feedRouter = router({
         imageUrl: item.imageUrl,
         description: item.description,
         createdAt: item.createdAt,
+        mediaType: item.mediaType,
+        cdnUrl: item.cdnUrl,
         likeCount: item.likes.length,
         isLiked: item.likes.some(
           (l: { userId: string }) => l.userId === ctx.user.id
@@ -283,6 +289,8 @@ export const feedRouter = router({
           imageUrl: schema.portfolios.imageUrl,
           description: schema.portfolios.description,
           sortOrder: schema.portfolios.sortOrder,
+          mediaType: schema.portfolios.mediaType,
+          cdnUrl: schema.portfolios.cdnUrl,
         })
         .from(schema.portfolios)
         .where(eq(schema.portfolios.artistId, input.artistId))
@@ -328,6 +336,8 @@ export const feedRouter = router({
           imageUrl: p.imageUrl,
           description: p.description,
           sortOrder: p.sortOrder ?? 0,
+          mediaType: p.mediaType,
+          cdnUrl: p.cdnUrl,
         })),
         postCount: portfolioItems.length,
         totalLikes,
@@ -396,6 +406,8 @@ export const feedRouter = router({
           imageUrl: schema.portfolios.imageUrl,
           description: schema.portfolios.description,
           sortOrder: schema.portfolios.sortOrder,
+          mediaType: schema.portfolios.mediaType,
+          cdnUrl: schema.portfolios.cdnUrl,
         })
         .from(schema.portfolios)
         .where(eq(schema.portfolios.artistId, settings.userId))
@@ -426,6 +438,8 @@ export const feedRouter = router({
           imageUrl: p.imageUrl,
           description: p.description,
           sortOrder: p.sortOrder ?? 0,
+          mediaType: p.mediaType,
+          cdnUrl: p.cdnUrl,
         })),
         postCount: portfolioItems.length,
       };

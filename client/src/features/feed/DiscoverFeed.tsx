@@ -70,7 +70,10 @@ export default function DiscoverFeed() {
     [setLocation]
   );
 
-  const allCards = data?.pages.flatMap((page) => page.cards) ?? [];
+  const allCards = data?.pages.flatMap((page) => page.cards.map(card => ({
+    ...card,
+    videoUrl: (card as any).cdnUrl || null,
+  }))) ?? [];
 
   if (isLoading) {
     return (

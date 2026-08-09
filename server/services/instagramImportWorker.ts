@@ -96,6 +96,9 @@ export async function processInstagramImport(
         totalDiscovered = media.length;
       }
 
+      // Track if this page had any new items (for infinite loop prevention)
+      let pageHadNewItems = false;
+
       for (const item of media) {
         totalProcessed++;
 
@@ -105,6 +108,8 @@ export async function processInstagramImport(
           await updateProgress(db, importId, { totalProcessed, totalSkipped });
           continue;
         }
+
+        pageHadNewItems = true;
 
         try {
           // Download thumbnail to R2
@@ -147,6 +152,17 @@ export async function processInstagramImport(
       }
 
       cursor = nextCursor || undefined;
+
+      // Stop if the entire page was duplicates or empty (prevents infinite loop with fallback pagination)
+      if (media.length > 0 && !pageHadNewItems) {
+        console.log(`[IG Import] Entire page was duplicates — stopping pagination`);
+        cursor = undefined;
+      }
+
+      // Also stop if we got an empty page
+      if (media.length === 0) {
+        cursor = undefined;
+      }
 
       // Update total discovered if we keep finding more pages
       if (cursor) {

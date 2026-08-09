@@ -79,7 +79,10 @@ export default function ArtistPortfolioFeed({
   );
 
   // Reorder cards to start from the tapped image
-  const allCards = data?.cards ?? [];
+  const allCards = (data?.cards ?? []).map(card => ({
+    ...card,
+    videoUrl: (card as any).cdnUrl || null,
+  }));
   const tappedIndex = allCards.findIndex((c) => c.id === tappedImageId);
   const reorderedCards =
     tappedIndex > 0

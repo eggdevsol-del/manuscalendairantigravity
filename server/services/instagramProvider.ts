@@ -155,7 +155,9 @@ export class RapidApiInstagramProvider implements InstagramProvider {
       url_embed_safe: "true",
     };
     if (cursor) {
+      // Send cursor under multiple parameter names — different API versions expect different ones
       params.pagination_token = cursor;
+      params.max_id = cursor;
     }
 
     const data = await rapidApiRequest("/userposts/", params);
@@ -180,7 +182,7 @@ export class RapidApiInstagramProvider implements InstagramProvider {
 
     // Resolve pagination cursor — check all known field names the API may use
     const pageInfo = d.page_info || d.paging_info || {};
-    const nextCursor =
+    let nextCursor: string | null =
       d.pagination_token ||
       d.next_cursor ||
       d.next_max_id ||
@@ -189,6 +191,19 @@ export class RapidApiInstagramProvider implements InstagramProvider {
       pageInfo.next_cursor ||
       (pageInfo.has_next_page === true && pageInfo.cursor) ||
       null;
+
+    // Fallback: if no explicit cursor but we got items, use last item's ID as max_id
+    // This is the classic Instagram pagination method
+    if (!nextCursor && items.length > 0) {
+      const lastItem = items[items.length - 1];
+      const lastId = lastItem.id || lastItem.pk;
+      if (lastId) {
+        nextCursor = String(lastId);
+        if (!cursor) {
+          console.log(`[IG Provider] No cursor in response — using fallback max_id: ${nextCursor}`);
+        }
+      }
+    }
 
     if (!cursor) {
       console.log(`[IG Provider] Items: ${items.length}, nextCursor: ${nextCursor ? "present" : "null"}`);

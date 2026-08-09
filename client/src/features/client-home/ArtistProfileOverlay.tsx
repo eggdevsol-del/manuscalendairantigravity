@@ -60,6 +60,8 @@ export default function ArtistProfileOverlay({
       createdAt: null,
       likeCount: 0,
       isLiked: false,
+      mediaType: (item as any).mediaType || null,
+      videoUrl: (item as any).cdnUrl || null,
     }));
   }, [profile, artistId]);
 
