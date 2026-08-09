@@ -160,15 +160,49 @@ export class RapidApiInstagramProvider implements InstagramProvider {
 
     const data = await rapidApiRequest("/userposts/", params);
     const d = data.data || data;
-    const items = d.items || [];
-    const nextCursor = d.pagination_token || null;
+
+    // Log raw response keys on first page to aid debugging
+    if (!cursor) {
+      console.log("[IG Provider] First page response keys:", Object.keys(d));
+      if (d.page_info) {
+        console.log("[IG Provider] page_info:", JSON.stringify(d.page_info));
+      }
+      if (d.paging_info) {
+        console.log("[IG Provider] paging_info:", JSON.stringify(d.paging_info));
+      }
+    }
+
+    // Resolve items — handle both flat array and GraphQL-style edge format
+    let items = d.items || [];
+    if (items.length === 0 && d.edge_owner_to_timeline_media?.edges) {
+      items = d.edge_owner_to_timeline_media.edges.map((e: any) => e.node);
+    }
+
+    // Resolve pagination cursor — check all known field names the API may use
+    const pageInfo = d.page_info || d.paging_info || {};
+    const nextCursor =
+      d.pagination_token ||
+      d.next_cursor ||
+      d.next_max_id ||
+      d.end_cursor ||
+      pageInfo.end_cursor ||
+      pageInfo.next_cursor ||
+      (pageInfo.has_next_page === true && pageInfo.cursor) ||
+      null;
+
+    if (!cursor) {
+      console.log(`[IG Provider] Items: ${items.length}, nextCursor: ${nextCursor ? "present" : "null"}`);
+    }
 
     const media = items.map(parseItem);
+
+    // Resolve total count — check multiple possible fields
+    const totalEstimate = d.count || d.media_count || d.edge_owner_to_timeline_media?.count;
 
     return {
       media,
       nextCursor,
-      totalEstimate: d.count,
+      totalEstimate,
     };
   }
 }
