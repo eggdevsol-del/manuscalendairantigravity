@@ -35,6 +35,7 @@ export function InstagramImportSettings({ onBack }: Props) {
   const [importId, setImportId] = useState<number | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifiedUser, setVerifiedUser] = useState<any>(null);
+  const [showConnectForm, setShowConnectForm] = useState(false);
 
   // Check for existing import
   const latestImport = trpc.instagram.getLatestImport.useQuery();
@@ -59,6 +60,7 @@ export function InstagramImportSettings({ onBack }: Props) {
   const startImportMutation = trpc.instagram.startImport.useMutation({
     onSuccess: (data) => {
       setImportId(data.importId);
+      setShowConnectForm(false);
       if (data.alreadyRunning) {
         toast.info("Import already in progress");
       }
@@ -103,8 +105,8 @@ export function InstagramImportSettings({ onBack }: Props) {
 
   const status = importStatus.data || (latestImport.data?.status !== "in_progress" ? latestImport.data : null);
   const isImporting = importId && status?.status === "in_progress";
-  const isComplete = status?.status === "completed";
-  const isFailed = status?.status === "failed";
+  const isComplete = status?.status === "completed" && !showConnectForm;
+  const isFailed = status?.status === "failed" && !showConnectForm;
 
   const progress = status
     ? Math.round(((status.totalProcessed || 0) / Math.max(status.totalDiscovered || 1, 1)) * 100)
@@ -113,7 +115,10 @@ export function InstagramImportSettings({ onBack }: Props) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-border/30">
+      <div
+        className="flex items-center gap-3 px-4 pb-4 border-b border-border/30"
+        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
+      >
         <button onClick={onBack} className="p-2 rounded-xl hover:bg-secondary/50 transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -247,8 +252,8 @@ export function InstagramImportSettings({ onBack }: Props) {
                 onClick={() => {
                   setVerifiedUser(null);
                   setImportId(null);
+                  setShowConnectForm(true);
                   setUsername(status?.instagramUsername || "");
-                  latestImport.refetch();
                 }}
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
