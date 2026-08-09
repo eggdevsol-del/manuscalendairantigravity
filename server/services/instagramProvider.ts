@@ -165,13 +165,9 @@ export class RapidApiInstagramProvider implements InstagramProvider {
 
     // Log raw response keys on first page to aid debugging
     if (!cursor) {
-      console.log("[IG Provider] First page response keys:", Object.keys(d));
-      if (d.page_info) {
-        console.log("[IG Provider] page_info:", JSON.stringify(d.page_info));
-      }
-      if (d.paging_info) {
-        console.log("[IG Provider] paging_info:", JSON.stringify(d.paging_info));
-      }
+      console.log("[IG Provider] Root response keys:", Object.keys(data));
+      console.log("[IG Provider] data.data keys:", Object.keys(d));
+      console.log("[IG Provider] Root pagination_token:", data.pagination_token || "NONE");
     }
 
     // Resolve items — handle both flat array and GraphQL-style edge format
@@ -180,9 +176,11 @@ export class RapidApiInstagramProvider implements InstagramProvider {
       items = d.edge_owner_to_timeline_media.edges.map((e: any) => e.node);
     }
 
-    // Resolve pagination cursor — check all known field names the API may use
+    // Resolve pagination cursor — check ROOT level first (where this API puts it),
+    // then check nested data, then page_info objects
     const pageInfo = d.page_info || d.paging_info || {};
     let nextCursor: string | null =
+      data.pagination_token ||      // ← ROOT level (this is where the API actually puts it)
       d.pagination_token ||
       d.next_cursor ||
       d.next_max_id ||
