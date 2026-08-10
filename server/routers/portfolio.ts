@@ -63,7 +63,7 @@ export const portfolioRouter = router({
 
       const items = await db.query.portfolios.findMany({
         where,
-        orderBy: [schema.portfolios.sortOrder, desc(schema.portfolios.createdAt)],
+        orderBy: [schema.portfolios.sortOrder, desc(schema.portfolios.publishedAt), desc(schema.portfolios.createdAt)],
         with: {
           likes: true,
           classifications: true,

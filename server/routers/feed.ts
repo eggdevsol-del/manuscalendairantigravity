@@ -60,7 +60,7 @@ export const feedRouter = router({
           artistIds.map((id) => sql`${id}`),
           sql`, `
         )})`,
-        orderBy: desc(schema.portfolios.createdAt),
+        orderBy: [desc(schema.portfolios.publishedAt), desc(schema.portfolios.createdAt)],
         with: {
           likes: true,
         },
@@ -203,7 +203,7 @@ export const feedRouter = router({
       // Get all portfolio items for this artist
       const portfolios = await db.query.portfolios.findMany({
         where: eq(schema.portfolios.artistId, input.artistId),
-        orderBy: desc(schema.portfolios.createdAt),
+        orderBy: [desc(schema.portfolios.publishedAt), desc(schema.portfolios.createdAt)],
         with: {
           likes: true,
         },
@@ -296,6 +296,7 @@ export const feedRouter = router({
         .where(eq(schema.portfolios.artistId, input.artistId))
         .orderBy(
           asc(schema.portfolios.sortOrder),
+          desc(schema.portfolios.publishedAt),
           desc(schema.portfolios.createdAt)
         );
 
@@ -413,6 +414,7 @@ export const feedRouter = router({
         .where(eq(schema.portfolios.artistId, settings.userId))
         .orderBy(
           asc(schema.portfolios.sortOrder),
+          desc(schema.portfolios.publishedAt),
           desc(schema.portfolios.createdAt)
         );
 

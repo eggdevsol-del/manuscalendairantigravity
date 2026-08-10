@@ -2,7 +2,7 @@
  * instagramImportWorker.ts — Processes Instagram portfolio imports
  * 
  * Handles paginated fetching, thumbnail generation via R2,
- * dedup checking, and real-time progress tracking.
+ * video re-hosting via R2, dedup checking, and real-time progress tracking.
  */
 
 import * as schema from "../../drizzle/schema";
@@ -15,7 +15,7 @@ import { randomUUID } from "crypto";
 
 const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || "").replace(/\/$/, "");
 
-// ── Thumbnail helpers ──────────────────────────────
+// ── R2 upload helpers ──────────────────────────────
 
 /**
  * Download an image from a URL and upload a compressed version to R2.
@@ -48,6 +48,41 @@ async function downloadAndUploadThumbnail(
   }
 }
 
+/**
+ * Download a video from a URL and upload to R2.
+ * Returns the R2 public URL.
+ */
+async function downloadAndUploadVideo(
+  videoUrl: string,
+  artistId: string
+): Promise<string | null> {
+  try {
+    const response = await fetch(videoUrl);
+    if (!response.ok) {
+      console.error(`[IG Import] Video download failed: HTTP ${response.status}`);
+      return null;
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const key = `instagram-videos/${artistId}/${randomUUID()}.mp4`;
+
+    await r2Client.send(
+      new PutObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: key,
+        Body: buffer,
+        ContentType: "video/mp4",
+      })
+    );
+
+    console.log(`[IG Import] Video uploaded to R2: ${key} (${(buffer.length / 1024 / 1024).toFixed(1)}MB)`);
+    return `${R2_PUBLIC_URL}/${key}`;
+  } catch (err) {
+    console.error("[IG Import] Failed to upload video:", err);
+    return null;
+  }
+}
+
 // ── Import processor ───────────────────────────────
 
 export async function processInstagramImport(
@@ -68,6 +103,21 @@ export async function processInstagramImport(
   let totalFailed = 0;
 
   try {
+    // Get the actual media count from the user profile
+    try {
+      const userInfo = await provider.getUserInfo(username);
+      if (userInfo.mediaCount > 0) {
+        totalDiscovered = userInfo.mediaCount;
+        await db
+          .update(schema.instagramImports)
+          .set({ totalDiscovered })
+          .where(eq(schema.instagramImports.id, importId));
+        console.log(`[IG Import] User @${username} has ${totalDiscovered} total posts`);
+      }
+    } catch (err) {
+      console.warn("[IG Import] Could not fetch user info for total count:", err);
+    }
+
     // Fetch existing externalMediaIds for this artist (dedup)
     const existingItems = await db.query.portfolios.findMany({
       where: and(
@@ -83,18 +133,18 @@ export async function processInstagramImport(
       const result = await provider.fetchUserMedia(username, cursor);
       const { media, nextCursor, totalEstimate } = result;
 
-      if (totalDiscovered === 0 && totalEstimate) {
+      // Update totalDiscovered if we get a better estimate from the API
+      if (totalDiscovered === 0 && totalEstimate && totalEstimate > 0) {
         totalDiscovered = totalEstimate;
-        await db
-          .update(schema.instagramImports)
-          .set({ totalDiscovered })
-          .where(eq(schema.instagramImports.id, importId));
       }
 
-      // If first page gives us the count directly from items
+      // If we still don't have a total, estimate from items on this page
       if (totalDiscovered === 0) {
         totalDiscovered = media.length;
       }
+
+      // Write totalDiscovered to DB so the client can show progress
+      await updateProgress(db, importId, { totalDiscovered });
 
       // Track if this page had any new items (for infinite loop prevention)
       let pageHadNewItems = false;
@@ -105,7 +155,7 @@ export async function processInstagramImport(
         // Dedup check
         if (existingIds.has(item.mediaId)) {
           totalSkipped++;
-          await updateProgress(db, importId, { totalProcessed, totalSkipped });
+          await updateProgress(db, importId, { totalProcessed, totalSkipped, totalDiscovered });
           continue;
         }
 
@@ -118,6 +168,12 @@ export async function processInstagramImport(
             ? await downloadAndUploadThumbnail(thumbSource, artistId)
             : null;
 
+          // For videos, download and re-host on R2
+          let r2VideoUrl: string | null = null;
+          if (item.mediaType === "video" && item.videoUrl) {
+            r2VideoUrl = await downloadAndUploadVideo(item.videoUrl, artistId);
+          }
+
           // Insert portfolio item
           await db.insert(schema.portfolios).values({
             artistId,
@@ -127,7 +183,7 @@ export async function processInstagramImport(
             mediaType: item.mediaType,
             externalMediaId: item.mediaId,
             externalPermalink: item.permalink,
-            cdnUrl: item.mediaType === "video" ? (item.videoUrl || item.imageUrl) : item.imageUrl,
+            cdnUrl: item.mediaType === "video" ? (r2VideoUrl || item.videoUrl || item.imageUrl) : (thumbnailUrl || item.imageUrl),
             thumbnailUrl,
             caption: item.caption || null,
             publishedAt: item.publishedAt.toISOString().slice(0, 19).replace("T", " "),
@@ -148,6 +204,7 @@ export async function processInstagramImport(
           totalAdded,
           totalSkipped,
           totalFailed,
+          totalDiscovered,
         });
       }
 
@@ -167,6 +224,7 @@ export async function processInstagramImport(
       // Update total discovered if we keep finding more pages
       if (cursor) {
         totalDiscovered = Math.max(totalDiscovered, totalProcessed + 12); // Estimate next page
+        await updateProgress(db, importId, { totalDiscovered });
       }
     } while (cursor);
 
@@ -215,6 +273,7 @@ async function updateProgress(
     totalAdded: number;
     totalSkipped: number;
     totalFailed: number;
+    totalDiscovered: number;
   }>
 ) {
   await db
