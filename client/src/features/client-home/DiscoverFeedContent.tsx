@@ -128,6 +128,7 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: 
           <FeedCard
             key={`${card.id}-${index}`}
             card={card}
+            index={index}
             onLike={handleLike}
             onShare={handleShare}
             onArtistTap={handleArtistTap}

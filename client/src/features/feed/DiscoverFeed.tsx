@@ -114,6 +114,7 @@ export default function DiscoverFeed() {
           <FeedCard
             key={`${card.id}-${index}`}
             card={card}
+            index={index}
             onLike={handleLike}
             onShare={handleShare}
             onArtistTap={handleArtistTap}

@@ -214,6 +214,14 @@ export function InstagramImportSettings({ onBack }: Props) {
                     )}
                     {stopImportMutation.isPending ? "Stopping..." : "Stop Import"}
                   </button>
+
+                  {/* Background import info */}
+                  <div className="mt-4 p-3 rounded-xl bg-[#833AB4]/10 border border-[#833AB4]/20">
+                    <p className="text-xs text-muted-foreground text-center leading-relaxed">
+                      <span className="font-semibold text-foreground">Your import continues in the background.</span>
+                      {" "}Feel free to explore the app — your portfolio will keep importing even if you leave this page.
+                    </p>
+                  </div>
                 </div>
               </Card>
             </div>

@@ -109,6 +109,7 @@ export default function ArtistPortfolioFeed({
           <FeedCard
             key={`artist-${card.id}-${index}`}
             card={card}
+            index={index}
             onLike={handleLike}
             onShare={handleShare}
             onArtistTap={handleArtistTap}

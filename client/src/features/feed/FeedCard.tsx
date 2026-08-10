@@ -1,5 +1,5 @@
-import React, { useState, useRef, useCallback } from "react";
-import { Heart, MessageCircle, Share2, Bookmark, MapPin } from "lucide-react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import { Heart, MessageCircle, Share2, Bookmark, MapPin, Play } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface FeedCardData {
@@ -27,14 +27,72 @@ interface FeedCardProps {
   onImageTap?: (card: FeedCardData) => void;
   compact?: boolean;
   focusMode?: boolean;
+  /** Index in the feed — first 10 get eager loading */
+  index?: number;
 }
 
-export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compact, focusMode }: FeedCardProps) {
+// ── Viewport-aware video hook ─────────────────────────
+// Only loads and plays video when element is near the viewport.
+// Pauses and unloads when out of view. Prevents iOS Safari crash
+// from having dozens of <video autoPlay> elements simultaneously.
+function useVideoInView(rootMargin = "200px") {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { rootMargin, threshold: 0.1 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [rootMargin]);
+
+  // Play/pause based on visibility
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isInView) {
+      // Set src and play
+      const src = video.dataset.src;
+      if (src && video.src !== src) {
+        video.src = src;
+        video.load();
+      }
+      video.play().catch(() => {});
+    } else {
+      // Pause and unload to free memory
+      video.pause();
+      video.removeAttribute("src");
+      video.load(); // Reset the element
+    }
+  }, [isInView]);
+
+  return { containerRef, videoRef, isInView };
+}
+
+export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compact, focusMode, index = 999 }: FeedCardProps) {
   const [liked, setLiked] = useState(card.isLiked);
   const [likeCount, setLikeCount] = useState(card.likeCount);
   const [showHeart, setShowHeart] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const lastTap = useRef(0);
+
+  const isVideo = card.mediaType === "video" && !!card.videoUrl;
+  const eagerLoad = index < 10;
+
+  // Viewport-aware video for standard mode
+  const standardVideo = useVideoInView("300px");
+  // Viewport-aware video for focus mode
+  const focusVideo = useVideoInView("100px");
 
   const handleLike = useCallback(() => {
     setLiked((prev) => !prev);
@@ -86,24 +144,32 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
   /* ── Focus mode: full-screen immersive layout ── */
   if (focusMode) {
     return (
-      <div className="feed-card feed-card-focus" onClick={handleDoubleTap}>
+      <div className="feed-card feed-card-focus" onClick={handleDoubleTap} ref={isVideo ? focusVideo.containerRef : undefined}>
         {/* Full-bleed media */}
-        {card.mediaType === "video" && card.videoUrl ? (
-          <video
-            src={card.videoUrl}
-            poster={card.imageUrl}
-            className="feed-card-focus-image"
-            autoPlay
-            loop
-            muted
-            playsInline
-          />
+        {isVideo ? (
+          <>
+            <video
+              ref={focusVideo.videoRef}
+              data-src={card.videoUrl!}
+              poster={card.imageUrl}
+              className="feed-card-focus-image"
+              loop
+              muted
+              playsInline
+            />
+            {/* Play icon overlay when not in view */}
+            {!focusVideo.isInView && (
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+                <Play size={48} color="rgba(255,255,255,0.7)" fill="rgba(255,255,255,0.7)" />
+              </div>
+            )}
+          </>
         ) : (
           <img
             src={card.imageUrl}
             alt={card.description || "Portfolio piece"}
             className="feed-card-focus-image"
-            loading="lazy"
+            loading={eagerLoad ? "eager" : "lazy"}
           />
         )}
 
@@ -220,23 +286,39 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
       )}
 
       {/* Media */}
-      <div className="feed-card-image-container" onClick={handleDoubleTap}>
-        {card.mediaType === "video" && card.videoUrl ? (
-          <video
-            src={card.videoUrl}
-            poster={card.imageUrl}
-            className="feed-card-image"
-            autoPlay
-            loop
-            muted
-            playsInline
-          />
+      <div className="feed-card-image-container" onClick={handleDoubleTap} ref={isVideo ? standardVideo.containerRef : undefined}>
+        {isVideo ? (
+          <>
+            {/* Poster image shown immediately, video loads when in viewport */}
+            <img
+              src={card.imageUrl}
+              alt={card.description || "Portfolio piece"}
+              className="feed-card-image"
+              loading={eagerLoad ? "eager" : "lazy"}
+              style={{ display: standardVideo.isInView ? "none" : "block" }}
+            />
+            <video
+              ref={standardVideo.videoRef}
+              data-src={card.videoUrl!}
+              poster={card.imageUrl}
+              className="feed-card-image"
+              loop
+              muted
+              playsInline
+              style={{ display: standardVideo.isInView ? "block" : "none" }}
+            />
+            {/* Video badge */}
+            <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.5)", borderRadius: 6, padding: "3px 8px", display: "flex", alignItems: "center", gap: 4, pointerEvents: "none" }}>
+              <Play size={10} color="white" fill="white" />
+              <span style={{ color: "white", fontSize: 10, fontWeight: 600 }}>REEL</span>
+            </div>
+          </>
         ) : (
           <img
             src={card.imageUrl}
             alt={card.description || "Portfolio piece"}
             className="feed-card-image"
-            loading="lazy"
+            loading={eagerLoad ? "eager" : "lazy"}
           />
         )}
 
