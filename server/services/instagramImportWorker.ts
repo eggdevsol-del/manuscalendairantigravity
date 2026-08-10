@@ -73,11 +73,13 @@ export async function processInstagramImport(
   db: MySql2Database<typeof schema>,
   importId: number,
   artistId: string,
-  username: string
+  username: string,
+  /** Optional cap on total items to import (0 = unlimited) */
+  maxItems: number = 0
 ): Promise<void> {
   const provider = getInstagramProvider();
 
-  console.log(`[IG Import] Starting import for @${username} (import #${importId})`);
+  console.log(`[IG Import] Starting import for @${username} (import #${importId})${maxItems ? ` [max: ${maxItems}]` : ""}`);
 
   let cursor: string | undefined;
   let totalDiscovered = 0;
@@ -152,6 +154,13 @@ export async function processInstagramImport(
       let pageHadNewItems = false;
 
       for (const item of media) {
+        // Stop if we've hit the maxItems cap
+        if (maxItems > 0 && totalAdded >= maxItems) {
+          console.log(`[IG Import] Reached maxItems cap (${maxItems}) — stopping`);
+          cursor = undefined;
+          break;
+        }
+
         // Check for cancellation every 10 items
         if (totalProcessed > 0 && totalProcessed % 10 === 0) {
           if (await isCancelled(db, importId)) {
