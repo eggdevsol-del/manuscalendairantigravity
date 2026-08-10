@@ -10,6 +10,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import {
   ImagePlus, Trash2, Loader2, GripVertical,
   Camera, Mail, Phone, MapPin, Globe,
+  CheckCircle2, Play,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/ssot";
 import { UserAvatar } from "@/components/ui/ssot/UserAvatar";
@@ -42,10 +43,16 @@ function SortablePortfolioItem({
   item,
   onDelete,
   deletingId,
+  selectMode,
+  isSelected,
+  onToggleSelect,
 }: {
-  item: { id: number; imageUrl: string; description: string | null };
+  item: { id: number; imageUrl: string; description: string | null; mediaType?: string | null; displayUrl?: string | null };
   onDelete: (id: number) => void;
   deletingId: number | null;
+  selectMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: number) => void;
 }) {
   const {
     attributes,
@@ -54,7 +61,7 @@ function SortablePortfolioItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: item.id });
+  } = useSortable({ id: item.id, disabled: selectMode });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -66,57 +73,96 @@ function SortablePortfolioItem({
     overflow: "hidden" as const,
   };
 
+  const isVideo = item.mediaType === "video";
+
   return (
-    <div ref={setNodeRef} style={style} className="artist-profile-grid-item">
+    <div
+      ref={setNodeRef}
+      style={{
+        ...style,
+        outline: isSelected ? "3px solid var(--color-primary)" : "none",
+        outlineOffset: "-3px",
+        borderRadius: 12,
+      }}
+      className="artist-profile-grid-item"
+      onClick={selectMode ? () => onToggleSelect?.(item.id) : undefined}
+    >
       <img
-        src={item.imageUrl}
+        src={item.displayUrl || item.imageUrl}
         alt={item.description || "Portfolio"}
         loading="lazy"
       />
-      <div
-        {...attributes}
-        {...listeners}
-        style={{
-          position: "absolute",
-          top: 4,
-          left: 4,
-          width: 24,
-          height: 24,
-          borderRadius: "50%",
-          background: "rgba(0,0,0,0.6)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "grab",
-          touchAction: "none",
-        }}
-      >
-        <GripVertical size={12} color="white" />
-      </div>
-      <button
-        onClick={() => onDelete(item.id)}
-        disabled={deletingId === item.id}
-        style={{
-          position: "absolute",
-          top: 4,
-          right: 4,
-          width: 24,
-          height: 24,
-          borderRadius: "50%",
-          background: "rgba(220,50,50,0.85)",
-          border: "none",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-        }}
-      >
-        {deletingId === item.id ? (
-          <Loader2 size={12} color="white" className="animate-spin" />
-        ) : (
-          <Trash2 size={12} color="white" />
-        )}
-      </button>
+
+      {/* Video badge */}
+      {isVideo && !selectMode && (
+        <div style={{ position: "absolute", bottom: 4, right: 4, width: 20, height: 20, borderRadius: "50%", background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Play size={10} color="white" fill="white" />
+        </div>
+      )}
+
+      {/* Select mode: checkbox */}
+      {selectMode && (
+        <div style={{ position: "absolute", inset: 0, background: isSelected ? "rgba(0,0,0,0.15)" : "rgba(0,0,0,0.25)", display: "flex", alignItems: "flex-start", justifyContent: "flex-start", padding: 6 }}>
+          <div style={{
+            width: 22, height: 22, borderRadius: "50%",
+            background: isSelected ? "var(--color-primary)" : "rgba(0,0,0,0.3)",
+            border: isSelected ? "none" : "2px solid rgba(255,255,255,0.7)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            {isSelected && <CheckCircle2 size={18} color="white" />}
+          </div>
+        </div>
+      )}
+
+      {/* Normal mode: drag handle + delete */}
+      {!selectMode && (
+        <>
+          <div
+            {...attributes}
+            {...listeners}
+            style={{
+              position: "absolute",
+              top: 4,
+              left: 4,
+              width: 24,
+              height: 24,
+              borderRadius: "50%",
+              background: "rgba(0,0,0,0.6)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "grab",
+              touchAction: "none",
+            }}
+          >
+            <GripVertical size={12} color="white" />
+          </div>
+          <button
+            onClick={() => onDelete(item.id)}
+            disabled={deletingId === item.id}
+            style={{
+              position: "absolute",
+              top: 4,
+              right: 4,
+              width: 24,
+              height: 24,
+              borderRadius: "50%",
+              background: "rgba(220,50,50,0.85)",
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+            }}
+          >
+            {deletingId === item.id ? (
+              <Loader2 size={12} color="white" className="animate-spin" />
+            ) : (
+              <Trash2 size={12} color="white" />
+            )}
+          </button>
+        </>
+      )}
     </div>
   );
 }
@@ -129,6 +175,9 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const utils = trpc.useUtils();
 
@@ -255,6 +304,42 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
     setDeletingId(id);
     deleteItem.reset();
     deleteItem.mutate({ id });
+  };
+
+  // ── Multi-select ──────────────────────────────
+  const bulkDeleteMutation = trpc.portfolio.bulkDelete.useMutation({
+    onSuccess: (data) => {
+      utils.portfolio.list.invalidate();
+      toast.success(`${data.deletedCount} item${data.deletedCount !== 1 ? "s" : ""} deleted`);
+      setSelectedIds(new Set());
+      setSelectMode(false);
+    },
+    onError: () => toast.error("Failed to delete items"),
+    onSettled: () => setBulkDeleting(false),
+  });
+
+  const toggleSelect = useCallback((id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const selectAll = useCallback(() => {
+    setSelectedIds(new Set(portfolio.map((p: any) => p.id)));
+  }, [portfolio]);
+
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedIds.size === 0) return;
+    setBulkDeleting(true);
+    bulkDeleteMutation.mutate({ ids: Array.from(selectedIds) });
   };
 
   const handleSaveProfile = () => {
@@ -425,16 +510,53 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
         <div style={{ padding: "0 2px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px 8px" }}>
             <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-secondary)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-              Portfolio ({portfolio.length})
+              {selectMode ? `${selectedIds.size} selected` : `Portfolio (${portfolio.length})`}
             </span>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              style={{ display: "flex", alignItems: "center", gap: 4, background: "var(--color-primary)", color: "var(--color-bg-base)", border: "none", borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}
-            >
-              {uploading ? <Loader2 size={12} className="animate-spin" /> : <ImagePlus size={12} />}
-              Add
-            </button>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              {selectMode ? (
+                <>
+                  <button
+                    onClick={exitSelectMode}
+                    style={{ background: "transparent", border: "1px solid var(--color-border)", borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer", color: "var(--foreground)" }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={selectAll}
+                    style={{ background: "var(--color-bg-secondary, rgba(255,255,255,0.08))", border: "none", borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer", color: "var(--foreground)" }}
+                  >
+                    All
+                  </button>
+                  <button
+                    onClick={handleBulkDelete}
+                    disabled={selectedIds.size === 0 || bulkDeleting}
+                    style={{ display: "flex", alignItems: "center", gap: 4, background: selectedIds.size > 0 ? "rgba(220,50,50,0.85)" : "rgba(220,50,50,0.4)", color: "white", border: "none", borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 600, cursor: selectedIds.size > 0 ? "pointer" : "default" }}
+                  >
+                    {bulkDeleting ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                    {selectedIds.size > 0 ? `Delete (${selectedIds.size})` : "Delete"}
+                  </button>
+                </>
+              ) : (
+                <>
+                  {portfolio.length > 0 && (
+                    <button
+                      onClick={() => setSelectMode(true)}
+                      style={{ background: "var(--color-bg-secondary, rgba(255,255,255,0.08))", border: "none", borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer", color: "var(--foreground)" }}
+                    >
+                      Select
+                    </button>
+                  )}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    style={{ display: "flex", alignItems: "center", gap: 4, background: "var(--color-primary)", color: "var(--color-bg-base)", border: "none", borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+                  >
+                    {uploading ? <Loader2 size={12} className="animate-spin" /> : <ImagePlus size={12} />}
+                    Add
+                  </button>
+                </>
+              )}
+            </div>
           </div>
           <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={handleFilePick} />
 
@@ -447,7 +569,15 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
               <SortableContext items={portfolioIds} strategy={rectSortingStrategy}>
                 <div className="artist-profile-grid">
                   {portfolio.map((item: any) => (
-                    <SortablePortfolioItem key={item.id} item={item} onDelete={handleDelete} deletingId={deletingId} />
+                    <SortablePortfolioItem
+                      key={item.id}
+                      item={item}
+                      onDelete={handleDelete}
+                      deletingId={deletingId}
+                      selectMode={selectMode}
+                      isSelected={selectedIds.has(item.id)}
+                      onToggleSelect={toggleSelect}
+                    />
                   ))}
                 </div>
               </SortableContext>
