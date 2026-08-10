@@ -5,7 +5,7 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import * as schema from "../../drizzle/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 import { getInstagramProvider } from "../services/instagramProvider";
@@ -135,5 +135,39 @@ export const instagramRouter = router({
       // Return the currently stored CDN URL
       // In future, refresh if expired
       return { videoUrl: item.cdnUrl || null };
+    }),
+
+  /**
+   * Stop/cancel an in-progress import.
+   * Sets the status to "cancelled" — the worker checks for this and stops gracefully.
+   */
+  stopImport: protectedProcedure
+    .input(z.object({ importId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+
+      const importRecord = await db.query.instagramImports.findFirst({
+        where: and(
+          eq(schema.instagramImports.id, input.importId),
+          eq(schema.instagramImports.artistId, ctx.user.id)
+        ),
+      });
+
+      if (!importRecord) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      if (importRecord.status !== "in_progress") {
+        return { success: false, message: "Import is not in progress" };
+      }
+
+      // Set status to cancelled — worker will pick this up and stop
+      await db
+        .update(schema.instagramImports)
+        .set({ status: "cancelled", updatedAt: sql`NOW()` })
+        .where(eq(schema.instagramImports.id, input.importId));
+
+      return { success: true };
     }),
 });

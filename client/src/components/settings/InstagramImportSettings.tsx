@@ -24,6 +24,7 @@ import {
   Video,
   LayoutGrid,
   RefreshCw,
+  StopCircle,
 } from "lucide-react";
 
 interface Props {
@@ -70,6 +71,19 @@ export function InstagramImportSettings({ onBack }: Props) {
     },
   });
 
+  const stopImportMutation = trpc.instagram.stopImport.useMutation({
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("Import stopped");
+        setImportId(null);
+        latestImport.refetch();
+      }
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to stop import");
+    },
+  });
+
   // Auto-resume existing in-progress import
   useEffect(() => {
     if (latestImport.data?.status === "in_progress") {
@@ -105,7 +119,8 @@ export function InstagramImportSettings({ onBack }: Props) {
 
   const status = importStatus.data || (latestImport.data?.status !== "in_progress" ? latestImport.data : null);
   const isImporting = importId && status?.status === "in_progress";
-  const isComplete = status?.status === "completed" && !showConnectForm;
+  const isCancelled = (status?.status === "cancelled") && !showConnectForm;
+  const isComplete = (status?.status === "completed" || isCancelled) && !showConnectForm;
   const isFailed = status?.status === "failed" && !showConnectForm;
 
   const progress = status
@@ -185,6 +200,20 @@ export function InstagramImportSettings({ onBack }: Props) {
                       <p className="text-xs text-muted-foreground">Failed</p>
                     </div>
                   </div>
+
+                  {/* Stop button */}
+                  <button
+                    onClick={() => importId && stopImportMutation.mutate({ importId })}
+                    disabled={stopImportMutation.isPending}
+                    className="mt-2 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-[var(--color-danger,#dc3232)]/30 text-[var(--color-danger,#dc3232)] text-sm font-semibold hover:bg-[var(--color-danger,#dc3232)]/10 transition-colors disabled:opacity-50"
+                  >
+                    {stopImportMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <StopCircle className="w-4 h-4" />
+                    )}
+                    {stopImportMutation.isPending ? "Stopping..." : "Stop Import"}
+                  </button>
                 </div>
               </Card>
             </div>

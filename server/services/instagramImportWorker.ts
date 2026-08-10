@@ -2,7 +2,10 @@
  * instagramImportWorker.ts — Processes Instagram portfolio imports
  * 
  * Handles paginated fetching, thumbnail generation via R2,
- * video re-hosting via R2, dedup checking, and real-time progress tracking.
+ * dedup checking, cancellation, and real-time progress tracking.
+ * 
+ * Videos use embed-safe proxy URLs (streamed, not hosted).
+ * Thumbnails are downloaded and re-hosted on R2.
  */
 
 import * as schema from "../../drizzle/schema";
@@ -48,39 +51,20 @@ async function downloadAndUploadThumbnail(
   }
 }
 
+// ── Cancellation check ─────────────────────────────
+
 /**
- * Download a video from a URL and upload to R2.
- * Returns the R2 public URL.
+ * Check if the import has been cancelled (status changed to "cancelled" in DB).
  */
-async function downloadAndUploadVideo(
-  videoUrl: string,
-  artistId: string
-): Promise<string | null> {
-  try {
-    const response = await fetch(videoUrl);
-    if (!response.ok) {
-      console.error(`[IG Import] Video download failed: HTTP ${response.status}`);
-      return null;
-    }
-
-    const buffer = Buffer.from(await response.arrayBuffer());
-    const key = `instagram-videos/${artistId}/${randomUUID()}.mp4`;
-
-    await r2Client.send(
-      new PutObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: key,
-        Body: buffer,
-        ContentType: "video/mp4",
-      })
-    );
-
-    console.log(`[IG Import] Video uploaded to R2: ${key} (${(buffer.length / 1024 / 1024).toFixed(1)}MB)`);
-    return `${R2_PUBLIC_URL}/${key}`;
-  } catch (err) {
-    console.error("[IG Import] Failed to upload video:", err);
-    return null;
-  }
+async function isCancelled(
+  db: MySql2Database<typeof schema>,
+  importId: number
+): Promise<boolean> {
+  const record = await db.query.instagramImports.findFirst({
+    where: eq(schema.instagramImports.id, importId),
+    columns: { status: true },
+  });
+  return record?.status === "cancelled";
 }
 
 // ── Import processor ───────────────────────────────
@@ -130,6 +114,24 @@ export async function processInstagramImport(
 
     // Paginate through all posts
     do {
+      // Check for cancellation before each page
+      if (await isCancelled(db, importId)) {
+        console.log(`[IG Import] Import #${importId} cancelled by user`);
+        await db
+          .update(schema.instagramImports)
+          .set({
+            status: "cancelled",
+            totalDiscovered,
+            totalProcessed,
+            totalAdded,
+            totalSkipped,
+            totalFailed,
+            updatedAt: sql`NOW()`,
+          })
+          .where(eq(schema.instagramImports.id, importId));
+        return;
+      }
+
       const result = await provider.fetchUserMedia(username, cursor);
       const { media, nextCursor, totalEstimate } = result;
 
@@ -150,6 +152,26 @@ export async function processInstagramImport(
       let pageHadNewItems = false;
 
       for (const item of media) {
+        // Check for cancellation every 10 items
+        if (totalProcessed > 0 && totalProcessed % 10 === 0) {
+          if (await isCancelled(db, importId)) {
+            console.log(`[IG Import] Import #${importId} cancelled by user (mid-page)`);
+            await db
+              .update(schema.instagramImports)
+              .set({
+                status: "cancelled",
+                totalDiscovered: totalProcessed,
+                totalProcessed,
+                totalAdded,
+                totalSkipped,
+                totalFailed,
+                updatedAt: sql`NOW()`,
+              })
+              .where(eq(schema.instagramImports.id, importId));
+            return;
+          }
+        }
+
         totalProcessed++;
 
         // Dedup check
@@ -162,17 +184,15 @@ export async function processInstagramImport(
         pageHadNewItems = true;
 
         try {
-          // Download thumbnail to R2
+          // Download thumbnail to R2 (images are small, permanent, CORS-safe)
           const thumbSource = item.thumbnailUrl || item.imageUrl;
           const thumbnailUrl = thumbSource
             ? await downloadAndUploadThumbnail(thumbSource, artistId)
             : null;
 
-          // For videos, download and re-host on R2
-          let r2VideoUrl: string | null = null;
-          if (item.mediaType === "video" && item.videoUrl) {
-            r2VideoUrl = await downloadAndUploadVideo(item.videoUrl, artistId);
-          }
+          // For videos: store the embed-safe proxy URL directly (streamed, not hosted)
+          // The url_embed_safe=true flag provides CORS-safe URLs via proxy
+          const videoUrl = item.mediaType === "video" ? item.videoUrl : undefined;
 
           // Insert portfolio item
           await db.insert(schema.portfolios).values({
@@ -183,7 +203,7 @@ export async function processInstagramImport(
             mediaType: item.mediaType,
             externalMediaId: item.mediaId,
             externalPermalink: item.permalink,
-            cdnUrl: item.mediaType === "video" ? (r2VideoUrl || item.videoUrl || item.imageUrl) : (thumbnailUrl || item.imageUrl),
+            cdnUrl: videoUrl || thumbnailUrl || item.imageUrl,
             thumbnailUrl,
             caption: item.caption || null,
             publishedAt: item.publishedAt.toISOString().slice(0, 19).replace("T", " "),
