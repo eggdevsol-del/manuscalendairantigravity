@@ -150,10 +150,10 @@ export function PortfolioExpand({
             </p>
 
             {/* Media — video or image */}
-            {portfolio[lightboxIndex].mediaType === "video" && portfolio[lightboxIndex].cdnUrl ? (
+            {portfolio[lightboxIndex].mediaType === "video" ? (
               <motion.video
                 key={lightboxIndex}
-                src={portfolio[lightboxIndex].cdnUrl}
+                src={`/api/ig-video/${portfolio[lightboxIndex].id}`}
                 poster={portfolio[lightboxIndex].imageUrl}
                 className="max-w-full max-h-full object-contain select-none px-4"
                 initial={{ opacity: 0, scale: 0.95 }}

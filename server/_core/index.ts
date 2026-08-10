@@ -223,6 +223,72 @@ async function startServer() {
     }
     res.redirect(301, `${r2PublicUrl}/${key}`);
   });
+
+  // ── Instagram video proxy ──────────────────────────────────────
+  // Streams Instagram videos through our server to avoid CORS issues.
+  // The client uses /api/ig-video/{portfolioId} as the <video src>.
+  app.get("/api/ig-video/:id", async (req, res) => {
+    try {
+      const { getDb } = await import("../db");
+      const schema = await import("../../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+
+      const db = await getDb();
+      if (!db) return res.status(500).json({ error: "DB unavailable" });
+
+      const portfolioId = parseInt(req.params.id, 10);
+      if (isNaN(portfolioId)) return res.status(400).json({ error: "Invalid ID" });
+
+      const item = await db.query.portfolios.findFirst({
+        where: eq(schema.portfolios.id, portfolioId),
+        columns: { cdnUrl: true, mediaType: true, externalMediaId: true },
+      });
+
+      if (!item || item.mediaType !== "video" || !item.cdnUrl) {
+        return res.status(404).json({ error: "Video not found" });
+      }
+
+      // Fetch video from the stored URL (embed-safe proxy or CDN)
+      const videoResponse = await fetch(item.cdnUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; TattoiApp/1.0)",
+        },
+      });
+
+      if (!videoResponse.ok) {
+        console.error(`[Video Proxy] Failed to fetch video: ${videoResponse.status} from ${item.cdnUrl.slice(0, 80)}`);
+        return res.status(502).json({ error: "Failed to fetch video from source" });
+      }
+
+      // Stream video to client with proper headers
+      const contentType = videoResponse.headers.get("content-type") || "video/mp4";
+      const contentLength = videoResponse.headers.get("content-length");
+
+      res.setHeader("Content-Type", contentType);
+      if (contentLength) res.setHeader("Content-Length", contentLength);
+      res.setHeader("Cache-Control", "public, max-age=3600"); // Cache 1 hour
+      res.setHeader("Accept-Ranges", "bytes");
+
+      // Pipe the response body to the client
+      const reader = videoResponse.body?.getReader();
+      if (!reader) return res.status(502).json({ error: "No response body" });
+
+      const pump = async () => {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) { res.end(); return; }
+          if (!res.write(value)) {
+            await new Promise(resolve => res.once("drain", resolve));
+          }
+        }
+      };
+      pump().catch(() => res.end());
+
+    } catch (err) {
+      console.error("[Video Proxy] Error:", err);
+      if (!res.headersSent) res.status(500).json({ error: "Internal error" });
+    }
+  });
   // ── Map image proxy ───────────────────────────────────────────
   // Direct Express route that streams Google Maps Static images as PNG.
   // Avoids base64/tRPC overhead and keeps the API key server-side.

@@ -75,7 +75,7 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: 
 
   const allCards = data?.pages.flatMap((page) => page.cards.map(card => ({
     ...card,
-    videoUrl: (card as any).cdnUrl || null,
+    videoUrl: (card as any).mediaType === "video" ? `/api/ig-video/${card.id}` : null,
   }))) ?? [];
 
   const handleArtistTap = useCallback(
