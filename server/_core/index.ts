@@ -289,6 +289,106 @@ async function startServer() {
       if (!res.headersSent) res.status(500).json({ error: "Internal error" });
     }
   });
+
+  // ── Admin: Seed real artists (temporary) ───────────────────────
+  // POST /api/admin/seed-artists?key=RAPIDAPI_KEY
+  // Triggers the real artist seeder on the server.
+  // Protected by requiring the RAPIDAPI_KEY as a query param.
+  app.post("/api/admin/seed-artists", async (req, res) => {
+    const key = req.query.key as string;
+    if (!key || key !== process.env.RAPIDAPI_KEY) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    // Don't block the request — run in background
+    res.json({ status: "started", message: "Seeding real artists in background. Check server logs for progress." });
+
+    // Dynamic import to avoid loading at startup
+    try {
+      const { nanoid } = await import("nanoid");
+      const { getDb } = await import("../db");
+      const dbSchema = await import("../../drizzle/schema");
+      const { eq, inArray } = await import("drizzle-orm");
+      const { processInstagramImport } = await import("../services/instagramImportWorker");
+
+      const db = await getDb();
+      if (!db) { console.error("[Seed] No DB"); return; }
+
+      const REAL_ARTISTS = [
+        { name: "Jake Jones", businessName: "Jake Jones Tattoo", instagram: "jakejonestattoo", keywords: "realism, portrait, black and grey", bio: "Black & grey realism specialist.", suburb: "Lutwyche", address: "550 Lutwyche Rd, Lutwyche QLD 4030", lat: "-27.4234", lng: "153.0306" },
+        { name: "Cherie Buttons", businessName: "Cherie Buttons Tattoo", instagram: "cheriebuttons", keywords: "illustrative, neo-traditional, colour", bio: "Illustrative and neo-traditional tattoos.", suburb: "Fortitude Valley", address: "52 Brunswick St, Fortitude Valley QLD 4006", lat: "-27.4578", lng: "153.0389" },
+        { name: "Jenny Ink", businessName: "Jenny Ink Studio", instagram: "jennyink_tattoo", keywords: "fine line, botanical, feminine, script", bio: "Delicate fine line work.", suburb: "Taringa", address: "19 Swann Rd, Taringa QLD 4068", lat: "-27.4977", lng: "152.9787" },
+        { name: "Jeje", businessName: "Jeje Ink", instagram: "jeje_ink", keywords: "japanese, irezumi, dragon, koi", bio: "Japanese traditional specialist.", suburb: "Morningside", address: "612 Wynnum Rd, Morningside QLD 4170", lat: "-27.4621", lng: "153.0742" },
+        { name: "Graceful Tattoos", businessName: "Graceful Tattoos", instagram: "graceful_tatt", keywords: "fine line, illustrative, floral", bio: "Fine line and illustrative tattooing.", suburb: "New Farm", address: "14 Merthyr Rd, New Farm QLD 4005", lat: "-27.4683", lng: "153.0442" },
+        { name: "Hailey Blossom", businessName: "Hailey Blossom Tattoo", instagram: "hailey_blossom", keywords: "fine line, pet portraits, floral", bio: "Fine line and detailed tattoos.", suburb: "Spring Hill", address: "20 Leichhardt St, Spring Hill QLD 4000", lat: "-27.4600", lng: "153.0206" },
+        { name: "Cappy Ink", businessName: "Cappy Ink", instagram: "cappy_ink", keywords: "illustrative, unique, colour, custom", bio: "Unique custom designs.", suburb: "Mt Gravatt", address: "1714 Logan Rd, Mt Gravatt QLD 4122", lat: "-27.5399", lng: "153.0796" },
+        { name: "Steve", businessName: "Fable Tattoo", instagram: "tattoos.by.steve", keywords: "colour, pop culture, anime, gaming", bio: "Colour specialist at Fable Tattoo.", suburb: "West End", address: "88 Vulture St, West End QLD 4101", lat: "-27.4795", lng: "153.0118" },
+        { name: "Westside Tattoo", businessName: "Westside Tattoo Brisbane", instagram: "westside_tattoo_brisbane", keywords: "japanese, traditional, portraiture", bio: "Long-standing Brisbane studio.", suburb: "West End", address: "195 Boundary St, West End QLD 4101", lat: "-27.4782", lng: "153.0098" },
+        { name: "Valley Ink", businessName: "Valley Ink", instagram: "valleyink", keywords: "custom, thin line, dot work", bio: "Custom tattoo studio in the Valley.", suburb: "Fortitude Valley", address: "315 Brunswick St, Fortitude Valley QLD 4006", lat: "-27.4542", lng: "153.0380" },
+        { name: "Tailor Made Tattoo", businessName: "Tailor Made Tattoo", instagram: "tailormadetattoo", keywords: "custom, realism, colour, walk-in", bio: "Custom tattoo studio in Woolloongabba.", suburb: "Woolloongabba", address: "71 Logan Rd, Woolloongabba QLD 4102", lat: "-27.4895", lng: "153.0329" },
+        { name: "CB Ink", businessName: "CB Ink Tattoo", instagram: "cbinktattoo", keywords: "realism, portrait, diverse styles", bio: "Large Brisbane studio with 25+ artists.", suburb: "Lutwyche", address: "543 Lutwyche Rd, Lutwyche QLD 4030", lat: "-27.4230", lng: "153.0310" },
+        { name: "Chalice Tattoo", businessName: "Chalice Tattoo Company", instagram: "chalicetattooco", keywords: "blackwork, dark art, occult, gothic", bio: "Blackwork and gothic tattooing.", suburb: "Paddington", address: "210 Given Tce, Paddington QLD 4064", lat: "-27.4597", lng: "152.9989" },
+        { name: "Save Point Tattoo", businessName: "Save Point Tattoo", instagram: "savepointtattoo", keywords: "anime, gaming, neo-japanese, colour", bio: "Anime and gaming tattoo specialists.", suburb: "Greenslopes", address: "162 Logan Rd, Greenslopes QLD 4120", lat: "-27.5035", lng: "153.0466" },
+        { name: "Ink Embassy", businessName: "Ink Embassy", instagram: "inkembassy", keywords: "colour, custom, vibrant, realism", bio: "Vibrant colour work in Bulimba.", suburb: "Bulimba", address: "43 Oxford St, Bulimba QLD 4171", lat: "-27.4617", lng: "153.0622" },
+      ];
+
+      const MESSAGES = [
+        "Hey! Thanks for checking out my work. What are you thinking for your next piece?",
+        "Welcome! I'm excited to potentially work with you. What style are you after?",
+        "Hi there! Stoked you found me. Drop me your ideas!",
+        "Thanks for connecting! What were you thinking?",
+        "Hey! Tell me about your vision!",
+      ];
+
+      // Find client
+      const [client] = await db.select({ id: dbSchema.users.id }).from(dbSchema.users).where(eq(dbSchema.users.role, "client")).limit(1);
+      if (!client) { console.error("[Seed] No client"); return; }
+
+      // Delete existing mock artists (keep pmasontattoo)
+      const allArtists = await db.select({ id: dbSchema.users.id, email: dbSchema.users.email }).from(dbSchema.users).where(eq(dbSchema.users.role, "artist"));
+      const deleteIds = allArtists.filter(a => a.email !== "bookings@pmasontattoo.com").map(a => a.id);
+      if (deleteIds.length > 0) {
+        for (const id of deleteIds) {
+          await db.delete(dbSchema.portfolios).where(eq(dbSchema.portfolios.artistId, id));
+        }
+        await db.delete(dbSchema.users).where(inArray(dbSchema.users.id, deleteIds));
+        console.log(`[Seed] Deleted ${deleteIds.length} mock artists`);
+      }
+
+      // Create each artist and import
+      for (let i = 0; i < REAL_ARTISTS.length; i++) {
+        const a = REAL_ARTISTS[i];
+        const artistId = nanoid();
+        const slug = a.instagram.replace(/[^a-z0-9]/gi, "").toLowerCase();
+
+        try {
+          await db.insert(dbSchema.users).values({ id: artistId, name: a.name, email: `${a.instagram}@demo.tattoi.app`, role: "artist", bio: a.bio, city: a.suburb, hasCompletedOnboarding: 1 });
+          await db.insert(dbSchema.artistSettings).values({ userId: artistId, businessName: a.businessName, displayName: a.name, businessAddress: a.address, businessCountry: "AU", keywords: a.keywords, publicSlug: slug, funnelEnabled: 1, workSchedule: JSON.stringify({}), services: JSON.stringify([]), lat: a.lat, lng: a.lng });
+
+          // Conversation
+          const [conv] = await db.insert(dbSchema.conversations).values({ artistId, clientId: client.id }).$returningId();
+          await db.insert(dbSchema.messages).values({ conversationId: conv.id, senderId: artistId, content: MESSAGES[i % MESSAGES.length], messageType: "text" });
+
+          // Import first 20 posts
+          const [imp] = await db.insert(dbSchema.instagramImports).values({ artistId, instagramUsername: a.instagram, status: "in_progress" });
+          console.log(`[Seed] ${i+1}/${REAL_ARTISTS.length} Importing @${a.instagram}...`);
+          await processInstagramImport(db, imp.insertId, artistId, a.instagram, 20);
+          console.log(`[Seed] ✅ ${a.name} done`);
+        } catch (err: any) {
+          console.error(`[Seed] ❌ ${a.name} failed: ${err.message}`);
+        }
+
+        // Rate limit delay
+        if (i < REAL_ARTISTS.length - 1) {
+          await new Promise(r => setTimeout(r, 3000));
+        }
+      }
+
+      console.log("[Seed] 🎉 All artists seeded!");
+    } catch (err) {
+      console.error("[Seed] Fatal error:", err);
+    }
+  });
   // ── Map image proxy ───────────────────────────────────────────
   // Direct Express route that streams Google Maps Static images as PNG.
   // Avoids base64/tRPC overhead and keeps the API key server-side.
