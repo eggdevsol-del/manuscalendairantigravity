@@ -102,7 +102,7 @@ export default function DiscoverFeed() {
   }
 
   return (
-    <div className="discover-feed">
+    <div className="discover-feed snap-scroll">
       {/* Header */}
       <div className="discover-feed-header">
         <span className="discover-feed-logo">d.o.t.s</span>

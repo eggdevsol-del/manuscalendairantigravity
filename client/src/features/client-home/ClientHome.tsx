@@ -263,7 +263,7 @@ export default function ClientHome() {
 
       {/* ── Content ── */}
       <div
-        className="client-home-content"
+        className={`client-home-content${view === "discovery" ? " snap-scroll" : ""}`}
         ref={!focusedArtist ? scrollRef : undefined}
         onScroll={!focusedArtist ? handleScroll : undefined}
       >
