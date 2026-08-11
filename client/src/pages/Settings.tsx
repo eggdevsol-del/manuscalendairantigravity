@@ -155,8 +155,8 @@ export default function Settings() {
   if (section) {
     const panel = (() => {
       switch (section) {
-        case "profile":       return <ProfileSettings onBack={handleBack} />;
-        case "portfolio":     return <ProfileSettings onBack={handleBack} />;
+        case "profile":       return <ProfileSettings onBack={handleBack} onNavigateToInstagram={nav("instagram")} />;
+        case "portfolio":     return <ProfileSettings onBack={handleBack} onNavigateToInstagram={nav("instagram")} />;
         case "storefront":    return <StorefrontSetupWizard onClose={handleBack} />;
         case "booking-link":  return <FunnelSettings onBack={handleBack} />;
         case "business":      return <BusinessSettings onBack={handleBack} />;

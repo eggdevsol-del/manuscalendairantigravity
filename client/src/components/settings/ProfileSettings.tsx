@@ -10,7 +10,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import {
   ImagePlus, Trash2, Loader2, GripVertical,
   Camera, Mail, Phone, MapPin, Globe,
-  CheckCircle2, Play,
+  CheckCircle2, Play, Instagram,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/ssot";
 import { UserAvatar } from "@/components/ui/ssot/UserAvatar";
@@ -37,6 +37,7 @@ import "../../features/client-home/artistProfile.css";
 
 interface ProfileSettingsProps {
   onBack: () => void;
+  onNavigateToInstagram?: () => void;
 }
 
 function SortablePortfolioItem({
@@ -167,7 +168,7 @@ function SortablePortfolioItem({
   );
 }
 
-export function ProfileSettings({ onBack }: ProfileSettingsProps) {
+export function ProfileSettings({ onBack, onNavigateToInstagram }: ProfileSettingsProps) {
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -538,6 +539,15 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
                 </>
               ) : (
                 <>
+                  {onNavigateToInstagram && (
+                    <button
+                      onClick={onNavigateToInstagram}
+                      style={{ display: "flex", alignItems: "center", gap: 4, background: "linear-gradient(135deg, #833AB4, #E1306C, #F77737)", color: "white", border: "none", borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+                    >
+                      <Instagram size={12} />
+                      Import
+                    </button>
+                  )}
                   {portfolio.length > 0 && (
                     <button
                       onClick={() => setSelectMode(true)}
