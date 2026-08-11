@@ -1191,11 +1191,32 @@ export async function generateBusinessTasks(
     `[BusinessTaskGenerator] After filtering: ${activeTasks.length} tasks (${allTasks.length} generated, ${allTasks.length - filteredTasks.length} completed, ${filteredTasks.length - activeTasks.length} expired)`
   );
 
-  // Sort by priority score (descending)
+  // Deduplicate: for certain task types, only keep the highest-priority task per client
+  const DEDUP_TASK_TYPES = new Set(["stale_conversation", "upcoming_overseas", "upcoming_local"]);
+  const deduped: BusinessTask[] = [];
+  const seenClientTaskKeys = new Set<string>();
+
+  // Sort first so we keep highest-priority duplicates
   activeTasks.sort((a, b) => b.priorityScore - a.priorityScore);
 
+  for (const task of activeTasks) {
+    if (DEDUP_TASK_TYPES.has(task.taskType) && task.clientId) {
+      const dedupKey = `${task.taskType}-${task.clientId}`;
+      if (seenClientTaskKeys.has(dedupKey)) {
+        console.log(`[BusinessTaskGenerator] Deduped: ${task.title} (${dedupKey})`);
+        continue;
+      }
+      seenClientTaskKeys.add(dedupKey);
+    }
+    deduped.push(task);
+  }
+
+  console.log(
+    `[BusinessTaskGenerator] After dedup: ${deduped.length} tasks (removed ${activeTasks.length - deduped.length} duplicates)`
+  );
+
   // Return top N tasks
-  return activeTasks.slice(0, maxTasks);
+  return deduped.slice(0, maxTasks);
 }
 
 export { BENCHMARKS };

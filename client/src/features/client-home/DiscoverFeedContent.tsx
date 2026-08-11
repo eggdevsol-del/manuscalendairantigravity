@@ -133,6 +133,8 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: 
             onShare={handleShare}
             onArtistTap={handleArtistTap}
             onImageTap={onImageTap}
+            focusMode
+            compact
           />
         ))}
       </div>

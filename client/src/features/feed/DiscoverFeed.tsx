@@ -118,6 +118,8 @@ export default function DiscoverFeed() {
             onLike={handleLike}
             onShare={handleShare}
             onArtistTap={handleArtistTap}
+            focusMode
+            compact
           />
         ))}
       </div>

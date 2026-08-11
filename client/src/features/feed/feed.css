@@ -337,6 +337,30 @@
   filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.6));
 }
 
+/* ── Mute/unmute toggle ── */
+.feed-card-mute-btn {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.2s, transform 0.15s;
+}
+.feed-card-mute-btn:active {
+  transform: scale(0.9);
+  background: rgba(0, 0, 0, 0.7);
+}
+
 /* ── Action bar ── */
 .feed-card-actions {
   display: flex;

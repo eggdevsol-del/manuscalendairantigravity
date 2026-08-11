@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { Heart, MessageCircle, Share2, Bookmark, MapPin, Play } from "lucide-react";
+import { Heart, MessageCircle, Share2, Bookmark, MapPin, Play, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface FeedCardData {
@@ -84,6 +84,7 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
   const [likeCount, setLikeCount] = useState(card.likeCount);
   const [showHeart, setShowHeart] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const lastTap = useRef(0);
 
   const isVideo = card.mediaType === "video" && !!card.videoUrl;
@@ -93,6 +94,24 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
   const standardVideo = useVideoInView("300px");
   // Viewport-aware video for focus mode
   const focusVideo = useVideoInView("100px");
+
+  // Mute when scrolling out of view
+  useEffect(() => {
+    if (!focusVideo.isInView && !standardVideo.isInView) {
+      setIsMuted(true);
+    }
+  }, [focusVideo.isInView, standardVideo.isInView]);
+
+  const handleMuteToggle = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMuted(prev => {
+      const newMuted = !prev;
+      // Apply to whichever video ref is active
+      const video = focusVideo.videoRef.current || standardVideo.videoRef.current;
+      if (video) video.muted = newMuted;
+      return newMuted;
+    });
+  }, [focusVideo.videoRef, standardVideo.videoRef]);
 
   const handleLike = useCallback(() => {
     setLiked((prev) => !prev);
@@ -154,7 +173,7 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
               poster={card.imageUrl}
               className="feed-card-focus-image"
               loop
-              muted
+              muted={isMuted}
               playsInline
             />
             {/* Play icon overlay when not in view */}
@@ -162,6 +181,16 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
               <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
                 <Play size={48} color="rgba(255,255,255,0.7)" fill="rgba(255,255,255,0.7)" />
               </div>
+            )}
+            {/* Mute/unmute toggle */}
+            {focusVideo.isInView && (
+              <button
+                onClick={handleMuteToggle}
+                className="feed-card-mute-btn"
+                aria-label={isMuted ? "Unmute" : "Mute"}
+              >
+                {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+              </button>
             )}
           </>
         ) : (
@@ -303,7 +332,7 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
               poster={card.imageUrl}
               className="feed-card-image"
               loop
-              muted
+              muted={isMuted}
               playsInline
               style={{ display: standardVideo.isInView ? "block" : "none" }}
             />
@@ -312,6 +341,16 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
               <Play size={10} color="white" fill="white" />
               <span style={{ color: "white", fontSize: 10, fontWeight: 600 }}>REEL</span>
             </div>
+            {/* Mute/unmute toggle */}
+            {standardVideo.isInView && (
+              <button
+                onClick={handleMuteToggle}
+                className="feed-card-mute-btn"
+                aria-label={isMuted ? "Unmute" : "Mute"}
+              >
+                {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+              </button>
+            )}
           </>
         ) : (
           <img

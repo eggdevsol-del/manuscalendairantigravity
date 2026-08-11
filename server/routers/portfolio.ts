@@ -51,9 +51,8 @@ export const portfolioRouter = router({
         });
 
       const conditions = [];
-      if (input?.artistId) {
-        conditions.push(eq(schema.portfolios.artistId, input.artistId));
-      }
+      const targetArtistId = input?.artistId || ctx.user.id;
+      conditions.push(eq(schema.portfolios.artistId, targetArtistId));
       // Only show available items
       conditions.push(eq(schema.portfolios.availabilityState, "available"));
 
