@@ -9,6 +9,7 @@ import Conversations from "@/pages/Conversations";
 import Chat from "@/pages/Chat";
 import Calendar from "@/pages/Calendar";
 import Settings from "@/pages/Settings";
+import ArtistProfileTab from "@/pages/ArtistProfileTab";
 import WorkHours from "@/pages/WorkHours";
 import Clients from "@/pages/Clients";
 import BankPayoutsPage from "@/pages/BankPayoutsPage";
@@ -31,6 +32,7 @@ export default function ArtistShell() {
           <Route path="/chat/:id" component={Chat} />
           <Route path="/calendar" component={Calendar} />
           <Route path="/settings" component={Settings} />
+          <Route path="/artist-profile" component={ArtistProfileTab} />
           <Route path="/work-hours" component={WorkHours} />
           <Route path="/clients" component={Clients} />
           <Route path="/bank-payouts" component={BankPayoutsPage} />

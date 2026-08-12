@@ -143,6 +143,17 @@ export default function Settings() {
   // Using pure local state avoids any wouter routing side-effects.
   const [section, setSection] = React.useState<SettingsSection | null>(null);
 
+  // Auto-open section from URL param (e.g. /settings?section=instagram)
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const s = params.get("section") as SettingsSection | null;
+    if (s) {
+      setSection(s);
+      // Clean up URL param
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
   // nav() updates section state directly — guaranteed re-render.
   const nav = (s: SettingsSection) => () => setSection(s);
   const handleBack = () => setSection(null);

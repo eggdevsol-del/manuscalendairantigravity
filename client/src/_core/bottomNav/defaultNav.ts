@@ -23,7 +23,7 @@ export const ARTIST_NAV_ITEMS: BottomNavButton[] = [
     badgeCount: 0,
   },
   { id: "calendar", path: "/calendar", label: "Calendar", icon: Calendar },
-  { id: "settings", path: "/settings", label: "Settings", icon: Settings },
+  { id: "profile", path: "/artist-profile", label: "Profile", icon: User },
 ];
 
 export const CLIENT_NAV_ITEMS: BottomNavButton[] = [
