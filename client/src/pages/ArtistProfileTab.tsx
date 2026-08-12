@@ -13,7 +13,7 @@
  */
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, MapPin, Mail, Phone, Globe, Pencil, Instagram, ImagePlus, Loader2, Camera } from "lucide-react";
+import { Settings, MapPin, Mail, Phone, Globe, Pencil, Instagram, ImagePlus, Loader2, Camera, Play } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
@@ -176,7 +176,7 @@ export default function ArtistProfileTab() {
 
   if (isLoading) {
     return (
-      <div className="artist-profile-overlay" style={{ position: "relative" }}>
+      <div className="artist-profile-overlay artist-profile-page">
         <div className="artist-profile-loading">
           <Loader2 className="animate-spin" size={32} />
         </div>
@@ -185,7 +185,7 @@ export default function ArtistProfileTab() {
   }
 
   return (
-    <div className="artist-profile-overlay" style={{ position: "relative", animation: "none", transform: "none" }}>
+    <div className="artist-profile-overlay artist-profile-page">
       {/* Header bar */}
       <div className="artist-profile-header">
         {inFeedView ? (
@@ -462,6 +462,11 @@ export default function ArtistProfileTab() {
                           alt={item.description || "Portfolio"}
                           loading="lazy"
                         />
+                        {(item as any).mediaType === "video" && (
+                          <div style={{ position: "absolute", top: 6, right: 6, background: "rgba(0,0,0,0.5)", borderRadius: 4, padding: "2px 5px", display: "flex", alignItems: "center", gap: 2 }}>
+                            <Play size={8} color="white" fill="white" />
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

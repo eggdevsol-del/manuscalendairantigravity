@@ -11,6 +11,14 @@
   flex-direction: column;
 }
 
+/* ── Page mode: used on the artist's own Profile tab (not as overlay) ── */
+.artist-profile-overlay.artist-profile-page {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  padding-bottom: 82px;
+}
+
 /* ── Header bar ── */
 .artist-profile-header {
   display: flex;
