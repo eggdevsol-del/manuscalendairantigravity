@@ -75,36 +75,61 @@ export function TooltipOverlay() {
   const position = step.position || "bottom";
 
   // Compute tooltip position relative to target
+  // Ensure it stays fully within viewport with 16px margin on all sides
+  const MARGIN = 16;
   let tooltipStyle: React.CSSProperties = {};
   let arrowClass = "";
 
+  const bubbleWidth = Math.min(320, viewportSize.w - MARGIN * 2);
+
   if (targetRect) {
-    const bubbleWidth = Math.min(340, viewportSize.w - 40);
+    // Horizontal: center on target, clamp to viewport
+    const idealLeft = targetRect.left + targetRect.width / 2 - bubbleWidth / 2;
+    const clampedLeft = Math.max(MARGIN, Math.min(idealLeft, viewportSize.w - bubbleWidth - MARGIN));
 
     if (position === "bottom") {
-      tooltipStyle = {
-        top: targetRect.top + targetRect.height + 16,
-        left: Math.max(20, Math.min(
-          targetRect.left + targetRect.width / 2 - bubbleWidth / 2,
-          viewportSize.w - bubbleWidth - 20
-        )),
-      };
-      arrowClass = "tooltip-tour-arrow-top";
+      let top = targetRect.top + targetRect.height + 14;
+      // If bubble would go below viewport, flip to top
+      if (top + 180 > viewportSize.h) {
+        tooltipStyle = {
+          bottom: viewportSize.h - targetRect.top + 14,
+          left: clampedLeft,
+          width: bubbleWidth,
+        };
+        arrowClass = "tooltip-tour-arrow-bottom";
+      } else {
+        tooltipStyle = {
+          top,
+          left: clampedLeft,
+          width: bubbleWidth,
+        };
+        arrowClass = "tooltip-tour-arrow-top";
+      }
     } else if (position === "top") {
-      tooltipStyle = {
-        bottom: viewportSize.h - targetRect.top + 16,
-        left: Math.max(20, Math.min(
-          targetRect.left + targetRect.width / 2 - bubbleWidth / 2,
-          viewportSize.w - bubbleWidth - 20
-        )),
-      };
-      arrowClass = "tooltip-tour-arrow-bottom";
+      let bottom = viewportSize.h - targetRect.top + 14;
+      // If bubble would go above viewport, flip to bottom
+      if (viewportSize.h - bottom + 180 < 0) {
+        tooltipStyle = {
+          top: targetRect.top + targetRect.height + 14,
+          left: clampedLeft,
+          width: bubbleWidth,
+        };
+        arrowClass = "tooltip-tour-arrow-top";
+      } else {
+        tooltipStyle = {
+          bottom,
+          left: clampedLeft,
+          width: bubbleWidth,
+        };
+        arrowClass = "tooltip-tour-arrow-bottom";
+      }
     }
   } else {
     // No target found — center the tooltip
     tooltipStyle = {
       top: "50%",
       left: "50%",
+      width: bubbleWidth,
       transform: "translate(-50%, -50%)",
     };
   }

@@ -32,8 +32,8 @@
 .tooltip-tour-bubble {
   position: fixed;
   z-index: 9991;
-  width: calc(100% - 40px);
-  max-width: 340px;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
   pointer-events: auto;
 }
 
