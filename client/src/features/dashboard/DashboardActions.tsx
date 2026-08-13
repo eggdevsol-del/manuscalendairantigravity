@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { type FABMenuItem } from "@/ui/FABMenu";
 
 interface DashboardFABActionsProps {
-  activeCategory: "business" | "social" | "personal";
+  activeCategory: "business" | "clients" | "suppliers";
   onShowChallenge: () => void;
 }
 
@@ -21,16 +21,7 @@ export function DashboardFABActions({
   const fabContent = useMemo<FABMenuItem[]>(() => {
     const items: FABMenuItem[] = [];
 
-    // New challenge for personal
-    if (activeCategory === "personal") {
-      items.push({
-        id: "new-challenge",
-        label: "New Challenge",
-        icon: Plus,
-        onClick: onShowChallenge,
-        highlight: true,
-      });
-    }
+    // FAB items are now minimal — task actions are inline in cards
 
     return items;
   }, [activeCategory, onShowChallenge]);

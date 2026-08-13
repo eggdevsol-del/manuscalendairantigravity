@@ -59,8 +59,8 @@ import { MerchantSetupStepper } from "@/features/onboarding/MerchantSetupStepper
 
 import { DashboardFABActions } from "@/features/dashboard/DashboardActions";
 import { PayoutWidgetContainer } from "@/features/payouts/PayoutWidgetContainer";
-import { OrdersTab } from "@/features/dashboard/OrdersTab";
-import { ContactsTab } from "@/features/dashboard/ContactsTab";
+import { ClientsTab } from "@/features/dashboard/ClientsTab";
+import { SuppliersTab } from "@/features/dashboard/SuppliersTab";
 import { MerchantDashboard } from "@/features/merchant/Dashboard";
 import { useTooltipTour, useTooltipTarget, DASHBOARD_TOUR } from "@/components/tooltip-tour";
 import { DEMO_TASKS } from "@/features/dashboard/dashboardDemoData";
@@ -132,7 +132,7 @@ function LoadingState() {
   );
 }
 
-const TITLES = ["Business", "Orders", "Contacts"];
+const TITLES = ["Business", "Clients", "Suppliers"];
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -166,10 +166,10 @@ export default function Dashboard() {
   // Auto-switch tabs during tour
   useEffect(() => {
     if (!isDemoMode) return;
-    // Steps 0-2: Business, 3-4: Orders, 5-7: Contacts
+    // Steps 0-2: Business, 3-5: Clients, 6-7: Suppliers
     let targetIndex = 0;
-    if (currentStep >= 3 && currentStep <= 4) targetIndex = 1;
-    else if (currentStep >= 5) targetIndex = 2;
+    if (currentStep >= 3 && currentStep <= 5) targetIndex = 1;
+    else if (currentStep >= 6) targetIndex = 2;
 
     if (activeIndex !== targetIndex) {
       const dir = targetIndex > activeIndex ? 1 : -1;
@@ -216,8 +216,8 @@ export default function Dashboard() {
   // Derived State
   const activeCategory = TITLES[activeIndex].toLowerCase() as
     | "business"
-    | "orders"
-    | "contacts";
+    | "clients"
+    | "suppliers";
 
   // Transform legacy task to ExtendedTask
   const transformLegacyTask = (task: DashboardTask): ExtendedTask => ({
@@ -250,7 +250,7 @@ export default function Dashboard() {
           }) as ExtendedTask
       );
     }
-    if (activeCategory === "contacts" || activeCategory === "orders") {
+    if (activeCategory === "clients" || activeCategory === "suppliers") {
       return [];
     }
     // Use legacy tasks for personal (if any remaining)
@@ -455,7 +455,7 @@ export default function Dashboard() {
         {/* Scrollable wrapper — contains widgets AND tab content */}
         <div className="flex-1 overflow-y-auto mobile-scroll">
           <motion.div 
-            animate={{ marginTop: activeCategory === "contacts" ? 0 : -8 }}
+            animate={{ marginTop: activeCategory === "suppliers" ? 0 : -8 }}
             className="px-6 w-full z-10 relative space-y-4"
           >
             <div>
@@ -464,9 +464,9 @@ export default function Dashboard() {
             {user?.role === "artist" || user?.role === "admin" ? (
               <motion.div
                 animate={{
-                  height: activeCategory === "contacts" ? 0 : "auto",
-                  opacity: activeCategory === "contacts" ? 0 : 1,
-                  scale: activeCategory === "contacts" ? 0.95 : 1,
+                  height: activeCategory === "suppliers" ? 0 : "auto",
+                  opacity: activeCategory === "suppliers" ? 0 : 1,
+                  scale: activeCategory === "suppliers" ? 0.95 : 1,
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="overflow-hidden"
@@ -514,10 +514,10 @@ export default function Dashboard() {
                   >
                     <div className="space-y-1 pb-32 max-w-lg mx-auto">
                       {/* Render Content Based on Active Category */}
-                      {activeCategory === "contacts" ? (
-                        <ContactsTab demoMode={isDemoMode} />
-                      ) : activeCategory === "orders" ? (
-                        <OrdersTab demoMode={isDemoMode} />
+                      {activeCategory === "suppliers" ? (
+                        <SuppliersTab demoMode={isDemoMode} />
+                      ) : activeCategory === "clients" ? (
+                        <ClientsTab demoMode={isDemoMode} />
                       ) : isDemoMode && activeCategory === "business" ? (
                         /* Demo mode: show mock task cards */
                         <div className="space-y-1">
@@ -596,7 +596,7 @@ export default function Dashboard() {
                         <EmptyState
                           category={TITLES[activeIndex]}
                           onAction={
-                            (activeCategory as string) === "contacts"
+                            (activeCategory as string) === "suppliers"
                               ? () => setShowChallengeSheet(true)
                               : undefined
                           }

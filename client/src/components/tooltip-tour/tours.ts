@@ -82,30 +82,17 @@ export const DASHBOARD_TOUR: TourConfig = {
       body: "Task cards like this appear when a client hasn't responded. Tap to expand and see action options like SMS, Email, or In-App message.",
       position: "bottom",
     },
-    // ── Orders tab (Steps 3–4) ────────────────────────
+    // ── Clients tab (Steps 3–5) ───────────────────────
     {
-      targetId: "demo-orders-area",
-      title: "Your orders",
-      body: "When clients purchase through your storefront, orders appear here. Track payment status and manage dispatch.",
+      targetId: "demo-clients-area",
+      title: "Your clients",
+      body: "Your complete client list — see their session history, total spend, and status at a glance. Tap any client to view their full profile.",
       position: "bottom",
     },
     {
-      targetId: "demo-order-card",
-      title: "Order management",
-      body: "Each order shows the client, item, and payment status. Mark as dispatched when you've shipped or handed it to the client.",
-      position: "bottom",
-    },
-    // ── Contacts tab (Steps 5–7) ──────────────────────
-    {
-      targetId: "demo-contacts-area",
-      title: "Your network",
-      body: "Manage your suppliers, fellow artists, and client contacts all in one place.",
-      position: "bottom",
-    },
-    {
-      targetId: "demo-supplier-card",
-      title: "Suppliers",
-      body: "Import supplier storefronts to browse and reorder supplies. Add any Shopify store by URL.",
+      targetId: "demo-client-card",
+      title: "Client profile",
+      body: "Each client card shows their name, session count, lifetime value, and location. Tap to drill into appointments, orders, and notes.",
       position: "bottom",
     },
     {
@@ -113,6 +100,19 @@ export const DASHBOARD_TOUR: TourConfig = {
       title: "Automated reminders",
       body: "The app sends automatic reminders on your behalf — appointment alerts, aftercare messages, and deposit nudges. You don't need to lift a finger.",
       position: "top",
+    },
+    // ── Suppliers tab (Steps 6–7) ─────────────────────
+    {
+      targetId: "demo-suppliers-area",
+      title: "Discover suppliers",
+      body: "Browse curated tattoo supply stores and import their catalogs with one tap. Find inks, needles, aftercare, and more.",
+      position: "bottom",
+    },
+    {
+      targetId: "demo-supplier-card",
+      title: "Your suppliers",
+      body: "Imported supplier storefronts appear here. Browse products and reorder supplies without leaving the app.",
+      position: "bottom",
     },
   ],
 };

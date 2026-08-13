@@ -29,39 +29,61 @@ export const DEMO_TASKS: ExtendedTask[] = [
   },
 ];
 
-// ── Mock Orders ───────────────────────────────────────────
+// ── Mock Clients (for Clients tab demo) ───────────────────
 
-export interface DemoOrder {
-  id: number;
-  customerName: string;
-  customerEmail: string;
-  item: string;
-  amount: number;
-  status: "paid" | "pending" | "fulfilled";
-  createdAt: string;
-  quantity: number;
+export interface DemoClient {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  avatar: string | null;
+  city: string;
+  tlv: number;
+  sittings: number;
+  nextAppointment: string | null;
+  lastSeen: string;
+  status: "active" | "lead" | "completed";
 }
 
-export const DEMO_ORDERS: DemoOrder[] = [
+export const DEMO_CLIENTS: DemoClient[] = [
   {
-    id: 9001,
-    customerName: "Sarah Chen",
-    customerEmail: "sarah@example.com",
-    item: "Custom flash sheet",
-    amount: 85,
-    status: "paid",
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    quantity: 1,
+    id: "demo-client-1",
+    name: "Sarah Chen",
+    email: "sarah@example.com",
+    phone: "0412 345 678",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=60",
+    city: "Sydney, NSW",
+    tlv: 1200,
+    sittings: 2,
+    nextAppointment: "Aug 20 — Sleeve session 3",
+    lastSeen: "2 days ago",
+    status: "active",
   },
   {
-    id: 9002,
-    customerName: "Marcus T",
-    customerEmail: "marcus@example.com",
-    item: "Aftercare bundle × 2",
-    amount: 42,
-    status: "pending",
-    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-    quantity: 2,
+    id: "demo-client-2",
+    name: "Marcus Thorne",
+    email: "marcus@example.com",
+    phone: "0423 456 789",
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=60",
+    city: "Melbourne, VIC",
+    tlv: 800,
+    sittings: 1,
+    nextAppointment: null,
+    lastSeen: "1 week ago",
+    status: "completed",
+  },
+  {
+    id: "demo-client-3",
+    name: "Elena Rodriguez",
+    email: "elena@example.com",
+    phone: "0434 567 890",
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&auto=format&fit=crop&q=60",
+    city: "Gold Coast, QLD",
+    tlv: 0,
+    sittings: 0,
+    nextAppointment: null,
+    lastSeen: "3 days ago",
+    status: "lead",
   },
 ];
 
@@ -99,7 +121,7 @@ export const DEMO_REMINDERS: DemoReminder[] = [
   },
 ];
 
-// ── Mock Suppliers (for Contacts demo) ────────────────────
+// ── Mock Suppliers (for Suppliers tab demo) ────────────────
 
 export const DEMO_SUPPLIERS = [
   {
@@ -115,22 +137,5 @@ export const DEMO_SUPPLIERS = [
     url: "https://drpickles.com",
     productCount: 38,
     logoUrl: null,
-  },
-];
-
-// ── Mock Artists (for Contacts demo) ──────────────────────
-
-export const DEMO_ARTISTS = [
-  {
-    id: "demo-artist-1",
-    name: "Sarah Chen",
-    style: "Fineline / Floral",
-    location: "Sydney, NSW",
-  },
-  {
-    id: "demo-artist-2",
-    name: "Marcus Thorne",
-    style: "Traditional",
-    location: "Melbourne, VIC",
   },
 ];
