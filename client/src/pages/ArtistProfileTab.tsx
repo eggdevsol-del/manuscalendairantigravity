@@ -93,7 +93,6 @@ export default function ArtistProfileTab() {
   useEffect(() => {
     if (
       profile &&
-      portfolio.length === 0 &&
       !isTourCompleted("profile-onboarding") &&
       !tourStartedRef.current &&
       !editMode
