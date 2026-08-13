@@ -21,6 +21,7 @@ import { FeedCard, FeedCardData } from "@/features/feed/FeedCard";
 import { UserAvatar } from "@/components/ui/ssot";
 import { toast } from "sonner";
 import { resizeImage } from "@/lib/resizeImage";
+import { useTooltipTour, useTooltipTarget, PROFILE_ONBOARDING_TOUR } from "@/components/tooltip-tour";
 import "@/features/client-home/artistProfile.css";
 
 export default function ArtistProfileTab() {
@@ -31,6 +32,12 @@ export default function ArtistProfileTab() {
   const feedScrollRef = useRef<HTMLDivElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  // Tooltip tour
+  const { startTour, isTourCompleted } = useTooltipTour();
+  const editProfileRef = useTooltipTarget("edit-profile-btn");
+  const importInstagramRef = useTooltipTarget("import-instagram-btn");
+  const tourStartedRef = useRef(false);
 
   // Select mode state
   const [selectMode, setSelectMode] = useState(false);
@@ -81,6 +88,32 @@ export default function ArtistProfileTab() {
       setWebsiteUrl(settings.websiteUrl || "");
     }
   }, [settings, user]);
+
+  // Auto-start profile onboarding tour for new artists
+  useEffect(() => {
+    if (
+      profile &&
+      portfolio.length === 0 &&
+      !isTourCompleted("profile-onboarding") &&
+      !tourStartedRef.current &&
+      !editMode
+    ) {
+      tourStartedRef.current = true;
+      // Small delay so the DOM is painted and refs are registered
+      const timer = setTimeout(() => {
+        const tour = {
+          ...PROFILE_ONBOARDING_TOUR,
+          steps: PROFILE_ONBOARDING_TOUR.steps.map((step, i) => ({
+            ...step,
+            // Step 0: "Edit Profile" — enter edit mode on Next
+            ...(i === 0 ? { onNext: () => setEditMode(true), nextDelay: 400 } : {}),
+          })),
+        };
+        startTour(tour);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [profile, portfolio.length, isTourCompleted, editMode, startTour]);
 
   // Save mutations
   const upsertSettings = trpc.artistSettings.upsert.useMutation({
@@ -308,6 +341,7 @@ export default function ArtistProfileTab() {
           </div>
         ) : (
           <button
+            ref={editProfileRef as any}
             onClick={() => setEditMode(true)}
             style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "1px solid var(--color-border)", borderRadius: 8, padding: "4px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer", color: "var(--foreground)" }}
           >
@@ -519,6 +553,7 @@ export default function ArtistProfileTab() {
                       ) : (
                         <>
                           <button
+                            ref={importInstagramRef as any}
                             onClick={() => setLocation("/settings?section=instagram")}
                             style={{ display: "flex", alignItems: "center", gap: 4, background: "linear-gradient(135deg, #833AB4, #E1306C, #F77737)", color: "white", border: "none", borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}
                           >

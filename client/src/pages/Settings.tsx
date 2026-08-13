@@ -48,6 +48,7 @@ import { NotificationSettings } from "@/components/settings/NotificationSettings
 import { StudioDashboardSettings } from "@/components/settings/StudioDashboardSettings";
 import StorefrontSetupWizard from "@/features/storefront/StorefrontSetupWizard";
 import { InstagramImportSettings } from "@/components/settings/InstagramImportSettings";
+import { HowTosSettings } from "@/components/settings/HowTosSettings";
 
 // ── Valid section keys ───────────────────────────────────────────────────────
 type SettingsSection =
@@ -64,6 +65,7 @@ type SettingsSection =
   | "studio"
   | "notifications"
   | "instagram"
+  | "how-tos"
   | "danger-zone";
 
 // ── Reusable row ─────────────────────────────────────────────────────────────
@@ -179,6 +181,7 @@ export default function Settings() {
         case "studio":        return (isStudio) ? <StudioDashboardSettings onBack={handleBack} /> : null;
         case "notifications": return <NotificationSettings onBack={handleBack} />;
         case "instagram":     return <InstagramImportSettings onBack={handleBack} />;
+        case "how-tos":        return <HowTosSettings onBack={handleBack} />;
         case "danger-zone":   return <DangerZoneSettings onBack={handleBack} />;
         default:              return null;
       }
@@ -414,6 +417,14 @@ export default function Settings() {
                   title="Danger Zone"
                   subtitle="Delete account & data"
                   onClick={nav("danger-zone")}
+                />
+                {/* How to's */}
+                <SettingsRow
+                  icon={BookOpen}
+                  iconColor="bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]"
+                  title="How to's"
+                  subtitle="Guided walkthroughs & tips"
+                  onClick={nav("how-tos")}
                 />
               </div>
             </Card>

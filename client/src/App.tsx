@@ -12,6 +12,7 @@ import { TeaserProvider } from "@/contexts/TeaserContext";
 import { SplashScreen } from "@/components/SplashScreen";
 import { UpdateBanner } from "@/components/UpdateBanner";
 import { InstallAppBanner } from "@/components/InstallAppBanner";
+import { TooltipTourProvider, TooltipOverlay } from "@/components/tooltip-tour";
 import { useVersionCheck } from "@/lib/useVersionCheck";
 import PublicArtistProfile from "@/pages/public/PublicArtistProfile";
 
@@ -244,13 +245,16 @@ function App() {
       <TeaserProvider>
         <UIDebugProvider>
           <BottomNavProvider>
-            <TooltipProvider>
-              <Toaster />
-              <AuthOnlyBanners />
-              <ErrorBoundary boundary="app-root">
-                <Router />
-              </ErrorBoundary>
-            </TooltipProvider>
+            <TooltipTourProvider>
+              <TooltipProvider>
+                <Toaster />
+                <AuthOnlyBanners />
+                <TooltipOverlay />
+                <ErrorBoundary boundary="app-root">
+                  <Router />
+                </ErrorBoundary>
+              </TooltipProvider>
+            </TooltipTourProvider>
           </BottomNavProvider>
         </UIDebugProvider>
       </TeaserProvider>
