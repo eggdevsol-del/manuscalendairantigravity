@@ -106,6 +106,8 @@ export function useAuth(options?: UseAuthOptions) {
             sessionStorage.setItem('authToken', result.token);
           }
         }
+        // Reset tooltip tours so they replay each session
+        localStorage.removeItem("manus_completed_tours");
       },
       onError: () => {},  // Silent failure — old token still works until expiry
     });
