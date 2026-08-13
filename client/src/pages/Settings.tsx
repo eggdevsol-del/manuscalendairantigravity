@@ -26,12 +26,15 @@ import {
 
   Users,
   Zap,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { forceUpdate } from "@/lib/pwa";
 import { APP_VERSION } from "@/lib/version";
 import { trpc } from "@/lib/trpc";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // ── Settings sub-panels ──────────────────────────────────────────────────────
 import { ProfileSettings } from "@/components/settings/ProfileSettings";
@@ -139,6 +142,7 @@ function PaymentProcessingRow() {
 export default function Settings() {
   const { user, loading, logout } = useAuth();
   const { showDebugLabels, setShowDebugLabels } = useUIDebug();
+  const { theme, toggleTheme } = useTheme();
   const [, setLocation] = useLocation(); // for cross-page nav (logout, /clients, etc.)
   // Section state — pure local state, no URL involved.
   // nav(s) sets the section; handleBack() resets it.
@@ -368,6 +372,19 @@ export default function Settings() {
                   subtitle="Push & alert preferences"
                   onClick={nav("notifications")}
                 />
+                {/* Theme toggle */}
+                <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-background0/20 text-muted-foreground">
+                      {theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-foreground">Dark Mode</p>
+                      <p className="text-xs text-muted-foreground">{theme === "dark" ? "On" : "Off"}</p>
+                    </div>
+                  </div>
+                  <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
+                </div>
                 {/* UI Debug toggle */}
                 <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors">
                   <div className="flex items-center gap-3">

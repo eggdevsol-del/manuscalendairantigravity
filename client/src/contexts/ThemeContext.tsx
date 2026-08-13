@@ -70,6 +70,20 @@ export function ThemeProvider({
     }
   }, [theme]);
 
+  // Sync when forceTheme changes (e.g. user data loads after reload)
+  // Only if no manual override exists
+  useEffect(() => {
+    if (!forceTheme) return;
+    try {
+      const override = localStorage.getItem(THEME_OVERRIDE_KEY);
+      if (!override) {
+        setTheme(forceTheme);
+      }
+    } catch {
+      setTheme(forceTheme);
+    }
+  }, [forceTheme]);
+
   // Remove stale next-themes key (do not remove THEME_OVERRIDE_KEY)
   useEffect(() => {
     localStorage.removeItem("theme");
