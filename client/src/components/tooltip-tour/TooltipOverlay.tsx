@@ -26,7 +26,10 @@ interface Rect {
 export function TooltipOverlay() {
   const { activeTour, currentStep, getTarget, nextStep, skipTour } = useTooltipTour();
   const [targetRect, setTargetRect] = useState<Rect | null>(null);
-  const [viewportSize, setViewportSize] = useState({ w: window.innerWidth, h: window.innerHeight });
+  const [viewportSize, setViewportSize] = useState({
+    w: document.documentElement.clientWidth,
+    h: document.documentElement.clientHeight,
+  });
 
   // Measure the target element
   const measureTarget = useCallback(() => {
@@ -52,7 +55,10 @@ export function TooltipOverlay() {
   useEffect(() => {
     measureTarget();
     const handle = () => {
-      setViewportSize({ w: window.innerWidth, h: window.innerHeight });
+      setViewportSize({
+        w: document.documentElement.clientWidth,
+        h: document.documentElement.clientHeight,
+      });
       measureTarget();
     };
     window.addEventListener("resize", handle);
