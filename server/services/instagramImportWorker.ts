@@ -15,6 +15,7 @@ import { getInstagramProvider, type InstagramMedia } from "./instagramProvider";
 import { r2Client, BUCKET_NAME } from "../lib/r2";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { randomUUID } from "crypto";
+import { extractSmartTags } from "../config/tagConfig";
 
 const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || "").replace(/\/$/, "");
 
@@ -203,6 +204,10 @@ export async function processInstagramImport(
           // The url_embed_safe=true flag provides CORS-safe URLs via proxy
           const videoUrl = item.mediaType === "video" ? item.videoUrl : undefined;
 
+          // Extract smart tags from caption
+          const extracted = extractSmartTags(item.caption);
+          const allTags = [...extracted.styleTags, ...extracted.locationTags];
+
           // Insert portfolio item
           await db.insert(schema.portfolios).values({
             artistId,
@@ -218,6 +223,7 @@ export async function processInstagramImport(
             publishedAt: item.publishedAt.toISOString().slice(0, 19).replace("T", " "),
             availabilityState: "available",
             importBatchId: importId,
+            tags: allTags.length > 0 ? JSON.stringify(allTags) : null,
           });
 
           existingIds.add(item.mediaId);

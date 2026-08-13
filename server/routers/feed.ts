@@ -16,6 +16,7 @@ export const feedRouter = router({
       z.object({
         cursor: z.number().optional(), // offset-based pagination
         limit: z.number().min(1).max(20).default(10),
+        tag: z.string().optional(),    // filter by style/location tag
       })
     )
     .query(async ({ ctx, input }) => {
@@ -66,9 +67,22 @@ export const feedRouter = router({
         },
       });
 
+      // 2b. If filtering by tag, filter portfolio items that match
+      const filteredPortfolios = input.tag
+        ? allPortfolios.filter((item) => {
+            if (!item.tags) return false;
+            try {
+              const tags: string[] = JSON.parse(item.tags as string);
+              return tags.some(t => t.toLowerCase() === input.tag!.toLowerCase());
+            } catch {
+              return false;
+            }
+          })
+        : allPortfolios;
+
       // 3. Group portfolios by artist
       const portfoliosByArtist = new Map<string, typeof allPortfolios>();
-      for (const item of allPortfolios) {
+      for (const item of filteredPortfolios) {
         const existing = portfoliosByArtist.get(item.artistId) || [];
         existing.push(item);
         portfoliosByArtist.set(item.artistId, existing);
@@ -101,6 +115,7 @@ export const feedRouter = router({
         isLiked: boolean;
         mediaType: string | null;
         cdnUrl: string | null;
+        tags: string[];
       }> = [];
 
       // Determine max portfolio length for round-robin cycles
@@ -143,6 +158,13 @@ export const feedRouter = router({
             isLiked: item.likes.some(
               (l: { userId: string }) => l.userId === ctx.user.id
             ),
+            tags: (() => {
+              try {
+                return item.tags ? JSON.parse(item.tags as string) : [];
+              } catch {
+                return [];
+              }
+            })(),
           });
         }
       }
@@ -291,6 +313,7 @@ export const feedRouter = router({
           sortOrder: schema.portfolios.sortOrder,
           mediaType: schema.portfolios.mediaType,
           cdnUrl: schema.portfolios.cdnUrl,
+          tags: schema.portfolios.tags,
         })
         .from(schema.portfolios)
         .where(eq(schema.portfolios.artistId, input.artistId))
@@ -339,6 +362,9 @@ export const feedRouter = router({
           sortOrder: p.sortOrder ?? 0,
           mediaType: p.mediaType,
           cdnUrl: p.cdnUrl,
+          tags: (() => {
+            try { return p.tags ? JSON.parse(p.tags) : []; } catch { return []; }
+          })(),
         })),
         postCount: portfolioItems.length,
         totalLikes,

@@ -1,0 +1,1 @@
+ALTER TABLE `portfolios` ADD COLUMN `tags` TEXT DEFAULT NULL;

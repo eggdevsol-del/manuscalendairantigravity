@@ -5,11 +5,11 @@
  * The header and scroll container are managed by the parent.
  */
 import "../feed/feed.css";
-import React, { useCallback, useRef, useEffect } from "react";
+import React, { useCallback, useRef, useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { FeedCard, type FeedCardData } from "../feed/FeedCard";
 import { useLocation } from "wouter";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface DiscoverFeedContentProps {
@@ -20,6 +20,7 @@ interface DiscoverFeedContentProps {
 export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: DiscoverFeedContentProps) {
   const [, setLocation] = useLocation();
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
 
   const {
     data,
@@ -29,7 +30,7 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: 
     isLoading,
     isError,
   } = trpc.feed.getDiscoverFeed.useInfiniteQuery(
-    { limit: 10 },
+    { limit: 10, tag: activeTag || undefined },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
       initialCursor: 0,
@@ -78,6 +79,10 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: 
     videoUrl: (card as any).mediaType === "video" ? `/api/ig-video/${card.id}` : null,
   }))) ?? [];
 
+  const handleTagTap = useCallback((tag: string) => {
+    setActiveTag(tag);
+  }, []);
+
   const handleArtistTap = useCallback(
     (slug: string) => {
       // Find the card for this slug so we can pass full artist data to the profile overlay
@@ -122,6 +127,34 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: 
 
   return (
     <>
+      {/* Active filter pill */}
+      {activeTag && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8,
+          padding: "8px 14px",
+          position: "sticky", top: 0, zIndex: 10,
+          background: "var(--color-bg-base)",
+        }}>
+          <button
+            onClick={() => setActiveTag(null)}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              background: "rgba(123, 92, 245, 0.15)",
+              color: "rgba(123, 92, 245, 1)",
+              border: "1px solid rgba(123, 92, 245, 0.3)",
+              borderRadius: 100, padding: "5px 12px",
+              fontSize: 12, fontWeight: 600, cursor: "pointer",
+            }}
+          >
+            {activeTag}
+            <X size={12} />
+          </button>
+          <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>
+            {allCards.length} post{allCards.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+      )}
+
       {/* Feed cards */}
       <div className="discover-feed-cards">
         {allCards.map((card, index) => (
@@ -133,6 +166,7 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: 
             onShare={handleShare}
             onArtistTap={handleArtistTap}
             onImageTap={onImageTap}
+            onTagTap={handleTagTap}
             focusMode
             compact
           />

@@ -10,6 +10,7 @@ export interface FeedCardData {
   artistCity: string | null;
   artistSlug: string | null;
   keywords: string[];
+  tags?: string[];           // post-level tags from Instagram hashtags
   imageUrl: string;
   description: string | null;
   createdAt: string | null;
@@ -25,6 +26,7 @@ interface FeedCardProps {
   onShare: (card: FeedCardData) => void;
   onArtistTap: (slug: string) => void;
   onImageTap?: (card: FeedCardData) => void;
+  onTagTap?: (tag: string) => void;
   compact?: boolean;
   focusMode?: boolean;
   /** Index in the feed — first 10 get eager loading */
@@ -79,7 +81,7 @@ function useVideoInView(rootMargin = "200px") {
   return { containerRef, videoRef, isInView };
 }
 
-export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compact, focusMode, index = 999 }: FeedCardProps) {
+export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTagTap, compact, focusMode, index = 999 }: FeedCardProps) {
   const [liked, setLiked] = useState(card.isLiked);
   const [likeCount, setLikeCount] = useState(card.likeCount);
   const [showHeart, setShowHeart] = useState(false);
@@ -253,13 +255,22 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
           )}
 
           {/* Tags (only visible when expanded) */}
-          {descExpanded && card.keywords.length > 0 && (
-            <div className="feed-card-focus-tags">
-              {card.keywords.slice(0, 4).map((tag, i) => (
-                <span key={i} className="feed-card-focus-tag">{tag}</span>
-              ))}
-            </div>
-          )}
+          {descExpanded && (() => {
+            const allTags = [...new Set([...card.keywords, ...(card.tags || [])])];
+            return allTags.length > 0 ? (
+              <div className="feed-card-focus-tags">
+                {allTags.slice(0, 6).map((tag, i) => (
+                  <span
+                    key={i}
+                    className="feed-card-focus-tag feed-card-tag-tappable"
+                    onClick={(e) => { e.stopPropagation(); onTagTap?.(tag); }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            ) : null;
+          })()}
         </div>
 
         {/* Double-tap heart animation */}
@@ -419,15 +430,22 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, compa
       )}
 
       {/* Style tags */}
-      {card.keywords.length > 0 && (
-        <div className="feed-card-tags">
-          {card.keywords.slice(0, 4).map((tag, i) => (
-            <span key={i} className="feed-card-tag">
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
+      {(() => {
+        const allTags = [...new Set([...card.keywords, ...(card.tags || [])])];
+        return allTags.length > 0 ? (
+          <div className="feed-card-tags">
+            {allTags.slice(0, 6).map((tag, i) => (
+              <span
+                key={i}
+                className="feed-card-tag feed-card-tag-tappable"
+                onClick={() => onTagTap?.(tag)}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        ) : null;
+      })()}
 
       {/* Book CTA — hidden in compact/focus mode */}
       {!compact && (

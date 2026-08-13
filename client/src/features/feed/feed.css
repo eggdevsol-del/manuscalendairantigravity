@@ -450,6 +450,21 @@
   letter-spacing: 0.2px;
 }
 
+/* Tappable tag pill — subtle accent violet tint */
+.feed-card-tag-tappable {
+  color: rgba(123, 92, 245, 0.9);
+  background: rgba(123, 92, 245, 0.12);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.feed-card-tag-tappable:hover,
+.feed-card-tag-tappable:active {
+  background: rgba(123, 92, 245, 0.25);
+  color: rgba(123, 92, 245, 1);
+}
+
 /* ── Book CTA ── */
 .feed-card-book-btn {
   display: block;

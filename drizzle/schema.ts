@@ -468,6 +468,7 @@ export const portfolios = mysqlTable(
     publishedAt: timestamp({ mode: "string" }),                    // Original publish date
     availabilityState: varchar({ length: 20 }).default("available"), // "available" | "removed" | "restricted"
     importBatchId: int(),                                          // FK to instagram_imports
+    tags: text(),                                                  // JSON array: ["realism","portrait","brisbane"]
     createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
     updatedAt: timestamp({ mode: "string" }).default(sql`(now())`),
   },
