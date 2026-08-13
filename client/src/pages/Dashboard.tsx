@@ -63,6 +63,7 @@ import { OrdersTab } from "@/features/dashboard/OrdersTab";
 import { ContactsTab } from "@/features/dashboard/ContactsTab";
 import { MerchantDashboard } from "@/features/merchant/Dashboard";
 import { useTooltipTour, useTooltipTarget, DASHBOARD_TOUR } from "@/components/tooltip-tour";
+import { DEMO_TASKS } from "@/features/dashboard/dashboardDemoData";
 
 // SSOT Components
 
@@ -140,11 +141,14 @@ export default function Dashboard() {
   const selectedDate = new Date();
 
   // Tooltip tour
-  const { startTour, isTourCompleted } = useTooltipTour();
-  const setupChecklistRef = useTooltipTarget("setup-checklist-widget");
+  const { startTour, isTourCompleted, activeTour, currentStep } = useTooltipTour();
   const payoutWidgetRef = useTooltipTarget("payout-widget");
   const dashboardTabsRef = useTooltipTarget("dashboard-tabs");
+  const demoTaskCardRef = useTooltipTarget("demo-task-card");
   const dashTourStartedRef = useRef(false);
+
+  // Detect demo mode (dashboard tour is active)
+  const isDemoMode = activeTour?.id === "dashboard-overview";
 
   // Auto-start dashboard tour
   useEffect(() => {
@@ -158,6 +162,21 @@ export default function Dashboard() {
       return () => clearTimeout(timer);
     }
   }, [user, isTourCompleted, startTour]);
+
+  // Auto-switch tabs during tour
+  useEffect(() => {
+    if (!isDemoMode) return;
+    // Steps 0-2: Business, 3-4: Orders, 5-7: Contacts
+    let targetIndex = 0;
+    if (currentStep >= 3 && currentStep <= 4) targetIndex = 1;
+    else if (currentStep >= 5) targetIndex = 2;
+
+    if (activeIndex !== targetIndex) {
+      const dir = targetIndex > activeIndex ? 1 : -1;
+      setPage([targetIndex, dir]);
+      setActiveIndex(targetIndex);
+    }
+  }, [isDemoMode, currentStep]);
 
 
   // Redirect Studio users
@@ -439,7 +458,7 @@ export default function Dashboard() {
             animate={{ marginTop: activeCategory === "contacts" ? 0 : -8 }}
             className="px-6 w-full z-10 relative space-y-4"
           >
-            <div ref={setupChecklistRef as any}>
+            <div>
               <SetupChecklistWidget />
             </div>
             {user?.role === "artist" || user?.role === "admin" ? (
@@ -496,9 +515,24 @@ export default function Dashboard() {
                     <div className="space-y-1 pb-32 max-w-lg mx-auto">
                       {/* Render Content Based on Active Category */}
                       {activeCategory === "contacts" ? (
-                        <ContactsTab />
+                        <ContactsTab demoMode={isDemoMode} />
                       ) : activeCategory === "orders" ? (
-                        <OrdersTab />
+                        <OrdersTab demoMode={isDemoMode} />
+                      ) : isDemoMode && activeCategory === "business" ? (
+                        /* Demo mode: show mock task cards */
+                        <div className="space-y-1">
+                          {DEMO_TASKS.map((task, i) => (
+                            <div key={task.id} ref={i === 0 ? demoTaskCardRef as any : undefined}>
+                              <TaskCard
+                                title={task.title}
+                                context={task.context}
+                                priority={task.priority}
+                                status={task.status}
+                                actionType={task.actionType as any}
+                              />
+                            </div>
+                          ))}
+                        </div>
                       ) : activeCategory === "business" && businessLoading ? (
                         <LoadingState />
                       ) : (currentTasks || []).length > 0 ? (

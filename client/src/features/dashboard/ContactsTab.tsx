@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, MapPin, ExternalLink, MessageCircle, Plus, Loader2, Link as LinkIcon, Trash2 } from "lucide-react";
+import { Search, MapPin, ExternalLink, MessageCircle, Plus, Loader2, Link as LinkIcon, Trash2, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDashboardTasks } from "@/features/dashboard/useDashboardTasks";
 import { trpc } from "@/lib/trpc";
 import { SupplierStorefront } from "./SupplierStorefront";
 import { toast } from "sonner";
+import { useTooltipTarget } from "@/components/tooltip-tour";
+import { DEMO_SUPPLIERS, DEMO_ARTISTS, DEMO_REMINDERS } from "./dashboardDemoData";
 
 // Mock Data for Phase 1 (Artists)
 const MOCK_ARTISTS = [
@@ -44,11 +46,20 @@ const MOCK_SUPPLIERS_DIRECTORY = [
   { name: "Bstattoo", url: "https://www.bstattoo.com.au/" }
 ];
 
-export function ContactsTab() {
+interface ContactsTabProps {
+  demoMode?: boolean;
+}
+
+export function ContactsTab({ demoMode = false }: ContactsTabProps) {
   const { actions } = useDashboardTasks();
   const [selectedSupplierId, setSelectedSupplierId] = useState<number | null>(null);
   const [isScrapeModalOpen, setIsScrapeModalOpen] = useState(false);
   const [scrapeUrl, setScrapeUrl] = useState("");
+
+  // Tooltip tour targets
+  const demoContactsAreaRef = useTooltipTarget("demo-contacts-area");
+  const demoSupplierCardRef = useTooltipTarget("demo-supplier-card");
+  const demoRemindersAreaRef = useTooltipTarget("demo-reminders-area");
 
   const { data: dbSuppliers, refetch: refetchSuppliers } = trpc.suppliers.getSuppliers.useQuery();
   const scrapeMutation = trpc.suppliers.scrapeShopifyStore.useMutation({
@@ -87,6 +98,104 @@ export function ContactsTab() {
     if (!scrapeUrl) return;
     scrapeMutation.mutate({ storeUrl: scrapeUrl });
   };
+
+  // Demo mode: show mock contacts + automated reminders for tooltip tour
+  if (demoMode) {
+    return (
+      <div className="space-y-8 animate-in fade-in duration-500 pb-20" ref={demoContactsAreaRef as any}>
+        {/* Search Bar */}
+        <div className="relative px-1">
+          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search suppliers and artists..."
+            className="w-full bg-secondary/50 border border-border rounded-full py-3.5 pl-12 pr-4 text-sm font-medium focus:outline-none transition-all placeholder:text-muted-foreground/70 text-foreground"
+            readOnly
+          />
+        </div>
+
+        {/* Demo Suppliers */}
+        <section>
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h2 className="text-xl font-bold tracking-tight">Suppliers</h2>
+            <button className="text-sm font-semibold text-primary">See all</button>
+          </div>
+          <div className="flex overflow-x-auto gap-4 pb-4 -mx-6 px-6 hide-scrollbar">
+            {DEMO_SUPPLIERS.map((supplier, i) => (
+              <div
+                key={supplier.id}
+                ref={i === 0 ? demoSupplierCardRef as any : undefined}
+                className="shrink-0 w-[280px] bg-card border border-border rounded-[24px] overflow-hidden shadow-sm"
+              >
+                <div className="p-5">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Package className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm truncate">{supplier.name}</p>
+                      <p className="text-xs text-muted-foreground">{supplier.productCount} products</p>
+                    </div>
+                  </div>
+                  <button className="w-full py-2 text-sm font-semibold text-primary bg-primary/10 rounded-xl">
+                    Browse Products
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Demo Artists */}
+        <section>
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h2 className="text-xl font-bold tracking-tight">Artists</h2>
+          </div>
+          <div className="space-y-3">
+            {DEMO_ARTISTS.map(artist => (
+              <div key={artist.id} className="bg-secondary/50 border border-border rounded-[20px] p-4 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                  {artist.name.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-sm">{artist.name}</p>
+                  <p className="text-xs text-muted-foreground">{artist.style} · {artist.location}</p>
+                </div>
+                <MessageCircle className="w-5 h-5 text-muted-foreground" />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Automated Reminders — demo only */}
+        <section ref={demoRemindersAreaRef as any}>
+          <div className="flex items-center gap-2 mb-4 px-1">
+            <h2 className="text-xl font-bold tracking-tight">Automated Reminders</h2>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
+              Auto
+            </span>
+          </div>
+          <div className="bg-secondary/50 border border-border rounded-[20px] overflow-hidden divide-y divide-border/30">
+            {DEMO_REMINDERS.map(reminder => (
+              <div key={reminder.id} className="p-4 flex items-start gap-3">
+                <span className="text-xl mt-0.5">{reminder.emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm">{reminder.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{reminder.description}</p>
+                  <p className="text-xs text-primary/70 mt-1 font-medium">{reminder.timing}</p>
+                </div>
+                <div className="shrink-0 px-2 py-1 rounded-lg bg-[var(--color-status-success-bg)] text-[var(--color-success)]">
+                  <span className="text-[10px] font-bold uppercase">Active</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <>

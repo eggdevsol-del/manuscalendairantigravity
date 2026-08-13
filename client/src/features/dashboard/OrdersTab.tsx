@@ -5,8 +5,16 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useTooltipTarget } from "@/components/tooltip-tour";
+import { DEMO_ORDERS } from "./dashboardDemoData";
 
-export function OrdersTab() {
+interface OrdersTabProps {
+  demoMode?: boolean;
+}
+
+export function OrdersTab({ demoMode = false }: OrdersTabProps) {
+  const demoOrdersAreaRef = useTooltipTarget("demo-orders-area");
+  const demoOrderCardRef = useTooltipTarget("demo-order-card");
   const { data: orders, isLoading, refetch } = trpc.storefront.getOrders.useQuery();
   const updateStatusMutation = trpc.storefront.updateOrderStatus.useMutation({
     onSuccess: () => refetch(),
@@ -14,6 +22,63 @@ export function OrdersTab() {
 
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [filter, setFilter] = useState<"all" | "pending" | "fulfilled">("all");
+
+  // Demo mode: show mock orders for the tooltip tour
+  if (demoMode) {
+    return (
+      <div className="space-y-4" ref={demoOrdersAreaRef as any}>
+        <div className="flex gap-2 p-1 bg-secondary/50 rounded-full mb-6">
+          {(["all", "pending", "fulfilled"] as const).map(f => (
+            <button
+              key={f}
+              className={cn(
+                "flex-1 px-4 py-2 text-sm font-bold capitalize rounded-full transition-all",
+                f === "all" ? "bg-foreground text-background" : "text-muted-foreground"
+              )}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+        <div className="space-y-3">
+          {DEMO_ORDERS.map((order, i) => {
+            const isPaid = order.status === "paid";
+            return (
+              <div
+                key={order.id}
+                ref={i === 0 ? demoOrderCardRef as any : undefined}
+                className="bg-secondary/50 border border-border rounded-[20px] overflow-hidden"
+              >
+                <div className="w-full text-left p-4 flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="font-bold text-lg">Order #{order.id}</span>
+                      <span className={cn(
+                        "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                        isPaid
+                          ? "bg-[var(--color-status-success-bg)] text-[var(--color-success)]"
+                          : "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
+                      )}>
+                        {isPaid ? "Paid" : "Pending"}
+                      </span>
+                    </div>
+                    <div className="text-sm text-muted-foreground flex gap-2">
+                      <span>{order.customerName}</span>
+                      <span>•</span>
+                      <span>{order.item}</span>
+                      <span>•</span>
+                      <span className="font-semibold text-[var(--color-status-info-text)]">${order.amount.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

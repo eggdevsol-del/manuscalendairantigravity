@@ -63,22 +63,55 @@ export const DASHBOARD_TOUR: TourConfig = {
   route: "/dashboard",
   category: "artist",
   steps: [
-    {
-      targetId: "setup-checklist-widget",
-      title: "Your setup checklist",
-      body: "Complete these steps to go live — connect payments, set your hours, and add services.",
-      position: "bottom",
-    },
+    // ── Business tab (Steps 0–2) ──────────────────────
     {
       targetId: "payout-widget",
       title: "Your earnings",
-      body: "Track your revenue at a glance. This updates as clients pay for consultations and bookings.",
+      body: "Track revenue at a glance — deposits, pending, and withdrawal balance.",
       position: "bottom",
     },
     {
       targetId: "dashboard-tabs",
-      title: "Your business tabs",
-      body: "Swipe between Business tasks, Orders, and Contacts. We'll flag things that need your attention.",
+      title: "Business tasks",
+      body: "Smart task cards flag things that need your attention — follow-ups, deposits due, and more.",
+      position: "top",
+    },
+    {
+      targetId: "demo-task-card",
+      title: "Example: Follow up",
+      body: "Task cards like this appear when a client hasn't responded. Tap to expand and see action options like SMS, Email, or In-App message.",
+      position: "bottom",
+    },
+    // ── Orders tab (Steps 3–4) ────────────────────────
+    {
+      targetId: "demo-orders-area",
+      title: "Your orders",
+      body: "When clients purchase through your storefront, orders appear here. Track payment status and manage dispatch.",
+      position: "bottom",
+    },
+    {
+      targetId: "demo-order-card",
+      title: "Order management",
+      body: "Each order shows the client, item, and payment status. Mark as dispatched when you've shipped or handed it to the client.",
+      position: "bottom",
+    },
+    // ── Contacts tab (Steps 5–7) ──────────────────────
+    {
+      targetId: "demo-contacts-area",
+      title: "Your network",
+      body: "Manage your suppliers, fellow artists, and client contacts all in one place.",
+      position: "bottom",
+    },
+    {
+      targetId: "demo-supplier-card",
+      title: "Suppliers",
+      body: "Import supplier storefronts to browse and reorder supplies. Add any Shopify store by URL.",
+      position: "bottom",
+    },
+    {
+      targetId: "demo-reminders-area",
+      title: "Automated reminders",
+      body: "The app sends automatic reminders on your behalf — appointment alerts, aftercare messages, and deposit nudges. You don't need to lift a finger.",
       position: "top",
     },
   ],
