@@ -66,6 +66,7 @@ async function main() {
     { name: "publishedAt", sql: "ALTER TABLE `portfolios` ADD COLUMN `publishedAt` TIMESTAMP DEFAULT NULL" },
     { name: "availabilityState", sql: "ALTER TABLE `portfolios` ADD COLUMN `availabilityState` VARCHAR(20) DEFAULT 'available'" },
     { name: "importBatchId", sql: "ALTER TABLE `portfolios` ADD COLUMN `importBatchId` INT DEFAULT NULL" },
+    { name: "tags", sql: "ALTER TABLE `portfolios` ADD COLUMN `tags` TEXT DEFAULT NULL" },
   ];
 
   for (const alt of portfolioAlterations) {
@@ -132,6 +133,37 @@ async function main() {
     } else {
       console.error("[Migration] ❌ Failed to create portfolio_classifications:", e.message);
     }
+  }
+
+  // ── Backfill tags from existing captions ──
+  try {
+    // Dynamic import to avoid issues if the module isn't available during initial build
+    const { extractSmartTags } = await import("../server/config/tagConfig");
+    
+    const [rows] = await connection.query(
+      "SELECT id, caption FROM portfolios WHERE caption IS NOT NULL AND (tags IS NULL OR tags = '')"
+    ) as any;
+    
+    if (rows.length > 0) {
+      console.log(`[Migration] Backfilling tags for ${rows.length} portfolio items...`);
+      let updated = 0;
+      for (const row of rows) {
+        const extracted = extractSmartTags(row.caption);
+        const allTags = [...extracted.styleTags, ...extracted.locationTags];
+        if (allTags.length > 0) {
+          await connection.query(
+            "UPDATE portfolios SET tags = ? WHERE id = ?",
+            [JSON.stringify(allTags), row.id]
+          );
+          updated++;
+        }
+      }
+      console.log(`[Migration] ✅ Backfilled tags for ${updated} items`);
+    } else {
+      console.log("[Migration] ⏭️  No items need tag backfill");
+    }
+  } catch (e: any) {
+    console.error("[Migration] ⚠️  Tag backfill skipped:", e.message);
   }
 
   await connection.end();
