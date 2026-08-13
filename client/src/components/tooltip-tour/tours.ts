@@ -9,8 +9,8 @@
  * - route: where to navigate before starting the tour
  * - steps: the actual tour step definitions
  *
- * Steps reference targetIds that must be registered via
- * useTooltipTarget() in the corresponding page component.
+ * Only tours with fully wired targets are included in ALL_TOURS.
+ * Steps reference targetIds registered via useTooltipTarget().
  *
  * Note: onNext callbacks are added dynamically when the tour
  * is started from the page component (since they need access
@@ -49,72 +49,47 @@ export const PROFILE_ONBOARDING_TOUR: TourConfig = {
     {
       targetId: "import-instagram-btn",
       title: "Import from Instagram",
-      body: "Bring your portfolio over from Instagram in one tap. We'll grab your latest 20 posts.",
+      body: "Bring your portfolio over from Instagram. Choose how many posts to import — you can always import more later.",
       position: "bottom",
     },
   ],
 };
 
-// ── Future tours (loosely planned) ────────────────────────
-
-export const BOOKING_FLOW_TOUR: TourConfig = {
-  id: "booking-flow",
-  label: "How bookings work",
-  description: "Learn how clients discover and book consultations with you.",
-  icon: "Calendar",
-  route: "/artist-home",
+export const DASHBOARD_TOUR: TourConfig = {
+  id: "dashboard-overview",
+  label: "Your dashboard",
+  description: "Learn how to use your home dashboard to manage your business.",
+  icon: "LayoutDashboard",
+  route: "/dashboard",
   category: "artist",
   steps: [
     {
-      targetId: "business-tab",
-      title: "Your business dashboard",
-      body: "This is where you'll manage incoming consultation requests and bookings.",
+      targetId: "setup-checklist-widget",
+      title: "Your setup checklist",
+      body: "Complete these steps to go live — connect payments, set your hours, and add services.",
       position: "bottom",
     },
-  ],
-};
-
-export const CLIENT_DISCOVERY_TOUR: TourConfig = {
-  id: "client-discovery",
-  label: "Discover artists",
-  description: "Learn how to browse artists, like their work, and book a consultation.",
-  icon: "Compass",
-  route: "/",
-  category: "client",
-  steps: [
     {
-      targetId: "discover-feed",
-      title: "Browse artists",
-      body: "Swipe through portfolios from local tattoo artists. Tap the tags to filter by style.",
+      targetId: "payout-widget",
+      title: "Your earnings",
+      body: "Track your revenue at a glance. This updates as clients pay for consultations and bookings.",
       position: "bottom",
     },
-  ],
-};
-
-export const SETTINGS_TOUR: TourConfig = {
-  id: "settings-overview",
-  label: "Navigate settings",
-  description: "A quick guide to the most important settings and where to find them.",
-  icon: "Settings",
-  route: "/settings",
-  category: "general",
-  steps: [
     {
-      targetId: "settings-profile-row",
-      title: "Profile settings",
-      body: "Manage your display name, bio, and contact visibility here.",
-      position: "bottom",
+      targetId: "dashboard-tabs",
+      title: "Your business tabs",
+      body: "Swipe between Business tasks, Orders, and Contacts. We'll flag things that need your attention.",
+      position: "top",
     },
   ],
 };
 
 // ── All tours registry ────────────────────────────────────
+// Only include tours that have fully wired targets
 
 export const ALL_TOURS: TourConfig[] = [
   PROFILE_ONBOARDING_TOUR,
-  BOOKING_FLOW_TOUR,
-  CLIENT_DISCOVERY_TOUR,
-  SETTINGS_TOUR,
+  DASHBOARD_TOUR,
 ];
 
 export function getToursForRole(role: "artist" | "client"): TourConfig[] {

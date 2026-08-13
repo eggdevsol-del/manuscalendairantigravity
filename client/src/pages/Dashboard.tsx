@@ -62,6 +62,7 @@ import { PayoutWidgetContainer } from "@/features/payouts/PayoutWidgetContainer"
 import { OrdersTab } from "@/features/dashboard/OrdersTab";
 import { ContactsTab } from "@/features/dashboard/ContactsTab";
 import { MerchantDashboard } from "@/features/merchant/Dashboard";
+import { useTooltipTour, useTooltipTarget, DASHBOARD_TOUR } from "@/components/tooltip-tour";
 
 // SSOT Components
 
@@ -137,6 +138,26 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [activeIndex, setActiveIndex] = useState(0);
   const selectedDate = new Date();
+
+  // Tooltip tour
+  const { startTour, isTourCompleted } = useTooltipTour();
+  const setupChecklistRef = useTooltipTarget("setup-checklist-widget");
+  const payoutWidgetRef = useTooltipTarget("payout-widget");
+  const dashboardTabsRef = useTooltipTarget("dashboard-tabs");
+  const dashTourStartedRef = useRef(false);
+
+  // Auto-start dashboard tour
+  useEffect(() => {
+    if (
+      user &&
+      !isTourCompleted("dashboard-overview") &&
+      !dashTourStartedRef.current
+    ) {
+      dashTourStartedRef.current = true;
+      const timer = setTimeout(() => startTour(DASHBOARD_TOUR), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [user, isTourCompleted, startTour]);
 
 
   // Redirect Studio users
@@ -418,7 +439,9 @@ export default function Dashboard() {
             animate={{ marginTop: activeCategory === "contacts" ? 0 : -8 }}
             className="px-6 w-full z-10 relative space-y-4"
           >
-            <SetupChecklistWidget />
+            <div ref={setupChecklistRef as any}>
+              <SetupChecklistWidget />
+            </div>
             {user?.role === "artist" || user?.role === "admin" ? (
               <motion.div
                 animate={{
@@ -429,7 +452,9 @@ export default function Dashboard() {
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="overflow-hidden"
               >
-                <PayoutWidgetContainer period="30d" />
+                <div ref={payoutWidgetRef as any}>
+                  <PayoutWidgetContainer period="30d" />
+                </div>
               </motion.div>
             ) : null}
           </motion.div>
@@ -440,7 +465,7 @@ export default function Dashboard() {
               isTeaserClient && "filter blur-sm pointer-events-none select-none"
             )}
           >
-            <div className="px-6 pb-2 shrink-0 relative z-50">
+            <div className="px-6 pb-2 shrink-0 relative z-50" ref={dashboardTabsRef as any}>
               <SegmentedHeader
                 options={TITLES}
                 activeIndex={activeIndex}

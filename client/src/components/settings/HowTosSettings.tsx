@@ -9,7 +9,7 @@ import { useTooltipTour, getToursForRole, type TourConfig } from "@/components/t
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import {
-  UserCircle, Calendar, Compass, Settings, ChevronRight, RotateCcw, CheckCircle2,
+  UserCircle, Calendar, Compass, Settings, ChevronRight, RotateCcw, CheckCircle2, LayoutDashboard,
 } from "lucide-react";
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -17,6 +17,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Calendar,
   Compass,
   Settings,
+  LayoutDashboard,
 };
 
 interface HowTosSettingsProps {

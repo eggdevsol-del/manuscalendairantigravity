@@ -37,6 +37,7 @@ export function InstagramImportSettings({ onBack }: Props) {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifiedUser, setVerifiedUser] = useState<any>(null);
   const [showConnectForm, setShowConnectForm] = useState(false);
+  const [maxPosts, setMaxPosts] = useState(50);
 
   // Check for existing import
   const latestImport = trpc.instagram.getLatestImport.useQuery();
@@ -114,7 +115,10 @@ export function InstagramImportSettings({ onBack }: Props) {
 
   const handleStartImport = () => {
     if (!verifiedUser) return;
-    startImportMutation.mutate({ username: username.replace(/^@/, "") });
+    startImportMutation.mutate({
+      username: username.replace(/^@/, ""),
+      maxPosts,
+    });
   };
 
   const status = importStatus.data || (latestImport.data?.status !== "in_progress" ? latestImport.data : null);
@@ -388,6 +392,55 @@ export function InstagramImportSettings({ onBack }: Props) {
                 </div>
               </Card>
 
+              {/* Post limit selector */}
+              {verifiedUser && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">How many posts to import?</p>
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(4, 1fr)",
+                    gap: 6,
+                    background: "var(--secondary, rgba(255,255,255,0.06))",
+                    borderRadius: "var(--radius-md, 12px)",
+                    padding: 4,
+                  }}>
+                    {[
+                      { label: "50", value: 50 },
+                      { label: "100", value: 100 },
+                      { label: "200", value: 200 },
+                      { label: "All", value: 0 },
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setMaxPosts(opt.value)}
+                        style={{
+                          padding: "8px 4px",
+                          borderRadius: "var(--radius-sm, 8px)",
+                          border: "none",
+                          fontSize: 13,
+                          fontWeight: maxPosts === opt.value ? 700 : 500,
+                          cursor: "pointer",
+                          background: maxPosts === opt.value
+                            ? "var(--primary, #7b5cf5)"
+                            : "transparent",
+                          color: maxPosts === opt.value
+                            ? "var(--primary-foreground, #fff)"
+                            : "var(--muted-foreground, #888)",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  {maxPosts === 0 && verifiedUser.mediaCount > 200 && (
+                    <p className="text-xs text-[var(--color-status-warning-text)]">
+                      ⚠ Importing all {verifiedUser.mediaCount} posts may take a while
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Start import button */}
               {verifiedUser && (
                 <Button
@@ -400,7 +453,7 @@ export function InstagramImportSettings({ onBack }: Props) {
                   ) : (
                     <Instagram className="w-4 h-4 mr-2" />
                   )}
-                  Import {verifiedUser.mediaCount} Posts
+                  Import {maxPosts === 0 ? `All ${verifiedUser.mediaCount}` : `${Math.min(maxPosts, verifiedUser.mediaCount)}`} Posts
                 </Button>
               )}
             </div>

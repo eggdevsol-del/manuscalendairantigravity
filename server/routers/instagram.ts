@@ -35,7 +35,10 @@ export const instagramRouter = router({
    * Creates an import record and begins processing in the background.
    */
   startImport: protectedProcedure
-    .input(z.object({ username: z.string().min(1).max(100) }))
+    .input(z.object({
+      username: z.string().min(1).max(100),
+      maxPosts: z.number().min(0).max(500).default(50),
+    }))
     .mutation(async ({ ctx, input }) => {
       if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
         throw new TRPCError({ code: "FORBIDDEN" });
@@ -65,11 +68,13 @@ export const instagramRouter = router({
       const importId = result.insertId;
 
       // Start processing in background (don't await)
+      // maxPosts: 0 = unlimited
       processInstagramImport(
         db,
         importId,
         ctx.user.id,
-        input.username.replace(/^@/, "")
+        input.username.replace(/^@/, ""),
+        input.maxPosts
       ).catch((err) => {
         console.error(`[IG Import] Background import #${importId} crashed:`, err);
       });
