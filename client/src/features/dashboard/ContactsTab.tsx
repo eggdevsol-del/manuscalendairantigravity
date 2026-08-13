@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, MapPin, ExternalLink, MessageCircle, Plus, Loader2, Link as LinkIcon, Trash2, Package } from "lucide-react";
+import { Search, MapPin, ExternalLink, MessageCircle, Plus, Loader2, Link as LinkIcon, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDashboardTasks } from "@/features/dashboard/useDashboardTasks";
 import { trpc } from "@/lib/trpc";
 import { SupplierStorefront } from "./SupplierStorefront";
 import { toast } from "sonner";
 import { useTooltipTarget } from "@/components/tooltip-tour";
-import { DEMO_SUPPLIERS, DEMO_ARTISTS, DEMO_REMINDERS } from "./dashboardDemoData";
+import { DEMO_SUPPLIERS, DEMO_REMINDERS } from "./dashboardDemoData";
 
 // Mock Data for Phase 1 (Artists)
 const MOCK_ARTISTS = [
@@ -85,122 +85,37 @@ export function ContactsTab({ demoMode = false }: ContactsTabProps) {
   });
 
   const handleDelete = (id: number) => {
+    if (demoMode) return;
     if (window.confirm("Are you sure you want to delete this storefront?")) {
       deleteMutation.mutate({ supplierId: id });
     }
   };
 
   const handleContact = (email: string) => {
+    if (demoMode) return;
     actions.handleComms.email(email);
   };
 
   const handleImport = () => {
+    if (demoMode) return;
     if (!scrapeUrl) return;
     scrapeMutation.mutate({ storeUrl: scrapeUrl });
   };
 
-  // Demo mode: show mock contacts + automated reminders for tooltip tour
-  if (demoMode) {
-    return (
-      <div className="space-y-8 animate-in fade-in duration-500 pb-20" ref={demoContactsAreaRef as any}>
-        {/* Search Bar */}
-        <div className="relative px-1">
-          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search suppliers and artists..."
-            className="w-full bg-secondary/50 border border-border rounded-full py-3.5 pl-12 pr-4 text-sm font-medium focus:outline-none transition-all placeholder:text-muted-foreground/70 text-foreground"
-            readOnly
-          />
-        </div>
-
-        {/* Demo Suppliers */}
-        <section>
-          <div className="flex items-center justify-between mb-4 px-1">
-            <h2 className="text-xl font-bold tracking-tight">Suppliers</h2>
-            <button className="text-sm font-semibold text-primary">See all</button>
-          </div>
-          <div className="flex overflow-x-auto gap-4 pb-4 -mx-6 px-6 hide-scrollbar">
-            {DEMO_SUPPLIERS.map((supplier, i) => (
-              <div
-                key={supplier.id}
-                ref={i === 0 ? demoSupplierCardRef as any : undefined}
-                className="shrink-0 w-[280px] bg-card border border-border rounded-[24px] overflow-hidden shadow-sm"
-              >
-                <div className="p-5">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <Package className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm truncate">{supplier.name}</p>
-                      <p className="text-xs text-muted-foreground">{supplier.productCount} products</p>
-                    </div>
-                  </div>
-                  <button className="w-full py-2 text-sm font-semibold text-primary bg-primary/10 rounded-xl">
-                    Browse Products
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Demo Artists */}
-        <section>
-          <div className="flex items-center justify-between mb-4 px-1">
-            <h2 className="text-xl font-bold tracking-tight">Artists</h2>
-          </div>
-          <div className="space-y-3">
-            {DEMO_ARTISTS.map(artist => (
-              <div key={artist.id} className="bg-secondary/50 border border-border rounded-[20px] p-4 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
-                  {artist.name.charAt(0)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm">{artist.name}</p>
-                  <p className="text-xs text-muted-foreground">{artist.style} · {artist.location}</p>
-                </div>
-                <MessageCircle className="w-5 h-5 text-muted-foreground" />
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Automated Reminders — demo only */}
-        <section ref={demoRemindersAreaRef as any}>
-          <div className="flex items-center gap-2 mb-4 px-1">
-            <h2 className="text-xl font-bold tracking-tight">Automated Reminders</h2>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
-              Auto
-            </span>
-          </div>
-          <div className="bg-secondary/50 border border-border rounded-[20px] overflow-hidden divide-y divide-border/30">
-            {DEMO_REMINDERS.map(reminder => (
-              <div key={reminder.id} className="p-4 flex items-start gap-3">
-                <span className="text-xl mt-0.5">{reminder.emoji}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm">{reminder.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{reminder.description}</p>
-                  <p className="text-xs text-primary/70 mt-1 font-medium">{reminder.timing}</p>
-                </div>
-                <div className="shrink-0 px-2 py-1 rounded-lg bg-[var(--color-status-success-bg)] text-[var(--color-success)]">
-                  <span className="text-[10px] font-bold uppercase">Active</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
-    );
-  }
+  // In demo mode, inject mock suppliers if user has none
+  const displaySuppliers = demoMode && (!dbSuppliers || dbSuppliers.length === 0)
+    ? DEMO_SUPPLIERS.map(s => ({
+        id: s.id,
+        name: s.name,
+        websiteUrl: s.url,
+        logoUrl: s.logoUrl,
+      }))
+    : dbSuppliers;
 
   return (
     <>
       <AnimatePresence>
-        {selectedSupplierId && (
+        {selectedSupplierId && !demoMode && (
           <SupplierStorefront 
             supplierId={selectedSupplierId} 
             onBack={() => setSelectedSupplierId(null)} 
@@ -208,7 +123,10 @@ export function ContactsTab({ demoMode = false }: ContactsTabProps) {
         )}
       </AnimatePresence>
 
-      <div className={cn("space-y-8 animate-in fade-in duration-500 pb-20", selectedSupplierId ? "hidden" : "")}>
+      <div
+        className={cn("space-y-8 animate-in fade-in duration-500 pb-20", selectedSupplierId && !demoMode ? "hidden" : "")}
+        ref={demoMode ? demoContactsAreaRef as any : undefined}
+      >
         
         {/* Search Bar */}
         <div className="relative px-1">
@@ -219,6 +137,7 @@ export function ContactsTab({ demoMode = false }: ContactsTabProps) {
             type="text"
             placeholder="Search suppliers and artists..."
             className="w-full bg-secondary/50 border border-border rounded-full py-3.5 pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/70 text-foreground"
+            readOnly={demoMode}
           />
         </div>
 
@@ -230,12 +149,13 @@ export function ContactsTab({ demoMode = false }: ContactsTabProps) {
           </div>
           
           <div className="flex overflow-x-auto gap-4 pb-4 -mx-6 px-6 hide-scrollbar">
-            {dbSuppliers?.map((supplier, i) => (
+            {displaySuppliers?.map((supplier: any, i: number) => (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
                 key={supplier.id}
+                ref={demoMode && i === 0 ? demoSupplierCardRef as any : undefined}
                 className="shrink-0 w-[280px] bg-card border border-border rounded-[24px] overflow-hidden group shadow-sm hover:shadow-md transition-all"
               >
                 <div className="h-32 w-full overflow-hidden relative bg-secondary/50 flex items-center justify-center">
@@ -260,77 +180,83 @@ export function ContactsTab({ demoMode = false }: ContactsTabProps) {
                   </div>
                   
                   <button 
-                    onClick={() => setSelectedSupplierId(supplier.id)}
+                    onClick={() => !demoMode && setSelectedSupplierId(supplier.id)}
                     className="w-full py-2.5 bg-secondary/80 hover:bg-secondary rounded-xl font-bold text-sm flex justify-center items-center gap-2 transition-colors border border-border/50 text-foreground"
                   >
                     <ExternalLink className="w-4 h-4" />
                     Browse Storefront
                   </button>
-                  <button 
-                    onClick={() => handleDelete(supplier.id)}
-                    disabled={deleteMutation.isPending}
-                    className="w-full py-2 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Delete Storefront
-                  </button>
+                  {!demoMode && (
+                    <button 
+                      onClick={() => handleDelete(supplier.id)}
+                      disabled={deleteMutation.isPending}
+                      className="w-full py-2 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Delete Storefront
+                    </button>
+                  )}
                 </div>
               </motion.div>
             ))}
 
-            {/* Add Supplier Card */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: (dbSuppliers?.length || 0) * 0.1 }}
-              className="shrink-0 w-[280px] bg-secondary/20 border border-dashed border-border rounded-[24px] overflow-hidden flex flex-col items-center justify-center cursor-pointer hover:bg-secondary/40 transition-colors p-6 text-center h-[280px]"
-              onClick={() => setIsScrapeModalOpen(true)}
-            >
-              <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4">
-                <Plus className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-lg mb-2">Add Supplier</h3>
-              <p className="text-sm text-muted-foreground">Import products instantly from any Shopify or WooCommerce store.</p>
-            </motion.div>
+            {/* Add Supplier Card — hide in demo mode */}
+            {!demoMode && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: (displaySuppliers?.length || 0) * 0.1 }}
+                className="shrink-0 w-[280px] bg-secondary/20 border border-dashed border-border rounded-[24px] overflow-hidden flex flex-col items-center justify-center cursor-pointer hover:bg-secondary/40 transition-colors p-6 text-center h-[280px]"
+                onClick={() => setIsScrapeModalOpen(true)}
+              >
+                <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4">
+                  <Plus className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">Add Supplier</h3>
+                <p className="text-sm text-muted-foreground">Import products instantly from any Shopify or WooCommerce store.</p>
+              </motion.div>
+            )}
           </div>
         </section>
 
-        {/* Discover Suppliers Directory */}
-        <div className="pt-2">
-          <div className="flex items-center justify-between mb-4 px-1">
-            <h2 className="text-xl font-black text-foreground">Discover Suppliers</h2>
-            <span className="text-xs font-bold text-muted-foreground bg-secondary px-2 py-1 rounded-full">
-              AUS / NZ
-            </span>
+        {/* Discover Suppliers Directory — hide in demo mode */}
+        {!demoMode && (
+          <div className="pt-2">
+            <div className="flex items-center justify-between mb-4 px-1">
+              <h2 className="text-xl font-black text-foreground">Discover Suppliers</h2>
+              <span className="text-xs font-bold text-muted-foreground bg-secondary px-2 py-1 rounded-full">
+                AUS / NZ
+              </span>
+            </div>
+            
+            <div className="flex overflow-x-auto hide-scrollbar gap-4 pb-4 -mx-4 px-4">
+              {MOCK_SUPPLIERS_DIRECTORY.map((dirSup, idx) => (
+                <motion.div
+                  key={dirSup.name}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="shrink-0 w-[240px] bg-card border border-border rounded-[24px] overflow-hidden flex flex-col shadow-sm"
+                >
+                  <div className="h-20 bg-secondary/30 flex items-center justify-center border-b border-border">
+                    <h3 className="font-black text-lg text-foreground">{dirSup.name}</h3>
+                  </div>
+                  <div className="p-4 flex flex-col gap-2">
+                    <p className="text-xs text-muted-foreground text-center line-clamp-1 mb-2">{dirSup.url}</p>
+                    <button 
+                      onClick={() => scrapeMutation.mutate({ storeUrl: dirSup.url })}
+                      disabled={scrapeMutation.isPending}
+                      className="w-full py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Import Supplier
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
-          
-          <div className="flex overflow-x-auto hide-scrollbar gap-4 pb-4 -mx-4 px-4">
-            {MOCK_SUPPLIERS_DIRECTORY.map((dirSup, idx) => (
-              <motion.div
-                key={dirSup.name}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                className="shrink-0 w-[240px] bg-card border border-border rounded-[24px] overflow-hidden flex flex-col shadow-sm"
-              >
-                <div className="h-20 bg-secondary/30 flex items-center justify-center border-b border-border">
-                  <h3 className="font-black text-lg text-foreground">{dirSup.name}</h3>
-                </div>
-                <div className="p-4 flex flex-col gap-2">
-                  <p className="text-xs text-muted-foreground text-center line-clamp-1 mb-2">{dirSup.url}</p>
-                  <button 
-                    onClick={() => scrapeMutation.mutate({ storeUrl: dirSup.url })}
-                    disabled={scrapeMutation.isPending}
-                    className="w-full py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl font-bold text-xs flex justify-center items-center gap-1.5 transition-colors"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    Import Supplier
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        )}
 
         {/* Artists Matrix */}
         <section>
@@ -372,67 +298,97 @@ export function ContactsTab({ demoMode = false }: ContactsTabProps) {
           </div>
         </section>
 
+        {/* Automated Reminders — shown only during demo mode tour */}
+        {demoMode && (
+          <section ref={demoRemindersAreaRef as any}>
+            <div className="flex items-center gap-2 mb-4 px-1">
+              <h2 className="text-xl font-bold tracking-tight">Automated Reminders</h2>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
+                Auto
+              </span>
+            </div>
+            <div className="bg-secondary/50 border border-border rounded-[20px] overflow-hidden divide-y divide-border/30">
+              {DEMO_REMINDERS.map(reminder => (
+                <div key={reminder.id} className="p-4 flex items-start gap-3">
+                  <span className="text-xl mt-0.5">{reminder.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm">{reminder.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{reminder.description}</p>
+                    <p className="text-xs text-primary/70 mt-1 font-medium">{reminder.timing}</p>
+                  </div>
+                  <div className="shrink-0 px-2 py-1 rounded-lg bg-[var(--color-status-success-bg)] text-[var(--color-success)]">
+                    <span className="text-[10px] font-bold uppercase">Active</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
       </div>
 
-      <AnimatePresence>
-        {isScrapeModalOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-md flex flex-col justify-center items-center p-4"
-          >
+      {/* Import Modal — only in real mode */}
+      {!demoMode && (
+        <AnimatePresence>
+          {isScrapeModalOpen && (
             <motion.div 
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 50, opacity: 0 }}
-              className="bg-card border border-border rounded-[32px] p-6 w-full max-w-md mx-auto relative overflow-hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-md flex flex-col justify-center items-center p-4"
             >
-              <button 
-                onClick={() => setIsScrapeModalOpen(false)}
-                className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-secondary/50 hover:bg-secondary"
+              <motion.div 
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 50, opacity: 0 }}
+                className="bg-card border border-border rounded-[32px] p-6 w-full max-w-md mx-auto relative overflow-hidden"
               >
-                <Plus className="w-4 h-4 rotate-45" />
-              </button>
-              
-              <div className="w-12 h-12 rounded-full bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] flex items-center justify-center mb-4">
-                <LinkIcon className="w-6 h-6" />
-              </div>
-              
-              <h3 className="text-xl font-bold mb-2">Import Store</h3>
-              <p className="text-sm text-muted-foreground mb-6">
-                Paste the URL of any Shopify or WooCommerce supplier to instantly import their entire catalog.
-              </p>
-              
-              <div className="space-y-4">
-                <input 
-                  type="url"
-                  value={scrapeUrl}
-                  onChange={(e) => setScrapeUrl(e.target.value)}
-                  placeholder="e.g. https://store.inkvendor.com"
-                  className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  disabled={scrapeMutation.isPending}
-                />
-                
-                <button
-                  onClick={handleImport}
-                  disabled={!scrapeUrl || scrapeMutation.isPending}
-                  className="w-full bg-foreground text-background font-bold rounded-xl py-3.5 flex items-center justify-center gap-2 disabled:opacity-50"
+                <button 
+                  onClick={() => setIsScrapeModalOpen(false)}
+                  className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-secondary/50 hover:bg-secondary"
                 >
-                  {scrapeMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Importing Catalog...
-                    </>
-                  ) : (
-                    "Import Store"
-                  )}
+                  <Plus className="w-4 h-4 rotate-45" />
                 </button>
-              </div>
+                
+                <div className="w-12 h-12 rounded-full bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] flex items-center justify-center mb-4">
+                  <LinkIcon className="w-6 h-6" />
+                </div>
+                
+                <h3 className="text-xl font-bold mb-2">Import Store</h3>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Paste the URL of any Shopify or WooCommerce supplier to instantly import their entire catalog.
+                </p>
+                
+                <div className="space-y-4">
+                  <input 
+                    type="url"
+                    value={scrapeUrl}
+                    onChange={(e) => setScrapeUrl(e.target.value)}
+                    placeholder="e.g. https://store.inkvendor.com"
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    disabled={scrapeMutation.isPending}
+                  />
+                  
+                  <button
+                    onClick={handleImport}
+                    disabled={!scrapeUrl || scrapeMutation.isPending}
+                    className="w-full bg-foreground text-background font-bold rounded-xl py-3.5 flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {scrapeMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Importing Catalog...
+                      </>
+                    ) : (
+                      "Import Store"
+                    )}
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      )}
     </>
   );
 }
