@@ -250,6 +250,9 @@ export const feedRouter = router({
         isLiked: item.likes.some(
           (l: { userId: string }) => l.userId === ctx.user.id
         ),
+        tags: (() => {
+          try { return item.tags ? JSON.parse(item.tags as string) : []; } catch { return []; }
+        })(),
       }));
 
       return { cards };

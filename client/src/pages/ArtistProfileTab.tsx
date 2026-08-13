@@ -237,6 +237,7 @@ export default function ArtistProfileTab() {
       isLiked: false,
       mediaType: (item as any).mediaType || null,
       videoUrl: (item as any).mediaType === "video" ? `/api/ig-video/${item.id}` : null,
+      tags: (item as any).tags || [],
     }));
   }, [profile, user?.id]);
 

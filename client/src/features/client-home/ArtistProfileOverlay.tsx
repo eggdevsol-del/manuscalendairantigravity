@@ -62,6 +62,7 @@ export default function ArtistProfileOverlay({
       isLiked: false,
       mediaType: (item as any).mediaType || null,
       videoUrl: (item as any).mediaType === "video" ? `/api/ig-video/${item.id}` : null,
+      tags: (item as any).tags || [],
     }));
   }, [profile, artistId]);
 
