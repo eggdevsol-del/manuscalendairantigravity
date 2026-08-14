@@ -107,7 +107,7 @@ export function SuppliersTab({ demoMode = false }: SuppliersTabProps) {
               </span>
             </div>
 
-            <div className="flex overflow-x-auto hide-scrollbar gap-4 pb-4 -mx-4 px-4">
+            <div className="flex overflow-x-auto hide-scrollbar gap-4 pb-4 -mx-4 px-4" style={{ touchAction: "pan-x", overscrollBehaviorX: "contain" }}>
               {SUPPLIER_DIRECTORY.map((dirSup, idx) => {
                 // Check if already imported
                 const alreadyImported = dbSuppliers?.some(
@@ -163,7 +163,7 @@ export function SuppliersTab({ demoMode = false }: SuppliersTabProps) {
               <h2 className="text-xl font-bold tracking-tight">My Suppliers</h2>
             </div>
 
-            <div className="flex overflow-x-auto gap-4 pb-4 -mx-6 px-6 hide-scrollbar">
+            <div className="flex overflow-x-auto gap-4 pb-4 -mx-6 px-6 hide-scrollbar" style={{ touchAction: "pan-x", overscrollBehaviorX: "contain" }}>
               {displaySuppliers?.map((supplier: any, i: number) => (
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
