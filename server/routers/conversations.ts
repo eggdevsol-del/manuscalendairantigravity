@@ -274,6 +274,18 @@ export const conversationsRouter = router({
         )
       });
 
+      // Batch-fetch leads for all clients (for hasLead detection)
+      const allLeads = await database.query.leads.findMany({
+        where: and(
+          eq(schema.leads.artistId, ctx.user.id),
+          inArray(schema.leads.clientId, clientIds)
+        ),
+        columns: { clientId: true },
+      });
+      const clientsWithLeads = new Set(allLeads.map(l => l.clientId).filter(Boolean));
+
+      const now = new Date().toISOString();
+
       const clientsData = await Promise.all(
         clientIds.map(async clientId => {
           const user = await db.getUser(clientId);
@@ -294,10 +306,18 @@ export const conversationsRouter = router({
 
           let tlv = 0;
           let sittings = 0;
+          let hasUpcoming = false;
 
           for (const appt of clientAppts) {
             if (appt.status === "completed") {
               sittings += 1;
+            }
+            // Check for upcoming appointments
+            if (
+              (appt.status === "confirmed" || appt.status === "pending") &&
+              appt.startTime > now
+            ) {
+              hasUpcoming = true;
             }
             // amountPaid is stored as whole dollars (int), not cents
             if (appt.clientPaid === 1 && appt.amountPaid) {
@@ -328,6 +348,8 @@ export const conversationsRouter = router({
             avatar: user.avatar,
             tlv,
             sittings,
+            hasUpcoming,
+            hasLead: clientsWithLeads.has(clientId),
             hasPushSubscription,
           };
         })

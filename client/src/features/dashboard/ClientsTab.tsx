@@ -17,6 +17,7 @@ import {
   Package,
   Image as ImageIcon,
   Clock,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,73 +29,84 @@ interface ClientsTabProps {
   demoMode?: boolean;
 }
 
-// ── Demo upcoming projects (for tour) ─────────────────────
-const DEMO_UPCOMING = [
+// ── Types ─────────────────────────────────────────────────
+
+interface GroupedProject {
+  clientId: string;
+  clientName: string;
+  clientAvatar: string | null;
+  clientEmail: string;
+  clientPhone: string;
+  clientCity: string;
+  /** The project name — from lead projectType or serviceName */
+  projectName: string;
+  /** Project details from linked lead */
+  project: any | null;
+  /** All sessions for this client-project */
+  sessions: {
+    id: number;
+    title: string;
+    startTime: string;
+    endTime: string;
+    status: string;
+    price: number | null;
+    depositAmount: number | null;
+    depositPaid: number | null;
+    paymentStatus: string | null;
+  }[];
+}
+
+type ClientStatus = "active" | "past_client" | "lead" | "imported";
+
+// ── Demo data ─────────────────────────────────────────────
+
+const DEMO_GROUPED: GroupedProject[] = [
   {
-    id: 9001,
-    title: "Sleeve Session 3",
-    startTime: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(),
-    status: "confirmed",
-    price: 450,
-    depositAmount: 150,
-    depositPaid: 1,
-    paymentStatus: "deposit_paid",
-    serviceName: "Full sleeve — Japanese Traditional",
-    client: {
-      id: "demo-client-1",
-      name: "Sarah Chen",
-      email: "sarah@example.com",
-      phone: "0412 345 678",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=60",
-      city: "Sydney",
-    },
+    clientId: "demo-client-1",
+    clientName: "Sarah Chen",
+    clientAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=60",
+    clientEmail: "sarah@example.com",
+    clientPhone: "0412 345 678",
+    clientCity: "Sydney",
+    projectName: "Full Sleeve — Japanese Traditional",
     project: {
-      projectType: "full-sleeve",
       projectDescription: "Koi fish and waves flowing into existing shoulder piece. Want traditional Japanese style with modern color palette.",
       stylePreferences: JSON.stringify(["Japanese Traditional", "Neo-Traditional"]),
-      referenceImages: null,
       placement: "Full left arm",
       estimatedSize: "extra-large",
       budgetLabel: "$3,000 – $5,000",
-      status: "scheduled",
     },
+    sessions: [
+      { id: 9001, title: "Sleeve Session 3", startTime: new Date(Date.now() + 6 * 86400000).toISOString(), endTime: new Date(Date.now() + 6 * 86400000 + 4 * 3600000).toISOString(), status: "confirmed", price: 450, depositAmount: 150, depositPaid: 1, paymentStatus: "deposit_paid" },
+      { id: 9003, title: "Sleeve Session 4", startTime: new Date(Date.now() + 20 * 86400000).toISOString(), endTime: new Date(Date.now() + 20 * 86400000 + 4 * 3600000).toISOString(), status: "pending", price: 450, depositAmount: null, depositPaid: null, paymentStatus: null },
+    ],
   },
   {
-    id: 9002,
-    title: "Back Piece Session 1",
-    startTime: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000).toISOString(),
-    status: "pending",
-    price: 600,
-    depositAmount: 200,
-    depositPaid: 0,
-    paymentStatus: "pending_deposit",
-    serviceName: "Full back piece — Realism",
-    client: {
-      id: "demo-client-2",
-      name: "Marcus Thorne",
-      email: "marcus@example.com",
-      phone: "0423 456 789",
-      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=60",
-      city: "Melbourne",
-    },
+    clientId: "demo-client-2",
+    clientName: "Marcus Thorne",
+    clientAvatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=60",
+    clientEmail: "marcus@example.com",
+    clientPhone: "0423 456 789",
+    clientCity: "Melbourne",
+    projectName: "Back Piece — Realism",
     project: {
-      projectType: "back-piece",
       projectDescription: "Full back piece — realistic lion portrait with geometric frame elements.",
       stylePreferences: JSON.stringify(["Realism", "Geometric"]),
-      referenceImages: null,
       placement: "Full back",
       estimatedSize: "extra-large",
       budgetLabel: "$5,000 – $8,000",
-      status: "deposit_requested",
     },
+    sessions: [
+      { id: 9002, title: "Back Piece Session 1", startTime: new Date(Date.now() + 8 * 86400000).toISOString(), endTime: new Date(Date.now() + 8 * 86400000 + 6 * 3600000).toISOString(), status: "pending", price: 600, depositAmount: 200, depositPaid: 0, paymentStatus: "pending_deposit" },
+    ],
   },
 ];
 
+// ── Main Component ────────────────────────────────────────
+
 export function ClientsTab({ demoMode = false }: ClientsTabProps) {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
-  const [expandedProjectId, setExpandedProjectId] = useState<number | null>(null);
+  const [expandedClientId, setExpandedClientId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Tooltip tour targets
@@ -112,12 +124,67 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
     enabled: !demoMode,
   });
 
-  // Merge real + demo
-  const displayProjects = demoMode ? DEMO_UPCOMING : (upcomingProjects || []);
+  // ── Group projects by client ────────────────────────────
+  const groupedProjects: GroupedProject[] = useMemo(() => {
+    if (demoMode) return DEMO_GROUPED;
+    if (!upcomingProjects || upcomingProjects.length === 0) return [];
 
-  const displayClients = demoMode
-    ? DEMO_CLIENTS
-    : (clients || []).map((c: any) => ({
+    const groups = new Map<string, GroupedProject>();
+
+    for (const appt of upcomingProjects) {
+      const clientId = appt.client?.id || "unknown";
+
+      if (!groups.has(clientId)) {
+        // Derive project name from lead or service
+        const projectName = appt.project?.projectType
+          ? formatProjectType(appt.project.projectType)
+          : appt.serviceName || appt.title || "Project";
+
+        groups.set(clientId, {
+          clientId,
+          clientName: appt.client?.name || "Client",
+          clientAvatar: appt.client?.avatar || null,
+          clientEmail: appt.client?.email || "",
+          clientPhone: appt.client?.phone || "",
+          clientCity: appt.client?.city || "",
+          projectName,
+          project: appt.project,
+          sessions: [],
+        });
+      }
+
+      groups.get(clientId)!.sessions.push({
+        id: appt.id,
+        title: appt.title || appt.serviceName || "Session",
+        startTime: appt.startTime,
+        endTime: appt.endTime,
+        status: appt.status,
+        price: appt.price,
+        depositAmount: appt.depositAmount,
+        depositPaid: appt.depositPaid,
+        paymentStatus: appt.paymentStatus,
+      });
+    }
+
+    return Array.from(groups.values());
+  }, [demoMode, upcomingProjects]);
+
+  // ── Client list with proper statuses ────────────────────
+  const displayClients = useMemo(() => {
+    if (demoMode) return DEMO_CLIENTS;
+    return (clients || []).map((c: any) => {
+      let status: ClientStatus;
+      if (c.hasUpcoming) {
+        status = "active";
+      } else if (c.sittings > 0) {
+        status = "past_client";
+      } else if (c.hasLead) {
+        status = "lead";
+      } else {
+        status = "imported";
+      }
+
+      return {
         id: c.id,
         name: c.name || "Unknown",
         email: c.email || "",
@@ -126,8 +193,10 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
         city: c.city ? `${c.city}${c.country ? `, ${c.country}` : ""}` : "",
         tlv: c.tlv || 0,
         sittings: c.sittings || 0,
-        status: (c.sittings > 0 ? "completed" : "lead") as "active" | "lead" | "completed",
-      }));
+        status,
+      };
+    });
+  }, [demoMode, clients]);
 
   const filteredClients = useMemo(() => {
     if (!searchQuery.trim()) return displayClients;
@@ -180,31 +249,38 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
         />
       </div>
 
-      {/* ── Upcoming Projects ──────────────────────────── */}
-      {displayProjects.length > 0 && (
+      {/* ── Upcoming Projects (grouped by client) ─────── */}
+      {groupedProjects.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-4 px-1">
             <h2 className="text-xl font-bold tracking-tight">Upcoming Projects</h2>
             <span className="text-xs font-bold text-muted-foreground bg-secondary px-2.5 py-1 rounded-full">
-              {displayProjects.length} upcoming
+              {groupedProjects.reduce((n, g) => n + g.sessions.length, 0)} session{groupedProjects.reduce((n, g) => n + g.sessions.length, 0) !== 1 ? "s" : ""}
             </span>
           </div>
 
           <div className="space-y-3">
-            {displayProjects.map((project: any, i: number) => {
-              const isExpanded = expandedProjectId === project.id;
-              const depositPending = project.paymentStatus === "pending_deposit";
-              const date = new Date(project.startTime);
+            {groupedProjects.map((group, i) => {
+              const isExpanded = expandedClientId === group.clientId;
+
+              // Determine overall status for the card
+              const hasConfirmed = group.sessions.some(s => s.status === "confirmed");
+              const allConfirmed = group.sessions.every(s => s.status === "confirmed");
+              const nextSession = group.sessions[0]; // already sorted by startTime from server
+
+              // Smart deposit badge — only show if deposit was actually requested
+              const depositInfo = getDepositInfo(group.sessions);
+
               let styles: string[] = [];
               try {
-                if (project.project?.stylePreferences) {
-                  styles = JSON.parse(project.project.stylePreferences);
+                if (group.project?.stylePreferences) {
+                  styles = JSON.parse(group.project.stylePreferences);
                 }
               } catch {}
 
               return (
                 <motion.div
-                  key={project.id}
+                  key={group.clientId}
                   ref={demoMode && i === 0 ? (demoClientCardRef as any) : undefined}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -213,20 +289,16 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
                 >
                   {/* Collapsed Header */}
                   <button
-                    onClick={() => !demoMode && setExpandedProjectId(isExpanded ? null : project.id)}
+                    onClick={() => !demoMode && setExpandedClientId(isExpanded ? null : group.clientId)}
                     className="w-full text-left p-4 flex items-center gap-3"
                   >
                     {/* Client Avatar */}
                     <div className="shrink-0">
-                      {project.client?.avatar ? (
-                        <img
-                          src={project.client.avatar}
-                          alt={project.client.name}
-                          className="w-11 h-11 rounded-full object-cover border-2 border-border"
-                        />
+                      {group.clientAvatar ? (
+                        <img src={group.clientAvatar} alt={group.clientName} className="w-11 h-11 rounded-full object-cover border-2 border-border" />
                       ) : (
                         <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg border-2 border-border">
-                          {(project.client?.name || "?").charAt(0)}
+                          {group.clientName.charAt(0)}
                         </div>
                       )}
                     </div>
@@ -234,28 +306,35 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
                     {/* Project Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="font-bold text-[15px] truncate">{project.client?.name || "Client"}</span>
-                        {depositPending && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]">
-                            Deposit Due
+                        <span className="font-bold text-[15px] truncate">{group.clientName}</span>
+                        {depositInfo.badge && (
+                          <span className={cn(
+                            "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                            depositInfo.badgeClass
+                          )}>
+                            {depositInfo.badge}
                           </span>
                         )}
-                        {!depositPending && project.status === "confirmed" && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[var(--color-status-success-bg)] text-[var(--color-success)]">
-                            Confirmed
+                        {!depositInfo.badge && (
+                          <span className={cn(
+                            "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                            allConfirmed
+                              ? "bg-[var(--color-status-success-bg)] text-[var(--color-success)]"
+                              : hasConfirmed
+                                ? "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]"
+                                : "bg-secondary text-muted-foreground"
+                          )}>
+                            {allConfirmed ? "Confirmed" : hasConfirmed ? "Partially Confirmed" : "Pending"}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">{project.title || project.serviceName}</p>
+                      <p className="text-sm font-medium text-muted-foreground truncate">{group.projectName}</p>
                       <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                         <Calendar className="w-3 h-3" />
-                        <span>{format(date, "EEE, MMM d · h:mm a")}</span>
-                        {project.price && (
-                          <>
-                            <span>·</span>
-                            <span className="font-semibold text-[var(--color-status-info-text)]">${project.price}</span>
-                          </>
-                        )}
+                        <span>
+                          {format(new Date(nextSession.startTime), "EEE, MMM d")}
+                          {group.sessions.length > 1 && ` + ${group.sessions.length - 1} more`}
+                        </span>
                       </div>
                     </div>
 
@@ -272,41 +351,71 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
                         className="overflow-hidden"
                       >
                         <div className="border-t border-border p-4 bg-background/80 space-y-4">
+                          {/* Session List */}
+                          <div>
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Sessions</p>
+                            <div className="space-y-2">
+                              {group.sessions.map((session) => {
+                                const sessionDeposit = getSessionDepositBadge(session);
+                                return (
+                                  <div key={session.id} className="flex items-center gap-3 bg-secondary/50 rounded-xl p-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold truncate">{session.title}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {format(new Date(session.startTime), "EEE, MMM d · h:mm a")}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      {session.price && (
+                                        <span className="text-xs font-semibold text-[var(--color-status-info-text)]">${session.price}</span>
+                                      )}
+                                      {sessionDeposit && (
+                                        <span className={cn("px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase", sessionDeposit.cls)}>
+                                          {sessionDeposit.label}
+                                        </span>
+                                      )}
+                                      <span className={cn(
+                                        "px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase",
+                                        session.status === "confirmed"
+                                          ? "bg-[var(--color-status-success-bg)] text-[var(--color-success)]"
+                                          : "bg-secondary text-muted-foreground"
+                                      )}>
+                                        {session.status}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+
                           {/* Project Details */}
-                          {project.project && (
+                          {group.project && (
                             <div className="space-y-3">
-                              {project.project.projectDescription && (
+                              {group.project.projectDescription && (
                                 <div>
-                                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Project Brief</p>
-                                  <p className="text-sm leading-relaxed">{project.project.projectDescription}</p>
+                                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Client's Request</p>
+                                  <p className="text-sm leading-relaxed">{group.project.projectDescription}</p>
                                 </div>
                               )}
 
                               <div className="grid grid-cols-2 gap-3">
-                                {project.project.placement && (
+                                {group.project.placement && (
                                   <div className="bg-secondary/50 rounded-xl p-3">
                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Placement</p>
-                                    <p className="text-sm font-semibold">{project.project.placement}</p>
+                                    <p className="text-sm font-semibold">{group.project.placement}</p>
                                   </div>
                                 )}
-                                {project.project.estimatedSize && (
+                                {group.project.estimatedSize && (
                                   <div className="bg-secondary/50 rounded-xl p-3">
                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Size</p>
-                                    <p className="text-sm font-semibold capitalize">{project.project.estimatedSize}</p>
+                                    <p className="text-sm font-semibold capitalize">{group.project.estimatedSize}</p>
                                   </div>
                                 )}
-                                {project.project.budgetLabel && (
+                                {group.project.budgetLabel && (
                                   <div className="bg-secondary/50 rounded-xl p-3">
                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Budget</p>
-                                    <p className="text-sm font-semibold">{project.project.budgetLabel}</p>
-                                  </div>
-                                )}
-                                {project.depositAmount && (
-                                  <div className="bg-secondary/50 rounded-xl p-3">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Deposit</p>
-                                    <p className={cn("text-sm font-semibold", depositPending ? "text-[var(--color-status-warning-text)]" : "text-[var(--color-success)]")}>
-                                      ${project.depositAmount} {depositPending ? "pending" : "paid"}
-                                    </p>
+                                    <p className="text-sm font-semibold">{group.project.budgetLabel}</p>
                                   </div>
                                 )}
                               </div>
@@ -327,24 +436,24 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
                           {/* Quick Actions */}
                           <div className="flex gap-2 pt-1">
                             <a
-                              href={`sms:${project.client?.phone}`}
+                              href={`sms:${group.clientPhone}`}
                               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-secondary/50 border border-border rounded-xl text-xs font-semibold hover:bg-secondary/80 transition-colors"
                             >
                               <MessageCircle className="w-3.5 h-3.5 text-primary" />
                               Message
                             </a>
                             <a
-                              href={`tel:${project.client?.phone}`}
+                              href={`tel:${group.clientPhone}`}
                               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-secondary/50 border border-border rounded-xl text-xs font-semibold hover:bg-secondary/80 transition-colors"
                             >
                               <Phone className="w-3.5 h-3.5 text-primary" />
                               Call
                             </a>
                             <button
-                              onClick={() => project.client && setSelectedClientId(project.client.id)}
+                              onClick={() => setSelectedClientId(group.clientId)}
                               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-foreground text-background rounded-xl text-xs font-bold hover:opacity-90 transition-colors"
                             >
-                              View Profile
+                              Profile
                               <ChevronRight className="w-3.5 h-3.5" />
                             </button>
                           </div>
@@ -360,7 +469,7 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
       )}
 
       {/* No Upcoming Projects */}
-      {displayProjects.length === 0 && !demoMode && (
+      {groupedProjects.length === 0 && !demoMode && (
         <div className="flex flex-col items-center justify-center p-6 text-center bg-secondary/50 rounded-3xl border border-border">
           <Calendar className="w-10 h-10 text-muted-foreground/50 mb-3" />
           <h2 className="text-lg font-bold mb-1">No Upcoming Projects</h2>
@@ -385,11 +494,7 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
         ) : (
           <div className="space-y-2">
             {filteredClients.map((client, i) => {
-              const statusConfig = {
-                active: { label: "Active", bg: "bg-[var(--color-status-success-bg)]", text: "text-[var(--color-success)]" },
-                completed: { label: "Completed", bg: "bg-secondary", text: "text-muted-foreground" },
-                lead: { label: "Lead", bg: "bg-[var(--color-status-info-bg)]", text: "text-[var(--color-status-info-text)]" },
-              }[client.status];
+              const statusConfig = STATUS_CONFIG[client.status];
 
               return (
                 <motion.div
@@ -459,6 +564,68 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
       )}
     </div>
   );
+}
+
+// ── Status badge config ───────────────────────────────────
+
+const STATUS_CONFIG: Record<ClientStatus, { label: string; bg: string; text: string }> = {
+  active: { label: "Active", bg: "bg-[var(--color-status-success-bg)]", text: "text-[var(--color-success)]" },
+  past_client: { label: "Past Client", bg: "bg-secondary", text: "text-muted-foreground" },
+  lead: { label: "Lead", bg: "bg-[var(--color-status-info-bg)]", text: "text-[var(--color-status-info-text)]" },
+  imported: { label: "Imported", bg: "bg-purple-500/10", text: "text-purple-400" },
+};
+
+// ── Deposit helpers ───────────────────────────────────────
+
+/** Get deposit info for the grouped project card header badge */
+function getDepositInfo(sessions: GroupedProject["sessions"]) {
+  let hasDepositDue = false;
+  let hasDepositPaid = false;
+
+  for (const s of sessions) {
+    // Only consider sessions where a deposit was actually requested
+    if (s.depositAmount && s.depositAmount > 0) {
+      if (s.paymentStatus === "pending_deposit" || s.depositPaid === 0) {
+        hasDepositDue = true;
+      } else if (s.paymentStatus === "deposit_paid" || s.paymentStatus === "fully_paid" || s.depositPaid === 1) {
+        hasDepositPaid = true;
+      }
+    }
+  }
+
+  if (hasDepositDue) {
+    return {
+      badge: "Deposit Due",
+      badgeClass: "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]",
+    };
+  }
+  if (hasDepositPaid) {
+    return {
+      badge: "Deposit Paid",
+      badgeClass: "bg-[var(--color-status-success-bg)] text-[var(--color-success)]",
+    };
+  }
+  return { badge: null, badgeClass: "" };
+}
+
+/** Get per-session deposit badge (only if deposit was requested) */
+function getSessionDepositBadge(session: GroupedProject["sessions"][0]) {
+  if (!session.depositAmount || session.depositAmount <= 0) return null;
+
+  if (session.paymentStatus === "fully_paid") {
+    return { label: "Paid", cls: "bg-[var(--color-status-success-bg)] text-[var(--color-success)]" };
+  }
+  if (session.paymentStatus === "deposit_paid" || session.depositPaid === 1) {
+    return { label: `$${session.depositAmount} dep`, cls: "bg-[var(--color-status-success-bg)] text-[var(--color-success)]" };
+  }
+  return { label: `$${session.depositAmount} due`, cls: "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]" };
+}
+
+/** Format projectType slug to readable name */
+function formatProjectType(slug: string): string {
+  return slug
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, c => c.toUpperCase());
 }
 
 // ── Client Profile Drill-Down ─────────────────────────────
