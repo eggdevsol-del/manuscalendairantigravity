@@ -162,7 +162,7 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
   // ── Main View ──────────────────────────────────────────
   return (
     <div
-      className="space-y-6 animate-in fade-in duration-500 pb-20"
+      className="space-y-6 animate-in fade-in duration-500 pb-40"
       ref={demoMode ? (demoClientsAreaRef as any) : undefined}
     >
       {/* Search Bar */}
@@ -503,7 +503,7 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
   }, [orders, client.email]);
 
   return (
-    <div className="animate-in slide-in-from-right duration-300 pb-20">
+    <div className="animate-in slide-in-from-right duration-300 pb-40">
       {/* Back Button */}
       <button
         onClick={onBack}

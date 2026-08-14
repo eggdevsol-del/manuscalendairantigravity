@@ -81,7 +81,7 @@ export function SuppliersTab({ demoMode = false }: SuppliersTabProps) {
       </AnimatePresence>
 
       <div
-        className={cn("space-y-8 animate-in fade-in duration-500 pb-20", selectedSupplierId && !demoMode ? "hidden" : "")}
+        className={cn("space-y-8 animate-in fade-in duration-500 pb-40", selectedSupplierId && !demoMode ? "hidden" : "")}
         ref={demoMode ? demoSuppliersAreaRef as any : undefined}
       >
         {/* Search Bar */}

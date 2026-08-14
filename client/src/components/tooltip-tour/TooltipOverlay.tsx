@@ -31,7 +31,32 @@ export function TooltipOverlay() {
     h: document.documentElement.clientHeight,
   });
 
-  // Measure the target element
+  // Scroll target into view then measure it
+  const scrollAndMeasure = useCallback(() => {
+    if (!activeTour) return;
+    const step = activeTour.steps[currentStep];
+    if (!step) return;
+
+    const el = getTarget(step.targetId);
+    if (el) {
+      // Scroll into view first, then measure after scroll settles
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Delay measurement to let scroll animation finish
+      setTimeout(() => {
+        const rect = el.getBoundingClientRect();
+        setTargetRect({
+          top: rect.top - PADDING,
+          left: rect.left - PADDING,
+          width: rect.width + PADDING * 2,
+          height: rect.height + PADDING * 2,
+        });
+      }, 350);
+    } else {
+      setTargetRect(null);
+    }
+  }, [activeTour, currentStep, getTarget]);
+
+  // Silent re-measure (no scroll — for resize/scroll listeners)
   const measureTarget = useCallback(() => {
     if (!activeTour) return;
     const step = activeTour.steps[currentStep];
@@ -51,9 +76,9 @@ export function TooltipOverlay() {
     }
   }, [activeTour, currentStep, getTarget]);
 
-  // Re-measure on step change, resize, scroll
+  // Scroll + measure on step change; silent re-measure on resize/scroll
   useEffect(() => {
-    measureTarget();
+    scrollAndMeasure();
     const handle = () => {
       setViewportSize({
         w: document.documentElement.clientWidth,
@@ -70,7 +95,7 @@ export function TooltipOverlay() {
       window.removeEventListener("scroll", handle, true);
       clearInterval(interval);
     };
-  }, [measureTarget]);
+  }, [scrollAndMeasure, measureTarget]);
 
   if (!activeTour) return null;
 
