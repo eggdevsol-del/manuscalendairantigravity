@@ -1950,7 +1950,7 @@ export const paymentRequests = mysqlTable(
     artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
     clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
     amountCents: int().notNull(),
-    status: mysqlEnum("payment_request_status", [
+    status: mysqlEnum([
       "pending",
       "paid",
       "expired",

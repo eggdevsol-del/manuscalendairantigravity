@@ -10,8 +10,12 @@ async function ensureTables(pool: mysql.Pool) {
   if (_migrated) return;
   _migrated = true;
   try {
+    // Drop first in case it was created with wrong column names
+    // (previous schema used mysqlEnum("payment_request_status",...) which
+    // created column 'payment_request_status' instead of 'status')
+    await pool.query(`DROP TABLE IF EXISTS \`payment_requests\``);
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS \`payment_requests\` (
+      CREATE TABLE \`payment_requests\` (
         \`id\` int AUTO_INCREMENT NOT NULL,
         \`appointmentId\` int NOT NULL,
         \`artistId\` varchar(64) NOT NULL,
@@ -31,7 +35,7 @@ async function ensureTables(pool: mysql.Pool) {
         KEY \`pr_status_idx\` (\`status\`)
       )
     `);
-    console.log("[Database] ✅ payment_requests table ensured");
+    console.log("[Database] ✅ payment_requests table created");
   } catch (e: any) {
     console.warn("[Database] ⚠️ payment_requests migration:", e.message);
   }
