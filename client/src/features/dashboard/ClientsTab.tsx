@@ -120,15 +120,25 @@ function titleCase(s: string): string {
   return s.replace(/\b\w/g, c => c.toUpperCase());
 }
 
+/** Ensure a datetime string from the DB is treated as UTC.
+ *  MySQL stores "2026-08-20 04:00:00" with no Z, so parseISO
+ *  treats it as device-local time — double-converting the offset.
+ *  This normalises it to a proper ISO 8601 UTC string. */
+function ensureUTC(raw: string): string {
+  if (raw.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(raw)) return raw;
+  return raw.replace(" ", "T") + "Z";
+}
+
 /** Format date in the session's stored timezone (studio tz), not the device's.
  *  Falls back to UTC if no timezone. Returns "Time TBC" for midnight UTC
  *  (which means no real time was set — BUG-2 fix). */
 function formatSessionDate(startTime: string, tz: string | null): { date: string; time: string } {
+  const utcStr = ensureUTC(startTime);
   const timezone = tz || "UTC";
-  const localDate = utcToLocal(startTime, timezone);
+  const localDate = utcToLocal(utcStr, timezone);
 
   // Check if this is a midnight-UTC placeholder (no real time set)
-  const utcDate = new Date(startTime);
+  const utcDate = new Date(utcStr);
   const isTimePlaceholder =
     utcDate.getUTCHours() === 0 && utcDate.getUTCMinutes() === 0 && !tz;
 
@@ -142,7 +152,7 @@ function formatSessionDate(startTime: string, tz: string | null): { date: string
 /** Relative time label — "today", "in 5 days", "in 4 weeks", "in 3 months" */
 function relativeLabel(startTime: string): string {
   const now = new Date();
-  const d = new Date(startTime);
+  const d = new Date(ensureUTC(startTime));
   const days = Math.round((d.getTime() - now.getTime()) / 86400000);
   if (days <= 0) return "today";
   if (days === 1) return "tomorrow";
@@ -156,7 +166,7 @@ function relativeLabel(startTime: string): string {
 function getExceptionFlag(session: SessionData): string | null {
   if (session.paidCents === 0) return "no deposit";
   if (session.status === "pending") return "unconfirmed";
-  if (isPast(new Date(session.startTime)) && session.remainingCents > 0) return "overdue";
+  if (isPast(new Date(ensureUTC(session.startTime))) && session.remainingCents > 0) return "overdue";
   return null;
 }
 
@@ -182,8 +192,8 @@ const DEMO_GROUPED: GroupedProject[] = [
     upcomingSessions: [], completedSessions: [],
   },
 ];
-DEMO_GROUPED[0].upcomingSessions = DEMO_GROUPED[0].sessions.filter(s => isFuture(new Date(s.startTime)));
-DEMO_GROUPED[0].completedSessions = DEMO_GROUPED[0].sessions.filter(s => s.status === "completed" || isPast(new Date(s.startTime)));
+DEMO_GROUPED[0].upcomingSessions = DEMO_GROUPED[0].sessions.filter(s => isFuture(new Date(ensureUTC(s.startTime))));
+DEMO_GROUPED[0].completedSessions = DEMO_GROUPED[0].sessions.filter(s => s.status === "completed" || isPast(new Date(ensureUTC(s.startTime))));
 
 // ══════════════════════════════════════════════════════════
 //  MAIN: ClientsTab
@@ -262,10 +272,10 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
 
       // Partition on timestamp, not status field (README line 229)
       const upcoming = group.sessions.filter(s =>
-        isFuture(new Date(s.startTime)) && s.status !== "cancelled"
+        isFuture(new Date(ensureUTC(s.startTime))) && s.status !== "cancelled"
       );
       const completed = group.sessions.filter(s =>
-        (isPast(new Date(s.startTime)) || s.status === "completed") && s.status !== "cancelled"
+        (isPast(new Date(ensureUTC(s.startTime))) || s.status === "completed") && s.status !== "cancelled"
       );
 
       return {
@@ -578,8 +588,8 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
   const metaLine = isEmptyProject
     ? "No sessions booked"
     : group.priceEach
-      ? `${group.serviceName} · ${group.sessions.length} sessions · ${formatMoney(group.priceEach)} each`
-      : `${group.sessions.length} sessions · ${formatCents(group.totalValueCents)} total`;
+      ? `${group.serviceName} · ${group.sessions.length} session${group.sessions.length !== 1 ? "s" : ""} · ${formatMoney(group.priceEach)} each`
+      : `${group.sessions.length} session${group.sessions.length !== 1 ? "s" : ""} · ${formatCents(group.totalValueCents)} total`;
 
   const firstName = group.clientName.split(" ")[0];
 
