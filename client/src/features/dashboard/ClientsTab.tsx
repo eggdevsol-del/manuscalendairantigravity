@@ -3,7 +3,6 @@ import { trpc } from "@/lib/trpc";
 import {
   Search,
   ChevronLeft,
-  ChevronDown,
   ChevronRight,
   MessageCircle,
   Phone,
@@ -137,7 +136,6 @@ DEMO_GROUPED[0].completedSessions = DEMO_GROUPED[0].sessions.filter(s => s.statu
 
 export function ClientsTab({ demoMode = false }: ClientsTabProps) {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
-  const [expandedClientId, setExpandedClientId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   const demoClientsAreaRef = useTooltipTarget("demo-clients-area");
@@ -312,8 +310,6 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
                 key={group.clientId}
                 group={group}
                 index={i}
-                isExpanded={expandedClientId === group.clientId}
-                onToggle={() => !demoMode && setExpandedClientId(expandedClientId === group.clientId ? null : group.clientId)}
                 onViewProfile={(id) => setSelectedClientId(id)}
                 demoMode={demoMode}
                 demoRef={demoMode && i === 0 ? (demoClientCardRef as any) : undefined}
@@ -432,14 +428,12 @@ const STATUS_CONFIG: Record<ClientStatus, { label: string; tokenClass: string }>
 interface ProjectCardProps {
   group: GroupedProject;
   index: number;
-  isExpanded: boolean;
-  onToggle: () => void;
   onViewProfile: (clientId: string) => void;
   demoMode: boolean;
   demoRef?: any;
 }
 
-function ProjectCard({ group, index, isExpanded, onToggle, onViewProfile, demoMode, demoRef }: ProjectCardProps) {
+function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: ProjectCardProps) {
   const [expandedSessionId, setExpandedSessionId] = useState<number | null>(null);
   const [completedOpen, setCompletedOpen] = useState(group.completedSessions.length <= 3);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -512,10 +506,7 @@ function ProjectCard({ group, index, isExpanded, onToggle, onViewProfile, demoMo
         "bg-card border-border/30",
       )}>
         {/* ── 1. HEADER BLOCK ─────────────────────── */}
-        <button
-          onClick={onToggle}
-          className="w-full text-left p-5 pb-4 border-b border-border/30"
-        >
+        <div className="p-5 pb-[18px] border-b border-border/30">
           {/* Identity row */}
           <div className="flex items-center gap-3.5">
             {/* Avatar — rounded-square for work imagery per design */}
@@ -544,91 +535,52 @@ function ProjectCard({ group, index, isExpanded, onToggle, onViewProfile, demoMo
 
             {/* Overflow button — min 44px touch */}
             <div
-              className="w-[34px] h-[34px] flex items-center justify-center rounded-[9px] shrink-0 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-              onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
+              className="w-[34px] h-[34px] flex items-center justify-center rounded-[9px] shrink-0 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+              onClick={() => setMenuOpen(!menuOpen)}
               aria-label="More options"
             >
               <MoreHorizontal className="w-[18px] h-[18px]" />
             </div>
           </div>
 
-          {/* Money block */}
-          {isExpanded && (
-            <div className="mt-5 flex items-end justify-between gap-3">
-              <div>
-                <p className="text-[10.5px] font-medium tracking-[0.14em] uppercase text-muted-foreground/60">
-                  {isFullyPaid ? "PAID IN FULL" : "OUTSTANDING"}
-                </p>
-                <p className={cn(
-                  "text-[30px] font-semibold leading-[1.1] tracking-[-0.02em] mt-1.5",
-                  isFullyPaid ? "text-[#4ade80]" : "text-foreground"
-                )}>
-                  {isFullyPaid
-                    ? formatCents(group.totalValueCents)
-                    : formatCents(group.outstandingCents)
-                  }
-                </p>
-              </div>
-              <div className="text-right text-[12.5px] leading-[1.6] text-muted-foreground">
-                <p><span className="text-[#4ade80]">{formatCents(group.collectedCents)}</span> collected</p>
-                <p>of {formatCents(group.totalValueCents)}</p>
-              </div>
+          {/* Money block — always visible */}
+          <div className="mt-5 flex items-end justify-between gap-3">
+            <div>
+              <p className="text-[10.5px] font-medium tracking-[0.14em] uppercase text-muted-foreground/60">
+                {isFullyPaid ? "PAID IN FULL" : "OUTSTANDING"}
+              </p>
+              <p className={cn(
+                "text-[30px] font-semibold leading-[1.1] tracking-[-0.02em] mt-1.5",
+                isFullyPaid ? "text-[#4ade80]" : "text-foreground"
+              )}>
+                {isFullyPaid
+                  ? formatCents(group.totalValueCents)
+                  : formatCents(group.outstandingCents)
+                }
+              </p>
             </div>
-          )}
-
-          {/* Progress bar */}
-          {isExpanded && (
-            <div className={cn(tokens.display.progressTrack, tokens.display.progressTrackLg, "mt-3")}>
-              <div
-                className={tokens.display.progressFill}
-                style={{ width: `${group.paidPct}%` }}
-                role="progressbar"
-                aria-valuenow={group.paidPct}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={`${group.paidPct}% paid`}
-              />
+            <div className="text-right text-[12.5px] leading-[1.6] text-muted-foreground">
+              <p><span className="text-[#4ade80]">{formatCents(group.collectedCents)}</span> collected</p>
+              <p>of {formatCents(group.totalValueCents)}</p>
             </div>
-          )}
+          </div>
 
-          {/* Collapsed summary */}
-          {!isExpanded && (
-            <div className="mt-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-3 h-3 text-muted-foreground" />
-                <span className={cn(typography.label, "text-muted-foreground")}>
-                  {group.upcomingSessions.length > 0
-                    ? `${format(new Date(group.upcomingSessions[0].startTime), "MMM d")}${group.upcomingSessions.length > 1 ? ` + ${group.upcomingSessions.length - 1} more` : ""}`
-                    : `${group.completedSessions.length} completed`
-                  }
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {group.outstandingCents > 0 && (
-                  <span className="text-[12px] font-medium text-muted-foreground">
-                    {formatCents(group.outstandingCents)} due
-                  </span>
-                )}
-                {/* Mini progress */}
-                <div className="w-16 h-[3px] rounded-full bg-[rgba(255,255,255,0.09)] overflow-hidden">
-                  <div className="h-full rounded-full bg-[#4ade80]" style={{ width: `${group.paidPct}%` }} />
-                </div>
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              </div>
-            </div>
-          )}
-        </button>
+          {/* Progress bar — always visible */}
+          <div className={cn(tokens.display.progressTrack, tokens.display.progressTrackLg, "mt-3")}>
+            <div
+              className={tokens.display.progressFill}
+              style={{ width: `${group.paidPct}%` }}
+              role="progressbar"
+              aria-valuenow={group.paidPct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`${group.paidPct}% paid`}
+            />
+          </div>
+        </div>
 
-        {/* ── 2. SESSION LISTS (expanded) ──────────── */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="px-5 pt-4 pb-0">
+        {/* ── 2. SESSION LISTS ─────────────────────── */}
+        <div className="px-5 pt-4 pb-0">
                 {/* UPCOMING */}
                 {group.upcomingSessions.length > 0 && (
                   <div>
@@ -793,38 +745,34 @@ function ProjectCard({ group, index, isExpanded, onToggle, onViewProfile, demoMo
                     </AnimatePresence>
                   </div>
                 )}
-              </div>
+        </div>
 
-              {/* ── 3. ACTION BAR (sticky) ─────────────── */}
-              <div className="p-5 flex gap-2.5 sticky bottom-0 bg-gradient-to-t from-card via-card to-transparent">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!isFullyPaid) {
-                      setSheetSessionId(null);
-                      setSheetOpen(true);
-                    }
-                  }}
-                  disabled={isFullyPaid}
-                  className={cn(
-                    "flex-[1.6] text-center rounded-[12px] py-[15px] text-[15.5px] font-semibold transition-colors",
-                    isFullyPaid
-                      ? "bg-primary/40 text-primary-foreground/60 cursor-not-allowed"
-                      : "bg-primary text-primary-foreground hover:bg-primary/90"
-                  )}
-                >
-                  Take payment
-                </button>
-                <a
-                  href={`sms:${group.clientPhone}`}
-                  className="flex-1 text-center border border-border/40 rounded-[12px] py-[15px] text-[15.5px] font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                >
-                  Message
-                </a>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* ── 3. ACTION BAR (sticky) ─────────────── */}
+        <div className="p-5 flex gap-2.5 sticky bottom-0 bg-gradient-to-t from-card via-card to-transparent">
+          <button
+            onClick={() => {
+              if (!isFullyPaid) {
+                setSheetSessionId(null);
+                setSheetOpen(true);
+              }
+            }}
+            disabled={isFullyPaid}
+            className={cn(
+              "flex-[1.6] text-center rounded-[12px] py-[15px] text-[15.5px] font-semibold transition-colors",
+              isFullyPaid
+                ? "bg-primary/40 text-primary-foreground/60 cursor-not-allowed"
+                : "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+          >
+            Take payment
+          </button>
+          <a
+            href={`sms:${group.clientPhone}`}
+            className="flex-1 text-center border border-border/40 rounded-[12px] py-[15px] text-[15.5px] font-medium text-foreground hover:bg-secondary/50 transition-colors"
+          >
+            Message
+          </a>
+        </div>
 
         {/* ── 4. OVERFLOW MENU ─────────────────────── */}
         <AnimatePresence>
