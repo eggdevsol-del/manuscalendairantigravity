@@ -1604,4 +1604,160 @@ export const funnelRouter = router({
         existingUser: !!existingUser,
       };
     }),
+
+  // ═══════════════════════════════════════════════════════════
+  //  PAYMENT REQUEST ENDPOINTS — Artist-initiated Stripe charge
+  // ═══════════════════════════════════════════════════════════
+
+  /**
+   * Get payment request info for the client's /pay/:token page.
+   * PUBLIC — auth is via HMAC-signed token.
+   */
+  getPaymentRequestInfo: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .query(async ({ input }) => {
+      const { verifyPaymentRequestToken } = await import(
+        "../services/paymentRequestToken"
+      );
+      const result = verifyPaymentRequestToken(input.token);
+
+      if (!result.valid) {
+        return { error: result.expired ? "expired" : "invalid" };
+      }
+
+      const db = await getDb();
+      if (!db) return { error: "server_error" };
+
+      const request = await db.query.paymentRequests.findFirst({
+        where: eq(schema.paymentRequests.id, result.requestId!),
+      });
+
+      if (!request) return { error: "not_found" };
+      if (request.status === "paid") return { error: "already_paid" };
+      if (request.status === "cancelled") return { error: "cancelled" };
+
+      // Fetch appointment, artist, client details
+      const appointment = await db.query.appointments.findFirst({
+        where: eq(schema.appointments.id, request.appointmentId),
+      });
+      if (!appointment) return { error: "not_found" };
+
+      const artist = await db.query.users.findFirst({
+        where: eq(schema.users.id, request.artistId),
+      });
+
+      const artistSettings = await db.query.artistSettings.findFirst({
+        where: eq(schema.artistSettings.userId, request.artistId),
+      });
+
+      const client = await db.query.users.findFirst({
+        where: eq(schema.users.id, request.clientId),
+      });
+
+      return {
+        requestId: request.id,
+        amountCents: request.amountCents,
+        status: request.status,
+        artistName:
+          artistSettings?.businessName ||
+          artistSettings?.displayName ||
+          artist?.name ||
+          "Your Artist",
+        artistImage: artist?.avatar || undefined,
+        clientName: client?.name || "Client",
+        sessionDate: appointment.startTime,
+        sessionTimeZone: appointment.timeZone,
+        serviceName: appointment.serviceName || appointment.title || "Session",
+        totalPriceCents: appointment.totalExpectedAmountCents || (appointment.price ? appointment.price * 100 : 0),
+        paidSoFarCents: appointment.totalPaidAmountCents || 0,
+      };
+    }),
+
+  /**
+   * Create Stripe Checkout for a payment request.
+   * PUBLIC — auth is via HMAC-signed token.
+   */
+  createPaymentRequestCheckout: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .mutation(async ({ input }) => {
+      const { verifyPaymentRequestToken } = await import(
+        "../services/paymentRequestToken"
+      );
+      const tokenResult = verifyPaymentRequestToken(input.token);
+      if (!tokenResult.valid || !tokenResult.requestId) {
+        return { error: "invalid_token" };
+      }
+
+      const db = await getDb();
+      if (!db) return { error: "server_error" };
+
+      const request = await db.query.paymentRequests.findFirst({
+        where: eq(schema.paymentRequests.id, tokenResult.requestId),
+      });
+      if (!request || request.status !== "pending") {
+        return { error: request?.status === "paid" ? "already_paid" : "invalid_request" };
+      }
+
+      // Fetch appointment + artist settings for fee calculation
+      const appointment = await db.query.appointments.findFirst({
+        where: eq(schema.appointments.id, request.appointmentId),
+      });
+      if (!appointment) return { error: "not_found" };
+
+      const client = await db.query.users.findFirst({
+        where: eq(schema.users.id, request.clientId),
+      });
+
+      const artistSettings = await db.query.artistSettings.findFirst({
+        where: eq(schema.artistSettings.userId, request.artistId),
+      });
+
+      const artist = await db.query.users.findFirst({
+        where: eq(schema.users.id, request.artistId),
+      });
+
+      // Calculate fees
+      const { calculateTransactionFees, resolvePaymentTier } = await import(
+        "../domain/fees"
+      );
+      const tier = resolvePaymentTier(artistSettings?.subscriptionTier);
+      const fees = calculateTransactionFees(request.amountCents, tier);
+
+      // Create Stripe Checkout Session
+      const { createPaymentRequestCheckoutSession } = await import(
+        "../services/stripe"
+      );
+
+      const artistName =
+        artistSettings?.businessName ||
+        artistSettings?.displayName ||
+        artist?.name ||
+        "Artist";
+
+      const session = await createPaymentRequestCheckoutSession({
+        requestId: request.id,
+        appointmentId: request.appointmentId,
+        amountCents: request.amountCents,
+        platformFeeCents: fees.platformFeeCents,
+        artistFeeCents: fees.artistFeeCents,
+        clientTotalCents: fees.clientTotalCents,
+        clientEmail: client?.email || "",
+        artistName,
+        stripeConnectAccountId: artistSettings?.stripeConnectAccountId || undefined,
+        tier,
+        token: input.token,
+      });
+
+      // Update payment request with checkout session ID
+      if (session.sessionId) {
+        await db.update(schema.paymentRequests)
+          .set({ stripeCheckoutSessionId: session.sessionId })
+          .where(eq(schema.paymentRequests.id, request.id));
+      }
+
+      return {
+        clientSecret: session.clientSecret,
+        url: session.url,
+      };
+    }),
 });

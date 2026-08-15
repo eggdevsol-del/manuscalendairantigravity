@@ -1,11 +1,13 @@
 /**
  * UpcomingWidget.tsx
  * Compact home-page widget showing the next 1-2 upcoming appointments.
+ * Now also shows pending payment request banners.
  */
 import { format } from "date-fns";
-import { Calendar, DollarSign, Clock } from "lucide-react";
+import { Calendar, DollarSign, Clock, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui";
 import { useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
 
 interface UpcomingWidgetProps {
   upcoming: any[];
@@ -14,10 +16,24 @@ interface UpcomingWidgetProps {
 export function UpcomingWidget({ upcoming }: UpcomingWidgetProps) {
   const [, setLocation] = useLocation();
 
+  // Fetch pending payment requests for this client
+  const { data: paymentRequests } = trpc.clientProfile.getMyPaymentRequests.useQuery(
+    undefined,
+    { refetchOnWindowFocus: true }
+  );
+
   // Show max 2 upcoming appointments
   const items = (upcoming || []).slice(0, 2);
 
-  if (items.length === 0) return null;
+  // Build a map: appointmentId → payment request
+  const requestsByApptId = new Map<number, typeof paymentRequests extends (infer T)[] ? T : never>();
+  if (paymentRequests) {
+    for (const pr of paymentRequests) {
+      requestsByApptId.set(pr.appointmentId, pr);
+    }
+  }
+
+  if (items.length === 0 && (!paymentRequests || paymentRequests.length === 0)) return null;
 
   return (
     <div className="space-y-3">
@@ -32,6 +48,8 @@ export function UpcomingWidget({ upcoming }: UpcomingWidgetProps) {
         const daysAway = Math.ceil(
           (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
         );
+
+        const pendingRequest = requestsByApptId.get(item.id);
 
         return (
           <div
@@ -78,7 +96,30 @@ export function UpcomingWidget({ upcoming }: UpcomingWidgetProps) {
                 </div>
               </div>
 
-              {item.remainingBalanceCents > 0 &&
+              {/* Payment Request Banner */}
+              {pendingRequest && (
+                <button
+                  onClick={() => setLocation(`/pay/${pendingRequest.token}`)}
+                  className="mt-3 w-full flex items-center justify-between rounded-xl px-4 py-3"
+                  style={{
+                    background: "rgba(242, 202, 92, 0.12)",
+                    border: "1px solid rgba(242, 202, 92, 0.3)",
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="w-4 h-4" style={{ color: "#f2ca5c" }} />
+                    <span className="text-sm font-semibold" style={{ color: "#f2ca5c" }}>
+                      ${(pendingRequest.amountCents / 100).toLocaleString("en-AU")} payment requested
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#f2ca5c" }}>
+                    Pay now
+                  </span>
+                </button>
+              )}
+
+              {/* Existing balance button — only if no payment request pending */}
+              {!pendingRequest && item.remainingBalanceCents > 0 &&
                 item.paymentStatus !== "fully_paid" && (
                   <Button
                     onClick={() => setLocation(`/balance/${item.id}`)}

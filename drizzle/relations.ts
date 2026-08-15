@@ -14,6 +14,7 @@ import {
   pushSubscriptions,
   quickActionButtons,
   socialMessageSync,
+  paymentRequests,
 } from "./schema";
 
 export const appointmentsRelations = relations(appointments, ({ one }) => ({
@@ -207,6 +208,26 @@ export const socialMessageSyncRelations = relations(
     user: one(users, {
       fields: [socialMessageSync.artistId],
       references: [users.id],
+    }),
+  })
+);
+
+export const paymentRequestsRelations = relations(
+  paymentRequests,
+  ({ one }) => ({
+    appointment: one(appointments, {
+      fields: [paymentRequests.appointmentId],
+      references: [appointments.id],
+    }),
+    artist: one(users, {
+      fields: [paymentRequests.artistId],
+      references: [users.id],
+      relationName: "paymentRequests_artistId_users_id",
+    }),
+    client: one(users, {
+      fields: [paymentRequests.clientId],
+      references: [users.id],
+      relationName: "paymentRequests_clientId_users_id",
     }),
   })
 );

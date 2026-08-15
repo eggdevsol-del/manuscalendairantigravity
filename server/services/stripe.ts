@@ -380,6 +380,80 @@ export async function createStorefrontCheckoutSession(opts: {
 
 
 /**
+ * Creates a Stripe Checkout Session for an artist-initiated payment request.
+ * Follows the same pattern as createBalanceCheckoutSession.
+ */
+export async function createPaymentRequestCheckoutSession(opts: {
+  requestId: number;
+  appointmentId: number;
+  amountCents: number;
+  platformFeeCents: number;
+  artistFeeCents: number;
+  clientTotalCents: number;
+  clientEmail: string;
+  artistName: string;
+  stripeConnectAccountId?: string;
+  tier: string;
+  token: string;
+}): Promise<{ url: string | null; clientSecret: string | null; sessionId: string }> {
+  const baseUrl = getAppUrl();
+
+  // Combined application fee = platform fee + artist fee
+  const applicationFeeCents = opts.platformFeeCents + opts.artistFeeCents;
+
+  const sessionConfig: any = {
+    payment_method_types: ["card"],
+    mode: "payment",
+    customer_email: opts.clientEmail || undefined,
+    client_reference_id: String(opts.appointmentId),
+    line_items: [
+      {
+        price_data: {
+          currency: "aud",
+          product_data: {
+            name: `Session Payment — ${opts.artistName}`,
+            description: `Payment request for your upcoming session`,
+          },
+          unit_amount: opts.clientTotalCents,
+        },
+        quantity: 1,
+      },
+    ],
+    metadata: {
+      type: "payment_request",
+      requestId: String(opts.requestId),
+      appointmentId: String(opts.appointmentId),
+      platformFeeCents: String(opts.platformFeeCents),
+      artistFeeCents: String(opts.artistFeeCents),
+      baseAmountCents: String(opts.amountCents),
+      stripeConnectAccountId: opts.stripeConnectAccountId || "",
+      tier: opts.tier,
+    },
+    ui_mode: "embedded",
+    return_url: `${baseUrl}/pay/${opts.token}?status=success&session_id={CHECKOUT_SESSION_ID}`,
+  };
+
+  // Connect routing — route payment to artist
+  if (opts.stripeConnectAccountId) {
+    sessionConfig.payment_intent_data = {
+      application_fee_amount: applicationFeeCents,
+      on_behalf_of: opts.stripeConnectAccountId,
+      transfer_data: {
+        destination: opts.stripeConnectAccountId,
+      },
+    };
+  }
+
+  const session = await stripe.checkout.sessions.create(sessionConfig);
+  return {
+    url: session.url,
+    clientSecret: session.client_secret,
+    sessionId: session.id,
+  };
+}
+
+
+/**
  * Express middleware to handle Stripe Webhook events.
  */
 export async function handleStripeWebhook(req: Request, res: Response) {
@@ -677,6 +751,88 @@ export async function handleStripeWebhook(req: Request, res: Response) {
               });
 
               console.log(`[Stripe] Store Order ${orderId} completed successfully`);
+            }
+          }
+          break;
+        }
+
+        // ── Payment Request (artist-initiated charge) ────────────
+        if (session.metadata?.type === "payment_request") {
+          const requestId = parseInt(session.metadata.requestId, 10);
+          const appointmentId = parseInt(session.metadata.appointmentId, 10);
+          const baseAmountCents = parseInt(session.metadata.baseAmountCents || "0", 10);
+          const platformFeeCents = parseInt(session.metadata.platformFeeCents || "0", 10);
+          const artistFeeCents = parseInt(session.metadata.artistFeeCents || "0", 10);
+          const connectAccountId = session.metadata.stripeConnectAccountId || null;
+
+          if (requestId && appointmentId) {
+            const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+
+            // 1. Mark payment request as paid
+            const { paymentRequests } = await import("../../drizzle/schema");
+            await db.update(paymentRequests).set({
+              status: "paid" as any,
+              paidAt: now,
+              stripeCheckoutSessionId: session.id,
+            }).where(eq(paymentRequests.id, requestId));
+
+            // 2. Update appointment balance
+            const booking = await db.query.appointments.findFirst({
+              where: eq(appointments.id, appointmentId),
+            });
+
+            if (booking) {
+              const newPaid = (booking.totalPaidAmountCents || 0) + baseAmountCents;
+              const expected = booking.totalExpectedAmountCents || (booking.price ? booking.price * 100 : 0);
+              const remaining = Math.max(0, expected - newPaid);
+              const isFullyPaid = remaining <= 0;
+
+              await db.update(appointments).set({
+                totalPaidAmountCents: newPaid,
+                remainingBalanceCents: remaining,
+                paymentStatus: isFullyPaid ? "fully_paid" as any : "deposit_paid" as any,
+                clientPaid: isFullyPaid ? 1 : 0,
+                amountPaid: Math.round(newPaid / 100),
+                ...(isFullyPaid ? {
+                  actualEndTime: now,
+                  status: "completed" as any,
+                  paymentMethod: "stripe" as any,
+                } : {}),
+                updatedAt: now,
+              }).where(eq(appointments.id, appointmentId));
+
+              // 3. Write to payment ledger
+              await db.insert(paymentLedger).values({
+                bookingId: appointmentId,
+                artistId: booking.artistId,
+                clientId: booking.clientId,
+                transactionType: "balance",
+                amountCents: baseAmountCents,
+                platformFeeCents,
+                artistFeeCents,
+                stripePaymentId: session.payment_intent as string || session.id,
+                stripeConnectAccountId: connectAccountId,
+                tier: (session.metadata.tier as any) || "free",
+                paymentMethod: "card",
+              });
+
+              // 4. Send push notification to artist
+              try {
+                const { sendPushNotification } = await import("./pushService");
+                const client = await db.query.users.findFirst({
+                  where: eq(users.id, booking.clientId),
+                });
+                const formatCents = (c: number) => `$${(c / 100).toLocaleString("en-AU", { minimumFractionDigits: 0 })}`;
+                await sendPushNotification(booking.artistId, {
+                  title: "Payment Received 💰",
+                  body: `${client?.name || "Your client"} paid ${formatCents(baseAmountCents)}`,
+                  data: { type: "payment_received", appointmentId },
+                });
+              } catch (e) {
+                console.warn("[Stripe] Push to artist failed:", e);
+              }
+
+              console.log(`[Stripe] Payment request ${requestId} completed for Booking ${appointmentId}, paid: ${baseAmountCents}c`);
             }
           }
           break;

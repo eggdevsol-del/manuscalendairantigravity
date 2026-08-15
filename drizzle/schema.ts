@@ -1939,6 +1939,41 @@ export const paymentLedger = mysqlTable(
 export type InsertPaymentLedger = InferInsertModel<typeof paymentLedger>;
 export type SelectPaymentLedger = InferSelectModel<typeof paymentLedger>;
 
+// ─── Payment Requests ─────────────────────────────────────
+// Artist-initiated charge requests. Client pays via Stripe Checkout.
+// Status lifecycle: pending → paid | expired | cancelled
+export const paymentRequests = mysqlTable(
+  "payment_requests",
+  {
+    id: int().primaryKey().autoincrement(),
+    appointmentId: int().notNull().references(() => appointments.id, { onDelete: "cascade" }),
+    artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+    clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+    amountCents: int().notNull(),
+    status: mysqlEnum("payment_request_status", [
+      "pending",
+      "paid",
+      "expired",
+      "cancelled",
+    ]).default("pending").notNull(),
+    token: varchar({ length: 255 }).notNull(),
+    stripeCheckoutSessionId: varchar({ length: 255 }),
+    createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
+    expiresAt: timestamp({ mode: "string" }),
+    paidAt: timestamp({ mode: "string" }),
+  },
+  table => [
+    index("pr_appointment_idx").on(table.appointmentId),
+    index("pr_artist_idx").on(table.artistId),
+    index("pr_client_idx").on(table.clientId),
+    index("pr_token_idx").on(table.token),
+    index("pr_status_idx").on(table.status),
+  ]
+);
+
+export type InsertPaymentRequest = InferInsertModel<typeof paymentRequests>;
+export type SelectPaymentRequest = InferSelectModel<typeof paymentRequests>;
+
 // ── Error Monitoring ──
 export const errorLog = mysqlTable("error_log", {
   id: int().autoincrement().primaryKey(),

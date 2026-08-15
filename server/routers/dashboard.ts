@@ -340,5 +340,100 @@ export const dashboardRouter = router({
         isFullyPaid,
       };
     }),
+
+  /**
+   * requestPayment — Artist sends a Stripe payment request to the client.
+   * Creates a payment_requests row, generates an HMAC token, and sends
+   * a push notification. The client pays via /pay/{token}.
+   */
+  requestPayment: protectedProcedure
+    .input(z.object({
+      appointmentId: z.number(),
+      amountCents: z.number().min(1),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const { user } = ctx;
+      if (user.role !== "artist" && user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      // Validate appointment
+      const appointment = await db.query.appointments.findFirst({
+        where: eq(schema.appointments.id, input.appointmentId),
+        with: { client: true },
+      });
+      if (!appointment) throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+      if (appointment.artistId !== user.id) throw new TRPCError({ code: "FORBIDDEN" });
+      if (!appointment.clientId) throw new TRPCError({ code: "BAD_REQUEST", message: "No client linked" });
+
+      // Check there isn't already a pending request for this appointment
+      const existingRequest = await db.query.paymentRequests.findFirst({
+        where: and(
+          eq(schema.paymentRequests.appointmentId, input.appointmentId),
+          eq(schema.paymentRequests.status, "pending"),
+        ),
+      });
+      if (existingRequest) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "A payment request is already pending for this session",
+        });
+      }
+
+      // Generate token and expiry
+      const { createPaymentRequestToken } = await import("../services/paymentRequestToken");
+      const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000)
+        .toISOString().slice(0, 19).replace("T", " ");
+
+      // Insert payment request (we need the ID first for the token)
+      const [insertResult] = await db.insert(schema.paymentRequests).values({
+        appointmentId: input.appointmentId,
+        artistId: user.id,
+        clientId: appointment.clientId,
+        amountCents: input.amountCents,
+        status: "pending",
+        token: "placeholder", // will update after we have the ID
+        expiresAt,
+      });
+
+      const requestId = insertResult.insertId;
+      const token = createPaymentRequestToken(requestId);
+
+      // Update with real token
+      await db.update(schema.paymentRequests)
+        .set({ token })
+        .where(eq(schema.paymentRequests.id, requestId));
+
+      // Build payment URL
+      const appUrl = process.env.VITE_APP_URL || process.env.APP_URL || "https://www.tattoi.app";
+      const paymentUrl = `${appUrl}/pay/${token}`;
+
+      // Send push notification to client
+      try {
+        const { sendPushNotification } = await import("../services/pushService");
+        const formatCents = (c: number) => `$${(c / 100).toLocaleString("en-AU", { minimumFractionDigits: 0 })}`;
+        const artistName = user.name || "Your artist";
+
+        await sendPushNotification(appointment.clientId, {
+          title: "Payment Request",
+          body: `${formatCents(input.amountCents)} due for your session with ${artistName}`,
+          url: paymentUrl,
+          data: { type: "payment_request", requestId, appointmentId: input.appointmentId },
+        });
+      } catch (e) {
+        // Push may fail if client has no subscription — that's OK
+        console.warn("[Dashboard] Push notification failed for payment request:", e);
+      }
+
+      return {
+        success: true,
+        requestId,
+        token,
+        paymentUrl,
+      };
+    }),
 });
 

@@ -539,6 +539,16 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
   const menuRef = useRef<HTMLDivElement>(null);
 
   const utils = trpc.useUtils();
+  const requestPaymentMutation = trpc.dashboard.requestPayment.useMutation({
+    onSuccess: () => {
+      utils.dashboard.getClientSessions.invalidate();
+    },
+    onError: (err) => {
+      showToast(err.message || "Failed to send payment request");
+    },
+  });
+
+  // Keep manual recording for cash/bank (overflow menu)
   const recordPayment = trpc.dashboard.recordManualPayment.useMutation({
     onSuccess: () => {
       utils.dashboard.getClientSessions.invalidate();
@@ -573,13 +583,14 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
     toastTimer.current = setTimeout(() => setToast(null), 2600);
   }, []);
 
-  const handleRecordPayment = useCallback((sessionId: number, amountCents: number) => {
-    recordPayment.mutate({ appointmentId: sessionId, amountCents, paymentMethod: "cash" });
+  const handleRequestPayment = useCallback((sessionId: number, amountCents: number) => {
+    requestPaymentMutation.mutate({ appointmentId: sessionId, amountCents });
     setSheetOpen(false);
     setSheetSessionId(null);
     setExpandedSessionId(null);
-    showToast(`${formatCents(amountCents)} recorded · balance updated`);
-  }, [recordPayment, showToast]);
+    const firstName = group.clientName.split(" ")[0];
+    showToast(`Payment request sent to ${firstName}`);
+  }, [requestPaymentMutation, showToast, group.clientName]);
 
   const isFullyPaid = group.outstandingCents <= 0;
   const isEmptyProject = group.sessions.length === 0;
@@ -1033,7 +1044,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
               group={group}
               preSelectedSessionId={sheetSessionId}
               onClose={() => { setSheetOpen(false); setSheetSessionId(null); }}
-              onConfirm={handleRecordPayment}
+              onConfirm={handleRequestPayment}
               demoMode={demoMode}
             />
           )}

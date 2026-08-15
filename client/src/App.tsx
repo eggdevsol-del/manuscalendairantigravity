@@ -25,6 +25,7 @@ import PublicStudioFunnel from "./pages/funnel/PublicStudioFunnel";
 import { PublicFunnel } from "./pages/funnel";
 import { DepositSheet } from "./pages/funnel/DepositSheet";
 import { BalanceSheet } from "./pages/funnel/BalanceSheet";
+import { PaymentRequestSheet } from "./pages/funnel/PaymentRequestSheet";
 import PublicStorefront from "./pages/public/PublicStorefront";
 import PublicEvents from "./pages/public/PublicEvents";
 import ArtistHub from "./pages/public/ArtistHub";
@@ -179,6 +180,7 @@ function Router() {
     location.startsWith("/start/") ||
     location.startsWith("/deposit/") ||
     location.startsWith("/balance/") ||
+    location.startsWith("/pay/") ||
     location.startsWith("/studio/") ||
     location.startsWith("/book/");
 
@@ -200,6 +202,7 @@ function Router() {
         </Route>
         <Route path="/deposit/:token" component={DepositSheet} />
         <Route path="/balance/:id" component={BalanceSheet} />
+        <Route path="/pay/:token" component={PaymentRequestSheet} />
 
         {/* Smart catch-all: app routes vs public slug pages */}
         <Route path="*">

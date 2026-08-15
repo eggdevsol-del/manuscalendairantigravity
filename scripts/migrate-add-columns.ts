@@ -166,6 +166,34 @@ async function main() {
     console.error("[Migration] ⚠️  Tag backfill skipped:", e.message);
   }
 
+  // ── Payment Requests table ──────────────────────────────────
+  try {
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS \`payment_requests\` (
+        \`id\` int AUTO_INCREMENT NOT NULL,
+        \`appointmentId\` int NOT NULL,
+        \`artistId\` varchar(64) NOT NULL,
+        \`clientId\` varchar(64) NOT NULL,
+        \`amountCents\` int NOT NULL,
+        \`status\` enum('pending','paid','expired','cancelled') NOT NULL DEFAULT 'pending',
+        \`token\` varchar(255) NOT NULL,
+        \`stripeCheckoutSessionId\` varchar(255),
+        \`createdAt\` timestamp DEFAULT CURRENT_TIMESTAMP,
+        \`expiresAt\` timestamp NULL,
+        \`paidAt\` timestamp NULL,
+        CONSTRAINT \`payment_requests_id\` PRIMARY KEY(\`id\`),
+        KEY \`pr_appointment_idx\` (\`appointmentId\`),
+        KEY \`pr_artist_idx\` (\`artistId\`),
+        KEY \`pr_client_idx\` (\`clientId\`),
+        KEY \`pr_token_idx\` (\`token\`),
+        KEY \`pr_status_idx\` (\`status\`)
+      )
+    `);
+    console.log("[Migration] ✅ payment_requests table ensured");
+  } catch (e: any) {
+    console.error("[Migration] ⚠️  payment_requests creation:", e.message);
+  }
+
   await connection.end();
   console.log("[Migration] Done.");
   process.exit(0);

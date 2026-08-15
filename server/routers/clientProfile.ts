@@ -9,6 +9,7 @@ import {
   appointments,
   orders,
   clientNotes,
+  paymentRequests,
 } from "../../drizzle/schema";
 import { eq, desc, and, gte } from "drizzle-orm";
 import { z } from "zod";
@@ -485,6 +486,45 @@ export const clientProfileRouter = router({
           )
         );
       return { success: true };
+    }),
+
+  /**
+   * getMyPaymentRequests — Returns pending payment requests for the logged-in client.
+   * Used by the UpcomingWidget to show "Payment requested" banners.
+   */
+  getMyPaymentRequests: protectedProcedure
+    .query(async ({ ctx }) => {
+      const database = await db.getDb();
+      if (!database) return [];
+
+      const requests = await database.query.paymentRequests.findMany({
+        where: and(
+          eq(paymentRequests.clientId, ctx.user.id),
+          eq(paymentRequests.status, "pending"),
+        ),
+      });
+
+      // Enrich with appointment info
+      const enriched = await Promise.all(requests.map(async (req) => {
+        const appt = await database.query.appointments.findFirst({
+          where: eq(appointments.id, req.appointmentId),
+        });
+        const artist = await database.query.users.findFirst({
+          where: eq(users.id, req.artistId),
+        });
+        return {
+          id: req.id,
+          appointmentId: req.appointmentId,
+          amountCents: req.amountCents,
+          token: req.token,
+          createdAt: req.createdAt,
+          sessionDate: appt?.startTime || null,
+          serviceName: appt?.serviceName || appt?.title || "Session",
+          artistName: artist?.name || "Artist",
+        };
+      }));
+
+      return enriched;
     }),
 });
 
