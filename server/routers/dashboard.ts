@@ -177,7 +177,6 @@ export const dashboardRouter = router({
       with: {
         client: true,
       },
-      limit: 100,
     });
 
     // Only include appointments that have a client and are active
