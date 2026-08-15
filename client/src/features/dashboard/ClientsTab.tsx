@@ -289,7 +289,7 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
         serviceName,
         priceEach,
       };
-    }).filter(g => g.sessions.length > 0);
+    }).filter(g => g.upcomingSessions.length > 0);
   }, [demoMode, allSessions]);
 
   // ── Client list ─────────────────────────────────────────
@@ -625,7 +625,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
               <div style={{
                 width: 46, height: 46, borderRadius: 12, background: DT.avatarFallback,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                font: "600 15px/1 -apple-system, sans-serif", color: "rgba(255,255,255,.6)", flexShrink: 0,
+                fontSize: 15, fontWeight: 600, lineHeight: 1, color: "rgba(255,255,255,.6)", flexShrink: 0,
               }}>
                 {group.clientName.split(" ").map(n => n[0]).join("").slice(0, 2)}
               </div>
@@ -633,14 +633,14 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
 
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
-                font: "600 18px/1.25 -apple-system, sans-serif",
+                fontSize: 18, fontWeight: 600, lineHeight: 1.25,
                 letterSpacing: "-.01em", color: DT.textPrimary,
                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
               }}>
                 {group.clientName}
               </div>
               <div style={{
-                font: "400 13.5px/1.4 -apple-system, sans-serif",
+                fontSize: 13.5, fontWeight: 400, lineHeight: 1.4,
                 color: DT.textSecondary, marginTop: 2,
                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
               }}>
@@ -676,18 +676,18 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
             <>
               <div style={{ marginTop: 20, display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
                 <div>
-                  <div style={{ font: "500 10.5px/1 -apple-system, sans-serif", letterSpacing: ".14em", color: DT.textTertiary }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 500, lineHeight: 1, letterSpacing: ".14em", color: DT.textTertiary }}>
                     {isFullyPaid ? "PAID IN FULL" : "OUTSTANDING"}
                   </div>
                   <div style={{
-                    font: "600 30px/1.1 -apple-system, sans-serif",
+                    fontSize: 30, fontWeight: 600, lineHeight: 1.1,
                     letterSpacing: "-.02em", marginTop: 7,
                     color: isFullyPaid ? DT.green : DT.textPrimary,
                   }}>
                     {isFullyPaid ? formatCents(group.totalValueCents) : formatCents(group.outstandingCents)}
                   </div>
                 </div>
-                <div style={{ textAlign: "right", font: "400 12.5px/1.6 -apple-system, sans-serif", color: DT.textSecondary }}>
+                <div style={{ textAlign: "right", fontSize: 12.5, fontWeight: 400, lineHeight: 1.6, color: DT.textSecondary }}>
                   <div><span style={{ color: DT.green }}>{formatCents(group.collectedCents)}</span> collected</div>
                   <div>of {formatCents(group.totalValueCents)}</div>
                 </div>
@@ -716,13 +716,13 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
         {isEmptyProject ? (
           /* Empty state — no sessions */
           <div style={{ padding: "40px 20px", textAlign: "center" }}>
-            <p style={{ font: "400 14px/1.5 -apple-system, sans-serif", color: DT.textSecondary, marginBottom: 16 }}>
+            <p style={{ fontSize: 14, fontWeight: 400, lineHeight: 1.5, color: DT.textSecondary, marginBottom: 16 }}>
               No sessions booked yet
             </p>
             <button
               style={{
                 background: DT.amber, color: DT.amberOnColor, borderRadius: 12,
-                padding: "13px 24px", font: "600 15px/1 -apple-system, sans-serif",
+                padding: "13px 24px", fontSize: 15, fontWeight: 600, lineHeight: 1,
                 cursor: "pointer", border: "none",
               }}
             >
@@ -735,10 +735,10 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
             {group.upcomingSessions.length > 0 && (
               <div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 11 }}>
-                  <span style={{ font: "500 10.5px/1 -apple-system, sans-serif", letterSpacing: ".14em", color: DT.textTertiary }}>
+                  <span style={{ fontSize: 10.5, fontWeight: 500, lineHeight: 1, letterSpacing: ".14em", color: DT.textTertiary }}>
                     UPCOMING
                   </span>
-                  <span style={{ font: "400 12px/1 -apple-system, sans-serif", color: DT.textTertiary }}>
+                  <span style={{ fontSize: 12, fontWeight: 400, lineHeight: 1, color: DT.textTertiary }}>
                     {group.upcomingSessions.length} left
                   </span>
                 </div>
@@ -768,11 +768,11 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                           <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 14px" }}>
                             {/* Date column — 94px fixed */}
                             <div style={{ width: 94, flexShrink: 0 }}>
-                              <div style={{ font: "600 14.5px/1.2 -apple-system, sans-serif", color: DT.textPrimary }}>
+                              <div style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.2, color: DT.textPrimary }}>
                                 {date}
                               </div>
                               <div style={{
-                                font: "400 12px/1.4 -apple-system, sans-serif",
+                                fontSize: 12, fontWeight: 400, lineHeight: 1.4,
                                 color: "rgba(255,255,255,.36)", marginTop: 2, whiteSpace: "nowrap",
                               }}>
                                 {time}
@@ -782,13 +782,13 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                             {/* Middle — money + progress */}
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-                                <span style={{ font: "400 13px/1.3 -apple-system, sans-serif", color: DT.textMoney }}>
+                                <span style={{ fontSize: 13, fontWeight: 400, lineHeight: 1.3, color: DT.textMoney }}>
                                   {session.paidCents >= session.priceCents
                                     ? "Paid in full"
                                     : `${formatCents(session.paidCents)} of ${formatCents(session.priceCents)}`
                                   }
                                 </span>
-                                <span style={{ font: "400 11.5px/1.3 -apple-system, sans-serif", color: DT.textQuaternary, whiteSpace: "nowrap" }}>
+                                <span style={{ fontSize: 11.5, fontWeight: 400, lineHeight: 1.3, color: DT.textQuaternary, whiteSpace: "nowrap" }}>
                                   {relativeLabel(session.startTime)}
                                 </span>
                               </div>
@@ -803,7 +803,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                             {/* Exception pill — only if not healthy */}
                             {flag && (
                               <span style={{
-                                font: "500 11px/1 -apple-system, sans-serif",
+                                fontSize: 11, fontWeight: 500, lineHeight: 1,
                                 color: DT.amber, border: `1px solid ${DT.amberBorder}`,
                                 borderRadius: 99, padding: "5px 8px", whiteSpace: "nowrap", flexShrink: 0,
                               }}>
@@ -834,7 +834,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                                         flex: 1, textAlign: "center",
                                         background: DT.amber, color: DT.amberOnColor,
                                         borderRadius: 10, padding: 11, border: "none",
-                                        font: "600 13.5px/1 -apple-system, sans-serif", cursor: "pointer",
+                                        fontSize: 13.5, fontWeight: 600, lineHeight: 1, cursor: "pointer",
                                       }}
                                     >
                                       Take {formatCents(balance)}
@@ -845,7 +845,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                                     style={{
                                       flexShrink: 0, border: "1px solid rgba(255,255,255,.16)",
                                       borderRadius: 10, padding: "11px 14px", background: "none",
-                                      font: "400 13.5px/1 -apple-system, sans-serif", color: "rgba(255,255,255,.8)", cursor: "pointer",
+                                      fontSize: 13.5, fontWeight: 400, lineHeight: 1, color: "rgba(255,255,255,.8)", cursor: "pointer",
                                     }}
                                   >
                                     Reschedule
@@ -855,7 +855,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                                     style={{
                                       flexShrink: 0, border: "1px solid rgba(255,255,255,.16)",
                                       borderRadius: 10, padding: "11px 14px", background: "none",
-                                      font: "400 13.5px/1 -apple-system, sans-serif", color: "rgba(255,255,255,.8)", cursor: "pointer",
+                                      fontSize: 13.5, fontWeight: 400, lineHeight: 1, color: "rgba(255,255,255,.8)", cursor: "pointer",
                                     }}
                                   >
                                     Note
@@ -882,10 +882,10 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                     margin: "20px 0 11px", cursor: "pointer",
                   }}
                 >
-                  <span style={{ font: "500 10.5px/1 -apple-system, sans-serif", letterSpacing: ".14em", color: DT.textTertiary }}>
+                  <span style={{ fontSize: 10.5, fontWeight: 500, lineHeight: 1, letterSpacing: ".14em", color: DT.textTertiary }}>
                     COMPLETED
                   </span>
-                  <span style={{ font: "400 12px/1 -apple-system, sans-serif", color: DT.textTertiary }}>
+                  <span style={{ fontSize: 12, fontWeight: 400, lineHeight: 1, color: DT.textTertiary }}>
                     {completedOpen ? "Hide" : "Show"} {group.completedSessions.length}
                   </span>
                 </div>
@@ -909,13 +909,13 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                                 padding: "11px 14px", borderRadius: 13, background: DT.completedRow,
                               }}
                             >
-                              <div style={{ width: 94, flexShrink: 0, font: "500 13.5px/1.2 -apple-system, sans-serif", color: "rgba(255,255,255,.55)" }}>
+                              <div style={{ width: 94, flexShrink: 0, fontSize: 13.5, fontWeight: 500, lineHeight: 1.2, color: "rgba(255,255,255,.55)" }}>
                                 {date}
                               </div>
-                              <div style={{ flex: 1, font: "400 12.5px/1.3 -apple-system, sans-serif", color: DT.textTertiary }}>
+                              <div style={{ flex: 1, fontSize: 12.5, fontWeight: 400, lineHeight: 1.3, color: DT.textTertiary }}>
                                 {time}
                               </div>
-                              <span style={{ font: "400 12.5px/1 -apple-system, sans-serif", color: "rgba(255,255,255,.4)" }}>
+                              <span style={{ fontSize: 12.5, fontWeight: 400, lineHeight: 1, color: "rgba(255,255,255,.4)" }}>
                                 {formatCents(session.paidCents)} paid
                               </span>
                             </div>
@@ -950,7 +950,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                 flex: 1.6, textAlign: "center",
                 background: isFullyPaid ? `${DT.amber}66` : DT.amber,
                 color: DT.amberOnColor, borderRadius: 12, padding: 15, border: "none",
-                font: "600 15.5px/1 -apple-system, sans-serif",
+                fontSize: 15.5, fontWeight: 600, lineHeight: 1,
                 cursor: isFullyPaid ? "not-allowed" : "pointer",
                 opacity: isFullyPaid ? 0.4 : 1,
               }}
@@ -962,7 +962,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
               style={{
                 flex: 1, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center",
                 border: "1px solid rgba(255,255,255,.18)", borderRadius: 12, padding: 15,
-                font: "500 15.5px/1 -apple-system, sans-serif", color: DT.textPrimary,
+                fontSize: 15.5, fontWeight: 500, lineHeight: 1, color: DT.textPrimary,
                 textDecoration: "none", cursor: "pointer",
               }}
             >
@@ -999,7 +999,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                     onClick={() => setMenuOpen(false)}
                     style={{
                       display: "block", padding: "10px 12px", borderRadius: 8,
-                      font: "400 14px/1 -apple-system, sans-serif", color: DT.textPrimary,
+                      fontSize: 14, fontWeight: 400, lineHeight: 1, color: DT.textPrimary,
                       textDecoration: "none", cursor: "pointer",
                     }}
                     className="hover:bg-[rgba(255,255,255,.08)]"
@@ -1013,7 +1013,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                     style={{
                       display: "block", width: "100%", textAlign: "left",
                       padding: "10px 12px", borderRadius: 8, border: "none", background: "none",
-                      font: "400 14px/1 -apple-system, sans-serif", color: DT.textPrimary,
+                      fontSize: 14, fontWeight: 400, lineHeight: 1, color: DT.textPrimary,
                       cursor: "pointer",
                     }}
                     className="hover:bg-[rgba(255,255,255,.08)]"
@@ -1050,7 +1050,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                 position: "absolute", left: 20, right: 20, bottom: 88,
                 background: DT.toastBg, border: `1px solid ${DT.toastBorder}`,
                 borderRadius: 12, padding: "13px 15px",
-                font: "500 13.5px/1.3 -apple-system, sans-serif", color: DT.toastText,
+                fontSize: 13.5, fontWeight: 500, lineHeight: 1.3, color: DT.toastText,
                 zIndex: 10,
               }}
               role="status"
@@ -1107,8 +1107,8 @@ function PaymentSheet({ group, preSelectedSessionId, onClose, onConfirm, demoMod
           borderRadius: "20px 20px 0 0", padding: "22px 20px 20px",
         }}
       >
-        <div style={{ font: "600 17px/1.2 -apple-system, sans-serif", color: DT.textPrimary }}>Take payment</div>
-        <div style={{ font: "400 13px/1.4 -apple-system, sans-serif", color: DT.textSecondary, marginTop: 4 }}>
+        <div style={{ fontSize: 17, fontWeight: 600, lineHeight: 1.2, color: DT.textPrimary }}>Take payment</div>
+        <div style={{ fontSize: 13, fontWeight: 400, lineHeight: 1.4, color: DT.textSecondary, marginTop: 4 }}>
           {group.clientName} · {formatCents(group.outstandingCents)} outstanding across {unsettledSessions.length} session{unsettledSessions.length !== 1 ? "s" : ""}
         </div>
 
@@ -1131,10 +1131,10 @@ function PaymentSheet({ group, preSelectedSessionId, onClose, onConfirm, demoMod
                   border: `1px solid ${isSelected ? DT.sheetSelectedBorder : DT.sheetUnselectedBorder}`,
                 }}
               >
-                <span style={{ font: "500 14px/1.2 -apple-system, sans-serif", color: DT.textPrimary }}>
+                <span style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.2, color: DT.textPrimary }}>
                   {date} · {formatCents(balance)} due
                 </span>
-                <span style={{ font: "400 13px/1.2 -apple-system, sans-serif", color: DT.textSecondary }}>
+                <span style={{ fontSize: 13, fontWeight: 400, lineHeight: 1.2, color: DT.textSecondary }}>
                   {pct > 0 ? `${pct}% paid` : "no deposit"}
                 </span>
               </div>
@@ -1152,7 +1152,7 @@ function PaymentSheet({ group, preSelectedSessionId, onClose, onConfirm, demoMod
             marginTop: 16, width: "100%", textAlign: "center",
             background: selected ? DT.amber : `${DT.amber}66`,
             color: DT.amberOnColor, borderRadius: 12, padding: 15, border: "none",
-            font: "600 15.5px/1 -apple-system, sans-serif",
+            fontSize: 15.5, fontWeight: 600, lineHeight: 1,
             cursor: selected ? "pointer" : "not-allowed",
             opacity: selected ? 1 : 0.4,
           }}
@@ -1209,7 +1209,7 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
           <div style={{
             width: 64, height: 64, borderRadius: 12, background: DT.avatarFallback,
             display: "flex", alignItems: "center", justifyContent: "center",
-            font: "600 20px/1 -apple-system, sans-serif", color: "rgba(255,255,255,.6)",
+            fontSize: 20, fontWeight: 600, lineHeight: 1, color: "rgba(255,255,255,.6)",
           }}>
             {client.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
           </div>
