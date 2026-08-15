@@ -338,6 +338,16 @@ export const tokens = {
     emptyState: 'flex flex-col items-center justify-center gap-3 py-12 text-center',
     emptyStateIcon: 'w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-muted-foreground',
     emptyStateText: 'text-[14px] text-muted-foreground max-w-[240px]',
+    // Progress bar — reusable track/fill for balance, completion, etc.
+    progressTrack: 'w-full rounded-full bg-[rgba(255,255,255,0.09)] overflow-hidden',
+    progressFill: 'h-full rounded-full bg-[#4ade80] transition-[width] duration-[450ms] ease-[cubic-bezier(0.2,0.7,0.3,1)]',
+    progressTrackLg: 'h-[5px]',
+    progressTrackSm: 'h-[3px]',
+    // Toast — green success notification
+    toast: 'fixed left-5 right-5 bottom-[88px] bg-[#1f3a2a] border border-[rgba(74,222,128,0.3)] rounded-[12px] px-4 py-3 text-[13.5px] font-medium text-[#c8f5da] z-50 animate-in fade-in slide-in-from-bottom-2',
+    // Overflow menu — popover anchored to trigger
+    overflowMenu: 'absolute bg-[#232325] border border-[rgba(255,255,255,0.1)] rounded-[12px] p-1.5 min-w-[170px] shadow-[0_18px_40px_rgba(0,0,0,0.55)] z-50',
+    overflowItem: 'w-full text-left px-3 py-2.5 rounded-[8px] text-[14px] font-normal text-foreground/80 hover:bg-[rgba(255,255,255,0.08)] transition-colors cursor-pointer',
   },
 
   // 12. Motion / Animations (Radix + Tailwind Animate)

@@ -157,11 +157,11 @@ export const dashboardRouter = router({
   }),
 
   /**
-   * getUpcomingProjects — Returns upcoming appointments enriched with
-   * client info and linked lead project details (style, placement, refs).
-   * Used by the Clients tab "Upcoming Projects" section.
+   * getClientSessions — Returns ALL sessions (upcoming + completed) for a client,
+   * enriched with payment cents fields and lead project details.
+   * Used by the redesigned Clients tab project cards.
    */
-  getUpcomingProjects: protectedProcedure.query(async ({ ctx }) => {
+  getClientSessions: protectedProcedure.query(async ({ ctx }) => {
     const { user } = ctx;
     if (user.role !== "artist" && user.role !== "admin") {
       throw new TRPCError({ code: "FORBIDDEN" });
@@ -170,26 +170,25 @@ export const dashboardRouter = router({
     const db = await getDb();
     if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-    const now = new Date().toISOString();
-
-    // Fetch upcoming appointments (pending/confirmed, starting from now)
-    const upcomingAppts = await db.query.appointments.findMany({
-      where: and(
-        eq(schema.appointments.artistId, user.id),
-        gte(schema.appointments.startTime, now),
-        inArray(schema.appointments.status, ["pending", "confirmed"])
-      ),
+    // Fetch ALL appointments (upcoming + completed) — not just future ones
+    const allAppts = await db.query.appointments.findMany({
+      where: eq(schema.appointments.artistId, user.id),
       orderBy: asc(schema.appointments.startTime),
       with: {
         client: true,
       },
-      limit: 20,
+      limit: 100,
     });
 
-    // Get clientIds to find linked leads
-    const clientIds = [...new Set(upcomingAppts.map(a => a.clientId))];
+    // Only include appointments that have a client and are active
+    const activeAppts = allAppts.filter(a =>
+      a.clientId && !["cancelled"].includes(a.status)
+    );
 
-    // Fetch leads linked to these appointments or clients
+    // Get clientIds to find linked leads
+    const clientIds = [...new Set(activeAppts.map(a => a.clientId))];
+
+    // Fetch leads linked to these clients
     let linkedLeads: any[] = [];
     if (clientIds.length > 0) {
       linkedLeads = await db.query.leads.findMany({
@@ -210,7 +209,7 @@ export const dashboardRouter = router({
     }
 
     // Also check leads linked by appointmentId
-    const apptIds = upcomingAppts.map(a => a.id);
+    const apptIds = activeAppts.map(a => a.id);
     if (apptIds.length > 0) {
       const apptLinkedLeads = await db.query.leads.findMany({
         where: and(
@@ -219,17 +218,22 @@ export const dashboardRouter = router({
         ),
       });
       for (const lead of apptLinkedLeads) {
-        // appointmentId-linked leads are more specific, prefer them
-        const appt = upcomingAppts.find(a => a.id === lead.appointmentId);
+        const appt = activeAppts.find(a => a.id === lead.appointmentId);
         if (appt) {
           leadByClient.set(appt.clientId, lead);
         }
       }
     }
 
-    // Merge appointments with lead data
-    return upcomingAppts.map(appt => {
+    // Merge appointments with lead data + payment fields
+    return activeAppts.map(appt => {
       const lead = leadByClient.get(appt.clientId);
+
+      // Derive cents fields — self-heal from legacy dollar amounts if needed
+      const priceCents = appt.totalExpectedAmountCents || (appt.price ? appt.price * 100 : 0);
+      const paidCents = appt.totalPaidAmountCents || (appt.depositPaid && appt.depositAmount ? appt.depositAmount * 100 : 0);
+      const remainingCents = appt.remainingBalanceCents ?? Math.max(0, priceCents - paidCents);
+
       return {
         id: appt.id,
         title: appt.title,
@@ -237,8 +241,12 @@ export const dashboardRouter = router({
         serviceName: appt.serviceName,
         startTime: appt.startTime,
         endTime: appt.endTime,
+        timeZone: appt.timeZone,
         status: appt.status,
         price: appt.price,
+        priceCents,
+        paidCents,
+        remainingCents,
         depositAmount: appt.depositAmount,
         depositPaid: appt.depositPaid,
         paymentStatus: appt.paymentStatus,
@@ -254,8 +262,8 @@ export const dashboardRouter = router({
         project: lead ? {
           projectType: lead.projectType,
           projectDescription: lead.projectDescription,
-          stylePreferences: lead.stylePreferences, // JSON string
-          referenceImages: lead.referenceImages, // JSON string
+          stylePreferences: lead.stylePreferences,
+          referenceImages: lead.referenceImages,
           placement: lead.placement,
           estimatedSize: lead.estimatedSize,
           budgetLabel: lead.budgetLabel,
@@ -264,5 +272,74 @@ export const dashboardRouter = router({
       };
     });
   }),
+
+  /**
+   * recordManualPayment — Records a cash/bank/manual payment against a session.
+   * Updates appointment balance fields + writes to payment ledger.
+   */
+  recordManualPayment: protectedProcedure
+    .input(z.object({
+      appointmentId: z.number(),
+      amountCents: z.number().min(1),
+      paymentMethod: z.enum(["cash", "bank"]),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const { user } = ctx;
+      if (user.role !== "artist" && user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const appointment = await db.query.appointments.findFirst({
+        where: eq(schema.appointments.id, input.appointmentId),
+      });
+      if (!appointment) throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+      if (appointment.artistId !== user.id) throw new TRPCError({ code: "FORBIDDEN" });
+
+      // Derive current balance
+      const expected = appointment.totalExpectedAmountCents || (appointment.price ? appointment.price * 100 : 0);
+      const currentPaid = appointment.totalPaidAmountCents || 0;
+      const newPaid = currentPaid + input.amountCents;
+      const remaining = Math.max(0, expected - newPaid);
+      const isFullyPaid = remaining <= 0;
+
+      const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+
+      // Update appointment
+      await db.update(schema.appointments).set({
+        totalPaidAmountCents: newPaid,
+        remainingBalanceCents: remaining,
+        totalExpectedAmountCents: expected || undefined,
+        paymentStatus: isFullyPaid ? "fully_paid" as any : "deposit_paid" as any,
+        clientPaid: isFullyPaid ? 1 : 0,
+        amountPaid: Math.round(newPaid / 100),
+        paymentMethod: input.paymentMethod as any,
+        updatedAt: now,
+      }).where(eq(schema.appointments.id, input.appointmentId));
+
+      // Write to payment ledger
+      await db.insert(schema.paymentLedger).values({
+        bookingId: input.appointmentId,
+        artistId: user.id,
+        clientId: appointment.clientId,
+        transactionType: "balance",
+        amountCents: input.amountCents,
+        platformFeeCents: 0,
+        artistFeeCents: 0,
+        stripePaymentId: `manual_${Date.now()}`,
+        stripeConnectAccountId: null,
+        tier: "free",
+        paymentMethod: input.paymentMethod,
+      });
+
+      return {
+        success: true,
+        newPaidCents: newPaid,
+        remainingCents: remaining,
+        isFullyPaid,
+      };
+    }),
 });
 
