@@ -300,41 +300,58 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
                         className="overflow-hidden"
                       >
                         <div className="border-t border-border p-4 bg-background/80 space-y-4">
-                          {/* Deposit summary — shown once */}
-                          {depositInfo.summary && (
-                            <div className={cn("rounded-[16px] p-3 flex items-center justify-between", depositInfo.summaryBg)}>
-                              <span className={cn(typography.bodySm, "font-semibold")}>{depositInfo.summary}</span>
-                              <span className={cn(tokens.display.badge, depositInfo.badgeClass)}>
-                                {depositInfo.badge}
-                              </span>
+                          {/* Deposit summary — total across all sessions */}
+                          {depositInfo.totalDeposit > 0 && (
+                            <div className={cn("rounded-[16px] p-3", depositInfo.summaryBg)}>
+                              <div className="flex items-center justify-between">
+                                <span className={cn(typography.bodySm, "font-semibold")}>{depositInfo.summary}</span>
+                                <span className={cn(tokens.display.badge, depositInfo.badgeClass)}>
+                                  {depositInfo.badge}
+                                </span>
+                              </div>
+                              {depositInfo.breakdown && (
+                                <p className={cn(typography.label, "text-muted-foreground mt-1")}>{depositInfo.breakdown}</p>
+                              )}
                             </div>
                           )}
 
-                          {/* Sessions — NO deposit badges on individual rows */}
+                          {/* Sessions — with per-session deposit allocation */}
                           <div>
                             <p className={tokens.header.sectionTitle + " mb-2"}>Sessions</p>
                             <div className="space-y-2">
-                              {group.sessions.map((session) => (
-                                <div key={session.id} className="flex items-center gap-3 bg-secondary/50 rounded-[16px] p-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className={cn(typography.bodySm, "font-semibold truncate")}>{session.title}</p>
-                                    <p className={cn(typography.label, "text-muted-foreground")}>
-                                      {format(new Date(session.startTime), "EEE, MMM d · h:mm a")}
-                                    </p>
+                              {group.sessions.map((session) => {
+                                const hasDeposit = session.depositAmount && session.depositAmount > 0;
+                                const depPaid = session.paymentStatus === "deposit_paid" || session.paymentStatus === "fully_paid" || session.depositPaid === 1;
+                                return (
+                                  <div key={session.id} className="flex items-center gap-3 bg-secondary/50 rounded-[16px] p-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className={cn(typography.bodySm, "font-semibold truncate")}>{session.title}</p>
+                                      <p className={cn(typography.label, "text-muted-foreground")}>
+                                        {format(new Date(session.startTime), "EEE, MMM d · h:mm a")}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      {session.price && (
+                                        <span className={cn(typography.price, statusColor.info.text)}>${session.price}</span>
+                                      )}
+                                      {hasDeposit && (
+                                        <span className={cn(
+                                          tokens.display.badge,
+                                          depPaid ? statusColor.success.full : statusColor.warning.full
+                                        )}>
+                                          ${session.depositAmount} dep
+                                        </span>
+                                      )}
+                                      <span className={cn(
+                                        tokens.display.badge,
+                                        session.status === "confirmed" ? statusColor.success.full : statusColor.neutral.full
+                                      )}>
+                                        {session.status}
+                                      </span>
+                                    </div>
                                   </div>
-                                  <div className="flex items-center gap-2 shrink-0">
-                                    {session.price && (
-                                      <span className={cn(typography.price, statusColor.info.text)}>${session.price}</span>
-                                    )}
-                                    <span className={cn(
-                                      tokens.display.badge,
-                                      session.status === "confirmed" ? statusColor.success.full : statusColor.neutral.full
-                                    )}>
-                                      {session.status}
-                                    </span>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
 
@@ -523,53 +540,68 @@ const STATUS_CONFIG: Record<ClientStatus, { label: string; tokenClass: string }>
 // ── Deposit helpers ───────────────────────────────────────
 
 /**
- * Compute deposit info ONCE for the entire grouped project.
- * The deposit is a single payment for the whole project — not per-session.
+ * Compute deposit info for the entire grouped project.
+ * Deposit = 25% of each session price, paid as one lump sum.
+ * e.g. 4 sessions × $375 = $1,500 total deposit.
  */
 function getProjectDepositInfo(sessions: GroupedProject["sessions"]) {
-  // Find the max non-zero deposit across sessions (they're all copies of the same value)
-  let depositAmount = 0;
-  let isPaid = false;
-  let isFullyPaid = false;
+  let totalDeposit = 0;
+  let perSession = 0;
+  let sessionsWithDeposit = 0;
+  let paidCount = 0;
+  let fullyPaidCount = 0;
 
   for (const s of sessions) {
     if (s.depositAmount && s.depositAmount > 0) {
-      depositAmount = Math.max(depositAmount, s.depositAmount);
+      totalDeposit += s.depositAmount;
+      perSession = s.depositAmount; // they're all the same rate
+      sessionsWithDeposit++;
       if (s.paymentStatus === "fully_paid") {
-        isFullyPaid = true;
+        fullyPaidCount++;
       } else if (s.paymentStatus === "deposit_paid" || s.depositPaid === 1) {
-        isPaid = true;
+        paidCount++;
       }
     }
   }
 
-  if (depositAmount === 0) {
-    return { badge: null, badgeClass: "", summary: null, summaryBg: "" };
+  if (totalDeposit === 0) {
+    return { badge: null, badgeClass: "", summary: null, summaryBg: "", breakdown: null, totalDeposit: 0 };
   }
 
-  if (isFullyPaid) {
+  const allPaid = (paidCount + fullyPaidCount) === sessionsWithDeposit;
+  const breakdown = sessionsWithDeposit > 1
+    ? `$${perSession} × ${sessionsWithDeposit} sessions = $${totalDeposit.toLocaleString()} total`
+    : null;
+
+  if (fullyPaidCount === sessionsWithDeposit) {
     return {
       badge: "Fully Paid",
       badgeClass: statusColor.success.full,
-      summary: `Deposit $${depositAmount} + balance paid`,
+      summary: `$${totalDeposit.toLocaleString()} deposit + balance paid`,
       summaryBg: "bg-[var(--color-status-success-bg)]",
+      breakdown,
+      totalDeposit,
     };
   }
 
-  if (isPaid) {
+  if (allPaid) {
     return {
-      badge: "Deposit Paid",
+      badge: `$${totalDeposit.toLocaleString()} Paid`,
       badgeClass: statusColor.success.full,
-      summary: `$${depositAmount} deposit received`,
+      summary: `$${totalDeposit.toLocaleString()} deposit received`,
       summaryBg: "bg-[var(--color-status-success-bg)]",
+      breakdown,
+      totalDeposit,
     };
   }
 
   return {
-    badge: "Deposit Due",
+    badge: `$${totalDeposit.toLocaleString()} Due`,
     badgeClass: statusColor.warning.full,
-    summary: `$${depositAmount} deposit outstanding`,
+    summary: `$${totalDeposit.toLocaleString()} deposit outstanding`,
     summaryBg: "bg-[var(--color-status-warning-bg)]",
+    breakdown,
+    totalDeposit,
   };
 }
 
