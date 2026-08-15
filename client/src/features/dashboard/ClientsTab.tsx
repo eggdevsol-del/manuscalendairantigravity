@@ -506,7 +506,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
         "bg-card border-border/30",
       )}>
         {/* ── 1. HEADER BLOCK ─────────────────────── */}
-        <div className="p-5 pb-[18px] border-b border-border/30">
+        <div className="p-5 pb-[18px]">
           {/* Identity row */}
           <div className="flex items-center gap-3.5">
             {/* Avatar — rounded-square for work imagery per design */}
@@ -605,10 +605,10 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                             <div
                               onClick={() => !demoMode && setExpandedSessionId(isOpen ? null : session.id)}
                               className={cn(
-                                "rounded-[13px] cursor-pointer transition-colors duration-[160ms]",
+                                "rounded-[13px] cursor-pointer transition-colors duration-[160ms] border-l-[3px] border-l-[#4ade80]",
                                 isOpen
-                                  ? "bg-secondary border border-border/40"
-                                  : "bg-secondary/50 border border-border/20 hover:bg-secondary"
+                                  ? "bg-secondary border border-border/40 border-l-[3px] border-l-[#4ade80]"
+                                  : "bg-secondary/50 border border-border/20 border-l-[3px] border-l-[#4ade80] hover:bg-secondary"
                               )}
                             >
                               {/* Session row */}
@@ -758,7 +758,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
             }}
             disabled={isFullyPaid}
             className={cn(
-              "flex-[1.6] text-center rounded-[12px] py-[15px] text-[15.5px] font-semibold transition-colors",
+              "flex-[1.6] text-center h-[52px] rounded-[16px] text-[15px] font-semibold transition-colors",
               isFullyPaid
                 ? "bg-primary/40 text-primary-foreground/60 cursor-not-allowed"
                 : "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -768,7 +768,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
           </button>
           <a
             href={`sms:${group.clientPhone}`}
-            className="flex-1 text-center border border-border/40 rounded-[12px] py-[15px] text-[15.5px] font-medium text-foreground hover:bg-secondary/50 transition-colors"
+            className="flex-1 text-center border border-border/40 h-[52px] rounded-[16px] text-[15px] font-medium text-foreground hover:bg-secondary/50 transition-colors flex items-center justify-center"
           >
             Message
           </a>
@@ -783,25 +783,24 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.12 }}
-              className={cn(tokens.display.overflowMenu, "top-[60px] right-[18px]")}
+              className="absolute top-[60px] right-[18px] bg-white border border-[rgba(0,0,0,0.08)] rounded-[12px] p-1.5 min-w-[170px] shadow-[0_18px_40px_rgba(0,0,0,0.35)] z-50"
             >
-              <button
-                onClick={() => { setMenuOpen(false); }}
-                className={tokens.display.overflowItem}
+              <a
+                href={`tel:${group.clientPhone}`}
+                onClick={() => setMenuOpen(false)}
+                className="block w-full text-left px-3 py-2.5 rounded-[8px] text-[14px] font-normal text-[#1a1a1b] hover:bg-[rgba(0,0,0,0.05)] transition-colors cursor-pointer"
               >
-                <a href={`tel:${group.clientPhone}`} className="flex items-center gap-2">
-                  <Phone className="w-4 h-4" /> Call {firstName}
-                </a>
-              </button>
+                Call {firstName}
+              </a>
               <button
                 onClick={() => { setMenuOpen(false); onViewProfile(group.clientId); }}
-                className={tokens.display.overflowItem}
+                className="w-full text-left px-3 py-2.5 rounded-[8px] text-[14px] font-normal text-[#1a1a1b] hover:bg-[rgba(0,0,0,0.05)] transition-colors cursor-pointer"
               >
                 View profile
               </button>
               <button
                 onClick={() => setMenuOpen(false)}
-                className={tokens.display.overflowItem}
+                className="w-full text-left px-3 py-2.5 rounded-[8px] text-[14px] font-normal text-[#1a1a1b] hover:bg-[rgba(0,0,0,0.05)] transition-colors cursor-pointer"
               >
                 Add session
               </button>
@@ -868,7 +867,7 @@ function PaymentSheet({ group, preSelectedSessionId, onClose, onConfirm, demoMod
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 bg-black/60 z-[9] flex items-end"
+      className="fixed inset-0 bg-black/60 z-[100] flex items-end"
       onClick={onClose}
     >
       <motion.div
@@ -881,7 +880,7 @@ function PaymentSheet({ group, preSelectedSessionId, onClose, onConfirm, demoMod
       >
         <p className="text-[17px] font-semibold leading-[1.2]">Take payment</p>
         <p className="text-[13px] font-normal leading-[1.4] text-muted-foreground mt-1">
-          {firstName} · {formatCents(group.outstandingCents)} outstanding across {unsettledSessions.length} session{unsettledSessions.length !== 1 ? "s" : ""}
+          {group.clientName} · {formatCents(group.outstandingCents)} outstanding across {unsettledSessions.length} session{unsettledSessions.length !== 1 ? "s" : ""}
         </p>
 
         {/* Session picker */}
@@ -896,10 +895,10 @@ function PaymentSheet({ group, preSelectedSessionId, onClose, onConfirm, demoMod
                 key={session.id}
                 onClick={() => setSelectedId(session.id)}
                 className={cn(
-                  "flex items-center justify-between p-3.5 rounded-[12px] text-left transition-colors",
+                  "flex items-center justify-between p-3.5 rounded-[12px] text-left transition-colors border-l-[3px]",
                   isSelected
-                    ? "bg-primary/10 border border-primary/50"
-                    : "bg-[rgba(255,255,255,0.03)] border border-border/20 hover:bg-[rgba(255,255,255,0.06)]"
+                    ? "bg-primary/10 border border-primary/50 border-l-[3px] border-l-primary"
+                    : "bg-[rgba(255,255,255,0.03)] border border-border/20 border-l-[3px] border-l-primary/30 hover:bg-[rgba(255,255,255,0.06)]"
                 )}
               >
                 <span className="text-[14px] font-medium">
