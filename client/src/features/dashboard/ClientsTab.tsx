@@ -8,22 +8,18 @@ import {
   MessageCircle,
   Phone,
   Mail,
-  MapPin,
   Calendar,
-  DollarSign,
   FileText,
   Loader2,
   Users,
   Package,
-  Image as ImageIcon,
-  Clock,
-  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTooltipTarget } from "@/components/tooltip-tour";
 import { DEMO_CLIENTS, DEMO_REMINDERS } from "./dashboardDemoData";
 import { format } from "date-fns";
+import { tokens, statusColor, typography } from "@/ui/tokens";
 
 interface ClientsTabProps {
   demoMode?: boolean;
@@ -38,11 +34,8 @@ interface GroupedProject {
   clientEmail: string;
   clientPhone: string;
   clientCity: string;
-  /** The project name — from lead projectType or serviceName */
   projectName: string;
-  /** Project details from linked lead */
   project: any | null;
-  /** All sessions for this client-project */
   sessions: {
     id: number;
     title: string;
@@ -109,20 +102,16 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
   const [expandedClientId, setExpandedClientId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Tooltip tour targets
   const demoClientsAreaRef = useTooltipTarget("demo-clients-area");
   const demoClientCardRef = useTooltipTarget("demo-client-card");
   const demoRemindersAreaRef = useTooltipTarget("demo-reminders-area");
 
-  // Real data
   const { data: upcomingProjects, isLoading: projectsLoading } = trpc.dashboard.getUpcomingProjects.useQuery(
-    undefined,
-    { enabled: !demoMode }
+    undefined, { enabled: !demoMode }
   );
-
-  const { data: clients, isLoading: clientsLoading } = trpc.conversations.getClients.useQuery(undefined, {
-    enabled: !demoMode,
-  });
+  const { data: clients, isLoading: clientsLoading } = trpc.conversations.getClients.useQuery(
+    undefined, { enabled: !demoMode }
+  );
 
   // ── Group projects by client ────────────────────────────
   const groupedProjects: GroupedProject[] = useMemo(() => {
@@ -130,16 +119,12 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
     if (!upcomingProjects || upcomingProjects.length === 0) return [];
 
     const groups = new Map<string, GroupedProject>();
-
     for (const appt of upcomingProjects) {
       const clientId = appt.client?.id || "unknown";
-
       if (!groups.has(clientId)) {
-        // Derive project name from lead or service
         const projectName = appt.project?.projectType
           ? formatProjectType(appt.project.projectType)
           : appt.serviceName || appt.title || "Project";
-
         groups.set(clientId, {
           clientId,
           clientName: appt.client?.name || "Client",
@@ -152,20 +137,13 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
           sessions: [],
         });
       }
-
       groups.get(clientId)!.sessions.push({
-        id: appt.id,
-        title: appt.title || appt.serviceName || "Session",
-        startTime: appt.startTime,
-        endTime: appt.endTime,
-        status: appt.status,
-        price: appt.price,
-        depositAmount: appt.depositAmount,
-        depositPaid: appt.depositPaid,
-        paymentStatus: appt.paymentStatus,
+        id: appt.id, title: appt.title || appt.serviceName || "Session",
+        startTime: appt.startTime, endTime: appt.endTime, status: appt.status,
+        price: appt.price, depositAmount: appt.depositAmount,
+        depositPaid: appt.depositPaid, paymentStatus: appt.paymentStatus,
       });
     }
-
     return Array.from(groups.values());
   }, [demoMode, upcomingProjects]);
 
@@ -174,26 +152,15 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
     if (demoMode) return DEMO_CLIENTS;
     return (clients || []).map((c: any) => {
       let status: ClientStatus;
-      if (c.hasUpcoming) {
-        status = "active";
-      } else if (c.sittings > 0) {
-        status = "past_client";
-      } else if (c.hasLead) {
-        status = "lead";
-      } else {
-        status = "imported";
-      }
-
+      if (c.hasUpcoming) status = "active";
+      else if (c.sittings > 0) status = "past_client";
+      else if (c.hasLead) status = "lead";
+      else status = "imported";
       return {
-        id: c.id,
-        name: c.name || "Unknown",
-        email: c.email || "",
-        phone: c.phone || "",
-        avatar: c.avatar || null,
+        id: c.id, name: c.name || "Unknown", email: c.email || "",
+        phone: c.phone || "", avatar: c.avatar || null,
         city: c.city ? `${c.city}${c.country ? `, ${c.country}` : ""}` : "",
-        tlv: c.tlv || 0,
-        sittings: c.sittings || 0,
-        status,
+        tlv: c.tlv || 0, sittings: c.sittings || 0, status,
       };
     });
   }, [demoMode, clients]);
@@ -202,18 +169,12 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
     if (!searchQuery.trim()) return displayClients;
     const q = searchQuery.toLowerCase();
     return displayClients.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.email.toLowerCase().includes(q) ||
-        c.city.toLowerCase().includes(q)
+      (c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.city.toLowerCase().includes(q)
     );
   }, [displayClients, searchQuery]);
 
-  const selectedClient = selectedClientId
-    ? displayClients.find((c) => c.id === selectedClientId)
-    : null;
+  const selectedClient = selectedClientId ? displayClients.find((c) => c.id === selectedClientId) : null;
 
-  // ── Client Profile Drill-down ──────────────────────────
   if (selectedClient && !demoMode) {
     return <ClientProfile client={selectedClient} onBack={() => setSelectedClientId(null)} />;
   }
@@ -222,29 +183,28 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-20">
+      <div className={tokens.loading.base + " py-20"}>
         <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
       </div>
     );
   }
 
-  // ── Main View ──────────────────────────────────────────
   return (
     <div
       className="space-y-6 animate-in fade-in duration-500 pb-40"
       ref={demoMode ? (demoClientsAreaRef as any) : undefined}
     >
-      {/* Search Bar */}
+      {/* Search — SSOT input.search */}
       <div className="relative px-1">
-        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-muted-foreground" />
+        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-10">
+          <Search className="h-4 w-4 text-muted-foreground" />
         </div>
         <input
           type="text"
           placeholder="Search clients..."
           value={demoMode ? "" : searchQuery}
           onChange={(e) => !demoMode && setSearchQuery(e.target.value)}
-          className="w-full bg-secondary/50 border border-border rounded-full py-3.5 pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/70 text-foreground"
+          className={cn(tokens.input.base, tokens.input.search, "w-full border-border")}
           readOnly={demoMode}
         />
       </div>
@@ -253,8 +213,8 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
       {groupedProjects.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-4 px-1">
-            <h2 className="text-xl font-bold tracking-tight">Upcoming Projects</h2>
-            <span className="text-xs font-bold text-muted-foreground bg-secondary px-2.5 py-1 rounded-full">
+            <h2 className={typography.h3}>Upcoming Projects</h2>
+            <span className={cn(tokens.display.badge, tokens.display.badgeSecondary)}>
               {groupedProjects.reduce((n, g) => n + g.sessions.length, 0)} session{groupedProjects.reduce((n, g) => n + g.sessions.length, 0) !== 1 ? "s" : ""}
             </span>
           </div>
@@ -262,21 +222,15 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
           <div className="space-y-3">
             {groupedProjects.map((group, i) => {
               const isExpanded = expandedClientId === group.clientId;
-
-              // Determine overall status for the card
               const hasConfirmed = group.sessions.some(s => s.status === "confirmed");
               const allConfirmed = group.sessions.every(s => s.status === "confirmed");
-              const nextSession = group.sessions[0]; // already sorted by startTime from server
+              const nextSession = group.sessions[0];
 
-              // Smart deposit badge — only show if deposit was actually requested
-              const depositInfo = getDepositInfo(group.sessions);
+              // Deposit — computed once for the whole project, not per-session
+              const depositInfo = getProjectDepositInfo(group.sessions);
 
               let styles: string[] = [];
-              try {
-                if (group.project?.stylePreferences) {
-                  styles = JSON.parse(group.project.stylePreferences);
-                }
-              } catch {}
+              try { if (group.project?.stylePreferences) styles = JSON.parse(group.project.stylePreferences); } catch {}
 
               return (
                 <motion.div
@@ -285,53 +239,48 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="bg-secondary/50 border border-border rounded-[20px] overflow-hidden"
+                  className={cn(tokens.card.base, "border-border/30")}
                 >
-                  {/* Collapsed Header */}
+                  {/* Header */}
                   <button
                     onClick={() => !demoMode && setExpandedClientId(isExpanded ? null : group.clientId)}
                     className="w-full text-left p-4 flex items-center gap-3"
                   >
-                    {/* Client Avatar */}
                     <div className="shrink-0">
                       {group.clientAvatar ? (
-                        <img src={group.clientAvatar} alt={group.clientName} className="w-11 h-11 rounded-full object-cover border-2 border-border" />
+                        <img src={group.clientAvatar} alt={group.clientName} className={cn(tokens.photography.avatar, tokens.photography.avatarSizes.md)} />
                       ) : (
-                        <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg border-2 border-border">
+                        <div className={cn(tokens.photography.avatarSizes.md, "rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg border-2 border-background")}>
                           {group.clientName.charAt(0)}
                         </div>
                       )}
                     </div>
 
-                    {/* Project Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="font-bold text-[15px] truncate">{group.clientName}</span>
+                        <span className={cn(typography.body, "font-bold")}>{group.clientName}</span>
+                        {/* Deposit badge — shown ONCE at card level */}
                         {depositInfo.badge && (
-                          <span className={cn(
-                            "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
-                            depositInfo.badgeClass
-                          )}>
+                          <span className={cn(tokens.display.badge, depositInfo.badgeClass)}>
                             {depositInfo.badge}
                           </span>
                         )}
+                        {/* Status badge if no deposit badge */}
                         {!depositInfo.badge && (
                           <span className={cn(
-                            "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
-                            allConfirmed
-                              ? "bg-[var(--color-status-success-bg)] text-[var(--color-success)]"
-                              : hasConfirmed
-                                ? "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]"
-                                : "bg-secondary text-muted-foreground"
+                            tokens.display.badge,
+                            allConfirmed ? statusColor.success.full
+                              : hasConfirmed ? statusColor.info.full
+                              : statusColor.neutral.full
                           )}>
-                            {allConfirmed ? "Confirmed" : hasConfirmed ? "Partially Confirmed" : "Pending"}
+                            {allConfirmed ? "Confirmed" : hasConfirmed ? "Partial" : "Pending"}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm font-medium text-muted-foreground truncate">{group.projectName}</p>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                        <Calendar className="w-3 h-3" />
-                        <span>
+                      <p className={cn(typography.bodySm, "text-muted-foreground truncate")}>{group.projectName}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Calendar className="w-3 h-3 text-muted-foreground" />
+                        <span className={cn(typography.label, "text-muted-foreground")}>
                           {format(new Date(nextSession.startTime), "EEE, MMM d")}
                           {group.sessions.length > 1 && ` + ${group.sessions.length - 1} more`}
                         </span>
@@ -341,7 +290,7 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
                     <ChevronDown className={cn("w-5 h-5 text-muted-foreground transition-transform shrink-0", isExpanded && "rotate-180")} />
                   </button>
 
-                  {/* Expanded Details */}
+                  {/* Expanded */}
                   <AnimatePresence>
                     {isExpanded && (
                       <motion.div
@@ -351,41 +300,41 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
                         className="overflow-hidden"
                       >
                         <div className="border-t border-border p-4 bg-background/80 space-y-4">
-                          {/* Session List */}
+                          {/* Deposit summary — shown once */}
+                          {depositInfo.summary && (
+                            <div className={cn("rounded-[16px] p-3 flex items-center justify-between", depositInfo.summaryBg)}>
+                              <span className={cn(typography.bodySm, "font-semibold")}>{depositInfo.summary}</span>
+                              <span className={cn(tokens.display.badge, depositInfo.badgeClass)}>
+                                {depositInfo.badge}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Sessions — NO deposit badges on individual rows */}
                           <div>
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Sessions</p>
+                            <p className={tokens.header.sectionTitle + " mb-2"}>Sessions</p>
                             <div className="space-y-2">
-                              {group.sessions.map((session) => {
-                                const sessionDeposit = getSessionDepositBadge(session);
-                                return (
-                                  <div key={session.id} className="flex items-center gap-3 bg-secondary/50 rounded-xl p-3">
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-semibold truncate">{session.title}</p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {format(new Date(session.startTime), "EEE, MMM d · h:mm a")}
-                                      </p>
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                      {session.price && (
-                                        <span className="text-xs font-semibold text-[var(--color-status-info-text)]">${session.price}</span>
-                                      )}
-                                      {sessionDeposit && (
-                                        <span className={cn("px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase", sessionDeposit.cls)}>
-                                          {sessionDeposit.label}
-                                        </span>
-                                      )}
-                                      <span className={cn(
-                                        "px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase",
-                                        session.status === "confirmed"
-                                          ? "bg-[var(--color-status-success-bg)] text-[var(--color-success)]"
-                                          : "bg-secondary text-muted-foreground"
-                                      )}>
-                                        {session.status}
-                                      </span>
-                                    </div>
+                              {group.sessions.map((session) => (
+                                <div key={session.id} className="flex items-center gap-3 bg-secondary/50 rounded-[16px] p-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className={cn(typography.bodySm, "font-semibold truncate")}>{session.title}</p>
+                                    <p className={cn(typography.label, "text-muted-foreground")}>
+                                      {format(new Date(session.startTime), "EEE, MMM d · h:mm a")}
+                                    </p>
                                   </div>
-                                );
-                              })}
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    {session.price && (
+                                      <span className={cn(typography.price, statusColor.info.text)}>${session.price}</span>
+                                    )}
+                                    <span className={cn(
+                                      tokens.display.badge,
+                                      session.status === "confirmed" ? statusColor.success.full : statusColor.neutral.full
+                                    )}>
+                                      {session.status}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
 
@@ -394,37 +343,36 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
                             <div className="space-y-3">
                               {group.project.projectDescription && (
                                 <div>
-                                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Client's Request</p>
-                                  <p className="text-sm leading-relaxed">{group.project.projectDescription}</p>
+                                  <p className={tokens.header.sectionTitle + " mb-1"}>Client's Request</p>
+                                  <p className={cn(typography.body, "leading-relaxed")}>{group.project.projectDescription}</p>
                                 </div>
                               )}
 
                               <div className="grid grid-cols-2 gap-3">
                                 {group.project.placement && (
-                                  <div className="bg-secondary/50 rounded-xl p-3">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Placement</p>
-                                    <p className="text-sm font-semibold">{group.project.placement}</p>
+                                  <div className="bg-secondary/50 rounded-[16px] p-3">
+                                    <p className={typography.nano + " text-muted-foreground mb-0.5"}>Placement</p>
+                                    <p className={typography.labelValue}>{group.project.placement}</p>
                                   </div>
                                 )}
                                 {group.project.estimatedSize && (
-                                  <div className="bg-secondary/50 rounded-xl p-3">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Size</p>
-                                    <p className="text-sm font-semibold capitalize">{group.project.estimatedSize}</p>
+                                  <div className="bg-secondary/50 rounded-[16px] p-3">
+                                    <p className={typography.nano + " text-muted-foreground mb-0.5"}>Size</p>
+                                    <p className={cn(typography.labelValue, "capitalize")}>{group.project.estimatedSize}</p>
                                   </div>
                                 )}
                                 {group.project.budgetLabel && (
-                                  <div className="bg-secondary/50 rounded-xl p-3">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Budget</p>
-                                    <p className="text-sm font-semibold">{group.project.budgetLabel}</p>
+                                  <div className="bg-secondary/50 rounded-[16px] p-3">
+                                    <p className={typography.nano + " text-muted-foreground mb-0.5"}>Budget</p>
+                                    <p className={typography.labelValue}>{group.project.budgetLabel}</p>
                                   </div>
                                 )}
                               </div>
 
-                              {/* Style Tags */}
                               {styles.length > 0 && (
                                 <div className="flex flex-wrap gap-1.5">
                                   {styles.map((style: string) => (
-                                    <span key={style} className="text-[11px] font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                                    <span key={style} className={cn(tokens.display.badge, tokens.display.badgePrimary)}>
                                       {style}
                                     </span>
                                   ))}
@@ -433,28 +381,28 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
                             </div>
                           )}
 
-                          {/* Quick Actions */}
+                          {/* Quick Actions — SSOT button tokens */}
                           <div className="flex gap-2 pt-1">
                             <a
                               href={`sms:${group.clientPhone}`}
-                              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-secondary/50 border border-border rounded-xl text-xs font-semibold hover:bg-secondary/80 transition-colors"
+                              className={cn(tokens.button.outline, "flex-1 flex items-center justify-center gap-1.5")}
                             >
-                              <MessageCircle className="w-3.5 h-3.5 text-primary" />
+                              <MessageCircle className="w-4 h-4" />
                               Message
                             </a>
                             <a
                               href={`tel:${group.clientPhone}`}
-                              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-secondary/50 border border-border rounded-xl text-xs font-semibold hover:bg-secondary/80 transition-colors"
+                              className={cn(tokens.button.outline, "flex-1 flex items-center justify-center gap-1.5")}
                             >
-                              <Phone className="w-3.5 h-3.5 text-primary" />
+                              <Phone className="w-4 h-4" />
                               Call
                             </a>
                             <button
                               onClick={() => setSelectedClientId(group.clientId)}
-                              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-foreground text-background rounded-xl text-xs font-bold hover:opacity-90 transition-colors"
+                              className={cn(tokens.button.primary, "flex-1 flex items-center justify-center gap-1.5")}
                             >
                               Profile
-                              <ChevronRight className="w-3.5 h-3.5" />
+                              <ChevronRight className="w-4 h-4" />
                             </button>
                           </div>
                         </div>
@@ -470,32 +418,33 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
 
       {/* No Upcoming Projects */}
       {groupedProjects.length === 0 && !demoMode && (
-        <div className="flex flex-col items-center justify-center p-6 text-center bg-secondary/50 rounded-3xl border border-border">
-          <Calendar className="w-10 h-10 text-muted-foreground/50 mb-3" />
-          <h2 className="text-lg font-bold mb-1">No Upcoming Projects</h2>
-          <p className="text-muted-foreground text-sm">Appointments will appear here once clients book sessions.</p>
+        <div className={tokens.display.emptyState}>
+          <div className={tokens.display.emptyStateIcon}>
+            <Calendar className="w-8 h-8" />
+          </div>
+          <p className={tokens.display.emptyStateText}>No upcoming projects. Appointments appear here once clients book sessions.</p>
         </div>
       )}
 
       {/* ── All Clients ────────────────────────────────── */}
       <section>
         <div className="flex items-center justify-between mb-4 px-1">
-          <h2 className="text-xl font-bold tracking-tight">
+          <h2 className={typography.h3}>
             {demoMode ? "All Clients" : `${filteredClients.length} Client${filteredClients.length !== 1 ? "s" : ""}`}
           </h2>
         </div>
 
         {filteredClients.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-6 text-center bg-secondary/50 rounded-3xl border border-border">
-            <Users className="w-10 h-10 text-muted-foreground/50 mb-3" />
-            <h2 className="text-lg font-bold mb-1">No Clients Yet</h2>
-            <p className="text-muted-foreground text-sm">Clients appear here once they book or message you.</p>
+          <div className={tokens.display.emptyState}>
+            <div className={tokens.display.emptyStateIcon}>
+              <Users className="w-8 h-8" />
+            </div>
+            <p className={tokens.display.emptyStateText}>Clients appear here once they book or message you.</p>
           </div>
         ) : (
           <div className="space-y-2">
             {filteredClients.map((client, i) => {
-              const statusConfig = STATUS_CONFIG[client.status];
-
+              const sc = STATUS_CONFIG[client.status];
               return (
                 <motion.div
                   key={client.id}
@@ -505,26 +454,26 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
                 >
                   <button
                     onClick={() => !demoMode && setSelectedClientId(client.id)}
-                    className="w-full text-left bg-secondary/50 border border-border rounded-[16px] p-3.5 flex items-center gap-3 hover:bg-secondary/70 transition-colors"
+                    className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "w-full text-left p-3.5 flex items-center gap-3")}
                   >
                     {client.avatar ? (
-                      <img src={client.avatar} alt={client.name} className="w-10 h-10 rounded-full object-cover border border-border shrink-0" />
+                      <img src={client.avatar} alt={client.name} className={cn(tokens.photography.avatar, tokens.photography.avatarSizes.sm, "w-10 h-10")} />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm border border-border shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm border-2 border-background shrink-0">
                         {client.name.charAt(0)}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm truncate">{client.name}</span>
-                        <span className={cn("px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase", statusConfig.bg, statusConfig.text)}>
-                          {statusConfig.label}
+                        <span className={cn(typography.bodySm, "font-bold truncate")}>{client.name}</span>
+                        <span className={cn(tokens.display.badge, sc.tokenClass)}>
+                          {sc.label}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
-                        {client.sittings > 0 && <span>{client.sittings} session{client.sittings !== 1 ? "s" : ""}</span>}
-                        {client.tlv > 0 && <span className="font-semibold text-[var(--color-status-info-text)]">${client.tlv.toLocaleString()}</span>}
-                        {client.city && <span>{client.city.split(",")[0]}</span>}
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {client.sittings > 0 && <span className={typography.label + " text-muted-foreground"}>{client.sittings} session{client.sittings !== 1 ? "s" : ""}</span>}
+                        {client.tlv > 0 && <span className={cn(typography.label, statusColor.info.text, "font-semibold")}>${client.tlv.toLocaleString()}</span>}
+                        {client.city && <span className={typography.label + " text-muted-foreground"}>{client.city.split(",")[0]}</span>}
                       </div>
                     </div>
                     <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -536,27 +485,23 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
         )}
       </section>
 
-      {/* Automated Reminders — shown only during demo mode tour */}
+      {/* Automated Reminders — demo tour only */}
       {demoMode && (
         <section ref={demoRemindersAreaRef as any}>
           <div className="flex items-center gap-2 mb-4 px-1">
-            <h2 className="text-xl font-bold tracking-tight">Automated Reminders</h2>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
-              Auto
-            </span>
+            <h2 className={typography.h3}>Automated Reminders</h2>
+            <span className={cn(tokens.display.badge, tokens.display.badgePrimary)}>Auto</span>
           </div>
-          <div className="bg-secondary/50 border border-border rounded-[20px] overflow-hidden divide-y divide-border/30">
+          <div className={cn(tokens.card.base, "border-border/30 overflow-hidden divide-y divide-border/30")}>
             {DEMO_REMINDERS.map((reminder) => (
               <div key={reminder.id} className="p-4 flex items-start gap-3">
                 <span className="text-xl mt-0.5">{reminder.emoji}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm">{reminder.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{reminder.description}</p>
-                  <p className="text-xs text-primary/70 mt-1 font-medium">{reminder.timing}</p>
+                  <p className={cn(typography.bodySm, "font-semibold")}>{reminder.title}</p>
+                  <p className={cn(typography.label, "text-muted-foreground mt-0.5")}>{reminder.description}</p>
+                  <p className={cn(typography.label, "text-primary/70 mt-1 font-medium")}>{reminder.timing}</p>
                 </div>
-                <div className="shrink-0 px-2 py-1 rounded-lg bg-[var(--color-status-success-bg)] text-[var(--color-success)]">
-                  <span className="text-[10px] font-bold uppercase">Active</span>
-                </div>
+                <span className={cn(tokens.display.badge, statusColor.success.full)}>Active</span>
               </div>
             ))}
           </div>
@@ -566,80 +511,78 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
   );
 }
 
-// ── Status badge config ───────────────────────────────────
+// ── Status config (SSOT status colors) ────────────────────
 
-const STATUS_CONFIG: Record<ClientStatus, { label: string; bg: string; text: string }> = {
-  active: { label: "Active", bg: "bg-[var(--color-status-success-bg)]", text: "text-[var(--color-success)]" },
-  past_client: { label: "Past Client", bg: "bg-secondary", text: "text-muted-foreground" },
-  lead: { label: "Lead", bg: "bg-[var(--color-status-info-bg)]", text: "text-[var(--color-status-info-text)]" },
-  imported: { label: "Imported", bg: "bg-purple-500/10", text: "text-purple-400" },
+const STATUS_CONFIG: Record<ClientStatus, { label: string; tokenClass: string }> = {
+  active:      { label: "Active",      tokenClass: statusColor.success.full },
+  past_client: { label: "Past Client", tokenClass: statusColor.neutral.full },
+  lead:        { label: "Lead",        tokenClass: statusColor.info.full },
+  imported:    { label: "Imported",    tokenClass: "bg-purple-500/10 text-purple-400 border border-purple-500/20" },
 };
 
 // ── Deposit helpers ───────────────────────────────────────
 
-/** Get deposit info for the grouped project card header badge */
-function getDepositInfo(sessions: GroupedProject["sessions"]) {
-  let hasDepositDue = false;
-  let hasDepositPaid = false;
+/**
+ * Compute deposit info ONCE for the entire grouped project.
+ * The deposit is a single payment for the whole project — not per-session.
+ */
+function getProjectDepositInfo(sessions: GroupedProject["sessions"]) {
+  // Find the max non-zero deposit across sessions (they're all copies of the same value)
+  let depositAmount = 0;
+  let isPaid = false;
+  let isFullyPaid = false;
 
   for (const s of sessions) {
-    // Only consider sessions where a deposit was actually requested
     if (s.depositAmount && s.depositAmount > 0) {
-      if (s.paymentStatus === "pending_deposit" || s.depositPaid === 0) {
-        hasDepositDue = true;
-      } else if (s.paymentStatus === "deposit_paid" || s.paymentStatus === "fully_paid" || s.depositPaid === 1) {
-        hasDepositPaid = true;
+      depositAmount = Math.max(depositAmount, s.depositAmount);
+      if (s.paymentStatus === "fully_paid") {
+        isFullyPaid = true;
+      } else if (s.paymentStatus === "deposit_paid" || s.depositPaid === 1) {
+        isPaid = true;
       }
     }
   }
 
-  if (hasDepositDue) {
+  if (depositAmount === 0) {
+    return { badge: null, badgeClass: "", summary: null, summaryBg: "" };
+  }
+
+  if (isFullyPaid) {
     return {
-      badge: "Deposit Due",
-      badgeClass: "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]",
+      badge: "Fully Paid",
+      badgeClass: statusColor.success.full,
+      summary: `Deposit $${depositAmount} + balance paid`,
+      summaryBg: "bg-[var(--color-status-success-bg)]",
     };
   }
-  if (hasDepositPaid) {
+
+  if (isPaid) {
     return {
       badge: "Deposit Paid",
-      badgeClass: "bg-[var(--color-status-success-bg)] text-[var(--color-success)]",
+      badgeClass: statusColor.success.full,
+      summary: `$${depositAmount} deposit received`,
+      summaryBg: "bg-[var(--color-status-success-bg)]",
     };
   }
-  return { badge: null, badgeClass: "" };
+
+  return {
+    badge: "Deposit Due",
+    badgeClass: statusColor.warning.full,
+    summary: `$${depositAmount} deposit outstanding`,
+    summaryBg: "bg-[var(--color-status-warning-bg)]",
+  };
 }
 
-/** Get per-session deposit badge (only if deposit was requested) */
-function getSessionDepositBadge(session: GroupedProject["sessions"][0]) {
-  if (!session.depositAmount || session.depositAmount <= 0) return null;
-
-  if (session.paymentStatus === "fully_paid") {
-    return { label: "Paid", cls: "bg-[var(--color-status-success-bg)] text-[var(--color-success)]" };
-  }
-  if (session.paymentStatus === "deposit_paid" || session.depositPaid === 1) {
-    return { label: `$${session.depositAmount} dep`, cls: "bg-[var(--color-status-success-bg)] text-[var(--color-success)]" };
-  }
-  return { label: `$${session.depositAmount} due`, cls: "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]" };
-}
-
-/** Format projectType slug to readable name */
 function formatProjectType(slug: string): string {
-  return slug
-    .replace(/[-_]/g, " ")
-    .replace(/\b\w/g, c => c.toUpperCase());
+  return slug.replace(/[-_]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 }
 
 // ── Client Profile Drill-Down ─────────────────────────────
 
 interface ClientProfileProps {
   client: {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-    avatar: string | null;
-    city: string;
-    tlv: number;
-    sittings: number;
+    id: string; name: string; email: string; phone: string;
+    avatar: string | null; city: string; tlv: number; sittings: number;
   };
   onBack: () => void;
 }
@@ -647,21 +590,12 @@ interface ClientProfileProps {
 function ClientProfile({ client, onBack }: ClientProfileProps) {
   const [activeSection, setActiveSection] = useState<"appointments" | "orders" | "notes">("appointments");
 
-  // Fetch appointment history for this client
   const { data: appointments } = trpc.clientProfile.getHistory.useQuery(
-    { clientId: client.id },
-    { enabled: !!client.id }
+    { clientId: client.id }, { enabled: !!client.id }
   );
-
-  // Fetch orders (filter by email)
-  const { data: orders } = trpc.storefront.getOrders.useQuery(undefined, {
-    enabled: !!client.id,
-  });
-
-  // Fetch notes
+  const { data: orders } = trpc.storefront.getOrders.useQuery(undefined, { enabled: !!client.id });
   const { data: notes } = trpc.clientProfile.getClientNotes.useQuery(
-    { clientId: client.id },
-    { enabled: !!client.id }
+    { clientId: client.id }, { enabled: !!client.id }
   );
 
   const clientOrders = useMemo(() => {
@@ -671,34 +605,33 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
 
   return (
     <div className="animate-in slide-in-from-right duration-300 pb-40">
-      {/* Back Button */}
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors mb-6"
+        className={cn(tokens.button.ghost, "flex items-center gap-2 px-2 py-2 mb-6")}
       >
         <ChevronLeft className="w-4 h-4" />
-        Back to clients
+        <span className={cn(typography.bodySm, "font-semibold")}>Back to clients</span>
       </button>
 
-      {/* Client Header */}
+      {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         {client.avatar ? (
-          <img src={client.avatar} alt={client.name} className="w-16 h-16 rounded-full object-cover border-2 border-primary/20" />
+          <img src={client.avatar} alt={client.name} className={cn(tokens.photography.avatar, tokens.photography.avatarSizes.lg)} />
         ) : (
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl border-2 border-primary/20">
+          <div className={cn(tokens.photography.avatarSizes.lg, "rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl border-2 border-background")}>
             {client.name.charAt(0)}
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h2 className="text-xl font-bold truncate">{client.name}</h2>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-            {client.sittings > 0 && <span>{client.sittings} session{client.sittings !== 1 ? "s" : ""}</span>}
-            {client.tlv > 0 && <span className="font-semibold text-[var(--color-status-info-text)]">${client.tlv.toLocaleString()} TLV</span>}
+          <h2 className={cn(typography.h2, "truncate")}>{client.name}</h2>
+          <div className="flex items-center gap-3 mt-1">
+            {client.sittings > 0 && <span className={cn(typography.label, "text-muted-foreground")}>{client.sittings} session{client.sittings !== 1 ? "s" : ""}</span>}
+            {client.tlv > 0 && <span className={cn(typography.label, statusColor.info.text, "font-semibold")}>${client.tlv.toLocaleString()} TLV</span>}
           </div>
         </div>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions — SSOT buttons */}
       <div className="flex gap-3 mb-6">
         {[
           { icon: MessageCircle, label: "Message", href: "#" },
@@ -708,25 +641,24 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
           <a
             key={label}
             href={href}
-            className="flex-1 flex flex-col items-center gap-1.5 py-3 bg-secondary/50 border border-border rounded-[16px] hover:bg-secondary/80 transition-colors"
+            className={cn(tokens.button.outline, "flex-1 flex flex-col items-center justify-center gap-1.5")}
           >
             <Icon className="w-5 h-5 text-primary" />
-            <span className="text-[11px] font-semibold text-muted-foreground">{label}</span>
+            <span className={cn(typography.label, "text-muted-foreground")}>{label}</span>
           </a>
         ))}
       </div>
 
-      {/* Section Tabs */}
-      <div className="flex gap-2 p-1 bg-secondary/50 rounded-full mb-6">
+      {/* Section Tabs — SSOT viewToggle */}
+      <div className={cn(tokens.calendar.viewToggle.container, "h-[44px] mb-6")}>
         {(["appointments", "orders", "notes"] as const).map((s) => (
           <button
             key={s}
             onClick={() => setActiveSection(s)}
             className={cn(
-              "flex-1 px-4 py-2 text-sm font-bold capitalize rounded-full transition-all",
-              activeSection === s
-                ? "bg-foreground text-background"
-                : "text-muted-foreground hover:text-white"
+              tokens.calendar.viewToggle.button,
+              "flex-1 capitalize",
+              activeSection === s ? tokens.calendar.viewToggle.active : tokens.calendar.viewToggle.inactive
             )}
           >
             {s}
@@ -734,7 +666,6 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
         ))}
       </div>
 
-      {/* Section Content */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeSection}
@@ -749,23 +680,23 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
                 <EmptySection icon={Calendar} text="No appointments yet" />
               ) : (
                 appointments.map((apt: any) => (
-                  <div key={apt.id} className="bg-secondary/50 border border-border rounded-[16px] p-4">
+                  <div key={apt.id} className={cn(tokens.card.base, "border-border/30 p-4")}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-sm">{apt.title || apt.description || "Session"}</span>
+                      <span className={cn(typography.bodySm, "font-bold")}>{apt.title || apt.description || "Session"}</span>
                       <span className={cn(
-                        "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
-                        apt.status === "completed" ? "bg-[var(--color-status-success-bg)] text-[var(--color-success)]" :
-                        apt.status === "confirmed" ? "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]" :
-                        "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
+                        tokens.display.badge,
+                        apt.status === "completed" ? statusColor.success.full
+                          : apt.status === "confirmed" ? statusColor.info.full
+                          : statusColor.warning.full
                       )}>
                         {apt.status}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className={cn(typography.label, "text-muted-foreground")}>
                       {apt.date ? format(new Date(apt.date), "MMM d, yyyy · h:mm a") : "No date"}
                     </p>
                     {apt.price && (
-                      <p className="text-xs font-semibold text-[var(--color-status-info-text)] mt-1">${apt.price}</p>
+                      <p className={cn(typography.label, statusColor.info.text, "font-semibold mt-1")}>${apt.price}</p>
                     )}
                   </div>
                 ))
@@ -781,18 +712,15 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
                 clientOrders.map((order: any) => {
                   const isFulfilled = order.status === "fulfilled";
                   return (
-                    <div key={order.id} className="bg-secondary/50 border border-border rounded-[16px] p-4">
+                    <div key={order.id} className={cn(tokens.card.base, "border-border/30 p-4")}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-sm">Order #{order.id}</span>
-                        <span className={cn(
-                          "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
-                          isFulfilled ? "bg-[var(--color-status-success-bg)] text-[var(--color-success)]" : "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
-                        )}>
+                        <span className={cn(typography.bodySm, "font-bold")}>Order #{order.id}</span>
+                        <span className={cn(tokens.display.badge, isFulfilled ? statusColor.success.full : statusColor.warning.full)}>
                           {isFulfilled ? "Dispatched" : "Pending"}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground">{format(new Date(order.createdAt), "MMM d, yyyy")}</p>
-                      <p className="text-xs font-semibold text-[var(--color-status-info-text)] mt-1">${(order.totalAmountCents / 100).toFixed(2)}</p>
+                      <p className={cn(typography.label, "text-muted-foreground")}>{format(new Date(order.createdAt), "MMM d, yyyy")}</p>
+                      <p className={cn(typography.label, statusColor.info.text, "font-semibold mt-1")}>${(order.totalAmountCents / 100).toFixed(2)}</p>
                     </div>
                   );
                 })
@@ -806,10 +734,10 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
                 <EmptySection icon={FileText} text="No notes for this client" />
               ) : (
                 notes.map((note: any) => (
-                  <div key={note.id} className="bg-secondary/50 border border-border rounded-[16px] p-4">
-                    <p className="text-sm whitespace-pre-wrap">{note.note}</p>
+                  <div key={note.id} className={cn(tokens.card.base, "border-border/30 p-4")}>
+                    <p className={cn(typography.body, "whitespace-pre-wrap")}>{note.note}</p>
                     {note.createdAt && (
-                      <p className="text-xs text-muted-foreground mt-2">{format(new Date(note.createdAt), "MMM d, yyyy")}</p>
+                      <p className={cn(typography.label, "text-muted-foreground mt-2")}>{format(new Date(note.createdAt), "MMM d, yyyy")}</p>
                     )}
                   </div>
                 ))
@@ -824,9 +752,11 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
 
 function EmptySection({ icon: Icon, text }: { icon: any; text: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
-      <Icon className="w-10 h-10 text-muted-foreground/50 mb-3" />
-      <p className="text-sm text-muted-foreground">{text}</p>
+    <div className={tokens.display.emptyState}>
+      <div className={tokens.display.emptyStateIcon}>
+        <Icon className="w-8 h-8" />
+      </div>
+      <p className={tokens.display.emptyStateText}>{text}</p>
     </div>
   );
 }
