@@ -6,6 +6,8 @@
  * Optionally renders an inline scrollable transaction list.
  */
 
+import { formatCents } from "@/lib/formatMoney";
+
 import {
     Banknote,
     TrendingUp,
@@ -60,9 +62,7 @@ export interface PayoutWidgetProps {
     onRefundRequest?: (transaction: TransactionEntry) => void;
 }
 
-function formatCents(cents: number): string {
-    return `$${(Math.abs(cents) / 100).toFixed(2)}`;
-}
+// formatCents imported from @/lib/formatMoney (SSOT)
 
 function formatDate(iso: string): string {
     const d = new Date(iso);

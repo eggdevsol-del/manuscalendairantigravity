@@ -1,3 +1,4 @@
+import { formatCents } from "@/lib/formatMoney";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, Banknote, Clock, AlertCircle, ChevronRight, Unlink } from "lucide-react";
@@ -49,7 +50,7 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
     }
   };
 
-  const formatCents = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+  // formatCents imported from @/lib/formatMoney (SSOT)
 
   const selectClass = "w-full px-4 py-3 rounded-[12px] bg-secondary/50 border border-border text-foreground text-sm focus:outline-none focus:border-primary/50 appearance-none";
 

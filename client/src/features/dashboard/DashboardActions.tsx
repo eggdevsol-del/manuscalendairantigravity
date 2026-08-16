@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { type FABMenuItem } from "@/ui/FABMenu";
 
 interface DashboardFABActionsProps {
-  activeCategory: "business" | "clients" | "suppliers";
+  activeCategory: "home" | "clients" | "money" | "supplies";
   onShowChallenge: () => void;
 }
 
