@@ -13,7 +13,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { useRoute, useSearch } from "wouter";
+import { useRoute, useSearch, useLocation } from "wouter";
 import { Check, AlertCircle, Clock, Calendar } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { format } from "date-fns";
@@ -37,8 +37,73 @@ function formatCents(cents: number): string {
   return `$${(abs / 100).toLocaleString("en-AU", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
+/** Success screen with close button + 4s auto-close */
+function SuccessScreen({ info, onClose }: { info: any; onClose: () => void }) {
+  const [countdown, setCountdown] = useState(4);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          onClose();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [onClose]);
+
+  return (
+    <div style={{
+      minHeight: "100vh", background: DT.bg,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: 20,
+    }}>
+      <div style={{
+        maxWidth: 400, width: "100%", textAlign: "center",
+        background: DT.card, border: `1px solid ${DT.cardBorder}`,
+        borderRadius: 20, padding: "40px 24px",
+      }}>
+        <div style={{
+          width: 64, height: 64, borderRadius: 32, background: DT.green,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          margin: "0 auto 20px",
+          animation: "popIn 0.4s cubic-bezier(.2,.7,.3,1.4)",
+        }}>
+          <Check size={32} color="#fff" />
+        </div>
+        <div style={{ fontSize: 22, fontWeight: 600, color: DT.textPrimary, marginBottom: 8 }}>
+          Payment Confirmed
+        </div>
+        <div style={{ fontSize: 14, lineHeight: 1.5, color: DT.textSecondary }}>
+          {info ? `${formatCents(info.amountCents)} paid to ${info.artistName}` : "Your payment has been processed."}
+        </div>
+
+        <button
+          onClick={onClose}
+          style={{
+            marginTop: 24, width: "100%",
+            background: "rgba(255,255,255,.08)",
+            border: `1px solid ${DT.cardBorder}`,
+            borderRadius: 12, padding: "14px 20px",
+            fontSize: 14, fontWeight: 600, color: DT.textPrimary,
+            cursor: "pointer",
+            transition: "background .2s",
+          }}
+        >
+          Close{countdown > 0 ? ` (${countdown}s)` : ""}
+        </button>
+      </div>
+      <style>{`@keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }`}</style>
+    </div>
+  );
+}
+
 export function PaymentRequestSheet() {
   const [, params] = useRoute("/pay/:token");
+  const [, setLocation] = useLocation();
   const searchString = useSearch();
   const urlParams = new URLSearchParams(searchString);
   const token = params?.token || "";
@@ -182,37 +247,13 @@ export function PaymentRequestSheet() {
   // ── Success ───────────────────────────────────────────────
   if (phase === "success") {
     const info = data && !("error" in data) ? data : null;
+    const handleClose = () => setLocation("/");
+
     return (
-      <div style={{
-        minHeight: "100vh", background: DT.bg,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 20,
-      }}>
-        <div style={{
-          maxWidth: 400, width: "100%", textAlign: "center",
-          background: DT.card, border: `1px solid ${DT.cardBorder}`,
-          borderRadius: 20, padding: "40px 24px",
-        }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: 32, background: DT.green,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            margin: "0 auto 20px",
-            animation: "popIn 0.4s cubic-bezier(.2,.7,.3,1.4)",
-          }}>
-            <Check size={32} color="#fff" />
-          </div>
-          <div style={{ fontSize: 22, fontWeight: 600, color: DT.textPrimary, marginBottom: 8 }}>
-            Payment Confirmed
-          </div>
-          <div style={{ fontSize: 14, lineHeight: 1.5, color: DT.textSecondary }}>
-            {info ? `${formatCents(info.amountCents)} paid to ${info.artistName}` : "Your payment has been processed."}
-          </div>
-          <div style={{ fontSize: 13, color: DT.textTertiary, marginTop: 16 }}>
-            You can close this page.
-          </div>
-        </div>
-        <style>{`@keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }`}</style>
-      </div>
+      <SuccessScreen
+        info={info}
+        onClose={handleClose}
+      />
     );
   }
 
@@ -366,7 +407,18 @@ export function PaymentRequestSheet() {
           <div style={{ padding: "16px 20px 24px" }}>
             <EmbeddedStripeCheckout
               clientSecret={checkoutClientSecret}
-              onComplete={() => setPhase("success")}
+              onComplete={() => {
+                // Notify banner to hide permanently for this request
+                const reqInfo = data && !("error" in data) ? data : null;
+                if (reqInfo) {
+                  window.dispatchEvent(
+                    new CustomEvent("payment-request-paid", {
+                      detail: { requestId: reqInfo.requestId },
+                    })
+                  );
+                }
+                setPhase("success");
+              }}
             />
           </div>
         )}

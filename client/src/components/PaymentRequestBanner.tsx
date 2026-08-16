@@ -5,6 +5,25 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 
+const PAID_KEY = "tattoi_paid_requests";
+
+/** Read paid IDs from localStorage */
+function getPaidIds(): Set<number> {
+  try {
+    const raw = localStorage.getItem(PAID_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+/** Persist a paid ID so the banner never shows again for this request */
+function markAsPaid(id: number) {
+  const ids = getPaidIds();
+  ids.add(id);
+  localStorage.setItem(PAID_KEY, JSON.stringify([...ids]));
+}
+
 /**
  * PaymentRequestBanner
  *
@@ -13,7 +32,8 @@ import { useAuth } from "@/_core/hooks/useAuth";
  *
  * Styled identically to UpdateBanner (SSOT).
  * Only renders for client users with pending requests.
- * Dismissable per session (re-appears on next page load).
+ * Hidden on /pay/ routes (checkout page handles its own UI).
+ * Paid requests are persisted in localStorage so they never reappear.
  *
  * Flow:
  *   artist sends requestPayment → payment_requests row created
@@ -23,8 +43,8 @@ import { useAuth } from "@/_core/hooks/useAuth";
  */
 export function PaymentRequestBanner() {
   const { user } = useAuth();
-  const [, setLocation] = useLocation();
-  const [dismissed, setDismissed] = useState<Set<number>>(new Set());
+  const [location, setLocation] = useLocation();
+  const [dismissed, setDismissed] = useState<Set<number>>(() => getPaidIds());
 
   // Only fetch for client users
   const isClient = user?.role === "client";
@@ -37,10 +57,26 @@ export function PaymentRequestBanner() {
     }
   );
 
+  // Listen for payment-completed events from PaymentRequestSheet
+  useEffect(() => {
+    const handler = (e: CustomEvent) => {
+      const id = e.detail?.requestId;
+      if (id) {
+        markAsPaid(id);
+        setDismissed((prev) => new Set(prev).add(id));
+      }
+    };
+    window.addEventListener("payment-request-paid" as any, handler);
+    return () => window.removeEventListener("payment-request-paid" as any, handler);
+  }, []);
+
+  // Hide on /pay/ routes — the checkout page handles its own UI
+  const isOnPayRoute = location.startsWith("/pay/");
+
   // Find the first non-dismissed pending request
   const pending = (requests || []).find((r) => !dismissed.has(r.id));
 
-  if (!isClient || !pending) return null;
+  if (!isClient || !pending || isOnPayRoute) return null;
 
   const amountDisplay = `$${(pending.amountCents / 100).toLocaleString("en-AU", {
     minimumFractionDigits: 0,
