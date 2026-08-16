@@ -214,6 +214,89 @@ function TodaySessionRow({ session }: { session: any }) {
   );
 }
 
+// ── Task Brief Content ──────────────────────────────────
+// Shows static emailBody/smsBody instantly, or fetches LLM brief on mount
+
+function TaskBriefContent({ task }: { task: any }) {
+  const st = task._serverTask;
+  if (!st) return null;
+
+  // If we have a static pre-composed message, show it immediately
+  const staticBrief = st.emailBody || st.smsBody;
+  if (staticBrief) {
+    return (
+      <div style={{
+        fontSize: DType.rowBody.fontSize,
+        fontWeight: DType.rowBody.fontWeight,
+        color: DT.textSecondary,
+        lineHeight: 1.5,
+        marginBottom: DSpace[4],
+        whiteSpace: "pre-line" as const,
+        maxHeight: 120,
+        overflow: "auto",
+      }}>
+        {staticBrief}
+      </div>
+    );
+  }
+
+  // Otherwise, fetch LLM-generated brief on-demand
+  return <LLMBrief serverTask={st} />;
+}
+
+// Separate component so the tRPC hook is always called (rules of hooks)
+function LLMBrief({ serverTask }: { serverTask: any }) {
+  const briefQuery = trpc.dashboardTasks.getTaskBrief.useQuery(
+    {
+      taskType: serverTask.taskType || "",
+      title: serverTask.title || "",
+      context: serverTask.context || "",
+      clientName: serverTask.clientName || null,
+      conversationId: serverTask.conversationId ?? null,
+    },
+    {
+      staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+      retry: 1,
+    }
+  );
+
+  if (briefQuery.isLoading) {
+    return (
+      <div style={{
+        fontSize: DType.rowBody.fontSize,
+        color: DT.textTertiary,
+        marginBottom: DSpace[4],
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+      }}>
+        <div className="animate-spin" style={{
+          width: 12, height: 12, border: "1.5px solid rgba(255,255,255,.15)",
+          borderTopColor: DT.textSecondary, borderRadius: "50%",
+        }} />
+        Generating brief…
+      </div>
+    );
+  }
+
+  if (!briefQuery.data?.brief) return null;
+
+  return (
+    <div style={{
+      fontSize: DType.rowBody.fontSize,
+      fontWeight: DType.rowBody.fontWeight,
+      color: DT.textSecondary,
+      lineHeight: 1.5,
+      marginBottom: DSpace[4],
+      whiteSpace: "pre-line" as const,
+      maxHeight: 120,
+      overflow: "auto",
+    }}>
+      {briefQuery.data.brief}
+    </div>
+  );
+}
+
 // ── Task Row ────────────────────────────────────────────
 
 interface TaskRowProps {
@@ -224,7 +307,7 @@ interface TaskRowProps {
   expanded?: boolean;
   onToggle?: () => void;
   // Expanded state
-  brief?: string | null;
+  briefSlot?: React.ReactNode;
   facts?: { key: string; value: string }[];
   actions?: { id: string; label: string; primary?: boolean; onClick: () => void }[];
   // Grouped summary
@@ -235,7 +318,7 @@ interface TaskRowProps {
 
 function TaskRow({
   title, context, dueLabel, isUrgent, expanded, onToggle,
-  brief, facts, actions, isGroupSummary, groupCount, children,
+  briefSlot, facts, actions, isGroupSummary, groupCount, children,
 }: TaskRowProps) {
   return (
     <div
@@ -285,21 +368,8 @@ function TaskRow({
       {/* Expanded: fact panel + actions */}
       {expanded && (
         <div style={{ marginTop: DSpace[5] }}>
-          {/* Brief — the pre-composed message shown for context */}
-          {brief && (
-            <div style={{
-              fontSize: DType.rowBody.fontSize,
-              fontWeight: DType.rowBody.fontWeight,
-              color: DT.textSecondary,
-              lineHeight: 1.5,
-              marginBottom: DSpace[4],
-              whiteSpace: "pre-line" as const,
-              maxHeight: 120,
-              overflow: "auto",
-            }}>
-              {brief}
-            </div>
-          )}
+          {/* Brief — pre-composed message or LLM-generated summary */}
+          {briefSlot}
           {facts && facts.length > 0 && (
             <div style={{
               background: DT.factPanelBg,
@@ -586,14 +656,6 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
     return facts;
   };
 
-  // Brief: the pre-composed email/SMS body gives the artist context
-  const getTaskBrief = (task: any): string | null => {
-    const st = task._serverTask;
-    if (!st) return null;
-    // Prefer email body (more detailed), fall back to SMS body
-    return st.emailBody || st.smsBody || null;
-  };
-
   const isLoading = overviewLoading || tasksLoading;
 
   return (
@@ -724,7 +786,7 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
                                 isUrgent={due.isUrgent}
                                 expanded={isTaskExpanded}
                                 onToggle={() => setExpandedTaskId(isTaskExpanded ? null : t.id)}
-                                brief={isTaskExpanded ? getTaskBrief(t) : undefined}
+                                briefSlot={isTaskExpanded ? <TaskBriefContent task={t} /> : undefined}
                                 facts={isTaskExpanded ? getTaskFacts(t) : undefined}
                                 actions={isTaskExpanded ? getTaskActions(t) : undefined}
                               />
@@ -750,7 +812,7 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
                   isUrgent={due.isUrgent}
                   expanded={isExpanded}
                   onToggle={() => setExpandedTaskId(isExpanded ? null : task.id)}
-                  brief={isExpanded ? getTaskBrief(task) : undefined}
+                  briefSlot={isExpanded ? <TaskBriefContent task={task} /> : undefined}
                   facts={isExpanded ? getTaskFacts(task) : undefined}
                   actions={isExpanded ? getTaskActions(task) : undefined}
                 />
@@ -825,7 +887,7 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
                     dueLabel=""
                     expanded={isExpanded}
                     onToggle={() => setExpandedTaskId(isExpanded ? null : task.id)}
-                    brief={isExpanded ? getTaskBrief(task) : undefined}
+                    briefSlot={isExpanded ? <TaskBriefContent task={task} /> : undefined}
                     actions={isExpanded ? [
                       { id: "archive", label: "Archive", primary: false, onClick: () => businessActions.completeTask(task._serverTask!, "manual") },
                     ] : undefined}
