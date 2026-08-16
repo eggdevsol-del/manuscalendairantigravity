@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ExternalLink, Loader2, PackageSearch, Search, RefreshCw } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, PackageSearch, Search, RefreshCw, Minus, Plus, ChevronRight } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
@@ -21,6 +21,41 @@ export function SupplierStorefront({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showInStockOnly, setShowInStockOnly] = useState(false);
+
+  // Cart state: variantId → { quantity, priceCents, productTitle, variantTitle }
+  const [cart, setCart] = useState<Record<number, { quantity: number; priceCents: number; productTitle: string; variantTitle: string }>>({}); 
+
+  const addToCart = (variantId: number, priceCents: number, productTitle: string, variantTitle: string) => {
+    setCart(prev => ({
+      ...prev,
+      [variantId]: {
+        quantity: (prev[variantId]?.quantity || 0) + 1,
+        priceCents,
+        productTitle,
+        variantTitle,
+      },
+    }));
+  };
+
+  const removeFromCart = (variantId: number) => {
+    setCart(prev => {
+      const next = { ...prev };
+      if (next[variantId] && next[variantId].quantity > 1) {
+        next[variantId] = { ...next[variantId], quantity: next[variantId].quantity - 1 };
+      } else {
+        delete next[variantId];
+      }
+      return next;
+    });
+  };
+
+  const cartItemCount = useMemo(() =>
+    Object.values(cart).reduce((sum, item) => sum + item.quantity, 0)
+  , [cart]);
+
+  const cartTotalCents = useMemo(() =>
+    Object.values(cart).reduce((sum, item) => sum + item.priceCents * item.quantity, 0)
+  , [cart]);
 
   // Background Sync
   const scrapeMutation = trpc.suppliers.scrapeShopifyStore.useMutation({
@@ -224,17 +259,14 @@ export function SupplierStorefront({
                       </div>
                     )}
                     
-                    {/* Inventory Badge */}
-                    <div className="absolute top-2 right-2">
-                      <div className={cn(
-                        "px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider backdrop-blur-md shadow-sm border",
-                        isAvailable 
-                          ? "bg-[var(--color-success)] text-white border-[var(--color-status-success-border)]" 
-                          : "bg-[var(--color-danger)] text-white border-[var(--color-status-danger-border)]"
-                      )}>
-                        {isAvailable ? "In Stock" : "Sold Out"}
+                    {/* OUT OF STOCK overlay badge */}
+                    {!isAvailable && (
+                      <div className="absolute bottom-2 right-2">
+                        <div className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-black/80 text-white border border-white/20 backdrop-blur-sm">
+                          OUT OF STOCK
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                   
                   <div className="p-3 flex flex-col flex-1">
@@ -261,10 +293,62 @@ export function SupplierStorefront({
                       </div>
                     )}
 
-                    <div className="mt-auto pt-3 border-t border-border flex items-center justify-between">
-                      <span className="font-bold text-sm text-foreground">
-                        {priceCents > 0 ? `$${(priceCents / 100).toFixed(2)}` : 'Pricing Unavailable'}
+                    <div className="mt-auto pt-3 border-t border-border flex items-center justify-between gap-2">
+                      <span className="font-bold text-sm text-foreground shrink-0">
+                        {priceCents > 0 ? `$${(priceCents / 100).toFixed(2)}` : 'N/A'}
                       </span>
+                      {isAvailable ? (
+                        selectedVarId && cart[selectedVarId] ? (
+                          // Quantity stepper
+                          <div className="flex items-center gap-0 rounded-full overflow-hidden" style={{ background: '#f2ca5c' }}>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); removeFromCart(selectedVarId); }}
+                              className="w-8 h-8 flex items-center justify-center hover:bg-black/10 transition-colors"
+                              style={{ minHeight: 32 }}
+                            >
+                              <Minus className="w-3.5 h-3.5 text-black" />
+                            </button>
+                            <span className="text-xs font-bold text-black min-w-[20px] text-center">
+                              {cart[selectedVarId].quantity}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (selectedVarId && activeVariant) {
+                                  addToCart(selectedVarId, priceCents, product.title, activeVariant.title || '');
+                                }
+                              }}
+                              className="w-8 h-8 flex items-center justify-center hover:bg-black/10 transition-colors"
+                              style={{ minHeight: 32 }}
+                            >
+                              <Plus className="w-3.5 h-3.5 text-black" />
+                            </button>
+                          </div>
+                        ) : (
+                          // Add button
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (selectedVarId && activeVariant) {
+                                addToCart(selectedVarId, priceCents, product.title, activeVariant.title || '');
+                              }
+                            }}
+                            className="px-4 py-1.5 rounded-full text-xs font-bold transition-colors"
+                            style={{ background: '#f2ca5c', color: '#1a1a19', minHeight: 32 }}
+                          >
+                            Add
+                          </button>
+                        )
+                      ) : (
+                        // Notify me button for out-of-stock
+                        <button
+                          onClick={(e) => { e.stopPropagation(); }}
+                          className="px-3 py-1.5 rounded-full text-xs font-bold border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+                          style={{ minHeight: 32 }}
+                        >
+                          Notify me
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -273,6 +357,36 @@ export function SupplierStorefront({
           </div>
         )}
       </div>
+
+      {/* Sticky Cart Bar */}
+      {cartItemCount > 0 && (
+        <div
+          className="fixed bottom-20 left-0 right-0 z-50 px-4 pb-2"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
+        >
+          <button
+            onClick={() => {
+              // Open supplier website for ordering
+              if (supplier?.websiteUrl) {
+                window.open(supplier.websiteUrl, '_blank');
+              }
+            }}
+            className="w-full flex items-center justify-between rounded-2xl px-5 py-3.5 shadow-lg transition-colors"
+            style={{
+              background: '#f2ca5c',
+              color: '#1a1a19',
+              minHeight: 52,
+            }}
+          >
+            <span className="text-sm font-bold">
+              {cartItemCount} {cartItemCount === 1 ? 'item' : 'items'} · ${(cartTotalCents / 100).toFixed(2)}
+            </span>
+            <span className="text-sm font-bold flex items-center gap-1">
+              Order <ChevronRight className="w-4 h-4" />
+            </span>
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 }
