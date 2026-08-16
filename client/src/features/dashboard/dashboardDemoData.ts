@@ -4,9 +4,16 @@
  * All mock data in one file. Only rendered when isDemoMode === true.
  * Reverts to real data the moment the tour ends.
  */
-import type { ExtendedTask } from "@/pages/Dashboard";
-
-// ── Mock Business Tasks ───────────────────────────────────
+// ExtendedTask type — only used for demo mock data during tooltip tour
+interface ExtendedTask {
+  id: string;
+  title: string;
+  context?: string;
+  priority: "high" | "medium" | "low";
+  status: "pending" | "completed" | "dismissed" | "snoozed";
+  actionType: string;
+  domain: "business" | "social" | "personal";
+}
 
 export const DEMO_TASKS: ExtendedTask[] = [
   {

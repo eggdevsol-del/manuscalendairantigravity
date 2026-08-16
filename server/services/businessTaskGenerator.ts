@@ -1067,6 +1067,137 @@ async function generateUpcomingWarningTasks(
 }
 
 // ==========================================
+// INVOICE DELIVERED WORK
+// ==========================================
+// §7: "Invoice delivered work" — Tier 1 task for completed sessions
+// with outstanding balances. One task per client.
+
+async function generateInvoiceDeliveredWorkTasks(
+  db: MySql2Database<typeof schema>,
+  artistId: string
+): Promise<BusinessTask[]> {
+  const tasks: BusinessTask[] = [];
+
+  // Look back 90 days for completed sessions with remaining balance
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+
+  const completedUnpaid = await db.query.appointments.findMany({
+    where: and(
+      eq(schema.appointments.artistId, artistId),
+      ne(schema.appointments.clientId, artistId), // Self-exclusion
+      eq(schema.appointments.status, "completed"),
+      lt(schema.appointments.startTime, new Date().toISOString()),
+      gte(schema.appointments.startTime, ninetyDaysAgo.toISOString())
+    ),
+    with: {
+      client: true,
+      conversation: true,
+    },
+    orderBy: desc(schema.appointments.startTime),
+  });
+
+  // Group by client — one task per client, not per session
+  const clientGroups = new Map<string, {
+    clientId: string;
+    clientName: string;
+    clientEmail: string | null;
+    clientPhone: string | null;
+    conversationId: number | null;
+    sessions: typeof completedUnpaid;
+    totalOwed: number;
+    totalPaid: number;
+    oldestUnpaid: Date;
+  }>();
+
+  for (const appt of completedUnpaid) {
+    const remaining = (appt.priceCents || 0) - (appt.paidCents || 0);
+    if (remaining <= 0) continue; // Fully paid
+
+    const cid = appt.clientId!;
+    if (!clientGroups.has(cid)) {
+      clientGroups.set(cid, {
+        clientId: cid,
+        clientName: (appt as any).client?.name || "Client",
+        clientEmail: (appt as any).client?.email || null,
+        clientPhone: (appt as any).client?.phone || null,
+        conversationId: appt.conversationId ?? null,
+        sessions: [],
+        totalOwed: 0,
+        totalPaid: 0,
+        oldestUnpaid: new Date(appt.startTime),
+      });
+    }
+
+    const group = clientGroups.get(cid)!;
+    group.sessions.push(appt);
+    group.totalOwed += remaining;
+    group.totalPaid += (appt.paidCents || 0);
+
+    const apptDate = new Date(appt.startTime);
+    if (apptDate < group.oldestUnpaid) {
+      group.oldestUnpaid = apptDate;
+    }
+  }
+
+  for (const [, group] of clientGroups) {
+    const daysSinceOldest = Math.floor(
+      (Date.now() - group.oldestUnpaid.getTime()) / (24 * 60 * 60 * 1000)
+    );
+
+    // Scoring: base 400 + staleness bonus + amount bonus
+    let baseScore = 400;
+
+    // Staleness: +50 per day overdue, capping at 400
+    baseScore += Math.min(400, daysSinceOldest * 50);
+
+    // Amount: +1 per $10 owed, capping at 200
+    baseScore += Math.min(200, Math.floor(group.totalOwed / 1000));
+
+    const owedFormatted = `$${(group.totalOwed / 100).toFixed(0)}`;
+    const sessionCount = group.sessions.length;
+    const clientFirst = firstName(group.clientName);
+
+    const emailSubject = `Outstanding balance — ${owedFormatted}`;
+    let emailBody = `Hi ${clientFirst},\n\nJust a reminder about the outstanding balance of ${owedFormatted} for ${sessionCount === 1 ? "your recent session" : `your ${sessionCount} recent sessions`}.\n\n`;
+
+    // Add payment link for each session
+    for (const s of group.sessions) {
+      const remaining = (s.priceCents || 0) - (s.paidCents || 0);
+      emailBody += `• ${(s as any).title || "Session"} — $${(remaining / 100).toFixed(0)} remaining: https://tattoi.com/pay/${s.id}\n`;
+    }
+
+    tasks.push({
+      taskType: "invoice_delivered_work",
+      taskTier: "tier1",
+      title: `Invoice ${group.clientName} — ${owedFormatted}`,
+      context: `${sessionCount} ${sessionCount === 1 ? "session" : "sessions"} completed, ${owedFormatted} not collected`,
+      priorityScore: baseScore,
+      priorityLevel: getPriorityLevel(baseScore),
+      relatedEntityType: "client",
+      relatedEntityId: group.clientId,
+      clientId: group.clientId,
+      clientName: group.clientName,
+      actionType: "email",
+      smsNumber: group.clientPhone,
+      smsBody: group.clientPhone
+        ? `Hi ${clientFirst}, just a reminder about the ${owedFormatted} outstanding for your recent session${sessionCount > 1 ? "s" : ""}. You can pay here: https://tattoi.com/pay/${group.sessions[0].id}`
+        : null,
+      emailRecipient: group.clientEmail,
+      emailSubject,
+      emailBody,
+      deepLink: group.conversationId
+        ? `/chat/${group.conversationId}`
+        : `/conversations`,
+      conversationId: group.conversationId,
+      dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Due tomorrow
+      expiresAt: null, // Never expires — money is owed
+    });
+  }
+
+  return tasks;
+}
+
+// ==========================================
 // MAIN GENERATOR FUNCTION
 // ==========================================
 
@@ -1129,6 +1260,7 @@ export async function generateBusinessTasks(
     healedPhotoTasks,
     thankYouTasks,
     upcomingWarningTasks,
+    invoiceTasks,
   ] = await Promise.all([
     generateNewLeadTasks(db, artistId),
     generateLeadFollowUpTasks(db, artistId),
@@ -1142,6 +1274,7 @@ export async function generateBusinessTasks(
     generateHealedPhotoTasks(db, artistId),
     generateThankYouTasks(db, artistId),
     generateUpcomingWarningTasks(db, artistId),
+    generateInvoiceDeliveredWorkTasks(db, artistId),
   ]);
 
   // Combine all tasks
@@ -1158,6 +1291,7 @@ export async function generateBusinessTasks(
     ...healedPhotoTasks,
     ...thankYouTasks,
     ...upcomingWarningTasks,
+    ...invoiceTasks,
   ];
 
   console.log(
@@ -1184,6 +1318,8 @@ export async function generateBusinessTasks(
   const now = new Date();
   const activeTasks = filteredTasks.filter(task => {
     if (task.expiresAt && task.expiresAt < now) return false;
+    // Self-exclusion: remove tasks targeting the artist's own client record
+    if (task.clientId && task.clientId === artistId) return false;
     return true;
   });
 

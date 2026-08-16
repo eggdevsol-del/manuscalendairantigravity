@@ -4,14 +4,12 @@
  * SegmentedHeader is the canonical tab header component.
  * Use this for consistent tab styling across all pages.
  *
- * Features:
- * - Non-selected tabs have 4% blur effect
- * - Active tab has full opacity and slight scale
- * - Smooth transitions between states
+ * §4: Active tab uses solid rgba(255,255,255,.1) pill.
+ *     No text-shadow glow, no blur filter.
+ *     Inactive text at .58 alpha for ≥4.5:1 contrast.
  *
  * DO NOT create custom tab styles in page components.
  */
-import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 
 interface SegmentedHeaderProps {
@@ -28,7 +26,9 @@ export function SegmentedHeader({
   className,
 }: SegmentedHeaderProps) {
   return (
-    <div className={cn(tokens.tabs.container, className)}>
+    <div className={cn("flex w-full items-center gap-1 p-1 rounded-full", className)}
+      style={{ background: "rgba(255,255,255,.04)" }}
+    >
       {options.map((title, index) => {
         const isActive = index === activeIndex;
         return (
@@ -36,13 +36,13 @@ export function SegmentedHeader({
             key={title}
             onClick={() => onChange(index)}
             className={cn(
-              tokens.tabs.button,
-              isActive ? tokens.tabs.active : tokens.tabs.inactive
+              "flex-1 text-center py-2 rounded-full transition-colors duration-200 outline-none",
+              "text-[14.5px] font-semibold tracking-tight",
+              "min-h-[44px]", // §10 touch target
             )}
             style={{
-              // Active tab: no blur, non-active: 4% blur (approx 0.4px)
-              filter: isActive ? "none" : "blur(0.4px)",
-              textShadow: isActive ? "0 0 20px rgba(255,255,255,0.3)" : "none",
+              background: isActive ? "rgba(255,255,255,.1)" : "transparent",
+              color: isActive ? "#f5f5f4" : "rgba(255,255,255,.58)",
             }}
           >
             {title}
@@ -52,3 +52,4 @@ export function SegmentedHeader({
     </div>
   );
 }
+

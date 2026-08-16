@@ -1,7 +1,7 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import * as schema from "../../drizzle/schema";
-import { eq, and, desc, sql, count, asc, gte, lt, inArray } from "drizzle-orm";
+import { eq, and, desc, sql, count, asc, gte, lt, inArray, ne } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 
@@ -76,10 +76,11 @@ export const dashboardRouter = router({
       },
     });
 
-    // 3. Today's Timeline
+    // 3. Today's Timeline — exclude self-appointments (account holder as own client)
     const todayTimeline = await db.query.appointments.findMany({
       where: and(
         eq(schema.appointments.artistId, user.id),
+        ne(schema.appointments.clientId, user.id),
         gte(schema.appointments.startTime, startOfDayIso),
         lt(schema.appointments.startTime, endOfDayIso)
       ),
@@ -180,8 +181,9 @@ export const dashboardRouter = router({
     });
 
     // Only include appointments that have a client and are active
+    // Exclude self-appointments (account holder as own client)
     const activeAppts = allAppts.filter(a =>
-      a.clientId && !["cancelled"].includes(a.status)
+      a.clientId && a.clientId !== user.id && !["cancelled"].includes(a.status)
     );
 
     // Get clientIds to find linked leads

@@ -12,7 +12,7 @@
 import { z } from "zod";
 import { artistProcedure, router } from "../_core/trpc";
 import { getDb } from "../services/core";
-import { eq, and, sql, gte, desc } from "drizzle-orm";
+import { eq, and, sql, gte, desc, notInArray } from "drizzle-orm";
 import {
     paymentLedger,
     artistSettings,
@@ -222,8 +222,12 @@ export const payoutsRouter = router({
                     .replace("T", " ")
                 : null;
 
-            // Build conditions
-            const conditions = [eq(paymentLedger.artistId, ctx.user.id)];
+            // Build conditions — exclude off-platform payments (cash/bank)
+            // They never moved through the platform and have zero fees.
+            const conditions = [
+                eq(paymentLedger.artistId, ctx.user.id),
+                notInArray(paymentLedger.paymentMethod, ["cash", "bank"]),
+            ];
             if (startDate) {
                 conditions.push(gte(paymentLedger.createdAt, startDate));
             }
