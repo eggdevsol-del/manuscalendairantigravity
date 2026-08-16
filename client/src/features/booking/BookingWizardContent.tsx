@@ -894,7 +894,7 @@ export function BookingWizardContent({
               </motion.div>
             )}
 
-            {(!isArtist && (proposalMeta.status === "accepted" || (proposalMeta.status === "pending" && isClientPaying) || (selectedAppointmentRaw?.paymentStatus === "pending_deposit"))) && (
+            {(!isArtist && (proposalMeta.status === "accepted" || (proposalMeta.status === "pending" && isClientPaying) || (selectedAppointmentRaw?.paymentStatus === "pending_deposit" && proposalMeta.status !== "confirmed" && proposalMeta.status !== "remittance_uploaded"))) && (
               <motion.div variants={fab.animation.item} className="flex flex-col gap-3 py-2">
                 <div className="p-3 bg-[var(--color-status-info-bg)] rounded-[8px] border border-[var(--color-status-info-border)]">
                   <h4 className="text-[10px] font-bold text-[var(--color-status-info-text)] uppercase tracking-widest mb-2 flex items-center gap-1.5"><Tag className="w-3 h-3" /> Deposit Required</h4>

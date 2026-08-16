@@ -12,6 +12,7 @@ import { TeaserProvider } from "@/contexts/TeaserContext";
 import { SplashScreen } from "@/components/SplashScreen";
 import { UpdateBanner } from "@/components/UpdateBanner";
 import { InstallAppBanner } from "@/components/InstallAppBanner";
+import { PaymentRequestBanner } from "@/components/PaymentRequestBanner";
 import { TooltipTourProvider, TooltipOverlay } from "@/components/tooltip-tour";
 import { useVersionCheck } from "@/lib/useVersionCheck";
 import PublicArtistProfile from "@/pages/public/PublicArtistProfile";
@@ -221,6 +222,7 @@ function AuthOnlyBanners() {
     <>
       <UpdateBanner />
       <InstallAppBanner />
+      <PaymentRequestBanner />
     </>
   );
 }
