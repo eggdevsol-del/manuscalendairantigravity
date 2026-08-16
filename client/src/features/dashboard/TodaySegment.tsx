@@ -224,6 +224,7 @@ interface TaskRowProps {
   expanded?: boolean;
   onToggle?: () => void;
   // Expanded state
+  brief?: string | null;
   facts?: { key: string; value: string }[];
   actions?: { id: string; label: string; primary?: boolean; onClick: () => void }[];
   // Grouped summary
@@ -234,7 +235,7 @@ interface TaskRowProps {
 
 function TaskRow({
   title, context, dueLabel, isUrgent, expanded, onToggle,
-  facts, actions, isGroupSummary, groupCount, children,
+  brief, facts, actions, isGroupSummary, groupCount, children,
 }: TaskRowProps) {
   return (
     <div
@@ -284,6 +285,21 @@ function TaskRow({
       {/* Expanded: fact panel + actions */}
       {expanded && (
         <div style={{ marginTop: DSpace[5] }}>
+          {/* Brief — the pre-composed message shown for context */}
+          {brief && (
+            <div style={{
+              fontSize: DType.rowBody.fontSize,
+              fontWeight: DType.rowBody.fontWeight,
+              color: DT.textSecondary,
+              lineHeight: 1.5,
+              marginBottom: DSpace[4],
+              whiteSpace: "pre-line" as const,
+              maxHeight: 120,
+              overflow: "auto",
+            }}>
+              {brief}
+            </div>
+          )}
           {facts && facts.length > 0 && (
             <div style={{
               background: DT.factPanelBg,
@@ -513,11 +529,27 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
       actions.push({ id: "complete", label: "Complete", primary: true, onClick: () => businessActions.completeTask(st, "manual") });
     }
 
-    // Secondary actions (max 2 more, bordered)
-    if (st.emailRecipient && actions[0]?.id !== "email") {
+    // Call button — when phone number exists
+    if (st.smsNumber) {
+      actions.push({
+        id: "call",
+        label: "Call",
+        onClick: () => {
+          const a = document.createElement("a");
+          a.href = `tel:${st.smsNumber.replace(/\D/g, "")}`;
+          a.target = "_top";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        },
+      });
+    }
+
+    // Secondary actions (remaining slots, bordered)
+    if (st.emailRecipient && actions[0]?.id !== "email" && !actions.find((a: any) => a.id === "email")) {
       actions.push({ id: "email", label: "Email", onClick: () => businessActions.openEmail(st) });
     }
-    if (st.deepLink) {
+    if (st.deepLink && actions.length < 3) {
       actions.push({ id: "open", label: "Open", onClick: () => setLocation(st.deepLink!) });
     }
 
@@ -552,6 +584,14 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
     const facts: { key: string; value: string }[] = [];
     if (st.context) facts.push({ key: "Details", value: st.context });
     return facts;
+  };
+
+  // Brief: the pre-composed email/SMS body gives the artist context
+  const getTaskBrief = (task: any): string | null => {
+    const st = task._serverTask;
+    if (!st) return null;
+    // Prefer email body (more detailed), fall back to SMS body
+    return st.emailBody || st.smsBody || null;
   };
 
   const isLoading = overviewLoading || tasksLoading;
@@ -684,6 +724,7 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
                                 isUrgent={due.isUrgent}
                                 expanded={isTaskExpanded}
                                 onToggle={() => setExpandedTaskId(isTaskExpanded ? null : t.id)}
+                                brief={isTaskExpanded ? getTaskBrief(t) : undefined}
                                 facts={isTaskExpanded ? getTaskFacts(t) : undefined}
                                 actions={isTaskExpanded ? getTaskActions(t) : undefined}
                               />
@@ -709,6 +750,7 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
                   isUrgent={due.isUrgent}
                   expanded={isExpanded}
                   onToggle={() => setExpandedTaskId(isExpanded ? null : task.id)}
+                  brief={isExpanded ? getTaskBrief(task) : undefined}
                   facts={isExpanded ? getTaskFacts(task) : undefined}
                   actions={isExpanded ? getTaskActions(task) : undefined}
                 />
@@ -783,6 +825,7 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
                     dueLabel=""
                     expanded={isExpanded}
                     onToggle={() => setExpandedTaskId(isExpanded ? null : task.id)}
+                    brief={isExpanded ? getTaskBrief(task) : undefined}
                     actions={isExpanded ? [
                       { id: "archive", label: "Archive", primary: false, onClick: () => businessActions.completeTask(task._serverTask!, "manual") },
                     ] : undefined}

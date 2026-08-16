@@ -18,12 +18,13 @@
  *   - Never more than three buttons in expanded rows
  */
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   PageShell,
+  PageHeader,
   SegmentedHeader,
 } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
@@ -42,7 +43,6 @@ import { ClientsTab } from "@/features/dashboard/ClientsTab";
 import { SuppliesSegment } from "@/features/dashboard/SuppliesSegment";
 import { MoneyStrip } from "@/features/dashboard/MoneyStrip";
 import { MoneyScreen } from "@/features/dashboard/MoneyScreen";
-import { DT, DType, DSpace } from "@/features/dashboard/dashboardTokens";
 
 // ── Constants ─────────────────────────────────────────────
 
@@ -118,12 +118,6 @@ export default function Dashboard() {
 
   const activeCategory = TITLES[activeIndex].toLowerCase() as "today" | "clients" | "supplies";
 
-  // Derive greeting
-  const greeting = useMemo(() => {
-    const firstName = user?.name?.split(" ")[0] || "Hey";
-    return firstName;
-  }, [user]);
-
   const todayLabel = format(new Date(), "EEEE, d MMMM");
 
   if (user?.role === "studio") return null;
@@ -140,51 +134,8 @@ export default function Dashboard() {
 
   return (
     <PageShell>
-      {/* §6.1 — Home header: no "Home" label, avatar + name + date */}
-      <div style={{
-        padding: `${DSpace[6]}px ${DSpace[7]}px ${DSpace[3]}px`,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: DSpace[4] }}>
-          {/* Avatar */}
-          {user?.avatar ? (
-            <img
-              src={user.avatar}
-              alt=""
-              style={{
-                width: 40, height: 40, borderRadius: 20,
-                objectFit: "cover",
-                border: `2px solid ${DT.hairline}`,
-              }}
-            />
-          ) : (
-            <div style={{
-              width: 40, height: 40, borderRadius: 20,
-              background: DT.quietRow,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 16, fontWeight: 600, color: DT.textPrimary,
-              border: `2px solid ${DT.hairline}`,
-            }}>
-              {(user?.name || "?")[0].toUpperCase()}
-            </div>
-          )}
-          <div>
-            <div style={{
-              fontSize: DType.screenTitle.fontSize,
-              fontWeight: DType.screenTitle.fontWeight,
-              color: DT.textPrimary,
-            }}>
-              Hey {greeting}
-            </div>
-            <div style={{
-              fontSize: DType.rowMeta.fontSize,
-              fontWeight: DType.rowMeta.fontWeight,
-              color: DT.textSecondary,
-            }}>
-              {todayLabel}
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* SSOT PageHeader — handles safe-area-inset-top for notch */}
+      <PageHeader title="Home" subtitle={todayLabel} />
 
       {/* 2. Content Container */}
       <div className={cn(tokens.contentContainer.base, "relative")}>
