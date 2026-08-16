@@ -20,9 +20,10 @@ import { cn } from "@/lib/utils";
 import { tokens } from "@/ui/tokens";
 import { PageShell, PageHeader, LoadingState } from "@/components/ui/ssot";
 import { RefundConfirmationFAB } from "@/features/payouts/RefundConfirmationFAB";
-import { formatCents } from "@/lib/formatMoney";
 
-// formatCents imported from @/lib/formatMoney (SSOT)
+function formatCents(cents: number): string {
+    return `$${(Math.abs(cents) / 100).toFixed(2)}`;
+}
 
 function formatDate(iso: string): string {
     const d = new Date(iso);

@@ -1066,125 +1066,6 @@ async function generateUpcomingWarningTasks(
   return tasks;
 }
 
-/**
- * TIER 2: Invoice Delivered Work
- * When a client has completed sessions with outstanding balance,
- * the artist should send an invoice / payment request.
- * Reads the same logic as the Clients tab derivation:
- * group sessions by client → sum outstanding on completed sessions.
- */
-async function generateInvoiceDeliveredWorkTasks(
-  db: MySql2Database<typeof schema>,
-  artistId: string
-): Promise<BusinessTask[]> {
-  const tasks: BusinessTask[] = [];
-
-  // Get all non-cancelled appointments for this artist (same query shape as getClientSessions)
-  const allAppts = await db.query.appointments.findMany({
-    where: and(
-      eq(schema.appointments.artistId, artistId),
-      ne(schema.appointments.status, "cancelled")
-    ),
-    with: { client: true },
-  });
-
-  // Group by clientId — mirrors ClientsTab derivation
-  const clientGroups = new Map<string, {
-    clientId: string;
-    clientName: string;
-    completedSessions: typeof allAppts;
-    totalValueCents: number;
-    collectedCents: number;
-    outstandingCents: number;
-    conversationId: number | null;
-    clientPhone: string | null;
-    clientEmail: string | null;
-  }>();
-
-  for (const appt of allAppts) {
-    if (!appt.clientId) continue;
-
-    if (!clientGroups.has(appt.clientId)) {
-      clientGroups.set(appt.clientId, {
-        clientId: appt.clientId,
-        clientName: appt.client?.name || "Client",
-        completedSessions: [],
-        totalValueCents: 0,
-        collectedCents: 0,
-        outstandingCents: 0,
-        conversationId: appt.conversationId ?? null,
-        clientPhone: appt.client?.phone || null,
-        clientEmail: appt.client?.email || null,
-      });
-    }
-
-    const group = clientGroups.get(appt.clientId)!;
-
-    // Only count completed/past sessions (same partition as ClientsTab)
-    const isPast = new Date(appt.startTime) < new Date();
-    const isCompleted = appt.status === "completed" || isPast;
-    if (!isCompleted) continue;
-
-    const priceCents = appt.totalExpectedAmountCents || (appt.price ? appt.price * 100 : 0);
-    const paidCents = appt.totalPaidAmountCents || (appt.depositPaid && appt.depositAmount ? appt.depositAmount * 100 : 0);
-
-    group.completedSessions.push(appt);
-    group.totalValueCents += priceCents;
-    group.collectedCents += paidCents;
-    group.outstandingCents = Math.max(0, group.totalValueCents - group.collectedCents);
-
-    // Take the most recent conversationId
-    if (appt.conversationId) {
-      group.conversationId = appt.conversationId;
-    }
-  }
-
-  // Generate a task for each client with outstanding balance on completed sessions
-  for (const [, group] of clientGroups) {
-    if (group.outstandingCents <= 0 || group.completedSessions.length === 0) continue;
-
-    const sessionCount = group.completedSessions.length;
-    const outstandingDollars = Math.round(group.outstandingCents / 100);
-
-    // Score: higher for larger outstanding amounts and more overdue sessions
-    const oldestCompleted = group.completedSessions
-      .map(s => new Date(s.startTime))
-      .sort((a, b) => a.getTime() - b.getTime())[0];
-    const daysOverdue = oldestCompleted ? daysSince(oldestCompleted) : 0;
-
-    // Base: 400 for any outstanding, +50 per $500 outstanding, +30 per day overdue
-    let baseScore = 400 + Math.min(300, Math.floor(outstandingDollars / 500) * 50) + Math.min(200, daysOverdue * 30);
-    baseScore = Math.min(850, baseScore); // Cap below critical (invoice is not as urgent as new lead)
-
-    const sessionLabel = sessionCount === 1 ? "1 session" : `${sessionCount} sessions`;
-
-    tasks.push({
-      taskType: "invoice_delivered_work",
-      taskTier: "tier2",
-      title: `Invoice ${firstName(group.clientName)}`,
-      context: `${sessionLabel} tattooed · $${outstandingDollars.toLocaleString()} not collected`,
-      priorityScore: baseScore,
-      priorityLevel: getPriorityLevel(baseScore),
-      relatedEntityType: "client",
-      relatedEntityId: group.clientId,
-      clientId: group.clientId,
-      clientName: group.clientName,
-      actionType: "in_app",
-      smsNumber: group.clientPhone,
-      smsBody: null,
-      emailRecipient: group.clientEmail,
-      emailSubject: null,
-      emailBody: null,
-      deepLink: group.conversationId ? `/chat/${group.conversationId}` : `/clients`,
-      conversationId: group.conversationId,
-      dueAt: null,
-      expiresAt: null, // Invoice tasks never expire — money is still owed
-    });
-  }
-
-  return tasks;
-}
-
 // ==========================================
 // MAIN GENERATOR FUNCTION
 // ==========================================
@@ -1248,7 +1129,6 @@ export async function generateBusinessTasks(
     healedPhotoTasks,
     thankYouTasks,
     upcomingWarningTasks,
-    invoiceDeliveredWorkTasks,
   ] = await Promise.all([
     generateNewLeadTasks(db, artistId),
     generateLeadFollowUpTasks(db, artistId),
@@ -1262,7 +1142,6 @@ export async function generateBusinessTasks(
     generateHealedPhotoTasks(db, artistId),
     generateThankYouTasks(db, artistId),
     generateUpcomingWarningTasks(db, artistId),
-    generateInvoiceDeliveredWorkTasks(db, artistId),
   ]);
 
   // Combine all tasks
@@ -1279,7 +1158,6 @@ export async function generateBusinessTasks(
     ...healedPhotoTasks,
     ...thankYouTasks,
     ...upcomingWarningTasks,
-    ...invoiceDeliveredWorkTasks,
   ];
 
   console.log(
@@ -1314,7 +1192,7 @@ export async function generateBusinessTasks(
   );
 
   // Deduplicate: for certain task types, only keep the highest-priority task per client
-  const DEDUP_TASK_TYPES = new Set(["stale_conversation", "upcoming_overseas", "upcoming_local", "invoice_delivered_work"]);
+  const DEDUP_TASK_TYPES = new Set(["stale_conversation", "upcoming_overseas", "upcoming_local"]);
   const deduped: BusinessTask[] = [];
   const seenClientTaskKeys = new Set<string>();
 
