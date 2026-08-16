@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CreditCard } from "lucide-react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 /**
  * PaymentRequestBanner
