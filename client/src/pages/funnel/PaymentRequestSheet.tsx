@@ -2,13 +2,13 @@
  * PaymentRequestSheet — Public page at /pay/:token
  *
  * Client-facing payment page for artist-initiated charge requests.
- * Uses embedded Stripe Checkout (following BalanceSheet pattern).
+ * Uses embedded Stripe Checkout (following deposit flow pattern).
  *
  * States:
  *   loading   → verifying token
  *   error     → invalid/expired/already-paid token
  *   ready     → shows session details + pay button
- *   checkout  → Stripe Checkout embed open
+ *   checkout  → Stripe Checkout embed open (inline below details)
  *   success   → payment confirmed
  */
 
@@ -17,6 +17,7 @@ import { useRoute, useSearch } from "wouter";
 import { Check, AlertCircle, Clock, Calendar } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { format } from "date-fns";
+import { EmbeddedStripeCheckout } from "@/features/stripe/EmbeddedStripeCheckout";
 
 const DT = {
   bg: "#0d0d0e",
@@ -55,6 +56,7 @@ export function PaymentRequestSheet() {
   const [phase, setPhase] = useState<"loading" | "ready" | "checkout" | "success" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null);
 
   // Process server response
   useEffect(() => {
@@ -98,7 +100,10 @@ export function PaymentRequestSheet() {
         setPhase("error");
         return;
       }
-      if (result.url) {
+      if (result.clientSecret) {
+        setCheckoutClientSecret(result.clientSecret);
+        setPhase("checkout");
+      } else if (result.url) {
         window.location.href = result.url;
       } else {
         setErrorMessage("Unable to start payment. Please try again.");
@@ -211,7 +216,7 @@ export function PaymentRequestSheet() {
     );
   }
 
-  // ── Ready — show payment details ──────────────────────────
+  // ── Ready / Checkout — show payment details ───────────────
   const info = data && !("error" in data) ? data : null;
   if (!info) return null;
 
@@ -235,7 +240,8 @@ export function PaymentRequestSheet() {
     <div style={{
       minHeight: "100vh", background: DT.bg,
       display: "flex", flexDirection: "column", alignItems: "center",
-      justifyContent: "center", padding: 20,
+      justifyContent: phase === "checkout" ? "flex-start" : "center",
+      padding: phase === "checkout" ? "40px 20px 20px" : 20,
     }}>
       <div style={{
         maxWidth: 400, width: "100%",
@@ -326,32 +332,44 @@ export function PaymentRequestSheet() {
           </div>
         </div>
 
-        {/* Pay button */}
-        <div style={{ padding: "20px 20px 24px" }}>
-          <button
-            onClick={handlePay}
-            disabled={isSubmitting}
-            style={{
-              width: "100%", textAlign: "center",
-              background: DT.amber, color: DT.amberOnColor,
-              borderRadius: 14, padding: "16px 20px",
-              fontSize: 16, fontWeight: 600, lineHeight: 1,
-              border: "none", cursor: isSubmitting ? "wait" : "pointer",
-              opacity: isSubmitting ? 0.7 : 1,
-              transition: "opacity .2s",
-            }}
-          >
-            {isSubmitting ? "Opening Stripe…" : `Pay ${formatCents(info.amountCents)}`}
-          </button>
+        {/* Pay button — visible only in ready phase */}
+        {phase === "ready" && (
+          <div style={{ padding: "20px 20px 24px" }}>
+            <button
+              onClick={handlePay}
+              disabled={isSubmitting}
+              style={{
+                width: "100%", textAlign: "center",
+                background: DT.amber, color: DT.amberOnColor,
+                borderRadius: 14, padding: "16px 20px",
+                fontSize: 16, fontWeight: 600, lineHeight: 1,
+                border: "none", cursor: isSubmitting ? "wait" : "pointer",
+                opacity: isSubmitting ? 0.7 : 1,
+                transition: "opacity .2s",
+              }}
+            >
+              {isSubmitting ? "Preparing Secure Checkout…" : `Pay ${formatCents(info.amountCents)}`}
+            </button>
 
-          <div style={{
-            textAlign: "center", marginTop: 14,
-            fontSize: 11, color: DT.textTertiary,
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
-          }}>
-            <Clock size={11} /> Secure payment powered by Stripe
+            <div style={{
+              textAlign: "center", marginTop: 14,
+              fontSize: 11, color: DT.textTertiary,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
+            }}>
+              <Clock size={11} /> Secure payment powered by Stripe
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Embedded Stripe Checkout — appears inline after tapping Pay */}
+        {phase === "checkout" && checkoutClientSecret && (
+          <div style={{ padding: "16px 20px 24px" }}>
+            <EmbeddedStripeCheckout
+              clientSecret={checkoutClientSecret}
+              onComplete={() => setPhase("success")}
+            />
+          </div>
+        )}
       </div>
 
       {/* Branding */}
