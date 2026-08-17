@@ -5,19 +5,12 @@
  * Tap behaviour:
  *   - Tap card body (banner / name area) → toggle portfolio expand
  *   - 💬 icon button → navigate to chat
- *   - 🛍 icon button → toggle storefront expand
- *
- * Portfolio and Storefront are mutually exclusive expansions.
  */
 
 import React, { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, ShoppingBag, Loader2, Package } from "lucide-react";
-import { trpc } from "@/lib/trpc";
-import { CartProvider, useCart } from "@/features/storefront/CartContext";
-import { StorefrontProductCard } from "@/features/storefront/StorefrontProductCard";
-import { StorefrontCheckoutFAB } from "@/features/storefront/StorefrontCheckoutFAB";
+import { MessageCircle } from "lucide-react";
 import { PortfolioExpand } from "@/features/client-profile/PortfolioExpand";
 
 interface ClientArtistCardProps {
@@ -25,62 +18,10 @@ interface ClientArtistCardProps {
   onShopToggle?: (expanded: boolean) => void;
 }
 
-// Storefront inner panel (needs CartProvider context)
-function ClientArtistCardStorefront({ artistId }: { artistId: string }) {
-  const { data: storefront, isLoading } = trpc.storefront.getStorefrontByArtistId.useQuery({ artistId });
-  const { setIsCartOpen, totalItems } = useCart();
-
-  if (isLoading) return (
-    <div className="flex items-center justify-center p-8">
-      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-    </div>
-  );
-
-  if (!storefront || storefront.products.length === 0) return (
-    <div className="flex flex-col items-center justify-center p-8 text-center bg-background/80 rounded-xl mx-4 mb-4 border border-border">
-      <Package className="w-8 h-8 text-muted-foreground mb-2" />
-      <p className="text-muted-foreground text-sm">No products available</p>
-    </div>
-  );
-
-  return (
-    <>
-      <div className="px-4 pb-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-white uppercase tracking-wider text-xs">Storefront</h3>
-          {totalItems > 0 && (
-            <button
-              onClick={e => { e.stopPropagation(); setIsCartOpen(true); }}
-              className="text-xs bg-primary hover:bg-primary/80 text-white px-3 py-1.5 rounded-full font-bold transition-colors shadow-lg"
-            >
-              Checkout ({totalItems})
-            </button>
-          )}
-        </div>
-        <div
-          className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 mobile-scroll snap-x"
-          onPointerDown={e => e.stopPropagation()}
-        >
-          {storefront.products.map((product: any) => (
-            <div key={product.id} className="min-w-[220px] max-w-[220px] snap-start shrink-0 h-full">
-              <StorefrontProductCard product={product} />
-            </div>
-          ))}
-        </div>
-      </div>
-      <StorefrontCheckoutFAB
-        onClose={() => setIsCartOpen(false)}
-        artistSlug={storefront.artistSlug}
-        artistId={artistId}
-      />
-    </>
-  );
-}
 
 export function ClientArtistCard({ conv, onShopToggle }: ClientArtistCardProps) {
   const [, setLocation] = useLocation();
-  // null = collapsed, "portfolio" | "storefront"
-  const [expanded, setExpanded] = useState<"portfolio" | "storefront" | null>(null);
+  const [expanded, setExpanded] = useState<boolean>(false);
 
   const artist = conv.otherUser;
   if (!artist) return null;
@@ -89,10 +30,8 @@ export function ClientArtistCard({ conv, onShopToggle }: ClientArtistCardProps) 
   const artistName = artist.name || artist.firstName || "Artist";
   const avatarUrl = artist.avatar || null;
 
-  const toggle = (section: "portfolio" | "storefront") => {
-    const next = expanded === section ? null : section;
-    setExpanded(next);
-    if (onShopToggle) onShopToggle(next === "storefront");
+  const togglePortfolio = () => {
+    setExpanded(prev => !prev);
   };
 
   return (
@@ -100,7 +39,7 @@ export function ClientArtistCard({ conv, onShopToggle }: ClientArtistCardProps) 
       {/* Banner — tap to toggle portfolio */}
       <button
         className="w-full text-left focus:outline-none"
-        onClick={() => toggle("portfolio")}
+        onClick={togglePortfolio}
       >
         {/* Banner Background */}
         {bannerUrl ? (
@@ -139,7 +78,7 @@ export function ClientArtistCard({ conv, onShopToggle }: ClientArtistCardProps) 
                 </p>
               )}
               {/* Subtle hint when collapsed */}
-              {expanded === null && (
+              {!expanded && (
                 <p className="text-white/30 text-[10px] mt-0.5">Tap to view portfolio</p>
               )}
             </div>
@@ -149,18 +88,6 @@ export function ClientArtistCard({ conv, onShopToggle }: ClientArtistCardProps) 
               className="flex items-center gap-2"
               onClick={e => e.stopPropagation()}
             >
-              {/* Storefront */}
-              <button
-                onClick={() => toggle("storefront")}
-                className={`shrink-0 w-10 h-10 rounded-full backdrop-blur-xl border flex items-center justify-center transition-all ${
-                  expanded === "storefront"
-                    ? "bg-foreground text-background border-white"
-                    : "bg-secondary/50 text-white border-border hover:bg-secondary/70"
-                }`}
-              >
-                <ShoppingBag className="w-4 h-4" />
-              </button>
-
               {/* Chat */}
               <button
                 onClick={() => setLocation(`/chat/${conv.id}`)}
@@ -180,7 +107,7 @@ export function ClientArtistCard({ conv, onShopToggle }: ClientArtistCardProps) 
 
       {/* ── Expandable areas ───────────────────────────────── */}
       <AnimatePresence initial={false}>
-        {expanded === "portfolio" && (
+        {expanded && (
           <motion.div
             key="portfolio"
             initial={{ height: 0, opacity: 0 }}
@@ -194,21 +121,6 @@ export function ClientArtistCard({ conv, onShopToggle }: ClientArtistCardProps) 
               artistName={artistName}
               onMessage={() => setLocation(`/chat/${conv.id}`)}
             />
-          </motion.div>
-        )}
-
-        {expanded === "storefront" && (
-          <motion.div
-            key="storefront"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="relative z-10 bg-[#111] border-t border-border overflow-hidden pt-2"
-          >
-            <CartProvider>
-              <ClientArtistCardStorefront artistId={artist.id} />
-            </CartProvider>
           </motion.div>
         )}
       </AnimatePresence>

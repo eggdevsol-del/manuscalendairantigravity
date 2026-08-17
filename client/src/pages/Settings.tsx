@@ -22,7 +22,7 @@ import {
   MapPin,
   Plane,
   RefreshCw,
-  Store,
+
 
   Users,
   Zap,
@@ -49,7 +49,6 @@ import { TravelSettings } from "@/components/settings/TravelSettings";
 import { DangerZoneSettings } from "@/components/settings/DangerZoneSettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { StudioDashboardSettings } from "@/components/settings/StudioDashboardSettings";
-import StorefrontSetupWizard from "@/features/storefront/StorefrontSetupWizard";
 import { InstagramImportSettings } from "@/components/settings/InstagramImportSettings";
 import { HowTosSettings } from "@/components/settings/HowTosSettings";
 
@@ -57,7 +56,6 @@ import { HowTosSettings } from "@/components/settings/HowTosSettings";
 type SettingsSection =
   | "profile"
   | "portfolio"
-  | "storefront"
   | "booking-link"
   | "business"
   | "work-hours"
@@ -174,7 +172,6 @@ export default function Settings() {
       switch (section) {
         case "profile":       return <ProfileSettings onBack={handleBack} onNavigateToInstagram={nav("instagram")} />;
         case "portfolio":     return <ProfileSettings onBack={handleBack} onNavigateToInstagram={nav("instagram")} />;
-        case "storefront":    return <StorefrontSetupWizard onClose={handleBack} />;
         case "booking-link":  return <FunnelSettings onBack={handleBack} />;
         case "business":      return <BusinessSettings onBack={handleBack} />;
         case "work-hours":    return <WorkHoursAndServicesSettings onBack={handleBack} />;
@@ -238,13 +235,6 @@ export default function Settings() {
                       title="Portfolio"
                       subtitle="Manage your work gallery"
                       onClick={nav("portfolio")}
-                    />
-                    <SettingsRow
-                      icon={Store}
-                      iconColor="bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]"
-                      title="Storefront"
-                      subtitle="Your public profile page"
-                      onClick={nav("storefront")}
                     />
                     <SettingsRow
                       icon={Link2}

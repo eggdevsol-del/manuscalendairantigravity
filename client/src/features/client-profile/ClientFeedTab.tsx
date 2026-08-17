@@ -6,15 +6,14 @@
  * Changes:
  * - Outer "Discover Nearby" container is invisible (no card border/bg)
  * - Full width, responsive
- * - Discover artist cards include Message + Storefront buttons
- * - Storefront expands inline (same as ClientArtistCard)
+ * - Discover artist cards include Message + Consultation buttons
  * - "Request Consultation" mini-form expands inline per card
  * - Floating search pill is transparent outside the pill shape
  */
 
 import { useState, useMemo, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { MessageCircle, MapPin, Search, X, ShoppingBag, ChevronRight, CalendarPlus, Loader2, Package, Check, ImagePlus } from "lucide-react";
+import { MessageCircle, MapPin, Search, X, ChevronRight, CalendarPlus, Loader2, Check, ImagePlus } from "lucide-react";
 import { ClientArtistCard } from "@/features/client-profile/ClientArtistCard";
 import { ArtistMapOverlay } from "@/features/client-profile/ArtistMapOverlay";
 import { FavouriteHeartButton } from "@/features/client-profile/FavouriteHeartButton";
@@ -24,9 +23,6 @@ import { trpc } from "@/lib/trpc";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { CartProvider, useCart } from "@/features/storefront/CartContext";
-import { StorefrontProductCard } from "@/features/storefront/StorefrontProductCard";
-import { StorefrontCheckoutFAB } from "@/features/storefront/StorefrontCheckoutFAB";
 import { PortfolioExpand } from "@/features/client-profile/PortfolioExpand";
 
 const STYLE_FILTERS = [
@@ -41,48 +37,6 @@ const PLACEMENT_OPTIONS = [
   "Neck", "Hand", "Foot", "Hip", "Wrist", "Other",
 ];
 
-// ── Inline storefront for Discover cards ────────────────────
-function DiscoverStorefront({ artistId, artistSlug }: { artistId: string; artistSlug: string }) {
-  const { data: storefront, isLoading } = trpc.storefront.getStorefrontByArtistId.useQuery({ artistId });
-  const { setIsCartOpen, totalItems } = useCart();
-
-  if (isLoading) return (
-    <div className="flex items-center justify-center p-6">
-      <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-    </div>
-  );
-
-  if (!storefront || storefront.products.length === 0) return (
-    <div className="flex flex-col items-center p-6 text-center">
-      <Package className="w-7 h-7 text-muted-foreground mb-2" />
-      <p className="text-muted-foreground text-sm">No products yet</p>
-    </div>
-  );
-
-  return (
-    <div className="px-4 pb-4">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Storefront</h4>
-        {totalItems > 0 && (
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="text-xs bg-primary text-white px-3 py-1 rounded-full font-bold"
-          >
-            Checkout ({totalItems})
-          </button>
-        )}
-      </div>
-      <div className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 mobile-scroll snap-x">
-        {storefront.products.map((product: any) => (
-          <div key={product.id} className="min-w-[200px] max-w-[200px] snap-start shrink-0">
-            <StorefrontProductCard product={product} />
-          </div>
-        ))}
-      </div>
-      <StorefrontCheckoutFAB onClose={() => setIsCartOpen(false)} artistSlug={artistSlug} artistId={artistId} />
-    </div>
-  );
-}
 
 // ── Inline consultation request form ────────────────────────
 function ConsultationForm({
@@ -304,8 +258,8 @@ function DiscoverArtistCard({
   onToggleFavourite: (artistId: string) => void;
 }) {
   const [, setLocation] = useLocation();
-  // null = collapsed | "portfolio" | "storefront" | "consultation"
-  const [expanded, setExpanded] = useState<"portfolio" | "storefront" | "consultation" | null>(null);
+  // null = collapsed | "portfolio" | "consultation"
+  const [expanded, setExpanded] = useState<"portfolio" | "consultation" | null>(null);
   const utils = trpc.useUtils();
 
   const getOrCreate = trpc.conversations.getOrCreate.useMutation({
@@ -321,7 +275,7 @@ function DiscoverArtistCard({
   const location = artist.city || (artist.businessAddress ? artist.businessAddress.split(",")[0] : null);
   const keywordList = (artist.keywords || "").split(",").map((k: string) => k.trim()).filter(Boolean);
 
-  const toggle = (section: "portfolio" | "storefront" | "consultation") =>
+  const toggle = (section: "portfolio" | "consultation") =>
     setExpanded(prev => (prev === section ? null : section));
 
   const handleMessage = () => {
@@ -392,16 +346,6 @@ function DiscoverArtistCard({
               onToggle={onToggleFavourite}
             />
             <button
-              onClick={() => toggle("storefront")}
-              className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all ${
-                expanded === "storefront"
-                  ? "bg-foreground text-background border-white"
-                  : "bg-secondary/50 text-white border-border"
-              }`}
-            >
-              <ShoppingBag className="w-4 h-4" />
-            </button>
-            <button
               onClick={() => toggle("consultation")}
               className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all ${
                 expanded === "consultation"
@@ -453,23 +397,6 @@ function DiscoverArtistCard({
               onMessage={handleMessage}
               showMessageCTA={!!clientId}
             />
-          </motion.div>
-        )}
-        {expanded === "storefront" && (
-          <motion.div
-            key="storefront"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="border-t border-border overflow-hidden"
-          >
-            <CartProvider>
-              <DiscoverStorefront
-                artistId={artist.id}
-                artistSlug={artist.publicSlug || ""}
-              />
-            </CartProvider>
           </motion.div>
         )}
         {expanded === "consultation" && (

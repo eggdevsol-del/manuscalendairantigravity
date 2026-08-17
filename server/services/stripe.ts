@@ -756,6 +756,101 @@ export async function handleStripeWebhook(req: Request, res: Response) {
           break;
         }
 
+        // ── Supplier Order (artist → supplier via DOTS) ───────────
+        if (session.metadata?.type === "supplier_order") {
+          const orderId = parseInt(session.metadata.orderId, 10);
+          const platformFeeCents = parseInt(session.metadata.platformFeeCents || "0", 10);
+
+          if (orderId) {
+            const { supplierOrders, suppliers, merchants } = await import("../../drizzle/schema");
+
+            const order = await db.query.supplierOrders.findFirst({
+              where: eq(supplierOrders.id, orderId),
+              with: { items: true, supplier: true },
+            });
+
+            if (order && order.status !== "paid") {
+              // 1. Update order status
+              const shippingDetails = (session as any).shipping_details;
+              await db.update(supplierOrders).set({
+                status: "paid",
+                stripePaymentIntentId: session.payment_intent as string || null,
+                stripeCheckoutSessionId: session.id,
+                shippingAddress: shippingDetails ? JSON.stringify(shippingDetails) : null,
+                shippingName: shippingDetails?.name || null,
+              }).where(eq(supplierOrders.id, orderId));
+
+              // 2. Write to Payment Ledger
+              await db.insert(paymentLedger).values({
+                artistId: order.artistId,
+                transactionType: "supplier_order",
+                amountCents: order.totalCents,
+                platformFeeCents,
+                artistFeeCents: 0,
+                stripePaymentId: session.payment_intent as string || session.id,
+                paymentMethod: session.payment_method_types?.[0] || "card",
+              });
+
+              // 3. Create Shopify draft order if supplier has Shopify connected
+              if (order.supplier?.merchantId) {
+                try {
+                  const merchant = await db.query.merchants.findFirst({
+                    where: eq(merchants.id, order.supplier.merchantId),
+                  });
+
+                  if (merchant?.shopifyDomain && merchant?.shopifyToken) {
+                    const { createShopifyDraftOrder } = await import("./shopifyAdminApi");
+
+                    const stripeAddr = shippingDetails?.address;
+                    const shippingAddress = stripeAddr ? {
+                      first_name: shippingDetails?.name?.split(" ")[0] || "",
+                      last_name: shippingDetails?.name?.split(" ").slice(1).join(" ") || "",
+                      address1: stripeAddr.line1 || "",
+                      address2: stripeAddr.line2 || undefined,
+                      city: stripeAddr.city || "",
+                      province: stripeAddr.state || "",
+                      zip: stripeAddr.postal_code || "",
+                      country: stripeAddr.country || "",
+                    } : undefined;
+
+                    const artistUser = await db.query.users.findFirst({
+                      where: eq(users.id, order.artistId),
+                    });
+
+                    const result = await createShopifyDraftOrder(
+                      merchant.shopifyDomain,
+                      merchant.shopifyToken,
+                      {
+                        lineItems: order.items
+                          .filter((item: any) => item.shopifyVariantId)
+                          .map((item: any) => ({
+                            shopifyVariantId: item.shopifyVariantId!,
+                            quantity: item.quantity,
+                          })),
+                        shippingAddress,
+                        note: `Order via d.o.t.s — Artist: ${artistUser?.name || "Unknown"}`,
+                        email: artistUser?.email || undefined,
+                      }
+                    );
+
+                    if (result) {
+                      await db.update(supplierOrders).set({
+                        shopifyDraftOrderId: result.draftOrderId,
+                        shopifyDraftOrderName: result.draftOrderName,
+                      }).where(eq(supplierOrders.id, orderId));
+                    }
+                  }
+                } catch (shopifyError: any) {
+                  console.error(`[Stripe] Shopify draft order failed for supplier order ${orderId}:`, shopifyError.message);
+                }
+              }
+
+              console.log(`[Stripe] Supplier Order ${orderId} completed successfully`);
+            }
+          }
+          break;
+        }
+
         // ── Payment Request (artist-initiated charge) ────────────
         if (session.metadata?.type === "payment_request") {
           const requestId = parseInt(session.metadata.requestId, 10);
