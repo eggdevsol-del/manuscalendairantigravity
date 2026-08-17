@@ -678,7 +678,7 @@ export function SupplierCheckoutSheet({
           )}
 
           {step === "payment" && clientSecret && (
-            <div style={{ padding: "20px", flex: 1 }}>
+            <div style={{ padding: "20px", paddingBottom: 120, flex: 1, overflowY: "auto", minHeight: 0, WebkitOverflowScrolling: "touch" }}>
               {/* Show final totals from server */}
               {checkoutData && (
                 <div
