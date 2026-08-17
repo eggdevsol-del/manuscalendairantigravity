@@ -597,7 +597,7 @@ export default function Signup() {
                     />
                   </div>
                   <p className="text-[11px] text-muted-foreground/70">
-                    We'll use this to automatically build your d.o.t.s storefront!
+                    We'll use this to set up your d.o.t.s profile!
                   </p>
                 </div>
               </>

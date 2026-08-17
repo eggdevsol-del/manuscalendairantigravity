@@ -1,7 +1,7 @@
 import React from "react";
 import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Instagram, Facebook, ArrowRight, Store, CalendarDays, Link as LinkIcon, CalendarPlus } from "lucide-react";
+import { Loader2, Instagram, Facebook, ArrowRight, CalendarDays, Link as LinkIcon, CalendarPlus } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 import { UserAvatar } from "@/components/ui/ssot";
 
@@ -166,28 +166,6 @@ export default function ArtistHub() {
               <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-white group-hover:translate-x-1 transition-all" />
             </div>
           </motion.button>
-
-          {/* Storefront (Phase 4) */}
-          {artist.hasProducts && (
-            <motion.button
-              variants={itemVariants}
-              onClick={() => setLocation(`/shop/${slug}`)}
-              className="group relative w-full overflow-hidden rounded-[20px] bg-secondary/50 hover:bg-secondary/50 border border-border hover:border-border transition-all active:scale-[0.98]"
-            >
-              <div className="w-full px-6 py-5 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-secondary/50 flex items-center justify-center border border-border group-hover:scale-110 transition-transform">
-                    <Store className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <span className="text-base font-bold text-white tracking-wide">Storefront</span>
-                    <span className="text-[11px] text-muted-foreground uppercase tracking-widest font-semibold mt-0.5">Aftercare & Merch</span>
-                  </div>
-                </div>
-                <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-muted-foreground group-hover:translate-x-1 transition-all" />
-              </div>
-            </motion.button>
-          )}
 
           {/* Seminars (Phase 4) */}
           {artist.hasSeminars && (

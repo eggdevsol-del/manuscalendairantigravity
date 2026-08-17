@@ -1148,3 +1148,146 @@ export async function handleStripeWebhook(req: Request, res: Response) {
     res.status(500).send("Webhook handler failed");
   }
 }
+
+// ── Supplier Order Checkout ──────────────────────────────────
+
+/**
+ * Creates a Stripe Checkout Session for an artist purchasing from a supplier.
+ * Payment goes directly to DOTS platform (no Connect split).
+ * Supports saved cards via stripeCustomerId.
+ */
+export async function createSupplierCheckoutSession(opts: {
+  orderId: number;
+  items: { productTitle: string; variantTitle?: string; priceCents: number; quantity: number }[];
+  supplierName: string;
+  subtotalCents: number;
+  platformFeeCents: number;
+  shippingCents: number;
+  totalCents: number;
+  currency: string;
+  stripeCustomerId?: string;
+  artistEmail: string;
+}): Promise<{ clientSecret: string | null }> {
+  const baseUrl = getAppUrl();
+  const currencyLower = (opts.currency || "aud").toLowerCase();
+
+  // Build line items for Stripe
+  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = opts.items.map(item => ({
+    price_data: {
+      currency: currencyLower,
+      product_data: {
+        name: item.variantTitle
+          ? `${item.productTitle} — ${item.variantTitle}`
+          : item.productTitle,
+        description: `From ${opts.supplierName}`,
+      },
+      unit_amount: item.priceCents,
+    },
+    quantity: item.quantity,
+  }));
+
+  // Add platform fee as a visible line item
+  if (opts.platformFeeCents > 0) {
+    line_items.push({
+      price_data: {
+        currency: currencyLower,
+        product_data: {
+          name: "d.o.t.s service fee",
+        },
+        unit_amount: opts.platformFeeCents,
+      },
+      quantity: 1,
+    });
+  }
+
+  // Add shipping as a line item if > 0
+  // (We use shipping_options for the shipping display)
+
+  const sessionConfig: Stripe.Checkout.SessionCreateParams = {
+    payment_method_types: ["card"],
+    mode: "payment",
+    line_items,
+    metadata: {
+      type: "supplier_order",
+      orderId: String(opts.orderId),
+      platformFeeCents: String(opts.platformFeeCents),
+      supplierName: opts.supplierName,
+    },
+    ui_mode: "embedded",
+    return_url: `${baseUrl}/dashboard?supplier_order=success&order_id=${opts.orderId}&session_id={CHECKOUT_SESSION_ID}`,
+    // Collect shipping address
+    shipping_address_collection: {
+      allowed_countries: ["AU", "NZ", "US", "GB", "CA"],
+    },
+  };
+
+  // Shipping options
+  if (opts.shippingCents >= 0) {
+    sessionConfig.shipping_options = [
+      {
+        shipping_rate_data: {
+          type: "fixed_amount",
+          fixed_amount: {
+            amount: opts.shippingCents,
+            currency: currencyLower,
+          },
+          display_name: opts.shippingCents === 0 ? "Free Shipping" : "Standard Shipping",
+        },
+      },
+    ];
+  }
+
+  // Attach Stripe customer for saved cards
+  if (opts.stripeCustomerId) {
+    sessionConfig.customer = opts.stripeCustomerId;
+    sessionConfig.payment_intent_data = {
+      setup_future_usage: "on_session",
+    };
+  } else {
+    // No customer yet — collect email and create one
+    sessionConfig.customer_email = opts.artistEmail;
+    sessionConfig.payment_intent_data = {
+      setup_future_usage: "on_session",
+    };
+  }
+
+  const session = await stripe.checkout.sessions.create(sessionConfig);
+  return { clientSecret: session.client_secret };
+}
+
+/**
+ * Retrieve Stripe Customer ID for an artist, creating one if needed.
+ */
+export async function getOrCreateStripeCustomer(
+  artistId: string,
+  email: string,
+  name: string
+): Promise<string> {
+  const db = await getDb();
+  if (!db) throw new Error("Database connection failed");
+
+  const settings = await db.query.artistSettings.findFirst({
+    where: eq(artistSettings.userId, artistId),
+  });
+
+  if (settings?.stripeCustomerId) {
+    return settings.stripeCustomerId;
+  }
+
+  // Create a new Stripe customer
+  const customer = await stripe.customers.create({
+    email,
+    name,
+    metadata: {
+      artistId,
+      source: "dots_supplier_checkout",
+    },
+  });
+
+  // Save to artist settings
+  await db.update(artistSettings)
+    .set({ stripeCustomerId: customer.id })
+    .where(eq(artistSettings.userId, artistId));
+
+  return customer.id;
+}

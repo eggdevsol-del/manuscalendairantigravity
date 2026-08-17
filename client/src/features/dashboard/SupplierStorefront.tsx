@@ -5,6 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { cn } from "@/lib/utils";
+import { SupplierCheckoutSheet } from "./SupplierCheckoutSheet";
 
 export function SupplierStorefront({ 
   supplierId, 
@@ -56,6 +57,32 @@ export function SupplierStorefront({
   const cartTotalCents = useMemo(() =>
     Object.values(cart).reduce((sum, item) => sum + item.priceCents * item.quantity, 0)
   , [cart]);
+
+  const [showCheckout, setShowCheckout] = useState(false);
+
+  // Transform internal cart state into array for SupplierCheckoutSheet
+  const checkoutCartItems = useMemo(() => {
+    if (!products) return [];
+    return Object.entries(cart).map(([variantIdStr, entry]) => {
+      const variantId = Number(variantIdStr);
+      // Find the product that contains this variant
+      let productId = 0;
+      for (const p of products) {
+        if (p.variants?.some((v: any) => v.id === variantId)) {
+          productId = p.id;
+          break;
+        }
+      }
+      return {
+        productId,
+        variantId,
+        quantity: entry.quantity,
+        priceCents: entry.priceCents,
+        productTitle: entry.productTitle,
+        variantTitle: entry.variantTitle,
+      };
+    });
+  }, [cart, products]);
 
   // Background Sync
   const scrapeMutation = trpc.suppliers.scrapeShopifyStore.useMutation({
@@ -359,18 +386,13 @@ export function SupplierStorefront({
       </div>
 
       {/* Sticky Cart Bar */}
-      {cartItemCount > 0 && (
+      {cartItemCount > 0 && !showCheckout && (
         <div
           className="fixed bottom-20 left-0 right-0 z-50 px-4 pb-2"
           style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
         >
           <button
-            onClick={() => {
-              // Open supplier website for ordering
-              if (supplier?.websiteUrl) {
-                window.open(supplier.websiteUrl, '_blank');
-              }
-            }}
+            onClick={() => setShowCheckout(true)}
             className="w-full flex items-center justify-between rounded-2xl px-5 py-3.5 shadow-lg transition-colors"
             style={{
               background: '#f2ca5c',
@@ -386,6 +408,20 @@ export function SupplierStorefront({
             </span>
           </button>
         </div>
+      )}
+
+      {/* Checkout Sheet */}
+      {showCheckout && (
+        <SupplierCheckoutSheet
+          supplierId={supplierId}
+          supplierName={supplier?.name || "Supplier"}
+          cartItems={checkoutCartItems}
+          onClose={() => setShowCheckout(false)}
+          onSuccess={() => {
+            setCart({});
+            setShowCheckout(false);
+          }}
+        />
       )}
     </motion.div>
   );

@@ -2140,6 +2140,7 @@ export const suppliers = mysqlTable('suppliers', {
   contactEmail: varchar({ length: 255 }),
   claimed: tinyint().default(0).notNull(),
   merchantId: int(), // Added as an int to avoid circular dependencies
+  currency: varchar({ length: 3 }).default('AUD'), // Store's base currency from Shopify
   createdAt: timestamp().notNull().defaultNow(),
 });
 
@@ -2480,3 +2481,114 @@ export type InsertInstagramImport = InferInsertModel<typeof instagramImports>;
 export type SelectInstagramImport = InferSelectModel<typeof instagramImports>;
 export type InsertPortfolioClassification = InferInsertModel<typeof portfolioClassifications>;
 export type SelectPortfolioClassification = InferSelectModel<typeof portfolioClassifications>;
+
+// ── Supplier Orders ─────────────────────────────────────────
+// Artist → Supplier purchases via DOTS checkout
+
+export const supplierOrders = mysqlTable('supplierOrders', {
+  id: int().autoincrement().primaryKey(),
+  artistId: varchar({ length: 64 }).notNull().references(() => users.id),
+  supplierId: int().notNull().references(() => suppliers.id),
+  subtotalCents: int().notNull(),
+  platformFeeCents: int().notNull(),
+  shippingCents: int().notNull().default(0),
+  totalCents: int().notNull(),
+  currency: varchar({ length: 3 }).notNull().default('AUD'),
+  status: mysqlEnum(['pending', 'paid', 'failed', 'refunded']).default('pending'),
+  stripePaymentIntentId: varchar({ length: 255 }),
+  stripeCheckoutSessionId: varchar({ length: 255 }),
+  shopifyDraftOrderId: varchar({ length: 255 }),
+  shopifyDraftOrderName: varchar({ length: 50 }),
+  shippingName: varchar({ length: 255 }),
+  shippingAddress: text(),
+  createdAt: timestamp().notNull().defaultNow(),
+  updatedAt: timestamp().notNull().defaultNow(),
+});
+
+export const supplierOrderItems = mysqlTable('supplierOrderItems', {
+  id: int().autoincrement().primaryKey(),
+  orderId: int().notNull().references(() => supplierOrders.id, { onDelete: 'cascade' }),
+  supplierProductId: int().notNull().references(() => supplierProducts.id),
+  variantId: int().references(() => supplierProductVariants.id),
+  productTitle: varchar({ length: 255 }).notNull(),
+  variantTitle: varchar({ length: 255 }),
+  quantity: int().notNull(),
+  priceCents: int().notNull(),
+  shopifyVariantId: varchar({ length: 255 }),
+});
+
+export const supplierOrdersRelations = relations(supplierOrders, ({ one, many }) => ({
+  artist: one(users, {
+    fields: [supplierOrders.artistId],
+    references: [users.id],
+  }),
+  supplier: one(suppliers, {
+    fields: [supplierOrders.supplierId],
+    references: [suppliers.id],
+  }),
+  items: many(supplierOrderItems),
+}));
+
+export const supplierOrderItemsRelations = relations(supplierOrderItems, ({ one }) => ({
+  order: one(supplierOrders, {
+    fields: [supplierOrderItems.orderId],
+    references: [supplierOrders.id],
+  }),
+  product: one(supplierProducts, {
+    fields: [supplierOrderItems.supplierProductId],
+    references: [supplierProducts.id],
+  }),
+}));
+
+// ── Supplier Shipping Zones & Rates ─────────────────────────
+// Scraped from Shopify Admin API /shipping_zones.json
+
+export const supplierShippingZones = mysqlTable('supplierShippingZones', {
+  id: int().autoincrement().primaryKey(),
+  supplierId: int().notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
+  name: varchar({ length: 255 }).notNull(),
+  countryCodes: text().notNull(), // JSON array of country codes e.g. ["AU","NZ"]
+  createdAt: timestamp().notNull().defaultNow(),
+});
+
+export const supplierShippingRates = mysqlTable('supplierShippingRates', {
+  id: int().autoincrement().primaryKey(),
+  zoneId: int().notNull().references(() => supplierShippingZones.id, { onDelete: 'cascade' }),
+  name: varchar({ length: 255 }).notNull(),
+  priceCents: int().notNull(),
+  currency: varchar({ length: 3 }).notNull().default('AUD'),
+  minOrderSubtotalCents: int().default(0),
+  maxOrderSubtotalCents: int(),
+  rateType: mysqlEnum(['price_based', 'weight_based']).default('price_based'),
+  createdAt: timestamp().notNull().defaultNow(),
+});
+
+export const supplierShippingZonesRelations = relations(supplierShippingZones, ({ one, many }) => ({
+  supplier: one(suppliers, {
+    fields: [supplierShippingZones.supplierId],
+    references: [suppliers.id],
+  }),
+  rates: many(supplierShippingRates),
+}));
+
+export const supplierShippingRatesRelations = relations(supplierShippingRates, ({ one }) => ({
+  zone: one(supplierShippingZones, {
+    fields: [supplierShippingRates.zoneId],
+    references: [supplierShippingZones.id],
+  }),
+}));
+
+// ── Exchange Rate Cache ─────────────────────────────────────
+
+export const exchangeRateCache = mysqlTable('exchangeRateCache', {
+  id: int().autoincrement().primaryKey(),
+  fromCurrency: varchar({ length: 3 }).notNull(),
+  toCurrency: varchar({ length: 3 }).notNull(),
+  rate: decimal({ precision: 12, scale: 6 }).notNull(),
+  fetchedAt: timestamp().notNull().defaultNow(),
+});
+
+export type InsertSupplierOrder = InferInsertModel<typeof supplierOrders>;
+export type SelectSupplierOrder = InferSelectModel<typeof supplierOrders>;
+export type InsertSupplierOrderItem = InferInsertModel<typeof supplierOrderItems>;
+export type SelectSupplierOrderItem = InferSelectModel<typeof supplierOrderItems>;
