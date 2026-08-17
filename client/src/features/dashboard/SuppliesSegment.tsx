@@ -207,11 +207,34 @@ function DirectoryCard({
             fontSize: DType.exceptionPill.fontSize,
             fontWeight: DType.exceptionPill.fontWeight,
             minHeight: 36,
-            opacity: importing ? 0.6 : 1,
-          }}
-        >
-          {importing ? "…" : "Import"}
-        </button>
+            display: "flex",
+            alignItems: "center",
+            color: DT.textTertiary,
+            border: `1px solid ${DT.hairline}`,
+          }}>
+            Added ✓
+          </div>
+        ) : (
+          <button
+            onClick={onImport}
+            disabled={importing}
+            style={{
+              background: DT.amber,
+              border: "none",
+              borderRadius: DRadius.button,
+              cursor: "pointer",
+              padding: "6px 14px",
+              color: DT.amberOnColor,
+              fontSize: DType.exceptionPill.fontSize,
+              fontWeight: DType.exceptionPill.fontWeight,
+              minHeight: 36,
+              opacity: importing ? 0.6 : 1,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {importing ? "Adding…" : "Add Supplier"}
+          </button>
+        )}
       </div>
     </div>
   );
