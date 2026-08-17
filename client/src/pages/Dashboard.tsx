@@ -34,7 +34,7 @@ import { format } from "date-fns";
 import { useTeaser } from "@/contexts/TeaserContext";
 import { SetupChecklistWidget } from "@/features/onboarding/SetupChecklistWidget";
 import { MerchantDashboard } from "@/features/merchant/Dashboard";
-import { useTooltipTour, DASHBOARD_TOUR } from "@/components/tooltip-tour";
+import { useTooltipTour, useTooltipTarget, DASHBOARD_TOUR } from "@/components/tooltip-tour";
 import { DashboardFABActions } from "@/features/dashboard/DashboardActions";
 
 // ── Segments ──────────────────────────────────────────────
@@ -62,6 +62,10 @@ export default function Dashboard() {
   const { startTour, isTourCompleted, activeTour, currentStep } = useTooltipTour();
   const dashTourStartedRef = useRef(false);
   const isDemoMode = activeTour?.id === "dashboard-overview";
+
+  // Tooltip tour element targets
+  const payoutWidgetRef = useTooltipTarget("payout-widget");
+  const dashboardTabsRef = useTooltipTarget("dashboard-tabs");
 
   // Auto-start dashboard tour
   useEffect(() => {
@@ -165,7 +169,9 @@ export default function Dashboard() {
 
             {/* §6.2 Money strip — always visible for artists */}
             {(user?.role === "artist" || user?.role === "admin") && (
-              <MoneyStrip onTap={() => setShowMoney(true)} />
+              <div ref={payoutWidgetRef}>
+                <MoneyStrip onTap={() => setShowMoney(true)} />
+              </div>
             )}
           </div>
 
@@ -176,7 +182,7 @@ export default function Dashboard() {
             )}
           >
             {/* §2: Segmented control — Today · Clients · Supplies */}
-            <div className="px-6 pb-2 pt-2 shrink-0 relative z-50">
+            <div ref={dashboardTabsRef} className="px-6 pb-2 pt-2 shrink-0 relative z-50">
               <SegmentedHeader
                 options={TITLES}
                 activeIndex={activeIndex}

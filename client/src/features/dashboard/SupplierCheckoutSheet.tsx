@@ -388,7 +388,7 @@ export function SupplierCheckoutSheet({
 
           {/* Content */}
           {step === "review" && (
-            <div style={{ padding: "20px", flex: 1 }}>
+            <div style={{ padding: "20px", paddingBottom: 0, flex: 1, overflowY: "auto" }}>
               {/* Supplier name */}
               <div
                 style={{
@@ -638,8 +638,22 @@ export function SupplierCheckoutSheet({
                   </span>
                 </div>
               </div>
+              {/* spacer for sticky CTA */}
+              <div style={{ height: 20 }} />
+            </div>
+          )}
 
-              {/* CTA */}
+          {/* Sticky CTA footer — always visible above nav bar */}
+          {step === "review" && (
+            <div
+              style={{
+                padding: "12px 20px",
+                paddingBottom: "calc(12px + env(safe-area-inset-bottom, 0px))",
+                borderTop: `1px solid ${DT.cardBorder}`,
+                background: DT.bg,
+                flexShrink: 0,
+              }}
+            >
               <button
                 onClick={handleContinueToPayment}
                 disabled={isSubmitting || cartItems.length === 0}

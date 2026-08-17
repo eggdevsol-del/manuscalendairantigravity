@@ -27,6 +27,7 @@ import { format, isPast } from "date-fns";
 import { utcToLocal } from "@shared/utils/timezone";
 import { ChevronDown, ChevronUp, Check, Mail, Smartphone, MessageSquare } from "lucide-react";
 import { useLocation } from "wouter";
+import { useTooltipTarget } from "@/components/tooltip-tour";
 
 // ── Helpers ──────────────────────────────────────────────
 
@@ -439,6 +440,10 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
 
+  // Tooltip tour targets
+  const demoSessionsRef = useTooltipTarget("demo-today-sessions");
+  const demoTaskRef = useTooltipTarget("demo-task-card");
+
   // Data
   const { data: overview, isLoading: overviewLoading, isError: overviewError, refetch: refetchOverview } = trpc.dashboard.getArtistOverview.useQuery(
     undefined,
@@ -661,7 +666,7 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: DSpace[7] }}>
       {/* ── IN THE CHAIR TODAY ── */}
-      <div>
+      <div ref={demoSessionsRef}>
         <SectionHeader label="IN THE CHAIR TODAY" />
         {isLoading ? (
           <div style={{
@@ -726,7 +731,7 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
       </div>
 
       {/* ── NEEDS YOU ── */}
-      <div>
+      <div ref={demoTaskRef}>
         <SectionHeader
           label="NEEDS YOU"
           right={needsYouTasks.length > 0 ? `${needsYouTasks.length} ${needsYouTasks.length === 1 ? "thing" : "things"}` : undefined}

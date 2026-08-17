@@ -18,6 +18,7 @@ import { Search, ExternalLink, Plus, Trash2, Package, ChevronRight } from "lucid
 import { SupplierStorefront } from "./SupplierStorefront";
 import { AnimatePresence, motion } from "framer-motion";
 import { DEMO_SUPPLIERS } from "./dashboardDemoData";
+import { useTooltipTarget } from "@/components/tooltip-tour";
 
 // Curated supplier directory
 const SUPPLIER_DIRECTORY = [
@@ -248,6 +249,10 @@ interface SuppliesSegmentProps {
 
 export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
   const [selectedSupplierId, setSelectedSupplierId] = useState<number | null>(null);
+
+  // Tooltip tour targets
+  const demoSuppliersAreaRef = useTooltipTarget("demo-suppliers-area");
+  const demoSupplierCardRef = useTooltipTarget("demo-supplier-card");
   const [searchQuery, setSearchQuery] = useState("");
   const [importingUrl, setImportingUrl] = useState<string | null>(null);
 
@@ -337,7 +342,7 @@ export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
       </div>
 
       {/* MY SUPPLIERS */}
-      <div>
+      <div ref={demoSuppliersAreaRef}>
         <SectionHeader label="MY SUPPLIERS" right={
           hasMySuppliers ? (
             <span style={{ fontSize: DType.sectionCount.fontSize, color: DT.textTertiary }}>
@@ -378,7 +383,7 @@ export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
       </div>
 
       {/* FIND SUPPLIERS */}
-      <div>
+      <div ref={demoSupplierCardRef}>
         <SectionHeader label="FIND SUPPLIERS" />
         <div style={{ display: "flex", flexDirection: "column", gap: DSpace[1] }}>
           {filteredDirectory.map(s => {

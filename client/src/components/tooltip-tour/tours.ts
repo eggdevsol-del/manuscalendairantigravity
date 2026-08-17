@@ -63,23 +63,23 @@ export const DASHBOARD_TOUR: TourConfig = {
   route: "/dashboard",
   category: "artist",
   steps: [
-    // ── Business tab (Steps 0–2) ──────────────────────
+    // ── Today tab (Steps 0–2) ──────────────────────
     {
       targetId: "payout-widget",
       title: "Your earnings",
-      body: "Track revenue at a glance — deposits, pending, and withdrawal balance.",
+      body: "Track revenue at a glance — deposits, pending, and withdrawal balance. Tap to see your full money screen.",
       position: "bottom",
     },
     {
       targetId: "dashboard-tabs",
-      title: "Business tasks",
-      body: "Smart task cards flag things that need your attention — follow-ups, deposits due, and more.",
-      position: "top",
+      title: "Today · Clients · Supplies",
+      body: "Swipe or tap to switch between your daily schedule, client list, and supplier catalog.",
+      position: "bottom",
     },
     {
       targetId: "demo-task-card",
-      title: "Example: Follow up",
-      body: "Task cards like this appear when a client hasn't responded. Tap to expand and see action options like SMS, Email, or In-App message.",
+      title: "Things that need you",
+      body: "Task cards flag things that need your attention — follow-ups, deposits due, and more. Tap to expand and see action options.",
       position: "bottom",
     },
     // ── Clients tab (Steps 3–5) ───────────────────────
@@ -101,17 +101,17 @@ export const DASHBOARD_TOUR: TourConfig = {
       body: "The app sends automatic reminders on your behalf — appointment alerts, aftercare messages, and deposit nudges. You don't need to lift a finger.",
       position: "top",
     },
-    // ── Suppliers tab (Steps 6–7) ─────────────────────
+    // ── Supplies tab (Steps 6–7) ─────────────────────
     {
       targetId: "demo-suppliers-area",
-      title: "Discover suppliers",
-      body: "Browse curated tattoo supply stores and import their catalogs with one tap. Find inks, needles, aftercare, and more.",
+      title: "Your suppliers",
+      body: "Your linked suppliers appear here. Tap any to browse products and reorder supplies without leaving the app.",
       position: "bottom",
     },
     {
       targetId: "demo-supplier-card",
-      title: "Your suppliers",
-      body: "Imported supplier storefronts appear here. Browse products and reorder supplies without leaving the app.",
+      title: "Find new suppliers",
+      body: "Browse curated tattoo supply stores and add them with one tap. Find inks, needles, aftercare, machines, and more.",
       position: "bottom",
     },
   ],

@@ -106,8 +106,10 @@ export function TooltipOverlay() {
   const position = step.position || "bottom";
 
   // Compute tooltip position relative to target
-  // Ensure it stays fully within viewport with 16px margin on all sides
-  const MARGIN = 16;
+  // Ensure it stays fully within viewport with margin on all sides
+  const MARGIN = 20;
+  // Account for bottom nav bar (roughly 80px + safe area)
+  const BOTTOM_SAFE = 100;
   let tooltipStyle: React.CSSProperties = {};
   let arrowClass = "";
 
@@ -119,13 +121,16 @@ export function TooltipOverlay() {
     const clampedLeft = Math.max(MARGIN, Math.min(idealLeft, viewportSize.w - bubbleWidth - MARGIN));
 
     if (position === "bottom") {
-      let top = targetRect.top + targetRect.height + 14;
-      // If bubble would go below viewport, flip to top
-      if (top + 180 > viewportSize.h) {
+      const top = targetRect.top + targetRect.height + 14;
+      // If bubble would go below viewport (accounting for nav bar), flip to top
+      if (top + 180 > viewportSize.h - BOTTOM_SAFE) {
+        const bottomVal = Math.max(MARGIN, viewportSize.h - targetRect.top + 14);
         tooltipStyle = {
-          bottom: viewportSize.h - targetRect.top + 14,
+          bottom: bottomVal,
           left: clampedLeft,
           width: bubbleWidth,
+          maxHeight: viewportSize.h - MARGIN * 2 - BOTTOM_SAFE,
+          overflowY: "auto",
         };
         arrowClass = "tooltip-tour-arrow-bottom";
       } else {
@@ -133,24 +138,30 @@ export function TooltipOverlay() {
           top,
           left: clampedLeft,
           width: bubbleWidth,
+          maxHeight: viewportSize.h - top - BOTTOM_SAFE,
+          overflowY: "auto",
         };
         arrowClass = "tooltip-tour-arrow-top";
       }
     } else if (position === "top") {
-      let bottom = viewportSize.h - targetRect.top + 14;
+      const bottomVal = viewportSize.h - targetRect.top + 14;
       // If bubble would go above viewport, flip to bottom
-      if (viewportSize.h - bottom + 180 < 0) {
+      if (targetRect.top - 180 < MARGIN) {
         tooltipStyle = {
           top: targetRect.top + targetRect.height + 14,
           left: clampedLeft,
           width: bubbleWidth,
+          maxHeight: viewportSize.h - (targetRect.top + targetRect.height + 14) - BOTTOM_SAFE,
+          overflowY: "auto",
         };
         arrowClass = "tooltip-tour-arrow-top";
       } else {
         tooltipStyle = {
-          bottom,
+          bottom: Math.max(MARGIN, bottomVal),
           left: clampedLeft,
           width: bubbleWidth,
+          maxHeight: targetRect.top - MARGIN * 2,
+          overflowY: "auto",
         };
         arrowClass = "tooltip-tour-arrow-bottom";
       }
