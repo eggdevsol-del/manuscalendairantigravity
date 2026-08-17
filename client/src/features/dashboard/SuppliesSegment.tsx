@@ -242,7 +242,7 @@ export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
   const handleImport = (url: string) => {
     if (demoMode) return;
     setImportingUrl(url);
-    scrapeMutation.mutate({ url });
+    scrapeMutation.mutate({ storeUrl: url });
   };
 
   // Data
