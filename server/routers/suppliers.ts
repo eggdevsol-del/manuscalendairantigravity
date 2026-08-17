@@ -145,13 +145,11 @@ export const suppliersRouter = router({
           where: eq(schema.suppliers.websiteUrl, baseUrl)
         });
 
-        let supplierId;
+        let supplierId: number;
 
         if (existingSupplier) {
           supplierId = existingSupplier.id;
           await db.update(schema.suppliers).set({ name: storeName, logoUrl }).where(eq(schema.suppliers.id, supplierId));
-          // Clear old products to insert fresh
-          await db.delete(schema.supplierProducts).where(eq(schema.supplierProducts.supplierId, supplierId));
         } else {
           const [supplierResult] = await db.insert(schema.suppliers).values({
             name: storeName,
@@ -161,55 +159,98 @@ export const suppliersRouter = router({
           supplierId = supplierResult.insertId;
         }
 
-        // Save Products
-        const productsToInsert = allProducts.map((p: any) => {
-          let imageUrl = p.images && p.images.length > 0 ? p.images[0].src : null;
-          let description = p.body_html ? p.body_html.replace(/<[^>]*>?/gm, '') : null;
-          
-          return {
-            supplierId,
-            title: p.title,
-            description,
-            imageUrl,
-            shopifyProductId: p.id.toString(),
-            category: p.product_type,
-            // Shopify prices are usually in variants
-          };
-        });
+        // Upsert Products (preserves DB IDs for stable cart references)
+        const existingProducts = existingSupplier
+          ? await db.query.supplierProducts.findMany({
+              where: eq(schema.supplierProducts.supplierId, supplierId),
+              with: { variants: true },
+            })
+          : [];
 
-        if (productsToInsert.length === 0) {
-          return { success: true, supplierId, productCount: 0 };
-        }
+        const seenProductIds = new Set<number>();
 
-        const [productInsertResult] = await db.insert(schema.supplierProducts).values(productsToInsert);
-        const firstProductId = productInsertResult.insertId;
-        
-        // We need to fetch the inserted products to get their IDs so we can map variants
-        const insertedProducts = await db.query.supplierProducts.findMany({
-          where: eq(schema.supplierProducts.supplierId, supplierId)
-        });
+        for (const p of allProducts) {
+          const imageUrl = p.images && p.images.length > 0 ? p.images[0].src : null;
+          const description = p.body_html ? p.body_html.replace(/<[^>]*>?/gm, '') : null;
+          const shopifyProductId = p.id.toString();
 
-        const variantsToInsert: any[] = [];
-        
-        for (const sp of allProducts) {
-          const dbProduct = insertedProducts.find(p => p.shopifyProductId === sp.id.toString());
-          if (dbProduct && sp.variants && sp.variants.length > 0) {
-            for (const v of sp.variants) {
+          const existing = existingProducts.find(ep => ep.shopifyProductId === shopifyProductId);
+
+          let productId: number;
+
+          if (existing) {
+            // Update existing product in-place
+            productId = existing.id;
+            await db.update(schema.supplierProducts).set({
+              title: p.title,
+              description,
+              imageUrl,
+              category: p.product_type,
+            }).where(eq(schema.supplierProducts.id, productId));
+          } else {
+            // Insert new product
+            const [result] = await db.insert(schema.supplierProducts).values({
+              supplierId,
+              title: p.title,
+              description,
+              imageUrl,
+              shopifyProductId,
+              category: p.product_type,
+            });
+            productId = result.insertId;
+          }
+
+          seenProductIds.add(productId);
+
+          // Upsert variants for this product
+          const existingVariants = existing?.variants || [];
+          const seenVariantIds = new Set<number>();
+
+          if (p.variants && p.variants.length > 0) {
+            for (const v of p.variants) {
               const priceVal = parseFloat(v.price) || 0;
-              variantsToInsert.push({
-                supplierProductId: dbProduct.id,
-                title: v.title || "Default",
-                priceCents: Math.round(priceVal * 100),
-                sku: v.sku || null,
-                inventoryCount: v.inventory_quantity !== undefined ? v.inventory_quantity : (v.available ? 1 : 0),
-                shopifyVariantId: v.id.toString(),
-              });
+              const shopifyVariantId = v.id.toString();
+              const existingVariant = existingVariants.find(
+                (ev: any) => ev.shopifyVariantId === shopifyVariantId
+              );
+
+              if (existingVariant) {
+                // Update in-place — keeps the same DB ID
+                await db.update(schema.supplierProductVariants).set({
+                  title: v.title || "Default",
+                  priceCents: Math.round(priceVal * 100),
+                  sku: v.sku || null,
+                  inventoryCount: v.inventory_quantity !== undefined ? v.inventory_quantity : (v.available ? 1 : 0),
+                }).where(eq(schema.supplierProductVariants.id, existingVariant.id));
+                seenVariantIds.add(existingVariant.id);
+              } else {
+                // Insert new variant
+                const [result] = await db.insert(schema.supplierProductVariants).values({
+                  supplierProductId: productId,
+                  title: v.title || "Default",
+                  priceCents: Math.round(priceVal * 100),
+                  sku: v.sku || null,
+                  inventoryCount: v.inventory_quantity !== undefined ? v.inventory_quantity : (v.available ? 1 : 0),
+                  shopifyVariantId,
+                });
+                seenVariantIds.add(result.insertId);
+              }
+            }
+          }
+
+          // Remove variants that no longer exist in Shopify
+          for (const ev of existingVariants) {
+            if (!seenVariantIds.has(ev.id)) {
+              await db.delete(schema.supplierProductVariants).where(eq(schema.supplierProductVariants.id, ev.id));
             }
           }
         }
 
-        if (variantsToInsert.length > 0) {
-          await db.insert(schema.supplierProductVariants).values(variantsToInsert);
+        // Remove products that no longer exist in Shopify
+        for (const ep of existingProducts) {
+          if (!seenProductIds.has(ep.id)) {
+            await db.delete(schema.supplierProducts).where(eq(schema.supplierProducts.id, ep.id));
+          }
         }
 
         return { 

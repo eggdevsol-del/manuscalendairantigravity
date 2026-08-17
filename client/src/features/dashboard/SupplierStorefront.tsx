@@ -87,9 +87,7 @@ export function SupplierStorefront({
   // Background Sync
   const scrapeMutation = trpc.suppliers.scrapeShopifyStore.useMutation({
     onSuccess: () => {
-      // Scrape deletes+reinserts all products — old variant IDs are invalidated
-      setCart({});
-      // Invalidate to seamlessly swap in fresh data
+      // Invalidate to seamlessly swap in fresh data (prices, stock, etc.)
       queryClient.invalidateQueries({ queryKey: getQueryKey(trpc.suppliers.getSupplierProducts, { supplierId }) });
     }
   });
