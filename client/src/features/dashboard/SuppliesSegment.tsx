@@ -21,12 +21,12 @@ import { DEMO_SUPPLIERS } from "./dashboardDemoData";
 
 // Curated supplier directory
 const SUPPLIER_DIRECTORY = [
-  { name: "Pro Tattoo Supply", url: "https://protattoosupply.com.au/", category: "General Supply" },
-  { name: "Dr Pickles", url: "https://drpickles.com/", category: "Aftercare" },
-  { name: "Tatsup", url: "https://www.tatsup.com/", category: "Equipment" },
-  { name: "Inkjecta", url: "https://inkjecta.com/", category: "Machines" },
-  { name: "Dynamic Color", url: "https://dynamiccolor.com/", category: "Inks" },
-  { name: "Bstattoo", url: "https://www.bstattoo.com.au/", category: "General Supply" },
+  { name: "Pro Tattoo Supply", url: "https://protattoosupply.com.au/", category: "General Supply", bannerUrl: "https://protattoosupply.com.au/cdn/shop/files/image.png" },
+  { name: "Dr Pickles", url: "https://drpickles.com/", category: "Aftercare", bannerUrl: "https://drpickles.com/cdn/shop/files/DrPickles_Homepage_Desktop_1.jpg" },
+  { name: "Tatsup", url: "https://www.tatsup.com/", category: "Equipment", bannerUrl: "https://www.tatsup.com/cdn/shop/files/tatsup-banner.jpg" },
+  { name: "Inkjecta", url: "https://inkjecta.com/", category: "Machines", bannerUrl: "https://inkjecta.com/cdn/shop/files/banner.jpg" },
+  { name: "Dynamic Color", url: "https://dynamiccolor.com/", category: "Inks", bannerUrl: "https://dynamiccolor.com/cdn/shop/files/hero-banner.jpg" },
+  { name: "Bstattoo", url: "https://www.bstattoo.com.au/", category: "General Supply", bannerUrl: "https://www.bstattoo.com.au/cdn/shop/files/banner.jpg" },
 ];
 
 // ── Section Header ──────────────────────────────────────
@@ -139,21 +139,44 @@ function SupplierRow({
 // ── Directory Card ──────────────────────────────────────
 
 function DirectoryCard({
-  name, url, category, onImport, importing,
+  name, url, category, bannerUrl, isAlreadyAdded, onImport, importing,
 }: {
-  name: string; url: string; category: string; onImport: () => void; importing: boolean;
+  name: string; url: string; category: string; bannerUrl?: string;
+  isAlreadyAdded: boolean; onImport: () => void; importing: boolean;
 }) {
   return (
     <div style={{
-      background: DT.cardSurface,
+      position: "relative",
       borderRadius: DRadius.row,
       border: `1px solid ${DT.hairline}`,
       padding: `${DSpace[4]}px ${DSpace[5]}px`,
       display: "flex",
       alignItems: "center",
       gap: DSpace[4],
+      overflow: "hidden",
+      minHeight: 64,
     }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
+      {/* Banner background */}
+      {bannerUrl && (
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: `url(${bannerUrl})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          opacity: 0.12,
+          zIndex: 0,
+        }} />
+      )}
+      {/* Dark overlay for text readability */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        background: `linear-gradient(90deg, ${DT.cardSurface} 40%, transparent 100%)`,
+        zIndex: 1,
+      }} />
+
+      <div style={{ flex: 1, minWidth: 0, position: "relative", zIndex: 2 }}>
         <div style={{ fontSize: DType.rowTitle.fontSize, fontWeight: DType.rowTitle.fontWeight, color: DT.textPrimary }}>
           {name}
         </div>
@@ -161,7 +184,7 @@ function DirectoryCard({
           {category}
         </div>
       </div>
-      <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+      <div style={{ display: "flex", gap: 8, flexShrink: 0, position: "relative", zIndex: 2 }}>
         <a
           href={url}
           target="_blank"
@@ -177,16 +200,10 @@ function DirectoryCard({
         >
           <ExternalLink size={14} />
         </a>
-        <button
-          onClick={onImport}
-          disabled={importing}
-          style={{
-            background: DT.amber,
-            border: "none",
+        {isAlreadyAdded ? (
+          <div style={{
             borderRadius: DRadius.button,
-            cursor: "pointer",
             padding: "6px 14px",
-            color: DT.amberOnColor,
             fontSize: DType.exceptionPill.fontSize,
             fontWeight: DType.exceptionPill.fontWeight,
             minHeight: 36,
@@ -331,7 +348,7 @@ export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
               No suppliers linked
             </div>
             <div style={{ color: DT.textSecondary, fontSize: DType.rowBody.fontSize, marginTop: 4 }}>
-              Import from the directory below
+              Add from the directory below
             </div>
           </div>
         )}
@@ -341,16 +358,25 @@ export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
       <div>
         <SectionHeader label="FIND SUPPLIERS" />
         <div style={{ display: "flex", flexDirection: "column", gap: DSpace[1] }}>
-          {filteredDirectory.map(s => (
-            <DirectoryCard
-              key={s.url}
-              name={s.name}
-              url={s.url}
-              category={s.category}
-              onImport={() => handleImport(s.url)}
-              importing={importingUrl === s.url}
-            />
-          ))}
+          {filteredDirectory.map(s => {
+            const alreadyAdded = displaySuppliers?.some((ds: any) => {
+              const dsUrl = (ds.websiteUrl || "").replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+              const dirUrl = s.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+              return dsUrl === dirUrl;
+            }) || false;
+            return (
+              <DirectoryCard
+                key={s.url}
+                name={s.name}
+                url={s.url}
+                category={s.category}
+                bannerUrl={s.bannerUrl}
+                isAlreadyAdded={alreadyAdded}
+                onImport={() => handleImport(s.url)}
+                importing={importingUrl === s.url}
+              />
+            );
+          })}
         </div>
       </div>
     </div>
