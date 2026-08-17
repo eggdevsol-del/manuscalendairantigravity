@@ -32,8 +32,11 @@
 .tooltip-tour-bubble {
   position: fixed;
   z-index: 9991;
-  max-width: calc(100vw - 32px);
-  max-width: calc(100dvw - 32px); /* dynamic viewport for iOS */
+  max-width: calc(100vw - 40px);
+  max-width: calc(100dvw - 40px); /* dynamic viewport for iOS */
+  /* Never extend beyond viewport vertically — account for nav bar */
+  max-height: calc(100dvh - 120px);
+  overflow-y: auto;
   box-sizing: border-box;
   pointer-events: auto;
   /* Safety: never overflow right edge */

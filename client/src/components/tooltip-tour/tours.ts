@@ -81,6 +81,7 @@ export const DASHBOARD_TOUR: TourConfig = {
       title: "Things that need you",
       body: "Task cards flag things that need your attention — follow-ups, deposits due, and more. Tap to expand and see action options.",
       position: "bottom",
+      nextDelay: 500, // Wait for Clients tab to mount
     },
     // ── Clients tab (Steps 3–5) ───────────────────────
     {
@@ -100,6 +101,7 @@ export const DASHBOARD_TOUR: TourConfig = {
       title: "Automated reminders",
       body: "The app sends automatic reminders on your behalf — appointment alerts, aftercare messages, and deposit nudges. You don't need to lift a finger.",
       position: "top",
+      nextDelay: 500, // Wait for Supplies tab to mount
     },
     // ── Supplies tab (Steps 6–7) ─────────────────────
     {

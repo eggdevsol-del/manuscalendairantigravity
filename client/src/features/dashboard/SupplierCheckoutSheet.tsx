@@ -326,7 +326,7 @@ export function SupplierCheckoutSheet({
             background: DT.bg,
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
-            overflow: "auto",
+            overflow: "hidden",
             display: "flex",
             flexDirection: "column",
           }}
