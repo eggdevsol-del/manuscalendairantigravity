@@ -637,7 +637,42 @@ export function SupplierCheckoutSheet({
                   </span>
                 </div>
               </div>
-              {/* spacer for fixed CTA button */}
+              {/* Checkout button — directly in content flow */}
+              <div style={{ marginTop: 8 }}>
+                <button
+                  onClick={handleContinueToPayment}
+                  disabled={isSubmitting || cartItems.length === 0}
+                  style={{
+                    width: "100%",
+                    padding: "16px 20px",
+                    borderRadius: 16,
+                    background: isSubmitting ? DT.track : DT.amber,
+                    color: isSubmitting ? DT.textTertiary : DT.amberOnColor,
+                    fontSize: 16,
+                    fontWeight: 700,
+                    border: "none",
+                    cursor: isSubmitting ? "default" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    minHeight: 56,
+                  }}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      Preparing checkout...
+                    </>
+                  ) : (
+                    <>
+                      Continue to Payment
+                      <ChevronRight size={18} />
+                    </>
+                  )}
+                </button>
+              </div>
+              {/* Bottom spacer for nav bar */}
               <div style={{ height: 100 }} />
             </div>
           )}
@@ -773,66 +808,6 @@ export function SupplierCheckoutSheet({
           )}
         </motion.div>
 
-        {/* Fixed CTA — rendered OUTSIDE the sheet card to avoid overflow:hidden clipping */}
-        {step === "review" && (
-          <div
-            style={{
-              position: "fixed",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: 101,
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <div
-              style={{
-                width: "100%",
-                maxWidth: 480,
-                padding: "12px 20px",
-                paddingBottom: "calc(12px + env(safe-area-inset-bottom, 0px))",
-                borderTop: `1px solid ${DT.cardBorder}`,
-                background: DT.bg,
-                borderBottomLeftRadius: 0,
-                borderBottomRightRadius: 0,
-              }}
-            >
-              <button
-                onClick={handleContinueToPayment}
-                disabled={isSubmitting || cartItems.length === 0}
-                style={{
-                  width: "100%",
-                  padding: "14px 20px",
-                  borderRadius: 16,
-                  background: isSubmitting ? DT.track : DT.amber,
-                  color: isSubmitting ? DT.textTertiary : DT.amberOnColor,
-                  fontSize: 15,
-                  fontWeight: 700,
-                  border: "none",
-                  cursor: isSubmitting ? "default" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  minHeight: 52,
-                }}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 size={18} className="animate-spin" />
-                    Preparing checkout...
-                  </>
-                ) : (
-                  <>
-                    Continue to Payment
-                    <ChevronRight size={18} />
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        )}
       </motion.div>
     </AnimatePresence>
   );
