@@ -84,8 +84,8 @@ export default function Dashboard() {
   useEffect(() => {
     if (!isDemoMode) return;
     let targetIndex = 0;
-    if (currentStep >= 3 && currentStep <= 5) targetIndex = 1;
-    else if (currentStep >= 6) targetIndex = 2;
+    if (currentStep >= 3 && currentStep <= 4) targetIndex = 1;
+    else if (currentStep >= 5) targetIndex = 2;
 
     if (activeIndex !== targetIndex) {
       const dir = targetIndex > activeIndex ? 1 : -1;

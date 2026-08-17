@@ -83,7 +83,7 @@ export const DASHBOARD_TOUR: TourConfig = {
       position: "bottom",
       nextDelay: 500, // Wait for Clients tab to mount
     },
-    // ── Clients tab (Steps 3–5) ───────────────────────
+    // ── Clients tab (Steps 3–4) ───────────────────────
     {
       targetId: "demo-clients-area",
       title: "Your clients",
@@ -95,15 +95,9 @@ export const DASHBOARD_TOUR: TourConfig = {
       title: "Client profile",
       body: "Each client card shows their name, session count, lifetime value, and location. Tap to drill into appointments, orders, and notes.",
       position: "bottom",
-    },
-    {
-      targetId: "demo-reminders-area",
-      title: "Automated reminders",
-      body: "The app sends automatic reminders on your behalf — appointment alerts, aftercare messages, and deposit nudges. You don't need to lift a finger.",
-      position: "top",
       nextDelay: 500, // Wait for Supplies tab to mount
     },
-    // ── Supplies tab (Steps 6–7) ─────────────────────
+    // ── Supplies tab (Steps 5–6) ─────────────────────
     {
       targetId: "demo-suppliers-area",
       title: "Your suppliers",

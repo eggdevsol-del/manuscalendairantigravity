@@ -18,9 +18,9 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTooltipTarget } from "@/components/tooltip-tour";
-import { DEMO_CLIENTS, DEMO_REMINDERS } from "./dashboardDemoData";
+import { DEMO_CLIENTS } from "./dashboardDemoData";
 import { format, isPast, isFuture } from "date-fns";
-import { tokens, statusColor, typography } from "@/ui/tokens";
+import { tokens, typography } from "@/ui/tokens";
 import { formatMoney, formatCents } from "@/lib/formatMoney";
 import { utcToLocal } from "@shared/utils/timezone";
 
@@ -205,7 +205,6 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
 
   const demoClientsAreaRef = useTooltipTarget("demo-clients-area");
   const demoClientCardRef = useTooltipTarget("demo-client-card");
-  const demoRemindersAreaRef = useTooltipTarget("demo-reminders-area");
 
   const {
     data: allSessions,
@@ -481,30 +480,6 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
             })}
           </div>
         )}
-      </section>
-
-      {/* Automated Reminders — demo only */}
-      {demoMode && (
-        <section ref={demoRemindersAreaRef as any}>
-          <div className="flex items-center gap-2 mb-4 px-1">
-            <h2 className={typography.h3}>Automated Reminders</h2>
-            <span className={cn(tokens.display.badge, tokens.display.badgePrimary)}>Auto</span>
-          </div>
-          <div className={cn(tokens.card.base, "border-border/30 overflow-hidden divide-y divide-border/30")}>
-            {DEMO_REMINDERS.map((reminder) => (
-              <div key={reminder.id} className="p-4 flex items-start gap-3">
-                <span className="text-xl mt-0.5">{reminder.emoji}</span>
-                <div className="flex-1 min-w-0">
-                  <p className={cn(typography.bodySm, "font-semibold")}>{reminder.title}</p>
-                  <p className={cn(typography.label, "text-muted-foreground mt-0.5")}>{reminder.description}</p>
-                  <p className={cn(typography.label, "text-primary/70 mt-1 font-medium")}>{reminder.timing}</p>
-                </div>
-                <span className={cn(tokens.display.badge, statusColor.success.full)}>Active</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }
