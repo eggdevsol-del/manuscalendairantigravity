@@ -126,7 +126,7 @@ export function TooltipOverlay() {
       if (top + 180 > viewportSize.h - BOTTOM_SAFE) {
         const bottomVal = Math.max(MARGIN, viewportSize.h - targetRect.top + 14);
         tooltipStyle = {
-          bottom: bottomVal,
+          bottom: Math.min(bottomVal, viewportSize.h - MARGIN),
           left: clampedLeft,
           width: bubbleWidth,
           maxHeight: viewportSize.h - MARGIN * 2 - BOTTOM_SAFE,
@@ -135,7 +135,7 @@ export function TooltipOverlay() {
         arrowClass = "tooltip-tour-arrow-bottom";
       } else {
         tooltipStyle = {
-          top,
+          top: Math.max(MARGIN, top),
           left: clampedLeft,
           width: bubbleWidth,
           maxHeight: viewportSize.h - top - BOTTOM_SAFE,
@@ -148,7 +148,7 @@ export function TooltipOverlay() {
       // If bubble would go above viewport, flip to bottom
       if (targetRect.top - 180 < MARGIN) {
         tooltipStyle = {
-          top: targetRect.top + targetRect.height + 14,
+          top: Math.max(MARGIN, targetRect.top + targetRect.height + 14),
           left: clampedLeft,
           width: bubbleWidth,
           maxHeight: viewportSize.h - (targetRect.top + targetRect.height + 14) - BOTTOM_SAFE,
@@ -157,7 +157,7 @@ export function TooltipOverlay() {
         arrowClass = "tooltip-tour-arrow-top";
       } else {
         tooltipStyle = {
-          bottom: Math.max(MARGIN, bottomVal),
+          bottom: Math.min(Math.max(MARGIN, bottomVal), viewportSize.h - MARGIN),
           left: clampedLeft,
           width: bubbleWidth,
           maxHeight: targetRect.top - MARGIN * 2,
@@ -167,12 +167,13 @@ export function TooltipOverlay() {
       }
     }
   } else {
-    // No target found — center the tooltip
+    // No target found — center the tooltip safely within viewport
     tooltipStyle = {
-      top: "50%",
-      left: "50%",
+      top: Math.max(MARGIN, viewportSize.h * 0.3),
+      left: Math.max(MARGIN, (viewportSize.w - bubbleWidth) / 2),
       width: bubbleWidth,
-      transform: "translate(-50%, -50%)",
+      maxHeight: viewportSize.h - MARGIN * 2 - BOTTOM_SAFE,
+      overflowY: "auto",
     };
   }
 

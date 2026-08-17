@@ -49,7 +49,7 @@ export interface DemoClient {
   sittings: number;
   nextAppointment: string | null;
   lastSeen: string;
-  status: "active" | "lead" | "completed";
+  status: "active" | "lead" | "past_client" | "imported";
 }
 
 export const DEMO_CLIENTS: DemoClient[] = [
@@ -77,7 +77,7 @@ export const DEMO_CLIENTS: DemoClient[] = [
     sittings: 1,
     nextAppointment: null,
     lastSeen: "1 week ago",
-    status: "completed",
+    status: "past_client",
   },
   {
     id: "demo-client-3",
