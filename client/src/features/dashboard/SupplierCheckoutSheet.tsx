@@ -339,10 +339,9 @@ export function SupplierCheckoutSheet({
               justifyContent: "space-between",
               padding: "16px 20px",
               borderBottom: `1px solid ${DT.cardBorder}`,
-              position: "sticky",
-              top: 0,
               background: DT.bg,
               zIndex: 10,
+              flexShrink: 0,
             }}
           >
             {step === "payment" ? (
@@ -388,7 +387,7 @@ export function SupplierCheckoutSheet({
 
           {/* Content */}
           {step === "review" && (
-            <div style={{ padding: "20px", paddingBottom: 0, flex: 1, overflowY: "auto" }}>
+            <div style={{ padding: "20px", paddingBottom: 0, flex: 1, overflowY: "auto", minHeight: 0 }}>
               {/* Supplier name */}
               <div
                 style={{
