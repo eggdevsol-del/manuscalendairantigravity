@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTooltipTarget } from "@/components/tooltip-tour";
 import { DEMO_CLIENTS } from "./dashboardDemoData";
 import { format, isPast, isFuture } from "date-fns";
-import { tokens, typography } from "@/ui/tokens";
+import { tokens, statusColor, typography } from "@/ui/tokens";
 import { formatMoney, formatCents } from "@/lib/formatMoney";
 import { utcToLocal } from "@shared/utils/timezone";
 
@@ -480,6 +480,7 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
             })}
           </div>
         )}
+      </section>
     </div>
   );
 }
