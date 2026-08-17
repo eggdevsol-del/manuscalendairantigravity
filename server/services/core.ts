@@ -41,11 +41,23 @@ async function ensureTables(pool: mysql.Pool) {
   }
 
   // ── Supplier Checkout Migration ──────────────────────────────
+  // Helper: MySQL ALTER TABLE ADD COLUMN (ignores "duplicate column" error 1060)
+  const addColumnIfMissing = async (table: string, col: string, definition: string) => {
+    try {
+      await pool.query(`ALTER TABLE \`${table}\` ADD COLUMN \`${col}\` ${definition}`);
+      console.log(`[Database] ✅ Added column ${table}.${col}`);
+    } catch (e: any) {
+      if (e.code === "ER_DUP_FIELDNAME" || e.errno === 1060) {
+        // Column already exists — OK
+      } else {
+        console.warn(`[Database] ⚠️ ALTER ${table}.${col}:`, e.message);
+      }
+    }
+  };
+
   try {
-    // Add currency column to suppliers (idempotent)
-    await pool.query(`
-      ALTER TABLE \`suppliers\` ADD COLUMN IF NOT EXISTS \`currency\` varchar(10) DEFAULT 'AUD'
-    `).catch(() => {});
+    // Add currency column to suppliers
+    await addColumnIfMissing("suppliers", "currency", "varchar(10) DEFAULT 'AUD'");
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS \`supplierOrders\` (
@@ -125,10 +137,8 @@ async function ensureTables(pool: mysql.Pool) {
       )
     `);
 
-    // Add stripeCustomerId to artistSettings (idempotent)
-    await pool.query(`
-      ALTER TABLE \`artistSettings\` ADD COLUMN IF NOT EXISTS \`stripeCustomerId\` varchar(255)
-    `).catch(() => {});
+    // Add stripeCustomerId to artistSettings
+    await addColumnIfMissing("artistSettings", "stripeCustomerId", "varchar(255)");
 
     console.log("[Database] ✅ supplier checkout tables migrated");
   } catch (e: any) {
