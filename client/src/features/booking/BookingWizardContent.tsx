@@ -41,7 +41,7 @@ import { Capacitor } from "@capacitor/core";
 import { useLocation } from "wouter";
 import { tokens, typography } from "@/ui/tokens";
 import { InlineFormSigning } from "./components/InlineFormSigning";
-import { EmbeddedStripeCheckout } from "@/features/stripe/EmbeddedStripeCheckout";
+import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 import { UserAvatar } from "@/components/ui/ssot";
 
 type BookingStep =
@@ -981,10 +981,10 @@ export function BookingWizardContent({
                 </div>
                 )}
 
-                {/* ── Embedded Checkout Component ── */}
+                {/* ── Custom Checkout Component ── */}
                 {checkoutClientSecret && (
                   <div className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <EmbeddedStripeCheckout clientSecret={checkoutClientSecret} />
+                    <DotsCheckout clientSecret={checkoutClientSecret} amountCents={0} onComplete={() => {}} />
                   </div>
                 )}
               </motion.div>
@@ -1140,7 +1140,7 @@ export function BookingWizardContent({
                       </button>
                     ) : (
                       <div className="mt-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <EmbeddedStripeCheckout clientSecret={checkoutBalanceClientSecret} />
+                        <DotsCheckout clientSecret={checkoutBalanceClientSecret} amountCents={0} onComplete={() => {}} />
                       </div>
                     )}
                   </div>

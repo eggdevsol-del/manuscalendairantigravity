@@ -4,7 +4,7 @@ import { protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { eq, and, desc, inArray } from "drizzle-orm";
 import * as schema from "../../drizzle/schema";
-import { createDepositCheckoutSession } from "../services/stripe";
+import { createDepositPaymentIntent } from "../services/paymentIntents";
 
 export const sessionPlansRouter = router({
   /**
@@ -149,8 +149,8 @@ export const sessionPlansRouter = router({
       // Generate a unique deposit token
       const depositToken = `sp_${plan.id}_${Date.now()}`;
 
-      // Create Stripe checkout session
-      const stripeSession = await createDepositCheckoutSession({
+      // Create Stripe PaymentIntent (custom checkout)
+      const paymentResult = await createDepositPaymentIntent({
         leadId: plan.id, // We reuse leadId field for session plan ID
         depositAmountCents: plan.depositTotalCents,
         platformFeeCents,
@@ -163,13 +163,13 @@ export const sessionPlansRouter = router({
         tier,
       });
 
-      // Store the Stripe session ID on the plan
+      // Store the Stripe PaymentIntent ID on the plan
       await dbRef.update(schema.sessionPlans)
-        .set({ stripeSessionId: depositToken })
+        .set({ stripeSessionId: paymentResult.paymentIntentId })
         .where(eq(schema.sessionPlans.id, plan.id));
 
       return {
-        clientSecret: stripeSession.clientSecret,
+        clientSecret: paymentResult.clientSecret,
         depositTotalCents: plan.depositTotalCents,
         platformFeeCents,
         totalCents: clientTotalCents,

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ShoppingCart, Plus, Minus, ChevronRight, Loader2, Package, CheckCircle2 } from "lucide-react";
 import { useCart } from "./CartContext";
 import { trpc } from "@/lib/trpc";
-import { EmbeddedStripeCheckout } from "@/features/stripe/EmbeddedStripeCheckout";
+import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -179,12 +179,14 @@ export function StorefrontCheckoutFAB({
 
             {step === "payment" && clientSecret && (
               <div className="p-4 max-w-xl mx-auto h-full min-h-[500px]">
-                <EmbeddedStripeCheckout
+                <DotsCheckout
                   clientSecret={clientSecret}
+                  amountCents={0}
                   onComplete={() => {
                     setStep("success");
                     clearCart();
                   }}
+                  onBack={() => setStep("review")}
                 />
               </div>
             )}

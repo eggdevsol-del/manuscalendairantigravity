@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
-import { EmbeddedStripeCheckout } from "@/features/stripe/EmbeddedStripeCheckout";
+import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 import { X, Check, Lock, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { UserAvatar } from "@/components/ui/ssot/UserAvatar";
@@ -312,52 +312,12 @@ function PaymentStep({
   onBack: () => void;
 }) {
   return (
-    <>
-      {/* Amount display */}
-      <div className="mb-4">
-        <span className="text-[13.5px] text-[#7A7A7A]">Paying </span>
-        <span className="text-[17px] font-bold text-white">
-          ${(totalCents / 100).toFixed(2)}
-        </span>
-      </div>
-
-      {/* Stripe iframe well */}
-      <div
-        style={{
-          background: "#141416",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 14,
-          padding: 14,
-          marginBottom: 16,
-        }}
-      >
-        <div className="flex items-center gap-1.5 mb-3">
-          <Lock className="w-3 h-3 text-[#7A7A7A]" />
-          <span className="text-[11px] font-semibold text-[#7A7A7A]">
-            Secure checkout · powered by Stripe
-          </span>
-        </div>
-        <EmbeddedStripeCheckout
-          clientSecret={clientSecret}
-          onComplete={onComplete}
-        />
-      </div>
-
-      {/* Back button */}
-      <button
-        onClick={onBack}
-        className="w-full flex items-center justify-center gap-1.5 text-[13px] font-semibold"
-        style={{
-          height: 44,
-          color: "#7A7A7A",
-          background: "transparent",
-          border: "none",
-        }}
-      >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        Back
-      </button>
-    </>
+    <DotsCheckout
+      clientSecret={clientSecret}
+      amountCents={totalCents}
+      onComplete={onComplete}
+      onBack={onBack}
+    />
   );
 }
 

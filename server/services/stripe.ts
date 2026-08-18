@@ -972,6 +972,306 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         break;
       }
 
+      // ── PaymentIntent.succeeded — Custom checkout (Payment Elements) ────
+      // Handles the same payment types as checkout.session.completed above,
+      // using identical metadata keys. This replaces Embedded Checkout.
+      case "payment_intent.succeeded": {
+        const pi = event.data.object as Stripe.PaymentIntent;
+        const piMeta = pi.metadata || {};
+
+        // ── Deposit Payment ──
+        if (piMeta.type === "deposit") {
+          const leadId = parseInt(piMeta.leadId, 10);
+          const messageId = piMeta.messageId ? parseInt(piMeta.messageId, 10) : undefined;
+
+          if (leadId) {
+            const lead = await db.query.leads.findFirst({
+              where: eq(leads.id, leadId),
+            });
+            if (!lead) break;
+
+            const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+            await db
+              .update(leads)
+              .set({
+                depositMethod: "stripe",
+                depositClaimedAt: now,
+                depositVerifiedAt: now,
+                stripeCheckoutSessionId: pi.id,
+                status: "deposit_verified" as any,
+                updatedAt: now,
+              })
+              .where(eq(leads.id, leadId));
+
+            if (messageId) {
+              const message = await db.query.messages.findFirst({
+                where: eq(messages.id, messageId),
+              });
+              if (message && message.metadata) {
+                try {
+                  const meta = typeof message.metadata === 'string'
+                    ? JSON.parse(message.metadata)
+                    : message.metadata;
+                  meta.status = "confirmed";
+                  await db.update(messages)
+                    .set({ metadata: JSON.stringify(meta) })
+                    .where(eq(messages.id, messageId));
+                } catch (e) {
+                  console.error(`[Stripe PI] Failed to update message ${messageId}`, e);
+                }
+              }
+            }
+
+            // Confirm appointments
+            const { confirmAppointments } = await import("./appointmentService");
+            try {
+              if (lead.conversationId) {
+                await confirmAppointments(lead.conversationId);
+              }
+            } catch (e) {
+              console.error(`[Stripe PI] Failed to confirm appointments`, e);
+            }
+
+            // Ledger write
+            const platformFeeCents = piMeta.platformFeeCents ? parseInt(piMeta.platformFeeCents, 10) : 0;
+            const artistFeeCents = piMeta.artistFeeCents ? parseInt(piMeta.artistFeeCents, 10) : 0;
+            const baseAmountCents = piMeta.baseAmountCents ? parseInt(piMeta.baseAmountCents, 10) : lead.depositAmount || 0;
+            const connectAccountId = piMeta.stripeConnectAccountId || null;
+
+            await db.insert(paymentLedger).values({
+              bookingId: null,
+              artistId: lead.artistId,
+              clientId: lead.clientId || null,
+              transactionType: "deposit",
+              amountCents: baseAmountCents,
+              platformFeeCents,
+              artistFeeCents,
+              stripePaymentId: pi.id,
+              stripeConnectAccountId: connectAccountId,
+              tier: (piMeta.tier as any) || "free",
+              paymentMethod: "card",
+            });
+
+            console.log(`[Stripe PI] Deposit verified for Lead ${leadId}`);
+          }
+          break;
+        }
+
+        // ── Balance Payment ──
+        if (piMeta.type === "balance") {
+          const bookingId = parseInt(piMeta.bookingId, 10);
+          const platformFeeCents = parseInt(piMeta.platformFeeCents || "0", 10);
+          const baseAmountCents = parseInt(piMeta.baseAmountCents || "0", 10);
+
+          if (bookingId) {
+            const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+            const booking = await db.query.appointments.findFirst({
+              where: eq(appointments.id, bookingId),
+            });
+
+            if (booking) {
+              const newPaid = (booking.totalPaidAmountCents || 0) + baseAmountCents;
+              const remaining = (booking.totalExpectedAmountCents || 0) - newPaid;
+              const isFullyPaid = remaining <= 0;
+
+              await db.update(appointments).set({
+                balancePaymentId: pi.id,
+                totalPaidAmountCents: newPaid,
+                remainingBalanceCents: Math.max(remaining, 0),
+                paymentStatus: isFullyPaid ? "fully_paid" as any : "deposit_paid" as any,
+                clientPaid: isFullyPaid ? 1 : 0,
+                ...(isFullyPaid ? {
+                  actualEndTime: now,
+                  status: "completed" as any,
+                  paymentMethod: "electronic transfer" as any,
+                } : {}),
+                updatedAt: now,
+              }).where(eq(appointments.id, bookingId));
+
+              if (isFullyPaid) {
+                const { createProcedureLog } = await import("./appointmentService");
+                try { await createProcedureLog(bookingId); } catch (e) {
+                  console.error(`[Stripe PI] Procedure log failed`, e);
+                }
+              }
+
+              const balanceArtistFeeCents = piMeta.artistFeeCents ? parseInt(piMeta.artistFeeCents, 10) : 0;
+              await db.insert(paymentLedger).values({
+                bookingId,
+                artistId: booking.artistId,
+                clientId: booking.clientId,
+                transactionType: "balance",
+                amountCents: baseAmountCents,
+                platformFeeCents,
+                artistFeeCents: balanceArtistFeeCents,
+                stripePaymentId: pi.id,
+                stripeConnectAccountId: piMeta.stripeConnectAccountId || null,
+                tier: (piMeta.tier as any) || "free",
+                paymentMethod: "electronic transfer",
+              });
+
+              console.log(`[Stripe PI] Balance paid for Booking ${bookingId}`);
+            }
+          }
+          break;
+        }
+
+        // ── Store Order ──
+        if (piMeta.type === "store_order") {
+          const orderId = parseInt(piMeta.orderId, 10);
+          const platformFeeCents = parseInt(piMeta.platformFeeCents || "0", 10);
+          const artistFeeCents = parseInt(piMeta.artistFeeCents || "0", 10);
+          const connectAccountId = piMeta.stripeConnectAccountId || null;
+
+          if (orderId) {
+            const order = await db.query.orders.findFirst({
+              where: eq(orders.id, orderId),
+            });
+            if (order) {
+              const nowStr = new Date().toISOString().slice(0, 19).replace("T", " ");
+              const nowDate = new Date();
+
+              await db.update(orders).set({
+                status: "paid",
+                stripePaymentIntentId: pi.id,
+                updatedAt: nowDate,
+              }).where(eq(orders.id, orderId));
+
+              // Decrement inventory
+              const items = await db.query.orderItems.findMany({
+                where: (orderItems, { eq }) => eq(orderItems.orderId, orderId),
+              });
+              for (const item of items) {
+                if (!item.productId) continue;
+                const product = await db.query.products.findFirst({
+                  where: eq(products.id, item.productId),
+                });
+                if (product && product.inventoryCount >= item.quantity) {
+                  await db.update(products).set({
+                    inventoryCount: product.inventoryCount - item.quantity,
+                    updatedAt: nowDate,
+                  }).where(eq(products.id, product.id));
+                }
+              }
+
+              // Ledger write
+              await db.insert(paymentLedger).values({
+                artistId: order.artistId,
+                transactionType: "store_order",
+                amountCents: order.totalAmountCents,
+                platformFeeCents,
+                artistFeeCents,
+                stripePaymentId: pi.id,
+                stripeConnectAccountId: connectAccountId,
+                paymentMethod: "card",
+              });
+
+              console.log(`[Stripe PI] Store Order ${orderId} completed`);
+            }
+          }
+          break;
+        }
+
+        // ── Supplier Order ──
+        if (piMeta.type === "supplier_order") {
+          const orderId = parseInt(piMeta.orderId, 10);
+          const platformFeeCents = parseInt(piMeta.platformFeeCents || "0", 10);
+
+          if (orderId) {
+            const { supplierOrders } = await import("../../drizzle/schema");
+            const order = await db.query.supplierOrders.findFirst({
+              where: eq(supplierOrders.id, orderId),
+              with: { items: true, supplier: true },
+            });
+
+            if (order && order.status !== "paid") {
+              await db.update(supplierOrders).set({
+                status: "paid",
+                stripePaymentIntentId: pi.id,
+              }).where(eq(supplierOrders.id, orderId));
+
+              await db.insert(paymentLedger).values({
+                artistId: order.artistId,
+                transactionType: "supplier_order",
+                amountCents: order.totalCents,
+                platformFeeCents,
+                artistFeeCents: 0,
+                stripePaymentId: pi.id,
+                paymentMethod: "card",
+              });
+
+              console.log(`[Stripe PI] Supplier Order ${orderId} completed`);
+            }
+          }
+          break;
+        }
+
+        // ── Payment Request ──
+        if (piMeta.type === "payment_request") {
+          const requestId = parseInt(piMeta.requestId, 10);
+          const appointmentId = parseInt(piMeta.appointmentId, 10);
+          const baseAmountCents = parseInt(piMeta.baseAmountCents || "0", 10);
+          const platformFeeCents = parseInt(piMeta.platformFeeCents || "0", 10);
+          const artistFeeCents = parseInt(piMeta.artistFeeCents || "0", 10);
+          const connectAccountId = piMeta.stripeConnectAccountId || null;
+
+          if (requestId && appointmentId) {
+            const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+            const { paymentRequests } = await import("../../drizzle/schema");
+            await db.update(paymentRequests).set({
+              status: "paid" as any,
+              paidAt: now,
+              stripeCheckoutSessionId: pi.id,
+            }).where(eq(paymentRequests.id, requestId));
+
+            const booking = await db.query.appointments.findFirst({
+              where: eq(appointments.id, appointmentId),
+            });
+
+            if (booking) {
+              const newPaid = (booking.totalPaidAmountCents || 0) + baseAmountCents;
+              const expected = booking.totalExpectedAmountCents || (booking.price ? booking.price * 100 : 0);
+              const remaining = Math.max(0, expected - newPaid);
+              const isFullyPaid = remaining <= 0;
+
+              await db.update(appointments).set({
+                totalPaidAmountCents: newPaid,
+                remainingBalanceCents: remaining,
+                paymentStatus: isFullyPaid ? "fully_paid" as any : "deposit_paid" as any,
+                clientPaid: isFullyPaid ? 1 : 0,
+                amountPaid: Math.round(newPaid / 100),
+                ...(isFullyPaid ? {
+                  actualEndTime: now,
+                  status: "completed" as any,
+                  paymentMethod: "stripe" as any,
+                } : {}),
+                updatedAt: now,
+              }).where(eq(appointments.id, appointmentId));
+
+              await db.insert(paymentLedger).values({
+                bookingId: appointmentId,
+                artistId: booking.artistId,
+                clientId: booking.clientId,
+                transactionType: "payment_request",
+                amountCents: baseAmountCents,
+                platformFeeCents,
+                artistFeeCents,
+                stripePaymentId: pi.id,
+                stripeConnectAccountId: connectAccountId,
+                tier: (piMeta.tier as any) || "free",
+                paymentMethod: "card",
+              });
+
+              console.log(`[Stripe PI] Payment request ${requestId} completed for Booking ${appointmentId}`);
+            }
+          }
+          break;
+        }
+
+        console.log(`[Stripe PI] Unhandled payment_intent type: ${piMeta.type}`);
+        break;
+      }
+
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
         const studioId = subscription.metadata.studioId;

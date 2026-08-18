@@ -22,7 +22,7 @@ import {
   Shield,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { EmbeddedStripeCheckout } from "@/features/stripe/EmbeddedStripeCheckout";
+import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 import { toast } from "sonner";
 
 // ── Design Tokens ────────────────────────────────────────────
@@ -792,9 +792,11 @@ export function SupplierCheckoutSheet({
                 </div>
               )}
 
-              <EmbeddedStripeCheckout
+              <DotsCheckout
                 clientSecret={clientSecret}
+                amountCents={checkoutData?.totalCents || 0}
                 onComplete={handlePaymentComplete}
+                onBack={() => setStep("review")}
               />
             </div>
           )}

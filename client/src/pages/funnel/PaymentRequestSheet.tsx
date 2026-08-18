@@ -17,7 +17,7 @@ import { useRoute, useSearch, useLocation } from "wouter";
 import { Check, AlertCircle, Clock, Calendar } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { format } from "date-fns";
-import { EmbeddedStripeCheckout } from "@/features/stripe/EmbeddedStripeCheckout";
+import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 
 const DT = {
   bg: "#0d0d0e",
@@ -402,11 +402,12 @@ export function PaymentRequestSheet() {
           </div>
         )}
 
-        {/* Embedded Stripe Checkout — appears inline after tapping Pay */}
+        {/* Custom Checkout — appears inline after tapping Pay */}
         {phase === "checkout" && checkoutClientSecret && (
           <div style={{ padding: "16px 20px 24px" }}>
-            <EmbeddedStripeCheckout
+            <DotsCheckout
               clientSecret={checkoutClientSecret}
+              amountCents={0}
               onComplete={() => {
                 // Notify banner to hide permanently for this request
                 const reqInfo = data && !("error" in data) ? data : null;
@@ -419,6 +420,7 @@ export function PaymentRequestSheet() {
                 }
                 setPhase("success");
               }}
+              onBack={() => setPhase("ready")}
             />
           </div>
         )}
