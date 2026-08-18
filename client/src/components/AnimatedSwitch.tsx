@@ -52,7 +52,7 @@ export function AnimatedSwitch({ children }: AnimatedSwitchProps) {
   const direction = directionRef.current;
 
   return (
-    <div style={{ position: "relative", width: "100%", minHeight: "100dvh" }}>
+    <div style={{ position: "relative", width: "100%", height: "100dvh", overflow: "hidden" }}>
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
           key={location}
@@ -80,6 +80,9 @@ export function AnimatedSwitch({ children }: AnimatedSwitchProps) {
             width: "100%",
             top: 0,
             left: 0,
+            height: "100%",
+            overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
           }}
         >
           {children}
