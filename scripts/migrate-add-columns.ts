@@ -194,6 +194,172 @@ async function main() {
     console.error("[Migration] ⚠️  payment_requests creation:", e.message);
   }
 
+  // ── Session Plans tables ─────────────────────────────────────
+  try {
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS \`sessionPlans\` (
+        \`id\` int AUTO_INCREMENT NOT NULL,
+        \`artistId\` varchar(64) NOT NULL,
+        \`clientId\` varchar(64) NOT NULL,
+        \`conversationId\` int,
+        \`status\` enum('pending','accepted','declined','withdrawn','refunded') NOT NULL DEFAULT 'pending',
+        \`totalEstimateCents\` int NOT NULL,
+        \`depositTotalCents\` int NOT NULL,
+        \`platformFeeCents\` int DEFAULT 0,
+        \`stripeSessionId\` varchar(255),
+        \`messageId\` int,
+        \`acceptedAt\` timestamp NULL,
+        \`createdAt\` timestamp DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT \`sessionPlans_id\` PRIMARY KEY(\`id\`),
+        FOREIGN KEY (\`artistId\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE,
+        FOREIGN KEY (\`clientId\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE,
+        FOREIGN KEY (\`conversationId\`) REFERENCES \`conversations\`(\`id\`) ON DELETE CASCADE
+      )
+    `);
+    console.log("[Migration] ✅ sessionPlans table ensured");
+  } catch (e: any) {
+    if (e.code !== "ER_TABLE_EXISTS_ERROR") console.error("[Migration] ⚠️  sessionPlans:", e.message);
+    else console.log("[Migration] ⏭️  Table already exists: sessionPlans");
+  }
+
+  try {
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS \`sessionPlanItems\` (
+        \`id\` int AUTO_INCREMENT NOT NULL,
+        \`sessionPlanId\` int NOT NULL,
+        \`sessionIndex\` int NOT NULL,
+        \`startsAt\` datetime NOT NULL,
+        \`durationMinutes\` int NOT NULL,
+        \`estimateCents\` int NOT NULL,
+        \`depositCents\` int NOT NULL,
+        \`appointmentId\` int,
+        \`createdAt\` timestamp DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT \`sessionPlanItems_id\` PRIMARY KEY(\`id\`),
+        FOREIGN KEY (\`sessionPlanId\`) REFERENCES \`sessionPlans\`(\`id\`) ON DELETE CASCADE,
+        FOREIGN KEY (\`appointmentId\`) REFERENCES \`appointments\`(\`id\`) ON DELETE SET NULL
+      )
+    `);
+    console.log("[Migration] ✅ sessionPlanItems table ensured");
+  } catch (e: any) {
+    if (e.code !== "ER_TABLE_EXISTS_ERROR") console.error("[Migration] ⚠️  sessionPlanItems:", e.message);
+    else console.log("[Migration] ⏭️  Table already exists: sessionPlanItems");
+  }
+
+  // ── Aftercare Templates tables ──────────────────────────────
+  try {
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS \`aftercareTemplates\` (
+        \`id\` int AUTO_INCREMENT NOT NULL,
+        \`artistId\` varchar(64) NOT NULL,
+        \`name\` varchar(255) NOT NULL DEFAULT 'Default',
+        \`totalDays\` int NOT NULL DEFAULT 42,
+        \`isDefault\` tinyint DEFAULT 1,
+        \`createdAt\` timestamp DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT \`aftercareTemplates_id\` PRIMARY KEY(\`id\`),
+        FOREIGN KEY (\`artistId\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE
+      )
+    `);
+    console.log("[Migration] ✅ aftercareTemplates table ensured");
+  } catch (e: any) {
+    if (e.code !== "ER_TABLE_EXISTS_ERROR") console.error("[Migration] ⚠️  aftercareTemplates:", e.message);
+    else console.log("[Migration] ⏭️  Table already exists: aftercareTemplates");
+  }
+
+  try {
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS \`aftercarePhases\` (
+        \`id\` int AUTO_INCREMENT NOT NULL,
+        \`templateId\` int NOT NULL,
+        \`fromDay\` int NOT NULL,
+        \`toDay\` int NOT NULL,
+        \`label\` varchar(100) NOT NULL,
+        \`instruction\` text NOT NULL,
+        \`sortOrder\` int DEFAULT 0,
+        CONSTRAINT \`aftercarePhases_id\` PRIMARY KEY(\`id\`),
+        FOREIGN KEY (\`templateId\`) REFERENCES \`aftercareTemplates\`(\`id\`) ON DELETE CASCADE
+      )
+    `);
+    console.log("[Migration] ✅ aftercarePhases table ensured");
+  } catch (e: any) {
+    if (e.code !== "ER_TABLE_EXISTS_ERROR") console.error("[Migration] ⚠️  aftercarePhases:", e.message);
+    else console.log("[Migration] ⏭️  Table already exists: aftercarePhases");
+  }
+
+  // ── New appointment columns for session plan linking ────────
+  const appointmentCols = [
+    { name: "projectName", sql: "ALTER TABLE `appointments` ADD COLUMN `projectName` VARCHAR(255) DEFAULT NULL" },
+    { name: "sessionIndex", sql: "ALTER TABLE `appointments` ADD COLUMN `sessionIndex` INT DEFAULT NULL" },
+    { name: "sessionTotal", sql: "ALTER TABLE `appointments` ADD COLUMN `sessionTotal` INT DEFAULT NULL" },
+    { name: "sessionPlanId", sql: "ALTER TABLE `appointments` ADD COLUMN `sessionPlanId` INT DEFAULT NULL" },
+    { name: "completedAt", sql: "ALTER TABLE `appointments` ADD COLUMN `completedAt` TIMESTAMP NULL DEFAULT NULL" },
+    { name: "aftercareTemplateId", sql: "ALTER TABLE `appointments` ADD COLUMN `aftercareTemplateId` INT DEFAULT NULL" },
+  ];
+
+  for (const alt of appointmentCols) {
+    try {
+      await connection.query(alt.sql);
+      console.log(`[Migration] ✅ Added appointment column: ${alt.name}`);
+    } catch (e: any) {
+      if (e.code === "ER_DUP_FIELDNAME") {
+        console.log(`[Migration] ⏭️  Appointment column already exists: ${alt.name}`);
+      } else {
+        console.error(`[Migration] ❌ Failed to add appointment column ${alt.name}:`, e.message);
+      }
+    }
+  }
+
+  // ── Update messages messageType enum ────────────────────────
+  try {
+    await connection.query(`
+      ALTER TABLE \`messages\` MODIFY COLUMN \`messageType\` ENUM(
+        'text','system','appointment_request','appointment_confirmed',
+        'image','video','studio_invite',
+        'session_plan','session_plan_accepted','touchup_request','balance_paid'
+      ) NOT NULL DEFAULT 'text'
+    `);
+    console.log("[Migration] ✅ Updated messages.messageType enum");
+  } catch (e: any) {
+    console.error("[Migration] ⚠️  messages.messageType enum update:", e.message);
+  }
+
+  // ── Seed default aftercare template for existing artists ────
+  try {
+    const [artists] = await connection.query(
+      "SELECT DISTINCT a.userId FROM artistSettings a LEFT JOIN aftercareTemplates t ON a.userId = t.artistId WHERE t.id IS NULL"
+    ) as any;
+
+    if (artists.length > 0) {
+      console.log(`[Migration] Seeding aftercare templates for ${artists.length} artists...`);
+      const defaultPhases = [
+        { fromDay: 1, toDay: 2, label: "Initial care", instruction: "Keep the wrap on 4 hours. Wash with unscented soap, pat dry, no cream yet.", sortOrder: 0 },
+        { fromDay: 3, toDay: 6, label: "Healing", instruction: "Thin layer of ointment twice daily. Expect plasma and tightness — do not pick.", sortOrder: 1 },
+        { fromDay: 7, toDay: 14, label: "Peeling", instruction: "Peeling and itch. Switch to fragrance-free moisturiser. No pools, saunas or gym chalk.", sortOrder: 2 },
+        { fromDay: 15, toDay: 28, label: "Settling", instruction: "Milky, cloudy look is normal — the top layer is still settling. Moisturise once daily.", sortOrder: 3 },
+        { fromDay: 29, toDay: 42, label: "Healed", instruction: "Colour clears. SPF 50 on it any time it's in the sun, permanently.", sortOrder: 4 },
+      ];
+
+      for (const artist of artists) {
+        const [result] = await connection.query(
+          "INSERT INTO aftercareTemplates (artistId, name, totalDays, isDefault) VALUES (?, 'Default', 42, 1)",
+          [artist.userId]
+        ) as any;
+        const templateId = result.insertId;
+
+        for (const phase of defaultPhases) {
+          await connection.query(
+            "INSERT INTO aftercarePhases (templateId, fromDay, toDay, label, instruction, sortOrder) VALUES (?, ?, ?, ?, ?, ?)",
+            [templateId, phase.fromDay, phase.toDay, phase.label, phase.instruction, phase.sortOrder]
+          );
+        }
+      }
+      console.log(`[Migration] ✅ Seeded aftercare templates for ${artists.length} artists`);
+    } else {
+      console.log("[Migration] ⏭️  All artists already have aftercare templates");
+    }
+  } catch (e: any) {
+    console.error("[Migration] ⚠️  Aftercare seed:", e.message);
+  }
+
   await connection.end();
   console.log("[Migration] Done.");
   process.exit(0);

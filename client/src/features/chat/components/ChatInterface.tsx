@@ -8,6 +8,7 @@ import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
 import { ProjectProposalMessage } from "@/components/chat/ProjectProposalMessage";
 import { PaymentRequestCard } from "@/components/chat/PaymentRequestCard";
 import { RescheduleDepositCard } from "@/components/chat/RescheduleDepositCard";
+import { SessionPlanCard } from "@/features/chat/components/SessionPlanCard";
 import {
   StudioInviteMessage,
   StudioInviteMetadata,
@@ -822,6 +823,9 @@ export function ChatInterface({
                   metadata?.type === "project_client_confirmation";
                 const isPaymentRequest = metadata?.type === "payment_request";
                 const isRescheduleDeposit = metadata?.type === "reschedule_deposit";
+                const isSessionPlan = metadata?.type === "session_plan" || message.messageType === "session_plan";
+                const isSessionPlanAccepted = metadata?.type === "session_plan_accepted" || message.messageType === "session_plan_accepted";
+                const isBalancePaid = message.messageType === "balance_paid";
                 const isStudioInvite = message.messageType === "studio_invite";
 
                 // Try to parse as image grid (reference_grid / placement_grid)
@@ -837,9 +841,47 @@ export function ChatInterface({
                   <div
                     key={message.id}
                     id={`message-${message.id}`}
-                    className={`flex ${(isProjectProposal || isPaymentRequest || isRescheduleDeposit) ? "justify-center w-full" : isOwn ? "justify-end" : "justify-start"}`}
+                    className={`flex ${(isProjectProposal || isPaymentRequest || isRescheduleDeposit || isSessionPlanAccepted || isBalancePaid) ? "justify-center w-full" : isSessionPlan ? "justify-start w-full" : isOwn ? "justify-end" : "justify-start"}`}
                   >
-                    {isRescheduleDeposit ? (
+                    {isSessionPlan ? (
+                      <SessionPlanCard
+                        sessionPlanId={metadata?.sessionPlanId}
+                        sessionCount={metadata?.sessionCount || 0}
+                        totalEstimateCents={metadata?.totalEstimateCents || 0}
+                        depositTotalCents={metadata?.depositTotalCents || 0}
+                        sessions={metadata?.sessions || []}
+                        isOwnMessage={isOwn}
+                        conversationId={conversationId}
+                      />
+                    ) : isSessionPlanAccepted ? (
+                      <div
+                        className="flex items-center justify-center"
+                        style={{
+                          background: "rgba(74,222,128,0.1)",
+                          border: "1px solid rgba(74,222,128,0.3)",
+                          borderRadius: 12,
+                          padding: "9px 14px",
+                        }}
+                      >
+                        <span className="text-[12.5px] font-medium" style={{ color: "#c8f5da" }}>
+                          {message.content}
+                        </span>
+                      </div>
+                    ) : isBalancePaid ? (
+                      <div
+                        className="flex items-center justify-center"
+                        style={{
+                          background: "rgba(74,222,128,0.08)",
+                          border: "1px solid rgba(74,222,128,0.25)",
+                          borderRadius: 12,
+                          padding: "9px 14px",
+                        }}
+                      >
+                        <span className="text-[12.5px] font-medium" style={{ color: "#c8f5da" }}>
+                          {message.content}
+                        </span>
+                      </div>
+                    ) : isRescheduleDeposit ? (
                       <div className="w-full flex justify-center">
                         <RescheduleDepositCard
                           metadata={metadata}

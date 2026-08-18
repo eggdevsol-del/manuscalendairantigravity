@@ -38,6 +38,8 @@ import { messageTagsRouter } from "./messageTags";
 import { designBriefRouter } from "./designBrief";
 import { instagramRouter } from "./instagram";
 import { supplierOrdersRouter } from "./supplierOrders";
+import { sessionPlansRouter } from "./sessionPlans";
+import { aftercareRouter } from "./aftercare";
 
 export const appRouter = router({
   appointments: appointmentsRouter,
@@ -78,6 +80,8 @@ export const appRouter = router({
   designBrief: designBriefRouter,
   instagram: instagramRouter,
   supplierOrders: supplierOrdersRouter,
+  sessionPlans: sessionPlansRouter,
+  aftercare: aftercareRouter,
 });
 
 export type AppRouter = typeof appRouter;

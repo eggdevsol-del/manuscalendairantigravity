@@ -80,6 +80,13 @@ export const appointments = mysqlTable(
       "fully_paid",
       "refunded",
     ]).default("pending_deposit"),
+    // ── Session Plan Linking ──
+    projectName: varchar({ length: 255 }),        // LLM-generated, editable by artist
+    sessionIndex: int(),                           // Which session in a multi-session plan (1, 2, 3…)
+    sessionTotal: int(),                           // Total sessions in the plan
+    sessionPlanId: int(),                          // FK to sessionPlans — added as column, relation handled separately
+    completedAt: timestamp({ mode: "string" }),    // When sitting was marked complete
+    aftercareTemplateId: int(),                    // Artist's aftercare template at time of completion
     createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
     updatedAt: timestamp({ mode: "string" }).default(sql`(now())`),
   },
@@ -336,6 +343,10 @@ export const messages = mysqlTable(
       "image",
       "video",
       "studio_invite",
+      "session_plan",
+      "session_plan_accepted",
+      "touchup_request",
+      "balance_paid",
     ])
       .default("text")
       .notNull(),
@@ -2592,3 +2603,115 @@ export type InsertSupplierOrder = InferInsertModel<typeof supplierOrders>;
 export type SelectSupplierOrder = InferSelectModel<typeof supplierOrders>;
 export type InsertSupplierOrderItem = InferInsertModel<typeof supplierOrderItems>;
 export type SelectSupplierOrderItem = InferSelectModel<typeof supplierOrderItems>;
+
+// ── Session Plans ──────────────────────────────────────────
+// A session plan groups one or more proposed sessions sent by an artist to a client.
+// Status lifecycle: pending → accepted (on deposit payment) | declined | withdrawn | refunded
+
+export const sessionPlans = mysqlTable('sessionPlans', {
+  id: int().autoincrement().primaryKey(),
+  artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  conversationId: int().references(() => conversations.id, { onDelete: 'cascade' }),
+  status: mysqlEnum(['pending', 'accepted', 'declined', 'withdrawn', 'refunded']).default('pending').notNull(),
+  totalEstimateCents: int().notNull(),
+  depositTotalCents: int().notNull(),
+  platformFeeCents: int().default(0),
+  stripeSessionId: varchar({ length: 255 }),
+  messageId: int().references(() => messages.id, { onDelete: 'set null' }),
+  acceptedAt: timestamp({ mode: 'string' }),
+  createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+});
+
+export const sessionPlanItems = mysqlTable('sessionPlanItems', {
+  id: int().autoincrement().primaryKey(),
+  sessionPlanId: int().notNull().references(() => sessionPlans.id, { onDelete: 'cascade' }),
+  sessionIndex: int().notNull(),
+  startsAt: datetime({ mode: 'string' }).notNull(),
+  durationMinutes: int().notNull(),
+  estimateCents: int().notNull(),
+  depositCents: int().notNull(),
+  appointmentId: int().references(() => appointments.id, { onDelete: 'set null' }),
+  createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+});
+
+export const sessionPlansRelations = relations(sessionPlans, ({ one, many }) => ({
+  artist: one(users, {
+    fields: [sessionPlans.artistId],
+    references: [users.id],
+    relationName: 'sessionPlanArtist',
+  }),
+  client: one(users, {
+    fields: [sessionPlans.clientId],
+    references: [users.id],
+    relationName: 'sessionPlanClient',
+  }),
+  conversation: one(conversations, {
+    fields: [sessionPlans.conversationId],
+    references: [conversations.id],
+  }),
+  message: one(messages, {
+    fields: [sessionPlans.messageId],
+    references: [messages.id],
+  }),
+  items: many(sessionPlanItems),
+}));
+
+export const sessionPlanItemsRelations = relations(sessionPlanItems, ({ one }) => ({
+  plan: one(sessionPlans, {
+    fields: [sessionPlanItems.sessionPlanId],
+    references: [sessionPlans.id],
+  }),
+  appointment: one(appointments, {
+    fields: [sessionPlanItems.appointmentId],
+    references: [appointments.id],
+  }),
+}));
+
+export type InsertSessionPlan = InferInsertModel<typeof sessionPlans>;
+export type SelectSessionPlan = InferSelectModel<typeof sessionPlans>;
+export type InsertSessionPlanItem = InferInsertModel<typeof sessionPlanItems>;
+export type SelectSessionPlanItem = InferSelectModel<typeof sessionPlanItems>;
+
+// ── Aftercare Templates ────────────────────────────────────
+// Artist-defined aftercare instructions. A default 42-day / 5-phase template
+// is seeded on signup. Phases are linked to completed appointments.
+
+export const aftercareTemplates = mysqlTable('aftercareTemplates', {
+  id: int().autoincrement().primaryKey(),
+  artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  name: varchar({ length: 255 }).notNull().default('Default'),
+  totalDays: int().notNull().default(42),
+  isDefault: tinyint().default(1),
+  createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+});
+
+export const aftercarePhases = mysqlTable('aftercarePhases', {
+  id: int().autoincrement().primaryKey(),
+  templateId: int().notNull().references(() => aftercareTemplates.id, { onDelete: 'cascade' }),
+  fromDay: int().notNull(),
+  toDay: int().notNull(),
+  label: varchar({ length: 100 }).notNull(),
+  instruction: text().notNull(),
+  sortOrder: int().default(0),
+});
+
+export const aftercareTemplatesRelations = relations(aftercareTemplates, ({ one, many }) => ({
+  artist: one(users, {
+    fields: [aftercareTemplates.artistId],
+    references: [users.id],
+  }),
+  phases: many(aftercarePhases),
+}));
+
+export const aftercarePhasesRelations = relations(aftercarePhases, ({ one }) => ({
+  template: one(aftercareTemplates, {
+    fields: [aftercarePhases.templateId],
+    references: [aftercareTemplates.id],
+  }),
+}));
+
+export type InsertAftercareTemplate = InferInsertModel<typeof aftercareTemplates>;
+export type SelectAftercareTemplate = InferSelectModel<typeof aftercareTemplates>;
+export type InsertAftercarePhase = InferInsertModel<typeof aftercarePhases>;
+export type SelectAftercarePhase = InferSelectModel<typeof aftercarePhases>;

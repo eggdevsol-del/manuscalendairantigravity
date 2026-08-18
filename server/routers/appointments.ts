@@ -6,7 +6,7 @@ import * as db from "../db";
 import { localToUTC, getBusinessTimezone } from "../../shared/utils/timezone";
 import { notificationOutbox } from "../../drizzle/schema";
 import { getBankDetailLabels } from "../../shared/utils/bankDetails";
-import { eq, sql, and, gte, lte } from "drizzle-orm";
+import { eq, sql, and, gte, lte, inArray } from "drizzle-orm";
 import * as schema from "../../drizzle/schema";
 import { canAccessFeature, getFeatureLimit } from "../_core/tierPermissions";
 
@@ -1033,6 +1033,186 @@ export const appointmentsRouter = router({
         );
 
       return { success: true };
+    }),
+
+  /**
+   * Get client bookings for the Bookings page.
+   * Returns upcoming and past appointments with artist info, payment status, and aftercare data.
+   */
+  getClientBookings: protectedProcedure
+    .input(z.object({
+      tab: z.enum(["upcoming", "past"]),
+    }))
+    .query(async ({ ctx, input }) => {
+      const dbRef = await db.getDb();
+      if (!dbRef) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const clientId = ctx.user.id;
+      const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+
+      if (input.tab === "upcoming") {
+        // Upcoming: confirmed/pending appointments where startTime >= now
+        const upcoming = await dbRef.query.appointments.findMany({
+          where: and(
+            eq(schema.appointments.clientId, clientId),
+            gte(schema.appointments.startTime, now),
+          ),
+          orderBy: (appointments, { asc }) => [asc(appointments.startTime)],
+        });
+
+        // Enrich with artist info
+        const artistIds = [...new Set(upcoming.map(a => a.artistId))];
+        const artists = artistIds.length > 0
+          ? await dbRef.query.users.findMany({
+              where: inArray(schema.users.id, artistIds),
+            })
+          : [];
+        const artistSettings = artistIds.length > 0
+          ? await dbRef.query.artistSettings.findMany({
+              where: inArray(schema.artistSettings.userId, artistIds),
+            })
+          : [];
+
+        // Get pending consult requests
+        const pendingConsults = await dbRef.query.consultations.findMany({
+          where: and(
+            eq(schema.consultations.clientId, clientId),
+            eq(schema.consultations.status, "pending"),
+          ),
+        });
+
+        // Get payment requests for upcoming appointments
+        const appointmentIds = upcoming.map(a => a.id);
+        const paymentRequests = appointmentIds.length > 0
+          ? await dbRef.query.paymentRequests.findMany({
+              where: and(
+                inArray(schema.paymentRequests.appointmentId, appointmentIds),
+                eq(schema.paymentRequests.status, "pending"),
+              ),
+            })
+          : [];
+
+        const artistMap = new Map(artists.map(a => [a.id, a]));
+        const settingsMap = new Map(artistSettings.map(s => [s.userId, s]));
+        const paymentRequestMap = new Map(paymentRequests.map(pr => [pr.appointmentId, pr]));
+
+        // Get consult artist info
+        const consultArtistIds = [...new Set(pendingConsults.map(c => c.artistId))];
+        const consultArtists = consultArtistIds.length > 0
+          ? await dbRef.query.users.findMany({
+              where: inArray(schema.users.id, consultArtistIds),
+            })
+          : [];
+        const consultArtistMap = new Map(consultArtists.map(a => [a.id, a]));
+
+        return {
+          appointments: upcoming.map(a => {
+            const artist = artistMap.get(a.artistId);
+            const settings = settingsMap.get(a.artistId);
+            const payReq = paymentRequestMap.get(a.id);
+            const durationMinutes = a.startTime && a.endTime
+              ? Math.round((new Date(a.endTime).getTime() - new Date(a.startTime).getTime()) / 60000)
+              : null;
+
+            return {
+              id: a.id,
+              startsAt: a.startTime,
+              endsAt: a.endTime,
+              durationMinutes,
+              status: a.status,
+              title: a.title,
+              projectName: a.projectName,
+              sessionIndex: a.sessionIndex,
+              sessionTotal: a.sessionTotal,
+              serviceName: a.serviceName,
+              studioName: settings?.businessName || null,
+              artist: {
+                id: a.artistId,
+                name: settings?.displayName || artist?.name || "Artist",
+              },
+              depositPaidCents: a.depositPaid ? (a.depositAmount || 0) * 100 : 0,
+              estimateCents: a.totalExpectedAmountCents || (a.price ? a.price * 100 : 0),
+              balanceDueCents: a.remainingBalanceCents || 0,
+              paymentStatus: a.paymentStatus,
+              paymentRequest: payReq ? {
+                id: payReq.id,
+                amountCents: payReq.amountCents,
+                status: payReq.status,
+              } : null,
+              conversationId: a.conversationId,
+            };
+          }),
+          pendingConsults: pendingConsults.map(c => {
+            const artist = consultArtistMap.get(c.artistId);
+            return {
+              id: c.id,
+              artistId: c.artistId,
+              artistName: artist?.name || "Artist",
+              subject: c.subject,
+              createdAt: c.createdAt,
+              conversationId: c.conversationId,
+            };
+          }),
+        };
+      } else {
+        // Past: completed appointments
+        const past = await dbRef.query.appointments.findMany({
+          where: and(
+            eq(schema.appointments.clientId, clientId),
+            eq(schema.appointments.status, "completed"),
+          ),
+          orderBy: (appointments, { desc: d }) => [d(appointments.startTime)],
+        });
+
+        // Enrich with artist info
+        const artistIds = [...new Set(past.map(a => a.artistId))];
+        const artists = artistIds.length > 0
+          ? await dbRef.query.users.findMany({
+              where: inArray(schema.users.id, artistIds),
+            })
+          : [];
+        const artistSettings = artistIds.length > 0
+          ? await dbRef.query.artistSettings.findMany({
+              where: inArray(schema.artistSettings.userId, artistIds),
+            })
+          : [];
+
+        const artistMap = new Map(artists.map(a => [a.id, a]));
+        const settingsMap = new Map(artistSettings.map(s => [s.userId, s]));
+
+        return {
+          appointments: past.map(a => {
+            const artist = artistMap.get(a.artistId);
+            const settings = settingsMap.get(a.artistId);
+            const durationMinutes = a.startTime && a.endTime
+              ? Math.round((new Date(a.endTime).getTime() - new Date(a.startTime).getTime()) / 60000)
+              : null;
+
+            return {
+              id: a.id,
+              startsAt: a.startTime,
+              endsAt: a.endTime,
+              durationMinutes,
+              status: a.status,
+              title: a.title,
+              projectName: a.projectName,
+              sessionIndex: a.sessionIndex,
+              sessionTotal: a.sessionTotal,
+              serviceName: a.serviceName,
+              studioName: settings?.businessName || null,
+              artist: {
+                id: a.artistId,
+                name: settings?.displayName || artist?.name || "Artist",
+              },
+              amountPaidCents: a.totalPaidAmountCents || (a.amountPaid ? a.amountPaid * 100 : 0),
+              completedAt: a.completedAt || a.actualEndTime || a.endTime,
+              aftercareTemplateId: a.aftercareTemplateId,
+              paymentStatus: a.paymentStatus,
+              conversationId: a.conversationId,
+            };
+          }),
+        };
+      }
     }),
 });
 

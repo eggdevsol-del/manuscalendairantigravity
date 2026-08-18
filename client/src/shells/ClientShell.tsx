@@ -7,7 +7,7 @@ import { AnimatedSwitch } from "@/components/AnimatedSwitch";
 import ClientHome from "@/features/client-home/ClientHome";
 import Conversations from "@/pages/Conversations";
 import Chat from "@/pages/Chat";
-import Calendar from "@/pages/Calendar";
+import BookingsPage from "@/features/bookings/BookingsPage";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
 import ClientProfilePage from "@/pages/profile/ClientProfilePage";
@@ -21,7 +21,7 @@ export default function ClientShell() {
           <Route path="/profile" component={ClientProfilePage} />
           <Route path="/conversations" component={Conversations} />
           <Route path="/chat/:id" component={Chat} />
-          <Route path="/calendar" component={Calendar} />
+          <Route path="/bookings" component={BookingsPage} />
           <Route path="/settings" component={Settings} />
           <Route component={NotFound} />
         </Switch>

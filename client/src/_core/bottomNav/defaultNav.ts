@@ -34,7 +34,7 @@ export const CLIENT_NAV_ITEMS: BottomNavButton[] = [
     label: "Messages",
     icon: MessageCircle,
   },
-  { id: "bookings", path: "/calendar", label: "Bookings", icon: Calendar },
+  { id: "bookings", path: "/bookings", label: "Bookings", icon: Calendar },
   { id: "profile", path: "/profile", label: "Profile", icon: User },
 ];
 
