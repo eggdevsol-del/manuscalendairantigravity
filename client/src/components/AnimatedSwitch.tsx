@@ -15,7 +15,7 @@ import React, { useRef } from "react";
 /** Route depths — bottom-nav tabs are 0, sub-pages are 1+ */
 const ROOT_ROUTES = new Set([
   "/dashboard", "/discover", "/profile", "/conversations",
-  "/calendar", "/settings", "/merchant",
+  "/calendar", "/settings", "/merchant", "/bookings",
 ]);
 
 function getDepth(path: string): number {
@@ -52,7 +52,7 @@ export function AnimatedSwitch({ children }: AnimatedSwitchProps) {
   const direction = directionRef.current;
 
   return (
-    <div style={{ position: "relative", width: "100%", minHeight: "100%" }}>
+    <div style={{ position: "relative", width: "100%", minHeight: "100dvh" }}>
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
           key={location}
