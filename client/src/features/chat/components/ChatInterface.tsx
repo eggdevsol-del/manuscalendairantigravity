@@ -518,8 +518,7 @@ export function ChatInterface({
               <button
                 onClick={() => {
                   setShowBookingWizard(true);
-                  // Auto-open the ActionPanel so the wizard appears immediately
-                  setTimeout(() => setFABOpen(true), 50);
+                  setFABOpen(true);
                 }}
                 className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold tracking-wide hover:bg-primary/90 active:scale-95 transition-all"
               >

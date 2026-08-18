@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Switch } from "wouter";
+import { Redirect, Route, Switch } from "wouter";
 import BottomNav from "@/components/BottomNav";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -27,6 +27,7 @@ export default function ArtistShell() {
     <div className="min-h-screen pb-16">
       <AnimatedSwitch>
         <Switch>
+          <Route path="/"><Redirect to="/dashboard" /></Route>
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/conversations" component={Conversations} />
           <Route path="/chat/:id" component={Chat} />

@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Switch, useLocation } from "wouter";
+import { Redirect, Route, Switch, useLocation } from "wouter";
 import BottomNav from "@/components/BottomNav";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -16,6 +16,7 @@ export default function MerchantShell() {
     <div className="min-h-screen pb-16">
       <AnimatedSwitch>
         <Switch>
+          <Route path="/"><Redirect to="/dashboard" /></Route>
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/merchant/orders" component={MerchantOrders} />
           <Route path="/merchant/products" component={MerchantProducts} />
