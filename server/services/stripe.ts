@@ -1080,20 +1080,9 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 remainingBalanceCents: Math.max(remaining, 0),
                 paymentStatus: isFullyPaid ? "fully_paid" as any : "deposit_paid" as any,
                 clientPaid: isFullyPaid ? 1 : 0,
-                ...(isFullyPaid ? {
-                  actualEndTime: now,
-                  status: "completed" as any,
-                  paymentMethod: "electronic transfer" as any,
-                } : {}),
+                paymentMethod: "stripe" as any,
                 updatedAt: now,
               }).where(eq(appointments.id, bookingId));
-
-              if (isFullyPaid) {
-                const { createProcedureLog } = await import("./appointmentService");
-                try { await createProcedureLog(bookingId); } catch (e) {
-                  console.error(`[Stripe PI] Procedure log failed`, e);
-                }
-              }
 
               const balanceArtistFeeCents = piMeta.artistFeeCents ? parseInt(piMeta.artistFeeCents, 10) : 0;
               await db.insert(paymentLedger).values({
