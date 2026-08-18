@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Switch } from "wouter";
+import { Redirect, Route, Switch } from "wouter";
 import BottomNav from "@/components/BottomNav";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -17,6 +17,7 @@ export default function ClientShell() {
     <div className="min-h-screen pb-16">
       <AnimatedSwitch>
         <Switch>
+          <Route path="/"><Redirect to="/discover" /></Route>
           <Route path="/discover" component={ClientHome} />
           <Route path="/profile" component={ClientProfilePage} />
           <Route path="/conversations" component={Conversations} />
