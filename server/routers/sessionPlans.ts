@@ -60,10 +60,12 @@ export const sessionPlansRouter = router({
 
       // Create plan items
       for (const session of input.sessions) {
+        // Convert ISO datetime → MySQL format (YYYY-MM-DD HH:MM:SS)
+        const startsAtMySQL = new Date(session.startsAt).toISOString().slice(0, 19).replace('T', ' ');
         await dbRef.insert(schema.sessionPlanItems).values({
           sessionPlanId: planId,
           sessionIndex: session.sessionIndex,
-          startsAt: session.startsAt,
+          startsAt: startsAtMySQL,
           durationMinutes: session.durationMinutes,
           estimateCents: session.estimateCents,
           depositCents: session.depositCents,
