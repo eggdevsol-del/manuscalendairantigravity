@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { EmbeddedStripeCheckout } from "@/features/stripe/EmbeddedStripeCheckout";
 import { X, Check, Lock, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { UserAvatar } from "@/components/ui/ssot/UserAvatar";
 
 type Step = "review" | "payment" | "success";
 
@@ -200,24 +201,11 @@ function ReviewStep({
       >
         {/* Artist header */}
         <div className="flex items-center gap-3 mb-3">
-          {/* Avatar initials */}
-          <div
-            className="flex items-center justify-center text-[12px] font-bold text-white shrink-0"
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              background: "#232326",
-              border: "1px solid rgba(255,255,255,0.12)",
-            }}
-          >
-            {artistName
-              .split(" ")
-              .map((n: string) => n[0])
-              .join("")
-              .slice(0, 2)
-              .toUpperCase()}
-          </div>
+          <UserAvatar
+            name={artistName}
+            avatar={(plan.artist as any)?.avatar}
+            size="sm"
+          />
           <div>
             <div className="text-[14px] font-semibold text-white">
               Deposit · {items.length} session{items.length !== 1 ? "s" : ""}
