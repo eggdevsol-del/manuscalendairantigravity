@@ -41,8 +41,6 @@ import {
 } from "@/components/ui/empty";
 import {
   useRegisterBottomNavRow,
-  useBottomNav,
-  useRegisterFABActions,
 } from "@/contexts/BottomNavContext";
 import {
   QuickActionsRow,
@@ -74,7 +72,7 @@ export function ChatInterface({
       utils.messages.list.invalidate({ conversationId });
     },
   });
-  const { isContextualVisible, setFABOpen } = useBottomNav();
+
 
   const {
     user,
@@ -253,132 +251,15 @@ export function ChatInterface({
     { enabled: !!selectedAppointment?.id }
   );
 
-  // Register FAB Actions
-  const fabContent = useMemo(() => {
-    // If loading or no conversation, return empty items to keep hooks stable
-    if (authLoading || convLoading || messagesLoading || !conversation) {
-      return [];
-    }
+  // Booking wizard / proposal sheet state
+  const effectiveProposal = selectedProposal || proposalData;
+  const isBookingSheetOpen = showBookingWizard || !!effectiveProposal || !!selectedAppointment;
 
-    // Check if we have either an explicit proposal or an appointment with an implicit proposal
-    const effectiveProposal = selectedProposal || proposalData;
-
-    if (showBookingWizard || !!effectiveProposal || !!selectedAppointment) {
-      return (
-        <BookingWizardContent
-          conversationId={conversationId}
-          artistServices={availableServices || []}
-          artistSettings={artistSettings}
-          isArtist={isArtist}
-          onBookingSuccess={() => {
-            toast.success("Booking proposal sent!");
-            setShowBookingWizard(false);
-          }}
-          onClose={() => {
-            setShowBookingWizard(false);
-            setSelectedProposal(null);
-            setSelectedAppointment(null);
-            // By not calling setFABOpen(false), we revert to the items list
-          }}
-          selectedProposal={effectiveProposal}
-          selectedAppointmentRaw={selectedAppointment}
-          onAcceptProposal={promo =>
-            handleClientAcceptProposal(effectiveProposal?.message, promo)
-          }
-          onRejectProposal={() => {
-            setSelectedProposal(null);
-          }}
-          onUpdateProposalState={(newMeta) => {
-            if (effectiveProposal) {
-              // Note: this only updates state if we had an explicit selectedProposal,
-              // but that's fine for accepting/rejecting from the chat interface directly.
-              setSelectedProposal({ message: effectiveProposal.message, metadata: newMeta });
-            }
-          }}
-          onCancelProposal={() => {
-            if (effectiveProposal)
-              handleCancelProposal(
-                effectiveProposal.message,
-                effectiveProposal.metadata
-              );
-            setSelectedProposal(null);
-          }}
-          isPendingProposalAction={bookProjectMutation.isPending}
-          artistId={conversation?.artistId}
-          isLoadingProposal={isLoadingProposalData}
-        />
-      );
-    }
-
-    if (selectedInvite) {
-      return [
-        {
-          id: "accept",
-          label: "Accept Invitation",
-          icon: Check,
-          onClick: async () => {
-            try {
-              await respondToInviteMutation.mutateAsync({
-                inviteId: selectedInvite.metadata.inviteId,
-                response: "accept",
-              });
-              toast.success(
-                `You are now a resident artist at ${selectedInvite.metadata.studioName}!`
-              );
-              setSelectedInvite(null);
-            } catch (e) {
-              toast.error("Failed to accept invitation.");
-            }
-          },
-          highlight: true,
-          closeOnClick: true,
-        },
-        {
-          id: "decline",
-          label: "Decline",
-          icon: XIcon,
-          onClick: async () => {
-            try {
-              await respondToInviteMutation.mutateAsync({
-                inviteId: selectedInvite.metadata.inviteId,
-                response: "decline",
-              });
-              toast.success("Studio invitation declined.");
-              setSelectedInvite(null);
-            } catch (e) {
-              toast.error("Failed to decline invitation.");
-            }
-          },
-          closeOnClick: true,
-        },
-      ];
-    }
-
-    // "Book Project" and "View Client Info" moved to header — FAB is empty by default
-    return [];
-  }, [
-    authLoading,
-    convLoading,
-    messagesLoading,
-    conversation?.id,
-    showBookingWizard,
-    selectedProposal,
-    conversationId,
-    availableServices,
-    artistSettings,
-    isArtist,
-    selectedInvite?.message?.id,
-    showClientInfo,
-    bookProjectMutation.isPending,
-    handleClientAcceptProposal,
-    handleCancelProposal,
-    setSelectedProposal,
-    selectedAppointment,
-    proposalData,
-    isLoadingProposalData,
-  ]);
-
-  useRegisterFABActions("chat-" + conversationId, fabContent);
+  const closeBookingSheet = useCallback(() => {
+    setShowBookingWizard(false);
+    setSelectedProposal(null);
+    setSelectedAppointment(null);
+  }, [setSelectedProposal]);
 
   // Register Bottom Nav Contextual Row
   const quickActionsRow = useMemo(() => {
@@ -411,30 +292,6 @@ export function ChatInterface({
   }, [user?.id, conversation?.id, quickActions, handleQuickAction]);
 
   useRegisterBottomNavRow("chat-actions", quickActionsRow);
-
-  // Sync proposal open state
-  useEffect(() => {
-    if (selectedProposal || selectedInvite) {
-      setFABOpen(true);
-    }
-  }, [selectedProposal, selectedInvite, setFABOpen]);
-
-  // Reset selection state when FAB is closed manually
-  useEffect(() => {
-    if (!isContextualVisible && !setFABOpen) return; // safety
-    // We only care about when the FAB is CLOSED
-  }, [isContextualVisible]);
-
-  // Better: listen for isFABOpen specifically if we want to reset state on close
-  const { isFABOpen } = useBottomNav();
-  useEffect(() => {
-    if (!isFABOpen) {
-      setSelectedProposal(null);
-      setShowBookingWizard(false);
-      setSelectedInvite(null);
-      setSelectedAppointment(null);
-    }
-  }, [isFABOpen, setSelectedProposal]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -516,10 +373,7 @@ export function ChatInterface({
             {/* BOOK button (artist-only) */}
             {isArtist && (
               <button
-                onClick={() => {
-                  setShowBookingWizard(true);
-                  setFABOpen(true);
-                }}
+                onClick={() => setShowBookingWizard(true)}
                 className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold tracking-wide hover:bg-primary/90 active:scale-95 transition-all"
               >
                 BOOK
@@ -698,7 +552,7 @@ export function ChatInterface({
                   onPress={() => {
                     handleViewProposal(msg, meta);
                     if (appt) setSelectedAppointment(appt);
-                    setFABOpen(true);
+
                   }}
                   onCancel={() => handleCancelProposal(msg, meta)}
                   onDelete={() => deleteMessageMutation.mutate({ messageId: msg.id })}
@@ -748,7 +602,6 @@ export function ChatInterface({
                       appointmentIds: [appt.id],
                     }
                   );
-                  setFABOpen(true);
                 }}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-secondary/50 hover:bg-secondary/50 transition-colors text-left group"
               >
@@ -896,7 +749,7 @@ export function ChatInterface({
                             const appt = conversationAppointments?.find((a: any) => a.id === metadata.appointmentId);
                             if (appt) {
                               setSelectedAppointment(appt);
-                              setFABOpen(true);
+          
                             }
                           }}
                         />
@@ -910,7 +763,7 @@ export function ChatInterface({
                             const appt = conversationAppointments?.find((a: any) => a.id === metadata.bookingId);
                             if (appt) {
                                setSelectedAppointment(appt);
-                               setFABOpen(true);
+           
                             } else {
                                // Fallback if not found in cache (though it should be for clients in this conversation)
                                setLocation(`/balance/${metadata.bookingId}`);
@@ -927,7 +780,7 @@ export function ChatInterface({
                           onPress={() => {
                             if (metadata?.status === "pending" && !isOwn) {
                               setSelectedInvite({ message, metadata });
-                              setFABOpen(true);
+          
                             }
                           }}
                         />
@@ -948,7 +801,7 @@ export function ChatInterface({
                                 const appt = conversationAppointments?.find((a: any) => a.id === apptId);
                                 if (appt) setSelectedAppointment(appt);
                               }
-                              setFABOpen(true);
+          
                             }}
                             onCancel={() =>
                               handleCancelProposal(message, metadata)
@@ -1205,6 +1058,49 @@ export function ChatInterface({
             Confirm Dates
           </Button>
         </div>
+      </BottomSheet>
+
+      {/* Booking Wizard / Proposal Sheet */}
+      <BottomSheet
+        isOpen={isBookingSheetOpen}
+        onClose={closeBookingSheet}
+        title={showBookingWizard ? "New Booking" : effectiveProposal ? "Proposal" : "Appointment"}
+      >
+        <BookingWizardContent
+          conversationId={conversationId}
+          artistServices={availableServices || []}
+          artistSettings={artistSettings}
+          isArtist={isArtist}
+          onBookingSuccess={() => {
+            toast.success("Booking proposal sent!");
+            closeBookingSheet();
+          }}
+          onClose={closeBookingSheet}
+          selectedProposal={effectiveProposal}
+          selectedAppointmentRaw={selectedAppointment}
+          onAcceptProposal={promo =>
+            handleClientAcceptProposal(effectiveProposal?.message, promo)
+          }
+          onRejectProposal={() => {
+            setSelectedProposal(null);
+          }}
+          onUpdateProposalState={(newMeta) => {
+            if (effectiveProposal) {
+              setSelectedProposal({ message: effectiveProposal.message, metadata: newMeta });
+            }
+          }}
+          onCancelProposal={() => {
+            if (effectiveProposal)
+              handleCancelProposal(
+                effectiveProposal.message,
+                effectiveProposal.metadata
+              );
+            setSelectedProposal(null);
+          }}
+          isPendingProposalAction={bookProjectMutation.isPending}
+          artistId={conversation?.artistId}
+          isLoadingProposal={isLoadingProposalData}
+        />
       </BottomSheet>
 
       <ClientProfileSheet
