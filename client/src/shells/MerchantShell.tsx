@@ -1,7 +1,7 @@
 import React from "react";
 import { Route, Switch, useLocation } from "wouter";
 import BottomNav from "@/components/BottomNav";
-import { ActionPanel } from "@/components/ActionPanel";
+
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AnimatedSwitch } from "@/components/AnimatedSwitch";
 import Dashboard from "@/pages/Dashboard";
@@ -30,7 +30,6 @@ export default function MerchantShell() {
 
       <ErrorBoundary boundary="fab">
         <BottomNav />
-        <ActionPanel />
       </ErrorBoundary>
     </div>
   );

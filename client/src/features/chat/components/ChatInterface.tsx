@@ -1079,7 +1079,7 @@ export function ChatInterface({
       {/* Floating Bottom Input & Actions */}
       <div
         className={cn(
-          "fixed left-4 right-4 z-[60] transition-all duration-300 ease-spring",
+          "fixed left-4 right-4 z-40 transition-all duration-300 ease-spring",
           "md:absolute md:left-4 md:right-4"
         )}
         style={{

@@ -1,7 +1,7 @@
 import React from "react";
 import { Route, Switch } from "wouter";
 import BottomNav from "@/components/BottomNav";
-import { ActionPanel } from "@/components/ActionPanel";
+
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AnimatedSwitch } from "@/components/AnimatedSwitch";
 import ClientHome from "@/features/client-home/ClientHome";
@@ -29,7 +29,6 @@ export default function ClientShell() {
 
       <ErrorBoundary boundary="fab">
         <BottomNav />
-        <ActionPanel />
       </ErrorBoundary>
     </div>
   );
