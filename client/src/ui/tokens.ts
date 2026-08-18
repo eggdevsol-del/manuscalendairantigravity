@@ -99,6 +99,23 @@ export const tokens = {
     content: "flex-1 relative w-full overflow-hidden",
   },
 
+  // Bottom sheet SSOT — all bottom sheets use these values
+  bottomSheet: {
+    /** CSS value for sheet `bottom` — docks to top of bottom nav */
+    bottom: "var(--bottom-nav-height)",
+    /** z-index for scrim + sheet (above chat input/FAB, below nav) */
+    zIndex: 60,
+    /** Scrim styles */
+    scrim: "fixed inset-0",
+    scrimBg: "rgba(0,0,0,.62)",
+    /** Sheet panel styles */
+    panel: "fixed left-0 right-0 flex flex-col",
+    panelBg: "#1B1B1B",
+    panelRadius: 20,
+    panelBorder: "1px solid rgba(255,255,255,0.12)",
+    maxHeight: "85vh",
+  },
+
   // Secondary sheet (Modals, Booking Wizard)
   sheetSecondary: {
     overlay: "fixed inset-0 z-[100] bg-background/80",

@@ -71,23 +71,26 @@ export function SessionPlanCheckoutSheet({
     <>
       {/* Scrim */}
       <div
-        className="fixed inset-0 z-50"
+        className="fixed inset-0"
         style={{
           background: "rgba(0,0,0,.62)",
           animation: "sheetScrimFade 180ms ease-out",
+          zIndex: "var(--z-bottom-sheet)" as any,
         }}
         onClick={step !== "payment" ? onClose : undefined}
       />
 
-      {/* Sheet panel */}
+      {/* Sheet panel — docked to top of bottom nav */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex flex-col"
+        className="fixed left-0 right-0 flex flex-col"
         style={{
+          bottom: "var(--bottom-nav-height)",
+          zIndex: "var(--z-bottom-sheet)" as any,
           background: "#1B1B1B",
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
           borderTop: "1px solid rgba(255,255,255,0.12)",
-          maxHeight: "92%",
+          maxHeight: "85vh",
           animation: "sheetSlideUp 280ms cubic-bezier(.2,.8,.25,1)",
         }}
       >
