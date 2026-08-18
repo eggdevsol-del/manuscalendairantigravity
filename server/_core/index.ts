@@ -214,59 +214,6 @@ async function startServer() {
     res.json({ clientId: process.env.GOOGLE_CLIENT_ID || "" });
   });
 
-  // ── TEMPORARY: Delete proposal cards for bob@gmail.com ────────
-  app.post("/api/admin/cleanup-bob-proposals", async (_req, res) => {
-    try {
-      const { getDb } = await import("../db");
-      const db = await getDb();
-      if (!db) return res.status(500).json({ error: "DB unavailable" });
-
-      const schema = await import("../../drizzle/schema");
-      const { eq, inArray, like, or } = await import("drizzle-orm");
-
-      const bob = await db.query.users.findFirst({
-        where: eq(schema.users.email, "bob@gmail.com"),
-      });
-      if (!bob) return res.status(404).json({ error: "bob@gmail.com not found" });
-
-      const convos = await db.query.conversations.findMany({
-        where: eq(schema.conversations.clientId, bob.id),
-      });
-      const convoIds = convos.map(c => c.id);
-      const log: string[] = [`Found bob: id=${bob.id}`, `Conversations: ${convoIds.length}`];
-
-      if (convoIds.length > 0) {
-        // Delete messages with proposal metadata (stored as JSON in metadata column)
-        const { and: andOp } = await import("drizzle-orm");
-        await db.delete(schema.messages)
-          .where(
-            andOp(
-              inArray(schema.messages.conversationId, convoIds),
-              or(
-                like(schema.messages.metadata, '%"project_proposal"%'),
-                like(schema.messages.metadata, '%"project_client_confirmation"%'),
-                like(schema.messages.metadata, '%"payment_request"%'),
-                like(schema.messages.metadata, '%"reschedule_deposit"%'),
-                like(schema.messages.metadata, '%"session_plan"%'),
-                // Also catch any remaining typed messages
-                inArray(schema.messages.messageType, [
-                  "session_plan" as any,
-                  "session_plan_accepted" as any,
-                  "appointment_request" as any,
-                  "appointment_confirmed" as any,
-                ])
-              )
-            )
-          );
-        log.push("Deleted proposal/card messages by metadata");
-      }
-
-      res.json({ success: true, log });
-    } catch (e: any) {
-      res.status(500).json({ error: e.message, stack: e.stack });
-    }
-  });
-
   // File serving endpoint — redirects to R2 CDN (migrated from MySQL base64)
   app.get("/api/files/*", (req, res) => {
     const key = (req.params as any)[0];

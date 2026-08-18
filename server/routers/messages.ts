@@ -1,8 +1,10 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { eventBus } from "../_core/eventBus";
-import { protectedProcedure, router } from "../_core/trpc";
+import { artistProcedure, protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { getDb } from "../services/core";
+import * as schema from "../../drizzle/schema";
 import { notificationOutbox, appointments } from "../../drizzle/schema";
 import { and, eq, gt, ne } from "drizzle-orm";
 
@@ -543,6 +545,34 @@ export const messagesRouter = router({
       } catch (err) {
         console.error("[Outbox] Failed to insert additional.requested event:", err);
       }
+
+      return { success: true };
+    }),
+
+  /**
+   * Hard-delete a message (artist only).
+   * Used to remove stale proposal/card messages from conversations.
+   */
+  deleteMessage: artistProcedure
+    .input(z.object({ messageId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const dbRef = await getDb();
+      if (!dbRef) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const message = await dbRef.query.messages.findFirst({
+        where: eq(schema.messages.id, input.messageId),
+      });
+      if (!message) throw new TRPCError({ code: "NOT_FOUND", message: "Message not found" });
+
+      // Verify the artist is part of this conversation
+      const convo = await dbRef.query.conversations.findFirst({
+        where: eq(schema.conversations.id, message.conversationId),
+      });
+      if (!convo || convo.artistId !== ctx.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      await dbRef.delete(schema.messages).where(eq(schema.messages.id, input.messageId));
 
       return { success: true };
     }),

@@ -69,6 +69,11 @@ export function ChatInterface({
 }: ChatInterfaceProps) {
   const [, setLocation] = useLocation();
   const respondToInviteMutation = trpc.studios.respondToInvite.useMutation();
+  const deleteMessageMutation = trpc.messages.deleteMessage.useMutation({
+    onSuccess: () => {
+      utils.messages.list.invalidate({ conversationId });
+    },
+  });
   const { isContextualVisible, setFABOpen } = useBottomNav();
 
   const {
@@ -697,6 +702,8 @@ export function ChatInterface({
                     setFABOpen(true);
                   }}
                   onCancel={() => handleCancelProposal(msg, meta)}
+                  onDelete={() => deleteMessageMutation.mutate({ messageId: msg.id })}
+                  isDeleting={deleteMessageMutation.isPending}
                 />
               );
             })}
@@ -947,6 +954,10 @@ export function ChatInterface({
                             onCancel={() =>
                               handleCancelProposal(message, metadata)
                             }
+                            onDelete={() =>
+                              deleteMessageMutation.mutate({ messageId: message.id })
+                            }
+                            isDeleting={deleteMessageMutation.isPending}
                           />
                         </div>
                       ) : gridData ? (
