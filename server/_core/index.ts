@@ -214,6 +214,85 @@ async function startServer() {
     res.json({ clientId: process.env.GOOGLE_CLIENT_ID || "" });
   });
 
+  // ── TEMPORARY: Cleanup bob@gmail.com data ───────────────────────
+  // DELETE after use. Removes appointments + proposal card messages only.
+  app.post("/api/admin/cleanup-bob", async (_req, res) => {
+    try {
+      const { getDb } = await import("../db");
+      const db = await getDb();
+      if (!db) return res.status(500).json({ error: "DB unavailable" });
+
+      const schema = await import("../../drizzle/schema");
+      const { eq, and, inArray } = await import("drizzle-orm");
+
+      // Find bob
+      const bob = await db.query.users.findFirst({
+        where: eq(schema.users.email, "bob@gmail.com"),
+      });
+      if (!bob) return res.status(404).json({ error: "bob@gmail.com not found" });
+
+      const log: string[] = [`Found bob: id=${bob.id}`];
+
+      // Get bob's appointments
+      const appts = await db.query.appointments.findMany({
+        where: eq(schema.appointments.clientId, bob.id),
+      });
+      log.push(`Found ${appts.length} appointments`);
+
+      if (appts.length > 0) {
+        const apptIds = appts.map(a => a.id);
+
+        // Delete appointment logs
+        await db.delete(schema.appointmentLogs)
+          .where(inArray(schema.appointmentLogs.appointmentId, apptIds));
+        log.push("Deleted appointment logs");
+
+        // Delete payment requests
+        try {
+          await db.delete(schema.paymentRequests)
+            .where(inArray(schema.paymentRequests.appointmentId, apptIds));
+          log.push("Deleted payment requests");
+        } catch (e) { log.push("No payment requests table or no rows"); }
+
+        // Delete payment ledger
+        try {
+          await db.delete(schema.paymentLedger)
+            .where(inArray(schema.paymentLedger.bookingId, apptIds));
+          log.push("Deleted payment ledger entries");
+        } catch (e) { log.push("No payment ledger entries"); }
+
+        // Delete appointments
+        await db.delete(schema.appointments)
+          .where(eq(schema.appointments.clientId, bob.id));
+        log.push(`Deleted ${appts.length} appointments`);
+      }
+
+      // Find bob's conversations
+      const convos = await db.query.conversations.findMany({
+        where: eq(schema.conversations.clientId, bob.id),
+      });
+      const convoIds = convos.map(c => c.id);
+      log.push(`Found ${convoIds.length} conversations`);
+
+      if (convoIds.length > 0) {
+        // Delete proposal/plan card messages only
+        const cardTypes = ["session_plan", "session_plan_accepted", "appointment_request", "appointment_confirmed"] as any[];
+        await db.delete(schema.messages)
+          .where(
+            and(
+              inArray(schema.messages.conversationId, convoIds),
+              inArray(schema.messages.messageType, cardTypes)
+            )
+          );
+        log.push("Deleted proposal/plan card messages");
+      }
+
+      res.json({ success: true, log });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message, stack: e.stack });
+    }
+  });
+
   // File serving endpoint — redirects to R2 CDN (migrated from MySQL base64)
   app.get("/api/files/*", (req, res) => {
     const key = (req.params as any)[0];
