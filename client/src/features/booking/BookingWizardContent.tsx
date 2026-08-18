@@ -354,6 +354,20 @@ export function BookingWizardContent({
     },
   });
 
+  const createSessionPlanMutation = trpc.sessionPlans.create.useMutation({
+    onSuccess: () => {
+      if (conversationId) {
+        utils.messages.list.invalidate({ conversationId });
+      }
+      toast.success("Session plan sent!");
+      onClose();
+      onBookingSuccess();
+    },
+    onError: err => {
+      toast.error("Failed to send session plan: " + err.message);
+    },
+  });
+
   const requestBalanceMutation = trpc.messages.requestBalance.useMutation({
     onSuccess: () => {
       toast.success("Final balance request sent!");
@@ -490,48 +504,30 @@ export function BookingWizardContent({
     if (frequency === "single" && customDates.length === 0) return;
 
     const datesToUse = frequency === "single" ? customDates : availability?.dates || [];
-
-    const datesList = datesToUse
-      .map((date: string | Date) =>
-        format(new Date(date), "EEEE, MMMM do yyyy, h:mm a")
-      )
-      .join("\n");
-
     const finalSittings = frequency === "single" ? customDates.length : requiredSittings;
-    const message = `I have found the following dates for your ${selectedService.name} project:\n\n${datesList}\n\nThis project consists of ${finalSittings} sittings.\nFrequency: ${frequency === "single" ? "Custom dates" : frequency}\nPrice per sitting: $${selectedService.price}\n\nPlease confirm these dates.`;
 
-    const totalCost = Number(selectedService.price) * finalSittings;
+    const pricePerSittingCents = Math.round(Number(selectedService.price) * 100);
+    const durationMinutes = Number(selectedService.duration) || 60;
+
     // Enforce 25% for Free tier (SSOT alignment)
     const rawPercent = Number(effectiveSettings?.depositPercentage ?? 25);
     const dbTier = effectiveSettings?.subscriptionTier?.toLowerCase();
     const isFreeTier = dbTier === "free" || dbTier === "basic" || !dbTier;
     const depositPercent = isFreeTier ? 25 : rawPercent;
-    
-    const totalDeposit = Math.round(totalCost * depositPercent / 100);
 
-    const metadata = JSON.stringify({
-      type: "project_proposal",
-      serviceName: selectedService.name,
-      serviceDuration: selectedService.duration,
-      sittings: finalSittings,
-      price: Number(selectedService.price),
-      totalCost: totalCost,
-      frequency: frequency === "single" ? "Custom dates" : frequency,
-      dates: datesToUse,
-      proposedDates: datesToUse,
-      status: "pending",
-      bsb: artistSettings?.bsb,
-      accountNumber: artistSettings?.accountNumber,
-      depositAmount: totalDeposit,
-      depositPercent: depositPercent,
-      autoSendDeposit: artistSettings?.autoSendDepositInfo,
-    });
+    // Build session items from the selected dates
+    const sessions = datesToUse.map((date: string | Date, idx: number) => ({
+      sessionIndex: idx + 1,
+      startsAt: new Date(date).toISOString(),
+      durationMinutes,
+      estimateCents: pricePerSittingCents,
+      depositCents: Math.round(pricePerSittingCents * depositPercent / 100),
+    }));
 
-    sendMessageMutation.mutate({
+    createSessionPlanMutation.mutate({
       conversationId,
-      content: message,
-      messageType: "appointment_request",
-      metadata: metadata,
+      serviceName: selectedService.name,
+      sessions,
     });
   };
 
@@ -1991,14 +1987,14 @@ export function BookingWizardContent({
                 <button
                   onClick={handleConfirmBooking}
                   disabled={
-                    sendMessageMutation.isPending || (frequency !== "single" && !availability?.dates) || (frequency === "single" && customDates.length === 0)
+                    createSessionPlanMutation.isPending || (frequency !== "single" && !availability?.dates) || (frequency === "single" && customDates.length === 0)
                   }
                   className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
                 >
-                  {sendMessageMutation.isPending ? (
+                  {createSessionPlanMutation.isPending ? (
                     <Loader2 className="w-4 h-4 animate-spin mx-auto" />
                   ) : (
-                    "Send Proposal"
+                    "Send Session Plan"
                   )}
                 </button>
               </div>

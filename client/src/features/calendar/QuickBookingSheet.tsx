@@ -126,6 +126,18 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
     },
   });
 
+  const createSessionPlanMutation = trpc.sessionPlans.create.useMutation({
+    onSuccess: () => {
+      toast.success("Session plan sent to client");
+      onSuccess();
+      onClose();
+    },
+    onError: (err) => {
+      toast.error("Failed to send session plan: " + err.message);
+      setSubmitting(false);
+    },
+  });
+
   // ── filtered clients ──────────────────────────────────────────────────
   const filteredClients = useMemo(() => {
     if (!clients) return [];
@@ -222,59 +234,30 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
         finalSittings = 1;
       }
 
-      // 2. Build proposal metadata (same structure as BookingWizardContent)
-      const totalCost = Number(price) * finalSittings;
+      // 2. Build session plan items
+      const pricePerSittingCents = Math.round(Number(price) * 100);
 
       // Deposit % calculation — same logic as BookingWizardContent
       const rawPercent = Number(artistSettings?.depositPercentage ?? 25);
       const dbTier = (artistSettings as any)?.subscriptionTier?.toLowerCase();
       const isFreeTier = dbTier === "free" || dbTier === "basic" || !dbTier;
       const depositPercent = isFreeTier ? 25 : rawPercent;
-      const totalDeposit = Math.round((totalCost * depositPercent) / 100);
 
-      const freqLabel = isMultiSitting
-        ? frequency === "consecutive"
-          ? "Consecutive"
-          : frequency === "weekly"
-            ? "Weekly"
-            : frequency === "biweekly"
-              ? "Bi-Weekly"
-              : "Monthly"
-        : "Custom dates";
+      const sessions = datesToUse.map((d, idx) => ({
+        sessionIndex: idx + 1,
+        startsAt: new Date(d).toISOString(),
+        durationMinutes,
+        estimateCents: pricePerSittingCents,
+        depositCents: Math.round(pricePerSittingCents * depositPercent / 100),
+      }));
 
-      const datesList = datesToUse
-        .map((d) => `• ${format(new Date(d), "EEEE, MMMM d, yyyy 'at' h:mm a")}`)
-        .join("\n");
-
-      const message = `I have found the following date${finalSittings > 1 ? "s" : ""} for your ${selectedService.name} project:\n\n${datesList}\n\nThis project consists of ${finalSittings} sitting${finalSittings > 1 ? "s" : ""}.\nFrequency: ${freqLabel}\nPrice per sitting: $${price}\n\nPlease confirm ${finalSittings > 1 ? "these dates" : "this date"}.`;
-
-      const metadata = JSON.stringify({
-        type: "project_proposal",
-        serviceName: selectedService.name,
-        serviceDuration: durationMinutes,
-        sittings: finalSittings,
-        price: Number(price),
-        totalCost,
-        frequency: freqLabel,
-        dates: datesToUse,
-        proposedDates: datesToUse,
-        status: "pending",
-        bsb: artistSettings?.bsb,
-        accountNumber: artistSettings?.accountNumber,
-        depositAmount: totalDeposit,
-        depositPercent,
-        autoSendDeposit: (artistSettings as any)?.autoSendDepositInfo,
-      });
-
-      // 3. Send proposal message (same as BookingWizardContent)
-      sendMessageMutation.mutate({
+      // 3. Create session plan (server sends the chat message)
+      createSessionPlanMutation.mutate({
         conversationId: convo.id,
-        content: message,
-        messageType: "appointment_request",
-        metadata,
+        clientId: selectedClientId,
+        serviceName: selectedService.name,
+        sessions,
       });
-
-      utils.messages.list.invalidate({ conversationId: convo.id });
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");
       setSubmitting(false);
@@ -550,7 +533,7 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
             ) : (
               <Check className="h-4 w-4" />
             )}
-            {submitting ? "Sending…" : "Send Proposal"}
+            {submitting ? "Sending…" : "Send Session Plan"}
           </button>
         </motion.div>
       </form>

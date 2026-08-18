@@ -13,8 +13,9 @@ export const sessionPlansRouter = router({
    */
   create: protectedProcedure
     .input(z.object({
-      clientId: z.string(),
+      clientId: z.string().optional(), // Resolved from conversation if not provided
       conversationId: z.number(),
+      serviceName: z.string().optional(), // For display context
       sessions: z.array(z.object({
         sessionIndex: z.number(),
         startsAt: z.string(), // ISO datetime
@@ -29,6 +30,16 @@ export const sessionPlansRouter = router({
 
       const artistId = ctx.user.id;
 
+      // Resolve clientId from conversation if not explicitly provided
+      let clientId = input.clientId;
+      if (!clientId) {
+        const convo = await dbRef.query.conversations.findFirst({
+          where: eq(schema.conversations.id, input.conversationId),
+        });
+        if (!convo?.clientId) throw new TRPCError({ code: "BAD_REQUEST", message: "Could not determine client from conversation" });
+        clientId = convo.clientId;
+      }
+
       // Calculate totals
       const totalEstimateCents = input.sessions.reduce((sum, s) => sum + s.estimateCents, 0);
       const depositTotalCents = input.sessions.reduce((sum, s) => sum + s.depositCents, 0);
@@ -39,7 +50,7 @@ export const sessionPlansRouter = router({
       // Create the session plan
       const [planResult] = await dbRef.insert(schema.sessionPlans).values({
         artistId,
-        clientId: input.clientId,
+        clientId,
         conversationId: input.conversationId,
         totalEstimateCents,
         depositTotalCents,
