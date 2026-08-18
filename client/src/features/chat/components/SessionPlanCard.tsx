@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { SessionPlanCheckoutSheet } from "../bookings/SessionPlanCheckoutSheet";
+import { SessionPlanCheckoutSheet } from "../../bookings/SessionPlanCheckoutSheet";
 
 interface SessionPlanCardProps {
   sessionPlanId: number;
