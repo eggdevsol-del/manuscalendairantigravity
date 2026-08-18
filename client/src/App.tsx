@@ -97,7 +97,7 @@ const KNOWN_APP_ROUTES = new Set([
   "calendar", "conversations", "chat", "dashboard", "settings",
   "work-hours", "clients", "bank-payouts", "payout-history",
   "notifications-management", "subscriptions", "lead", "admin",
-  "profile", "merchant", "discover", "complete-profile",
+  "profile", "merchant", "discover", "complete-profile", "bookings",
 ]);
 
 /**
