@@ -148,6 +148,11 @@ export const aftercareRouter = router({
         });
       }
 
+      // Auto-seed the default template if none exists for this artist
+      if (!template) {
+        template = await seedDefaultTemplate(dbRef, appointment.artistId);
+      }
+
       if (!template) return null;
 
       // Calculate day count
@@ -166,3 +171,47 @@ export const aftercareRouter = router({
       };
     }),
 });
+
+// ── Default Aftercare Phases ─────────────────────────────────────────────────
+// Standard 42-day / 5-phase tattoo aftercare template.
+// Auto-seeded when an artist has no template and a client views aftercare.
+
+const DEFAULT_PHASES = [
+  { fromDay: 1,  toDay: 2,  label: "Fresh",    sortOrder: 0, instruction: "Keep the wrap on 4 hours. Wash with unscented soap, pat dry, no cream yet." },
+  { fromDay: 3,  toDay: 6,  label: "Settling", sortOrder: 1, instruction: "Thin layer of ointment twice daily. Expect plasma and tightness — do not pick." },
+  { fromDay: 7,  toDay: 14, label: "Peeling",  sortOrder: 2, instruction: "Peeling and itch. Switch to fragrance-free moisturiser. No pools, saunas or gym chalk." },
+  { fromDay: 15, toDay: 28, label: "Settling", sortOrder: 3, instruction: "Milky, cloudy look is normal — the top layer is still settling. Moisturise once daily." },
+  { fromDay: 29, toDay: 42, label: "Healed",   sortOrder: 4, instruction: "Colour clears. SPF 50 on it any time it's in the sun, permanently." },
+];
+
+/**
+ * Auto-create the default 5-phase aftercare template for an artist.
+ * Called lazily when a client views aftercare and no template exists.
+ */
+async function seedDefaultTemplate(dbRef: any, artistId: string) {
+  const result = await dbRef.insert(schema.aftercareTemplates).values({
+    artistId,
+    name: "Default",
+    totalDays: 42,
+    isDefault: 1,
+  });
+  const templateId = Number(result[0].insertId);
+
+  for (const phase of DEFAULT_PHASES) {
+    await dbRef.insert(schema.aftercarePhases).values({
+      templateId,
+      ...phase,
+    });
+  }
+
+  // Return the freshly created template with phases
+  return dbRef.query.aftercareTemplates.findFirst({
+    where: eq(schema.aftercareTemplates.id, templateId),
+    with: {
+      phases: {
+        orderBy: (phases: any, { asc }: any) => [asc(phases.sortOrder)],
+      },
+    },
+  });
+}
+

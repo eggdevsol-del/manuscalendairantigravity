@@ -96,6 +96,28 @@ export async function createAppointment(appointment: InsertAppointment) {
     newValue: JSON.stringify(appt),
   });
 
+  // Fire-and-forget: generate a descriptive project name from conversation context
+  if (!appt.projectName && appt.conversationId) {
+    (async () => {
+      try {
+        const { generateProjectName } = await import("./llmEnrichment");
+        const name = await generateProjectName(
+          db,
+          appt.conversationId,
+          appt.title || appt.serviceName
+        );
+        if (name && name !== "Custom piece") {
+          await db
+            .update(appointments)
+            .set({ projectName: name })
+            .where(eq(appointments.id, appointmentId));
+        }
+      } catch (e) {
+        console.error("Failed to generate project name:", e);
+      }
+    })();
+  }
+
   return appt;
 }
 

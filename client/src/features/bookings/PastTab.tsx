@@ -17,6 +17,17 @@ function formatDuration(minutes: number | null): string {
   return `${hrs} hr${hrs !== 1 ? "s" : ""}`;
 }
 
+/** Check if a completed appointment is within the 42-day healing window */
+function isWithinHealingWindow(completedAt: string | null): boolean {
+  if (!completedAt) return false;
+  const completed = new Date(completedAt);
+  const now = new Date();
+  const diffDays = Math.floor(
+    (now.getTime() - completed.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  return diffDays <= 42;
+}
+
 export function PastTab() {
   const [, setLocation] = useLocation();
   const { data, isLoading } = trpc.appointments.getClientBookings.useQuery({
@@ -44,8 +55,47 @@ export function PastTab() {
     );
   }
 
+  // Find the most recent appointment within the healing window for top aftercare
+  const healingAppointment = appointments.find(
+    (appt) => appt.completedAt && isWithinHealingWindow(appt.completedAt)
+  );
+
   return (
     <div className="flex flex-col gap-3">
+      {/* ── Aftercare block — top of tab ──────────────────────────── */}
+      {healingAppointment && (
+        <div
+          style={{
+            background: "#1A1A1E",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: 16,
+            padding: 16,
+          }}
+        >
+          {/* Context: which project this aftercare is for */}
+          <div className="flex items-center justify-between mb-2">
+            <span
+              className="text-[12px] font-bold uppercase"
+              style={{ color: "#7A7A7A", letterSpacing: "0.06em" }}
+            >
+              {healingAppointment.artist.name}
+            </span>
+            <span className="text-[12px] text-[#7A7A7A]">
+              {healingAppointment.projectName || healingAppointment.title}
+            </span>
+          </div>
+
+          <AftercareTimeline
+            appointmentId={healingAppointment.id}
+            completedAt={healingAppointment.completedAt!}
+            artistId={healingAppointment.artist.id}
+            artistName={healingAppointment.artist.name}
+            conversationId={healingAppointment.conversationId}
+          />
+        </div>
+      )}
+
+      {/* ── Past appointment cards ────────────────────────────────── */}
       {appointments.map((appt) => (
         <div
           key={appt.id}
@@ -78,17 +128,6 @@ export function PastTab() {
               ? ` · $${(appt.amountPaidCents / 100).toFixed(0)} paid in full`
               : ""}
           </p>
-
-          {/* Aftercare block */}
-          {appt.completedAt && (
-            <AftercareTimeline
-              appointmentId={appt.id}
-              completedAt={appt.completedAt}
-              artistId={appt.artist.id}
-              artistName={appt.artist.name}
-              conversationId={appt.conversationId}
-            />
-          )}
 
           {/* Book a touch-up button */}
           <button

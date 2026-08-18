@@ -292,3 +292,69 @@ export async function summariseConversationState(
 
   return summary;
 }
+
+// ── Project Name Generation ──────────────────────────────────────────────────
+
+const PROJECT_NAME_SYSTEM_PROMPT = `You name tattoo projects based on conversation context between an artist and client.
+
+STRICT RULES:
+- Output ONLY the project name (2-5 words). Nothing else — no quotes, no punctuation, no explanation.
+- Be descriptive and specific to what the client wants (e.g. "Botanical half sleeve", "Geometric forearm band", "Memorial portrait", "Koi fish thigh piece").
+- Never include the artist or client name.
+- Never use generic names like "Tattoo project", "New booking", "Custom piece", or "Tattoo session".
+- If the conversation doesn't contain enough detail, use what's available (service name, placement, style).
+- Keep it concise and elegant — this is displayed as the project title in the client's app.`;
+
+/**
+ * Generate a short, descriptive project name from conversation context.
+ * Used to populate the `projectName` column on appointments.
+ *
+ * @param conversationId - The conversation to read context from
+ * @param fallbackTitle - Fallback if LLM fails (e.g. service name)
+ * @returns The generated project name (2-5 words)
+ */
+export async function generateProjectName(
+  db: MySql2Database<typeof schema>,
+  conversationId: number,
+  fallbackTitle?: string
+): Promise<string> {
+  try {
+    // Get the most recent 10 messages for context
+    const recentMessages = await db.query.messages.findMany({
+      where: eq(messages.conversationId, conversationId),
+      orderBy: (m, { desc: d }) => [d(m.createdAt)],
+      limit: 10,
+    });
+
+    if (recentMessages.length === 0) {
+      return fallbackTitle || "Custom piece";
+    }
+
+    // Build context from messages (oldest first)
+    const msgContext = recentMessages
+      .reverse()
+      .map((m) => `${m.senderRole === "artist" ? "Artist" : "Client"}: ${m.content}`)
+      .join("\n");
+
+    const result = await invokeLLM({
+      model: "gpt-4o-mini",
+      systemPrompt: PROJECT_NAME_SYSTEM_PROMPT,
+      userPrompt: `Based on this conversation, generate a project name:\n\n${msgContext}`,
+      maxTokens: 30,
+      temperature: 0.4,
+    });
+
+    const name = extractTextContent(result)?.trim();
+
+    // Validate: must be 1-8 words, no weird characters
+    if (name && name.length > 0 && name.length <= 60 && !name.includes("\n")) {
+      return name;
+    }
+
+    return fallbackTitle || "Custom piece";
+  } catch (e) {
+    console.error("Failed to generate project name:", e);
+    return fallbackTitle || "Custom piece";
+  }
+}
+

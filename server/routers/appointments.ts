@@ -1036,6 +1036,99 @@ export const appointmentsRouter = router({
     }),
 
   /**
+   * Create a PaymentIntent for paying the remaining balance on an appointment.
+   * Used by "Pay Early" and "Pay Now" buttons on the client Bookings page.
+   */
+  createBalancePaymentIntent: protectedProcedure
+    .input(z.object({ appointmentId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const dbRef = await db.getDb();
+      if (!dbRef) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const appointment = await dbRef.query.appointments.findFirst({
+        where: eq(schema.appointments.id, input.appointmentId),
+      });
+
+      if (!appointment) throw new TRPCError({ code: "NOT_FOUND" });
+
+      // Must be the client on this appointment
+      if (appointment.clientId !== ctx.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      // Must have a balance remaining
+      const remaining = appointment.remainingBalanceCents || 0;
+      if (remaining <= 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No balance remaining on this appointment",
+        });
+      }
+
+      // Already fully paid
+      if (appointment.paymentStatus === "fully_paid") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This appointment is already fully paid",
+        });
+      }
+
+      // Get artist info for Connect + fees
+      const artistSettings = await dbRef.query.artistSettings.findFirst({
+        where: eq(schema.artistSettings.userId, appointment.artistId),
+      });
+      const artist = await dbRef.query.users.findFirst({
+        where: eq(schema.users.id, appointment.artistId),
+      });
+      const client = await dbRef.query.users.findFirst({
+        where: eq(schema.users.id, ctx.user.id),
+      });
+
+      // Fee calculation
+      const {
+        calculateTransactionFees,
+        resolvePaymentTier,
+      } = await import("../domain/fees");
+
+      const tier = resolvePaymentTier(artistSettings?.subscriptionTier);
+      const fees = calculateTransactionFees(remaining, tier);
+
+      // Create PaymentIntent
+      const { createBalancePaymentIntent } = await import(
+        "../services/paymentIntents"
+      );
+
+      const balanceToken = `bal_${appointment.id}_${Date.now()}`;
+      const paymentResult = await createBalancePaymentIntent({
+        bookingId: appointment.id,
+        balanceAmountCents: remaining,
+        platformFeeCents: fees.platformFeeCents,
+        artistFeeCents: fees.artistFeeCents,
+        clientTotalCents: fees.clientTotalCents,
+        clientEmail: client?.email || "",
+        artistName:
+          artistSettings?.businessName ||
+          artistSettings?.displayName ||
+          artist?.name ||
+          "Artist",
+        stripeConnectAccountId: artistSettings?.stripeConnectAccountId,
+        tier,
+        balanceToken,
+      });
+
+      return {
+        clientSecret: paymentResult.clientSecret,
+        balanceAmountCents: remaining,
+        platformFeeCents: fees.platformFeeCents,
+        totalCents: fees.clientTotalCents,
+        artistName:
+          artistSettings?.displayName || artist?.name || "Artist",
+        projectName: appointment.projectName || appointment.title || "Session",
+        depositPaidCents: appointment.totalPaidAmountCents || 0,
+      };
+    }),
+
+  /**
    * Get client bookings for the Bookings page.
    * Returns upcoming and past appointments with artist info, payment status, and aftercare data.
    */
