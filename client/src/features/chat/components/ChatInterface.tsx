@@ -66,6 +66,7 @@ export function ChatInterface({
   onBack,
 }: ChatInterfaceProps) {
   const [, setLocation] = useLocation();
+  const utils = trpc.useUtils();
   const respondToInviteMutation = trpc.studios.respondToInvite.useMutation();
   const deleteMessageMutation = trpc.messages.deleteMessage.useMutation({
     onSuccess: () => {
@@ -136,8 +137,6 @@ export function ChatInterface({
     handleConfirmDialogCancel,
     confirmDialog,
   } = useChatController(conversationId);
-
-  const utils = trpc.useUtils();
 
   // ── Design Brief Panel ─────────────────────
   // Persist collapsed/expanded state per conversation in localStorage
@@ -1066,41 +1065,43 @@ export function ChatInterface({
         onClose={closeBookingSheet}
         title={showBookingWizard ? "New Booking" : effectiveProposal ? "Proposal" : "Appointment"}
       >
-        <BookingWizardContent
-          conversationId={conversationId}
-          artistServices={availableServices || []}
-          artistSettings={artistSettings}
-          isArtist={isArtist}
-          onBookingSuccess={() => {
-            toast.success("Booking proposal sent!");
-            closeBookingSheet();
-          }}
-          onClose={closeBookingSheet}
-          selectedProposal={effectiveProposal}
-          selectedAppointmentRaw={selectedAppointment}
-          onAcceptProposal={promo =>
-            handleClientAcceptProposal(effectiveProposal?.message, promo)
-          }
-          onRejectProposal={() => {
-            setSelectedProposal(null);
-          }}
-          onUpdateProposalState={(newMeta) => {
-            if (effectiveProposal) {
-              setSelectedProposal({ message: effectiveProposal.message, metadata: newMeta });
+        {isBookingSheetOpen && (
+          <BookingWizardContent
+            conversationId={conversationId}
+            artistServices={availableServices || []}
+            artistSettings={artistSettings}
+            isArtist={isArtist}
+            onBookingSuccess={() => {
+              toast.success("Booking proposal sent!");
+              closeBookingSheet();
+            }}
+            onClose={closeBookingSheet}
+            selectedProposal={effectiveProposal}
+            selectedAppointmentRaw={selectedAppointment}
+            onAcceptProposal={promo =>
+              handleClientAcceptProposal(effectiveProposal?.message, promo)
             }
-          }}
-          onCancelProposal={() => {
-            if (effectiveProposal)
-              handleCancelProposal(
-                effectiveProposal.message,
-                effectiveProposal.metadata
-              );
-            setSelectedProposal(null);
-          }}
-          isPendingProposalAction={bookProjectMutation.isPending}
-          artistId={conversation?.artistId}
-          isLoadingProposal={isLoadingProposalData}
-        />
+            onRejectProposal={() => {
+              setSelectedProposal(null);
+            }}
+            onUpdateProposalState={(newMeta) => {
+              if (effectiveProposal) {
+                setSelectedProposal({ message: effectiveProposal.message, metadata: newMeta });
+              }
+            }}
+            onCancelProposal={() => {
+              if (effectiveProposal)
+                handleCancelProposal(
+                  effectiveProposal.message,
+                  effectiveProposal.metadata
+                );
+              setSelectedProposal(null);
+            }}
+            isPendingProposalAction={bookProjectMutation.isPending}
+            artistId={conversation?.artistId}
+            isLoadingProposal={isLoadingProposalData}
+          />
+        )}
       </BottomSheet>
 
       <ClientProfileSheet
