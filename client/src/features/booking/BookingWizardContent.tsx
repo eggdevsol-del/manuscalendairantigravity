@@ -984,7 +984,13 @@ export function BookingWizardContent({
                 {/* ── Custom Checkout Component ── */}
                 {checkoutClientSecret && (
                   <div className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <DotsCheckout clientSecret={checkoutClientSecret} amountCents={0} onComplete={() => {}} />
+                    <DotsCheckout clientSecret={checkoutClientSecret} amountCents={0} onComplete={() => {
+                      if (conversationId) {
+                        utils.messages.list.invalidate({ conversationId });
+                      }
+                      utils.appointments.getClientBookings.invalidate();
+                      toast.success("Deposit paid! Your sessions are confirmed.");
+                    }} />
                   </div>
                 )}
               </motion.div>
@@ -1140,7 +1146,13 @@ export function BookingWizardContent({
                       </button>
                     ) : (
                       <div className="mt-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <DotsCheckout clientSecret={checkoutBalanceClientSecret} amountCents={0} onComplete={() => {}} />
+                        <DotsCheckout clientSecret={checkoutBalanceClientSecret} amountCents={0} onComplete={() => {
+                      if (conversationId) {
+                        utils.messages.list.invalidate({ conversationId });
+                      }
+                      utils.appointments.getClientBookings.invalidate();
+                      toast.success("Balance paid!");
+                    }} />
                       </div>
                     )}
                   </div>

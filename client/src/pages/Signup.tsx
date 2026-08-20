@@ -82,7 +82,9 @@ export default function Signup() {
     localStorage.setItem("user", JSON.stringify(userObj));
     utils.auth.me.setData(undefined, userObj);
     toast.success("Account created! Welcome to CalendAIr.");
-    setLocation("/");
+    const role = userObj.role;
+    const target = role === "merchant" ? "/dashboard" : role === "client" ? "/discover" : "/dashboard";
+    setLocation(target);
     setIsLoading(false);
   };
 
@@ -159,7 +161,7 @@ export default function Signup() {
         toast.success("Google account linked! Please complete your profile.");
       } else {
         toast.success("Welcome back!");
-        window.location.href = "/";
+        window.location.href = "/discover";
       }
     } catch (err: any) {
       toast.error(err?.message || "Google sign-in failed. Please try again.");
@@ -285,7 +287,7 @@ export default function Signup() {
       });
 
       toast.success("Profile complete! Let's get started.");
-      setLocation("/");
+      setLocation("/discover");
     } catch (err: any) {
       toast.error(err?.message || "Failed to update profile. Please try again.");
     } finally {
@@ -426,7 +428,7 @@ export default function Signup() {
 
               <button
                 type="button"
-                onClick={() => setLocation("/")}
+                onClick={() => setLocation("/discover")}
                 className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors mt-2"
               >
                 Skip for now

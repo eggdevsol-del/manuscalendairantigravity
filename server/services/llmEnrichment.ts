@@ -271,7 +271,7 @@ export async function summariseConversationState(
         .update(designBriefs)
         .set({
           conversationSummary: summary,
-          summaryGeneratedAt: new Date().toISOString(),
+          summaryGeneratedAt: new Date(),
         })
         .where(eq(designBriefs.id, cached.id));
     } else {
@@ -282,7 +282,7 @@ export async function summariseConversationState(
         briefText: "",
         messageCount: 0,
         conversationSummary: summary,
-        summaryGeneratedAt: new Date().toISOString(),
+        summaryGeneratedAt: new Date(),
       });
     }
   } catch (e) {

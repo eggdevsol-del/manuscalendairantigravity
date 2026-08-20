@@ -266,9 +266,11 @@ export default function Login() {
       if (data.user.role === "studio") {
         window.location.href = "/studio";
       } else if (data.user.role === "merchant") {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
+      } else if (data.user.role === "client") {
+        window.location.href = "/discover";
       } else {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       }
     },
     onError: error => {
@@ -301,13 +303,15 @@ export default function Login() {
 
       if (result.isNewUser) {
         toast.success("Welcome to d.o.t.s! Let's get you set up.");
-        window.location.href = "/";
+        window.location.href = "/discover";
       } else {
         toast.success("Welcome back!");
         if (result.user.role === "studio") {
           window.location.href = "/studio";
+        } else if (result.user.role === "client") {
+          window.location.href = "/discover";
         } else {
-          window.location.href = "/";
+          window.location.href = "/dashboard";
         }
       }
     } catch (err: any) {
