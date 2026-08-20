@@ -266,9 +266,9 @@ export default function Login() {
       if (data.user.role === "studio") {
         window.location.href = "/studio";
       } else if (data.user.role === "merchant") {
-        window.location.href = "/dashboard";
+        window.location.href = "/";
       } else {
-        window.location.href = "/calendar";
+        window.location.href = "/";
       }
     },
     onError: error => {
@@ -301,13 +301,13 @@ export default function Login() {
 
       if (result.isNewUser) {
         toast.success("Welcome to d.o.t.s! Let's get you set up.");
-        window.location.href = "/calendar";
+        window.location.href = "/";
       } else {
         toast.success("Welcome back!");
         if (result.user.role === "studio") {
           window.location.href = "/studio";
         } else {
-          window.location.href = "/calendar";
+          window.location.href = "/";
         }
       }
     } catch (err: any) {
