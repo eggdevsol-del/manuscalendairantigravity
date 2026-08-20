@@ -998,6 +998,25 @@ export async function handleStripeWebhook(req: Request, res: Response) {
               });
 
               if (plan) {
+                // ── Idempotency guard: skip if already processed ──
+                if (plan.status === "accepted") {
+                  console.log(`[Stripe PI] Session plan ${plan.id} already accepted — skipping (webhook retry)`);
+                  break;
+                }
+
+                // Double-check: any appointments already exist for this plan?
+                const existingAppts = await db.query.appointments.findMany({
+                  where: eq(appointments.sessionPlanId, plan.id),
+                });
+                if (existingAppts.length > 0) {
+                  console.log(`[Stripe PI] Session plan ${plan.id} already has ${existingAppts.length} appointments — skipping`);
+                  // Still mark as accepted if somehow missed
+                  await db.update(sessionPlans)
+                    .set({ status: "accepted", acceptedAt: new Date().toISOString().slice(0, 19).replace("T", " "), stripeSessionId: pi.id })
+                    .where(eq(sessionPlans.id, plan.id));
+                  break;
+                }
+
                 console.log(`[Stripe PI] Session plan ${plan.id} deposit payment received`);
                 const now = new Date().toISOString().slice(0, 19).replace("T", " ");
 

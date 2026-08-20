@@ -311,6 +311,76 @@ async function startServer() {
     }
   });
 
+  // ── Admin: Cleanup duplicate appointments ────────────────────
+  // POST /api/admin/cleanup-duplicates?key=RAPIDAPI_KEY
+  app.post("/api/admin/cleanup-duplicates", async (req, res) => {
+    const key = req.query.key as string;
+    if (!key || key !== process.env.RAPIDAPI_KEY) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    try {
+      const { getDb } = await import("../db");
+      const dbSchema = await import("../../drizzle/schema");
+      const { eq, sql } = await import("drizzle-orm");
+
+      const db = await getDb();
+      if (!db) return res.status(500).json({ error: "DB unavailable" });
+
+      // Find all session plan appointments
+      const allPlanAppts = await db.query.appointments.findMany({
+        where: sql`${dbSchema.appointments.sessionPlanId} IS NOT NULL`,
+        orderBy: (appointments, { asc }) => [asc(appointments.id)],
+      });
+
+      // Group by sessionPlanId + sessionIndex
+      const groups = new Map<string, typeof allPlanAppts>();
+      for (const appt of allPlanAppts) {
+        const k = `${appt.sessionPlanId}_${appt.sessionIndex}`;
+        if (!groups.has(k)) groups.set(k, []);
+        groups.get(k)!.push(appt);
+      }
+
+      const deletedIds: number[] = [];
+      for (const [, appts] of groups) {
+        if (appts.length <= 1) continue;
+        const [, ...dupes] = appts; // keep first, delete rest
+        for (const dupe of dupes) {
+          await db.delete(dbSchema.appointments).where(eq(dbSchema.appointments.id, dupe.id));
+          deletedIds.push(dupe.id);
+        }
+      }
+
+      // Also check non-plan duplicates (same conversationId + startTime + title)
+      const allAppts = await db.query.appointments.findMany({
+        where: sql`${dbSchema.appointments.sessionPlanId} IS NULL`,
+        orderBy: (appointments, { asc }) => [asc(appointments.id)],
+      });
+
+      const nonPlanGroups = new Map<string, typeof allAppts>();
+      for (const appt of allAppts) {
+        const k = `${appt.conversationId}_${appt.startTime}_${appt.title}`;
+        if (!nonPlanGroups.has(k)) nonPlanGroups.set(k, []);
+        nonPlanGroups.get(k)!.push(appt);
+      }
+
+      for (const [, appts] of nonPlanGroups) {
+        if (appts.length <= 1) continue;
+        const [, ...dupes] = appts;
+        for (const dupe of dupes) {
+          await db.delete(dbSchema.appointments).where(eq(dbSchema.appointments.id, dupe.id));
+          deletedIds.push(dupe.id);
+        }
+      }
+
+      console.log(`[Admin] Cleaned up ${deletedIds.length} duplicate appointments: ${deletedIds.join(", ")}`);
+      return res.json({ status: "done", deleted: deletedIds.length, deletedIds });
+    } catch (err: any) {
+      console.error("[Admin] Cleanup failed:", err);
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   // ── Admin: Seed real artists (temporary) ───────────────────────
   // POST /api/admin/seed-artists?key=RAPIDAPI_KEY
   // Triggers the real artist seeder on the server.
