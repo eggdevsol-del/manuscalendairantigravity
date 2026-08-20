@@ -1,5 +1,5 @@
 /**
- * ProjectProposalMessage  SSOT Compliant (v4)
+ * ProjectProposalMessage — SSOT Compliant (v4)
  *
  * Three variants:
  *  - 'pinned'   ? compact horizontal strip under the header (pending proposals only)
@@ -9,8 +9,7 @@
  * All styling via tokens.card SSOT + clientDark SSOT. No hardcoded colors.
  */
 
-import { Check, X as XIcon, ArrowRight, Calendar, MoreVertical, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Check, X as XIcon, ArrowRight, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { tokens } from "@/ui/tokens";
@@ -39,8 +38,6 @@ interface ProjectProposalMessageProps {
   isFullyPaid?: boolean;
   onPress?: () => void;
   onCancel?: () => void;
-  onDelete?: () => void;
-  isDeleting?: boolean;
 }
 
 function getGlow(status: string) {
@@ -74,10 +71,7 @@ export function ProjectProposalMessage({
   isFullyPaid,
   onPress,
   onCancel,
-  onDelete,
-  isDeleting,
 }: ProjectProposalMessageProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const { serviceName, totalCost, sittings, status, serviceDuration } = metadata;
   const card = tokens.card;
 
@@ -115,7 +109,7 @@ export function ProjectProposalMessage({
           <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-primary/70">Proposal</p>
           <p className="text-xs font-bold text-foreground truncate">{serviceName}</p>
           <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
-            ${totalCost}  {hours}h  {sittings || 1}s
+            ${totalCost} · {hours}h · {sittings || 1}s
           </p>
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
@@ -141,15 +135,6 @@ export function ProjectProposalMessage({
             <XIcon className="w-3 h-3" />
           </button>
         )}
-        {isArtist && onDelete && (
-          <button
-            className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center bg-secondary/50 hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-colors"
-            onClick={e => { e.stopPropagation(); onDelete(); }}
-            disabled={isDeleting}
-          >
-            <Trash2 className="w-3 h-3" />
-          </button>
-        )}
       </div>
     );
   }
@@ -169,33 +154,6 @@ export function ProjectProposalMessage({
       >
         {/* Status accent bar */}
         <div className={cn("h-[3px] w-full shrink-0 rounded-t-2xl", accentBar)} />
-
-        {/* 3-dot menu for delete */}
-        {isArtist && onDelete && (
-          <div className="absolute top-2 right-2 z-20">
-            <button
-              className="w-7 h-7 rounded-full flex items-center justify-center bg-black/40 hover:bg-black/60 text-white/70 hover:text-white transition-colors backdrop-blur-sm"
-              onClick={e => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
-            >
-              <MoreVertical className="w-3.5 h-3.5" />
-            </button>
-            {menuOpen && (
-              <div
-                className="absolute right-0 top-8 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl overflow-hidden min-w-[130px] animate-in fade-in zoom-in-95 duration-150"
-                onClick={e => e.stopPropagation()}
-              >
-                <button
-                  className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-medium text-red-400 hover:bg-red-500/10 transition-colors"
-                  onClick={() => { setMenuOpen(false); onDelete(); }}
-                  disabled={isDeleting}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  {isDeleting ? "Deleting..." : "Delete Card"}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
 
         <div className="flex-1 flex flex-col px-4 pt-3 pb-4 min-h-0 overflow-hidden">
           <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-primary/60">
