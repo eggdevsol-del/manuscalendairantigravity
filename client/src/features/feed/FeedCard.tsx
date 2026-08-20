@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Heart, MessageCircle, Share2, Bookmark, MapPin, Play, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useVideoPool, setGlobalMuted, getGlobalMuted } from "@/hooks/useVideoPool";
 
 export interface FeedCardData {
   id: number;
@@ -33,53 +34,8 @@ interface FeedCardProps {
   index?: number;
 }
 
-// ── Viewport-aware video hook ─────────────────────────
-// Only loads and plays video when element is near the viewport.
-// Pauses and unloads when out of view. Prevents iOS Safari crash
-// from having dozens of <video autoPlay> elements simultaneously.
-function useVideoInView(rootMargin = "200px") {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isInView, setIsInView] = useState(false);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsInView(entry.isIntersecting);
-      },
-      { rootMargin, threshold: 0.1 }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [rootMargin]);
-
-  // Play/pause based on visibility
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (isInView) {
-      // Set src and play
-      const src = video.dataset.src;
-      if (src && video.src !== src) {
-        video.src = src;
-        video.load();
-      }
-      video.play().catch(() => {});
-    } else {
-      // Pause and unload to free memory
-      video.pause();
-      video.removeAttribute("src");
-      video.load(); // Reset the element
-    }
-  }, [isInView]);
-
-  return { containerRef, videoRef, isInView };
-}
+// Video playback is now managed by the centralized useVideoPool hook.
+// See client/src/hooks/useVideoPool.ts for the pool manager.
 
 export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTagTap, compact, focusMode, index = 999 }: FeedCardProps) {
   const [liked, setLiked] = useState(card.isLiked);
@@ -92,28 +48,28 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
   const isVideo = card.mediaType === "video" && !!card.videoUrl;
   const eagerLoad = index < 10;
 
-  // Viewport-aware video for standard mode
-  const standardVideo = useVideoInView("300px");
-  // Viewport-aware video for focus mode
-  const focusVideo = useVideoInView("100px");
+  // Pool-managed video for both standard and focus modes
+  const videoPool = useVideoPool(
+    isVideo ? card.videoUrl! : "",
+    card.imageUrl
+  );
 
   // Mute when scrolling out of view
   useEffect(() => {
-    if (!focusVideo.isInView && !standardVideo.isInView) {
+    if (!videoPool.isInView) {
       setIsMuted(true);
+      setGlobalMuted(true);
     }
-  }, [focusVideo.isInView, standardVideo.isInView]);
+  }, [videoPool.isInView]);
 
   const handleMuteToggle = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setIsMuted(prev => {
       const newMuted = !prev;
-      // Apply to whichever video ref is active
-      const video = focusVideo.videoRef.current || standardVideo.videoRef.current;
-      if (video) video.muted = newMuted;
+      setGlobalMuted(newMuted);
       return newMuted;
     });
-  }, [focusVideo.videoRef, standardVideo.videoRef]);
+  }, []);
 
   const handleLike = useCallback(() => {
     setLiked((prev) => !prev);
@@ -165,27 +121,33 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
   /* ── Focus mode: full-screen immersive layout ── */
   if (focusMode) {
     return (
-      <div className="feed-card feed-card-focus" onClick={handleDoubleTap} ref={isVideo ? focusVideo.containerRef : undefined}>
+      <div className="feed-card feed-card-focus" onClick={handleDoubleTap}>
         {/* Full-bleed media */}
         {isVideo ? (
           <>
-            <video
-              ref={focusVideo.videoRef}
-              data-src={card.videoUrl!}
-              poster={card.imageUrl}
+            {/* Pool-managed video container — video element injected by pool */}
+            <div
+              ref={videoPool.containerRef}
               className="feed-card-focus-image"
-              loop
-              muted={isMuted}
-              playsInline
-            />
+              style={{ position: "relative", width: "100%", height: "100%" }}
+            >
+              {/* Poster shown while pool hasn't assigned a video yet */}
+              {!videoPool.isInView && (
+                <img
+                  src={card.imageUrl}
+                  alt={card.description || "Portfolio piece"}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              )}
+            </div>
             {/* Play icon overlay when not in view */}
-            {!focusVideo.isInView && (
+            {!videoPool.isInView && (
               <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
                 <Play size={48} color="rgba(255,255,255,0.7)" fill="rgba(255,255,255,0.7)" />
               </div>
             )}
             {/* Mute/unmute toggle */}
-            {focusVideo.isInView && (
+            {videoPool.isInView && (
               <button
                 onClick={handleMuteToggle}
                 className="feed-card-mute-btn"
@@ -326,34 +288,32 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
       )}
 
       {/* Media */}
-      <div className="feed-card-image-container" onClick={handleDoubleTap} ref={isVideo ? standardVideo.containerRef : undefined}>
+      <div className="feed-card-image-container" onClick={handleDoubleTap}>
         {isVideo ? (
           <>
-            {/* Poster image shown immediately, video loads when in viewport */}
-            <img
-              src={card.imageUrl}
-              alt={card.description || "Portfolio piece"}
+            {/* Pool-managed video container */}
+            <div
+              ref={videoPool.containerRef}
               className="feed-card-image"
-              loading={eagerLoad ? "eager" : "lazy"}
-              style={{ display: standardVideo.isInView ? "none" : "block" }}
-            />
-            <video
-              ref={standardVideo.videoRef}
-              data-src={card.videoUrl!}
-              poster={card.imageUrl}
-              className="feed-card-image"
-              loop
-              muted={isMuted}
-              playsInline
-              style={{ display: standardVideo.isInView ? "block" : "none" }}
-            />
+              style={{ position: "relative" }}
+            >
+              {/* Poster shown while pool hasn't assigned a video yet */}
+              {!videoPool.isInView && (
+                <img
+                  src={card.imageUrl}
+                  alt={card.description || "Portfolio piece"}
+                  className="feed-card-image"
+                  loading={eagerLoad ? "eager" : "lazy"}
+                />
+              )}
+            </div>
             {/* Video badge */}
             <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.5)", borderRadius: 6, padding: "3px 8px", display: "flex", alignItems: "center", gap: 4, pointerEvents: "none" }}>
               <Play size={10} color="white" fill="white" />
               <span style={{ color: "white", fontSize: 10, fontWeight: 600 }}>REEL</span>
             </div>
             {/* Mute/unmute toggle */}
-            {standardVideo.isInView && (
+            {videoPool.isInView && (
               <button
                 onClick={handleMuteToggle}
                 className="feed-card-mute-btn"

@@ -224,9 +224,9 @@ async function startServer() {
     res.redirect(301, `${r2PublicUrl}/${key}`);
   });
 
-  // ── Instagram video proxy ──────────────────────────────────────
-  // Streams Instagram videos through our server to avoid CORS issues.
-  // The client uses /api/ig-video/{portfolioId} as the <video src>.
+  // ── Video proxy ─────────────────────────────────────────────────
+  // Serves videos with proper Range request support (required by iOS Safari autoplay).
+  // If the video is hosted on R2, redirects directly. Otherwise proxies from origin.
   app.get("/api/ig-video/:id", async (req, res) => {
     try {
       const { getDb } = await import("../db");
@@ -248,26 +248,47 @@ async function startServer() {
         return res.status(404).json({ error: "Video not found" });
       }
 
-      // Fetch video from the stored URL (embed-safe proxy or CDN)
-      const videoResponse = await fetch(item.cdnUrl, {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (compatible; TattoiApp/1.0)",
-        },
-      });
+      const R2_PUBLIC = (process.env.R2_PUBLIC_URL || "").replace(/\/$/, "");
 
-      if (!videoResponse.ok) {
-        console.error(`[Video Proxy] Failed to fetch video: ${videoResponse.status} from ${item.cdnUrl.slice(0, 80)}`);
+      // If the video is already on R2, redirect directly (no proxy needed)
+      if (R2_PUBLIC && item.cdnUrl.startsWith(R2_PUBLIC)) {
+        res.setHeader("Cache-Control", "public, max-age=86400"); // 24h cache
+        return res.redirect(302, item.cdnUrl);
+      }
+
+      // ── Proxy mode: forward Range requests for iOS Safari ──
+      const upstreamHeaders: Record<string, string> = {
+        "User-Agent": "Mozilla/5.0 (compatible; TattoiApp/1.0)",
+      };
+
+      // Forward Range header from client
+      const rangeHeader = req.headers.range;
+      if (rangeHeader) {
+        upstreamHeaders["Range"] = rangeHeader;
+      }
+
+      const videoResponse = await fetch(item.cdnUrl, { headers: upstreamHeaders });
+
+      if (!videoResponse.ok && videoResponse.status !== 206) {
+        console.error(`[Video Proxy] Failed: ${videoResponse.status} from ${item.cdnUrl.slice(0, 80)}`);
         return res.status(502).json({ error: "Failed to fetch video from source" });
       }
 
-      // Stream video to client with proper headers
+      // Forward response headers
       const contentType = videoResponse.headers.get("content-type") || "video/mp4";
       const contentLength = videoResponse.headers.get("content-length");
+      const contentRange = videoResponse.headers.get("content-range");
+      const acceptRanges = videoResponse.headers.get("accept-ranges");
 
+      // Set appropriate status code
+      const statusCode = videoResponse.status === 206 ? 206 : 200;
+
+      res.status(statusCode);
       res.setHeader("Content-Type", contentType);
       if (contentLength) res.setHeader("Content-Length", contentLength);
-      res.setHeader("Cache-Control", "public, max-age=3600"); // Cache 1 hour
-      res.setHeader("Accept-Ranges", "bytes");
+      if (contentRange) res.setHeader("Content-Range", contentRange);
+      res.setHeader("Accept-Ranges", acceptRanges || "bytes");
+      res.setHeader("Cache-Control", "public, max-age=3600");
 
       // Pipe the response body to the client
       const reader = videoResponse.body?.getReader();

@@ -52,6 +52,51 @@ async function downloadAndUploadThumbnail(
   }
 }
 
+/**
+ * Download a video from a URL and upload to R2.
+ * Returns the R2 public URL. Falls back to source URL on failure.
+ */
+async function downloadAndUploadVideo(
+  videoUrl: string,
+  artistId: string
+): Promise<string | null> {
+  try {
+    const response = await fetch(videoUrl, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; TattoiApp/1.0)" },
+    });
+    if (!response.ok) {
+      console.warn(`[IG Import] Video download failed: ${response.status}`);
+      return null;
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    // Skip if video is too large (>100MB) to avoid memory issues
+    if (buffer.byteLength > 100 * 1024 * 1024) {
+      console.warn(`[IG Import] Video too large (${(buffer.byteLength / 1024 / 1024).toFixed(1)}MB), skipping R2 upload`);
+      return null;
+    }
+
+    const contentType = response.headers.get("content-type") || "video/mp4";
+    const ext = contentType.includes("mp4") ? "mp4" : "mov";
+    const key = `instagram-videos/${artistId}/${randomUUID()}.${ext}`;
+
+    await r2Client.send(
+      new PutObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: key,
+        Body: buffer,
+        ContentType: contentType,
+      })
+    );
+
+    console.log(`[IG Import] Video uploaded to R2: ${key} (${(buffer.byteLength / 1024 / 1024).toFixed(1)}MB)`);
+    return `${R2_PUBLIC_URL}/${key}`;
+  } catch (err) {
+    console.error("[IG Import] Failed to upload video to R2:", err);
+    return null;
+  }
+}
+
 // ── Cancellation check ─────────────────────────────
 
 /**
@@ -200,9 +245,13 @@ export async function processInstagramImport(
             ? await downloadAndUploadThumbnail(thumbSource, artistId)
             : null;
 
-          // For videos: store the embed-safe proxy URL directly (streamed, not hosted)
-          // The url_embed_safe=true flag provides CORS-safe URLs via proxy
-          const videoUrl = item.mediaType === "video" ? item.videoUrl : undefined;
+          // For videos: download and upload to R2 for permanent hosting
+          // Falls back to original URL if R2 upload fails
+          let videoR2Url: string | null = null;
+          if (item.mediaType === "video" && item.videoUrl) {
+            videoR2Url = await downloadAndUploadVideo(item.videoUrl, artistId);
+          }
+          const videoUrl = videoR2Url || (item.mediaType === "video" ? item.videoUrl : undefined);
 
           // Extract smart tags from caption
           const extracted = extractSmartTags(item.caption);

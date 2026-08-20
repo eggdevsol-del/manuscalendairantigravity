@@ -161,6 +161,7 @@ export function PortfolioExpand({
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.18 }}
                 autoPlay
+                muted
                 loop
                 playsInline
                 controls
