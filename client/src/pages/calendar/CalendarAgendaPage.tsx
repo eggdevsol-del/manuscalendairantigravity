@@ -2,13 +2,13 @@ import { useCalendarAgendaController } from "./hooks/useCalendarAgendaController
 import { CalendarMonthHeader } from "./components/CalendarMonthHeader";
 import { CalendarDateStrip7 } from "./components/CalendarDateStrip7";
 import { AgendaDayList } from "./components/AgendaDayList";
-import { MonthBreakdown } from "./components/MonthBreakdown";
+import { AgendaBreakdownList } from "./components/AgendaBreakdownList";
 import { PageShell, PageHeader } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { useRegisterFABActions } from "@/contexts/BottomNavContext";
 
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { type FABMenuItem } from "@/ui/FABMenu";
 import { BookingWizardContent } from "@/features/booking/BookingWizardContent";
 import { PersonalReminderForm } from "@/features/calendar/PersonalReminderForm";
@@ -17,6 +17,11 @@ import { useLocation } from "wouter";
 import { useEffect, useRef } from "react";
 import { useBottomNav } from "@/contexts/BottomNavContext";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
+
+// ── Cancel confirmation step type ──
+type CancelStep = null | "confirm" | "confirmAll";
 
 export default function CalendarAgendaPage() {
   const controller = useCalendarAgendaController();
@@ -24,6 +29,60 @@ export default function CalendarAgendaPage() {
   const { isFABOpen, setFABOpen } = useBottomNav();
   const { user } = useAuth();
   const isClient = user?.role === "client";
+
+  // ── Cancel state ──
+  const [cancelTarget, setCancelTarget] = useState<any>(null);
+  const [cancelStep, setCancelStep] = useState<CancelStep>(null);
+
+  const cancelSessionMutation = trpc.appointments.cancelSession.useMutation({
+    onSuccess: () => {
+      toast.success("Session cancelled");
+      controller.refetch();
+      resetCancel();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const cancelProjectMutation = trpc.appointments.cancelProjectSessions.useMutation({
+    onSuccess: (data) => {
+      toast.success(`${data.cancelledCount} sessions cancelled`);
+      controller.refetch();
+      resetCancel();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const resetCancel = useCallback(() => {
+    setCancelTarget(null);
+    setCancelStep(null);
+  }, []);
+
+  const handleCancelSession = useCallback((apt: any) => {
+    setCancelTarget(apt);
+    setCancelStep("confirm");
+  }, []);
+
+  const handleConfirmCancel = useCallback(() => {
+    if (!cancelTarget) return;
+
+    // If this appointment is part of a multi-session plan, ask about cancelling all
+    if (cancelTarget.sessionPlanId && cancelTarget.sessionTotal && cancelTarget.sessionTotal > 1) {
+      setCancelStep("confirmAll");
+    } else {
+      // Single session — cancel immediately
+      cancelSessionMutation.mutate({ appointmentId: cancelTarget.id });
+    }
+  }, [cancelTarget, cancelSessionMutation]);
+
+  const handleConfirmAllDecision = useCallback((cancelAll: boolean) => {
+    if (!cancelTarget) return;
+
+    if (cancelAll) {
+      cancelProjectMutation.mutate({ sessionPlanId: cancelTarget.sessionPlanId });
+    } else {
+      cancelSessionMutation.mutate({ appointmentId: cancelTarget.id });
+    }
+  }, [cancelTarget, cancelSessionMutation, cancelProjectMutation]);
 
   // Reset selection when FAB closes
   useEffect(() => {
@@ -121,7 +180,7 @@ export default function CalendarAgendaPage() {
 
   useRegisterFABActions("calendar", fabActions);
 
-  // Gestures for toggling Month View
+  // Gestures for toggling Agenda View — DISABLED when agenda is open to allow scrolling
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const touchEndX = useRef(0);
@@ -140,26 +199,68 @@ export default function CalendarAgendaPage() {
   };
 
   const handleTouchEnd = () => {
+    // When agenda is open, don't intercept swipes — allow free scrolling
+    if (controller.isBreakdownOpen) return;
+
     const deltaY = touchEndY.current - touchStartY.current;
     const deltaX = touchEndX.current - touchStartX.current;
 
-    // If it's a prominent vertical swipe and Month View is open
     if (Math.abs(deltaY) > 50 && Math.abs(deltaY) > Math.abs(deltaX)) {
-      // Either Swipe Down or Swipe Up when Month View is open will close it
-      // Swipe Down often feels like "pulling the drawer closed" if the drawer opens downwards
-      if (controller.isBreakdownOpen) {
-        controller.toggleBreakdown();
-      } else if (deltaY > 50 && !controller.isBreakdownOpen) {
-        // Swipe down on the week view (when closed) could pull open the month view.
-        // But only if we swipe on the header, otherwise we break list scrolling.
-        // We'll leave it out for now to avoid scrolling conflicts.
-      }
+      // No-op for now: swipe gestures only used in week view
     }
   };
 
   return (
     <PageShell>
       <PageHeader title="Calendar" />
+
+      {/* ── Cancel Confirmation Banner (SSOT pattern) ── */}
+      {cancelStep === "confirm" && (
+        <div className="flex items-center justify-between px-4 py-3 bg-destructive/10 border-b border-destructive/20 animate-in slide-in-from-top-2 duration-200">
+          <span className="text-sm font-semibold text-destructive">
+            Cancel this session?
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={resetCancel}
+              className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground rounded-md hover:bg-secondary/50 transition-colors"
+            >
+              No
+            </button>
+            <button
+              onClick={handleConfirmCancel}
+              disabled={cancelSessionMutation.isPending}
+              className="px-3 py-1.5 text-xs font-bold text-destructive-foreground bg-destructive rounded-md hover:bg-destructive/90 transition-colors"
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      )}
+
+      {cancelStep === "confirmAll" && (
+        <div className="flex items-center justify-between px-4 py-3 bg-destructive/10 border-b border-destructive/20 animate-in slide-in-from-top-2 duration-200">
+          <span className="text-sm font-semibold text-destructive">
+            Cancel all sessions for this project?
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleConfirmAllDecision(false)}
+              disabled={cancelSessionMutation.isPending}
+              className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground rounded-md hover:bg-secondary/50 transition-colors"
+            >
+              No, just this one
+            </button>
+            <button
+              onClick={() => handleConfirmAllDecision(true)}
+              disabled={cancelProjectMutation.isPending}
+              className="px-3 py-1.5 text-xs font-bold text-destructive-foreground bg-destructive rounded-md hover:bg-destructive/90 transition-colors"
+            >
+              Yes, cancel all
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Reschedule mode banner */}
       {controller.isRescheduling && (
@@ -181,35 +282,43 @@ export default function CalendarAgendaPage() {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* 1. Underlying Breakdown Layer (visible when top layer slides down) */}
-        {/* iPad: Relative, 50% width, always visible, z-0 */}
+        {/* 1. Underlying Agenda Layer (visible when top layer slides down) */}
         <div
           className={cn(
             "absolute inset-0 transition-opacity duration-300 md:relative md:inset-auto md:w-1/2 md:opacity-100 md:z-0",
             controller.isBreakdownOpen ? "opacity-100 z-0" : "opacity-0 -z-10"
           )}
         >
-          <MonthBreakdown
-            month={controller.activeDate}
+          <AgendaBreakdownList
             eventsByDay={controller.eventsByDay}
             workSchedule={controller.workSchedule}
-            onDateTap={controller.handleDateTap}
             activeArtists={controller.activeArtists}
+            onAppointmentTap={controller.handleAppointmentTap}
+            onDateTap={controller.startBooking}
+            onCancelSession={handleCancelSession}
           />
         </div>
 
         {/* 2. Sliding Main Content Layer */}
+        {/* When agenda is open, tapping this area (which is slid down, showing the calendar) returns to week view */}
         <div
           className={cn(
             "absolute inset-0 flex flex-col transition-transform duration-500 ease-in-out z-10",
             "md:relative md:inset-auto md:w-1/2 md:translate-y-0 md:bg-transparent md:border-l md:border-border md:pt-5",
             controller.isBreakdownOpen
-              ? "translate-y-[55vh] rounded-t-[2.5rem] bg-background shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden"
+              ? "translate-y-[55vh] rounded-t-[2.5rem] bg-background shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden cursor-pointer"
               : "translate-y-0 bg-transparent"
           )}
+          onClick={controller.isBreakdownOpen ? controller.toggleBreakdown : undefined}
         >
           {/* Sticky Header Zone */}
-          <div className="z-20 bg-transparent">
+          <div className="z-20 bg-transparent" onClick={(e) => {
+            // When breakdown is open, clicking the header should close it
+            // But don't prevent button clicks within the header
+            if (controller.isBreakdownOpen) {
+              e.stopPropagation();
+            }
+          }}>
             <CalendarMonthHeader
               activeDate={controller.activeDate}
               onToggleBreakdown={controller.toggleBreakdown}

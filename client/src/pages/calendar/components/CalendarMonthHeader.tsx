@@ -71,7 +71,7 @@ export function CalendarMonthHeader({
           className="text-xs font-semibold text-primary hover:bg-primary/10 h-8 px-3"
           onClick={onToggleBreakdown}
         >
-          {isBreakdownOpen ? "Week" : "Month"}
+          {isBreakdownOpen ? "Week" : "Agenda"}
         </Button>
       </div>
     </header>

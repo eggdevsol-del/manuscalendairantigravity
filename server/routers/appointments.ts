@@ -1307,6 +1307,107 @@ export const appointmentsRouter = router({
         };
       }
     }),
+
+  /**
+   * Artist cancels a single session. Sets status to "cancelled" and sends a system message.
+   */
+  cancelSession: artistProcedure
+    .input(z.object({
+      appointmentId: z.number(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const appointment = await db.getAppointment(input.appointmentId);
+      if (!appointment) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+      }
+      if (appointment.artistId !== ctx.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Not your appointment" });
+      }
+
+      await db.updateAppointment(input.appointmentId, {
+        status: "cancelled" as any,
+      }, ctx.user.id);
+
+      await db.logAppointmentAction({
+        appointmentId: input.appointmentId,
+        action: "cancelled",
+        performedBy: ctx.user.id,
+        newValue: JSON.stringify({ cancelledBy: "artist" }),
+      });
+
+      // Send system message in chat
+      if (appointment.conversationId) {
+        const title = appointment.title || "Session";
+        const dateStr = appointment.startTime
+          ? new Date(appointment.startTime).toLocaleDateString("en-AU", {
+              weekday: "short", day: "numeric", month: "short",
+            })
+          : "";
+        await db.createMessage({
+          conversationId: appointment.conversationId,
+          senderId: ctx.user.id,
+          content: `${title} on ${dateStr} has been cancelled.`,
+          messageType: "system" as any,
+        });
+      }
+
+      return { success: true };
+    }),
+
+  /**
+   * Artist cancels all sessions in a project (by sessionPlanId).
+   * Sets all matching appointments to "cancelled" and sends a single system message.
+   */
+  cancelProjectSessions: artistProcedure
+    .input(z.object({
+      sessionPlanId: z.number(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const dbRef = await db.getDb();
+      if (!dbRef) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      // Find all appointments for this session plan
+      const planAppointments = await dbRef.query.appointments.findMany({
+        where: and(
+          eq(schema.appointments.sessionPlanId, input.sessionPlanId),
+          eq(schema.appointments.artistId, ctx.user.id),
+        ),
+      });
+
+      if (planAppointments.length === 0) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "No sessions found for this project" });
+      }
+
+      const apptIds = planAppointments.map(a => a.id);
+
+      // Batch cancel all
+      await dbRef.update(schema.appointments)
+        .set({ status: "cancelled", updatedAt: new Date() })
+        .where(inArray(schema.appointments.id, apptIds));
+
+      // Log each
+      for (const appt of planAppointments) {
+        await db.logAppointmentAction({
+          appointmentId: appt.id,
+          action: "cancelled",
+          performedBy: ctx.user.id,
+          newValue: JSON.stringify({ cancelledBy: "artist", batchCancel: true, sessionPlanId: input.sessionPlanId }),
+        });
+      }
+
+      // Send single system message
+      const conversationId = planAppointments[0]?.conversationId;
+      if (conversationId) {
+        await db.createMessage({
+          conversationId,
+          senderId: ctx.user.id,
+          content: `All ${planAppointments.length} sessions for this project have been cancelled.`,
+          messageType: "system" as any,
+        });
+      }
+
+      return { success: true, cancelledCount: planAppointments.length };
+    }),
 });
 
 // Helper function to send deposit info with secure payment link
