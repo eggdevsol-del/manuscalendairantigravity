@@ -296,6 +296,12 @@ export default function CalendarAgendaPage() {
             onAppointmentTap={controller.handleAppointmentTap}
             onDateTap={controller.startBooking}
             onCancelSession={handleCancelSession}
+            onMessageClient={(apt: any) => {
+              if (apt.conversationId) {
+                setLocation(`/chat/${apt.conversationId}`);
+              }
+            }}
+            onReschedule={(apt: any) => controller.startReschedule(apt)}
           />
         </div>
 
