@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { getDb } from "./core";
 import { eq, and } from "drizzle-orm";
-import { studios, artistSettings, leads, messages, paymentLedger, appointments, orders, products, orderItems, users, conversations, merchants } from "../../drizzle/schema";
+import { studios, artistSettings, leads, messages, paymentLedger, appointments, orders, products, orderItems, users, conversations, merchants, sessionPlans, sessionPlanItems } from "../../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import type { Request, Response } from "express";
 
@@ -988,9 +988,121 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             const lead = await db.query.leads.findFirst({
               where: eq(leads.id, leadId),
             });
-            if (!lead) break;
+            if (!lead) {
+              // ── SESSION PLAN FALLBACK ──────────────────────────────
+              // sessionPlans.accept() reuses the "deposit" type with plan.id as leadId.
+              // If no lead exists with this ID, check if it's a session plan payment.
+              const plan = await db.query.sessionPlans.findFirst({
+                where: eq(sessionPlans.id, leadId),
+                with: { items: true },
+              });
+
+              if (plan) {
+                console.log(`[Stripe PI] Session plan ${plan.id} deposit payment received`);
+                const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+
+                // 1. Update plan status → accepted
+                await db.update(sessionPlans)
+                  .set({
+                    status: "accepted",
+                    acceptedAt: now,
+                    stripeSessionId: pi.id,
+                  })
+                  .where(eq(sessionPlans.id, plan.id));
+
+                // 2. Create confirmed appointments for each session item
+                const planItems = plan.items || [];
+                for (const item of planItems) {
+                  const startDate = new Date(item.startsAt);
+                  const endDate = new Date(startDate.getTime() + item.durationMinutes * 60 * 1000);
+                  const startStr = startDate.toISOString().slice(0, 19).replace("T", " ");
+                  const endStr = endDate.toISOString().slice(0, 19).replace("T", " ");
+                  const depositCentsDollars = Math.round(item.depositCents / 100);
+
+                  const [apptResult] = await db.insert(appointments).values({
+                    conversationId: plan.conversationId,
+                    artistId: plan.artistId,
+                    clientId: plan.clientId,
+                    title: `Session ${item.sessionIndex}`,
+                    startTime: startStr,
+                    endTime: endStr,
+                    timeZone: "Australia/Brisbane",
+                    status: "confirmed",
+                    price: item.estimateCents,
+                    depositAmount: depositCentsDollars,
+                    depositPaid: 1,
+                    confirmationSent: 0,
+                    sessionIndex: item.sessionIndex,
+                    sessionTotal: planItems.length,
+                    sessionPlanId: plan.id,
+                    depositPaymentId: pi.id,
+                    totalExpectedAmountCents: item.estimateCents,
+                    totalPaidAmountCents: item.depositCents,
+                    remainingBalanceCents: item.estimateCents - item.depositCents,
+                    paymentStatus: "deposit_paid",
+                    paymentMethod: "stripe",
+                    createdAt: now,
+                    updatedAt: now,
+                  });
+
+                  // Link the appointment back to the session plan item
+                  await db.update(sessionPlanItems)
+                    .set({ appointmentId: apptResult.insertId })
+                    .where(eq(sessionPlanItems.id, item.id));
+
+                  console.log(`[Stripe PI] Created appointment ${apptResult.insertId} for session ${item.sessionIndex}`);
+                }
+
+                // 3. Update the session plan chat message metadata → confirmed
+                if (plan.messageId) {
+                  const msg = await db.query.messages.findFirst({
+                    where: eq(messages.id, plan.messageId),
+                  });
+                  if (msg?.metadata) {
+                    try {
+                      const meta = typeof msg.metadata === "string"
+                        ? JSON.parse(msg.metadata)
+                        : msg.metadata;
+                      meta.status = "confirmed";
+                      await db.update(messages)
+                        .set({ metadata: JSON.stringify(meta) })
+                        .where(eq(messages.id, plan.messageId));
+                      console.log(`[Stripe PI] Session plan message ${plan.messageId} confirmed`);
+                    } catch (e) {
+                      console.error(`[Stripe PI] Failed to update session plan message`, e);
+                    }
+                  }
+                }
+
+                // 4. Ledger write
+                const spPlatformFee = piMeta.platformFeeCents ? parseInt(piMeta.platformFeeCents, 10) : (plan.platformFeeCents || 0);
+                const spArtistFee = piMeta.artistFeeCents ? parseInt(piMeta.artistFeeCents, 10) : 0;
+                const spBaseAmount = piMeta.baseAmountCents ? parseInt(piMeta.baseAmountCents, 10) : plan.depositTotalCents;
+                const spConnectId = piMeta.stripeConnectAccountId || null;
+
+                await db.insert(paymentLedger).values({
+                  bookingId: null,
+                  artistId: plan.artistId,
+                  clientId: plan.clientId,
+                  transactionType: "deposit",
+                  amountCents: spBaseAmount,
+                  platformFeeCents: spPlatformFee,
+                  artistFeeCents: spArtistFee,
+                  stripePaymentId: pi.id,
+                  stripeConnectAccountId: spConnectId,
+                  tier: (piMeta.tier as any) || "free",
+                  paymentMethod: "card",
+                });
+
+                console.log(`[Stripe PI] Session plan ${plan.id} fully confirmed with ${planItems.length} appointments`);
+              } else {
+                console.warn(`[Stripe PI] No lead or session plan found for ID ${leadId}`);
+              }
+              break;
+            }
 
             const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+            const nowDate = new Date();
             await db
               .update(leads)
               .set({
