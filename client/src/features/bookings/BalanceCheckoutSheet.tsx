@@ -50,33 +50,9 @@ export function BalanceCheckoutSheet({
 
   const handlePaymentComplete = useCallback(() => {
     setStep("success");
-
-    // Optimistic update: immediately zero the balance in the cache
-    utils.appointments.getClientBookings.setData(
-      { tab: "upcoming" },
-      (prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          appointments: prev.appointments.map((appt: any) =>
-            appt.id === appointmentId
-              ? {
-                  ...appt,
-                  balanceDueCents: 0,
-                  paymentStatus: "fully_paid",
-                  paymentRequest: null,
-                }
-              : appt
-          ),
-        };
-      }
-    );
-
-    // Delayed invalidation: refetch from DB after webhook has processed
-    setTimeout(() => {
-      utils.appointments.getClientBookings.invalidate();
-    }, 3000);
-  }, [utils, appointmentId]);
+    // Invalidate bookings to reflect updated payment status
+    utils.appointments.getClientBookings.invalidate();
+  }, [utils]);
 
   const handleDone = useCallback(() => {
     onClose();
