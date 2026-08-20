@@ -513,8 +513,6 @@ export function ChatInterface({
               <button
                 onClick={() => {
                   setShowBookingWizard(true);
-                  // Auto-open the ActionPanel so the wizard appears immediately
-                  setTimeout(() => setFABOpen(true), 50);
                 }}
                 className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold tracking-wide hover:bg-primary/90 active:scale-95 transition-all"
               >
@@ -1251,6 +1249,64 @@ export function ChatInterface({
         onConfirm={handleConfirmDialogAccept}
         onCancel={handleConfirmDialogCancel}
       />
+
+      {/* ── Booking Wizard BottomSheet ─────────────────────── */}
+      {(() => {
+        const effectiveProposal = selectedProposal || proposalData;
+        const isOpen = showBookingWizard || !!effectiveProposal || !!selectedAppointment;
+        if (!isOpen) return null;
+        return (
+          <BottomSheet
+            open={isOpen}
+            onClose={() => {
+              setShowBookingWizard(false);
+              setSelectedProposal(null);
+              setSelectedAppointment(null);
+            }}
+            title="Booking"
+          >
+            <BookingWizardContent
+              conversationId={conversationId}
+              artistServices={availableServices || []}
+              artistSettings={artistSettings}
+              isArtist={isArtist}
+              onBookingSuccess={() => {
+                toast.success("Booking proposal sent!");
+                setShowBookingWizard(false);
+              }}
+              onClose={() => {
+                setShowBookingWizard(false);
+                setSelectedProposal(null);
+                setSelectedAppointment(null);
+              }}
+              selectedProposal={effectiveProposal}
+              selectedAppointmentRaw={selectedAppointment}
+              onAcceptProposal={promo =>
+                handleClientAcceptProposal(effectiveProposal?.message, promo)
+              }
+              onRejectProposal={() => {
+                setSelectedProposal(null);
+              }}
+              onUpdateProposalState={(newMeta) => {
+                if (effectiveProposal) {
+                  setSelectedProposal({ message: effectiveProposal.message, metadata: newMeta });
+                }
+              }}
+              onCancelProposal={() => {
+                if (effectiveProposal)
+                  handleCancelProposal(
+                    effectiveProposal.message,
+                    effectiveProposal.metadata
+                  );
+                setSelectedProposal(null);
+              }}
+              isPendingProposalAction={bookProjectMutation.isPending}
+              artistId={conversation?.artistId}
+              isLoadingProposal={isLoadingProposalData}
+            />
+          </BottomSheet>
+        );
+      })()}
     </div>
   );
 }
