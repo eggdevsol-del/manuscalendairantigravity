@@ -6,7 +6,7 @@ import * as db from "../db";
 import { localToUTC, getBusinessTimezone } from "../../shared/utils/timezone";
 import { notificationOutbox } from "../../drizzle/schema";
 import { getBankDetailLabels } from "../../shared/utils/bankDetails";
-import { eq, sql, and, gte, lte, inArray } from "drizzle-orm";
+import { eq, sql, and, gte, lte, inArray, not } from "drizzle-orm";
 import * as schema from "../../drizzle/schema";
 import { canAccessFeature, getFeatureLimit } from "../_core/tierPermissions";
 
@@ -1144,11 +1144,12 @@ export const appointmentsRouter = router({
       const now = new Date().toISOString().slice(0, 19).replace("T", " ");
 
       if (input.tab === "upcoming") {
-        // Upcoming: confirmed/pending appointments where startTime >= now
+        // Upcoming: confirmed/pending appointments where startTime >= now, excluding cancelled
         const upcoming = await dbRef.query.appointments.findMany({
           where: and(
             eq(schema.appointments.clientId, clientId),
             gte(schema.appointments.startTime, now),
+            not(eq(schema.appointments.status, "cancelled")),
           ),
           orderBy: (appointments, { asc }) => [asc(appointments.startTime)],
         });
