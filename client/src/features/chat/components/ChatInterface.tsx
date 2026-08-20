@@ -1,7 +1,7 @@
 import { Button, Input, Label, ScrollArea, DialogTitle } from "@/components/ui";
 import { useChatController } from "@/features/chat/useChatController";
 import { cn } from "@/lib/utils";
-import { BottomSheet } from "@/components/ui/ssot";
+import { BottomSheet, ActionSheet } from "@/components/ui/ssot";
 import { UserAvatar } from "@/components/ui/ssot/UserAvatar";
 import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
 // ProposalSheet removed - not needed
@@ -1256,7 +1256,7 @@ export function ChatInterface({
         const isOpen = showBookingWizard || !!effectiveProposal || !!selectedAppointment;
         if (!isOpen) return null;
         return (
-          <BottomSheet
+          <ActionSheet
             open={isOpen}
             onClose={() => {
               setShowBookingWizard(false);
@@ -1304,7 +1304,7 @@ export function ChatInterface({
               artistId={conversation?.artistId}
               isLoadingProposal={isLoadingProposalData}
             />
-          </BottomSheet>
+          </ActionSheet>
         );
       })()}
     </div>
