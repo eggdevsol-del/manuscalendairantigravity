@@ -180,7 +180,11 @@ function assignVideo(entry: PoolEntry, container: ContainerEntry) {
       });
     }
   };
-  video.addEventListener("canplay", onCanPlay, { once: true });
+  const onError = () => {
+    console.warn(`[pool] Video stream error for ${container.videoId} -> ${url.slice(-35)}`);
+    releaseVideo(entry);
+  };
+  video.addEventListener("error", onError, { once: true });
 
   // Set src and trigger load
   video.src = container.src;

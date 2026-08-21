@@ -15,10 +15,12 @@ const R2_PUBLIC = (process.env.R2_PUBLIC_URL || "").replace(/\/$/, "");
  */
 function resolveVideoUrl(item: { id: number; mediaType: string | null; cdnUrl: string | null }): string | null {
   if (item.mediaType !== "video" || !item.cdnUrl) return null;
-  // If already on R2, return direct URL (CDN-served, scales infinitely)
-  if (R2_PUBLIC && item.cdnUrl.startsWith(R2_PUBLIC)) return item.cdnUrl;
-  // Legacy: proxy through server (handles expired Instagram CDN URLs)
-  return `/api/ig-video/${item.id}`;
+  // If hosted on R2 or Cloudflare CDN, return direct URL (CDN-served, scales infinitely)
+  if (item.cdnUrl.includes(".r2.dev") || (R2_PUBLIC && item.cdnUrl.startsWith(R2_PUBLIC))) {
+    return item.cdnUrl;
+  }
+  // Stale legacy URL: return null so it renders as a photo rather than stalling video player with a 502
+  return null;
 }
 
 export const feedRouter = router({

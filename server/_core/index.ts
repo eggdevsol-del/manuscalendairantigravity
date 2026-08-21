@@ -401,6 +401,35 @@ async function startServer() {
     }
   });
 
+  // ── Admin: Purge legacy non-R2 video URLs ─────────────────
+  // POST /api/admin/purge-legacy-videos?key=RAPIDAPI_KEY
+  app.post("/api/admin/purge-legacy-videos", async (req, res) => {
+    const key = req.query.key as string;
+    if (!key || key !== process.env.RAPIDAPI_KEY) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    try {
+      const { getDb } = await import("../db");
+      const dbSchema = await import("../../drizzle/schema");
+      const { sql, eq } = await import("drizzle-orm");
+
+      const db = await getDb();
+      if (!db) return res.status(500).json({ error: "DB unavailable" });
+
+      const R2_PUBLIC = (process.env.R2_PUBLIC_URL || "").replace(/\/$/, "");
+
+      // Update all video portfolio items that are not on R2 to mediaType = 'image'
+      const result = await db.update(dbSchema.portfolios)
+        .set({ mediaType: "image", cdnUrl: null })
+        .where(sql`${dbSchema.portfolios.mediaType} = 'video' AND (${dbSchema.portfolios.cdnUrl} IS NULL OR (${dbSchema.portfolios.cdnUrl} NOT LIKE '${sql.raw(R2_PUBLIC)}%' AND ${dbSchema.portfolios.cdnUrl} NOT LIKE 'https://pub-%'))`);
+
+      res.json({ status: "success", message: "Purged non-R2 video references to static images" });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // ── Admin: Cleanup duplicate appointments ────────────────────
   // POST /api/admin/cleanup-duplicates?key=RAPIDAPI_KEY
   app.post("/api/admin/cleanup-duplicates", async (req, res) => {
