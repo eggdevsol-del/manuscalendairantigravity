@@ -17,6 +17,7 @@ import { useRef, useEffect, useCallback, useState } from "react";
 const MAX_POOL_SIZE = 4; // iOS Safari handles 4-6 safely
 const LOAD_TIMEOUT_MS = 8000; // Give up if video can't load in 8s
 const RETRY_DELAY_MS = 2000; // Wait before retrying a failed video
+const MAX_RETRIES = 1; // Only retry once, then give up permanently
 const RECONCILE_DEBOUNCE_MS = 100; // Debounce reconciliation during fast scrolls
 
 interface PoolEntry {
@@ -33,6 +34,7 @@ interface ContainerEntry {
   poster: string;
   isInView: boolean;
   failedAt: number; // timestamp of last failure (0 = no failure)
+  retryCount: number; // how many times we've retried this container
 }
 
 // ── Singleton pool (shared across all FeedCard instances) ──
@@ -102,9 +104,15 @@ function reconcilePool() {
   const poolEntries = getOrCreatePool();
   const now = Date.now();
 
-  // Get all visible containers, excluding recently-failed ones in cooldown
+  // Get all visible containers, excluding permanently-failed and in-cooldown ones
   const visibleContainers = Array.from(containers.values())
-    .filter(c => c.isInView && (c.failedAt === 0 || now - c.failedAt > RETRY_DELAY_MS));
+    .filter(c => {
+      if (!c.isInView) return false;
+      if (c.failedAt === 0) return true; // Never failed
+      if (c.retryCount > MAX_RETRIES) return false; // Permanently failed — don't retry
+      if (now - c.failedAt <= RETRY_DELAY_MS) return false; // In cooldown
+      return true; // Cooldown passed, retry allowed
+    });
 
   // Sort by proximity to viewport center (lower = closer)
   const viewportCenter = window.innerHeight / 2;
@@ -149,9 +157,12 @@ function assignVideo(entry: PoolEntry, container: ContainerEntry) {
   const { video } = entry;
 
   entry.assignedTo = container.videoId;
-  entry.retryCount = container.failedAt > 0 ? 1 : 0; // Track if this is a retry
+  entry.retryCount = container.retryCount;
   video.muted = globalMuted;
   video.poster = container.poster;
+
+  // Start invisible — only show after canplay to prevent black flash
+  video.style.opacity = "0";
 
   // Attach to DOM
   container.element.appendChild(video);
@@ -168,27 +179,35 @@ function assignVideo(entry: PoolEntry, container: ContainerEntry) {
 
   const onCanPlay = () => {
     cleanup();
+    // Make visible now that we have a frame to show
+    video.style.opacity = "1";
     video.play().catch(() => {});
   };
 
   const onError = () => {
     cleanup();
-    console.warn(`[VideoPool] Failed to load video for ${container.videoId}: ${container.src.slice(0, 60)}`);
+    container.retryCount++;
     container.failedAt = Date.now();
+    console.warn(`[VideoPool] Failed to load video for ${container.videoId} (attempt ${container.retryCount}/${MAX_RETRIES + 1}): ${container.src.slice(0, 60)}`);
     releaseVideo(entry);
-    // Schedule reconcile to potentially retry after cooldown
-    setTimeout(scheduleReconcile, RETRY_DELAY_MS + 100);
+    // Only schedule retry if under the cap
+    if (container.retryCount <= MAX_RETRIES) {
+      setTimeout(scheduleReconcile, RETRY_DELAY_MS + 100);
+    }
   };
 
   // Timeout guard: if video doesn't load in time, release the slot
   entry.loadTimeout = setTimeout(() => {
     entry.loadTimeout = null;
     if (entry.assignedTo === container.videoId && video.readyState < 3) {
-      console.warn(`[VideoPool] Load timeout for ${container.videoId}`);
-      cleanup();
+      container.retryCount++;
       container.failedAt = Date.now();
+      console.warn(`[VideoPool] Load timeout for ${container.videoId} (attempt ${container.retryCount}/${MAX_RETRIES + 1})`);
+      cleanup();
       releaseVideo(entry);
-      setTimeout(scheduleReconcile, RETRY_DELAY_MS + 100);
+      if (container.retryCount <= MAX_RETRIES) {
+        setTimeout(scheduleReconcile, RETRY_DELAY_MS + 100);
+      }
     }
   }, LOAD_TIMEOUT_MS);
 
@@ -257,6 +276,7 @@ export function useVideoPool(src: string, poster: string) {
       poster,
       isInView: false,
       failedAt: 0,
+      retryCount: 0,
     });
 
     // Observe
