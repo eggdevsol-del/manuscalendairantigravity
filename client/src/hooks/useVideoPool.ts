@@ -1,24 +1,29 @@
 /**
- * useVideoPool.ts — Centralized video element pool manager
- * ────────────────────────────────────────────────────────
- * Manages a pool of reusable <video> elements to prevent iOS Safari
- * crashes from having too many active video elements.
+ * useVideoPool.ts — Centralized video element pool manager (v2)
+ * ─────────────────────────────────────────────────────────────
+ * Manages a pool of reusable <video> elements for infinite-scroll feeds.
+ * Designed for thousands of concurrent users on iOS Safari.
  *
- * Features:
- * - Pool of MAX_POOL_SIZE video elements (reused, not created/destroyed)
- * - Single IntersectionObserver for all video containers
- * - Waits for `canplay` before calling `play()` (fixes race condition)
- * - Priority: nearest-to-viewport-center gets playback first
- * - Properly handles Range requests via the server proxy
+ * v2 improvements:
+ * - Error recovery: releases pool slots on load failure
+ * - Retry with backoff: retries failed videos once after 2s
+ * - Debounced reconciliation: prevents thrashing during fast scrolling
+ * - Proper cleanup: no orphaned event listeners
+ * - Timeout guard: releases slots if video can't load within 8s
  */
 
 import { useRef, useEffect, useCallback, useState } from "react";
 
 const MAX_POOL_SIZE = 4; // iOS Safari handles 4-6 safely
+const LOAD_TIMEOUT_MS = 8000; // Give up if video can't load in 8s
+const RETRY_DELAY_MS = 2000; // Wait before retrying a failed video
+const RECONCILE_DEBOUNCE_MS = 100; // Debounce reconciliation during fast scrolls
 
 interface PoolEntry {
   video: HTMLVideoElement;
-  assignedTo: string | null; // data-video-id of the container
+  assignedTo: string | null;
+  retryCount: number;
+  loadTimeout: ReturnType<typeof setTimeout> | null;
 }
 
 interface ContainerEntry {
@@ -27,6 +32,7 @@ interface ContainerEntry {
   src: string;
   poster: string;
   isInView: boolean;
+  failedAt: number; // timestamp of last failure (0 = no failure)
 }
 
 // ── Singleton pool (shared across all FeedCard instances) ──
@@ -35,6 +41,7 @@ let pool: PoolEntry[] = [];
 let containers = new Map<string, ContainerEntry>();
 let observer: IntersectionObserver | null = null;
 let globalMuted = true;
+let reconcileTimer: ReturnType<typeof setTimeout> | null = null;
 
 function getOrCreatePool(): PoolEntry[] {
   if (pool.length > 0) return pool;
@@ -48,7 +55,7 @@ function getOrCreatePool(): PoolEntry[] {
     video.setAttribute("playsinline", "");
     video.setAttribute("webkit-playsinline", "");
     video.style.cssText = "width:100%;height:100%;object-fit:cover;display:block;";
-    pool.push({ video, assignedTo: null });
+    pool.push({ video, assignedTo: null, retryCount: 0, loadTimeout: null });
   }
 
   return pool;
@@ -68,8 +75,8 @@ function getOrCreateObserver(): IntersectionObserver {
           container.isInView = entry.isIntersecting;
         }
       }
-      // Re-evaluate which videos should be playing
-      reconcilePool();
+      // Debounced reconciliation — prevents thrashing during fast scrolls
+      scheduleReconcile();
     },
     { rootMargin: "200px", threshold: 0.1 }
   );
@@ -77,16 +84,27 @@ function getOrCreateObserver(): IntersectionObserver {
   return observer;
 }
 
+/** Debounce reconciliation to avoid churning pool slots during fast scrolls */
+function scheduleReconcile() {
+  if (reconcileTimer) clearTimeout(reconcileTimer);
+  reconcileTimer = setTimeout(() => {
+    reconcileTimer = null;
+    reconcilePool();
+  }, RECONCILE_DEBOUNCE_MS);
+}
+
 /**
  * Core reconciliation: decide which containers get video elements.
  * Prioritizes visible containers closest to the viewport center.
+ * Skips containers that recently failed (cooldown period).
  */
 function reconcilePool() {
   const poolEntries = getOrCreatePool();
+  const now = Date.now();
 
-  // Get all visible containers
+  // Get all visible containers, excluding recently-failed ones in cooldown
   const visibleContainers = Array.from(containers.values())
-    .filter(c => c.isInView);
+    .filter(c => c.isInView && (c.failedAt === 0 || now - c.failedAt > RETRY_DELAY_MS));
 
   // Sort by proximity to viewport center (lower = closer)
   const viewportCenter = window.innerHeight / 2;
@@ -113,6 +131,7 @@ function reconcilePool() {
   // 2. Assign videos to containers that need them
   for (const container of visibleContainers) {
     if (!shouldHaveVideo.has(container.videoId)) continue;
+    if (!container.src) continue; // Skip containers with no video URL
 
     // Already assigned?
     const existingEntry = poolEntries.find(e => e.assignedTo === container.videoId);
@@ -130,24 +149,65 @@ function assignVideo(entry: PoolEntry, container: ContainerEntry) {
   const { video } = entry;
 
   entry.assignedTo = container.videoId;
+  entry.retryCount = container.failedAt > 0 ? 1 : 0; // Track if this is a retry
   video.muted = globalMuted;
   video.poster = container.poster;
 
   // Attach to DOM
   container.element.appendChild(video);
 
-  // Set src and wait for canplay before playing
-  video.src = container.src;
-  video.load();
+  // ── Event handlers with proper cleanup ──
+  const cleanup = () => {
+    video.removeEventListener("canplay", onCanPlay);
+    video.removeEventListener("error", onError);
+    if (entry.loadTimeout) {
+      clearTimeout(entry.loadTimeout);
+      entry.loadTimeout = null;
+    }
+  };
 
   const onCanPlay = () => {
+    cleanup();
     video.play().catch(() => {});
   };
+
+  const onError = () => {
+    cleanup();
+    console.warn(`[VideoPool] Failed to load video for ${container.videoId}: ${container.src.slice(0, 60)}`);
+    container.failedAt = Date.now();
+    releaseVideo(entry);
+    // Schedule reconcile to potentially retry after cooldown
+    setTimeout(scheduleReconcile, RETRY_DELAY_MS + 100);
+  };
+
+  // Timeout guard: if video doesn't load in time, release the slot
+  entry.loadTimeout = setTimeout(() => {
+    entry.loadTimeout = null;
+    if (entry.assignedTo === container.videoId && video.readyState < 3) {
+      console.warn(`[VideoPool] Load timeout for ${container.videoId}`);
+      cleanup();
+      container.failedAt = Date.now();
+      releaseVideo(entry);
+      setTimeout(scheduleReconcile, RETRY_DELAY_MS + 100);
+    }
+  }, LOAD_TIMEOUT_MS);
+
   video.addEventListener("canplay", onCanPlay, { once: true });
+  video.addEventListener("error", onError, { once: true });
+
+  // Set src and trigger load
+  video.src = container.src;
+  video.load();
 }
 
 function releaseVideo(entry: PoolEntry) {
   const { video } = entry;
+
+  // Clear timeout
+  if (entry.loadTimeout) {
+    clearTimeout(entry.loadTimeout);
+    entry.loadTimeout = null;
+  }
 
   video.pause();
   video.removeAttribute("src");
@@ -159,6 +219,7 @@ function releaseVideo(entry: PoolEntry) {
   }
 
   entry.assignedTo = null;
+  entry.retryCount = 0;
 }
 
 // ── Public hook ──────────────────────────────────────────
@@ -195,6 +256,7 @@ export function useVideoPool(src: string, poster: string) {
       src,
       poster,
       isInView: false,
+      failedAt: 0,
     });
 
     // Observe

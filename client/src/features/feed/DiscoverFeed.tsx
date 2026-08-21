@@ -72,7 +72,7 @@ export default function DiscoverFeed() {
 
   const allCards = data?.pages.flatMap((page) => page.cards.map(card => ({
     ...card,
-    videoUrl: (card as any).mediaType === "video" ? `/api/ig-video/${card.id}` : null,
+    videoUrl: (card as any).videoUrl || null,
   }))) ?? [];
 
   if (isLoading) {

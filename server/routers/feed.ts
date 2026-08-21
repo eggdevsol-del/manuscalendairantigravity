@@ -5,6 +5,22 @@ import { eq, and, asc, desc, sql, isNotNull } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 
+const R2_PUBLIC = (process.env.R2_PUBLIC_URL || "").replace(/\/$/, "");
+
+/**
+ * Resolve the best video URL for a portfolio item.
+ * - R2 URLs are returned directly (CDN-served, no server bottleneck)
+ * - Legacy Instagram CDN URLs fall back to the proxy endpoint
+ * - Non-video items return null
+ */
+function resolveVideoUrl(item: { id: number; mediaType: string | null; cdnUrl: string | null }): string | null {
+  if (item.mediaType !== "video" || !item.cdnUrl) return null;
+  // If already on R2, return direct URL (CDN-served, scales infinitely)
+  if (R2_PUBLIC && item.cdnUrl.startsWith(R2_PUBLIC)) return item.cdnUrl;
+  // Legacy: proxy through server (handles expired Instagram CDN URLs)
+  return `/api/ig-video/${item.id}`;
+}
+
 export const feedRouter = router({
   /**
    * Get the discover feed — round-robin interleaved portfolio items across all artists.
@@ -153,7 +169,7 @@ export const feedRouter = router({
             description: item.description,
             createdAt: item.createdAt,
             mediaType: item.mediaType,
-            cdnUrl: item.cdnUrl,
+            videoUrl: resolveVideoUrl(item),
             likeCount: item.likes.length,
             isLiked: item.likes.some(
               (l: { userId: string }) => l.userId === ctx.user.id
@@ -245,7 +261,7 @@ export const feedRouter = router({
         description: item.description,
         createdAt: item.createdAt,
         mediaType: item.mediaType,
-        cdnUrl: item.cdnUrl,
+        videoUrl: resolveVideoUrl(item),
         likeCount: item.likes.length,
         isLiked: item.likes.some(
           (l: { userId: string }) => l.userId === ctx.user.id
@@ -364,7 +380,7 @@ export const feedRouter = router({
           description: p.description,
           sortOrder: p.sortOrder ?? 0,
           mediaType: p.mediaType,
-          cdnUrl: p.cdnUrl,
+          videoUrl: resolveVideoUrl(p),
           tags: (() => {
             try { return p.tags ? JSON.parse(p.tags) : []; } catch { return []; }
           })(),
@@ -470,7 +486,7 @@ export const feedRouter = router({
           description: p.description,
           sortOrder: p.sortOrder ?? 0,
           mediaType: p.mediaType,
-          cdnUrl: p.cdnUrl,
+          videoUrl: resolveVideoUrl(p),
         })),
         postCount: portfolioItems.length,
       };

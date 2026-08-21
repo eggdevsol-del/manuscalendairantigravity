@@ -311,6 +311,96 @@ async function startServer() {
     }
   });
 
+  // ── Admin: Migrate stale video URLs to R2 ──────────────────
+  // POST /api/admin/migrate-videos?key=RAPIDAPI_KEY
+  // Re-downloads videos with expired Instagram CDN URLs and uploads to R2.
+  app.post("/api/admin/migrate-videos", async (req, res) => {
+    const key = req.query.key as string;
+    if (!key || key !== process.env.RAPIDAPI_KEY) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    try {
+      const { getDb } = await import("../db");
+      const dbSchema = await import("../../drizzle/schema");
+      const { eq, sql } = await import("drizzle-orm");
+      const { r2Client, BUCKET_NAME } = await import("../lib/r2");
+      const { PutObjectCommand } = await import("@aws-sdk/client-s3");
+      const { randomUUID } = await import("crypto");
+
+      const db = await getDb();
+      if (!db) return res.status(500).json({ error: "DB unavailable" });
+
+      const R2_PUBLIC = (process.env.R2_PUBLIC_URL || "").replace(/\/$/, "");
+
+      // Find all video portfolio items with non-R2 cdnUrl
+      const staleVideos = await db.query.portfolios.findMany({
+        where: sql`${dbSchema.portfolios.mediaType} = 'video' AND ${dbSchema.portfolios.cdnUrl} IS NOT NULL AND ${dbSchema.portfolios.cdnUrl} NOT LIKE '${sql.raw(R2_PUBLIC)}%'`,
+      });
+
+      console.log(`[Admin] Found ${staleVideos.length} videos with non-R2 URLs`);
+
+      // Return immediately with count, process in background
+      res.json({ status: "started", staleCount: staleVideos.length });
+
+      let migrated = 0;
+      let failed = 0;
+
+      for (const video of staleVideos) {
+        try {
+          if (!video.cdnUrl) continue;
+
+          // Try to download from the original URL
+          const response = await fetch(video.cdnUrl, {
+            headers: { "User-Agent": "Mozilla/5.0 (compatible; TattoiApp/1.0)" },
+          });
+
+          if (!response.ok) {
+            console.warn(`[Admin] Cannot download video ${video.id}: HTTP ${response.status}`);
+            failed++;
+            continue;
+          }
+
+          const buffer = Buffer.from(await response.arrayBuffer());
+          if (buffer.byteLength > 100 * 1024 * 1024) {
+            console.warn(`[Admin] Video ${video.id} too large (${(buffer.byteLength / 1024 / 1024).toFixed(1)}MB)`);
+            failed++;
+            continue;
+          }
+
+          const contentType = response.headers.get("content-type") || "video/mp4";
+          const ext = contentType.includes("mp4") ? "mp4" : "mov";
+          const r2Key = `instagram-videos/${video.artistId}/${randomUUID()}.${ext}`;
+
+          await r2Client.send(new PutObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: r2Key,
+            Body: buffer,
+            ContentType: contentType,
+          }));
+
+          const r2Url = `${R2_PUBLIC}/${r2Key}`;
+
+          // Update DB with new R2 URL
+          await db.update(dbSchema.portfolios)
+            .set({ cdnUrl: r2Url })
+            .where(eq(dbSchema.portfolios.id, video.id));
+
+          migrated++;
+          console.log(`[Admin] Migrated video ${video.id} → R2 (${(buffer.byteLength / 1024 / 1024).toFixed(1)}MB)`);
+        } catch (err) {
+          console.error(`[Admin] Failed to migrate video ${video.id}:`, err);
+          failed++;
+        }
+      }
+
+      console.log(`[Admin] Video migration complete: ${migrated} migrated, ${failed} failed`);
+    } catch (err: any) {
+      console.error("[Admin] Migration failed:", err);
+      if (!res.headersSent) return res.status(500).json({ error: err.message });
+    }
+  });
+
   // ── Admin: Cleanup duplicate appointments ────────────────────
   // POST /api/admin/cleanup-duplicates?key=RAPIDAPI_KEY
   app.post("/api/admin/cleanup-duplicates", async (req, res) => {

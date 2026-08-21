@@ -81,7 +81,7 @@ export default function ArtistPortfolioFeed({
   // Reorder cards to start from the tapped image
   const allCards = (data?.cards ?? []).map(card => ({
     ...card,
-    videoUrl: (card as any).mediaType === "video" ? `/api/ig-video/${card.id}` : null,
+    videoUrl: (card as any).videoUrl || null,
   }));
   const tappedIndex = allCards.findIndex((c) => c.id === tappedImageId);
   const reorderedCards =
