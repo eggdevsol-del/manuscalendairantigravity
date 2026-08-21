@@ -49,7 +49,7 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
   const eagerLoad = index < 10;
 
   // Simple IntersectionObserver-based autoplay
-  const { videoRef, isInView } = useVideoAutoplay();
+  const { videoRef, isInView, hasError, setHasError } = useVideoAutoplay(isVideo ? card.videoUrl : null);
 
   // Mute when scrolling out of view
   useEffect(() => {
@@ -120,7 +120,7 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
     return (
       <div className="feed-card feed-card-focus" onClick={handleDoubleTap}>
         {/* Full-bleed media */}
-        {isVideo ? (
+        {isVideo && !hasError ? (
           <>
             <video
               ref={videoRef}
@@ -129,10 +129,12 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
               poster={card.imageUrl}
               className="feed-card-focus-image"
               style={{ objectFit: "cover" }}
+              autoPlay
               muted
               playsInline
               loop
               preload={eagerLoad ? "auto" : "metadata"}
+              onError={() => setHasError(true)}
             />
             {/* Mute/unmute toggle */}
             {isInView && (
@@ -277,7 +279,7 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
 
       {/* Media */}
       <div className="feed-card-image-container" onClick={handleDoubleTap}>
-        {isVideo ? (
+        {isVideo && !hasError ? (
           <>
             <video
               ref={videoRef}
@@ -285,10 +287,12 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
               src={card.videoUrl!}
               poster={card.imageUrl}
               className="feed-card-image"
+              autoPlay
               muted
               playsInline
               loop
               preload={eagerLoad ? "auto" : "metadata"}
+              onError={() => setHasError(true)}
             />
             {/* Video badge */}
             <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.5)", borderRadius: 6, padding: "3px 8px", display: "flex", alignItems: "center", gap: 4, pointerEvents: "none" }}>

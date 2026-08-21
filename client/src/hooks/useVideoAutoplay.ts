@@ -1,32 +1,43 @@
 /**
- * useVideoAutoplay.ts — Simple IntersectionObserver-based video autoplay
+ * useVideoAutoplay.ts — Robust IntersectionObserver-based video autoplay
  * ─────────────────────────────────────────────────────────────────────
- * Replaces useVideoPool with a simpler approach: each video card has its
- * own native <video> element (rendered in JSX, not dynamically created).
- * This hook just controls play/pause based on visibility.
+ * Each video card renders its own native <video> in JSX with muted, playsInline,
+ * and autoPlay. This hook monitors visibility and controls play/pause smoothly.
  *
- * Why this works better than a pool:
- * - Native <video> elements in JSX satisfy iOS Safari autoplay policies
- * - No dynamic DOM manipulation = no black flash
- * - IntersectionObserver is lightweight and well-supported
- * - Browser handles its own resource management for off-screen videos
+ * iOS Safari Requirements implemented:
+ * - HTML attributes `muted=""`, `playsinline=""`, `webkit-playsinline=""` set on mount
+ * - `defaultMuted = true` to satisfy WebKit autoplay policy before React hydration
+ * - `autoPlay` attribute so WebKit starts buffering & playing immediately when in view
+ * - Threshold 0.2 with 50px rootMargin for seamless scrolling transitions
  */
 
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 
 let globalMuted = true;
 
 /**
- * Hook that auto-plays/pauses a video ref based on viewport visibility.
- * The video element must be rendered in JSX with muted, playsInline, loop.
+ * Hook that manages playback of a video element based on viewport visibility.
  */
-export function useVideoAutoplay() {
+export function useVideoAutoplay(src?: string | null) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isInView, setIsInView] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  // Reset error state if src changes
+  useEffect(() => {
+    setHasError(false);
+  }, [src]);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || !src) return;
+
+    // Enforce iOS Safari required attributes explicitly on the DOM element
+    video.setAttribute("muted", "");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+    video.defaultMuted = true;
+    video.muted = globalMuted;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -34,31 +45,35 @@ export function useVideoAutoplay() {
         setIsInView(visible);
 
         if (visible) {
-          // Play when in view — muted autoplay is always allowed on iOS
           video.muted = globalMuted;
-          video.play().catch(() => {});
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(() => {
+              // Ignore expected abort/user-gesture errors
+            });
+          }
         } else {
-          // Pause and reset when out of view to save resources
-          video.pause();
+          if (!video.paused) {
+            video.pause();
+          }
         }
       },
-      { rootMargin: "100px", threshold: 0.3 }
+      { rootMargin: "50px", threshold: 0.2 }
     );
 
     observer.observe(video);
     return () => observer.disconnect();
-  }, []);
+  }, [src]);
 
-  return { videoRef, isInView };
+  return { videoRef, isInView, hasError, setHasError };
 }
 
 /**
- * Set global mute state for all videos.
+ * Set global mute state for all videos on the page.
  */
 export function setGlobalMuted(muted: boolean) {
   globalMuted = muted;
-  // Update all video elements on the page
-  document.querySelectorAll<HTMLVideoElement>("video[data-feed-video]").forEach(v => {
+  document.querySelectorAll<HTMLVideoElement>("video[data-feed-video]").forEach((v) => {
     v.muted = muted;
   });
 }
