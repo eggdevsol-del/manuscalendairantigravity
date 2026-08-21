@@ -1,16 +1,10 @@
 /**
- * useVideoPool.ts — Centralized video element pool manager
- * ────────────────────────────────────────────────────────
- * Manages a pool of reusable <video> elements to prevent iOS Safari
- * crashes from having too many active video elements.
- *
- * Features:
- * - Pool of MAX_POOL_SIZE video elements (reused, not created/destroyed)
- * - Single IntersectionObserver for all video containers
- * - Full WebKit DOM attribute compliance (`muted=""`, `playsinline=""`, `defaultMuted=true`)
- * - Waits for `canplay` or immediate `readyState >= 3` before calling `play()`
- * - Priority: nearest-to-viewport-center gets playback first
- * - Direct R2 CDN streams with Range request support
+ * useVideoPool.ts — Centralized video element pool manager (with Phase 0 Instrumentation)
+ * ───────────────────────────────────────────────────────────────────────────────────────
+ * Phase 0 Diagnostics Active:
+ * - Detailed video.play() rejection logging with error name & message
+ * - 1-second periodic element state probe
+ * - Reconcile churn counter & assign logging
  */
 
 import { useRef, useEffect, useCallback, useState } from "react";
@@ -36,6 +30,31 @@ let pool: PoolEntry[] = [];
 let containers = new Map<string, ContainerEntry>();
 let observer: IntersectionObserver | null = null;
 let globalMuted = true;
+let reconcileCount = 0;
+const assignHistory = new Map<string, number>();
+
+// Phase 0.2: Element state probe
+if (typeof window !== "undefined" && !(window as any).__videoProbeStarted) {
+  (window as any).__videoProbeStarted = true;
+  setInterval(() => {
+    const videos = document.querySelectorAll("video");
+    if (videos.length === 0) return;
+    videos.forEach((v, i) => {
+      console.log(`[probe] video #${i}`, {
+        src: v.currentSrc?.slice(-35) || v.src?.slice(-35) || "empty",
+        paused: v.paused,
+        t: +v.currentTime.toFixed(2),
+        readyState: v.readyState,
+        networkState: v.networkState,
+        err: v.error ? `${v.error.code} - ${v.error.message}` : null,
+        muted: v.muted,
+        connected: v.isConnected,
+        h: Math.round(v.getBoundingClientRect().height),
+        w: Math.round(v.getBoundingClientRect().width),
+      });
+    });
+  }, 1000);
+}
 
 function getOrCreatePool(): PoolEntry[] {
   if (pool.length > 0) return pool;
@@ -89,6 +108,7 @@ function getOrCreateObserver(): IntersectionObserver {
  * Prioritizes visible containers closest to the viewport center.
  */
 function reconcilePool() {
+  reconcileCount++;
   const poolEntries = getOrCreatePool();
 
   // Get all visible containers
@@ -135,6 +155,12 @@ function reconcilePool() {
 
 function assignVideo(entry: PoolEntry, container: ContainerEntry) {
   const { video } = entry;
+  const url = container.src;
+
+  // Phase 0.3: Reconcile churn counter
+  const timesAssigned = (assignHistory.get(container.videoId) || 0) + 1;
+  assignHistory.set(container.videoId, timesAssigned);
+  console.log(`[pool] assignVideo (#${reconcileCount}): ${container.videoId} (assigned ${timesAssigned}x) -> ${url.slice(-35)}`);
 
   entry.assignedTo = container.videoId;
   video.setAttribute("muted", "");
@@ -145,10 +171,14 @@ function assignVideo(entry: PoolEntry, container: ContainerEntry) {
   // Attach to DOM
   container.element.appendChild(video);
 
+  // Phase 0.1: Catch play rejections
   const onCanPlay = () => {
-    video.play().catch((err) => {
-      console.warn("[VideoPool] Play failed:", err);
-    });
+    const p = video.play();
+    if (p !== undefined) {
+      p.catch((err) => {
+        console.warn("[pool] play rejected (canplay):", err.name, err.message, url.slice(-35));
+      });
+    }
   };
   video.addEventListener("canplay", onCanPlay, { once: true });
 
@@ -158,12 +188,18 @@ function assignVideo(entry: PoolEntry, container: ContainerEntry) {
 
   // If already buffered (cached), attempt immediate playback
   if (video.readyState >= 3) {
-    video.play().catch(() => {});
+    const p = video.play();
+    if (p !== undefined) {
+      p.catch((err) => {
+        console.warn("[pool] play rejected (immediate):", err.name, err.message, url.slice(-35));
+      });
+    }
   }
 }
 
 function releaseVideo(entry: PoolEntry) {
   const { video } = entry;
+  console.log(`[pool] releaseVideo: releasing slot from ${entry.assignedTo}`);
 
   video.pause();
   video.removeAttribute("src");
@@ -184,12 +220,6 @@ let nextVideoId = 0;
 /**
  * Hook for a single video container in the feed.
  * Registers the container with the global pool manager.
- *
- * Usage:
- * ```tsx
- * const { containerRef, isInView } = useVideoPool(videoUrl, posterUrl);
- * return <div ref={containerRef} data-video-id={...} />;
- * ```
  */
 export function useVideoPool(src: string, poster: string) {
   const videoIdRef = useRef<string>(`vpool-${nextVideoId++}`);
