@@ -124,22 +124,20 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
       <div className="feed-card feed-card-focus" onClick={handleDoubleTap}>
         {/* Full-bleed media */}
         {isVideo ? (
-          <>
-            {/* Pool-managed video container — video element injected by pool */}
+          <div className="feed-card-focus-image" style={{ position: "relative", width: "100%", height: "100%" }}>
+            {/* Dedicated video container: React leaves its DOM children untouched */}
             <div
               ref={videoPool.containerRef}
-              className="feed-card-focus-image"
-              style={{ position: "relative", width: "100%", height: "100%" }}
-            >
-              {/* Poster shown while pool hasn't assigned a video yet */}
-              {!videoPool.isInView && (
-                <img
-                  src={card.imageUrl}
-                  alt={card.description || "Portfolio piece"}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              )}
-            </div>
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+            />
+            {/* Poster shown while pool hasn't assigned a video yet */}
+            {!videoPool.isInView && (
+              <img
+                src={card.imageUrl}
+                alt={card.description || "Portfolio piece"}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            )}
             {/* Play icon overlay when not in view */}
             {!videoPool.isInView && (
               <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
@@ -156,7 +154,7 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
                 {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
               </button>
             )}
-          </>
+          </div>
         ) : (
           <img
             src={card.imageUrl}
@@ -290,23 +288,21 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
       {/* Media */}
       <div className="feed-card-image-container" onClick={handleDoubleTap}>
         {isVideo ? (
-          <>
-            {/* Pool-managed video container */}
+          <div className="feed-card-image" style={{ position: "relative" }}>
+            {/* Dedicated video container: React leaves its DOM children untouched */}
             <div
               ref={videoPool.containerRef}
-              className="feed-card-image"
-              style={{ position: "relative" }}
-            >
-              {/* Poster shown while pool hasn't assigned a video yet */}
-              {!videoPool.isInView && (
-                <img
-                  src={card.imageUrl}
-                  alt={card.description || "Portfolio piece"}
-                  className="feed-card-image"
-                  loading={eagerLoad ? "eager" : "lazy"}
-                />
-              )}
-            </div>
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+            />
+            {/* Poster shown while pool hasn't assigned a video yet */}
+            {!videoPool.isInView && (
+              <img
+                src={card.imageUrl}
+                alt={card.description || "Portfolio piece"}
+                className="feed-card-image"
+                loading={eagerLoad ? "eager" : "lazy"}
+              />
+            )}
             {/* Video badge */}
             <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.5)", borderRadius: 6, padding: "3px 8px", display: "flex", alignItems: "center", gap: 4, pointerEvents: "none" }}>
               <Play size={10} color="white" fill="white" />
@@ -322,7 +318,7 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
                 {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
               </button>
             )}
-          </>
+          </div>
         ) : (
           <img
             src={card.imageUrl}

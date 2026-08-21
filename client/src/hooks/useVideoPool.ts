@@ -7,7 +7,8 @@
  * Features:
  * - Pool of MAX_POOL_SIZE video elements (reused, not created/destroyed)
  * - Single IntersectionObserver for all video containers
- * - Waits for `canplay` before calling `play()` (fixes race condition)
+ * - Full WebKit DOM attribute compliance (`muted=""`, `playsinline=""`, `defaultMuted=true`)
+ * - Waits for `canplay` or immediate `readyState >= 3` before calling `play()`
  * - Priority: nearest-to-viewport-center gets playback first
  * - Direct R2 CDN streams with Range request support
  */
@@ -44,9 +45,15 @@ function getOrCreatePool(): PoolEntry[] {
     video.playsInline = true;
     video.loop = true;
     video.muted = true;
+    video.defaultMuted = true;
+    video.autoplay = true;
     video.preload = "auto";
+    video.setAttribute("muted", "");
     video.setAttribute("playsinline", "");
     video.setAttribute("webkit-playsinline", "");
+    video.setAttribute("autoplay", "");
+    video.setAttribute("loop", "");
+    video.setAttribute("preload", "auto");
     video.style.cssText = "width:100%;height:100%;object-fit:cover;display:block;";
     pool.push({ video, assignedTo: null });
   }
@@ -130,20 +137,29 @@ function assignVideo(entry: PoolEntry, container: ContainerEntry) {
   const { video } = entry;
 
   entry.assignedTo = container.videoId;
+  video.setAttribute("muted", "");
+  video.defaultMuted = true;
   video.muted = globalMuted;
   video.poster = container.poster;
 
   // Attach to DOM
   container.element.appendChild(video);
 
-  // Set src and wait for canplay before playing
+  const onCanPlay = () => {
+    video.play().catch((err) => {
+      console.warn("[VideoPool] Play failed:", err);
+    });
+  };
+  video.addEventListener("canplay", onCanPlay, { once: true });
+
+  // Set src and trigger load
   video.src = container.src;
   video.load();
 
-  const onCanPlay = () => {
+  // If already buffered (cached), attempt immediate playback
+  if (video.readyState >= 3) {
     video.play().catch(() => {});
-  };
-  video.addEventListener("canplay", onCanPlay, { once: true });
+  }
 }
 
 function releaseVideo(entry: PoolEntry) {
