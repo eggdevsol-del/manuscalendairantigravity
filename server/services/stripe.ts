@@ -1047,7 +1047,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                     endTime: endStr,
                     timeZone: "Australia/Brisbane",
                     status: "confirmed",
-                    price: item.estimateCents,
+                    price: Math.round(item.estimateCents / 100),
                     depositAmount: depositCentsDollars,
                     depositPaid: 1,
                     confirmationSent: 0,

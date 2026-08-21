@@ -373,8 +373,28 @@ async function startServer() {
         }
       }
 
-      console.log(`[Admin] Cleaned up ${deletedIds.length} duplicate appointments: ${deletedIds.join(", ")}`);
-      return res.json({ status: "done", deleted: deletedIds.length, deletedIds });
+      // ── Fix price field: cents stored in dollars field ──
+      // Session plan appointments had price = estimateCents (e.g. 150000)
+      // instead of price = estimateCents / 100 (e.g. 1500)
+      const allSessionPlanAppts = await db.query.appointments.findMany({
+        where: sql`${dbSchema.appointments.sessionPlanId} IS NOT NULL AND ${dbSchema.appointments.price} = ${dbSchema.appointments.totalExpectedAmountCents}`,
+      });
+
+      let priceFixCount = 0;
+      for (const appt of allSessionPlanAppts) {
+        if (appt.price && appt.totalExpectedAmountCents && appt.price === appt.totalExpectedAmountCents && appt.price > 10000) {
+          // price matches totalExpectedAmountCents AND is suspiciously large → it's in cents
+          const correctedPrice = Math.round(appt.price / 100);
+          await db.update(dbSchema.appointments).set({
+            price: correctedPrice,
+          }).where(eq(dbSchema.appointments.id, appt.id));
+          priceFixCount++;
+          console.log(`[Admin] Fixed price for appointment ${appt.id}: ${appt.price} → ${correctedPrice}`);
+        }
+      }
+
+      console.log(`[Admin] Cleaned up ${deletedIds.length} duplicates, fixed ${priceFixCount} prices`);
+      return res.json({ status: "done", deleted: deletedIds.length, deletedIds, priceFixed: priceFixCount });
     } catch (err: any) {
       console.error("[Admin] Cleanup failed:", err);
       return res.status(500).json({ error: err.message });
