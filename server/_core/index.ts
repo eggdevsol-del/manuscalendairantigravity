@@ -146,6 +146,7 @@ async function startServer() {
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com https://b.stripecdn.com",
         "font-src 'self' https://fonts.gstatic.com https://b.stripecdn.com",
         "img-src 'self' data: blob: https: http:",
+        "media-src 'self' blob: data: https: http:",
         "connect-src 'self' https: wss: https://api.stripe.com https://connect.stripe.com https://b.stripecdn.com",
         "frame-src 'self' https://js.stripe.com https://connect.stripe.com https://connect-js.stripe.com https://b.stripecdn.com https://accounts.google.com",
         "worker-src 'self' blob:",
