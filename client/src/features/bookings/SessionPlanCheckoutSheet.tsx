@@ -54,15 +54,42 @@ export function SessionPlanCheckoutSheet({
     );
   };
 
-  const handlePaymentComplete = () => {
-    setStep("success");
-    // Invalidate queries so the bookings page and chat update
+  const refreshChatAndBookingsState = () => {
+    // 1. Immediate invalidation
     utils.sessionPlans.getById.invalidate({ sessionPlanId });
     utils.sessionPlans.getByConversation.invalidate({ conversationId });
+    utils.messages.list.invalidate({ conversationId });
+    utils.conversations.getById.invalidate(conversationId);
+    utils.appointments.getByConversation.invalidate(conversationId);
     utils.appointments.getClientBookings.invalidate();
+    utils.appointments.getClientCalendar.invalidate();
+    utils.appointments.getArtistCalendar.invalidate();
+    utils.appointments.getStudioCalendar.invalidate();
+
+    // 2. Refresh within 2-second window (at 600ms and 1500ms) for async backend/webhook consistency
+    setTimeout(() => {
+      utils.messages.list.invalidate({ conversationId });
+      utils.sessionPlans.getByConversation.invalidate({ conversationId });
+      utils.sessionPlans.getById.invalidate({ sessionPlanId });
+      utils.appointments.getByConversation.invalidate(conversationId);
+    }, 600);
+
+    setTimeout(() => {
+      utils.messages.list.invalidate({ conversationId });
+      utils.sessionPlans.getByConversation.invalidate({ conversationId });
+      utils.sessionPlans.getById.invalidate({ sessionPlanId });
+      utils.appointments.getByConversation.invalidate(conversationId);
+      utils.appointments.getClientBookings.invalidate();
+    }, 1500);
+  };
+
+  const handlePaymentComplete = () => {
+    setStep("success");
+    refreshChatAndBookingsState();
   };
 
   const handleDone = () => {
+    refreshChatAndBookingsState();
     onClose();
   };
 
