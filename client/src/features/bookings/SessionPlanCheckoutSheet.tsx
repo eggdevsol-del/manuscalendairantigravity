@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 import { X, Check, Lock, ArrowLeft } from "lucide-react";
@@ -68,7 +69,7 @@ export function SessionPlanCheckoutSheet({
   const title =
     step === "success" ? "Payment confirmed" : "Accept session plan";
 
-  return (
+  const sheetContent = (
     <>
       {/* Scrim */}
       <div
@@ -163,6 +164,8 @@ export function SessionPlanCheckoutSheet({
       `}</style>
     </>
   );
+
+  return typeof document !== "undefined" ? createPortal(sheetContent, document.body) : null;
 }
 
 // ── Review Step ──────────────────────────────────────────────
