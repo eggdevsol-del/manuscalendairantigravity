@@ -690,10 +690,9 @@ export const tokens = {
     statusRadius: "rounded-[16px]",
   },
 
-    // Content Container (replaces GlassSheet)
-    contentContainer: {
-      base: "flex-1 flex flex-col overflow-hidden", // Transparent version
-    },
+  // Content Container (replaces GlassSheet)
+  contentContainer: {
+    base: "flex-1 flex flex-col overflow-hidden", // Transparent version
   },
 } as const;
 
