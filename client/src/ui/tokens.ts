@@ -690,8 +690,114 @@ export const tokens = {
     statusRadius: "rounded-[16px]",
   },
 
-  // Content Container (replaces GlassSheet)
-  contentContainer: {
-    base: "flex-1 flex flex-col overflow-hidden", // Transparent version
+    // Content Container (replaces GlassSheet)
+    contentContainer: {
+      base: "flex-1 flex flex-col overflow-hidden", // Transparent version
+    },
   },
 } as const;
+
+// ═══════════════════════════════════════════════════════════
+//  Canonical Surfaces, Borders, Colors, Radii & Type Scale
+// ═══════════════════════════════════════════════════════════
+
+export const surfaces = {
+  pageBg: "#111112",
+  card: "#1a1a1b",
+  cardAlt: "#131314",
+  cardHighlight: "#1A1A1E",
+  row: "#1a1a1b",
+  rowHover: "#212123",
+  quietRow: "rgba(255,255,255,.02)",
+  sheet: "#1c1c1e",
+  sheetPanel: "#1B1B1B",
+  menu: "#232325",
+  avatarFallback: "#2a2a2c",
+  factPanel: "rgba(255,255,255,.03)",
+  scrim: "rgba(0,0,0,.62)",
+  segmentPill: "rgba(255,255,255,.1)",
+} as const;
+
+export const borders = {
+  hairline: "rgba(255,255,255,.06)",
+  hairlineLight: "rgba(255,255,255,.08)",
+  subtle: "rgba(255,255,255,.12)",
+  emphasisAmber: "rgba(242,202,92,.3)",
+  amberBorder40: "rgba(242,202,92,.4)",
+  progressTrack: "rgba(255,255,255,.09)",
+} as const;
+
+export const colors = {
+  textPrimary: "#f5f5f4",
+  textSecondary: "rgba(255,255,255,.62)",
+  textTertiary: "rgba(255,255,255,.58)",
+  mutedGrey: "#7A7A7A",
+  green: "#4ade80",
+  amber: "#f2ca5c",
+  amberGold: "#F8D057",
+  amberHover: "#f6d472",
+  amberOnColor: "#1a1a12",
+  destructive: "#ef4444",
+  destructiveText: "#f87171",
+  cancelRed: "#ff5050",
+  toastBg: "#1f3a2a",
+  toastText: "#c8f5da",
+} as const;
+
+export const radii = {
+  pill: 99,
+  card: 15,
+  row: 13,
+  button: 11,
+  small: 9,
+  factPanel: 10,
+  sheet: 20,
+} as const;
+
+export const space = [4, 7, 9, 11, 14, 16, 20, 22] as const;
+
+export const typeScale = {
+  headlineMoney: { fontSize: 30, fontWeight: 600 },
+  screenTitle: { fontSize: 18, fontWeight: 600 },
+  button: { fontSize: 15.5, fontWeight: 600 },
+  rowTitle: { fontSize: 14.5, fontWeight: 600 },
+  rowBody: { fontSize: 13, fontWeight: 400 },
+  rowBodyLg: { fontSize: 12.5, fontWeight: 400 },
+  rowMeta: { fontSize: 12, fontWeight: 400 },
+  exceptionPill: { fontSize: 11.5, fontWeight: 500 },
+  sectionLabel: { fontSize: 10, fontWeight: 500, letterSpacing: "0.14em" },
+  sectionCount: { fontSize: 11.5, fontWeight: 400 },
+  moneyLabel: { fontSize: 9.5, fontWeight: 500, letterSpacing: "0.13em" },
+} as const;
+
+// ═══════════════════════════════════════════════════════════
+//  Dashboard SSOT Bridge Exports (DT, DType, DSpace, DRadius)
+// ═══════════════════════════════════════════════════════════
+
+export const DT = {
+  pageBg: surfaces.pageBg,
+  cardSurface: surfaces.card,
+  rowHover: surfaces.rowHover,
+  quietRow: surfaces.quietRow,
+  sheetSurface: surfaces.sheet,
+  hairline: borders.hairline,
+  emphasisBorder: borders.emphasisAmber,
+  textPrimary: colors.textPrimary,
+  textSecondary: colors.textSecondary,
+  textTertiary: colors.textTertiary,
+  green: colors.green,
+  amber: colors.amber,
+  amberHover: colors.amberHover,
+  amberOnColor: colors.amberOnColor,
+  amberBorder40: borders.amberBorder40,
+  destructive: colors.destructive,
+  destructiveText: colors.destructiveText,
+  progressTrack: borders.progressTrack,
+  factPanelBg: surfaces.factPanel,
+  segmentPill: surfaces.segmentPill,
+} as const;
+
+export const DType = typeScale;
+export const DSpace = space;
+export const DRadius = radii;
+

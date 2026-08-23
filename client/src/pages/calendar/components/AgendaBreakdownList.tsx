@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useMemo } from "react";
 import { format, addDays, startOfDay, isToday } from "date-fns";
 import { CreditCard, X } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { surfaces, borders, colors, typography } from "@/ui/tokens";
 
 interface AgendaBreakdownListProps {
   eventsByDay: Record<string, any[]>;
@@ -99,7 +100,7 @@ export function AgendaBreakdownList({
     <div
       ref={scrollRef}
       onScroll={handleScroll}
-      className="flex-1 overflow-y-auto px-4 pb-40 pt-4"
+      className="w-full h-full flex-1 overflow-y-auto px-4 pb-[60vh] pt-4 touch-pan-y overscroll-contain"
     >
       {allEvents.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
@@ -129,10 +130,10 @@ export function AgendaBreakdownList({
                 key={apt.id}
                 className="relative overflow-hidden"
                 style={{
-                  background: "#1A1A1E",
+                  background: surfaces.cardHighlight,
                   border: isCancelled
                     ? "1px solid rgba(255,80,80,0.15)"
-                    : "1px solid rgba(255,255,255,0.08)",
+                    : `1px solid ${borders.hairlineLight}`,
                   borderRadius: 16,
                   padding: 16,
                   opacity: isCancelled ? 0.5 : 1,
@@ -143,8 +144,8 @@ export function AgendaBreakdownList({
                   <div
                     className="absolute top-0 right-0 text-[10px] font-bold uppercase tracking-wide"
                     style={{
-                      background: "#F8D057",
-                      color: "#1B1B1B",
+                      background: colors.amberGold,
+                      color: surfaces.sheetPanel,
                       padding: "5px 12px",
                       borderBottomLeftRadius: 12,
                       letterSpacing: "0.06em",
@@ -166,7 +167,7 @@ export function AgendaBreakdownList({
                       background: "rgba(255,80,80,0.1)",
                     }}
                   >
-                    <X className="w-3.5 h-3.5" style={{ color: "#ff5050" }} />
+                    <X className="w-3.5 h-3.5" style={{ color: colors.cancelRed }} />
                   </button>
                 )}
 
@@ -176,7 +177,7 @@ export function AgendaBreakdownList({
                   <div
                     className="text-[12px] font-bold uppercase mb-1"
                     style={{
-                      color: isNext && isConfirmed ? "#F8D057" : "#7A7A7A",
+                      color: isNext && isConfirmed ? colors.amberGold : colors.mutedGrey,
                       letterSpacing: "0.06em",
                     }}
                   >
@@ -192,7 +193,7 @@ export function AgendaBreakdownList({
                   </h3>
 
                   {/* Meta line */}
-                  <p className="text-[13.5px] text-[#7A7A7A] mb-3">
+                  <p className="text-[13.5px] mb-3" style={{ color: colors.mutedGrey }}>
                     {apt.clientName || "Client"}
                     {durationStr ? ` · ${durationStr}` : ""}
                     {apt.sessionIndex && apt.sessionTotal
@@ -206,8 +207,8 @@ export function AgendaBreakdownList({
                       {depositPaidCents > 0 && (
                         <div>
                           <div
-                            className="text-[10px] font-bold uppercase text-[#7A7A7A] mb-0.5"
-                            style={{ letterSpacing: "0.06em" }}
+                            className="text-[10px] font-bold uppercase mb-0.5"
+                            style={{ color: colors.mutedGrey, letterSpacing: "0.06em" }}
                           >
                             Deposit
                           </div>
@@ -219,8 +220,8 @@ export function AgendaBreakdownList({
                       {estimateCents > 0 && (
                         <div>
                           <div
-                            className="text-[10px] font-bold uppercase text-[#7A7A7A] mb-0.5"
-                            style={{ letterSpacing: "0.06em" }}
+                            className="text-[10px] font-bold uppercase mb-0.5"
+                            style={{ color: colors.mutedGrey, letterSpacing: "0.06em" }}
                           >
                             Estimate
                           </div>
@@ -241,12 +242,12 @@ export function AgendaBreakdownList({
                       borderRadius: 12,
                       padding: "12px 14px",
                       background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      border: `1px solid ${borders.hairlineLight}`,
                       minHeight: 44,
                     }}
                   >
                     <div className="flex items-center gap-2">
-                      <CreditCard className="w-4 h-4" style={{ color: "#7A7A7A" }} />
+                      <CreditCard className="w-4 h-4" style={{ color: colors.mutedGrey }} />
                       <span
                         className="text-[13.5px] font-semibold"
                         style={{ color: "rgba(255,255,255,.7)" }}
@@ -261,7 +262,7 @@ export function AgendaBreakdownList({
                 {isCancelled && (
                   <div
                     className="text-[10px] font-bold uppercase tracking-wider mt-1"
-                    style={{ color: "#ff5050", letterSpacing: "0.06em" }}
+                    style={{ color: colors.cancelRed, letterSpacing: "0.06em" }}
                   >
                     CANCELLED
                   </div>

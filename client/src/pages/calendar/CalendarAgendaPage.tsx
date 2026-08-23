@@ -285,7 +285,7 @@ export default function CalendarAgendaPage() {
         {/* 1. Underlying Agenda Layer (visible when top layer slides down) */}
         <div
           className={cn(
-            "absolute inset-0 transition-opacity duration-300 md:relative md:inset-auto md:w-1/2 md:opacity-100 md:z-0",
+            "absolute inset-0 flex flex-col w-full h-full transition-opacity duration-300 md:relative md:inset-auto md:w-1/2 md:opacity-100 md:z-0",
             controller.isBreakdownOpen ? "opacity-100 z-0" : "opacity-0 -z-10"
           )}
         >

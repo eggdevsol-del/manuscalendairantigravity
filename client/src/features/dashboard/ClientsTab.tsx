@@ -20,53 +20,51 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTooltipTarget } from "@/components/tooltip-tour";
 import { DEMO_CLIENTS } from "./dashboardDemoData";
 import { format, isPast, isFuture } from "date-fns";
-import { tokens, statusColor, typography } from "@/ui/tokens";
+import { tokens, statusColor, typography, surfaces, borders, colors } from "@/ui/tokens";
 import { formatMoney, formatCents } from "@/lib/formatMoney";
 import { utcToLocal } from "@shared/utils/timezone";
 
-// ── Design tokens (from README spec lines 236-265) ────────
-// Using the prototype's exact values. Where an existing SSOT token
-// matches, we reference it; where the prototype specifies a precise
-// hex that the token system doesn't cover, we inline it.
+// ── Design tokens (SSOT integration) ─────────────────────
+// Uses canonical design tokens from `@/ui/tokens`.
 
 const DT = {
   // Surfaces
-  card: "#131314",
-  row: "#1a1a1b",
-  rowHover: "#212123",
-  completedRow: "rgba(255,255,255,.02)",
-  sheet: "#1c1c1e",
-  menu: "#232325",
-  avatarFallback: "#2a2a2c",
+  card: surfaces.cardAlt,
+  row: surfaces.row,
+  rowHover: surfaces.rowHover,
+  completedRow: surfaces.quietRow,
+  sheet: surfaces.sheet,
+  menu: surfaces.menu,
+  avatarFallback: surfaces.avatarFallback,
   // Borders
-  hairline: "rgba(255,255,255,.07)",
+  hairline: borders.hairline,
   rowBorder: "rgba(255,255,255,.05)",
-  rowBorderExpanded: "rgba(255,255,255,.12)",
+  rowBorderExpanded: borders.subtle,
   // Text
-  textPrimary: "#f5f5f4",
-  textSecondary: "rgba(255,255,255,.44)",
-  textTertiary: "rgba(255,255,255,.34)",
+  textPrimary: colors.textPrimary,
+  textSecondary: colors.textSecondary,
+  textTertiary: colors.textTertiary,
   textQuaternary: "rgba(255,255,255,.32)",
   textMoney: "rgba(255,255,255,.7)",
   // Semantic
-  green: "#4ade80",
-  amber: "#f2ca5c",
-  amberHover: "#f6d472",
-  amberOnColor: "#1a1a12",
-  amberBorder: "rgba(242,202,92,.4)",
+  green: colors.green,
+  amber: colors.amber,
+  amberHover: colors.amberHover,
+  amberOnColor: colors.amberOnColor,
+  amberBorder: borders.amberBorder40,
   // Sheet selection
   sheetSelected: "rgba(242,202,92,.13)",
   sheetSelectedBorder: "rgba(242,202,92,.5)",
   sheetUnselected: "rgba(255,255,255,.03)",
   sheetUnselectedBorder: "rgba(255,255,255,.07)",
   // Toast
-  toastBg: "#1f3a2a",
+  toastBg: colors.toastBg,
   toastBorder: "rgba(74,222,128,.3)",
-  toastText: "#c8f5da",
+  toastText: colors.toastText,
   // Track
-  track: "rgba(255,255,255,.09)",
+  track: borders.progressTrack,
   // Scrim
-  scrim: "rgba(0,0,0,.6)",
+  scrim: surfaces.scrim,
 } as const;
 
 interface ClientsTabProps {
