@@ -1,27 +1,18 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { PageHeader, PageShell } from "@/components/ui/ssot";
-import { UserAvatar } from "@/components/ui/ssot/UserAvatar";
-import { Button, Card, Input } from "@/components/ui";
-import { tokens } from "@/ui/tokens";
-import { cn } from "@/lib/utils";
-import { trpc } from "@/lib/trpc";
-import {
-  Users,
-  BarChart3,
-  Mail,
-  ShieldAlert,
-  UserPlus,
-  Trash2,
-  User,
-  ChevronLeft,
-  Settings as SettingsIcon,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
-import { useLocation } from "wouter";
+/**
+ * StudioDashboardSettings — "The Department of Tattoo Services"
+ *
+ * Settings sub-panel for Studio Management:
+ * - Displays active studio status & resident roster summary
+ * - 1-tap "Open Studio Dashboard" launcher
+ * - Studio creation onboarding wizard trigger
+ */
 
-type TabState = "team" | "invite" | "analytics" | "settings";
+import React, { useState } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
+import { ChevronLeft } from "lucide-react";
+import { useLocation } from "wouter";
+import { StudioCreateModal } from "@/features/studio/StudioCreateModal";
 
 interface StudioDashboardSettingsProps {
   onBack: () => void;
@@ -30,483 +21,116 @@ interface StudioDashboardSettingsProps {
 export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps) {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState<TabState>("team");
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<"artist" | "manager">("artist");
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("success") === "true") {
-      toast.success(
-        "Welcome to your new Studio space! Your subscription is active."
-      );
-      // Clean up the URL
-      window.history.replaceState({}, "", "/studio");
-    }
-  }, []);
-
-  // Verify Role and Studio existence
-  const { data: currentStudio, isLoading: isLoadingStudio } =
-    trpc.studios.getCurrentStudio.useQuery(undefined, {
-      enabled: !!user,
-    });
-
-  const { data: teamMembers, refetch: refetchTeam } =
-    trpc.studios.getStudioMembers.useQuery(
-      { studioId: currentStudio?.id! },
-      { enabled: !!currentStudio?.id }
-    );
-
-  const inviteMutation = trpc.studios.inviteArtist.useMutation({
-    onSuccess: () => {
-      setInviteEmail("");
-      toast.success("Invitation sent successfully!");
-      refetchTeam();
-      // Automatically switch back to team tab to see the pending invite
-      setActiveTab("team");
-    },
-    onError: err => {
-      toast.error(err.message);
-    },
+  const { data: studio, isLoading } = trpc.studios.getMyStudio.useQuery(undefined, {
+    enabled: !!user,
   });
 
-  const removeMutation = trpc.studios.removeMember.useMutation({
-    onSuccess: () => {
-      refetchTeam();
-    },
-  });
-
-  if (isLoadingStudio) {
-    return (
-      <div className="w-full h-full flex flex-col overflow-hidden relative">
-        <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
-          <button
-            onClick={onBack}
-            className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5 text-foreground" />
-          </button>
-          <h2 className="text-xl font-semibold text-foreground">Studio Headquarters</h2>
-        </div>
-        <div className="flex-1 w-full bg-transparent flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
-  }
-
-  // Fallback for Solo Artists who stumble here
-  if (
-    !currentStudio ||
-    (currentStudio.role !== "owner" && currentStudio.role !== "manager")
-  ) {
-    return (
-      <div className="w-full h-full flex flex-col overflow-hidden relative">
-        <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
-          <button
-            onClick={onBack}
-            className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5 text-foreground" />
-          </button>
-          <h2 className="text-xl font-semibold text-foreground">Studio Headquarters</h2>
-        </div>
-        <div className="flex-1 w-full overflow-y-auto px-4 pt-12 text-center pb-[180px]">
-          <div className="w-16 h-16 rounded-full bg-[var(--color-status-danger-bg)] flex items-center justify-center mx-auto mb-4">
-            <ShieldAlert className="w-8 h-8 text-[var(--color-status-danger-text)]" />
-          </div>
-          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-          <p className="text-muted-foreground">
-            You must be a Studio Owner or Manager to access this dashboard.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const handleInvite = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteEmail) return;
-    inviteMutation.mutate({
-      studioId: currentStudio.id,
-      artistEmail: inviteEmail,
-      role: inviteRole,
-    });
-  };
-
-  const handleRemoveMember = (userId: string) => {
-    if (confirm("Are you sure you want to remove this member?")) {
-      removeMutation.mutate({
-        studioId: currentStudio.id,
-        userId: userId,
-      });
-    }
-  };
-
-  const activeMembers = teamMembers?.filter(m => m.status === "active") || [];
-  const pendingMembers =
-    teamMembers?.filter(m => m.status === "pending_invite") || [];
+  const { data: roster } = trpc.studios.getRoster.useQuery(
+    { studioId: studio?.id || "" },
+    { enabled: !!studio?.id }
+  );
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden relative">
+    <div className="w-full h-full flex flex-col overflow-hidden relative font-['Poppins',system-ui,sans-serif] text-foreground">
+      {/* Header */}
       <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0 bg-transparent z-20 border-b border-border">
         <button
           onClick={onBack}
-          className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
+          className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/70 transition-colors"
         >
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
-        <h2 className="text-xl font-semibold text-foreground">{currentStudio.name}</h2>
-      </div>
-
-      {/* Desktop Horizontal Layout Optimized Tabs */}
-      <div className="shrink-0 z-10 px-4 pt-4 pb-2 bg-transparent border-b border-border/10">
-        <div className="flex justify-between items-center w-full max-w-4xl mx-auto bg-secondary/50 rounded-md p-1 relative border border-border overflow-x-auto no-scrollbar">
-          <button
-            onClick={() => setActiveTab("team")}
-            className={cn(
-              "flex-1 min-w-[100px] relative z-10 py-2.5 text-sm font-semibold transition-colors flex items-center justify-center gap-2",
-              activeTab === "team"
-                ? "text-primary-foreground"
-                : "text-muted-foreground hover:text-white"
-            )}
-          >
-            <Users className="w-4 h-4 hidden sm:block" />
-            Team
-            {activeTab === "team" && (
-              <motion.div
-                layoutId="studio_tab_indicator"
-                className="absolute inset-0 bg-primary/30 border border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] rounded-md -z-10"
-                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-              />
-            )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab("invite")}
-            className={cn(
-              "flex-1 min-w-[100px] relative z-10 py-2.5 text-sm font-semibold transition-colors flex items-center justify-center gap-2",
-              activeTab === "invite"
-                ? "text-primary-foreground"
-                : "text-muted-foreground hover:text-white"
-            )}
-          >
-            <UserPlus className="w-4 h-4 hidden sm:block" />
-            Invite
-            {activeTab === "invite" && (
-              <motion.div
-                layoutId="studio_tab_indicator"
-                className="absolute inset-0 bg-primary/30 border border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] rounded-md -z-10"
-                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-              />
-            )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab("analytics")}
-            className={cn(
-              "flex-1 min-w-[100px] relative z-10 py-2.5 text-sm font-semibold transition-colors flex items-center justify-center gap-2",
-              activeTab === "analytics"
-                ? "text-primary-foreground"
-                : "text-muted-foreground hover:text-white"
-            )}
-          >
-            <BarChart3 className="w-4 h-4 hidden sm:block" />
-            Analytics
-            {activeTab === "analytics" && (
-              <motion.div
-                layoutId="studio_tab_indicator"
-                className="absolute inset-0 bg-primary/30 border border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] rounded-md -z-10"
-                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-              />
-            )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab("settings")}
-            className={cn(
-              "flex-1 min-w-[100px] relative z-10 py-2.5 text-sm font-semibold transition-colors flex items-center justify-center gap-2",
-              activeTab === "settings"
-                ? "text-primary-foreground"
-                : "text-muted-foreground hover:text-white"
-            )}
-          >
-            <SettingsIcon className="w-4 h-4 hidden sm:block" />
-            Settings
-            {activeTab === "settings" && (
-              <motion.div
-                layoutId="studio_tab_indicator"
-                className="absolute inset-0 bg-primary/30 border border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] rounded-md -z-10"
-                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-              />
-            )}
-          </button>
+        <div>
+          <h2 className="text-xl font-bold text-foreground">Studio Management</h2>
+          <p className="text-xs text-muted-foreground">The Department of Tattoo Services</p>
         </div>
       </div>
 
-      <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
-        <div className="pb-[180px] max-w-4xl mx-auto px-4 pt-8">
-          <AnimatePresence mode="wait">
-            {activeTab === "team" && (
-              <motion.div
-                key="team-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-8"
-              >
-                {/* Intro for Studio Accounts */}
-                {teamMembers && teamMembers.length <= 1 && (
-                  <div className="p-6 bg-primary/10 border border-primary/30 rounded-md">
-                    <h3 className="text-xl font-bold mb-2">
-                      Welcome to your Studio!
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Your studio account is currently set up as an owner/manager
-                      hub. To start taking bookings, you should invite your
-                      personal Artist profile under the "Invite" tab.
-                    </p>
-                    <Button onClick={() => setActiveTab("invite")} variant="hero">
-                      Invite Artist
-                    </Button>
-                  </div>
-                )}
-
-                {/* Team List */}
-                <div className="space-y-6">
-                  {/* Active Members */}
-                  <div>
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 pl-1 flex items-center gap-2">
-                      <Users className="w-4 h-4" /> Active Members (
-                      {activeMembers.length})
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {activeMembers.map((member: any) => (
-                        <div
-                          key={member.id}
-                          className="p-4 rounded-md bg-secondary/50 border border-border flex items-center justify-between hover:bg-secondary/50 transition-colors"
-                        >
-                          <div className="flex items-center gap-4">
-                            <UserAvatar name={member.user.name} avatar={member.user.avatar} size="lg" />
-                            <div>
-                              <p className="font-semibold text-lg text-foreground">
-                                {member.user.name}
-                              </p>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-sm text-muted-foreground">
-                                  {member.user.email}
-                                </span>
-                                {member.role === "owner" && (
-                                  <span className="px-2 py-0.5 rounded bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)] text-[10px] font-bold uppercase tracking-wider">
-                                    Owner
-                                  </span>
-                                )}
-                                {member.role === "manager" && (
-                                  <span className="px-2 py-0.5 rounded bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] text-[10px] font-bold uppercase tracking-wider">
-                                    Manager
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Only allow removing if not self, and logged in user is owner/manager */}
-                          {member.user.id !== user?.id &&
-                            currentStudio.role === "owner" && (
-                              <button
-                                onClick={() => handleRemoveMember(member.user.id)}
-                                className="p-2.5 text-muted-foreground hover:text-[var(--color-status-danger-text)] hover:bg-red-400/10 rounded-md transition-colors"
-                              >
-                                <Trash2 className="w-5 h-5" />
-                              </button>
-                            )}
-                        </div>
-                      ))}
-                      {activeMembers.length === 0 && (
-                        <p className="text-sm text-muted-foreground italic px-2">
-                          No active members found.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Pending Invites */}
-                  {pendingMembers.length > 0 && (
-                    <div className="pt-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 pl-1 flex items-center gap-2">
-                        <Mail className="w-4 h-4" /> Pending Invites (
-                        {pendingMembers.length})
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {pendingMembers.map((member: any) => (
-                          <div
-                            key={member.id}
-                            className="p-4 rounded-md bg-secondary/50 border border-border border-dashed flex items-center justify-between opacity-70"
-                          >
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-full bg-secondary/50 border-2 border-dashed border-border flex items-center justify-center">
-                                <Mail className="w-5 h-5 text-muted-foreground" />
-                              </div>
-                              <div>
-                                <p className="font-semibold text-lg text-foreground">
-                                  {member.user.name || member.user.email}
-                                </p>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-sm text-muted-foreground">
-                                    Pending • Invited as {member.role}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {currentStudio.role === "owner" && (
-                              <button
-                                onClick={() => handleRemoveMember(member.user.id)}
-                                className="p-2 text-muted-foreground hover:text-[var(--color-status-danger-text)] hover:bg-red-400/10 rounded-md transition-colors"
-                                title="Cancel Invite"
-                              >
-                                <Trash2 className="w-5 h-5" />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+      {/* Body */}
+      <div className="flex-1 w-full overflow-y-auto px-6 py-6 pb-28">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          </div>
+        ) : studio ? (
+          <div className="space-y-5 max-w-[560px] mx-auto">
+            {/* Active Studio Card */}
+            <div className="bg-[#1e1e22] border border-[#eec95f]/35 rounded-[22px] p-5 sm:p-6 shadow-xl">
+              <div className="flex items-center gap-3.5 mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#e7c563] to-[#8f6f2c] text-[#231b06] flex items-center justify-center font-bold text-lg">
+                  {studio.name.slice(0, 2).toUpperCase()}
                 </div>
-              </motion.div>
-            )}
-
-            {activeTab === "invite" && (
-              <motion.div
-                key="invite-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="max-w-2xl mx-auto space-y-6"
-              >
-                <div className="p-8 bg-secondary/50 border border-border rounded-md">
-                  <div className="mb-8 text-center">
-                    <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                      <UserPlus className="w-8 h-8 text-primary" />
-                    </div>
-                    <h3 className="text-2xl font-bold mb-2">Invite to Studio</h3>
-                    <p className="text-muted-foreground">
-                      Add artists and managers to your studio space. They will
-                      receive an email invitation to join.
-                    </p>
-                  </div>
-                  <form onSubmit={handleInvite} className="flex flex-col gap-6">
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                          User Email
-                        </label>
-                        <Input
-                          placeholder="artist@example.com"
-                          value={inviteEmail}
-                          onChange={e => setInviteEmail(e.target.value)}
-                          className="w-full bg-background/80 border-border py-6 text-lg"
-                          type="email"
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                          Role
-                        </label>
-                        <select
-                          className="w-full bg-background/80 border border-border rounded-md px-4 py-3 text-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                          value={inviteRole}
-                          onChange={e => setInviteRole(e.target.value as any)}
-                        >
-                          <option value="artist">
-                            Artist (Takes bookings & manages clients)
-                          </option>
-                          <option value="manager">
-                            Manager (Admin access to studio)
-                          </option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <Button
-                      type="submit"
-                      disabled={inviteMutation.isPending || !inviteEmail}
-                      className="w-full py-6 text-lg mt-4 shadow-lg shadow-primary/20"
-                      variant="hero"
-                    >
-                      {inviteMutation.isPending
-                        ? "Sending Invitation..."
-                        : "Send Invitation"}
-                    </Button>
-                  </form>
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === "analytics" && (
-              <motion.div
-                key="analytics-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-6"
-              >
-                <div className="p-12 bg-secondary/50 border border-border rounded-md text-center flex flex-col items-center justify-center min-h-[400px]">
-                  <div className="p-6 rounded-full bg-secondary/50 border border-border mb-6">
-                    <BarChart3 className="w-16 h-16 text-muted-foreground opacity-70" />
-                  </div>
-                  <h3 className="text-3xl font-bold mb-4 tracking-tight">
-                    Studio Analytics
-                  </h3>
-                  <p className="text-muted-foreground text-lg max-w-md mx-auto mb-8 leading-relaxed">
-                    Track total studio revenue, member-specific performance, and
-                    global retention metrics across all your artists.
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-white truncate">{studio.name}</h3>
+                  <p className="text-xs text-[#9b9ba1] truncate">
+                    {studio.address || "Studio Headquarters"} · {roster?.length || 1} chair{(roster?.length || 1) > 1 ? "s" : ""}
                   </p>
-                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary font-bold text-sm tracking-widest uppercase">
-                    Coming Soon
-                  </span>
                 </div>
-              </motion.div>
-            )}
+                <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[#57c97e]/15 text-[#57c97e] border border-[#57c97e]/30">
+                  Active
+                </span>
+              </div>
 
-            {activeTab === "settings" && (
-              <motion.div
-                key="settings-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-6"
-              >
-                <div className="p-8 bg-secondary/50 border border-border rounded-md flex flex-col items-center justify-center min-h-[400px] text-center">
-                  <div className="p-6 rounded-full bg-secondary/50 border border-border mb-6">
-                    <SettingsIcon className="w-16 h-16 text-muted-foreground opacity-70" />
-                  </div>
-                  <h3 className="text-3xl font-bold mb-4 tracking-tight">
-                    Studio Setup
-                  </h3>
-                  <p className="text-muted-foreground text-lg max-w-md mx-auto mb-8 leading-relaxed">
-                    Manage your studio's billing, global policies, and booking
-                    details.
+              <div className="grid grid-cols-2 gap-2.5 my-4">
+                <div className="bg-[#28282c] rounded-xl p-3">
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-[#8d8d93]">Default Terms</span>
+                  <p className="text-base font-bold text-[#eec95f] mt-0.5">
+                    {studio.defaultCommission ? `${studio.defaultCommission}% cut` : `$${Math.round((studio.defaultChairRentCents || 0) / 100)}/wk rent`}
                   </p>
-                  <Button
-                    onClick={onBack}
-                    variant="hero"
-                    className="px-8"
-                  >
-                    Open Settings
-                  </Button>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                <div className="bg-[#28282c] rounded-xl p-3">
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-[#8d8d93]">Resident Artists</span>
+                  <p className="text-base font-bold text-white mt-0.5">{roster?.length || 1} of 10</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setLocation("/studio")}
+                className="w-full bg-[#f2cf63] text-[#1c1503] font-bold rounded-full py-3.5 text-sm hover:bg-[#f6d97e] transition-colors shadow-lg flex items-center justify-center gap-2"
+              >
+                <span>Open Studio Dashboard</span>
+                <span>→</span>
+              </button>
+            </div>
+
+            {/* Explainer card */}
+            <div className="bg-card border border-border rounded-2xl p-4 text-xs text-muted-foreground leading-relaxed">
+              <p className="font-semibold text-foreground mb-1">How Studio Mode Works:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Clients book with resident artists — the studio never holds client deposits.</li>
+                <li>At every artist payout, the studio's settlement cut is automatically transferred to your studio Stripe balance.</li>
+                <li>Use the Studio Dashboard to manage chairs, route inbound leads, and view shop analytics.</li>
+              </ul>
+            </div>
+          </div>
+        ) : (
+          /* No Studio — Launch CTA */
+          <div className="max-w-[480px] mx-auto text-center py-10 space-y-4">
+            <div className="w-16 h-16 rounded-full bg-[#eec95f]/15 border border-[#8a7434] text-[#eec95f] flex items-center justify-center text-3xl mx-auto">
+              🏛️
+            </div>
+            <h3 className="text-xl font-bold text-foreground">Manage Your Studio on Tattoi</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Have other artists working in your shop? Set up your studio to manage resident chairs, route incoming leads, and automate commission splits from payouts.
+            </p>
+            <div className="pt-2">
+              <button
+                onClick={() => setCreateModalOpen(true)}
+                className="bg-[#f2cf63] text-[#1c1503] font-bold rounded-full px-7 py-3.5 text-sm hover:bg-[#f6d97e] transition-colors shadow-lg"
+              >
+                + Launch Studio Dashboard
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+      <StudioCreateModal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+      />
     </div>
   );
 }

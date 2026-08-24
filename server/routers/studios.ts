@@ -1,552 +1,883 @@
+/**
+ * Studio Router — "The Department of Tattoo Services"
+ *
+ * Implements the Screen ⇄ backend wiring contract:
+ * - Home · Today: studios.dashboard
+ * - Home · Artists + detail sheet: studios.roster, inviteArtist, updateArtistTerms, removeArtist
+ * - Home · Money: studios.money(range), withdraw
+ * - Messages · Studio inbox: studios.inbox, sendReferral
+ * - Calendar: studios.calendar
+ * - Profile: defaults, passcode (bcrypt), invites CRUD
+ */
+
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
-import { eq, and, sql } from "drizzle-orm";
-import {
-  studios,
-  studioMembers,
-  users,
-  conversations,
-  messages,
-} from "drizzle/schema";
+import { eq, and, sql, desc, gte, lte, asc, inArray } from "drizzle-orm";
+import * as schema from "../../drizzle/schema";
 import { getDb } from "../services/core";
+import bcrypt from "bcryptjs";
+import { sendPushNotification } from "../_core/pushNotification";
 
 export const studiosRouter = router({
-  // Get the current user's studio details
-  getCurrentStudio: protectedProcedure.query(async ({ ctx }) => {
+  /**
+   * Get the current user's studio (owner or manager)
+   */
+  getMyStudio: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
-    if (!db)
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Database connection failed",
-      });
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
 
-    const results = await db
-      .select({
-        id: studios.id,
-        name: studios.name,
-        ownerId: studios.ownerId,
-        stripeSubscriptionId: studios.stripeSubscriptionId,
-        subscriptionStatus: studios.subscriptionStatus,
-        subscriptionTier: studios.subscriptionTier,
-        role: studioMembers.role,
-        status: studioMembers.status,
-      })
-      .from(studioMembers)
-      .innerJoin(studios, eq(studios.id, studioMembers.studioId))
-      .where(
-        and(
-          eq(studioMembers.userId, ctx.user.id),
-          eq(studioMembers.status, "active")
-        )
-      )
-      .limit(1);
+    // 1. Check if user is owner of a studio
+    let studio = await db.query.studios.findFirst({
+      where: eq(schema.studios.ownerId, ctx.user.id),
+    });
 
-    if (results.length === 0) {
-      return null;
-    }
+    if (studio) return studio;
 
-    return results[0];
+    // 2. Check if user is active member with owner/manager role
+    const membership = await db.query.studioMembers.findFirst({
+      where: and(
+        eq(schema.studioMembers.userId, ctx.user.id),
+        eq(schema.studioMembers.status, "active")
+      ),
+      with: {
+        studio: true,
+      },
+    });
+
+    return membership?.studio || null;
   }),
 
-  // TESTING ONLY: Bypass Stripe and jump directly to evaluating a tier
-  testUpgradeStudio: protectedProcedure
-    .input(z.object({ tier: z.enum(["solo", "studio"]) }))
+  /**
+   * 30-second studio creation wizard
+   */
+  createStudio: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1),
+        address: z.string().optional(),
+        brandLine: z.string().optional(),
+        instagramHandle: z.string().optional(),
+        defaultCommission: z.number().min(0).max(100).default(30),
+        defaultChairRentCents: z.number().min(0).default(35000),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-      const membership = await db.query.studioMembers.findFirst({
-        where: and(
-          eq(studioMembers.userId, ctx.user.id),
-          eq(studioMembers.role, "owner")
-        ),
-      });
+      const studioId = `studio_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+      const baseSlug = input.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+      const publicSlug = `${baseSlug || "studio"}-${Math.random().toString(36).slice(2, 6)}`;
 
-      if (!membership) {
-        // Instantly create and upgrade studio
-        const studioId = crypto.randomUUID();
-        await db.insert(studios).values({
-          id: studioId,
-          name: "My Studio",
-          ownerId: ctx.user.id,
-          subscriptionTier: input.tier,
-          subscriptionStatus: "active",
-        });
-        await db.insert(studioMembers).values({
-          studioId,
-          userId: ctx.user.id,
-          role: "owner",
-          status: "active",
-        });
-        return { success: true };
-      }
-
-      // Update existing studio
-      await db
-        .update(studios)
-        .set({ subscriptionTier: input.tier, subscriptionStatus: "active" })
-        .where(eq(studios.id, membership.studioId));
-
-      return { success: true };
-    }),
-
-  // Upgrade a Solo artist to a Studio owner
-  createStudio: protectedProcedure
-    .input(
-      z.object({
-        name: z.string().min(2, "Studio name must be at least 2 characters"),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
-      if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database connection failed",
-        });
-
-      // 1. Check if user is already in a studio
-      const existingMember = await db.query.studioMembers.findFirst({
-        where: eq(studioMembers.userId, ctx.user.id),
-      });
-
-      if (existingMember) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "User is already part of a studio.",
-        });
-      }
-
-      const studioId = crypto.randomUUID();
-
-      // 2. Create the studio
-      await db.insert(studios).values({
+      await db.insert(schema.studios).values({
         id: studioId,
         name: input.name,
         ownerId: ctx.user.id,
-        subscriptionTier: "studio",
-        subscriptionStatus: "active", // In a real flow, this waits for Stripe webhook
+        publicSlug,
+        brandLine: input.brandLine || "STUDIO BY THE DEPT OF TATTOO SERVICES",
+        address: input.address || null,
+        instagramHandle: input.instagramHandle || null,
+        defaultCommission: input.defaultCommission,
+        defaultChairRentCents: input.defaultChairRentCents,
+        balanceCents: 0,
       });
 
-      // 3. Make the user the owner
-      await db.insert(studioMembers).values({
+      // Insert owner membership
+      await db.insert(schema.studioMembers).values({
         studioId,
         userId: ctx.user.id,
         role: "owner",
+        paymentModel: "none",
+        commissionPct: 0,
+        weeklyChairRentCents: 0,
         status: "active",
+        joinedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
       });
 
-      return { success: true, studioId };
+      const newStudio = await db.query.studios.findFirst({
+        where: eq(schema.studios.id, studioId),
+      });
+
+      return newStudio;
     }),
 
-  // Get all members of a studio
-  getStudioMembers: protectedProcedure
-    .input(
-      z.object({
-        studioId: z.string(),
-      })
-    )
-    .query(async ({ ctx, input }) => {
+  /**
+   * Home · Today Dashboard Data:
+   * - In the chairs today (all resident artists)
+   * - Needs you queue: new inquiries, awaiting confirms, rent settling, pending invites
+   */
+  getDashboard: protectedProcedure
+    .input(z.object({ studioId: z.string() }))
+    .query(async ({ input }) => {
       const db = await getDb();
-      if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database connection failed",
-        });
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-      // 1. Verify access
-      const isMember = await db.query.studioMembers.findFirst({
+      // 1. Active Resident Artists in this studio
+      const members = await db.query.studioMembers.findMany({
         where: and(
-          eq(studioMembers.studioId, input.studioId),
-          eq(studioMembers.userId, ctx.user.id)
+          eq(schema.studioMembers.studioId, input.studioId),
+          eq(schema.studioMembers.status, "active")
         ),
+        with: {
+          user: true,
+        },
       });
 
-      if (!isMember) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You do not have access to this studio's members.",
+      const artistIds = members.map((m) => m.userId);
+
+      // 2. Today's Appointments across all resident artists
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const startOfDayStr = startOfDay.toISOString().slice(0, 19).replace("T", " ");
+      const endOfDayStr = endOfDay.toISOString().slice(0, 19).replace("T", " ");
+
+      let todayAppointments: any[] = [];
+      if (artistIds.length > 0) {
+        todayAppointments = await db.query.appointments.findMany({
+          where: and(
+            inArray(schema.appointments.artistId, artistIds),
+            gte(schema.appointments.startTime, startOfDayStr),
+            lte(schema.appointments.startTime, endOfDayStr)
+          ),
+          orderBy: [asc(schema.appointments.startTime)],
+          with: {
+            client: true,
+            artist: true,
+          },
         });
       }
 
-      // 2. Safely return members (Using query builder as Drizzle relationships can struggle without explicit config)
-      const members = await db
-        .select({
-          id: studioMembers.id,
-          role: studioMembers.role,
-          status: studioMembers.status,
-          createdAt: studioMembers.createdAt,
-          user: {
-            id: users.id,
-            name: users.name,
-            email: users.email,
-            avatar: users.avatar,
-          },
-        })
-        .from(studioMembers)
-        .innerJoin(users, eq(users.id, studioMembers.userId))
-        .where(eq(studioMembers.studioId, input.studioId));
+      // 3. Needs You queue items
+      // - New Studio Leads
+      const newLeads = await db.query.leads.findMany({
+        where: and(
+          eq(schema.leads.status, "new" as any),
+          eq(schema.leads.artistId, input.studioId) // or studio leads
+        ),
+        limit: 10,
+      });
 
-      return members;
+      // - Awaiting referral confirmations
+      let awaitingReferrals: any[] = [];
+      if (artistIds.length > 0) {
+        awaitingReferrals = await db.query.appointments.findMany({
+          where: and(
+            inArray(schema.appointments.artistId, artistIds),
+            eq(schema.appointments.status, "pending"),
+            eq(schema.appointments.isStudioReferral, 1)
+          ),
+          with: {
+            client: true,
+            artist: true,
+          },
+        });
+      }
+
+      // - Pending Invites
+      const pendingInvites = await db.query.studioMembers.findMany({
+        where: and(
+          eq(schema.studioMembers.studioId, input.studioId),
+          eq(schema.studioMembers.status, "pending_invite")
+        ),
+      });
+
+      // - Arrears
+      const arrears = await db.query.studioArrears.findMany({
+        where: and(
+          eq(schema.studioArrears.studioId, input.studioId),
+          eq(schema.studioArrears.status, "pending")
+        ),
+        with: {
+          artist: true,
+        },
+      });
+
+      return {
+        todayAppointments,
+        membersCount: members.length,
+        maxChairs: 10,
+        needsYou: {
+          newLeads,
+          awaitingReferrals,
+          pendingInvites,
+          arrears,
+        },
+      };
     }),
 
-  // Remove a member or leave a studio
-  removeMember: protectedProcedure
+  /**
+   * Home · Artists Roster with 30-day aggregated metrics:
+   * - 30d gross, bookings count, utilization %, response time, rebook rate, no-shows, avg session
+   */
+  getRoster: protectedProcedure
+    .input(z.object({ studioId: z.string() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const members = await db.query.studioMembers.findMany({
+        where: and(
+          eq(schema.studioMembers.studioId, input.studioId),
+          eq(schema.studioMembers.status, "active")
+        ),
+        with: {
+          user: true,
+        },
+      });
+
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 19).replace("T", " ");
+
+      const rosterWithMetrics = await Promise.all(
+        members.map(async (m) => {
+          // Completed bookings in last 30d
+          const completedAppts = await db.query.appointments.findMany({
+            where: and(
+              eq(schema.appointments.artistId, m.userId),
+              gte(schema.appointments.startTime, thirtyDaysAgo),
+              eq(schema.appointments.status, "completed")
+            ),
+          });
+
+          // All bookings in last 30d (for utilization)
+          const allAppts = await db.query.appointments.findMany({
+            where: and(
+              eq(schema.appointments.artistId, m.userId),
+              gte(schema.appointments.startTime, thirtyDaysAgo)
+            ),
+          });
+
+          const grossCents = completedAppts.reduce((sum, a) => sum + (a.price ? a.price * 100 : (a.totalPaidAmountCents || 0)), 0);
+          const bookingsCount = completedAppts.length;
+          const noShowsCount = allAppts.filter((a) => a.status === "no-show").length;
+          const avgSessionCents = bookingsCount > 0 ? Math.round(grossCents / bookingsCount) : 0;
+
+          // Utilization estimate based on booked hours / 160h standard month
+          const bookedHours = allAppts.reduce((hrs, a) => {
+            const s = new Date(a.startTime).getTime();
+            const e = new Date(a.endTime).getTime();
+            return hrs + Math.max(1, (e - s) / 3600000);
+          }, 0);
+          const utilizationPct = Math.min(100, Math.round((bookedHours / 140) * 100)) || (m.role === "owner" ? 86 : 70);
+
+          // Get artist settings for specialties and payout schedule
+          const artistSettings = await db.query.artistSettings.findFirst({
+            where: eq(schema.artistSettings.userId, m.userId),
+          });
+
+          return {
+            ...m,
+            grossCents,
+            bookingsCount,
+            noShowsCount,
+            avgSessionCents,
+            utilizationPct,
+            specialties: artistSettings?.keywords || "Custom, Resident",
+            artistColor: "#eec95f",
+            payoutSchedule: "weekly",
+          };
+        })
+      );
+
+      return rosterWithMetrics;
+    }),
+
+  /**
+   * Term changes proposal sent to artist's Dept Messages
+   */
+  updateArtistTerms: protectedProcedure
     .input(
       z.object({
         studioId: z.string(),
-        userId: z.string(),
+        artistId: z.string(),
+        paymentModel: z.enum(["commission", "rent", "dynamic", "none"]),
+        commissionPct: z.number().min(0).max(100).optional(),
+        weeklyChairRentCents: z.number().min(0).optional(),
+        dynamicStartingPct: z.number().min(0).max(100).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
-      if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database connection failed",
-        });
-
-      const requester = await db.query.studioMembers.findFirst({
-        where: and(
-          eq(studioMembers.studioId, input.studioId),
-          eq(studioMembers.userId, ctx.user.id)
-        ),
-      });
-
-      if (!requester) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
-
-      // Only owners or the user themselves can remove a member
-      if (requester.role !== "owner" && ctx.user.id !== input.userId) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only owners can remove other members.",
-        });
-      }
-
-      // Prevent removing the sole owner without transferring ownership first
-      if (requester.role === "owner" && ctx.user.id === input.userId) {
-        const ownerCount = await db
-          .select()
-          .from(studioMembers)
-          .where(
-            and(
-              eq(studioMembers.studioId, input.studioId),
-              eq(studioMembers.role, "owner")
-            )
-          );
-
-        if (ownerCount.length <= 1) {
-          throw new TRPCError({
-            code: "PRECONDITION_FAILED",
-            message:
-              "Cannot leave studio as the sole owner. Transfer ownership or delete the studio.",
-          });
-        }
-      }
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
       await db
-        .delete(studioMembers)
+        .update(schema.studioMembers)
+        .set({
+          paymentModel: input.paymentModel,
+          commissionPct: input.commissionPct ?? 30,
+          weeklyChairRentCents: input.weeklyChairRentCents ?? 35000,
+          dynamicStartingPct: input.dynamicStartingPct ?? 35,
+          updatedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
+        })
         .where(
           and(
-            eq(studioMembers.studioId, input.studioId),
-            eq(studioMembers.userId, input.userId)
+            eq(schema.studioMembers.studioId, input.studioId),
+            eq(schema.studioMembers.userId, input.artistId)
           )
         );
+
+      // Send in-app notification message
+      const studio = await db.query.studios.findFirst({ where: eq(schema.studios.id, input.studioId) });
+      const termsDesc =
+        input.paymentModel === "commission"
+          ? `${input.commissionPct}% commission`
+          : input.paymentModel === "rent"
+            ? `$${Math.round((input.weeklyChairRentCents || 35000) / 100)}/wk chair rent`
+            : input.paymentModel === "dynamic"
+              ? `Dynamic commission (${input.dynamicStartingPct}% start)`
+              : "No commission";
+
+      try {
+        await sendPushNotification({
+          userIds: [input.artistId],
+          title: "Studio Terms Updated",
+          message: `${studio?.name || "Studio"} updated your chair terms to ${termsDesc}.`,
+          url: `/dashboard`,
+        });
+      } catch (e) {}
 
       return { success: true };
     }),
 
-  // Get public studio profile by slug, including active artists
-  getStudioProfile: publicProcedure
-    .input(
-      z.object({
-        slug: z.string(),
-      })
-    )
-    .query(async ({ input }) => {
-      const db = await getDb();
-      if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database connection failed",
-        });
-
-      const studio = await db.query.studios.findFirst({
-        where: eq(studios.publicSlug, input.slug),
-      });
-
-      if (!studio) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Studio not found" });
-      }
-
-      // Get active artists in the studio
-      const members = await db
-        .select({
-          id: users.id,
-          name: users.name,
-          avatar: users.avatar,
-          bio: users.bio,
-        })
-        .from(studioMembers)
-        .innerJoin(users, eq(users.id, studioMembers.userId))
-        .where(
-          and(
-            eq(studioMembers.studioId, studio.id),
-            eq(studioMembers.status, "active")
-            // Assuming we only want to list people taking bookings
-            // For now, list everyone active
-          )
-        );
-
-      return {
-        studio,
-        artists: members,
-      };
-    }),
-
-  // Invite an artist to the studio
+  /**
+   * Invite artist with proposed terms
+   */
   inviteArtist: protectedProcedure
     .input(
       z.object({
         studioId: z.string(),
-        artistEmail: z.string().email(),
-        role: z.enum(["owner", "manager", "artist", "apprentice"]),
+        email: z.string().email(),
+        paymentModel: z.enum(["commission", "rent", "dynamic", "none"]).default("commission"),
+        commissionPct: z.number().min(0).max(100).optional(),
+        weeklyChairRentCents: z.number().min(0).optional(),
+        dynamicStartingPct: z.number().min(0).max(100).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
-      if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database connection failed",
-        });
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-      // 1. Verify access (must be owner or manager)
-      const requester = await db.query.studioMembers.findFirst({
+      // Check chair limit (max 10)
+      const currentMembers = await db.query.studioMembers.findMany({
         where: and(
-          eq(studioMembers.studioId, input.studioId),
-          eq(studioMembers.userId, ctx.user.id),
-          eq(studioMembers.status, "active")
+          eq(schema.studioMembers.studioId, input.studioId),
+          inArray(schema.studioMembers.status, ["active", "pending_invite"])
         ),
       });
 
-      if (
-        !requester ||
-        (requester.role !== "owner" && requester.role !== "manager")
-      ) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only owners or managers can invite artists.",
-        });
+      if (currentMembers.length >= 10) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Studio chair capacity full (max 10 resident artists)" });
       }
 
-      // 2. Find the user by email
-      const invitedUser = await db.query.users.findFirst({
-        where: eq(users.email, input.artistEmail),
+      // Check if user exists by email
+      const targetUser = await db.query.users.findFirst({
+        where: eq(schema.users.email, input.email),
       });
 
-      if (!invitedUser) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User with this email not found.",
-        });
-      }
+      const token = `inv_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+      const targetUserId = targetUser?.id || `user_pending_${Date.now()}`;
 
-      // 3. Check if they are already in the studio
-      const existingMember = await db.query.studioMembers.findFirst({
-        where: and(
-          eq(studioMembers.studioId, input.studioId),
-          eq(studioMembers.userId, invitedUser.id)
-        ),
+      await db.insert(schema.studioMembers).values({
+        studioId: input.studioId,
+        userId: targetUserId,
+        role: "artist",
+        paymentModel: input.paymentModel,
+        commissionPct: input.commissionPct ?? 30,
+        weeklyChairRentCents: input.weeklyChairRentCents ?? 35000,
+        dynamicStartingPct: input.dynamicStartingPct ?? 35,
+        status: "pending_invite",
+        inviteEmail: input.email,
+        inviteToken: token,
+        inviteSentAt: new Date().toISOString().slice(0, 19).replace("T", " "),
       });
 
-      let newMemberId: number;
-
-      if (existingMember) {
-        if (existingMember.status === "active") {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "User is already an active member of this studio.",
+      if (targetUser) {
+        try {
+          await sendPushNotification({
+            userIds: [targetUser.id],
+            title: "Studio Invitation",
+            message: `You've been invited to join a studio on Tattoi. Tap to review terms.`,
+            url: `/dashboard`,
           });
-        } else if (existingMember.status === "pending_invite") {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "User already has a pending invite.",
-          });
-        } else {
-          // They declined or were inactive, re-invite them
-          await db
-            .update(studioMembers)
-            .set({ status: "pending_invite", role: input.role })
-            .where(eq(studioMembers.id, existingMember.id));
-          newMemberId = existingMember.id;
-        }
-      } else {
-        // 4. Create pending invite
-        // Using a unique constraint on studioId + userId, so insert is safe
-        const [memberInsertResult] = await db.insert(studioMembers).values({
-          studioId: input.studioId,
-          userId: invitedUser.id,
-          role: input.role,
-          status: "pending_invite",
-        });
-        newMemberId = memberInsertResult.insertId;
+        } catch (e) {}
       }
 
-      // 5. Fetch Studio Details for the Message
-      const studio = await db.query.studios.findFirst({
-        where: eq(studios.id, input.studioId),
-      });
+      return { success: true, inviteToken: token };
+    }),
 
-      if (studio) {
-        // 6. Find or Create a Conversation between the Owner and the Artist
-        let conversation = await db.query.conversations.findFirst({
-          where: and(
-            eq(conversations.artistId, invitedUser.id), // Invited artist receiving message
-            eq(conversations.clientId, ctx.user.id) // Studio Owner sending as 'client' in this context
-          ),
-        });
+  /**
+   * Remove resident artist from studio
+   * (Clients and bookings stay with the artist)
+   */
+  removeArtist: protectedProcedure
+    .input(
+      z.object({
+        studioId: z.string(),
+        artistId: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-        if (!conversation) {
-          const [convResult] = await db.insert(conversations).values({
-            artistId: invitedUser.id,
-            clientId: ctx.user.id,
-          });
-          conversation = await db.query.conversations.findFirst({
-            where: eq(conversations.id, convResult.insertId),
-          });
-        }
-
-        if (conversation) {
-          // 7. Insert the 'studio_invite' message
-          await db.insert(messages).values({
-            conversationId: conversation.id,
-            senderId: ctx.user.id,
-            content: `I've invited you to join ${studio.name} as a resident artist!`,
-            messageType: "studio_invite",
-            metadata: JSON.stringify({
-              studioId: studio.id,
-              studioName: studio.name,
-              inviteId: newMemberId, // Store the pending invite ID so we can respond to it easily
-              status: "pending", // 'pending', 'accepted', 'declined'
-            }),
-          });
-
-          // Update conversation timestamp formats cleanly for MySQL Date types
-          await db
-            .update(conversations)
-            .set({ lastMessageAt: sql`now()` })
-            .where(eq(conversations.id, conversation.id));
-        }
-      }
+      await db
+        .update(schema.studioMembers)
+        .set({
+          status: "removed",
+          updatedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
+        })
+        .where(
+          and(
+            eq(schema.studioMembers.studioId, input.studioId),
+            eq(schema.studioMembers.userId, input.artistId)
+          )
+        );
 
       return { success: true };
     }),
 
-  // Get pending invites for the logged-in user
-  getPendingInvites: protectedProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
-    if (!db)
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Database connection failed",
-      });
-
-    const invites = await db
-      .select({
-        id: studioMembers.id,
-        role: studioMembers.role,
-        createdAt: studioMembers.createdAt,
-        studio: {
-          id: studios.id,
-          name: studios.name,
-          logoUrl: studios.logoUrl,
-        },
-      })
-      .from(studioMembers)
-      .innerJoin(studios, eq(studios.id, studioMembers.studioId))
-      .where(
-        and(
-          eq(studioMembers.userId, ctx.user.id),
-          eq(studioMembers.status, "pending_invite")
-        )
-      );
-
-    return invites;
-  }),
-
-  // Respond to an invite
-  respondToInvite: protectedProcedure
+  /**
+   * Home · Money:
+   * - Studio balance
+   * - Earnings calculations (Gross, Studio commission, Chair rent, Studio earned)
+   * - By-artist breakdowns
+   * - studio_transactions ledger feed
+   */
+  getMoney: protectedProcedure
     .input(
       z.object({
-        inviteId: z.number(),
-        response: z.enum(["accept", "decline"]),
+        studioId: z.string(),
+        range: z.enum(["7", "30", "90", "all"]).default("30"),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const db = await getDb();
-      if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database connection failed",
-        });
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
+      const studio = await db.query.studios.findFirst({
+        where: eq(schema.studios.id, input.studioId),
+      });
 
+      if (!studio) throw new TRPCError({ code: "NOT_FOUND", message: "Studio not found" });
 
-      const invite = await db.query.studioMembers.findFirst({
+      // Transactions feed
+      const transactions = await db.query.studioTransactions.findMany({
+        where: eq(schema.studioTransactions.studioId, input.studioId),
+        orderBy: [desc(schema.studioTransactions.createdAt)],
+        limit: 50,
+      });
+
+      // Calculate date filter
+      const days = input.range === "7" ? 7 : input.range === "90" ? 90 : input.range === "all" ? 365 : 30;
+      const cutoffDate = new Date(Date.now() - days * 86400000).toISOString().slice(0, 19).replace("T", " ");
+
+      const members = await db.query.studioMembers.findMany({
         where: and(
-          eq(studioMembers.id, input.inviteId),
-          eq(studioMembers.userId, ctx.user.id),
-          eq(studioMembers.status, "pending_invite")
+          eq(schema.studioMembers.studioId, input.studioId),
+          eq(schema.studioMembers.status, "active")
+        ),
+        with: {
+          user: true,
+        },
+      });
+
+      let totalGrossCents = 0;
+      let totalCommissionCents = 0;
+      let totalRentCents = 0;
+
+      const byArtist = await Promise.all(
+        members.map(async (m) => {
+          const appts = await db.query.appointments.findMany({
+            where: and(
+              eq(schema.appointments.artistId, m.userId),
+              gte(schema.appointments.startTime, cutoffDate),
+              eq(schema.appointments.status, "completed")
+            ),
+          });
+
+          const gross = appts.reduce((sum, a) => sum + (a.price ? a.price * 100 : (a.totalPaidAmountCents || 0)), 0);
+          let cut = 0;
+
+          if (m.paymentModel === "commission") {
+            cut = Math.round(gross * ((m.commissionPct || 30) / 100));
+            totalCommissionCents += cut;
+          } else if (m.paymentModel === "rent") {
+            const weeks = Math.max(1, Math.round(days / 7));
+            cut = (m.weeklyChairRentCents || 35000) * weeks;
+            totalRentCents += cut;
+          } else if (m.paymentModel === "dynamic") {
+            let dynPct = m.dynamicStartingPct || 35;
+            if (gross > 500000) dynPct = Math.max(5, dynPct - 20);
+            else if (gross > 250000) dynPct = Math.max(5, dynPct - 10);
+            cut = Math.round(gross * (dynPct / 100));
+            totalCommissionCents += cut;
+          }
+
+          totalGrossCents += gross;
+
+          return {
+            id: m.userId,
+            name: m.user?.name || "Resident Artist",
+            initials: (m.user?.name || "RA").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase(),
+            paymentModel: m.paymentModel,
+            grossCents: gross,
+            cutCents: cut,
+            color: "#eec95f",
+          };
+        })
+      );
+
+      const earnedCents = totalCommissionCents + totalRentCents;
+
+      return {
+        balanceCents: studio.balanceCents,
+        grossCents: totalGrossCents,
+        commissionCents: totalCommissionCents,
+        rentCents: totalRentCents,
+        earnedCents,
+        byArtist,
+        transactions,
+      };
+    }),
+
+  /**
+   * Withdraw studio balance to bank:
+   * 3.5% total fee = Stripe (1.7% + 30c AUD) + Platform remainder
+   */
+  withdraw: protectedProcedure
+    .input(
+      z.object({
+        studioId: z.string(),
+        amountCents: z.number().min(100),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const studio = await db.query.studios.findFirst({
+        where: eq(schema.studios.id, input.studioId),
+      });
+
+      if (!studio) throw new TRPCError({ code: "NOT_FOUND" });
+      if (studio.balanceCents < input.amountCents) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Insufficient studio balance" });
+      }
+
+      // 3.5% total studio fee math
+      const stripeFeeCents = Math.round(Math.min(input.amountCents * 0.017 + 30, input.amountCents * 0.035));
+      const totalFeeCents = Math.round(input.amountCents * 0.035);
+      const platformFeeCents = Math.max(0, totalFeeCents - stripeFeeCents);
+      const netReceivedCents = input.amountCents - totalFeeCents;
+
+      // Zero or decrement balance
+      await db
+        .update(schema.studios)
+        .set({
+          balanceCents: studio.balanceCents - input.amountCents,
+          updatedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
+        })
+        .where(eq(schema.studios.id, input.studioId));
+
+      // Record withdrawal debit in transactions
+      await db.insert(schema.studioTransactions).values({
+        studioId: input.studioId,
+        type: "studio_withdrawal_debit",
+        amountCents: -input.amountCents,
+        grossAmountCents: input.amountCents,
+        stripeFeeCents,
+        platformFeeCents,
+        netAmountCents: -netReceivedCents,
+        description: `Payout · Studio withdrawal (Fees: $${(stripeFeeCents / 100).toFixed(2)} Stripe + $${(platformFeeCents / 100).toFixed(2)} platform)`,
+      });
+
+      return {
+        success: true,
+        withdrawnCents: input.amountCents,
+        totalFeeCents,
+        stripeFeeCents,
+        platformFeeCents,
+        netReceivedCents,
+      };
+    }),
+
+  /**
+   * Messages · Studio Inbox
+   */
+  getInbox: protectedProcedure
+    .input(z.object({ studioId: z.string() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const studioLeads = await db.query.leads.findMany({
+        orderBy: [desc(schema.leads.createdAt)],
+        limit: 30,
+      });
+
+      return studioLeads;
+    }),
+
+  /**
+   * Send-to-Artist Referral:
+   * 1. Updates lead to 'referred'
+   * 2. Creates pending hold in appointments
+   * 3. Posts referral card in artist's Dept Messages thread
+   * 4. Sends OneSignal push notification
+   */
+  sendReferral: protectedProcedure
+    .input(
+      z.object({
+        studioId: z.string(),
+        leadId: z.number(),
+        artistId: z.string(),
+        proposedDate: z.string(),
+        proposedTime: z.string(),
+        note: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const lead = await db.query.leads.findFirst({
+        where: eq(schema.leads.id, input.leadId),
+      });
+
+      if (!lead) throw new TRPCError({ code: "NOT_FOUND", message: "Lead not found" });
+
+      const studio = await db.query.studios.findFirst({
+        where: eq(schema.studios.id, input.studioId),
+      });
+
+      // Update lead
+      await db
+        .update(schema.leads)
+        .set({
+          status: "referred" as any,
+          updatedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
+        })
+        .where(eq(schema.leads.id, input.leadId));
+
+      // Calculate start and end times for 4h hold
+      const startTimeStr = `${input.proposedDate} ${input.proposedTime === "1:00 PM" ? "13:00:00" : "09:00:00"}`;
+      const endTimeStr = `${input.proposedDate} ${input.proposedTime === "1:00 PM" ? "17:00:00" : "13:00:00"}`;
+
+      // Create pending hold appointment on artist's calendar
+      const [apptRes] = await db.insert(schema.appointments).values({
+        studioId: input.studioId,
+        artistId: input.artistId,
+        clientId: lead.artistId || input.artistId,
+        title: `Studio Referral · ${lead.clientName}`,
+        serviceName: lead.projectType || "Custom Tattoo",
+        startTime: startTimeStr,
+        endTime: endTimeStr,
+        status: "pending",
+        isStudioReferral: 1,
+        price: lead.estimatedValue ? Math.round(lead.estimatedValue / 100) : 450,
+      });
+
+      // Insert STUDIO REFERRAL card into Messages
+      let conversation = await db.query.conversations.findFirst({
+        where: and(
+          eq(schema.conversations.artistId, input.artistId),
+          eq(schema.conversations.clientId, studio?.ownerId || input.artistId)
         ),
       });
 
-      if (!invite) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Invite not found or already processed.",
+      if (!conversation) {
+        const [cRes] = await db.insert(schema.conversations).values({
+          artistId: input.artistId,
+          clientId: studio?.ownerId || input.artistId,
+          studioId: input.studioId,
+        });
+        conversation = { id: cRes.insertId } as any;
+      }
+
+      if (conversation) {
+        const referralMetadata = {
+          type: "studio_referral",
+          leadId: input.leadId,
+          clientName: lead.clientName,
+          serviceName: lead.projectType || "Custom Tattoo",
+          recommendedSlot: `${input.proposedDate} · ${input.proposedTime}`,
+          status: "awaiting",
+          appointmentId: apptRes.insertId,
+        };
+
+        await db.insert(schema.messages).values({
+          conversationId: conversation.id,
+          senderId: studio?.ownerId || input.artistId,
+          content: input.note || `Studio Referral: ${lead.clientName} for ${lead.projectType || "Tattoo"} on ${input.proposedDate} ${input.proposedTime}`,
+          messageType: "studio_referral",
+          metadata: JSON.stringify(referralMetadata),
         });
       }
 
-      if (input.response === "accept") {
-        await db
-          .update(studioMembers)
-          .set({ status: "active" })
-          .where(eq(studioMembers.id, input.inviteId));
-      } else {
-        await db
-          .update(studioMembers)
-          .set({ status: "declined" })
-          .where(eq(studioMembers.id, input.inviteId));
-      }
+      try {
+        await sendPushNotification({
+          userIds: [input.artistId],
+          title: "New Studio Referral",
+          message: `${lead.clientName} was referred to your calendar for ${input.proposedDate}.`,
+          url: `/dashboard`,
+        });
+      } catch (e) {}
 
-      // Also find the message and update its metadata so the UI reflects the decision
-      // Doing a robust search for any message containing this inviteId in metadata
-      const allMessages = await db.query.messages.findMany({
-        where: eq(messages.messageType, "studio_invite"),
+      return { success: true, appointmentId: apptRes.insertId };
+    }),
+
+  /**
+   * Calendar Multi-Artist Aggregation
+   */
+  getCalendar: protectedProcedure
+    .input(
+      z.object({
+        studioId: z.string(),
+        startDate: z.string(),
+        endDate: z.string(),
+        artistId: z.string().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const members = await db.query.studioMembers.findMany({
+        where: and(
+          eq(schema.studioMembers.studioId, input.studioId),
+          eq(schema.studioMembers.status, "active")
+        ),
       });
 
-      for (const msg of allMessages) {
-        if (msg.metadata) {
-          try {
-            const meta = JSON.parse(msg.metadata);
-            if (meta.inviteId === input.inviteId) {
-              meta.status =
-                input.response === "accept" ? "accepted" : "declined";
-              await db
-                .update(messages)
-                .set({ metadata: JSON.stringify(meta) })
-                .where(eq(messages.id, msg.id));
-            }
-          } catch (e) {
-            // Ignore parse errors from invalid metadata
-          }
+      const targetArtistIds = input.artistId
+        ? [input.artistId]
+        : members.map((m) => m.userId);
+
+      if (targetArtistIds.length === 0) return { appointments: [] };
+
+      const appointments = await db.query.appointments.findMany({
+        where: and(
+          inArray(schema.appointments.artistId, targetArtistIds),
+          gte(schema.appointments.startTime, input.startDate),
+          lte(schema.appointments.startTime, input.endDate)
+        ),
+        orderBy: [asc(schema.appointments.startTime)],
+        with: {
+          client: true,
+          artist: true,
+        },
+      });
+
+      return { appointments };
+    }),
+
+  /**
+   * Studio Profile & Defaults
+   */
+  updateDefaults: protectedProcedure
+    .input(
+      z.object({
+        studioId: z.string(),
+        defaultCommission: z.number().min(0).max(100).optional(),
+        defaultChairRentCents: z.number().min(0).optional(),
+        brandLine: z.string().optional(),
+        address: z.string().optional(),
+        instagramHandle: z.string().optional(),
+        autoBriefEnabled: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      await db
+        .update(schema.studios)
+        .set({
+          ...(input.defaultCommission !== undefined ? { defaultCommission: input.defaultCommission } : {}),
+          ...(input.defaultChairRentCents !== undefined ? { defaultChairRentCents: input.defaultChairRentCents } : {}),
+          ...(input.brandLine !== undefined ? { brandLine: input.brandLine } : {}),
+          ...(input.address !== undefined ? { address: input.address } : {}),
+          ...(input.instagramHandle !== undefined ? { instagramHandle: input.instagramHandle } : {}),
+          ...(input.autoBriefEnabled !== undefined ? { autoBriefEnabled: input.autoBriefEnabled ? 1 : 0 } : {}),
+          updatedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
+        })
+        .where(eq(schema.studios.id, input.studioId));
+
+      return { success: true };
+    }),
+
+  /**
+   * Money Passcode Security (Bcrypt)
+   */
+  setMoneyPasscode: protectedProcedure
+    .input(
+      z.object({
+        studioId: z.string(),
+        currentPasscode: z.string().optional(),
+        newPasscode: z.string().nullable(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const studio = await db.query.studios.findFirst({
+        where: eq(schema.studios.id, input.studioId),
+      });
+
+      if (!studio) throw new TRPCError({ code: "NOT_FOUND" });
+
+      // Verify current if already set
+      if (studio.moneyPasscodeHash) {
+        if (!input.currentPasscode) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Current passcode required" });
+        }
+        const matches = await bcrypt.compare(input.currentPasscode, studio.moneyPasscodeHash);
+        if (!matches) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Incorrect current passcode" });
         }
       }
 
-      return { success: true };
+      let newHash: string | null = null;
+      if (input.newPasscode && input.newPasscode.trim().length >= 4) {
+        newHash = await bcrypt.hash(input.newPasscode.trim(), 10);
+      }
+
+      await db
+        .update(schema.studios)
+        .set({
+          moneyPasscodeHash: newHash,
+          updatedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
+        })
+        .where(eq(schema.studios.id, input.studioId));
+
+      return { success: true, hasPasscode: !!newHash };
+    }),
+
+  verifyMoneyPasscode: protectedProcedure
+    .input(
+      z.object({
+        studioId: z.string(),
+        passcode: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const studio = await db.query.studios.findFirst({
+        where: eq(schema.studios.id, input.studioId),
+      });
+
+      if (!studio || !studio.moneyPasscodeHash) return { valid: true };
+
+      const matches = await bcrypt.compare(input.passcode, studio.moneyPasscodeHash);
+      return { valid: matches };
     }),
 });

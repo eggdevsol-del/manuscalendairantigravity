@@ -18,6 +18,7 @@ import { Button } from "../button";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { type ReactNode } from "react";
 import { APP_TITLE } from "@/const";
+import { StudioSwitcher } from "@/components/StudioSwitcher";
 
 interface PageHeaderProps {
   /** Page title — displayed on the right side as the current page indicator */
@@ -46,10 +47,11 @@ export function PageHeader({
 
   // Business name for branding — fallback to user name
   const artistBranding = (user as any)?.artistSettings?.businessName || user?.name || null;
+  const isArtist = user?.role === "artist" || user?.role === "admin";
 
   return (
     <header
-      className={cn(tokens.shell.header, "justify-between", className)}
+      className={cn(tokens.shell.header, "justify-between items-start gap-2", className)}
       style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
     >
       {/* Left side — branding or back button */}
@@ -67,12 +69,18 @@ export function PageHeader({
         {artistBranding ? (
           <div className="flex flex-col">
             <h1 className={tokens.header.pageTitle}>{artistBranding}</h1>
-            <span className="text-[10px] uppercase font-bold tracking-widest opacity-50">
-              by {APP_TITLE}
-            </span>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-[10px] uppercase font-bold tracking-widest opacity-50">
+                by {APP_TITLE}
+              </span>
+              {isArtist && <StudioSwitcher className="scale-90 origin-left" />}
+            </div>
           </div>
         ) : (
-          <h1 className={tokens.header.pageTitle}>{title}</h1>
+          <div className="flex flex-col">
+            <h1 className={tokens.header.pageTitle}>{title}</h1>
+            {isArtist && <StudioSwitcher className="scale-90 origin-left mt-1" />}
+          </div>
         )}
       </div>
 

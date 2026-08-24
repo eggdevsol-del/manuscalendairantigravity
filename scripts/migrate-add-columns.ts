@@ -314,12 +314,153 @@ async function main() {
       ALTER TABLE \`messages\` MODIFY COLUMN \`messageType\` ENUM(
         'text','system','appointment_request','appointment_confirmed',
         'image','video','studio_invite',
-        'session_plan','session_plan_accepted','touchup_request','balance_paid'
+        'session_plan','session_plan_accepted','touchup_request','balance_paid',
+        'studio_referral','settlement_received'
       ) NOT NULL DEFAULT 'text'
     `);
     console.log("[Migration] ✅ Updated messages.messageType enum");
   } catch (e: any) {
     console.error("[Migration] ⚠️  messages.messageType enum update:", e.message);
+  }
+
+  // ── Studio Tables ──────────────────────────────────────────
+  try {
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS \`studios\` (
+        \`id\` VARCHAR(64) PRIMARY KEY,
+        \`name\` VARCHAR(255) NOT NULL,
+        \`ownerId\` VARCHAR(64) NOT NULL,
+        \`publicSlug\` VARCHAR(255) NOT NULL UNIQUE,
+        \`brandLine\` VARCHAR(255) DEFAULT 'STUDIO BY THE DEPT OF TATTOO SERVICES',
+        \`address\` TEXT,
+        \`instagramHandle\` VARCHAR(100),
+        \`stripeConnectAccountId\` VARCHAR(255),
+        \`balanceCents\` INT NOT NULL DEFAULT 0,
+        \`defaultCommission\` INT DEFAULT 30,
+        \`defaultChairRentCents\` INT DEFAULT 35000,
+        \`moneyPasscodeHash\` VARCHAR(255),
+        \`autoBriefEnabled\` TINYINT DEFAULT 1,
+        \`subscriptionTier\` VARCHAR(50) DEFAULT 'studio',
+        \`createdAt\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        \`updatedAt\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (\`ownerId\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE
+      )
+    `);
+    console.log("[Migration] ✅ Created table: studios");
+  } catch (e: any) {
+    console.error("[Migration] ⚠️  studios table:", e.message);
+  }
+
+  try {
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS \`studio_members\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`studioId\` VARCHAR(64) NOT NULL,
+        \`userId\` VARCHAR(64) NOT NULL,
+        \`role\` ENUM('owner', 'manager', 'artist', 'apprentice') NOT NULL DEFAULT 'artist',
+        \`paymentModel\` ENUM('commission', 'rent', 'dynamic', 'none') NOT NULL DEFAULT 'commission',
+        \`commissionPct\` INT DEFAULT 30,
+        \`weeklyChairRentCents\` INT DEFAULT 35000,
+        \`dynamicStartingPct\` INT DEFAULT 35,
+        \`status\` ENUM('active', 'pending_invite', 'declined', 'removed') NOT NULL DEFAULT 'active',
+        \`inviteEmail\` VARCHAR(255),
+        \`inviteToken\` VARCHAR(255),
+        \`inviteSentAt\` TIMESTAMP NULL,
+        \`joinedAt\` TIMESTAMP NULL,
+        \`createdAt\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        \`updatedAt\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY \`unique_studio_member\` (\`studioId\`, \`userId\`),
+        FOREIGN KEY (\`studioId\`) REFERENCES \`studios\`(\`id\`) ON DELETE CASCADE,
+        FOREIGN KEY (\`userId\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE
+      )
+    `);
+    console.log("[Migration] ✅ Created table: studio_members");
+  } catch (e: any) {
+    console.error("[Migration] ⚠️  studio_members table:", e.message);
+  }
+
+  try {
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS \`studio_transactions\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`studioId\` VARCHAR(64) NOT NULL,
+        \`artistId\` VARCHAR(64) NULL,
+        \`type\` ENUM('artist_settlement_credit', 'studio_withdrawal_debit', 'refund_clawback_debit', 'adjustment') NOT NULL,
+        \`amountCents\` INT NOT NULL,
+        \`grossAmountCents\` INT NULL,
+        \`stripeFeeCents\` INT DEFAULT 0,
+        \`platformFeeCents\` INT DEFAULT 0,
+        \`netAmountCents\` INT NOT NULL,
+        \`paymentModel\` VARCHAR(50),
+        \`payoutSchedule\` VARCHAR(20),
+        \`stripeTransferId\` VARCHAR(255),
+        \`stripePayoutId\` VARCHAR(255),
+        \`description\` TEXT,
+        \`createdAt\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (\`studioId\`) REFERENCES \`studios\`(\`id\`) ON DELETE CASCADE,
+        FOREIGN KEY (\`artistId\`) REFERENCES \`users\`(\`id\`) ON DELETE SET NULL
+      )
+    `);
+    console.log("[Migration] ✅ Created table: studio_transactions");
+  } catch (e: any) {
+    console.error("[Migration] ⚠️  studio_transactions table:", e.message);
+  }
+
+  try {
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS \`studio_arrears\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`studioId\` VARCHAR(64) NOT NULL,
+        \`artistId\` VARCHAR(64) NOT NULL,
+        \`amountCents\` INT NOT NULL,
+        \`reason\` VARCHAR(255) NOT NULL,
+        \`status\` ENUM('pending', 'deducted', 'waived') NOT NULL DEFAULT 'pending',
+        \`deductedTransactionId\` INT NULL,
+        \`createdAt\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        \`resolvedAt\` TIMESTAMP NULL,
+        FOREIGN KEY (\`studioId\`) REFERENCES \`studios\`(\`id\`) ON DELETE CASCADE,
+        FOREIGN KEY (\`artistId\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE
+      )
+    `);
+    console.log("[Migration] ✅ Created table: studio_arrears");
+  } catch (e: any) {
+    console.error("[Migration] ⚠️  studio_arrears table:", e.message);
+  }
+
+  try {
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS \`rcti_invoices\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`invoiceNumber\` VARCHAR(50) NOT NULL UNIQUE,
+        \`studioId\` VARCHAR(64) NOT NULL,
+        \`artistId\` VARCHAR(64) NOT NULL,
+        \`periodStart\` DATETIME NOT NULL,
+        \`periodEnd\` DATETIME NOT NULL,
+        \`grossAmountCents\` INT NOT NULL,
+        \`gstAmountCents\` INT NOT NULL DEFAULT 0,
+        \`settlementAmountCents\` INT NOT NULL,
+        \`paymentModel\` VARCHAR(50) NOT NULL,
+        \`pdfUrl\` TEXT,
+        \`createdAt\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (\`studioId\`) REFERENCES \`studios\`(\`id\`) ON DELETE CASCADE,
+        FOREIGN KEY (\`artistId\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE
+      )
+    `);
+    console.log("[Migration] ✅ Created table: rcti_invoices");
+  } catch (e: any) {
+    console.error("[Migration] ⚠️  rcti_invoices table:", e.message);
+  }
+
+  // ── Appointment isStudioReferral column ─────────────────────
+  try {
+    await connection.query("ALTER TABLE `appointments` ADD COLUMN `isStudioReferral` TINYINT DEFAULT 0");
+    console.log("[Migration] ✅ Added column: appointments.isStudioReferral");
+  } catch (e: any) {
+    if (e.code === "ER_DUP_FIELDNAME") {
+      console.log("[Migration] ⏭️  Column already exists: appointments.isStudioReferral");
+    } else {
+      console.error("[Migration] ❌ Failed to add appointments.isStudioReferral:", e.message);
+    }
   }
 
   // ── Seed default aftercare template for existing artists ────

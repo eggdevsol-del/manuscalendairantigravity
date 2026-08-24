@@ -783,7 +783,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
               // 2. Write to Payment Ledger
               await db.insert(paymentLedger).values({
                 artistId: order.artistId,
-                transactionType: "supplier_order",
+                transactionType: "store_order" as any,
                 amountCents: order.totalCents,
                 platformFeeCents,
                 artistFeeCents: 0,
@@ -1323,7 +1323,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
 
               await db.insert(paymentLedger).values({
                 artistId: order.artistId,
-                transactionType: "supplier_order",
+                transactionType: "store_order" as any,
                 amountCents: order.totalCents,
                 platformFeeCents,
                 artistFeeCents: 0,
@@ -1383,7 +1383,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 bookingId: appointmentId,
                 artistId: booking.artistId,
                 clientId: booking.clientId,
-                transactionType: "payment_request",
+                transactionType: "balance" as any,
                 amountCents: baseAmountCents,
                 platformFeeCents,
                 artistFeeCents,
@@ -1625,6 +1625,14 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             subject: `Payout of ${amountFormatted} has been deposited`,
             body: `Your payout of ${amountFormatted} ${(payout.currency || "aud").toUpperCase()} has been deposited to your bank account.`,
           });
+        }
+
+        // ── Studio Settlement Processing ──
+        try {
+          const { handleArtistPayoutWebhook } = await import("./studioSettlement");
+          await handleArtistPayoutWebhook(event, payout, connectAccountId);
+        } catch (settleErr: any) {
+          console.error("[Stripe Webhook] Studio settlement error on payout.paid:", settleErr);
         }
 
         console.log(

@@ -34,6 +34,7 @@ import ArtistHub from "./pages/public/ArtistHub";
 import ArtistShell from "./shells/ArtistShell";
 import ClientShell from "./shells/ClientShell";
 import MerchantShell from "./shells/MerchantShell";
+import StudioShell from "./shells/StudioShell";
 
 function getRedirectUrlForRole(role: string, path: string = "") {
   const { hostname, port, protocol } = window.location;
@@ -64,7 +65,7 @@ function getRedirectUrlForRole(role: string, path: string = "") {
  */
 function GuardedShell() {
   const { user, loading, isSessionChecked } = useAuth();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
 
   React.useEffect(() => {
     // Only redirect once the me query has fully settled (isFetched).
@@ -77,6 +78,10 @@ function GuardedShell() {
 
   if (loading || !isSessionChecked) return null;
   if (!user) return null;
+
+  if (location.startsWith("/studio")) {
+    return <StudioShell />;
+  }
 
   const userRole = user.role;
   const isArtist = userRole === "artist" || userRole === "admin";
@@ -97,7 +102,7 @@ const KNOWN_APP_ROUTES = new Set([
   "calendar", "conversations", "chat", "dashboard", "settings",
   "work-hours", "clients", "bank-payouts", "payout-history",
   "notifications-management", "subscriptions", "lead", "admin",
-  "profile", "merchant", "discover", "complete-profile", "bookings",
+  "profile", "merchant", "discover", "complete-profile", "bookings", "studio",
 ]);
 
 /**
