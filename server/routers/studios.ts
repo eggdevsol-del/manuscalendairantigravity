@@ -86,17 +86,33 @@ export const studiosRouter = router({
         balanceCents: 0,
       });
 
-      // Insert owner membership
-      await db.insert(schema.studioMembers).values({
-        studioId,
-        userId: ctx.user.id,
-        role: "owner",
-        paymentModel: "none",
-        commissionPct: 0,
-        weeklyChairRentCents: 0,
-        status: "active",
-        joinedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
-      });
+      // Insert owner membership with error resilience
+      try {
+        await db.insert(schema.studioMembers).values({
+          studioId,
+          userId: ctx.user.id,
+          role: "owner",
+          paymentModel: "none",
+          commissionPct: 0,
+          weeklyChairRentCents: 0,
+          status: "active",
+        });
+      } catch (memberErr: any) {
+        console.error("[createStudio] Error inserting owner studio member:", memberErr);
+        try {
+          await db.insert(schema.studioMembers).values({
+            studioId,
+            userId: ctx.user.id,
+            role: "owner",
+            paymentModel: "commission",
+            commissionPct: 0,
+            weeklyChairRentCents: 0,
+            status: "active",
+          });
+        } catch (retryErr) {
+          console.error("[createStudio] Fallback member insert also failed:", retryErr);
+        }
+      }
 
       const newStudio = await db.query.studios.findFirst({
         where: eq(schema.studios.id, studioId),

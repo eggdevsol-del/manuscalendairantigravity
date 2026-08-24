@@ -451,6 +451,60 @@ async function main() {
     console.error("[Migration] ⚠️  rcti_invoices table:", e.message);
   }
 
+  // ── Sync studio_members columns and enums ────────────────────
+  const studioMemberAlterations = [
+    { name: "role enum", sql: "ALTER TABLE `studio_members` MODIFY COLUMN `role` ENUM('owner', 'manager', 'artist', 'apprentice') NOT NULL DEFAULT 'artist'" },
+    { name: "paymentModel enum", sql: "ALTER TABLE `studio_members` MODIFY COLUMN `paymentModel` ENUM('commission', 'rent', 'dynamic', 'none') NOT NULL DEFAULT 'commission'" },
+    { name: "status enum", sql: "ALTER TABLE `studio_members` MODIFY COLUMN `status` ENUM('active', 'pending_invite', 'declined', 'removed') NOT NULL DEFAULT 'active'" },
+    { name: "commissionPct", sql: "ALTER TABLE `studio_members` ADD COLUMN `commissionPct` INT DEFAULT 30" },
+    { name: "weeklyChairRentCents", sql: "ALTER TABLE `studio_members` ADD COLUMN `weeklyChairRentCents` INT DEFAULT 35000" },
+    { name: "dynamicStartingPct", sql: "ALTER TABLE `studio_members` ADD COLUMN `dynamicStartingPct` INT DEFAULT 35" },
+    { name: "inviteEmail", sql: "ALTER TABLE `studio_members` ADD COLUMN `inviteEmail` VARCHAR(255) DEFAULT NULL" },
+    { name: "inviteToken", sql: "ALTER TABLE `studio_members` ADD COLUMN `inviteToken` VARCHAR(255) DEFAULT NULL" },
+    { name: "inviteSentAt", sql: "ALTER TABLE `studio_members` ADD COLUMN `inviteSentAt` TIMESTAMP NULL DEFAULT NULL" },
+    { name: "joinedAt", sql: "ALTER TABLE `studio_members` ADD COLUMN `joinedAt` TIMESTAMP NULL DEFAULT NULL" },
+  ];
+
+  for (const alt of studioMemberAlterations) {
+    try {
+      await connection.query(alt.sql);
+      console.log(`[Migration] ✅ Synced studio_members: ${alt.name}`);
+    } catch (e: any) {
+      if (e.code === "ER_DUP_FIELDNAME") {
+        console.log(`[Migration] ⏭️  studio_members column already exists: ${alt.name}`);
+      } else {
+        console.log(`[Migration] ℹ️  studio_members ${alt.name}:`, e.message);
+      }
+    }
+  }
+
+  // ── Sync studios columns ────────────────────────────────────
+  const studiosAlterations = [
+    { name: "brandLine", sql: "ALTER TABLE `studios` ADD COLUMN `brandLine` VARCHAR(255) DEFAULT 'STUDIO BY THE DEPT OF TATTOO SERVICES'" },
+    { name: "address", sql: "ALTER TABLE `studios` ADD COLUMN `address` TEXT DEFAULT NULL" },
+    { name: "instagramHandle", sql: "ALTER TABLE `studios` ADD COLUMN `instagramHandle` VARCHAR(100) DEFAULT NULL" },
+    { name: "stripeConnectAccountId", sql: "ALTER TABLE `studios` ADD COLUMN `stripeConnectAccountId` VARCHAR(255) DEFAULT NULL" },
+    { name: "balanceCents", sql: "ALTER TABLE `studios` ADD COLUMN `balanceCents` INT NOT NULL DEFAULT 0" },
+    { name: "defaultCommission", sql: "ALTER TABLE `studios` ADD COLUMN `defaultCommission` INT DEFAULT 30" },
+    { name: "defaultChairRentCents", sql: "ALTER TABLE `studios` ADD COLUMN `defaultChairRentCents` INT DEFAULT 35000" },
+    { name: "moneyPasscodeHash", sql: "ALTER TABLE `studios` ADD COLUMN `moneyPasscodeHash` VARCHAR(255) DEFAULT NULL" },
+    { name: "autoBriefEnabled", sql: "ALTER TABLE `studios` ADD COLUMN `autoBriefEnabled` TINYINT DEFAULT 1" },
+    { name: "subscriptionTier", sql: "ALTER TABLE `studios` ADD COLUMN `subscriptionTier` VARCHAR(50) DEFAULT 'studio'" },
+  ];
+
+  for (const alt of studiosAlterations) {
+    try {
+      await connection.query(alt.sql);
+      console.log(`[Migration] ✅ Synced studios: ${alt.name}`);
+    } catch (e: any) {
+      if (e.code === "ER_DUP_FIELDNAME") {
+        console.log(`[Migration] ⏭️  studios column already exists: ${alt.name}`);
+      } else {
+        console.log(`[Migration] ℹ️  studios ${alt.name}:`, e.message);
+      }
+    }
+  }
+
   // ── Appointment isStudioReferral column ─────────────────────
   try {
     await connection.query("ALTER TABLE `appointments` ADD COLUMN `isStudioReferral` TINYINT DEFAULT 0");

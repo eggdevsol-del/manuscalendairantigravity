@@ -21,9 +21,9 @@ export function StudioSwitcher({ currentMode = "artist", className = "" }: Studi
   const [location, setLocation] = useLocation();
   const [modalOpen, setModalOpen] = useState(false);
 
-  const { data: studio, isLoading } = trpc.studios.getMyStudio.useQuery();
-
-  if (isLoading) return null;
+  const { data: studio } = trpc.studios.getMyStudio.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
 
   const isStudioPage = location.startsWith("/studio");
 
@@ -47,7 +47,7 @@ export function StudioSwitcher({ currentMode = "artist", className = "" }: Studi
           className={`flex items-center gap-2 bg-gradient-to-r from-[#eec95f]/15 to-transparent border border-[#8a7434] hover:border-[#eec95f] text-[#eec95f] hover:text-white rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all shadow-sm ${className}`}
         >
           <span className="text-sm">🏛️</span>
-          <span className="truncate max-w-[130px] sm:max-w-[200px]">{studio.name}</span>
+          <span className="truncate max-w-[130px] sm:max-w-[200px]">{studio.name || "Multi-artist Studio"}</span>
           <span className="text-[10px] opacity-75 font-mono">›</span>
         </button>
       ) : (
@@ -56,7 +56,7 @@ export function StudioSwitcher({ currentMode = "artist", className = "" }: Studi
           className={`flex items-center gap-1.5 bg-[#28282b] border border-dashed border-[#eec95f]/50 hover:border-[#eec95f] text-[#eec95f] hover:text-white rounded-full px-3 py-1.5 text-xs font-medium transition-all shadow-sm ${className}`}
         >
           <span className="text-xs font-bold">+</span>
-          <span>Studio Mode</span>
+          <span>Multi-artist Studio</span>
         </button>
       )}
 
