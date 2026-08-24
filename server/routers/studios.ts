@@ -128,7 +128,7 @@ export const studiosRouter = router({
    */
   getDashboard: protectedProcedure
     .input(z.object({ studioId: z.string() }))
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -147,10 +147,12 @@ export const studiosRouter = router({
         },
       });
 
+      const ownerId = studio?.ownerId || ctx.user.id;
+
       // Include owner ID + all active resident artists
       const artistIds = Array.from(
         new Set([
-          ...(studio?.ownerId ? [studio.ownerId] : []),
+          ...(ownerId ? [ownerId] : []),
           ...members.map((m) => m.userId),
         ])
       );
@@ -244,12 +246,12 @@ export const studiosRouter = router({
 
   /**
    * Home · Artists Roster with 30-day real aggregated metrics:
-   * - Includes studio owner and all resident artists
+   * - Unconditionally includes studio owner and all resident artists
    * - 30d real gross, bookings count, utilization %, response time, rebook rate, no-shows, avg session
    */
   getRoster: protectedProcedure
     .input(z.object({ studioId: z.string() }))
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -267,15 +269,17 @@ export const studiosRouter = router({
         },
       });
 
+      const ownerId = studio?.ownerId || ctx.user.id;
       const allMembers = [...members];
-      if (studio?.ownerId && !allMembers.some((m) => m.userId === studio.ownerId)) {
+
+      if (ownerId && !allMembers.some((m) => m.userId === ownerId)) {
         const ownerUser = await db.query.users.findFirst({
-          where: eq(schema.users.id, studio.ownerId),
+          where: eq(schema.users.id, ownerId),
         });
         allMembers.unshift({
           id: -1,
           studioId: input.studioId,
-          userId: studio.ownerId,
+          userId: ownerId,
           role: "owner" as const,
           paymentModel: "none" as const,
           commissionPct: 0,
@@ -285,10 +289,10 @@ export const studiosRouter = router({
           inviteEmail: null,
           inviteToken: null,
           inviteSentAt: null,
-          joinedAt: studio.createdAt,
-          createdAt: studio.createdAt,
-          updatedAt: studio.updatedAt,
-          user: ownerUser || null,
+          joinedAt: studio?.createdAt || new Date().toISOString(),
+          createdAt: studio?.createdAt || new Date().toISOString(),
+          updatedAt: studio?.updatedAt || new Date().toISOString(),
+          user: ownerUser || ctx.user || null,
         } as any);
       }
 
@@ -296,6 +300,17 @@ export const studiosRouter = router({
 
       const rosterWithMetrics = await Promise.all(
         allMembers.map(async (m) => {
+          let userObj = m.user;
+          if (!userObj && m.userId) {
+            userObj = await db.query.users.findFirst({
+              where: eq(schema.users.id, m.userId),
+            });
+          }
+
+          if (!userObj && m.userId === ctx.user.id) {
+            userObj = ctx.user as any;
+          }
+
           // Completed bookings in last 30d
           const completedAppts = await db.query.appointments.findMany({
             where: and(
@@ -319,7 +334,7 @@ export const studiosRouter = router({
             0
           );
           const bookingsCount = completedAppts.length;
-          const noShowsCount = allAppts.filter((a) => a.status === "no-show").length;
+          const noShowsCount = activeAppts.filter((a) => a.status === "no-show").length;
           const avgSessionCents = bookingsCount > 0 ? Math.round(grossCents / bookingsCount) : 0;
 
           // Utilization based on active booked hours / 140h standard working month
@@ -340,14 +355,19 @@ export const studiosRouter = router({
             where: eq(schema.artistSettings.userId, m.userId),
           });
 
+          const isOwner = m.role === "owner" || m.userId === ownerId || m.userId === ctx.user.id;
+
           return {
             ...m,
+            user: userObj,
+            role: isOwner ? ("owner" as const) : m.role,
+            paymentModel: isOwner ? ("none" as const) : m.paymentModel,
             grossCents,
             bookingsCount,
             noShowsCount,
             avgSessionCents,
             utilizationPct,
-            specialties: artistSettings?.keywords || (m.role === "owner" ? "Owner · Resident Artist" : "Resident Artist"),
+            specialties: artistSettings?.keywords || (isOwner ? (artistSettings?.keywords || "Owner · Resident Artist") : "Resident Artist"),
             artistColor: "#eec95f",
             payoutSchedule: "weekly",
           };
