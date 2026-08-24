@@ -123,7 +123,7 @@ export const studiosRouter = router({
 
   /**
    * Home · Today Dashboard Data:
-   * - In the chairs today (all resident artists)
+   * - In the chairs today (studio owner + all resident artists)
    * - Needs you queue: new inquiries, awaiting confirms, rent settling, pending invites
    */
   getDashboard: protectedProcedure
@@ -131,6 +131,10 @@ export const studiosRouter = router({
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const studio = await db.query.studios.findFirst({
+        where: eq(schema.studios.id, input.studioId),
+      });
 
       // 1. Active Resident Artists in this studio
       const members = await db.query.studioMembers.findMany({
@@ -143,9 +147,15 @@ export const studiosRouter = router({
         },
       });
 
-      const artistIds = members.map((m) => m.userId);
+      // Include owner ID + all active resident artists
+      const artistIds = Array.from(
+        new Set([
+          ...(studio?.ownerId ? [studio.ownerId] : []),
+          ...members.map((m) => m.userId),
+        ])
+      );
 
-      // 2. Today's Appointments across all resident artists
+      // 2. Today's Appointments across studio owner + all resident artists
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date();
@@ -170,14 +180,18 @@ export const studiosRouter = router({
         });
       }
 
-      // 3. Needs You queue items
+      // 3. Needs You queue items (Real live records)
       // - New Studio Leads
       const newLeads = await db.query.leads.findMany({
         where: and(
           eq(schema.leads.status, "new" as any),
-          eq(schema.leads.artistId, input.studioId) // or studio leads
+          or(
+            eq(schema.leads.artistId, input.studioId),
+            studio?.ownerId ? eq(schema.leads.artistId, studio.ownerId) : undefined
+          )
         ),
-        limit: 10,
+        limit: 15,
+        orderBy: [desc(schema.leads.createdAt)],
       });
 
       // - Awaiting referral confirmations
@@ -217,7 +231,7 @@ export const studiosRouter = router({
 
       return {
         todayAppointments,
-        membersCount: members.length,
+        membersCount: artistIds.length,
         maxChairs: 10,
         needsYou: {
           newLeads,
@@ -229,14 +243,19 @@ export const studiosRouter = router({
     }),
 
   /**
-   * Home · Artists Roster with 30-day aggregated metrics:
-   * - 30d gross, bookings count, utilization %, response time, rebook rate, no-shows, avg session
+   * Home · Artists Roster with 30-day real aggregated metrics:
+   * - Includes studio owner and all resident artists
+   * - 30d real gross, bookings count, utilization %, response time, rebook rate, no-shows, avg session
    */
   getRoster: protectedProcedure
     .input(z.object({ studioId: z.string() }))
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const studio = await db.query.studios.findFirst({
+        where: eq(schema.studios.id, input.studioId),
+      });
 
       const members = await db.query.studioMembers.findMany({
         where: and(
@@ -248,10 +267,35 @@ export const studiosRouter = router({
         },
       });
 
+      const allMembers = [...members];
+      if (studio?.ownerId && !allMembers.some((m) => m.userId === studio.ownerId)) {
+        const ownerUser = await db.query.users.findFirst({
+          where: eq(schema.users.id, studio.ownerId),
+        });
+        allMembers.unshift({
+          id: -1,
+          studioId: input.studioId,
+          userId: studio.ownerId,
+          role: "owner" as const,
+          paymentModel: "none" as const,
+          commissionPct: 0,
+          weeklyChairRentCents: 0,
+          dynamicStartingPct: 0,
+          status: "active" as const,
+          inviteEmail: null,
+          inviteToken: null,
+          inviteSentAt: null,
+          joinedAt: studio.createdAt,
+          createdAt: studio.createdAt,
+          updatedAt: studio.updatedAt,
+          user: ownerUser || null,
+        } as any);
+      }
+
       const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 19).replace("T", " ");
 
       const rosterWithMetrics = await Promise.all(
-        members.map(async (m) => {
+        allMembers.map(async (m) => {
           // Completed bookings in last 30d
           const completedAppts = await db.query.appointments.findMany({
             where: and(
@@ -269,18 +313,21 @@ export const studiosRouter = router({
             ),
           });
 
-          const grossCents = completedAppts.reduce((sum, a) => sum + (a.price ? a.price * 100 : (a.totalPaidAmountCents || 0)), 0);
+          const grossCents = completedAppts.reduce(
+            (sum, a) => sum + (a.price ? a.price * 100 : (a.totalPaidAmountCents || 0)),
+            0
+          );
           const bookingsCount = completedAppts.length;
           const noShowsCount = allAppts.filter((a) => a.status === "no-show").length;
           const avgSessionCents = bookingsCount > 0 ? Math.round(grossCents / bookingsCount) : 0;
 
-          // Utilization estimate based on booked hours / 160h standard month
+          // Utilization based on booked hours / 140h standard working month
           const bookedHours = allAppts.reduce((hrs, a) => {
             const s = new Date(a.startTime).getTime();
             const e = new Date(a.endTime).getTime();
             return hrs + Math.max(1, (e - s) / 3600000);
           }, 0);
-          const utilizationPct = Math.min(100, Math.round((bookedHours / 140) * 100)) || (m.role === "owner" ? 86 : 70);
+          const utilizationPct = Math.min(100, Math.round((bookedHours / 140) * 100));
 
           // Get artist settings for specialties and payout schedule
           const artistSettings = await db.query.artistSettings.findFirst({
@@ -294,7 +341,7 @@ export const studiosRouter = router({
             noShowsCount,
             avgSessionCents,
             utilizationPct,
-            specialties: artistSettings?.keywords || "Custom, Resident",
+            specialties: artistSettings?.keywords || (m.role === "owner" ? "Owner · Resident Artist" : "Resident Artist"),
             artistColor: "#eec95f",
             payoutSchedule: "weekly",
           };
@@ -624,20 +671,82 @@ export const studiosRouter = router({
     }),
 
   /**
-   * Messages · Studio Inbox
+   * Messages · Studio Inbox:
+   * Returns real studio leads and real conversations (with clients or artists)
    */
   getInbox: protectedProcedure
     .input(z.object({ studioId: z.string() }))
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-      const studioLeads = await db.query.leads.findMany({
-        orderBy: [desc(schema.leads.createdAt)],
-        limit: 30,
+      const studio = await db.query.studios.findFirst({
+        where: eq(schema.studios.id, input.studioId),
       });
 
-      return studioLeads;
+      // 1. Real Studio Leads
+      const studioLeads = await db.query.leads.findMany({
+        where: or(
+          eq(schema.leads.artistId, input.studioId),
+          studio?.ownerId ? eq(schema.leads.artistId, studio.ownerId) : undefined
+        ),
+        orderBy: [desc(schema.leads.createdAt)],
+        limit: 50,
+      });
+
+      // 2. Real Studio Conversations
+      const studioConversations = await db.query.conversations.findMany({
+        where: or(
+          eq(schema.conversations.studioId, input.studioId),
+          studio?.ownerId ? eq(schema.conversations.artistId, studio.ownerId) : undefined,
+          studio?.ownerId ? eq(schema.conversations.clientId, studio.ownerId) : undefined
+        ),
+        with: {
+          client: true,
+          artist: true,
+          messages: {
+            orderBy: [asc(schema.messages.createdAt)],
+            limit: 50,
+          },
+        },
+        orderBy: [desc(schema.conversations.updatedAt)],
+        limit: 50,
+      });
+
+      return {
+        leads: studioLeads,
+        conversations: studioConversations,
+      };
+    }),
+
+  /**
+   * Send real text message from studio in conversation
+   */
+  sendStudioMessage: protectedProcedure
+    .input(
+      z.object({
+        studioId: z.string(),
+        conversationId: z.number(),
+        content: z.string().min(1),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const [msgRes] = await db.insert(schema.messages).values({
+        conversationId: input.conversationId,
+        senderId: ctx.user.id,
+        content: input.content,
+        messageType: "text",
+      });
+
+      await db
+        .update(schema.conversations)
+        .set({ updatedAt: new Date().toISOString().slice(0, 19).replace("T", " ") })
+        .where(eq(schema.conversations.id, input.conversationId));
+
+      return { success: true, messageId: msgRes.insertId };
     }),
 
   /**
@@ -749,7 +858,8 @@ export const studiosRouter = router({
     }),
 
   /**
-   * Calendar Multi-Artist Aggregation
+   * Calendar Multi-Artist Aggregation:
+   * Returns appointments for the studio owner + all active resident artists
    */
   getCalendar: protectedProcedure
     .input(
@@ -764,6 +874,10 @@ export const studiosRouter = router({
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
+      const studio = await db.query.studios.findFirst({
+        where: eq(schema.studios.id, input.studioId),
+      });
+
       const members = await db.query.studioMembers.findMany({
         where: and(
           eq(schema.studioMembers.studioId, input.studioId),
@@ -771,9 +885,16 @@ export const studiosRouter = router({
         ),
       });
 
+      const allArtistIds = Array.from(
+        new Set([
+          ...(studio?.ownerId ? [studio.ownerId] : []),
+          ...members.map((m) => m.userId),
+        ])
+      );
+
       const targetArtistIds = input.artistId
         ? [input.artistId]
-        : members.map((m) => m.userId);
+        : allArtistIds;
 
       if (targetArtistIds.length === 0) return { appointments: [] };
 

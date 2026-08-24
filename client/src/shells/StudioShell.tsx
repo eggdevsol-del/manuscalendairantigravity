@@ -1,17 +1,8 @@
-/**
- * StudioShell — "The Department of Tattoo Services"
- *
- * Root layout shell for the Studio Role:
- * - 4-tab bottom navigation (Home, Messages, Calendar, Profile)
- * - Top role switcher ("← Switch to Artist Mode")
- * - Dynamic tab navigation and sub-routing
- * - Design notes modal
- */
-
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
+import { Home, MessageSquare, Calendar, User } from "lucide-react";
 import { StudioHome } from "../features/studio/StudioHome";
 import { StudioMessages } from "../features/studio/StudioMessages";
 import { StudioCalendar } from "../features/studio/StudioCalendar";
@@ -35,10 +26,32 @@ export default function StudioShell() {
     setActiveTab(tab);
   };
 
+  // Design system token colors matching Artist App BottomNav
+  const bgColor = "var(--color-bg-header, #141416)";
+  const borderColor = "var(--color-border, rgba(255,255,255,0.08))";
+  const activeColor = "var(--color-accent-violet, #eec95f)";
+  const inactiveColor = "var(--color-text-secondary, #8A8A92)";
+  const badgeBorder = "var(--color-bg-header, #141416)";
+  const dangerColor = "var(--color-danger, #ef4444)";
+
+  const navTabs = [
+    { id: "home" as const, label: "Home", icon: Home },
+    { id: "msg" as const, label: "Messages", icon: MessageSquare },
+    { id: "cal" as const, label: "Calendar", icon: Calendar },
+    { id: "prof" as const, label: "Profile", icon: User },
+  ];
+
   return (
-    <div className="h-full min-h-[100dvh] flex flex-col bg-[#1b1b1b] text-[#f2f2f3] font-['Poppins',system-ui,sans-serif] selection:bg-[#eec95f]/30">
+    <div className="min-h-screen pb-[90px] bg-[#1b1b1b] text-[#f2f2f3] font-['DM_Sans',system-ui,sans-serif] selection:bg-[#eec95f]/30 flex flex-col">
       {/* ── Top Role Switcher Bar ── */}
-      <div className="shrink-0 bg-[#141415] border-b border-white/[0.07] px-4 py-2 flex items-center justify-between z-40">
+      <div
+        className="sticky top-0 shrink-0 z-40 px-4 py-2 flex items-center justify-between backdrop-blur-md"
+        style={{
+          backgroundColor: bgColor,
+          borderBottom: `1px solid ${borderColor}`,
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 0.5rem)",
+        }}
+      >
         <button
           onClick={() => setLocation("/dashboard")}
           className="flex items-center gap-2 bg-[#252528] hover:bg-[#303035] border border-white/10 text-white rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all shadow-sm"
@@ -48,13 +61,13 @@ export default function StudioShell() {
         </button>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-medium text-[#8d8d93] hidden sm:inline">STUDIO MODE</span>
+          <span className="text-[11px] font-semibold tracking-wider text-[#8d8d93] uppercase">MULTI-ARTIST STUDIO</span>
           <div className="w-2 h-2 rounded-full bg-[#57c97e] animate-pulse" />
         </div>
       </div>
 
-      {/* ── Main Viewport Content ── */}
-      <div className="flex-1 overflow-y-auto">
+      {/* ── Main Viewport Content (Fluid natural scroll) ── */}
+      <div className="flex-1 w-full">
         {isLoading ? (
           <div className="flex items-center justify-center py-24">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#eec95f]" />
@@ -73,7 +86,7 @@ export default function StudioShell() {
                 onClick={() => setCreateModalOpen(true)}
                 className="bg-[#f2cf63] text-[#1c1503] font-bold rounded-full px-7 py-3.5 text-sm hover:bg-[#f6d97e] transition-colors shadow-lg"
               >
-                + Launch Your Studio
+                + Launch Multi-artist Studio
               </button>
             </div>
           </div>
@@ -109,64 +122,93 @@ export default function StudioShell() {
         )}
       </div>
 
-      {/* ── Fixed Bottom Navigation Bar (z-50) ── */}
-      <div className="shrink-0 bg-[#161616] border-t border-white/[0.06] py-2.5 pb-safe z-50">
-        <div className="max-w-[640px] mx-auto grid grid-cols-4">
-          {/* Home */}
-          <button
-            onClick={() => handleNavigate("home")}
-            className={`flex flex-col items-center gap-1 py-1 transition-colors ${
-              activeTab === "home" ? "text-white" : "text-[#7d7d84] hover:text-white"
-            }`}
-          >
-            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 10.8 12 4l8 6.8V20a1 1 0 0 1-1 1h-4.6v-5.6H9.6V21H5a1 1 0 0 1-1-1z" />
-            </svg>
-            <span className="text-[11.5px] font-medium">Home</span>
-          </button>
+      {/* ── Fixed Bottom Navigation Bar (Identical to Artist App BottomNav) ── */}
+      <nav
+        id="studio-bottom-nav"
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          userSelect: "none",
+          backgroundColor: bgColor,
+          borderTop: `1px solid ${borderColor}`,
+          transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          willChange: "transform",
+        }}
+      >
+        {/* Tab row — 62px icon area matching Artist App */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            height: 62,
+            paddingTop: 14,
+          }}
+        >
+          {navTabs.map((item) => {
+            const active = activeTab === item.id;
+            const IconComponent = item.icon;
 
-          {/* Messages */}
-          <button
-            onClick={() => handleNavigate("msg")}
-            className={`flex flex-col items-center gap-1 py-1 transition-colors ${
-              activeTab === "msg" ? "text-white" : "text-[#7d7d84] hover:text-white"
-            }`}
-          >
-            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 12a8.5 8.5 0 0 1-12.4 7.5L4 21l1.5-4.3A8.5 8.5 0 1 1 21 12z" />
-            </svg>
-            <span className="text-[11.5px] font-medium">Messages</span>
-          </button>
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleNavigate(item.id)}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 4,
+                  flex: 1,
+                  height: "100%",
+                  background: "none",
+                  border: "none",
+                  outline: "none",
+                  cursor: "pointer",
+                  color: active ? activeColor : inactiveColor,
+                  WebkitTapHighlightColor: "transparent",
+                  padding: 0,
+                }}
+              >
+                {/* Icon with badges */}
+                <div style={{ position: "relative" }}>
+                  <IconComponent
+                    style={{ width: 24, height: 24, color: "inherit" }}
+                    strokeWidth={active ? 2.5 : 1.8}
+                    fill={active ? "currentColor" : "none"}
+                    fillOpacity={active ? 0.15 : 0}
+                  />
+                </div>
 
-          {/* Calendar */}
-          <button
-            onClick={() => handleNavigate("cal")}
-            className={`flex flex-col items-center gap-1 py-1 transition-colors ${
-              activeTab === "cal" ? "text-white" : "text-[#7d7d84] hover:text-white"
-            }`}
-          >
-            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3.5" y="5" width="17" height="16" rx="3" />
-              <path d="M3.5 9.5h17M8.5 3v4M15.5 3v4" />
-            </svg>
-            <span className="text-[11.5px] font-medium">Calendar</span>
-          </button>
-
-          {/* Profile */}
-          <button
-            onClick={() => handleNavigate("prof")}
-            className={`flex flex-col items-center gap-1 py-1 transition-colors ${
-              activeTab === "prof" ? "text-white" : "text-[#7d7d84] hover:text-white"
-            }`}
-          >
-            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="8" r="3.6" />
-              <path d="M5 20.4c.8-4 3.6-6 7-6s6.2 2 7 6" />
-            </svg>
-            <span className="text-[11.5px] font-medium">Profile</span>
-          </button>
+                {/* Label — 10px, active=600, inactive=400 */}
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: active ? 600 : 400,
+                    color: "inherit",
+                    lineHeight: 1.2,
+                    letterSpacing: "0.01em",
+                  }}
+                >
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
-      </div>
+
+        {/* Bottom safe-area fill */}
+        <div
+          style={{
+            height: "env(safe-area-inset-bottom, 20px)",
+            backgroundColor: bgColor,
+            minHeight: 20,
+          }}
+        />
+      </nav>
 
       {/* ── DESIGN NOTES SHEET ── */}
       {notesOpen && createPortal(

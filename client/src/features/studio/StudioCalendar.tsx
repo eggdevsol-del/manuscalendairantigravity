@@ -148,12 +148,12 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
   }, [selDate]);
 
   return (
-    <div className="max-w-[1060px] mx-auto w-full px-4 sm:px-6 py-6 pb-28 text-[#f2f2f3]">
-      {/* ── Header ── */}
+    <div className="max-w-[1060px] mx-auto w-full px-4 sm:px-6 py-6 pb-28 text-[#f2f2f3] font-['DM_Sans',system-ui,sans-serif]">
+      {/* ── Header (SSOT typography) ── */}
       <div className="flex justify-between items-start mb-4.5">
         <div>
-          <h1 className="text-[25px] font-bold tracking-tight leading-tight text-white">
-            {myStudio?.name || "Harpoon and highwater"}
+          <h1 className="text-[26px] sm:text-[28px] font-bold tracking-tight leading-tight text-white">
+            {myStudio?.name || "Multi-artist Studio"}
           </h1>
           <div className="text-[10px] font-semibold tracking-[1.6px] text-[#8d8d93] mt-1 uppercase">
             {myStudio?.brandLine || "STUDIO BY THE DEPT OF TATTOO SERVICES"}
