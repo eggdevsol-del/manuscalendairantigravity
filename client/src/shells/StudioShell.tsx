@@ -9,6 +9,7 @@
  */
 
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import { StudioHome } from "../features/studio/StudioHome";
@@ -168,9 +169,9 @@ export default function StudioShell() {
       </div>
 
       {/* ── DESIGN NOTES SHEET ── */}
-      {notesOpen && (
-        <div className="fixed inset-0 z-60 flex flex-col justify-end">
-          <div onClick={() => setNotesOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+      {notesOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
+          <div onClick={() => setNotesOpen(false)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
           <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5">
             <div className="flex items-center justify-between mb-3">
               <div className="text-[13px] font-semibold tracking-[2px] text-[#c9c9ce] uppercase">
@@ -204,7 +205,8 @@ export default function StudioShell() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── CREATE STUDIO MODAL ── */}

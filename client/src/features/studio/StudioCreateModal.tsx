@@ -6,6 +6,7 @@
  */
 
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -58,13 +59,13 @@ export function StudioCreateModal({ isOpen, onClose }: StudioCreateModalProps) {
     });
   };
 
-  return (
-    <div className="fixed inset-0 z-70 flex items-center justify-center p-4 sm:p-6 font-['Poppins',system-ui,sans-serif]">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 font-['Poppins',system-ui,sans-serif]">
       {/* Backdrop */}
-      <div onClick={onClose} className="fixed inset-0 bg-black/75 backdrop-blur-md" />
+      <div onClick={onClose} className="fixed inset-0 bg-black/80 backdrop-blur-md" />
 
       {/* Modal Card */}
-      <div className="relative z-10 bg-[#1e1e22] border border-[#eec95f]/30 rounded-[24px] p-6 sm:p-7 max-w-[500px] w-full shadow-2xl text-[#f2f2f3] animate-in zoom-in-95">
+      <div className="relative z-10 bg-[#19191c] border border-[#eec95f]/30 rounded-[24px] p-6 sm:p-7 max-w-[500px] w-full shadow-2xl text-[#f2f2f3] animate-in zoom-in-95">
         <div className="flex items-center justify-between mb-4">
           <div>
             <div className="text-[10.5px] font-semibold tracking-[1.8px] text-[#eec95f] uppercase">
@@ -213,6 +214,7 @@ export function StudioCreateModal({ isOpen, onClose }: StudioCreateModalProps) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

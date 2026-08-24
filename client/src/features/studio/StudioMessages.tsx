@@ -11,6 +11,7 @@
  */
 
 import React, { useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
@@ -412,9 +413,9 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
       {/* ══════════════════════════════════════════════ */}
       {/* SEND-TO-ARTIST 3-STEP WIZARD SHEET */}
       {/* ══════════════════════════════════════════════ */}
-      {asOpen && selLead && (
-        <div className="fixed inset-0 z-60 flex flex-col justify-end">
-          <div onClick={() => setAsOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+      {asOpen && selLead && createPortal(
+        <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
+          <div onClick={() => setAsOpen(false)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
           <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5">
             {/* Wizard Header */}
             <div className="flex items-center gap-3 mb-4.5">
@@ -575,7 +576,8 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

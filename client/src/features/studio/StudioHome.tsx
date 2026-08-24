@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
@@ -620,9 +621,9 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
       {/* ══════════════════════════════════════════════ */}
       {/* ARTIST DETAIL SHEET */}
       {/* ══════════════════════════════════════════════ */}
-      {detArtist && (
-        <div className="fixed inset-0 z-60 flex flex-col justify-end">
-          <div onClick={() => setDetArtistId(null)} className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+      {detArtist && createPortal(
+        <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
+          <div onClick={() => setDetArtistId(null)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
           <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[88vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5">
             <div className="flex items-center gap-3.5 mb-4.5">
               <div className="w-13 h-13 rounded-full bg-[#eec95f]/15 border border-[#eec95f] text-[#eec95f] flex items-center justify-center font-bold text-base shrink-0">
@@ -786,15 +787,16 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
               Remove from studio
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ══════════════════════════════════════════════ */}
       {/* REMOVE CONFIRMATION MODAL */}
       {/* ══════════════════════════════════════════════ */}
-      {rmOpen && detArtist && (
-        <div className="fixed inset-0 z-70 flex items-center justify-center p-6 font-['Poppins',system-ui,sans-serif]">
-          <div onClick={() => setRmOpen(false)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
+      {rmOpen && detArtist && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 font-['Poppins',system-ui,sans-serif]">
+          <div onClick={() => setRmOpen(false)} className="fixed inset-0 bg-black/75 backdrop-blur-sm" />
           <div className="relative z-10 bg-[#1f1f22] border border-white/10 rounded-[20px] p-6 max-w-[380px] w-full text-white shadow-2xl animate-in zoom-in-95">
             <h3 className="text-lg font-bold">Remove {detArtist.user?.name}?</h3>
             <p className="text-xs text-[#9b9ba1] leading-relaxed mt-2">
@@ -815,15 +817,16 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ══════════════════════════════════════════════ */}
       {/* INVITE ARTIST SHEET */}
       {/* ══════════════════════════════════════════════ */}
-      {invOpen && (
-        <div className="fixed inset-0 z-60 flex flex-col justify-end">
-          <div onClick={() => setInvOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+      {invOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
+          <div onClick={() => setInvOpen(false)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
           <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5">
             <div className="flex items-center justify-between mb-2">
               <div className="text-[13px] font-semibold tracking-[2px] text-[#c9c9ce] uppercase">
@@ -905,15 +908,16 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ══════════════════════════════════════════════ */}
       {/* WITHDRAW SHEET */}
       {/* ══════════════════════════════════════════════ */}
-      {wOpen && (
-        <div className="fixed inset-0 z-60 flex flex-col justify-end">
-          <div onClick={() => setWOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+      {wOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
+          <div onClick={() => setWOpen(false)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
           <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5">
             <div className="flex items-center justify-between mb-4">
               <div className="text-[13px] font-semibold tracking-[2px] text-[#c9c9ce] uppercase">
@@ -957,7 +961,8 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
               {withdrawMutation.isPending ? "Processing..." : "Withdraw to bank"}
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

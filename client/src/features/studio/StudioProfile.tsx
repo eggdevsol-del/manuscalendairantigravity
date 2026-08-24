@@ -10,6 +10,7 @@
  */
 
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
@@ -239,9 +240,9 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
       {/* ══════════════════════════════════════════════ */}
       {/* DEFAULTS SHEET */}
       {/* ══════════════════════════════════════════════ */}
-      {dfOpen && (
-        <div className="fixed inset-0 z-60 flex flex-col justify-end">
-          <div onClick={() => setDfOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+      {dfOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
+          <div onClick={() => setDfOpen(false)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
           <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5">
             <div className="flex items-center justify-between mb-3.5">
               <div className="text-[13px] font-semibold tracking-[2px] text-[#c9c9ce] uppercase">
@@ -283,15 +284,16 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
               Save Defaults
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ══════════════════════════════════════════════ */}
       {/* MONEY PASSCODE SHEET */}
       {/* ══════════════════════════════════════════════ */}
-      {ppOpen && (
-        <div className="fixed inset-0 z-60 flex flex-col justify-end">
-          <div onClick={() => setPpOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+      {ppOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
+          <div onClick={() => setPpOpen(false)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
           <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5">
             <div className="flex items-center justify-between mb-2">
               <div className="text-[13px] font-semibold tracking-[2px] text-[#c9c9ce] uppercase">
@@ -339,7 +341,8 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
               </button>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
