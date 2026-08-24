@@ -305,11 +305,12 @@ export const studiosRouter = router({
             ),
           });
 
-          // All bookings in last 30d (for utilization)
-          const allAppts = await db.query.appointments.findMany({
+          // Active / completed bookings in last 30d (for utilization)
+          const activeAppts = await db.query.appointments.findMany({
             where: and(
               eq(schema.appointments.artistId, m.userId),
-              gte(schema.appointments.startTime, thirtyDaysAgo)
+              gte(schema.appointments.startTime, thirtyDaysAgo),
+              inArray(schema.appointments.status, ["completed", "confirmed", "in_progress"])
             ),
           });
 
@@ -321,13 +322,18 @@ export const studiosRouter = router({
           const noShowsCount = allAppts.filter((a) => a.status === "no-show").length;
           const avgSessionCents = bookingsCount > 0 ? Math.round(grossCents / bookingsCount) : 0;
 
-          // Utilization based on booked hours / 140h standard working month
-          const bookedHours = allAppts.reduce((hrs, a) => {
+          // Utilization based on active booked hours / 140h standard working month
+          const bookedHours = activeAppts.reduce((hrs, a) => {
             const s = new Date(a.startTime).getTime();
-            const e = new Date(a.endTime).getTime();
-            return hrs + Math.max(1, (e - s) / 3600000);
+            const e = a.endTime ? new Date(a.endTime).getTime() : s + 3 * 3600000;
+            if (isNaN(s) || isNaN(e) || e <= s) return hrs + 2;
+            const durationHrs = Math.min(12, Math.max(0.5, (e - s) / 3600000));
+            return hrs + durationHrs;
           }, 0);
-          const utilizationPct = Math.min(100, Math.round((bookedHours / 140) * 100));
+
+          const utilizationPct = activeAppts.length > 0
+            ? Math.min(100, Math.max(0, Math.round((bookedHours / 140) * 100)))
+            : 0;
 
           // Get artist settings for specialties and payout schedule
           const artistSettings = await db.query.artistSettings.findFirst({

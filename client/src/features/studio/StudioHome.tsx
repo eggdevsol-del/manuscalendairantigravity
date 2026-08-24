@@ -13,6 +13,45 @@ import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
+function MetricTooltip({ text, label }: { text: string; label?: string }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <span className="relative inline-flex items-center" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((v) => !v);
+        }}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        className="w-3.5 h-3.5 rounded-full border border-white/20 text-[9px] font-semibold text-[#8d8d93] hover:text-white hover:border-white/40 flex items-center justify-center transition-colors ml-1 leading-none cursor-pointer"
+        aria-label="Metric info"
+      >
+        i
+      </button>
+
+      {open && (
+        <>
+          {/* Mobile touch backdrop to dismiss */}
+          <span
+            className="fixed inset-0 z-[100] sm:hidden"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(false);
+            }}
+          />
+          <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-[101] w-48 sm:w-56 p-2.5 rounded-xl bg-[#28282b] border border-white/15 text-[11px] text-[#d8d8dc] font-normal leading-relaxed shadow-xl backdrop-blur-md pointer-events-none animate-in fade-in zoom-in-95 duration-150 text-left">
+            {label && <strong className="block text-white font-semibold mb-0.5">{label}</strong>}
+            {text}
+          </span>
+        </>
+      )}
+    </span>
+  );
+}
+
 interface StudioHomeProps {
   onNavigateTab: (tab: "home" | "msg" | "cal" | "prof", options?: any) => void;
   onOpenNotes: () => void;
@@ -221,13 +260,25 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
         className="border border-[#8a7434] rounded-[16px] p-4.5 sm:p-5 flex items-center gap-7 cursor-pointer bg-gradient-to-b from-[#f2cf63]/5 to-transparent hover:border-[#eec95f] transition-all mb-4"
       >
         <div>
-          <div className="text-[10.5px] font-semibold tracking-[1.8px] text-[#9a8a55]">EARNED (30D)</div>
+          <div className="text-[10.5px] font-semibold tracking-[1.8px] text-[#9a8a55] flex items-center">
+            EARNED (30D)
+            <MetricTooltip
+              label="Earned (30D)"
+              text="Net revenue collected by the studio from resident artist commissions and chair rent over the past 30 days."
+            />
+          </div>
           <div className="text-[21px] font-semibold text-[#eec95f] mt-0.5">
             {isMasked ? "$ ••••" : formatMoney(moneyData?.earnedCents || 0, true)}
           </div>
         </div>
         <div>
-          <div className="text-[10.5px] font-semibold tracking-[1.8px] text-[#9a8a55]">STUDIO BALANCE</div>
+          <div className="text-[10.5px] font-semibold tracking-[1.8px] text-[#9a8a55] flex items-center">
+            STUDIO BALANCE
+            <MetricTooltip
+              label="Studio Balance"
+              text="Live studio funds currently in escrow ready for instant bank payout."
+            />
+          </div>
           <div className="text-[21px] font-semibold text-[#eec95f] mt-0.5">
             {isMasked ? "$ ••••••" : formatMoney(balanceCents, true)}
           </div>
@@ -434,14 +485,29 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
 
                   <div className="flex items-center gap-2.5 mt-3.5">
                     <div className="flex-1 h-1.5 rounded-full bg-[#323236] overflow-hidden">
-                      <div className="h-full rounded-full bg-[#eec95f]" style={{ width: `${a.utilizationPct || 70}%` }} />
+                      <div
+                        className="h-full rounded-full bg-[#eec95f] transition-all duration-300"
+                        style={{ width: `${a.utilizationPct ?? 0}%` }}
+                      />
                     </div>
-                    <div className="text-xs text-[#9b9ba1] shrink-0">{a.utilizationPct || 70}% booked</div>
+                    <div className="text-xs text-[#9b9ba1] shrink-0 flex items-center">
+                      {a.utilizationPct ?? 0}% booked
+                      <MetricTooltip
+                        label="% Booked"
+                        text="Chair utilization percentage based on active appointment hours against standard 140h monthly chair capacity."
+                      />
+                    </div>
                   </div>
 
                   <div className="flex justify-between items-center mt-2.5 text-[13px]">
                     <span className="text-[#9b9ba1]">{a.bookingsCount || 0} bookings</span>
-                    <span className="font-semibold text-white">{formatMoney(a.grossCents || 0)} gross · 30d</span>
+                    <span className="font-semibold text-white flex items-center">
+                      {formatMoney(a.grossCents || 0)} gross · 30d
+                      <MetricTooltip
+                        label="30D Gross"
+                        text="Total gross tattoo sales completed by this artist in the last 30 days."
+                      />
+                    </span>
                   </div>
                 </div>
               );
