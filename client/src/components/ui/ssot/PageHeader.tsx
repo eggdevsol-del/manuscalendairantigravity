@@ -47,39 +47,47 @@ export function PageHeader({
 
   // Business name for branding — fallback to user name
   const artistBranding = (user as any)?.artistSettings?.businessName || user?.name || null;
-  const isArtist = user?.role === "artist" || user?.role === "admin";
+  const isArtist = user ? user.role !== "client" : false;
 
   return (
     <header
-      className={cn(tokens.shell.header, "justify-between items-start gap-2", className)}
+      className={cn(tokens.shell.header, "justify-between items-start gap-3", className)}
       style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
     >
       {/* Left side — branding or back button */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-start gap-2 min-w-0 flex-1">
         {onBack && (
           <Button
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="-ml-2 h-8 w-8 text-foreground/70 hover:text-foreground"
+            className="-ml-2 mt-0.5 h-8 w-8 text-foreground/70 hover:text-foreground shrink-0"
           >
             <ChevronLeft className="w-6 h-6" />
           </Button>
         )}
         {artistBranding ? (
-          <div className="flex flex-col">
-            <h1 className={tokens.header.pageTitle}>{artistBranding}</h1>
+          <div className="flex flex-col min-w-0">
+            <h1 className={cn(tokens.header.pageTitle, "truncate")}>{artistBranding}</h1>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px] uppercase font-bold tracking-widest opacity-50">
+              <span className="text-[10px] uppercase font-bold tracking-widest opacity-50 shrink-0">
                 by {APP_TITLE}
               </span>
-              {isArtist && <StudioSwitcher className="scale-90 origin-left" />}
             </div>
+            {isArtist && (
+              <div className="mt-1.5 flex items-center">
+                <StudioSwitcher />
+              </div>
+            )}
           </div>
         ) : (
-          <div className="flex flex-col">
-            <h1 className={tokens.header.pageTitle}>{title}</h1>
-            {isArtist && <StudioSwitcher className="scale-90 origin-left mt-1" />}
+          <div className="flex flex-col min-w-0">
+            <h1 className={cn(tokens.header.pageTitle, "truncate")}>{title}</h1>
+            {isArtist && (
+              <div className="mt-1.5 flex items-center">
+                <StudioSwitcher />
+              </div>
+            )}
           </div>
         )}
       </div>
