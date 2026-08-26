@@ -42,49 +42,26 @@ export default function StudioShell() {
   ];
 
   return (
-    <div className="min-h-screen pb-[90px] bg-[#1b1b1b] text-[#f2f2f3] font-['DM_Sans',system-ui,sans-serif] selection:bg-[#eec95f]/30 flex flex-col">
-      {/* ── Top Role Switcher Bar ── */}
-      <div
-        className="sticky top-0 shrink-0 z-40 px-4 py-2 flex items-center justify-between backdrop-blur-md"
-        style={{
-          backgroundColor: bgColor,
-          borderBottom: `1px solid ${borderColor}`,
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 0.5rem)",
-        }}
-      >
-        <button
-          onClick={() => setLocation("/dashboard")}
-          className="flex items-center gap-2 bg-[#252528] hover:bg-[#303035] border border-white/10 text-white rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all shadow-sm"
-        >
-          <span>←</span>
-          <span>Switch to Artist Mode</span>
-        </button>
-
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold tracking-wider text-[#8d8d93] uppercase">MULTI-ARTIST STUDIO</span>
-          <div className="w-2 h-2 rounded-full bg-[#57c97e] animate-pulse" />
-        </div>
-      </div>
-
-      {/* ── Main Viewport Content (Fluid natural scroll) ── */}
-      <div className="flex-1 w-full">
+    <div className="fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden bg-background">
+      {/* ── Main Viewport Content ── */}
+      <div className="flex-1 w-full h-full overflow-hidden flex flex-col">
         {isLoading ? (
-          <div className="flex items-center justify-center py-24">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#eec95f]" />
+          <div className="flex-1 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
         ) : !studio ? (
-          <div className="max-w-[480px] mx-auto text-center py-16 px-6 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-[#eec95f]/15 border border-[#8a7434] text-[#eec95f] flex items-center justify-center text-3xl mx-auto">
+          <div className="flex-1 overflow-y-auto mobile-scroll px-6 py-16 text-center space-y-4 max-w-[480px] mx-auto flex flex-col justify-center items-center">
+            <div className="w-16 h-16 rounded-full bg-primary/15 border border-primary text-primary flex items-center justify-center text-3xl mx-auto">
               🏛️
             </div>
-            <h2 className="text-2xl font-bold text-white">No Studio Found</h2>
-            <p className="text-sm text-[#9b9ba1] leading-relaxed">
+            <h2 className="text-2xl font-bold text-foreground">No Studio Found</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
               You haven't set up a studio space yet. Launch your multi-chair studio to manage resident artists and track shop payouts.
             </p>
             <div className="pt-3">
               <button
                 onClick={() => setCreateModalOpen(true)}
-                className="bg-[#f2cf63] text-[#1c1503] font-bold rounded-full px-7 py-3.5 text-sm hover:bg-[#f6d97e] transition-colors shadow-lg"
+                className="bg-primary text-primary-foreground font-bold rounded-full px-7 py-3.5 text-sm hover:opacity-90 transition-opacity shadow-lg"
               >
                 + Launch Multi-artist Studio
               </button>

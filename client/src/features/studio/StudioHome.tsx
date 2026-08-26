@@ -12,6 +12,8 @@ import React, { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/ui/ssot";
+import { tokens } from "@/ui/tokens";
 
 function MetricTooltip({ text, label }: { text: string; label?: string }) {
   const [open, setOpen] = useState(false);
@@ -223,41 +225,37 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
     withdrawMutation.mutate({ studioId, amountCents: balanceCents });
   };
 
-  return (
-    <div className="max-w-[1060px] mx-auto w-full px-4 sm:px-6 py-6 pb-28 text-[#f2f2f3] font-['DM_Sans',system-ui,sans-serif]">
-      {/* ── Header (SSOT typography) ── */}
-      <div className="flex justify-between items-start gap-3 mb-5">
-        <div>
-          <h1 className="text-[26px] sm:text-[28px] font-bold tracking-tight leading-tight text-white">
-            {myStudio?.name || "Multi-artist Studio"}
-          </h1>
-          <div className="text-[10px] font-semibold tracking-[1.6px] text-[#8d8d93] mt-1 uppercase">
-            {myStudio?.brandLine || "STUDIO BY THE DEPT OF TATTOO SERVICES"}
-          </div>
-        </div>
-        <div className="text-right shrink-0">
-          <div className="flex items-center gap-2.5 justify-end">
-            <button
-              onClick={onOpenNotes}
-              className="w-6.5 h-6.5 rounded-full border border-white/15 bg-transparent text-[#8d8d93] text-xs font-semibold hover:border-white/30 transition-colors flex items-center justify-center"
-            >
-              i
-            </button>
-            <div className="text-[21px] font-medium text-[#ececee]">Home</div>
-          </div>
-          <div className="text-[13px] text-[#8d8d93] mt-0.5">
-            {new Date().toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" })}
-          </div>
-        </div>
-      </div>
+  const todayLabel = new Date().toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" });
 
-      {/* ── Gold-Bordered Money Summary Card (Real DB live values) ── */}
-      <div
-        onClick={() => {
-          setHomeSeg("money");
-          setIsMoneyUnlocked(false);
-        }}
-        className="border border-[#8a7434] rounded-[16px] p-4.5 sm:p-5 flex items-center gap-7 cursor-pointer bg-gradient-to-b from-[#f2cf63]/5 to-transparent hover:border-[#eec95f] transition-all mb-4"
+  return (
+    <div className="flex-1 w-full h-full flex flex-col overflow-hidden bg-background">
+      {/* ── SSOT PageHeader (Identical to Artist App) ── */}
+      <PageHeader
+        title="Home"
+        subtitle={todayLabel}
+        rightAction={
+          <button
+            onClick={onOpenNotes}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+          >
+            <span className="w-5 h-5 rounded-full border border-border flex items-center justify-center font-bold text-[10px]">
+              i
+            </span>
+            <span>Guide</span>
+          </button>
+        }
+      />
+
+      {/* ── Scrollable Viewport Content ── */}
+      <div className="flex-1 overflow-y-auto mobile-scroll px-4 sm:px-6 pt-2 pb-32">
+        <div className="max-w-[1060px] mx-auto w-full text-[#f2f2f3] font-['DM_Sans',system-ui,sans-serif]">
+          {/* ── Gold-Bordered Money Summary Card (Real DB live values) ── */}
+          <div
+            onClick={() => {
+              setHomeSeg("money");
+              setIsMoneyUnlocked(false);
+            }}
+            className="border border-[#8a7434] rounded-[16px] p-4.5 sm:p-5 flex items-center gap-7 cursor-pointer bg-gradient-to-b from-[#f2cf63]/5 to-transparent hover:border-[#eec95f] transition-all mb-4"
       >
         <div>
           <div className="text-[10.5px] font-semibold tracking-[1.8px] text-[#9a8a55] flex items-center">
@@ -1030,6 +1028,8 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
         </div>,
         document.body
       )}
+        </div>
+      </div>
     </div>
   );
 }

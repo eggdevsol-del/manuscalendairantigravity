@@ -10,6 +10,7 @@
 
 import React, { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
+import { PageHeader } from "@/components/ui/ssot";
 
 interface StudioCalendarProps {
   initialDate?: string;
@@ -148,22 +149,15 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
   }, [selDate]);
 
   return (
-    <div className="max-w-[1060px] mx-auto w-full px-4 sm:px-6 py-6 pb-28 text-[#f2f2f3] font-['DM_Sans',system-ui,sans-serif]">
-      {/* ── Header (SSOT typography) ── */}
-      <div className="flex justify-between items-start mb-4.5">
-        <div>
-          <h1 className="text-[26px] sm:text-[28px] font-bold tracking-tight leading-tight text-white">
-            {myStudio?.name || "Multi-artist Studio"}
-          </h1>
-          <div className="text-[10px] font-semibold tracking-[1.6px] text-[#8d8d93] mt-1 uppercase">
-            {myStudio?.brandLine || "STUDIO BY THE DEPT OF TATTOO SERVICES"}
-          </div>
-        </div>
-        <div className="text-[21px] font-medium text-[#ececee]">Calendar</div>
-      </div>
+    <div className="flex-1 w-full h-full flex flex-col overflow-hidden bg-background">
+      {/* ── SSOT PageHeader (Identical to Artist App) ── */}
+      <PageHeader title="Calendar" />
 
-      {/* ── Navigation Bar ── */}
-      <div className="flex items-center gap-2.5 mb-4 flex-wrap">
+      {/* ── Scrollable Viewport Content ── */}
+      <div className="flex-1 overflow-y-auto mobile-scroll px-4 sm:px-6 pt-2 pb-32">
+        <div className="max-w-[1060px] mx-auto w-full text-[#f2f2f3] font-['DM_Sans',system-ui,sans-serif]">
+          {/* ── Navigation Bar ── */}
+          <div className="flex items-center gap-2.5 mb-4 flex-wrap">
         <button
           onClick={() => setSelDate(new Date().toISOString().slice(0, 10))}
           className="border-1.5 border-[#8a7434] text-white rounded-full px-4.5 py-2 text-sm font-medium hover:border-[#eec95f] transition-all"
@@ -400,6 +394,8 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
           </div>
         </div>
       )}
+        </div>
+      </div>
     </div>
   );
 }

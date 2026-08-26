@@ -10,6 +10,7 @@ import {
   Banknote,
   Bell,
   BookOpen,
+  Building2,
   ChevronRight,
   Clock,
   CreditCard,
@@ -312,16 +313,13 @@ export default function Settings() {
                     title="Consultations"
                     subtitle="Intake & consult settings"
                     onClick={nav("consultations")}
+                  <SettingsRow
+                    icon={Building2}
+                    iconColor="bg-[#eec95f]/20 text-[#eec95f]"
+                    title="Multi-Artist Studio Space"
+                    subtitle="Chairs, resident artists, calendar & shop payouts"
+                    onClick={() => setLocation("/studio")}
                   />
-                  {isStudio && (
-                    <SettingsRow
-                      icon={Users}
-                      iconColor="bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]"
-                      title="Studio Headquarters"
-                      subtitle="Manage your studio"
-                      onClick={nav("studio")}
-                    />
-                  )}
                 </div>
               </Card>
             </section>

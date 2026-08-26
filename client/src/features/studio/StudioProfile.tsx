@@ -13,6 +13,8 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { useLocation } from "wouter";
+import { PageHeader } from "@/components/ui/ssot";
 
 interface StudioProfileProps {
   onNavigateHomeArtists?: () => void;
@@ -80,29 +82,24 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
     });
   };
 
-  const copyBookingLink = () => {
-    const link = `https://www.tattoi.app/f/${myStudio?.publicSlug || "harpoonandhighwater"}`;
+  const [, setLocation] = useLocation();
+
+  const handleCopyLink = () => {
+    const link = `${window.location.origin}/s/${myStudio?.publicSlug || "studio"}`;
     navigator.clipboard.writeText(link);
     toast.success("Studio booking link copied!");
   };
 
   return (
-    <div className="max-w-[1060px] mx-auto w-full px-4 sm:px-6 py-6 pb-28 text-[#f2f2f3] font-['DM_Sans',system-ui,sans-serif]">
-      {/* ── Header (SSOT typography) ── */}
-      <div className="flex justify-between items-start mb-4.5">
-        <div>
-          <h1 className="text-[26px] sm:text-[28px] font-bold tracking-tight leading-tight text-white">
-            {myStudio?.name || "Multi-artist Studio"}
-          </h1>
-          <div className="text-[10px] font-semibold tracking-[1.6px] text-[#8d8d93] mt-1 uppercase">
-            {myStudio?.brandLine || "STUDIO BY THE DEPT OF TATTOO SERVICES"}
-          </div>
-        </div>
-        <div className="text-[21px] font-medium text-[#ececee]">Profile</div>
-      </div>
+    <div className="flex-1 w-full h-full flex flex-col overflow-hidden bg-background">
+      {/* ── SSOT PageHeader (Identical to Artist App) ── */}
+      <PageHeader title="Profile" />
 
-      {/* ── Studio Identity Block ── */}
-      <div className="text-center py-3 pb-6">
+      {/* ── Scrollable Viewport Content ── */}
+      <div className="flex-1 overflow-y-auto mobile-scroll px-4 sm:px-6 pt-2 pb-32">
+        <div className="max-w-[1060px] mx-auto w-full text-[#f2f2f3] font-['DM_Sans',system-ui,sans-serif]">
+          {/* ── Studio Identity Block ── */}
+          <div className="text-center py-3 pb-6">
         <div className="w-21 h-21 rounded-full mx-auto flex items-center justify-center font-bold text-2xl bg-gradient-to-br from-[#e7c563] to-[#8f6f2c] text-[#231b06] shadow-lg">
           {(myStudio?.name || "ST").slice(0, 2).toUpperCase()}
         </div>
@@ -233,6 +230,17 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
               </div>
               <span className="text-[#6e6e75] font-mono">›</span>
             </div>
+          </div>
+
+          {/* Switch to Artist Account */}
+          <div className="pt-2">
+            <button
+              onClick={() => setLocation("/dashboard")}
+              className="w-full py-3.5 px-4 rounded-2xl bg-[#28282b] border border-white/10 hover:border-white/20 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.99]"
+            >
+              <span>←</span>
+              <span>Switch to Artist Account</span>
+            </button>
           </div>
         </div>
       </div>

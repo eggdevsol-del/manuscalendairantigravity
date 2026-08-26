@@ -18,7 +18,6 @@ import { Button } from "../button";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { type ReactNode } from "react";
 import { APP_TITLE } from "@/const";
-import { StudioSwitcher } from "@/components/StudioSwitcher";
 
 interface PageHeaderProps {
   /** Page title — displayed on the right side as the current page indicator */
@@ -47,7 +46,6 @@ export function PageHeader({
 
   // Business name for branding — fallback to user name
   const artistBranding = (user as any)?.artistSettings?.businessName || user?.name || null;
-  const isArtist = user ? user.role !== "client" : false;
 
   return (
     <header
@@ -74,20 +72,10 @@ export function PageHeader({
                 by {APP_TITLE}
               </span>
             </div>
-            {isArtist && (
-              <div className="mt-1.5 flex items-center">
-                <StudioSwitcher />
-              </div>
-            )}
           </div>
         ) : (
           <div className="flex flex-col min-w-0">
             <h1 className={cn(tokens.header.pageTitle, "truncate")}>{title}</h1>
-            {isArtist && (
-              <div className="mt-1.5 flex items-center">
-                <StudioSwitcher />
-              </div>
-            )}
           </div>
         )}
       </div>
