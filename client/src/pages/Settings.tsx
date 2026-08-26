@@ -313,6 +313,7 @@ export default function Settings() {
                     title="Consultations"
                     subtitle="Intake & consult settings"
                     onClick={nav("consultations")}
+                  />
                   <SettingsRow
                     icon={Building2}
                     iconColor="bg-[#eec95f]/20 text-[#eec95f]"
