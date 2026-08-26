@@ -165,14 +165,14 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
             </div>
 
             {/* Studio booking link */}
-            <div onClick={copyBookingLink} className="flex items-center gap-3.5 p-4 cursor-pointer hover:bg-white/[0.02]">
+            <div onClick={handleCopyLink} className="flex items-center gap-3.5 p-4 cursor-pointer hover:bg-white/[0.02]">
               <div className="w-9 h-9 rounded-full bg-[#a98ff2]/15 text-[#a98ff2] flex items-center justify-center text-sm shrink-0">
                 ⚯
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold text-white">Studio booking link</div>
                 <div className="text-xs text-[#9b9ba1] truncate">
-                  tattoi.app/f/{myStudio?.publicSlug || "harpoonandhighwater"}
+                  tattoi.app/s/{myStudio?.publicSlug || "studio"}
                 </div>
               </div>
               <span className="text-[#6e6e75] font-mono">›</span>
@@ -244,6 +244,8 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
       {/* ══════════════════════════════════════════════ */}
       {/* DEFAULTS SHEET */}
