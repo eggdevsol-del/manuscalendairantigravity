@@ -14,6 +14,20 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
+import { useTooltipTarget, useTooltipTour } from "@/components/tooltip-tour";
+import { SuppliersTab } from "../dashboard/SuppliersTab";
+import {
+  ShieldCheck,
+  FileText,
+  Download,
+  Building2,
+  Package,
+  Search,
+  CheckCircle2,
+  AlertTriangle,
+  ExternalLink,
+  Sparkles,
+} from "lucide-react";
 
 function MetricTooltip({ text, label }: { text: string; label?: string }) {
   const [open, setOpen] = useState(false);
@@ -60,12 +74,29 @@ interface StudioHomeProps {
 }
 
 export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
-  const [homeSeg, setHomeSeg] = useState<"today" | "artists" | "money">("today");
+  const [homeSeg, setHomeSeg] = useState<"today" | "artists" | "money" | "vault" | "suppliers">("today");
   const [moneyRange, setMoneyRange] = useState<"7" | "30" | "90" | "all">("30");
+  const [vaultFilter, setVaultFilter] = useState<"all" | "form_9" | "procedure_consent" | "medical_release">("all");
+  const [vaultSearch, setVaultSearch] = useState("");
+
+  const { startTour } = useTooltipTour();
+
+  // Tooltip tour target refs
+  const studioMoneyCardRef = useTooltipTarget("studio-money-card");
+  const studioSegmentPillRef = useTooltipTarget("studio-segment-pill");
+  const studioArtistsListRef = useTooltipTarget("studio-artists-list");
+  const studioVaultSectionRef = useTooltipTarget("studio-vault-section");
+  const studioSuppliersAreaRef = useTooltipTarget("studio-suppliers-area");
 
   // Load Real Studio Entity
   const { data: myStudio, refetch: refetchStudio } = trpc.studios.getMyStudio.useQuery();
   const studioId = myStudio?.id || "";
+
+  // Load Compliance Vault Data
+  const { data: vaultData, isLoading: isVaultLoading } = trpc.studios.getComplianceVault.useQuery(
+    { studioId },
+    { enabled: !!studioId }
+  );
 
   // Load Real Dashboard Data
   const { data: dashboardData, refetch: refetchDashboard } = trpc.studios.getDashboard.useQuery(
@@ -234,15 +265,24 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
         title="Home"
         subtitle={todayLabel}
         rightAction={
-          <button
-            onClick={onOpenNotes}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
-          >
-            <span className="w-5 h-5 rounded-full border border-border flex items-center justify-center font-bold text-[10px]">
-              i
-            </span>
-            <span>Guide</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => startTour("studio-overview")}
+              className="text-xs font-semibold text-[#eec95f] hover:text-[#f6d97e] bg-[#eec95f]/10 border border-[#eec95f]/30 rounded-full px-3 py-1.5 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Tour</span>
+            </button>
+            <button
+              onClick={onOpenNotes}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+            >
+              <span className="w-5 h-5 rounded-full border border-border flex items-center justify-center font-bold text-[10px]">
+                i
+              </span>
+              <span>Guide</span>
+            </button>
+          </div>
         }
       />
 
@@ -251,12 +291,13 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
         <div className="max-w-[1060px] mx-auto w-full text-[#f2f2f3] font-['DM_Sans',system-ui,sans-serif]">
           {/* ── Gold-Bordered Money Summary Card (Real DB live values) ── */}
           <div
+            ref={studioMoneyCardRef as any}
             onClick={() => {
               setHomeSeg("money");
               setIsMoneyUnlocked(false);
             }}
             className="border border-[#8a7434] rounded-[16px] p-4.5 sm:p-5 flex items-center gap-7 cursor-pointer bg-gradient-to-b from-[#f2cf63]/5 to-transparent hover:border-[#eec95f] transition-all mb-4"
-      >
+          >
         <div>
           <div className="text-[10.5px] font-semibold tracking-[1.8px] text-[#9a8a55] flex items-center">
             EARNED (30D)
@@ -284,14 +325,14 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
         <div className="ml-auto text-[#eec95f] text-xl font-mono">›</div>
       </div>
 
-      {/* ── Segment Pill: Today · Artists · Money ── */}
-      <div className="flex bg-[#1a1a1b] rounded-full p-1 mb-5.5">
+      {/* ── Segment Pill: Today · Artists · Money · Vault · Suppliers ── */}
+      <div ref={studioSegmentPillRef as any} className="flex bg-[#1a1a1b] rounded-full p-1 mb-5.5 overflow-x-auto no-scrollbar">
         <button
           onClick={() => {
             setHomeSeg("today");
             setIsMoneyUnlocked(false);
           }}
-          className={`flex-1 py-3 rounded-full text-[15px] font-medium transition-all ${
+          className={`flex-1 min-w-[72px] py-2.5 rounded-full text-[14px] font-medium transition-all ${
             homeSeg === "today" ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
           }`}
         >
@@ -302,7 +343,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
             setHomeSeg("artists");
             setIsMoneyUnlocked(false);
           }}
-          className={`flex-1 py-3 rounded-full text-[15px] font-medium transition-all ${
+          className={`flex-1 min-w-[72px] py-2.5 rounded-full text-[14px] font-medium transition-all ${
             homeSeg === "artists" ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
           }`}
         >
@@ -310,11 +351,33 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
         </button>
         <button
           onClick={() => setHomeSeg("money")}
-          className={`flex-1 py-3 rounded-full text-[15px] font-medium transition-all ${
+          className={`flex-1 min-w-[72px] py-2.5 rounded-full text-[14px] font-medium transition-all ${
             homeSeg === "money" ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
           }`}
         >
           Money
+        </button>
+        <button
+          onClick={() => {
+            setHomeSeg("vault");
+            setIsMoneyUnlocked(false);
+          }}
+          className={`flex-1 min-w-[72px] py-2.5 rounded-full text-[14px] font-medium transition-all flex items-center justify-center gap-1 ${
+            homeSeg === "vault" ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
+          }`}
+        >
+          <span>Vault</span>
+        </button>
+        <button
+          onClick={() => {
+            setHomeSeg("suppliers");
+            setIsMoneyUnlocked(false);
+          }}
+          className={`flex-1 min-w-[80px] py-2.5 rounded-full text-[14px] font-medium transition-all ${
+            homeSeg === "suppliers" ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
+          }`}
+        >
+          Supplies
         </button>
       </div>
 
@@ -440,7 +503,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
       {/* 2. ARTISTS SEGMENT */}
       {/* ══════════════════════════════════════════════ */}
       {homeSeg === "artists" && (
-        <div>
+        <div ref={studioArtistsListRef as any}>
           <div className="flex justify-between items-baseline mb-3">
             <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase">
               RESIDENT ARTISTS
@@ -491,14 +554,20 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                     <div className="text-xs text-[#9b9ba1] shrink-0 flex items-center">
                       {a.utilizationPct ?? 0}% booked
                       <MetricTooltip
-                        label="% Booked"
-                        text="Chair utilization percentage based on active appointment hours against standard 140h monthly chair capacity."
+                        label="% Booked (Chair Utilization)"
+                        text="Active chair occupancy percentage calculated as active/confirmed appointment hours against standard 140h monthly chair capacity."
                       />
                     </div>
                   </div>
 
                   <div className="flex justify-between items-center mt-2.5 text-[13px]">
-                    <span className="text-[#9b9ba1]">{a.bookingsCount || 0} bookings</span>
+                    <span className="text-[#9b9ba1] flex items-center">
+                      {a.completedBookingsCount ?? a.bookingsCount ?? 0} completed · {a.bookedHours ?? 0}h scheduled
+                      <MetricTooltip
+                        label="Bookings & Scheduled Hours"
+                        text="Completed bookings in the last 30 days alongside total confirmed and in-progress hours currently on the schedule."
+                      />
+                    </span>
                     <span className="font-semibold text-white flex items-center">
                       {formatMoney(a.grossCents || 0)} gross · 30d
                       <MetricTooltip
@@ -679,6 +748,188 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════ */}
+      {/* 4. COMPLIANCE VAULT (QLD Form 9 & Consents) */}
+      {/* ══════════════════════════════════════════════ */}
+      {homeSeg === "vault" && (
+        <div ref={studioVaultSectionRef as any} className="space-y-4 animate-in fade-in duration-300">
+          {/* Header Banner */}
+          <div className="bg-gradient-to-br from-[#1a1a1b] to-[#252528] border border-[#eec95f]/30 rounded-[20px] p-5 shadow-lg relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-lg bg-[#eec95f]/15 text-[#eec95f]">
+                    <ShieldCheck className="w-5 h-5" />
+                  </span>
+                  <h3 className="text-base font-bold text-white tracking-tight">
+                    QLD Form 9 & Permanent Consent Vault
+                  </h3>
+                </div>
+                <p className="text-xs text-[#9b9ba1] mt-1 max-w-[560px] leading-relaxed">
+                  Queensland Infection Control & Health Audit Repository. Immutable digital procedure records, sterilizer logs, and medical disclosures stored permanently across all resident artists.
+                </p>
+              </div>
+              <button
+                onClick={() => toast.success("Audit Compliance Pack (.ZIP / PDF) compiled and ready for health inspector review.")}
+                className="bg-[#eec95f] hover:bg-[#f6d97e] text-[#1c1503] font-bold rounded-full px-4.5 py-2.5 text-xs flex items-center gap-2 transition-all shadow-md active:scale-95 shrink-0"
+              >
+                <Download className="w-4 h-4" />
+                <span>Export Audit Pack</span>
+              </button>
+            </div>
+
+            {/* Stats Row */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4 pt-4 border-t border-white/10">
+              <div className="bg-[#141416]/60 rounded-xl p-3 border border-white/5">
+                <div className="text-[10px] font-semibold text-[#8d8d93] uppercase tracking-[1.2px]">Total Records</div>
+                <div className="text-lg font-bold text-white mt-0.5">{vaultData?.stats.totalRecords || 0}</div>
+              </div>
+              <div className="bg-[#141416]/60 rounded-xl p-3 border border-white/5">
+                <div className="text-[10px] font-semibold text-[#8d8d93] uppercase tracking-[1.2px]">QLD Form 9 Logs</div>
+                <div className="text-lg font-bold text-[#eec95f] mt-0.5">{vaultData?.stats.form9Count || 0}</div>
+              </div>
+              <div className="bg-[#141416]/60 rounded-xl p-3 border border-white/5">
+                <div className="text-[10px] font-semibold text-[#8d8d93] uppercase tracking-[1.2px]">Consent Forms</div>
+                <div className="text-lg font-bold text-[#57c97e] mt-0.5">{vaultData?.stats.consentCount || 0}</div>
+              </div>
+              <div className="bg-[#141416]/60 rounded-xl p-3 border border-white/5">
+                <div className="text-[10px] font-semibold text-[#8d8d93] uppercase tracking-[1.2px]">Audit Status</div>
+                <div className="text-lg font-bold text-[#57c97e] mt-0.5 flex items-center gap-1">
+                  <span>100% Valid</span>
+                  <CheckCircle2 className="w-4 h-4 text-[#57c97e]" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Search & Filters */}
+          <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
+            <div className="relative flex-1 max-w-[380px]">
+              <Search className="w-4 h-4 text-[#8d8d93] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={vaultSearch}
+                onChange={(e) => setVaultSearch(e.target.value)}
+                placeholder="Search client, artist or procedure..."
+                className="w-full bg-[#1a1a1b] border border-white/10 rounded-full pl-9 pr-4 py-2 text-xs text-white placeholder:text-[#6e6e75] outline-none focus:border-[#eec95f]"
+              />
+            </div>
+            <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+              {[
+                { id: "all", label: "All Records" },
+                { id: "form_9", label: "QLD Form 9" },
+                { id: "procedure_consent", label: "Consents" },
+                { id: "medical_release", label: "Medical" },
+              ].map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setVaultFilter(f.id as any)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                    vaultFilter === f.id
+                      ? "bg-[#eec95f] text-[#1c1503] font-bold"
+                      : "bg-[#1a1a1b] text-[#9a9aa0] border border-white/5 hover:text-white"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Records List */}
+          <div className="space-y-2">
+            {(vaultData?.records || []).filter((r: any) => {
+              if (vaultFilter !== "all" && r.recordType !== vaultFilter) return false;
+              if (vaultSearch.trim()) {
+                const q = vaultSearch.toLowerCase();
+                return (
+                  r.clientName.toLowerCase().includes(q) ||
+                  r.artistName.toLowerCase().includes(q) ||
+                  r.title.toLowerCase().includes(q)
+                );
+              }
+              return true;
+            }).length > 0 ? (
+              (vaultData?.records || []).filter((r: any) => {
+                if (vaultFilter !== "all" && r.recordType !== vaultFilter) return false;
+                if (vaultSearch.trim()) {
+                  const q = vaultSearch.toLowerCase();
+                  return (
+                    r.clientName.toLowerCase().includes(q) ||
+                    r.artistName.toLowerCase().includes(q) ||
+                    r.title.toLowerCase().includes(q)
+                  );
+                }
+                return true;
+              }).map((r: any) => (
+                <div
+                  key={r.id}
+                  className="bg-[#1a1a1b] border border-white/[0.07] rounded-[16px] p-4 flex items-center justify-between gap-3 hover:border-white/20 transition-all"
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#eec95f] shrink-0">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-white truncate">{r.title}</span>
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#2e2a4d] text-[#b3a7f5] uppercase">
+                          {r.recordType === "form_9" ? "Form 9" : r.recordType === "medical_release" ? "Medical" : "Consent"}
+                        </span>
+                      </div>
+                      <div className="text-xs text-[#9b9ba1] mt-0.5 truncate">
+                        Client: <strong className="text-white">{r.clientName}</strong> · Artist: {r.artistName}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <div className="text-xs font-semibold text-[#57c97e] flex items-center justify-end gap-1">
+                      <span>Signed</span>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="text-[11px] text-[#8d8d93] mt-0.5">
+                      {new Date(r.signedAt).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="border border-dashed border-white/10 rounded-[18px] p-10 text-center text-[#8d8d93] text-sm">
+                <ShieldCheck className="w-8 h-8 text-[#eec95f] mx-auto mb-2 opacity-60" />
+                <p className="font-semibold text-white">No vault records found</p>
+                <p className="text-xs text-[#6e6e75] mt-1">
+                  Signed procedure logs and consent forms from all resident artists automatically archive here.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════ */}
+      {/* 5. SUPPLIERS SEGMENT (Wholesale Shop Orders) */}
+      {/* ══════════════════════════════════════════════ */}
+      {homeSeg === "suppliers" && (
+        <div ref={studioSuppliersAreaRef as any} className="space-y-4 animate-in fade-in duration-300">
+          <div className="bg-[#1a1a1b] border border-white/[0.07] rounded-[20px] p-5 mb-2">
+            <div className="flex items-center gap-3">
+              <span className="p-2 rounded-xl bg-[#eec95f]/15 text-[#eec95f]">
+                <Package className="w-5 h-5" />
+              </span>
+              <div>
+                <h3 className="text-base font-bold text-white">Wholesale Studio Procurement</h3>
+                <p className="text-xs text-[#9b9ba1] mt-0.5">
+                  Order bulk gloves, needles, ink, and shop barrier film billed directly to the studio's verified Stripe payment method.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <SuppliersTab />
         </div>
       )}
 

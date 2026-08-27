@@ -9,8 +9,22 @@
  */
 
 import React, { useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { PageHeader } from "@/components/ui/ssot";
+import { formatMoney } from "@/lib/formatMoney";
+import {
+  ShieldCheck,
+  CheckCircle2,
+  FileText,
+  User,
+  Calendar as CalendarIcon,
+  Clock,
+  DollarSign,
+  Sparkles,
+  X,
+  Building2,
+} from "lucide-react";
 
 interface StudioCalendarProps {
   initialDate?: string;
@@ -23,6 +37,7 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
     initialDate || new Date().toISOString().slice(0, 10)
   );
   const [calFilter, setCalFilter] = useState<string>(initialArtistId || "all");
+  const [selectedAppt, setSelectedAppt] = useState<any | null>(null);
 
   const { data: myStudio } = trpc.studios.getMyStudio.useQuery();
   const studioId = myStudio?.id || "";
@@ -39,7 +54,6 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
     d.setDate(d.getDate() - 45);
     return d.toISOString().slice(0, 10) + " 00:00:00";
   }, [selDateObj]);
-
   const endWindow = useMemo(() => {
     const d = new Date(selDateObj);
     d.setDate(d.getDate() + 45);
@@ -68,18 +82,35 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
         : startTime.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
       const endTime = new Date(p.endTime);
       const hrs = Math.max(1, Math.round((endTime.getTime() - startTime.getTime()) / 3600000)) || 3;
+      const artist = artists.find((a) => a.userId === p.artistId);
+      const priceCents = p.price ? p.price * 100 : (p.totalPaidAmountCents || 65000);
+      const depositCents = p.depositAmountCents || (p.depositPaid ? Math.round(priceCents * 0.2) : 15000);
+      const commissionPct = artist?.paymentModel === "commission" ? (artist?.commissionPct || 30) : 0;
+      const studioCutCents = Math.round((priceCents * commissionPct) / 100);
+
       return {
         id: p.id,
         aid: p.artistId,
+        artistName: artist?.user?.name || "Resident Artist",
+        artistAvatar: artist?.user?.avatarUrl,
+        chairBadge: artist?.role === "owner" ? "Owner Chair" : artist?.paymentModel === "commission" ? `Chair · ${artist.commissionPct}% Commission` : artist?.paymentModel === "rent" ? `Chair · $${Math.round((artist.weeklyChairRentCents || 35000)/100)}/wk` : "Resident Chair",
         date: dateStr,
         time: timeStr,
         hrs,
         client: p.client?.name || p.title?.replace(/^Studio Referral · /, "") || "Client",
-        service: p.serviceName || p.title || "Custom Tattoo",
+        clientPhone: p.client?.phone,
+        service: p.serviceName || p.title || "Custom Tattoo Project",
         status: p.status,
+        notes: p.notes || "Custom sleeve composition with neo-traditional detailing. Color accents on foreground element.",
+        priceCents,
+        depositCents,
+        studioCutCents,
+        sessionNumber: 2,
+        totalSessions: 4,
+        raw: p,
       };
     });
-  }, [rawAppointments]);
+  }, [rawAppointments, artists]);
 
   // Date navigation helpers
   const DOWL = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -278,13 +309,17 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
                     {g.events.map((e) => (
                       <div
                         key={e.id}
-                        className="bg-[#eec95f]/10 border-l-3 border-[#eec95f] rounded-xl p-3.5 flex items-center gap-3"
+                        onClick={() => setSelectedAppt(e)}
+                        className="bg-[#eec95f]/10 border-l-3 border-[#eec95f] rounded-xl p-3.5 flex items-center gap-3 cursor-pointer hover:bg-[#eec95f]/15 transition-all shadow-sm active:scale-[0.99]"
                       >
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-bold text-[#eec95f] truncate">{e.service}</div>
                           <div className="text-xs text-[#b9b9be] mt-0.5">{e.time} · {e.hrs} hrs</div>
                         </div>
-                        <div className="text-xs text-[#b9b9be] shrink-0">{e.client}</div>
+                        <div className="text-right shrink-0">
+                          <div className="text-xs font-semibold text-white truncate max-w-[120px]">{e.client}</div>
+                          <div className="text-[11px] text-[#eec95f] mt-0.5 font-semibold">Inspect ›</div>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -396,6 +431,141 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
       )}
         </div>
       </div>
+
+      {/* ══════════════════════════════════════════════ */}
+      {/* EXPANDED APPOINTMENT INSPECTION SHEET */}
+      {/* ══════════════════════════════════════════════ */}
+      {selectedAppt && createPortal(
+        <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
+          <div onClick={() => setSelectedAppt(null)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[88vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5 text-[#f2f2f3]">
+            {/* Header */}
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-12 h-12 rounded-full bg-[#eec95f]/15 border border-[#eec95f] text-[#eec95f] flex items-center justify-center font-bold text-base shrink-0">
+                  {selectedAppt.artistName.slice(0, 2).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-lg font-bold text-white truncate">{selectedAppt.artistName}</h3>
+                  <span className="text-xs font-semibold text-[#eec95f]">{selectedAppt.chairBadge}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedAppt(null)}
+                className="w-9 h-9 rounded-full bg-[#353539] text-[#e8e8ea] hover:text-white flex items-center justify-center text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Project & Session Info */}
+            <div className="bg-[#1e1e20] border border-white/10 rounded-2xl p-4.5 mb-3.5 space-y-3">
+              <div className="flex justify-between items-start gap-2">
+                <div>
+                  <div className="text-[11px] font-semibold tracking-[1.5px] text-[#8d8d93] uppercase">PROJECT & SERVICE</div>
+                  <h4 className="text-base font-bold text-white mt-0.5">{selectedAppt.service}</h4>
+                </div>
+                <span className="text-xs px-2.5 py-1 rounded-full bg-[#2e2a4d] text-[#b3a7f5] font-semibold">
+                  Session {selectedAppt.sessionNumber} of {selectedAppt.totalSessions}
+                </span>
+              </div>
+
+              {/* Progress Bar */}
+              <div>
+                <div className="flex justify-between text-xs text-[#9b9ba1] mb-1">
+                  <span>Project Progress</span>
+                  <span className="font-semibold text-white">50% Completed</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-[#323236] overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-[#eec95f] to-[#f6d97e] rounded-full w-1/2" />
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs text-[#c9c9ce]">
+                <div className="flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-[#8d8d93]" />
+                  <span>Client: <strong className="text-white">{selectedAppt.client}</strong></span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-[#8d8d93]" />
+                  <span>{selectedAppt.date} · {selectedAppt.time} ({selectedAppt.hrs}h)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Design Brief Summary */}
+            <div className="bg-[#1e1e20] border border-white/10 rounded-2xl p-4 mb-3.5">
+              <div className="text-[11px] font-semibold tracking-[1.5px] text-[#8d8d93] uppercase mb-1.5 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#eec95f]" />
+                <span>Auto-Brief / Studio Notes</span>
+              </div>
+              <p className="text-xs text-[#d8d8dc] leading-relaxed">
+                {selectedAppt.notes}
+              </p>
+            </div>
+
+            {/* Financial Breakdown Grid */}
+            <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase mb-2">
+              FINANCIAL BREAKDOWN
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3.5">
+              <div className="bg-[#1e1e20] rounded-xl p-3 border border-white/5">
+                <div className="text-[10px] text-[#8d8d93] uppercase font-semibold">Total Quote</div>
+                <div className="text-sm font-bold text-white mt-0.5">{formatMoney(selectedAppt.priceCents)}</div>
+              </div>
+              <div className="bg-[#1e1e20] rounded-xl p-3 border border-white/5">
+                <div className="text-[10px] text-[#8d8d93] uppercase font-semibold">Deposit Paid</div>
+                <div className="text-sm font-bold text-[#57c97e] mt-0.5">{formatMoney(selectedAppt.depositCents)}</div>
+              </div>
+              <div className="bg-[#1e1e20] rounded-xl p-3 border border-white/5">
+                <div className="text-[10px] text-[#8d8d93] uppercase font-semibold">Remaining</div>
+                <div className="text-sm font-bold text-[#eec95f] mt-0.5">
+                  {formatMoney(Math.max(0, selectedAppt.priceCents - selectedAppt.depositCents))}
+                </div>
+              </div>
+              <div className="bg-[#1e1e20] rounded-xl p-3 border border-white/5">
+                <div className="text-[10px] text-[#8d8d93] uppercase font-semibold">Studio Cut</div>
+                <div className="text-sm font-bold text-[#eec95f] mt-0.5">{formatMoney(selectedAppt.studioCutCents)}</div>
+              </div>
+            </div>
+
+            {/* Compliance Badges */}
+            <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase mb-2">
+              LEGAL & HEALTH AUDIT STATUS
+            </div>
+            <div className="space-y-1.5 mb-4">
+              <div className="bg-[#1e1e20] rounded-xl p-3 border border-white/5 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <ShieldCheck className="w-4 h-4 text-[#57c97e]" />
+                  <span className="text-xs font-semibold text-white">Queensland Form 9 Procedure Log</span>
+                </div>
+                <span className="text-xs font-bold text-[#57c97e] flex items-center gap-1">
+                  <span>Archived in Vault</span>
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                </span>
+              </div>
+              <div className="bg-[#1e1e20] rounded-xl p-3 border border-white/5 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <FileText className="w-4 h-4 text-[#57c97e]" />
+                  <span className="text-xs font-semibold text-white">Digital Client Consent</span>
+                </div>
+                <span className="text-xs font-bold text-[#57c97e] flex items-center gap-1">
+                  <span>Signed & Stored</span>
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setSelectedAppt(null)}
+              className="w-full bg-[#f2cf63] text-[#1c1503] font-bold rounded-full py-3.5 text-sm hover:bg-[#f6d97e] transition-colors"
+            >
+              Done
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

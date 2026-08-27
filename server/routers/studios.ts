@@ -362,6 +362,9 @@ export const studiosRouter = router({
             paymentModel: isOwner ? ("none" as const) : m.paymentModel,
             grossCents,
             bookingsCount,
+            completedBookingsCount: bookingsCount,
+            scheduledBookingsCount: activeAppts.length,
+            bookedHours: Math.round(bookedHours),
             noShowsCount,
             avgSessionCents,
             utilizationPct,
@@ -373,6 +376,103 @@ export const studiosRouter = router({
       );
 
       return rosterWithMetrics;
+    }),
+
+  /**
+   * QLD Form 9, Medical & Consent Permanent Compliance Vault
+   */
+  getComplianceVault: protectedProcedure
+    .input(z.object({ studioId: z.string().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const studio = await resolveStudioForUser(db, ctx.user.id, input?.studioId);
+      if (!studio) throw new TRPCError({ code: "NOT_FOUND", message: "Studio not found" });
+
+      const members = await db.query.studioMembers.findMany({
+        where: and(
+          eq(schema.studioMembers.studioId, studio.id),
+          eq(schema.studioMembers.status, "active")
+        ),
+      });
+
+      const artistIds = Array.from(new Set([studio.ownerId, ctx.user.id, ...members.map((m) => m.userId)]));
+
+      // Fetch consent forms & procedure logs
+      const forms = await db.query.consentForms.findMany({
+        where: inArray(schema.consentForms.artistId, artistIds),
+        orderBy: [desc(schema.consentForms.createdAt)],
+        limit: 100,
+      });
+
+      const logs = await db.query.procedureLogs.findMany({
+        where: inArray(schema.procedureLogs.artistId, artistIds),
+        orderBy: [desc(schema.procedureLogs.date)],
+        limit: 100,
+      });
+
+      // Get users for name resolution
+      const usersList = await db.query.users.findMany({
+        where: inArray(schema.users.id, artistIds),
+      });
+      const userMap = new Map(usersList.map((u) => [u.id, u.name || u.email || "Artist"]));
+
+      const form9Count = forms.filter((f) => f.formType === "form_9").length + logs.length;
+      const consentCount = forms.filter((f) => f.formType === "procedure_consent").length;
+      const medicalCount = forms.filter((f) => f.formType === "medical_release").length;
+      const totalRecords = forms.length + logs.length;
+
+      const unifiedRecords = [
+        ...forms.map((f) => {
+          let cName = "Client";
+          try {
+            if (f.formData) {
+              const parsed = JSON.parse(f.formData);
+              cName = parsed.clientName || parsed.name || "Client";
+            }
+          } catch {}
+          return {
+            id: `cf-${f.id}`,
+            recordType: f.formType,
+            title: f.title || (f.formType === "form_9" ? "QLD Form 9 Record" : f.formType === "medical_release" ? "Medical Disclosure" : "Procedure Consent"),
+            artistId: f.artistId,
+            artistName: userMap.get(f.artistId) || "Resident Artist",
+            clientId: f.clientId,
+            clientName: cName,
+            status: f.status,
+            signedAt: f.signedAt || f.createdAt,
+            hasSignature: !!f.signature,
+            isAuditCompliant: f.status === "signed",
+          };
+        }),
+        ...logs.map((l) => ({
+          id: `pl-${l.id}`,
+          recordType: "form_9" as const,
+          title: "QLD Form 9 Procedure Log",
+          artistId: l.artistId,
+          artistName: userMap.get(l.artistId) || "Resident Artist",
+          clientId: l.clientId,
+          clientName: l.clientName || "Client",
+          status: "signed" as const,
+          signedAt: l.date || l.createdAt,
+          hasSignature: true,
+          isAuditCompliant: true,
+        })),
+      ].sort((a, b) => new Date(b.signedAt || 0).getTime() - new Date(a.signedAt || 0).getTime());
+
+      return {
+        studioId: studio.id,
+        studioName: studio.name,
+        stats: {
+          totalRecords,
+          form9Count,
+          consentCount,
+          medicalCount,
+          complianceRatePct: totalRecords > 0 ? Math.round((unifiedRecords.filter((r) => r.isAuditCompliant).length / totalRecords) * 100) : 100,
+        },
+        records: unifiedRecords,
+      };
     }),
 
   /**
