@@ -14,7 +14,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
-import { useTooltipTarget, useTooltipTour } from "@/components/tooltip-tour";
+import { useTooltipTarget, useTooltipTour, STUDIO_OVERVIEW_TOUR } from "@/components/tooltip-tour";
 import { SuppliersTab } from "../dashboard/SuppliersTab";
 import {
   ShieldCheck,
@@ -267,7 +267,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
         rightAction={
           <div className="flex items-center gap-2">
             <button
-              onClick={() => startTour("studio-overview")}
+              onClick={() => startTour(STUDIO_OVERVIEW_TOUR)}
               className="text-xs font-semibold text-[#eec95f] hover:text-[#f6d97e] bg-[#eec95f]/10 border border-[#eec95f]/30 rounded-full px-3 py-1.5 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -555,7 +555,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                       {a.utilizationPct ?? 0}% booked
                       <MetricTooltip
                         label="% Booked (Chair Utilization)"
-                        text="Active chair occupancy percentage calculated as active/confirmed appointment hours against standard 140h monthly chair capacity."
+                        text={`Chair utilization calculated dynamically against this artist's configured working schedule (${a.monthlyCapacityHours ?? 150}h/mo working capacity). ${a.freeHours ?? 0}h free time remaining.`}
                       />
                     </div>
                   </div>

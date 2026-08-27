@@ -335,7 +335,7 @@ export const studiosRouter = router({
           const noShowsCount = activeAppts.filter((a) => a.status === "no-show").length;
           const avgSessionCents = bookingsCount > 0 ? Math.round(grossCents / bookingsCount) : 0;
 
-          // Utilization based on active booked hours / 140h standard working month
+          // Utilization based on active booked hours / artist profile working capacity
           const bookedHours = activeAppts.reduce((hrs, a) => {
             const s = new Date(a.startTime).getTime();
             const e = a.endTime ? new Date(a.endTime).getTime() : s + 3 * 3600000;
@@ -344,14 +344,60 @@ export const studiosRouter = router({
             return hrs + durationHrs;
           }, 0);
 
-          const utilizationPct = activeAppts.length > 0
-            ? Math.min(100, Math.max(0, Math.round((bookedHours / 140) * 100)))
-            : 0;
-
-          // Get artist settings for specialties and payout schedule
+          // Get artist settings for specialties, payout schedule, and workSchedule
           const artistSettings = await db.query.artistSettings.findFirst({
             where: eq(schema.artistSettings.userId, m.userId),
           });
+
+          // Calculate weekly available working hours from artist profile schedule
+          let weeklyCapacityHours = 0;
+          if (artistSettings?.workSchedule) {
+            try {
+              const rawSchedule = typeof artistSettings.workSchedule === "string"
+                ? JSON.parse(artistSettings.workSchedule)
+                : artistSettings.workSchedule;
+
+              if (Array.isArray(rawSchedule)) {
+                rawSchedule.forEach((d: any) => {
+                  if (d.enabled !== false) {
+                    const s = d.start || d.startTime || "10:00";
+                    const e = d.end || d.endTime || "18:00";
+                    const [sh, sm] = s.split(":").map(Number);
+                    const [eh, em] = e.split(":").map(Number);
+                    const dayHrs = (eh + (em || 0) / 60) - (sh + (sm || 0) / 60);
+                    if (dayHrs > 0) weeklyCapacityHours += dayHrs;
+                  }
+                });
+              } else if (rawSchedule && typeof rawSchedule === "object") {
+                Object.values(rawSchedule).forEach((d: any) => {
+                  if (d === true || d?.enabled !== false) {
+                    const s = d?.start || d?.startTime || "10:00";
+                    const e = d?.end || d?.endTime || "18:00";
+                    const [sh, sm] = (s || "10:00").split(":").map(Number);
+                    const [eh, em] = (e || "18:00").split(":").map(Number);
+                    const dayHrs = (eh + (em || 0) / 60) - (sh + (sm || 0) / 60);
+                    weeklyCapacityHours += dayHrs > 0 ? dayHrs : 8;
+                  }
+                });
+              }
+            } catch (err) {
+              console.error("Error parsing artist work schedule in studios router:", err);
+            }
+          }
+
+          // Fallback to standard 35h week if no schedule configured
+          if (weeklyCapacityHours <= 0) {
+            weeklyCapacityHours = 35;
+          }
+
+          // Monthly working capacity hours (4.333 weeks in a month)
+          const monthlyCapacityHours = Math.round(weeklyCapacityHours * 4.333);
+
+          const utilizationPct = activeAppts.length > 0 && monthlyCapacityHours > 0
+            ? Math.min(100, Math.max(0, Math.round((bookedHours / monthlyCapacityHours) * 100)))
+            : 0;
+
+          const freeHours = Math.max(0, monthlyCapacityHours - Math.round(bookedHours));
 
           const isOwner = m.role === "owner" || m.userId === ownerId || m.userId === ctx.user.id;
 
@@ -365,6 +411,9 @@ export const studiosRouter = router({
             completedBookingsCount: bookingsCount,
             scheduledBookingsCount: activeAppts.length,
             bookedHours: Math.round(bookedHours),
+            monthlyCapacityHours,
+            weeklyCapacityHours: Math.round(weeklyCapacityHours),
+            freeHours,
             noShowsCount,
             avgSessionCents,
             utilizationPct,
