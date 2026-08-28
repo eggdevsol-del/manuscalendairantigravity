@@ -214,6 +214,46 @@ export default function CalendarAgendaPage() {
     <PageShell>
       <PageHeader title="Calendar" />
 
+      {/* ── Multi-Artist Chair Filter Row (Progressive Studio Extension) ── */}
+      {controller.isStudioView && controller.activeArtists.length > 1 && (
+        <div className="px-4 py-2 border-b border-border/40 bg-background/95 backdrop-blur-sm shrink-0 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <button
+            onClick={() => controller.setSelectedArtistFilter("all")}
+            className={cn(
+              "px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1",
+              controller.selectedArtistFilter === "all"
+                ? "bg-[#eec95f] text-[#1c1503] shadow-sm"
+                : "bg-secondary/60 text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <span>💺 All Chairs ({controller.activeArtists.length})</span>
+          </button>
+
+          {controller.activeArtists.map((a: any) => {
+            const isSelected = controller.selectedArtistFilter === a.userId;
+            const name = a.user?.name || "Resident Artist";
+            const firstName = name.split(" ")[0];
+            const isMe = a.userId === user?.id;
+
+            return (
+              <button
+                key={a.userId}
+                onClick={() => controller.setSelectedArtistFilter(a.userId)}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5",
+                  isSelected
+                    ? "bg-[#eec95f] text-[#1c1503] font-bold shadow-sm"
+                    : "bg-secondary/60 text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[#eec95f]" />
+                <span>{isMe ? `My Chair (${firstName})` : firstName}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* ── Cancel Confirmation Banner (SSOT pattern) ── */}
       {cancelStep === "confirm" && (
         <div className="flex items-center justify-between px-4 py-3 bg-destructive/10 border-b border-destructive/20 animate-in slide-in-from-top-2 duration-200">

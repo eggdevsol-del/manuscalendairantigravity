@@ -5,7 +5,7 @@ import { tokens } from "@/ui/tokens";
 import { Check, X, Building2 } from "lucide-react";
 import { toast } from "sonner";
 
-export default function ArtistInvitations({ onBack }: { onBack: () => void }) {
+export function ArtistInvitations({ onBack }: { onBack: () => void }) {
   const { data: invites, refetch } = trpc.studios.getPendingInvites.useQuery();
   const respondMutation = trpc.studios.respondToInvite.useMutation({
     onSuccess: () => {

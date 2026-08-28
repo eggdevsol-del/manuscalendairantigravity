@@ -321,12 +321,16 @@ function TaskRow({
   title, context, dueLabel, isUrgent, expanded, onToggle,
   briefSlot, facts, actions, isGroupSummary, groupCount, children,
 }: TaskRowProps) {
+  const isStudioTask = title.toLowerCase().includes("[studio]") || context.toLowerCase().includes("studio") || context.toLowerCase().includes("chair") || context.toLowerCase().includes("settlement");
+  const edgeColor = isStudioTask ? "#eec95f" : isUrgent ? DT.amber : "#7b5cf5";
+
   return (
     <div
       style={{
         background: expanded ? DT.rowHover : DT.cardSurface,
         borderRadius: DRadius.row,
         border: `1px solid ${isUrgent ? DT.emphasisBorder : DT.hairline}`,
+        borderLeft: `4px solid ${edgeColor}`,
         padding: DSpace[6],
         cursor: onToggle ? "pointer" : undefined,
         transition: "background .15s",
@@ -434,9 +438,10 @@ function TaskRow({
 
 interface TodaySegmentProps {
   demoMode?: boolean;
+  studioScope?: "personal" | "studio";
 }
 
-export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
+export function TodaySegment({ demoMode = false, studioScope = "personal" }: TodaySegmentProps) {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
 
