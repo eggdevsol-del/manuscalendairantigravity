@@ -85,7 +85,6 @@ export const appointments = mysqlTable(
     sessionIndex: int(),                           // Which session in a multi-session plan (1, 2, 3…)
     sessionTotal: int(),                           // Total sessions in the plan
     sessionPlanId: int(),                          // FK to sessionPlans — added as column, relation handled separately
-    isStudioReferral: tinyint().default(0),        // Studio referral pending/hold flag
     completedAt: timestamp({ mode: "string" }),    // When sitting was marked complete
     aftercareTemplateId: int(),                    // Artist's aftercare template at time of completion
     createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
@@ -348,8 +347,6 @@ export const messages = mysqlTable(
       "session_plan_accepted",
       "touchup_request",
       "balance_paid",
-      "studio_referral",
-      "settlement_received",
     ])
       .default("text")
       .notNull(),
@@ -579,6 +576,57 @@ export const users = mysqlTable(
 );
 
 export type User = InferSelectModel<typeof users>;
+
+export const studios = mysqlTable(
+  "studios",
+  {
+    id: varchar({ length: 64 }).primaryKey(),
+    name: varchar({ length: 255 }).notNull(),
+    ownerId: varchar({ length: 64 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    stripeSubscriptionId: varchar({ length: 255 }),
+    subscriptionStatus: mysqlEnum([
+      "active",
+      "past_due",
+      "canceled",
+      "trialing",
+    ]).default("active"),
+    subscriptionTier: mysqlEnum(["solo", "studio"]).default("solo"),
+    publicSlug: varchar({ length: 50 }),
+    funnelEnabled: tinyint().default(0),
+    logoUrl: text(),
+    description: text(),
+    createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
+    updatedAt: timestamp({ mode: "string" }).default(sql`(now())`),
+  },
+  table => [unique("studios_publicSlug_unique").on(table.publicSlug)]
+);
+
+export const studioMembers = mysqlTable(
+  "studio_members",
+  {
+    id: int().primaryKey().autoincrement(),
+    studioId: varchar({ length: 64 })
+      .notNull()
+      .references(() => studios.id, { onDelete: "cascade" }),
+    userId: varchar({ length: 64 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: mysqlEnum(["owner", "manager", "artist", "apprentice"])
+      .default("artist")
+      .notNull(),
+    status: mysqlEnum(["active", "inactive", "pending_invite", "declined"])
+      .default("active")
+      .notNull(),
+    createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
+    updatedAt: timestamp({ mode: "string" }).default(sql`(now())`),
+  },
+  table => [unique("studio_user_unique").on(table.studioId, table.userId)]
+);
+
+export type Studio = InferSelectModel<typeof studios>;
+export type StudioMember = InferSelectModel<typeof studioMembers>;
 
 export const voucherTemplates = mysqlTable(
   "voucher_templates",
@@ -2667,207 +2715,3 @@ export type InsertAftercareTemplate = InferInsertModel<typeof aftercareTemplates
 export type SelectAftercareTemplate = InferSelectModel<typeof aftercareTemplates>;
 export type InsertAftercarePhase = InferInsertModel<typeof aftercarePhases>;
 export type SelectAftercarePhase = InferSelectModel<typeof aftercarePhases>;
-
-// ══════════════════════════════════════════════
-// STUDIO ROLE & SETTLEMENT ENGINE
-// ══════════════════════════════════════════════
-
-export const studios = mysqlTable(
-  "studios",
-  {
-    id: varchar({ length: 64 }).primaryKey(),
-    name: varchar({ length: 255 }).notNull(),
-    ownerId: varchar({ length: 64 })
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    publicSlug: varchar({ length: 255 }).notNull(),
-    brandLine: varchar({ length: 255 }).default("STUDIO BY THE DEPT OF TATTOO SERVICES"),
-    address: text(),
-    instagramHandle: varchar({ length: 100 }),
-    stripeConnectAccountId: varchar({ length: 255 }),
-    balanceCents: int().default(0).notNull(),
-    defaultCommission: int().default(30),
-    defaultChairRentCents: int().default(35000),
-    moneyPasscodeHash: varchar({ length: 255 }),
-    autoBriefEnabled: tinyint().default(1),
-    subscriptionTier: varchar({ length: 50 }).default("studio"),
-    createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
-    updatedAt: timestamp({ mode: "string" }).default(sql`(now())`),
-  },
-  table => [unique("studios_publicSlug_unique").on(table.publicSlug)]
-);
-
-export const studioMembers = mysqlTable(
-  "studio_members",
-  {
-    id: int().primaryKey().autoincrement(),
-    studioId: varchar({ length: 64 })
-      .notNull()
-      .references(() => studios.id, { onDelete: "cascade" }),
-    userId: varchar({ length: 64 })
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    role: mysqlEnum(["owner", "manager", "artist", "apprentice"]).default("artist").notNull(),
-    paymentModel: mysqlEnum(["commission", "rent", "dynamic", "none"]).default("commission").notNull(),
-    commissionPct: int().default(30),
-    weeklyChairRentCents: int().default(35000),
-    dynamicStartingPct: int().default(35),
-    status: mysqlEnum(["active", "pending_invite", "declined", "removed"]).default("active").notNull(),
-    inviteEmail: varchar({ length: 255 }),
-    inviteToken: varchar({ length: 255 }),
-    inviteSentAt: timestamp({ mode: "string" }),
-    joinedAt: timestamp({ mode: "string" }),
-    createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
-    updatedAt: timestamp({ mode: "string" }).default(sql`(now())`),
-  },
-  table => [
-    unique("unique_studio_member").on(table.studioId, table.userId),
-    index("idx_studio_members_user").on(table.userId),
-  ]
-);
-
-export const studioTransactions = mysqlTable(
-  "studio_transactions",
-  {
-    id: int().primaryKey().autoincrement(),
-    studioId: varchar({ length: 64 })
-      .notNull()
-      .references(() => studios.id, { onDelete: "cascade" }),
-    artistId: varchar({ length: 64 }).references(() => users.id, { onDelete: "set null" }),
-    type: mysqlEnum([
-      "artist_settlement_credit",
-      "studio_withdrawal_debit",
-      "refund_clawback_debit",
-      "adjustment",
-    ]).notNull(),
-    amountCents: int().notNull(),
-    grossAmountCents: int(),
-    stripeFeeCents: int().default(0),
-    platformFeeCents: int().default(0),
-    netAmountCents: int().notNull(),
-    paymentModel: varchar({ length: 50 }),
-    payoutSchedule: varchar({ length: 20 }),
-    stripeTransferId: varchar({ length: 255 }),
-    stripePayoutId: varchar({ length: 255 }),
-    description: text(),
-    createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
-  },
-  table => [
-    index("idx_studio_tx_studio").on(table.studioId),
-    index("idx_studio_tx_artist").on(table.artistId),
-  ]
-);
-
-export const studioArrears = mysqlTable(
-  "studio_arrears",
-  {
-    id: int().primaryKey().autoincrement(),
-    studioId: varchar({ length: 64 })
-      .notNull()
-      .references(() => studios.id, { onDelete: "cascade" }),
-    artistId: varchar({ length: 64 })
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    amountCents: int().notNull(),
-    reason: varchar({ length: 255 }).notNull(),
-    status: mysqlEnum(["pending", "deducted", "waived"]).default("pending").notNull(),
-    deductedTransactionId: int(),
-    createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
-    resolvedAt: timestamp({ mode: "string" }),
-  },
-  table => [
-    index("idx_studio_arrears_studio_artist").on(table.studioId, table.artistId),
-  ]
-);
-
-export const rctiInvoices = mysqlTable(
-  "rcti_invoices",
-  {
-    id: int().primaryKey().autoincrement(),
-    invoiceNumber: varchar({ length: 50 }).notNull().unique(),
-    studioId: varchar({ length: 64 })
-      .notNull()
-      .references(() => studios.id, { onDelete: "cascade" }),
-    artistId: varchar({ length: 64 })
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    periodStart: datetime({ mode: "string" }).notNull(),
-    periodEnd: datetime({ mode: "string" }).notNull(),
-    grossAmountCents: int().notNull(),
-    gstAmountCents: int().notNull().default(0),
-    settlementAmountCents: int().notNull(),
-    paymentModel: varchar({ length: 50 }).notNull(),
-    pdfUrl: text(),
-    createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
-  },
-  table => [
-    index("idx_rcti_studio_artist").on(table.studioId, table.artistId),
-  ]
-);
-
-export const studiosRelations = relations(studios, ({ one, many }) => ({
-  owner: one(users, {
-    fields: [studios.ownerId],
-    references: [users.id],
-    relationName: "studioOwner",
-  }),
-  members: many(studioMembers),
-  transactions: many(studioTransactions),
-  arrears: many(studioArrears),
-  rctiInvoices: many(rctiInvoices),
-}));
-
-export const studioMembersRelations = relations(studioMembers, ({ one }) => ({
-  studio: one(studios, {
-    fields: [studioMembers.studioId],
-    references: [studios.id],
-  }),
-  user: one(users, {
-    fields: [studioMembers.userId],
-    references: [users.id],
-  }),
-}));
-
-export const studioTransactionsRelations = relations(studioTransactions, ({ one }) => ({
-  studio: one(studios, {
-    fields: [studioTransactions.studioId],
-    references: [studios.id],
-  }),
-  artist: one(users, {
-    fields: [studioTransactions.artistId],
-    references: [users.id],
-  }),
-}));
-
-export const studioArrearsRelations = relations(studioArrears, ({ one }) => ({
-  studio: one(studios, {
-    fields: [studioArrears.studioId],
-    references: [studios.id],
-  }),
-  artist: one(users, {
-    fields: [studioArrears.artistId],
-    references: [users.id],
-  }),
-}));
-
-export const rctiInvoicesRelations = relations(rctiInvoices, ({ one }) => ({
-  studio: one(studios, {
-    fields: [rctiInvoices.studioId],
-    references: [studios.id],
-  }),
-  artist: one(users, {
-    fields: [rctiInvoices.artistId],
-    references: [users.id],
-  }),
-}));
-
-export type InsertStudio = InferInsertModel<typeof studios>;
-export type SelectStudio = InferSelectModel<typeof studios>;
-export type InsertStudioMember = InferInsertModel<typeof studioMembers>;
-export type SelectStudioMember = InferSelectModel<typeof studioMembers>;
-export type InsertStudioTransaction = InferInsertModel<typeof studioTransactions>;
-export type SelectStudioTransaction = InferSelectModel<typeof studioTransactions>;
-export type InsertStudioArrear = InferInsertModel<typeof studioArrears>;
-export type SelectStudioArrear = InferSelectModel<typeof studioArrears>;
-export type InsertRctiInvoice = InferInsertModel<typeof rctiInvoices>;
-export type SelectRctiInvoice = InferSelectModel<typeof rctiInvoices>;

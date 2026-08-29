@@ -113,54 +113,12 @@ export const DASHBOARD_TOUR: TourConfig = {
   ],
 };
 
-export const STUDIO_OVERVIEW_TOUR: TourConfig = {
-  id: "studio-overview",
-  label: "Studio Space & Team Management",
-  description: "Learn how to manage your multi-artist shop, track earnings, QLD compliance vault, and order wholesale supplies.",
-  icon: "Building2",
-  route: "/studio",
-  category: "artist",
-  steps: [
-    {
-      targetId: "studio-money-card",
-      title: "Shop Earnings & Stripe Balance",
-      body: "Monitor total 30-day revenue collected from resident artist commissions and chair rent alongside your live Stripe escrow balance.",
-      position: "bottom",
-    },
-    {
-      targetId: "studio-segment-pill",
-      title: "Multi-Mode Switcher",
-      body: "Seamlessly switch between Today's chair schedule, Resident Artists, Shop Finances, QLD Compliance Vault, and Wholesale Supplies.",
-      position: "bottom",
-    },
-    {
-      targetId: "studio-artists-list",
-      title: "Resident Chairs & Utilization",
-      body: "View all resident artists, their payment terms (commission % or fixed weekly rent), completed bookings, and live chair capacity utilization.",
-      position: "bottom",
-    },
-    {
-      targetId: "studio-vault-section",
-      title: "QLD Form 9 & Consent Vault",
-      body: "Audit-proof permanent storage for Queensland procedure logs, autoclave sterilization records, and client consent forms across all artists.",
-      position: "bottom",
-    },
-    {
-      targetId: "studio-suppliers-area",
-      title: "Wholesale Shop Supplies",
-      body: "Procure bulk studio essentials (gloves, needles, inks, barrier film) billed directly to your verified Stripe business account.",
-      position: "bottom",
-    },
-  ],
-};
-
 // ── All tours registry ────────────────────────────────────
 // Only include tours that have fully wired targets
 
 export const ALL_TOURS: TourConfig[] = [
   PROFILE_ONBOARDING_TOUR,
   DASHBOARD_TOUR,
-  STUDIO_OVERVIEW_TOUR,
 ];
 
 export function getToursForRole(role: "artist" | "client"): TourConfig[] {

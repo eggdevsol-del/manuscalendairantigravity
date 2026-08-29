@@ -9,8 +9,6 @@
  */
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from "react";
 
-import { ALL_TOURS } from "./tours";
-
 export interface TourStep {
   targetId: string;
   title: string;
@@ -28,8 +26,8 @@ export interface TourDefinition {
 }
 
 interface TooltipTourContextType {
-  /** Start a tour by definition or string ID */
-  startTour: (tour: TourDefinition | string) => void;
+  /** Start a tour by definition */
+  startTour: (tour: TourDefinition) => void;
   /** Advance to next step (or finish) */
   nextStep: () => void;
   /** Skip / dismiss the entire tour */
@@ -103,15 +101,7 @@ export function TooltipTourProvider({ children }: { children: React.ReactNode })
     });
   }, []);
 
-  const startTour = useCallback((tour: TourDefinition | string) => {
-    if (typeof tour === "string") {
-      const found = ALL_TOURS.find((t) => t.id === tour);
-      if (found) {
-        setActiveTour(found);
-        setCurrentStep(0);
-      }
-      return;
-    }
+  const startTour = useCallback((tour: TourDefinition) => {
     setActiveTour(tour);
     setCurrentStep(0);
   }, []);
