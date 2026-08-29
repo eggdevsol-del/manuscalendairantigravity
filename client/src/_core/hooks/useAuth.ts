@@ -33,14 +33,21 @@ export function useAuth(options?: UseAuthOptions) {
     try {
       await logoutMutation.mutateAsync();
     } catch (error: unknown) {
-      console.warn("[Auth] Logout mutation failed (clearing local session anyway):", error);
+      if (
+        error instanceof TRPCClientError &&
+        error.data?.code === "UNAUTHORIZED"
+      ) {
+        return;
+      }
+      throw error;
     } finally {
+      utils.auth.me.setData(undefined, null);
+      await utils.auth.me.invalidate();
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
-      localStorage.removeItem("manus-runtime-user-info");
+      // Also clear session storage just in case
       sessionStorage.removeItem("authToken");
       sessionStorage.removeItem("user");
-      utils.auth.me.setData(undefined, null);
 
       // Detach hardware session from the backend OneSignal identity
       try {
@@ -49,8 +56,6 @@ export function useAuth(options?: UseAuthOptions) {
       } catch (err) {
         console.error("[Auth] Failed to detach OneSignal ID on logout:", err);
       }
-
-      window.location.href = "/login";
     }
   }, [logoutMutation, utils]);
 

@@ -76,14 +76,15 @@ function GuardedShell() {
     }
   }, [user, loading, isSessionChecked, setLocation]);
 
-  if (loading || !isSessionChecked || !user) return null;
+  if (loading || !isSessionChecked) return null;
+  if (!user) return null;
 
   if (location.startsWith("/studio")) {
-    return <ArtistShell />;
+    return <StudioShell />;
   }
 
   const userRole = user.role;
-  const isArtist = userRole === "artist" || userRole === "studio" || userRole === "admin";
+  const isArtist = userRole === "artist" || userRole === "admin";
   const isMerchant = userRole === "merchant";
 
   if (isArtist) {

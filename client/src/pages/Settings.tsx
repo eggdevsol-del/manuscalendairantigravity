@@ -180,7 +180,7 @@ export default function Settings() {
         case "data-import":   return <DataImportSettings onBack={handleBack} />;
         case "regulation":    return <RegulationSettings onBack={handleBack} />;
         case "consultations": return <ConsultationSettings onBack={handleBack} />;
-        case "studio":        return <StudioDashboardSettings onBack={handleBack} />;
+        case "studio":        return (isStudio) ? <StudioDashboardSettings onBack={handleBack} /> : null;
         case "notifications": return <NotificationSettings onBack={handleBack} />;
         case "instagram":     return <InstagramImportSettings onBack={handleBack} />;
         case "how-tos":        return <HowTosSettings onBack={handleBack} />;
@@ -318,8 +318,8 @@ export default function Settings() {
                     icon={Building2}
                     iconColor="bg-[#eec95f]/20 text-[#eec95f]"
                     title="Multi-Artist Studio Space"
-                    subtitle="Chairs, resident artists, smart intake & QLD vault"
-                    onClick={nav("studio")}
+                    subtitle="Chairs, resident artists, calendar & shop payouts"
+                    onClick={() => setLocation("/studio")}
                   />
                 </div>
               </Card>

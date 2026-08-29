@@ -161,7 +161,7 @@ export default function Signup() {
         toast.success("Google account linked! Please complete your profile.");
       } else {
         toast.success("Welcome back!");
-        window.location.href = result.user.role === "client" ? "/discover" : "/dashboard";
+        window.location.href = "/discover";
       }
     } catch (err: any) {
       toast.error(err?.message || "Google sign-in failed. Please try again.");

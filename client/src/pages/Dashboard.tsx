@@ -37,13 +37,12 @@ import { MerchantDashboard } from "@/features/merchant/Dashboard";
 import { useTooltipTour, useTooltipTarget, DASHBOARD_TOUR } from "@/components/tooltip-tour";
 import { DashboardFABActions } from "@/features/dashboard/DashboardActions";
 
+// ── Segments ──────────────────────────────────────────────
 import { TodaySegment } from "@/features/dashboard/TodaySegment";
 import { ClientsTab } from "@/features/dashboard/ClientsTab";
 import { SuppliesSegment } from "@/features/dashboard/SuppliesSegment";
 import { MoneyStrip } from "@/features/dashboard/MoneyStrip";
 import { MoneyScreen } from "@/features/dashboard/MoneyScreen";
-import { StudioCommandHub } from "@/features/dashboard/StudioCommandHub";
-import { trpc } from "@/lib/trpc";
 
 // ── Constants ─────────────────────────────────────────────
 
@@ -55,10 +54,6 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [activeIndex, setActiveIndex] = useState(0);
-  const [studioScope, setStudioScope] = useState<"personal" | "studio">("personal");
-
-  // Fetch studio info if user is a studio owner/member
-  const { data: myStudio } = trpc.studios.getMyStudio.useQuery();
 
   // Money pushed screen state
   const [showMoney, setShowMoney] = useState(false);
@@ -98,6 +93,13 @@ export default function Dashboard() {
       setActiveIndex(targetIndex);
     }
   }, [isDemoMode, currentStep]);
+
+  // Redirect Studio users
+  useEffect(() => {
+    if (user?.role === "studio") {
+      setLocation("/studio");
+    }
+  }, [user, setLocation]);
 
   // Teaser Mode
   const { isTeaserClient } = useTeaser();
@@ -160,32 +162,16 @@ export default function Dashboard() {
 
         {/* Scrollable wrapper */}
         <div className="flex-1 overflow-y-auto mobile-scroll">
-          <div className="px-6 w-full z-10 relative space-y-3 pt-2">
-            {/* Studio Floor Command Hub (Progressive In-Place Extension) */}
-            {myStudio && (
-              <StudioCommandHub
-                activeScope={studioScope}
-                onScopeChange={setStudioScope}
-                onGoToSupplies={() => {
-                  setActiveIndex(2);
-                  setPage([2, 1]);
-                }}
-              />
-            )}
+          <div className="px-6 w-full z-10 relative space-y-4">
+            <div>
+              <SetupChecklistWidget />
+            </div>
 
-            {studioScope === "personal" && (
-              <>
-                <div>
-                  <SetupChecklistWidget />
-                </div>
-
-                {/* §6.2 Money strip — always visible in personal mode */}
-                {(user?.role === "artist" || user?.role === "admin" || user?.role === "studio") && (
-                  <div ref={payoutWidgetRef}>
-                    <MoneyStrip onTap={() => setShowMoney(true)} />
-                  </div>
-                )}
-              </>
+            {/* §6.2 Money strip — always visible for artists */}
+            {(user?.role === "artist" || user?.role === "admin") && (
+              <div ref={payoutWidgetRef}>
+                <MoneyStrip onTap={() => setShowMoney(true)} />
+              </div>
             )}
           </div>
 
@@ -227,7 +213,7 @@ export default function Dashboard() {
                   >
                     <div className="pb-32 max-w-lg mx-auto">
                       {activeCategory === "today" ? (
-                        <TodaySegment demoMode={isDemoMode} studioScope={studioScope} />
+                        <TodaySegment demoMode={isDemoMode} />
                       ) : activeCategory === "clients" ? (
                         <ClientsTab demoMode={isDemoMode} />
                       ) : activeCategory === "supplies" ? (

@@ -18,16 +18,11 @@ import { cn } from "@/lib/utils";
 import { tokens } from "@/ui/tokens";
 import { Button, Input } from "@/components/ui";
 
-import { trpc } from "@/lib/trpc";
-import { StudioMessages } from "@/features/studio/StudioMessages";
-
 export default function Conversations() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState<"clients" | "studio" | "contacts">("clients");
+  const [activeTab, setActiveTab] = useState<"clients" | "contacts">("clients");
   const [searchQuery, setSearchQuery] = useState("");
-
-  const { data: myStudio } = trpc.studios.getMyStudio.useQuery();
 
   // Merchant app only uses the "Contacts" tab
   const currentTab = user?.role === "merchant" ? "contacts" : activeTab;
@@ -35,8 +30,16 @@ export default function Conversations() {
   // Handle referrals
   useArtistReferral();
 
+  // Mutation to create/get conversation for fallback navigation (now in list)
+  // const createConversation = trpc.conversations.getOrCreate.useMutation();
+
   // Use centralized hook (SSOT) - Used for loading state check
   const { data: conversations, isLoading, isPending } = useConversations();
+
+  // Mutations moved to ConversationsList
+  // const updateLeadStatus = trpc.funnel.updateLeadStatus.useMutation();
+  // const updateConsultation = trpc.consultations.update.useMutation();
+  // const utils = trpc.useUtils(); // For invalidating queries (v11)
 
   // Consolidate inbox requests (Leads + Consultations) via SSOT Hook
   const {
@@ -44,6 +47,8 @@ export default function Conversations() {
     isLoading: requestsLoading,
     isArtist,
   } = useInboxRequests();
+
+  // Handle Mark As Read logic moved to ConversationsList
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -53,12 +58,15 @@ export default function Conversations() {
   }, [user, loading, setLocation]);
 
   // Combined loading state: Auth loading OR Query loading (initial fetch) OR Requests loading
+  // FIX: Include requestsLoading to prevent race condition on Android
   const isPageLoading =
     loading || (isLoading && !conversations) || requestsLoading;
 
   if (isPageLoading) {
     return <LoadingState message="Loading messages..." fullScreen />;
   }
+
+  // const unreadTotal = conversations?.reduce((acc, curr) => acc + (curr.unreadCount || 0), 0) || 0;
 
   return (
     <PageShell>
@@ -67,28 +75,26 @@ export default function Conversations() {
         <PageHeader title="Messages" className="bg-transparent" />
 
         {/* Search Bar */}
-        {currentTab !== "studio" && (
-          <div className="px-4 shrink-0 mb-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search conversations..."
-                className="pl-9 pr-9 bg-transparent border-none shadow-none focus:bg-secondary/30 transition-colors"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-muted flex items-center justify-center hover:bg-muted-foreground/20 transition-colors"
-                >
-                  <X className="h-3 w-3 text-muted-foreground" />
-                </button>
-              )}
-            </div>
+        <div className="px-4 shrink-0 mb-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search conversations..."
+              className="pl-9 pr-9 bg-transparent border-none shadow-none focus:bg-secondary/30 transition-colors"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-muted flex items-center justify-center hover:bg-muted-foreground/20 transition-colors"
+              >
+                <X className="h-3 w-3 text-muted-foreground" />
+              </button>
+            )}
           </div>
-        )}
+        </div>
         
         {/* Mobile Tabs */}
         {user?.role === "artist" && (
@@ -103,18 +109,6 @@ export default function Conversations() {
             >
               Clients
             </button>
-            {myStudio && (
-              <button
-                type="button"
-                className={cn(
-                  "flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-1",
-                  currentTab === "studio" ? "bg-background text-[#eec95f] shadow-sm font-bold" : "text-muted-foreground hover:text-[#eec95f]"
-                )}
-                onClick={() => setActiveTab("studio")}
-              >
-                <span>🏛️ Studio</span>
-              </button>
-            )}
             <button
               type="button"
               className={cn(
@@ -129,13 +123,7 @@ export default function Conversations() {
         )}
 
         <div className="flex-1 overflow-hidden">
-          {currentTab === "studio" ? (
-            <div className="h-full overflow-y-auto mobile-scroll">
-              <StudioMessages />
-            </div>
-          ) : (
-            <ConversationsList filter={currentTab as any} searchQuery={searchQuery} />
-          )}
+          <ConversationsList filter={currentTab} searchQuery={searchQuery} />
         </div>
       </div>
 

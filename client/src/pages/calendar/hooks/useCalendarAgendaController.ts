@@ -91,8 +91,6 @@ export function useCalendarAgendaController() {
     { enabled: isClientView, placeholderData: prev => prev }
   );
 
-  const [selectedArtistFilter, setSelectedArtistFilter] = useState<string>("all");
-
   const appointments = useMemo(() => {
     if (isStudioView) return studioAppointments;
     if (isSoloArtistView) return soloAppointments;
@@ -100,13 +98,16 @@ export function useCalendarAgendaController() {
     return [];
   }, [isStudioView, studioAppointments, isSoloArtistView, soloAppointments, isClientView, clientAppointments]);
 
-  const filteredAppointments = useMemo(() => {
-    if (!appointments) return [];
-    if (selectedArtistFilter === "all") return appointments;
-    return appointments.filter((apt: any) => apt.artistId === selectedArtistFilter);
-  }, [appointments, selectedArtistFilter]);
+  useEffect(() => {
+    console.log("[CalendarHook] Payload Size:", appointments?.length);
+    if (appointments?.length) {
+        console.log("[CalendarHook] Sample Event:", appointments[appointments.length - 1]?.title);
+    }
+  }, [appointments]);
 
   const isLoading = isLoadingStudioAppts || isLoadingSoloAppts || isLoadingClientAppts || isLoadingStudio;
+
+
 
   const activeArtists = useMemo(() => {
     if (!teamMembers || teamMembers.length === 0) {
@@ -140,15 +141,15 @@ export function useCalendarAgendaController() {
   }, [windowStart]);
 
   const eventsByDay = useMemo(() => {
-    if (!filteredAppointments) return {};
+    if (!appointments) return {};
     const groups: Record<string, any[]> = {};
-    filteredAppointments.forEach((apt: any) => {
+    appointments.forEach((apt: any) => {
       const dateKey = format(new Date(apt.startTime), "yyyy-MM-dd");
       if (!groups[dateKey]) groups[dateKey] = [];
       groups[dateKey].push(apt);
     });
     return groups;
-  }, [filteredAppointments]);
+  }, [appointments]);
 
   const agendaDates = useMemo(() => {
     const days = [];
@@ -407,11 +408,6 @@ export function useCalendarAgendaController() {
     artistSettings,
     setActiveDate,
     activeArtists,
-    // Studio Multi-Artist Layer
-    isStudioView,
-    currentStudio,
-    selectedArtistFilter,
-    setSelectedArtistFilter,
     // Reschedule
     rescheduleAppointment,
     startReschedule,

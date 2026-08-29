@@ -28,7 +28,6 @@ export default function ArtistShell() {
       <AnimatedSwitch>
         <Switch>
           <Route path="/"><Redirect to="/dashboard" /></Route>
-          <Route path="/studio"><Redirect to="/dashboard" /></Route>
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/conversations" component={Conversations} />
           <Route path="/chat/:id" component={Chat} />
