@@ -76,7 +76,8 @@ function GuardedShell() {
     }
   }, [user, loading, isSessionChecked, setLocation]);
 
-  if (loading || !isSessionChecked) return null;
+  if (loading || !isSessionChecked || !user) return null;
+
   if (location.startsWith("/studio")) {
     return <ArtistShell />;
   }

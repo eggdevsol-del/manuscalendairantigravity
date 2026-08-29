@@ -250,6 +250,17 @@ export default function Login() {
     return () => clearInterval(t);
   }, []);
 
+  // Auto-redirect if already authenticated
+  useEffect(() => {
+    if (!authLoading && user) {
+      if (user.role === "client") {
+        window.location.href = "/discover";
+      } else {
+        window.location.href = "/dashboard";
+      }
+    }
+  }, [user, authLoading]);
+
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: data => {
       localStorage.removeItem("authToken");
@@ -260,14 +271,11 @@ export default function Login() {
       const storage = rememberMe ? localStorage : sessionStorage;
       storage.setItem("authToken", data.token);
       storage.setItem("user", JSON.stringify(data.user));
+      utils.auth.me.setData(undefined, data.user as any);
 
       toast.success("Welcome back!");
 
-      if (data.user.role === "studio") {
-        window.location.href = "/studio";
-      } else if (data.user.role === "merchant") {
-        window.location.href = "/dashboard";
-      } else if (data.user.role === "client") {
+      if (data.user.role === "client") {
         window.location.href = "/discover";
       } else {
         window.location.href = "/dashboard";
@@ -298,17 +306,14 @@ export default function Login() {
       const storage = rememberMe ? localStorage : sessionStorage;
       storage.setItem("authToken", result.token);
       storage.setItem("user", JSON.stringify(result.user));
-
-      await utils.auth.me.invalidate();
+      utils.auth.me.setData(undefined, result.user as any);
 
       if (result.isNewUser) {
-        toast.success("Welcome to d.o.t.s! Let's get you set up.");
-        window.location.href = "/discover";
+        toast.success("Welcome to TATTOI! Let's get you set up.");
+        window.location.href = result.user.role === "client" ? "/discover" : "/dashboard";
       } else {
         toast.success("Welcome back!");
-        if (result.user.role === "studio") {
-          window.location.href = "/studio";
-        } else if (result.user.role === "client") {
+        if (result.user.role === "client") {
           window.location.href = "/discover";
         } else {
           window.location.href = "/dashboard";
