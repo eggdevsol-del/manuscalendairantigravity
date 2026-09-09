@@ -117,6 +117,9 @@ const KNOWN_APP_ROUTES = new Set([
   "discover",
   "complete-profile",
   "bookings",
+  "waitlist",
+  "projects",
+  "supply-orders",
 ]);
 
 /**

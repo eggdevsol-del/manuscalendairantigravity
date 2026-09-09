@@ -63,7 +63,7 @@ Xcode is available on this Mac. Run `pnpm build`, then `CAPACITOR_SERVER_URL=htt
 
 ## Still outstanding
 
-- Remaining end-to-end acceptance, including email delivery, actual Stripe/Shopify provider behavior, and signed-in mobile flows. The targeted schema reconciliation is complete.
+- Remaining end-to-end acceptance, including email delivery, additional Stripe failure/concurrency paths, Shopify provider behavior, and physical-device flows. The targeted schema reconciliation and the Stripe test deposit/refund scenario below are complete.
 - Full studio product workflows, paid entitlement enforcement, settlement and verified merchant ownership transfer.
 - Provider-wide historical duplicate/refund reconciliation, Shopify retry fault tests and real MySQL concurrency tests.
 - Clinical/legal review of retention, consent wording, procedure logs and jurisdiction-specific requirements. No legal compliance certification is claimed.
@@ -79,7 +79,7 @@ The saved GitHub credential cannot create Actions workflows (missing workflow sc
 1. Select the correct existing Railway service for `www.tattoi.app`; confirm its database and Stripe test-mode configuration without copying secrets into Git or chat. Set `REQUIRE_STRIPE_TEST_MODE=true` for the deployment check.
 2. Back up the test database and inspect the actual schema/migration journal. Run `pnpm deploy:check`; resolve baseline drift deliberately and apply the outstanding versioned migrations. Do not run schema push or initialization against the existing database.
 3. Configure the service to build `codex/tattoi-frictionless-rebuild` at the latest verified GitHub commit. `railway.json` builds with `pnpm build`, starts with `pnpm start`, and checks `/api/health`.
-4. Verify `/api/version` reports 2.11.3 and the deployed GitHub SHA, then run the acceptance scenarios above with test accounts. A failed health check must be investigated before accepting the rollout.
+4. Verify `/api/version` reports 2.11.4 and the deployed GitHub SHA, then run the acceptance scenarios above with test accounts. A failed health check must be investigated before accepting the rollout.
 5. On iPhone, open `https://www.tattoi.app` in Safari and use Share → Add to Home Screen. An existing PWA uses the same deployed service; close/reopen and accept the app's update prompt if shown. A native device build still requires Apple signing/provisioning.
 
 Shopify request fields follow the official [DraftOrderInput](https://shopify.dev/docs/api/admin-graphql/latest/input-objects/DraftOrderInput) and [MailingAddressInput](https://shopify.dev/docs/api/admin-graphql/latest/input-objects/MailingAddressInput) references (Admin GraphQL 2026-07). Actual merchant scopes and provider delivery have not been verified against a connected test shop.
@@ -103,3 +103,9 @@ The real MySQL acceptance script passed waitlist join/retry, offer and pending a
 The shared checkout now renders Stripe Embedded Checkout for `cs_` Session secrets and Payment Elements for `pi_` PaymentIntent secrets. These are different provider contracts; routing both through Payment Elements broke supplier checkout. Missing public-key configuration now shows an unavailable message instead of starting the SDK with an empty key. Two regression tests cover the integration choice. Stripe's [React integration documentation](https://github.com/stripe/react-stripe-js) distinguishes these flows.
 
 The live PWA recovery page was exercised successfully: an existing browser displaying the old 2.10.0 boot/sign-in screen refreshed to the rebuilt labelled email/password interface. A direct runtime check confirms `VITE_STRIPE_PUBLISHABLE_KEY` is present in test mode and `VITE_ONESIGNAL_APP_ID` is present. The configured Stripe test endpoint at `https://www.tattoi.app/api/stripe/webhook` is enabled and includes every event required by the server. Only `RESEND_API_KEY` and `EMAIL_FROM` are missing from these integration checks; the account owner has been asked to supply them.
+
+## Deployed Stripe acceptance and route correction (2.11.4)
+
+On 9 September 2026, `check-stripe-flow.ts --run` passed against the deployed 2.11.3 service at commit `376290f64b27f94b431ae4d2ae07132aeefb0af0`, its MySQL database and Stripe test API. Repeated plan acceptance reused one PaymentIntent; a confirmed test payment reached the actual webhook, which created two sessions and required consent forms. A partial refund reduced session payments by exactly 10,000 cents. Refunding the remainder cleared the deposit; the ledger contained one deposit receipt and cumulative refunds of exactly 20,000 base cents plus the original platform fee. The test charge is fully refunded. Clearly labelled TEST ONLY fixtures remain under session plan 11 for inspection. This is provider acceptance for this scenario, not a concurrency or exhaustive payment-method test.
+
+A new TEST ONLY client account successfully registered through the public interface, opened discovery and showed the expected empty bookings state. The global PWA update action also completed. Navigating to Cancellation offers exposed a route collision: `/waitlist` was interpreted as a public artist slug. Version 2.11.4 reserves waitlist, projects and supply-orders as application routes. Email configuration was rechecked during this run: both `RESEND_API_KEY` and `EMAIL_FROM` remain absent.
