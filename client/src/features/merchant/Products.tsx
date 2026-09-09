@@ -80,7 +80,7 @@ export function MerchantProducts() {
         title="Products"
         subtitle="Your catalogue, ready for your customers."
       />
-      <div className="px-4 py-4 space-y-5 max-w-4xl mx-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto mobile-scroll w-full px-4 py-4 pb-28 space-y-5 max-w-4xl mx-auto">
         <div className="flex flex-wrap gap-3">
           <div className="relative flex-1 min-w-44">
             <Search className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground" />

@@ -31,7 +31,7 @@ export function MerchantSettings() {
         title="Store settings"
         subtitle="Business details, payments and integrations."
       />
-      <div className="max-w-3xl w-full mx-auto p-4 pb-28 space-y-6">
+      <div className="flex-1 min-h-0 overflow-y-auto mobile-scroll max-w-3xl w-full mx-auto p-4 pb-28 space-y-6">
         <Link href="/account-settings" className="inline-block underline py-2">
           Account, notifications and sign out
         </Link>

@@ -16,7 +16,7 @@ export function MerchantDashboard() {
           "Orders, products and payments in one place."
         }
       />
-      <div className="max-w-4xl mx-auto w-full px-4 py-5 pb-28 space-y-5">
+      <div className="flex-1 min-h-0 overflow-y-auto mobile-scroll max-w-4xl mx-auto w-full px-4 py-5 pb-28 space-y-5">
         <div className="flex flex-wrap gap-3">
           <Link
             href="/merchant/orders"

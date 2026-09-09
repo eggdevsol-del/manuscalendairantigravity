@@ -21,7 +21,7 @@ export function MerchantOrders() {
   return (
     <PageShell>
       <PageHeader title="Orders" subtitle="Keep every order moving." />
-      <div className="px-4 py-4 max-w-4xl mx-auto space-y-4">
+      <div className="flex-1 min-h-0 overflow-y-auto mobile-scroll w-full px-4 py-4 pb-28 max-w-4xl mx-auto space-y-4">
         <div className="flex flex-wrap gap-3">
           <Input
             aria-label="Search orders"
