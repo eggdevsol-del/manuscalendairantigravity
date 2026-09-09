@@ -23,7 +23,7 @@ export function CalendarMonthHeader({
         <Button
           variant="ghost"
           size="sm"
-          className="text-xs font-semibold text-primary hover:bg-primary/10 h-8 px-3"
+          className="text-xs font-semibold text-foreground dark:text-primary hover:bg-primary/10 h-8 px-3"
           onClick={() => {
             onDateChange(new Date());
           }}
@@ -37,6 +37,7 @@ export function CalendarMonthHeader({
         <Button
           variant="ghost"
           size="icon"
+          aria-label="Previous month"
           className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
           onClick={() => {
             onDateChange(startOfMonth(subMonths(activeDate, 1)));
@@ -54,6 +55,7 @@ export function CalendarMonthHeader({
         <Button
           variant="ghost"
           size="icon"
+          aria-label="Next month"
           className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
           onClick={() => {
             onDateChange(startOfMonth(addMonths(activeDate, 1)));
@@ -68,7 +70,7 @@ export function CalendarMonthHeader({
         <Button
           variant="ghost"
           size="sm"
-          className="text-xs font-semibold text-primary hover:bg-primary/10 h-8 px-3"
+          className="text-xs font-semibold text-foreground dark:text-primary hover:bg-primary/10 h-8 px-3"
           onClick={onToggleBreakdown}
         >
           {isBreakdownOpen ? "Week" : "Agenda"}

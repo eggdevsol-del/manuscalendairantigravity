@@ -86,7 +86,7 @@ export function AgendaDayList({
                   <h2
                     className={cn(
                       "text-lg font-bold",
-                      isTdy ? "text-primary" : "text-foreground"
+                      isTdy ? "text-foreground dark:text-primary" : "text-foreground"
                     )}
                   >
                     {format(date, "EEEE")}
@@ -98,6 +98,7 @@ export function AgendaDayList({
                 <Button
                   size="icon"
                   variant="ghost"
+                  aria-label={`Add booking on ${format(date, "d MMMM yyyy")}`}
                   className="h-8 w-8 rounded-full bg-accent/20 hover:bg-accent/40 text-muted-foreground"
                   onClick={() => onDateTap?.(date)}
                 >
@@ -186,7 +187,7 @@ export function AgendaDayList({
                               })
                             : !isDesign && (
                                 <div
-                                  className="py-6 text-center text-xs text-muted-foreground/30 italic cursor-pointer hover:bg-secondary/50 rounded-md transition-colors border border-dashed border-border h-full flex flex-col justify-center"
+                                  className="py-6 text-center text-xs text-muted-foreground cursor-pointer hover:bg-secondary/50 rounded-md transition-colors border border-dashed border-border h-full flex flex-col justify-center"
                                   onClick={() => onDateTap?.(date)}
                                 >
                                   <span className="mb-1">
@@ -203,7 +204,7 @@ export function AgendaDayList({
                   /* Fallback if no artists loaded yet or someone removed all artists */
                   !isDesign && (
                     <div
-                      className="py-6 text-center text-sm text-muted-foreground/30 italic cursor-pointer hover:bg-secondary/50 rounded-md transition-colors"
+                      className="py-6 text-center text-sm text-muted-foreground cursor-pointer hover:bg-secondary/50 rounded-md transition-colors"
                       onClick={() => onDateTap?.(date)}
                     >
                       Touch to add appointment

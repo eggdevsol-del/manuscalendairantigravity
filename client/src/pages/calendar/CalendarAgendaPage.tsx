@@ -265,7 +265,7 @@ export default function CalendarAgendaPage() {
       {/* Reschedule mode banner */}
       {controller.isRescheduling && (
         <div className="flex items-center justify-between px-4 py-2 bg-primary/10 border-b border-primary/20">
-          <span className="text-xs font-semibold text-primary">
+          <span className="text-xs font-semibold text-foreground dark:text-primary">
             Tap a date to reschedule
           </span>
           <button
