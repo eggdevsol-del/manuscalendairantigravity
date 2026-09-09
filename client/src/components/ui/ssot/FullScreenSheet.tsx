@@ -50,6 +50,8 @@ interface FullScreenSheetProps {
   children: React.ReactNode;
   /** Additional class names for the sheet content container */
   className?: string;
+  /** Optional solid surface for focused payment flows. */
+  surfaceClassName?: string;
   /** Height of the context area (default: "h-[15vh]") */
   contextHeight?: string;
 }
@@ -64,6 +66,7 @@ export function FullScreenSheet({
   onBack,
   children,
   className,
+  surfaceClassName,
   contextHeight = "h-[15vh]",
 }: FullScreenSheetProps) {
   return (
@@ -91,7 +94,8 @@ export function FullScreenSheet({
                 className={cn(
                   tokens.sheetSecondary.content,
                   tokens.animations.sheetSlideUp,
-                  "will-change-transform"
+                  "will-change-transform",
+                  surfaceClassName
                 )}
                 drag="y"
                 dragConstraints={{ top: 0 }}

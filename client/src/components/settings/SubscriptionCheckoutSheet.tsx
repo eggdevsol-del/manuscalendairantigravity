@@ -19,6 +19,7 @@ export function SubscriptionCheckoutSheet({
   return (
     <FullScreenSheet
       open
+      surfaceClassName="bg-background"
       onClose={onClose}
       title={`${name} subscription`}
       contextTitle={active ? `${name} is active` : `Join ${name}`}

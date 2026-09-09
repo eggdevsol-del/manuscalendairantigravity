@@ -189,7 +189,7 @@ export function StudioDashboardSettings({ onBack }: { onBack: () => void }) {
                         >
                           {checkout.isPending
                             ? "Opening checkout…"
-                            : "Review subscription in Stripe"}
+                            : "Choose Studio"}
                         </Button>
                       </>
                     )}
