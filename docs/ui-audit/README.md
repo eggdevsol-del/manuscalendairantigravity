@@ -41,4 +41,12 @@ Payment submission and every external-provider/account/data state are outside th
 
 ## Deployed checkout inspection
 
-The in-app Pro checkout renders the A$99 monthly total, card fields, subscription terms and app-owned header in the deposit-style SheetShell. No payment was submitted. Removed an unsupported `defaultCollapsed` option from the tabs layout after Stripe logged a warning. Stripe also reports that Apple Pay is unavailable because this test domain has not been registered/verified; card checkout renders. This provider configuration is not solved by the UI changes.
+The in-app Pro checkout renders the A$99 monthly total, card fields, subscription terms and app-owned header in the deposit-style SheetShell. No payment was submitted. Removed an unsupported `defaultCollapsed` option from the tabs layout after Stripe logged a warning. The initial inspection reported that Apple Pay was unavailable because the test domain had not been registered. This was subsequently resolved as recorded below.
+
+## Sandbox payment-domain verification — 2026-09-10
+
+Registered `www.tattoi.app` on the platform Stripe sandbox account after confirming it was absent. The API returned `enabled: true`, `livemode: false`, and `active` status for Apple Pay, Google Pay and Link. The existing hosted Stripe checkout registrations were retained. No live-mode configuration or payment was changed.
+
+Reopened the app-owned Pro checkout: payment fields and the monthly subscription action rendered; the fresh browser log contained no Stripe warnings. This verifies domain configuration and checkout rendering, not an Apple Pay authorization on a physical device. An eligible device/wallet is still required to exercise the wallet button and authorization flow.
+
+Stripe reference: [Register domains for payment methods](https://docs.stripe.com/payments/payment-methods/pmd-registration).
