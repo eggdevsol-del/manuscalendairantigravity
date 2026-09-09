@@ -38,7 +38,7 @@ export function StudioDashboardSettings({ onBack }: StudioDashboardSettingsProps
     const params = new URLSearchParams(window.location.search);
     if (params.get("success") === "true") {
       toast.success(
-        "Welcome to your new Studio space! Your subscription is active."
+        "Checkout returned. Subscription status updates after payment confirmation."
       );
       // Clean up the URL
       window.history.replaceState({}, "", "/studio");

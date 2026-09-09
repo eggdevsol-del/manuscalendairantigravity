@@ -57,7 +57,7 @@ export const TIER_CONFIGS: Record<SubscriptionTier, TierConfig> = {
         canRemoveBranding: false,
         canUseCustomMessaging: false,
         canUseMarketingBroadcasts: false,
-        canUseWaitlist: false,
+        canUseWaitlist: true, // Manual cancellation offers are part of the core booking workflow.
         canUseAIVoiceNotes: false,
         canProcessFinalPayments: false,
 

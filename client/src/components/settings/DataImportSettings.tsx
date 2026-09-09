@@ -1,632 +1,361 @@
-import { UploadCloud, Database, CheckCircle2, AlertTriangle, Loader2, Link2 } from "lucide-react";
-import { PageHeader } from "@/components/ui/ssot";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import Papa from "papaparse";
-import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
-import { z } from "zod";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/safe-select";
-import { Label } from "@/components/ui/label";
-
-interface DataImportSettingsProps {
-    onBack: () => void;
-}
-
-export function DataImportSettings({ onBack }: DataImportSettingsProps) {
-    const [file, setFile] = useState<File | null>(null);
-    const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
-    const [csvData, setCsvData] = useState<any[]>([]);
-
-    const [importMode, setImportMode] = useState<"clients" | "appointments">("clients");
-    const [isReviewing, setIsReviewing] = useState(false);
-    const [reviewStats, setReviewStats] = useState({ valid: 0, skipped: 0 });
-
-    const [uniqueServices, setUniqueServices] = useState<string[]>([]);
-    const [serviceMap, setServiceMap] = useState<Record<string, string>>({});
-
-    const { data: artistSettings } = trpc.artistSettings.get.useQuery();
-    let internalServices: any[] = [];
-    if (artistSettings?.services) {
-        try {
-            const parsed = JSON.parse(artistSettings.services);
-            if (Array.isArray(parsed)) internalServices = parsed;
-        } catch (e) { }
+import { Button, Input, Label } from "@/components/ui";
+import { PageHeader } from "@/components/ui/ssot";
+import type { ImportInput, ImportResult, ImportRow } from "@shared/importData";
+const fields = [
+  "name",
+  "email",
+  "phone",
+  "date",
+  "startTime",
+  "endTime",
+  "serviceName",
+  "price",
+] as const;
+const labels = {
+  name: "Client name",
+  email: "Email",
+  phone: "Phone",
+  date: "Date",
+  startTime: "Start time",
+  endTime: "End time",
+  serviceName: "Service",
+  price: "Price (AUD)",
+};
+export function DataImportSettings({ onBack }: { onBack: () => void }) {
+  const [mode, setMode] = useState<"clients" | "appointments">("clients");
+  const [rows, setRows] = useState<Record<string, string>[]>([]),
+    [headers, setHeaders] = useState<string[]>([]);
+  const [mapping, setMapping] = useState<Record<string, string>>({}),
+    [serviceMap, setServiceMap] = useState<Record<string, string>>({});
+  const [payload, setPayload] = useState<ImportInput | null>(null),
+    [results, setResults] = useState<ImportResult[]>([]),
+    [error, setError] = useState("");
+  const [fileName, setFileName] = useState(""),
+    [calendarUrl, setCalendarUrl] = useState("");
+  const settings = trpc.artistSettings.get.useQuery();
+  const utils = trpc.useUtils();
+  const preview = trpc.dataImport.preview.useMutation({
+    onSuccess: setResults,
+    onError: e => setError(e.message),
+  });
+  const commit = trpc.dataImport.commit.useMutation({
+    onSuccess: data => {
+      setResults(previous =>
+        previous.map(old => {
+          const updated = data.rows.find(r => r.sourceRow === old.sourceRow);
+          return updated ? { ...updated, index: old.index } : old;
+        })
+      );
+      void utils.conversations.list.invalidate();
+      void utils.appointments.invalidate();
+    },
+    onError: e => setError(e.message),
+  });
+  const calendar = trpc.artistSettings.upsert.useMutation({
+    onError: e => setError(e.message),
+  });
+  let services: { id: string; name: string }[] = [];
+  try {
+    services = JSON.parse(settings.data?.services || "[]");
+  } catch {}
+  const busy = preview.isPending || commit.isPending;
+  const invalidate = () => {
+    setPayload(null);
+    setResults([]);
+    setError("");
+  };
+  const read = (file?: File) => {
+    if (!file) return;
+    invalidate();
+    setRows([]);
+    setHeaders([]);
+    setMapping({});
+    setServiceMap({});
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Use a CSV smaller than 5 MB.");
+      return;
     }
-
-    // Core Client Mappings
-    const [nameCol, setNameCol] = useState<string>("");
-    const [phoneCol, setPhoneCol] = useState<string>("");
-    const [emailCol, setEmailCol] = useState<string>("");
-
-    // Appointment Additional Mappings
-    const [dateCol, setDateCol] = useState<string>("");
-    const [startTimeCol, setStartTimeCol] = useState<string>("");
-    const [endTimeCol, setEndTimeCol] = useState<string>("");
-    const [serviceCol, setServiceCol] = useState<string>("");
-    const [priceCol, setPriceCol] = useState<string>("");
-
-    const clientMutation = trpc.dataImport.bulkImportClients.useMutation({
-        onSuccess: (data) => {
-            toast.success(`Successfully imported ${data.success} clients. Skipped ${data.skipped}.`);
-            onBack();
-        },
-        onError: (err) => {
-            toast.error(err.message || "Failed to import processing CSV.");
+    setFileName(file.name);
+    Papa.parse<Record<string, string>>(file, {
+      header: true,
+      skipEmptyLines: "greedy",
+      complete: ({ data, meta, errors }) => {
+        if (errors.length) {
+          setError(errors[0].message);
+          return;
         }
+        if (data.length > 500) {
+          setError(
+            "Import up to 500 rows at a time. Split this file into smaller files."
+          );
+          return;
+        }
+        setRows(data);
+        setHeaders(meta.fields || []);
+        const guess: Record<string, string> = {};
+        for (const field of fields) {
+          const candidates = {
+            name: ["client name", "full name", "name"],
+            email: ["email", "email address"],
+            phone: ["phone", "mobile", "phone number"],
+            date: ["date", "appointment date"],
+            startTime: ["start time", "time", "start"],
+            endTime: ["end time", "end"],
+            serviceName: ["service", "treatment", "service name"],
+            price: ["price", "cost", "amount"],
+          }[field];
+          guess[field] =
+            (meta.fields || []).find(h =>
+              candidates.includes(h.toLowerCase().trim())
+            ) || "";
+        }
+        setMapping(guess);
+      },
+      error: e => setError(e.message),
     });
-
-    const appointmentMutation = trpc.dataImport.bulkImportAppointments.useMutation({
-        onSuccess: (data) => {
-            toast.success(`Successfully imported ${data.success} appointments. Skipped ${data.skipped}.`);
-            onBack();
-        },
-        onError: (err) => {
-            toast.error(err.message || "Failed to import processing CSV.");
-        }
-    });
-
-    const [extCalendarUrl, setExtCalendarUrl] = useState("");
-    const [isSavingUrl, setIsSavingUrl] = useState(false);
-
-    const upsertMutation = trpc.artistSettings.upsert.useMutation({
-        onSuccess: () => {
-            toast.success("External Calendar linked successfully!");
-            setIsSavingUrl(false);
-        },
-        onError: (err) => {
-            toast.error(err.message || "Failed to link calendar. Please check the URL.");
-            setIsSavingUrl(false);
-        }
-    });
-
-    const handleSaveCalendar = () => {
-        if (!extCalendarUrl) return;
-        setIsSavingUrl(true);
-        upsertMutation.mutate({
-            appleCalendarUrl: extCalendarUrl,
-            workSchedule: artistSettings?.workSchedule || "{}",
-            services: artistSettings?.services || "[]"
-        });
-    };
-
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files || files.length === 0) return;
-
-        const uploadedFile = files[0];
-        if (uploadedFile.type !== "text/csv" && !uploadedFile.name.endsWith('.csv')) {
-            toast.error("Please explicitly upload a valid .csv file.");
-            return;
-        }
-
-        setFile(uploadedFile);
-
-        Papa.parse(uploadedFile, {
-            header: true,
-            skipEmptyLines: true,
-            complete: (results) => {
-                if (!results.meta.fields || results.meta.fields.length === 0) {
-                    toast.error("Could not find any headers in the CSV.");
-                    return;
-                }
-                const validHeaders = results.meta.fields.filter(h => h && h.trim() !== "");
-                setCsvHeaders(validHeaders);
-                setCsvData(results.data);
-
-                // Auto-map common headers
-                const lowerHeaders = validHeaders.map(h => h.toLowerCase().trim());
-
-                const guessName = lowerHeaders.findIndex(h => h.includes('name') || h.includes('client'));
-                if (guessName > -1) setNameCol(validHeaders[guessName]);
-
-                const guessPhone = lowerHeaders.findIndex(h => h.includes('phone') || h.includes('mobile') || h.includes('number'));
-                if (guessPhone > -1) setPhoneCol(validHeaders[guessPhone]);
-
-                const guessEmail = lowerHeaders.findIndex(h => h.includes('email'));
-                if (guessEmail > -1) setEmailCol(validHeaders[guessEmail]);
-
-                // Guess Appointment Columns
-                const guessDate = lowerHeaders.findIndex(h => h.includes('date'));
-                if (guessDate > -1) setDateCol(validHeaders[guessDate]);
-
-                const guessStartTime = lowerHeaders.findIndex(h => h.includes('start') || h.includes('time'));
-                if (guessStartTime > -1) setStartTimeCol(validHeaders[guessStartTime]);
-
-                const guessEndTime = lowerHeaders.findIndex(h => h.includes('end') || h.includes('duration'));
-                if (guessEndTime > -1) setEndTimeCol(validHeaders[guessEndTime]);
-
-                const guessService = lowerHeaders.findIndex(h => h.includes('service') || h.includes('treatment'));
-                if (guessService > -1) setServiceCol(validHeaders[guessService]);
-
-                const guessPrice = lowerHeaders.findIndex(h => h.includes('price') || h.includes('cost') || h.includes('total') || h.includes('amount'));
-                if (guessPrice > -1) setPriceCol(validHeaders[guessPrice]);
-            },
-            error: (err) => {
-                toast.error(`Parser error: ${err.message}`);
-            }
-        });
-    };
-
-    const handleReview = () => {
-        let valid = 0;
-        let skipped = 0;
-        const extractedServices = new Set<string>();
-
-        csvData.forEach((row) => {
-            const hasName = nameCol && row[nameCol]?.trim();
-            const hasContact = (phoneCol && row[phoneCol]?.trim()) || (emailCol && row[emailCol]?.trim());
-
-            if (importMode === "clients") {
-                if (hasName && hasContact) {
-                    if (emailCol && row[emailCol]?.trim()) {
-                        const emailValidation = z.string().email().safeParse(row[emailCol].trim());
-                        if (emailValidation.success) valid++;
-                        else skipped++;
-                    } else {
-                        valid++;
-                    }
-                } else {
-                    skipped++;
-                }
-            } else if (importMode === "appointments") {
-                const hasDate = dateCol && row[dateCol]?.trim();
-                const hasTime = startTimeCol && row[startTimeCol]?.trim();
-
-                if (hasName && hasDate && hasTime) {
-                    const baseStr = `${row[dateCol].trim()} ${row[startTimeCol].trim()}`;
-                    let testDate = new Date(baseStr);
-                    if (isNaN(testDate.getTime())) {
-                        testDate = new Date(`${row[dateCol].trim()}T${row[startTimeCol].trim()}`);
-                    }
-                    if (!isNaN(testDate.getTime())) {
-                        valid++;
-                        // Extract unique service names for mapping UI
-                        if (importMode === "appointments" && serviceCol && row[serviceCol]?.trim()) {
-                            extractedServices.add(row[serviceCol].trim());
-                        }
-                    } else skipped++;
-                } else {
-                    skipped++;
-                }
-            }
-        });
-
-        setReviewStats({ valid, skipped });
-        setUniqueServices(Array.from(extractedServices));
-        setIsReviewing(true);
-    };
-
-    const handleImport = () => {
-        if (!nameCol) {
-            toast.error("You must map at least the 'Client Name' column before importing.");
-            return;
-        }
-
-        if (importMode === "appointments") {
-            if (!dateCol || !startTimeCol) {
-                toast.error("You must map Date and Start Time for Appointments.");
-                return;
-            }
-        }
-
-        // Exact Zod schema match to prevent backend batch crashes
-        const isValidEmail = (email: string) => z.string().email().safeParse(email).success;
-
-        if (importMode === "clients") {
-            // Construct standardized payload for Clients
-            const payload = csvData.map((row, index) => {
-                let rawEmail = (emailCol && emailCol !== "SKIP") ? row[emailCol]?.trim() : "";
-
-                // Drop malformed emails cleanly so they don't crash the entire batch insertion
-                if (rawEmail && !isValidEmail(rawEmail)) {
-                    console.warn(`Dropped malformed email at row ${index}: ${rawEmail}`);
-                    rawEmail = "";
-                }
-
-                return {
-                    name: row[nameCol]?.trim() || "Unknown Client",
-                    phone: (phoneCol && phoneCol !== "SKIP") ? row[phoneCol]?.trim() : "",
-                    email: rawEmail,
-                    source: "csv_import"
-                };
-            }).filter(c => c.phone || c.email); // Must have at least one valid contact point
-
-            if (payload.length === 0) {
-                toast.error("No valid contacts found containing a phone or email.");
-                return;
-            }
-            clientMutation.mutate({ clients: payload });
-
-        } else if (importMode === "appointments") {
-            const payload = csvData.map((row, index) => {
-                let rawEmail = (emailCol && emailCol !== "SKIP") ? row[emailCol]?.trim() : "";
-                if (rawEmail && !isValidEmail(rawEmail)) {
-                    rawEmail = "";
-                }
-
-                // Safely extract price if mapped. Strip '$', ',', etc.
-                let parsedPrice: number | undefined = undefined;
-                if (priceCol && priceCol !== "SKIP" && row[priceCol]) {
-                    const rawValue = row[priceCol].replace(/[^0-9.-]+/g, "");
-                    const parsedFloat = parseFloat(rawValue);
-                    if (!isNaN(parsedFloat)) parsedPrice = parsedFloat;
-                }
-
-                return {
-                    clientName: row[nameCol]?.trim() || "Unknown Client",
-                    clientPhone: (phoneCol && phoneCol !== "SKIP") ? row[phoneCol]?.trim() : "",
-                    clientEmail: rawEmail,
-                    date: row[dateCol]?.trim() || "",
-                    startTime: row[startTimeCol]?.trim() || "",
-                    endTime: (endTimeCol && endTimeCol !== "SKIP") ? row[endTimeCol]?.trim() : undefined,
-                    serviceName: (serviceCol && serviceCol !== "SKIP") ? row[serviceCol]?.trim() : undefined,
-                    price: parsedPrice,
-                };
-            }).filter(a => a.date && a.startTime);
-
-            if (payload.length === 0) {
-                toast.error("No valid appointments found containing both Date and Start Time.");
-                return;
-            }
-            appointmentMutation.mutate({ appointments: payload, serviceMap: serviceMap });
-        }
-    };
-
-
-    return (
-        <div className="w-full h-full flex flex-col overflow-hidden relative">
-            <PageHeader title="Import Clients" onBack={onBack} />
-
-            <div className="flex-1 w-full overflow-y-auto mobile-scroll touch-pan-y relative z-10">
-                <div className="pb-[180px] max-w-lg mx-auto space-y-6 px-4 pt-6">
-
-                    {/* Header Info */}
-                    <div className="flex flex-col items-center justify-center py-6 border-b border-border mb-2 text-center space-y-3">
-                        <Database className="w-8 h-8 text-primary opacity-80" />
-                        <h3 className="font-semibold text-foreground tracking-tight">Data Migration Tool</h3>
-                        <p className="text-sm text-muted-foreground leading-relaxed max-w-[90%]">Upload a .CSV file exported from tools like Vagaro, Square, or Fresha to instantly copy your {importMode === "clients" ? "client roster" : "appointment history"} directly into your CRM.</p>
-                    </div>
-
-                    {/* Mode Switcher */}
-                    {!file && (
-                        <div className="flex bg-secondary/50 p-1 rounded-[8px] border border-border w-full mb-4">
-                            <button
-                                onClick={() => setImportMode("clients")}
-                                className={`flex-1 flex justify-center py-2 text-sm font-semibold rounded-md transition-all ${importMode === "clients" ? 'bg-primary text-black' : 'text-muted-foreground hover:bg-secondary/50'}`}
-                            >
-                                Clients
-                            </button>
-                            <button
-                                onClick={() => setImportMode("appointments")}
-                                className={`flex-1 flex justify-center py-2 text-sm font-semibold rounded-md transition-all ${importMode === "appointments" ? 'bg-primary text-black' : 'text-muted-foreground hover:bg-secondary/50'}`}
-                            >
-                                Appointments
-                            </button>
-                        </div>
-                    )}
-
-                    {!file ? (
-                        <div className="space-y-4">
-                            <Label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground ml-1">Spreadsheet File</Label>
-                            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-border rounded-md cursor-pointer bg-background/80 hover:bg-background/80 hover:border-border transition-all">
-                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <UploadCloud className="w-8 h-8 mb-3 text-muted-foreground" />
-                                    <p className="mb-2 text-sm text-muted-foreground font-semibold"><span className="text-primary font-bold">Click to upload</span> or drag and drop</p>
-                                    <p className="text-xs text-muted-foreground/60">CSV format only</p>
-                                </div>
-                                <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} />
-                            </label>
-
-                            {importMode === "appointments" && (
-                                <div className="pt-6 mt-6 border-t border-border space-y-4">
-                                    <Label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground ml-1">External Calendar Sync</Label>
-                                    <p className="text-[11px] text-muted-foreground/80 px-1 leading-relaxed">
-                                        If you use Google Calendar, Apple Calendar, or any other platform that outputs a public <span className="text-primary font-mono bg-primary/10 px-1 py-0.5 rounded">.ics</span> link, paste it below to continuously block your availability based on external events.
-                                    </p>
-                                    <div className="flex gap-2">
-                                        <div className="relative flex-1">
-                                            <Link2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <Input
-                                                value={extCalendarUrl}
-                                                onChange={(e) => setExtCalendarUrl(e.target.value)}
-                                                placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
-                                                className="pl-9 h-14 text-xs bg-background/80 border-border"
-                                            />
-                                        </div>
-                                        <Button
-                                            variant="secondary"
-                                            className="h-14 text-[11px] font-bold shrink-0 whitespace-nowrap bg-secondary/50 hover:bg-secondary/50"
-                                            disabled={!extCalendarUrl || isSavingUrl}
-                                            onClick={handleSaveCalendar}
-                                        >
-                                            {isSavingUrl ? <Loader2 className="w-4 h-4 animate-spin" /> : "Connect Calendar"}
-                                        </Button>
-                                    </div>
-                                    {artistSettings?.appleCalendarUrl && (
-                                        <div className="flex items-center gap-2 px-3 py-2 bg-[var(--color-status-success-bg)] border border-[var(--color-status-success-border)] rounded-md mt-2">
-                                            <CheckCircle2 className="w-4 h-4 text-[var(--color-status-success-text)]" />
-                                            <p className="text-[10px] text-[var(--color-status-success-text)] font-medium">Currently receiving active syncs from external calendar.</p>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                        </div>
-                    ) : (
-                        <div className="space-y-6">
-
-
-
-                            <div className="space-y-4">
-                                <div className="mb-2">
-                                    <p className="text-muted-foreground text-sm font-medium">Uploaded File</p>
-                                </div>
-                                <div className="flex items-center justify-between px-4 py-3 bg-secondary/50 border border-border rounded-md">
-                                    <div>
-                                        <p className="font-semibold text-sm flex items-center gap-2">
-                                            <CheckCircle2 className="w-4 h-4 text-[var(--color-status-success-text)]" />
-                                            {file.name}
-                                        </p>
-                                        <p className="text-[11px] text-muted-foreground mt-1">{csvData.length} records parsed securely.</p>
-                                    </div>
-                                    <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground" onClick={() => {
-                                        setFile(null);
-                                        setCsvHeaders([]);
-                                        setUniqueServices([]);
-                                        setServiceMap({});
-                                        setIsReviewing(false);
-                                    }}>
-                                        Remove
-                                    </Button>
-                                </div>
-                            </div>
-
-                            {isReviewing ? (
-                                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both">
-                                    <div className="space-y-4">
-                                        <div className="mb-2">
-                                            <p className="text-muted-foreground text-sm font-medium">Status summary</p>
-                                        </div>
-                                        <div className="flex items-start gap-4 p-4 bg-secondary/50 border border-border rounded-md">
-                                            <Database className="w-6 h-6 text-primary mt-1" />
-                                            <div>
-                                                <h3 className="text-sm font-semibold text-foreground">Ready to Import {importMode === "clients" ? "Clients" : "Appointments"}</h3>
-                                                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                                                    We found <strong className="text-[var(--color-status-success-text)] font-bold">{reviewStats.valid}</strong> valid records to import. {"\n"}
-                                                    {reviewStats.skipped > 0 && <span className="text-[var(--color-status-warning-text)] font-medium">{reviewStats.skipped} records will be safely skipped due to missing or invalid data.</span>}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {importMode === "appointments" && uniqueServices.length > 0 && (
-                                        <div className="space-y-4 pt-6 border-t border-border">
-                                            <div className="mb-2">
-                                                <h4 className="text-sm font-medium text-foreground">Map Imported Services</h4>
-                                                <p className="text-[11px] text-muted-foreground leading-relaxed mt-1">We detected these raw external service names from your spreadsheet. You can assign them to your internal services now so they inherit the correct price and duration, or leave them as mystery strings to edit locally later.</p>
-                                            </div>
-                                            <div className="space-y-3">
-                                                {uniqueServices.map(extService => (
-                                                    <div key={extService} className="flex flex-col gap-2 p-3 bg-secondary/50 border border-border rounded-md">
-                                                        <Label className="text-xs font-semibold">{extService}</Label>
-                                                        <Select value={serviceMap[extService] || "SKIP"} onValueChange={(val) => setServiceMap(prev => ({ ...prev, [extService]: val }))}>
-                                                            <SelectTrigger className="w-full bg-background/80 border-border rounded-md h-14 text-xs">
-                                                                <SelectValue placeholder="Do not map (Keep as mystery string)" />
-                                                            </SelectTrigger>
-                                                            <SelectContent className="z-[200] rounded-md">
-                                                                <SelectItem value="SKIP" className="text-xs">Do not map (Keep as mystery string)</SelectItem>
-                                                                {internalServices.map((s: any) => (
-                                                                    <SelectItem key={s.id} value={s.id} className="text-xs">{s.name} ({s.duration}m)</SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                                        <Button
-                                            variant="outline"
-                                            className="w-full sm:w-1/3 text-xs h-14 rounded-md"
-                                            onClick={() => {
-                                                setUniqueServices([]);
-                                                setServiceMap({});
-                                                setIsReviewing(false);
-                                            }}
-                                        >
-                                            Reset Mapping
-                                        </Button>
-                                        <Button
-                                            className="w-full sm:w-2/3 bg-primary text-primary-foreground font-bold uppercase tracking-wider text-[10px] rounded-md h-14"
-                                            onClick={handleImport}
-                                            disabled={clientMutation.isPending || appointmentMutation.isPending || reviewStats.valid === 0}
-                                        >
-                                            {clientMutation.isPending || appointmentMutation.isPending ? (
-                                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                                            ) : (
-                                                <CheckCircle2 className="w-4 h-4 mr-2" />
-                                            )}
-                                            {clientMutation.isPending || appointmentMutation.isPending ? "Importing..." : `Import ${reviewStats.valid} Records`}
-                                        </Button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="space-y-4">
-                                        <div className="mb-2">
-                                            <p className="text-muted-foreground text-sm font-medium">Map columns from your CSV</p>
-                                        </div>
-
-                                        <div className="space-y-4 p-4 bg-background/80 border border-border rounded-md">
-                                            <div className="space-y-2">
-                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Client Name <span className="text-destructive">*</span></Label>
-                                                <Select value={nameCol} onValueChange={setNameCol}>
-                                                    <SelectTrigger className="w-full bg-secondary/50 border-border rounded-md">
-                                                        <SelectValue placeholder="Select CSV column..." />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="z-[200] rounded-md">
-                                                        {csvHeaders.map(h => (
-                                                            <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Phone Number</Label>
-                                                <Select value={phoneCol} onValueChange={setPhoneCol}>
-                                                    <SelectTrigger className="w-full bg-secondary/50 border-border rounded-md">
-                                                        <SelectValue placeholder="Select CSV column..." />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="z-[200] rounded-md">
-                                                        <SelectItem value="SKIP">-- Skip Phone --</SelectItem>
-                                                        {csvHeaders.map(h => (
-                                                            <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Email</Label>
-                                                <Select value={emailCol} onValueChange={setEmailCol}>
-                                                    <SelectTrigger className="w-full bg-secondary/50 border-border rounded-md">
-                                                        <SelectValue placeholder="Select CSV column..." />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="z-[200] rounded-md">
-                                                        <SelectItem value="SKIP">-- Skip Email --</SelectItem>
-                                                        {csvHeaders.map(h => (
-                                                            <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-
-                                            {importMode === "appointments" && (
-                                                <>
-                                                    <div className="space-y-2 pt-4 border-t border-border">
-                                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Appointment Date <span className="text-destructive">*</span></Label>
-                                                        <Select value={dateCol} onValueChange={setDateCol}>
-                                                            <SelectTrigger className="w-full bg-secondary/50 border-border rounded-md">
-                                                                <SelectValue placeholder="Select CSV column..." />
-                                                            </SelectTrigger>
-                                                            <SelectContent className="z-[200] rounded-md">
-                                                                {csvHeaders.map(h => (
-                                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Start Time <span className="text-destructive">*</span></Label>
-                                                        <Select value={startTimeCol} onValueChange={setStartTimeCol}>
-                                                            <SelectTrigger className="w-full bg-secondary/50 border-border rounded-md">
-                                                                <SelectValue placeholder="Select CSV column..." />
-                                                            </SelectTrigger>
-                                                            <SelectContent className="z-[200] rounded-md">
-                                                                {csvHeaders.map(h => (
-                                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">End Time / Duration</Label>
-                                                        <Select value={endTimeCol} onValueChange={setEndTimeCol}>
-                                                            <SelectTrigger className="w-full bg-secondary/50 border-border rounded-md">
-                                                                <SelectValue placeholder="Select CSV column..." />
-                                                            </SelectTrigger>
-                                                            <SelectContent className="z-[200] rounded-md">
-                                                                <SelectItem value="SKIP">-- Default 1 Hour --</SelectItem>
-                                                                {csvHeaders.map(h => (
-                                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Service Name</Label>
-                                                        <Select value={serviceCol} onValueChange={setServiceCol}>
-                                                            <SelectTrigger className="w-full bg-secondary/50 border-border rounded-md">
-                                                                <SelectValue placeholder="Select CSV column..." />
-                                                            </SelectTrigger>
-                                                            <SelectContent className="z-[200] rounded-md">
-                                                                <SelectItem value="SKIP">-- Skip / Unknown --</SelectItem>
-                                                                {csvHeaders.map(h => (
-                                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Service / Treatment</Label>
-                                                        <Select value={serviceCol} onValueChange={setServiceCol}>
-                                                            <SelectTrigger className="w-full bg-secondary/50 border-border rounded-md">
-                                                                <SelectValue placeholder="Select CSV column..." />
-                                                            </SelectTrigger>
-                                                            <SelectContent className="z-[200] rounded-md">
-                                                                <SelectItem value="SKIP">-- Unmapped Appointment --</SelectItem>
-                                                                {csvHeaders.map(h => (
-                                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-
-                                                    <div className="space-y-2 pb-4">
-                                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Price / Cost (Optional)</Label>
-                                                        <Select value={priceCol} onValueChange={setPriceCol}>
-                                                            <SelectTrigger className="w-full bg-secondary/50 border-border rounded-md">
-                                                                <SelectValue placeholder="Select CSV column..." />
-                                                            </SelectTrigger>
-                                                            <SelectContent className="z-[200] rounded-md">
-                                                                <SelectItem value="SKIP">-- Skip Price --</SelectItem>
-                                                                {csvHeaders.map(h => (
-                                                                    <SelectItem key={h} value={h}>{h}</SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-
-                                        {importMode === "clients" ? (
-                                            <div className="p-4 bg-[var(--color-status-warning-bg)] border border-yellow-500/20 rounded-md mt-4 flex items-start gap-3">
-                                                <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
-                                                <p className="text-xs text-yellow-200/80 leading-snug">
-                                                    Clients must have either an email or a phone number to be imported. Records missing both will be safely skipped.
-                                                </p>
-                                            </div>
-                                        ) : (
-                                            <div className="p-4 bg-[var(--color-status-warning-bg)] border border-yellow-500/20 rounded-md mt-4 flex items-start gap-3">
-                                                <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
-                                                <p className="text-xs text-yellow-200/80 leading-snug">
-                                                    Dates and Start Times must be correctly formatted to be ingested. A client profile will be generated automatically if the client isn't already registered.
-                                                </p>
-                                            </div>
-                                        )}
-
-                                        <Button
-                                            className="w-full bg-primary/20 text-primary font-bold uppercase tracking-wider text-[10px] rounded-md border border-primary/30 h-14 mt-6"
-                                            onClick={handleReview}
-                                            disabled={!nameCol || (importMode === "appointments" && (!dateCol || !startTimeCol))}
-                                        >
-                                            Review {importMode === "clients" ? "Clients" : "Appointments"}
-                                        </Button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    )}
-                </div>
+  };
+  const getPayload = (): ImportInput => ({
+    mode,
+    serviceMap,
+    rows: rows.map((row, index) => {
+      const text = (key: string) => (row[mapping[key]] || "").trim();
+      const raw = text("price").replace(/[$,]/g, "");
+      if (raw && !Number.isFinite(Number(raw)))
+        throw new Error(
+          "A price is not a valid number. Check the Price column mapping."
+        );
+      return {
+        sourceRow: index + 2,
+        name: text("name"),
+        email: text("email"),
+        phone: text("phone"),
+        date: text("date"),
+        startTime: text("startTime"),
+        endTime: text("endTime"),
+        serviceName: text("serviceName"),
+        price: raw ? Number(raw) : undefined,
+      };
+    }),
+  });
+  const review = () => {
+    setError("");
+    try {
+      const p = getPayload();
+      setPayload(p);
+      preview.mutate(p);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+  const importReady = () => {
+    if (!payload) return;
+    const selected = results
+      .filter(r => ["new", "matched", "failed"].includes(r.status))
+      .map(r => payload.rows[r.index]);
+    const next = { ...payload, rows: selected };
+    commit.mutate(next);
+  };
+  const eligible = results.filter(r =>
+    ["new", "matched", "failed"].includes(r.status)
+  ).length;
+  const serviceNames = [
+    ...new Set(
+      rows.map(r => (r[mapping.serviceName] || "").trim()).filter(Boolean)
+    ),
+  ];
+  return (
+    <div className="h-full flex flex-col">
+      <PageHeader
+        title="Import your data"
+        subtitle="Review matches and duplicates before adding anything."
+      />
+      <div className="overflow-y-auto touch-pan-y p-5 pb-32 space-y-6 max-w-3xl mx-auto w-full">
+        <Button variant="ghost" onClick={onBack}>
+          Back to settings
+        </Button>
+        <section className="border rounded-2xl p-5 space-y-4">
+          <Label htmlFor="import-mode">What are you importing?</Label>
+          <select
+            id="import-mode"
+            value={mode}
+            disabled={busy}
+            onChange={e => {
+              setMode(e.target.value as typeof mode);
+              invalidate();
+            }}
+            className="w-full min-h-12 rounded-xl bg-background border px-3"
+          >
+            <option value="clients">Clients</option>
+            <option value="appointments">Appointments</option>
+          </select>
+          <Label htmlFor="csv">CSV file · up to 500 rows</Label>
+          <Input
+            id="csv"
+            type="file"
+            accept=".csv,text/csv"
+            disabled={busy}
+            onChange={e => read(e.target.files?.[0])}
+          />
+          {fileName && (
+            <p className="text-sm">
+              {fileName} · {rows.length} rows
+            </p>
+          )}
+          <p className="text-sm text-muted-foreground">
+            Use an email or phone for each client. Dates: YYYY-MM-DD or
+            DD/MM/YYYY. Times: HH:mm or h:mm AM/PM. Appointments use the
+            business timezone, Australia/Brisbane.
+          </p>
+        </section>
+        {headers.length > 0 && (
+          <section className="border rounded-2xl p-5 space-y-4">
+            <h2 className="text-xl font-semibold">Match your columns</h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {fields
+                .filter(
+                  f =>
+                    mode === "appointments" ||
+                    ["name", "email", "phone"].includes(f)
+                )
+                .map(f => (
+                  <div key={f}>
+                    <Label htmlFor={`map-${f}`}>{labels[f]}</Label>
+                    <select
+                      id={`map-${f}`}
+                      disabled={busy}
+                      value={mapping[f] || ""}
+                      onChange={e => {
+                        setMapping({ ...mapping, [f]: e.target.value });
+                        invalidate();
+                      }}
+                      className="w-full min-h-12 rounded-xl bg-background border px-3 mt-2"
+                    >
+                      <option value="">Not included</option>
+                      {headers.map(h => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
             </div>
-        </div>
-    );
+            {mode === "appointments" && serviceNames.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="font-medium">Match services</h3>
+                {serviceNames.map(name => (
+                  <div key={name}>
+                    <Label>{name}</Label>
+                    <select
+                      aria-label={`Map service ${name}`}
+                      value={serviceMap[name] || ""}
+                      disabled={busy}
+                      onChange={e => {
+                        setServiceMap({
+                          ...serviceMap,
+                          [name]: e.target.value,
+                        });
+                        invalidate();
+                      }}
+                      className="w-full min-h-12 rounded-xl bg-background border px-3"
+                    >
+                      <option value="">Keep imported service name</option>
+                      {services.map(s => (
+                        <option value={s.id} key={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            )}
+            <Button
+              className="w-full min-h-12"
+              disabled={busy || !mapping.name || !rows.length}
+              onClick={review}
+            >
+              {preview.isPending
+                ? "Checking existing records…"
+                : "Review matches & duplicates"}
+            </Button>
+          </section>
+        )}
+        {error && (
+          <p role="alert" className="text-destructive border rounded-xl p-4">
+            {error}
+          </p>
+        )}
+        {results.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-xl font-semibold">Review results</h2>
+            <p>
+              {results.filter(r => r.status === "imported").length} imported ·{" "}
+              {results.filter(r => r.status === "duplicate").length} duplicates
+              ·{" "}
+              {
+                results.filter(r =>
+                  ["invalid", "conflict", "failed"].includes(r.status)
+                ).length
+              }{" "}
+              need attention
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Duplicates are skipped. Existing profiles are never overwritten.
+              Each row is checked again when imported.
+            </p>
+            <div className="max-h-96 overflow-y-auto border rounded-xl divide-y">
+              {results.map(r => (
+                <article key={r.index} className="p-4">
+                  <div className="flex justify-between gap-3">
+                    <strong>{r.name || "Missing name"}</strong>
+                    <span className="capitalize">{r.status}</span>
+                  </div>
+                  <p className="text-sm mt-1">
+                    Row {r.sourceRow || r.index + 2}: {r.detail}
+                  </p>
+                </article>
+              ))}
+            </div>
+            <Button
+              className="w-full min-h-12"
+              onClick={importReady}
+              disabled={busy || eligible === 0}
+            >
+              {commit.isPending
+                ? "Importing…"
+                : `Import / retry ${eligible} ready rows`}
+            </Button>
+          </section>
+        )}
+        <section className="border rounded-2xl p-5 space-y-3">
+          <h2 className="text-lg font-semibold">External calendar</h2>
+          <Label htmlFor="calendar-url">Calendar feed URL</Label>
+          <Input
+            id="calendar-url"
+            value={calendarUrl}
+            onChange={e => setCalendarUrl(e.target.value)}
+            placeholder="https://…"
+          />
+          <Button
+            variant="outline"
+            disabled={calendar.isPending || !calendarUrl}
+            onClick={() =>
+              calendar.mutate({
+                appleCalendarUrl: calendarUrl,
+                workSchedule: settings.data?.workSchedule || "{}",
+                services: settings.data?.services || "[]",
+              })
+            }
+          >
+            Save calendar link
+          </Button>
+          {calendar.isSuccess && <p role="status">Calendar link saved.</p>}
+        </section>
+      </div>
+    </div>
+  );
 }

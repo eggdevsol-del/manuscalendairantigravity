@@ -9,7 +9,8 @@ import {
   conversations,
   messages,
 } from "drizzle/schema";
-import { getDb } from "../services/core";
+import { getDb, withDatabaseTransaction } from "../services/core";
+import { requireArtist } from "../services/access";
 
 export const studiosRouter = router({
   // Get the current user's studio details
@@ -103,8 +104,9 @@ export const studiosRouter = router({
         name: z.string().min(2, "Studio name must be at least 2 characters"),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
+    .mutation(async ({ ctx, input }) => withDatabaseTransaction(async db => {
+      requireArtist(ctx.user);
+      await db.select({id:users.id}).from(users).where(eq(users.id,ctx.user.id)).for("update");
       if (!db)
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -131,7 +133,7 @@ export const studiosRouter = router({
         name: input.name,
         ownerId: ctx.user.id,
         subscriptionTier: "studio",
-        subscriptionStatus: "active", // In a real flow, this waits for Stripe webhook
+        subscriptionStatus: "canceled", // Paid access is granted only by the subscription webhook.
       });
 
       // 3. Make the user the owner
@@ -143,7 +145,7 @@ export const studiosRouter = router({
       });
 
       return { success: true, studioId };
-    }),
+    })),
 
   // Get all members of a studio
   getStudioMembers: protectedProcedure
@@ -283,7 +285,7 @@ export const studiosRouter = router({
         where: eq(studios.publicSlug, input.slug),
       });
 
-      if (!studio) {
+      if (!studio || studio.funnelEnabled !== 1) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Studio not found" });
       }
 
@@ -307,7 +309,7 @@ export const studiosRouter = router({
         );
 
       return {
-        studio,
+        studio: {id:studio.id,name:studio.name,publicSlug:studio.publicSlug,logoUrl:studio.logoUrl,description:studio.description},
         artists: members,
       };
     }),
@@ -348,6 +350,9 @@ export const studiosRouter = router({
         });
       }
 
+      if (input.role === "owner" && requester.role !== "owner") throw new TRPCError({code:"FORBIDDEN",message:"Only an owner can invite another owner."});
+      const entitlement = await db.query.studios.findFirst({where:eq(studios.id,input.studioId)});
+      if (!entitlement?.stripeSubscriptionId || !["active","trialing"].includes(entitlement.subscriptionStatus || "")) throw new TRPCError({code:"PRECONDITION_FAILED",message:"Activate studio billing before inviting team members."});
       // 2. Find the user by email
       const invitedUser = await db.query.users.findFirst({
         where: eq(users.email, input.artistEmail),

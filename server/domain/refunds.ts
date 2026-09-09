@@ -140,3 +140,11 @@ export function calculatePartialRefund(
         platformRetainsCents: originalPlatformFeeCents,
     };
 }
+
+/** Apply refunded cents in session order, with no negative allocations or rounding drift. */
+export function allocateRefund(totalCents:number,weights:number[]):number[]{
+  const sum=weights.reduce((a,b)=>a+b,0);
+  if(!Number.isSafeInteger(totalCents)||totalCents<0||weights.some(w=>!Number.isSafeInteger(w)||w<0)||totalCents>sum)throw new Error('Invalid refund allocation.');
+  let remaining=totalCents;
+  return weights.map(weight=>{const amount=Math.min(weight,remaining);remaining-=amount;return amount;});
+}

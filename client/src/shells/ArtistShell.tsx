@@ -1,3 +1,5 @@
+import WaitlistPage from "@/features/bookings/WaitlistPage";
+import ProjectSummary from "@/features/bookings/ProjectSummary";
 import React from "react";
 import { Redirect, Route, Switch } from "wouter";
 import BottomNav from "@/components/BottomNav";
@@ -34,6 +36,8 @@ export default function ArtistShell() {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/conversations" component={Conversations} />
           <Route path="/chat/:id" component={Chat} />
+          <Route path="/projects/:id" component={ProjectSummary} />
+          <Route path="/waitlist" component={WaitlistPage} />
           <Route path="/calendar" component={Calendar} />
           <Route path="/settings" component={Settings} />
           <Route path="/artist-profile" component={ArtistProfileTab} />

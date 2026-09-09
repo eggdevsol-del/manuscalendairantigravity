@@ -1,3 +1,5 @@
+import { waitlistRouter } from "./waitlist";
+import { projectsRouter } from "./projects";
 import { reconciliationRouter } from "./reconciliation";
 import { router } from "../_core/trpc";
 import { appointmentsRouter } from "./appointments";
@@ -43,6 +45,8 @@ import { sessionPlansRouter } from "./sessionPlans";
 import { aftercareRouter } from "./aftercare";
 
 export const appRouter = router({
+  waitlist: waitlistRouter,
+  projects: projectsRouter,
   reconciliation: reconciliationRouter,
   appointments: appointmentsRouter,
   artistSettings: artistSettingsRouter,

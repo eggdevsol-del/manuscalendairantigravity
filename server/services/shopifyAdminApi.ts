@@ -16,6 +16,7 @@ function sanitizeShopDomain(shopDomain: string): string {
       baseUrl = `${baseUrl}.myshopify.com`;
     }
   }
+  if (!/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/i.test(baseUrl)) throw new Error('Use the store’s myshopify.com domain.');
   return baseUrl;
 }
 
@@ -247,66 +248,4 @@ export async function syncShopCurrency(
  * Create a draft order on the supplier's Shopify store.
  * Called after successful payment via DOTS.
  */
-export async function createShopifyDraftOrder(
-  shopDomain: string,
-  accessToken: string,
-  order: {
-    lineItems: { shopifyVariantId: string; quantity: number }[];
-    shippingAddress?: {
-      first_name: string;
-      last_name: string;
-      address1: string;
-      address2?: string;
-      city: string;
-      province: string;
-      zip: string;
-      country: string;
-    };
-    note: string;
-    email?: string;
-  }
-): Promise<{ draftOrderId: string; draftOrderName: string }> {
-  const baseUrl = sanitizeShopDomain(shopDomain);
-
-  const body: any = {
-    draft_order: {
-      line_items: order.lineItems.map(item => ({
-        variant_id: parseInt(item.shopifyVariantId, 10),
-        quantity: item.quantity,
-      })),
-      note: order.note,
-      tags: "d.o.t.s,marketplace-order",
-    },
-  };
-
-  if (order.shippingAddress) {
-    body.draft_order.shipping_address = order.shippingAddress;
-  }
-
-  if (order.email) {
-    body.draft_order.email = order.email;
-  }
-
-  const response = await fetch(`https://${baseUrl}/admin/api/2024-01/draft_orders.json`, {
-    method: 'POST',
-    signal: AbortSignal.timeout(15000),
-    headers: {
-      'X-Shopify-Access-Token': accessToken,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Shopify Draft Order Error (${response.status}): ${errorText}`);
-  }
-
-  const data = await response.json();
-  const draftOrder = data.draft_order;
-
-  return {
-    draftOrderId: String(draftOrder.id),
-    draftOrderName: draftOrder.name || `#D${draftOrder.id}`,
-  };
-}
+export { createShopifyDraftOrder } from './shopifyDraftOrder';

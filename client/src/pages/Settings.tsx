@@ -265,6 +265,7 @@ export default function Settings() {
               onClick={() => setLocation("/admin/operations")}
             />
           )}
+          {isArtist && <SettingsRow icon={Clock} iconColor="bg-secondary text-foreground" title="Cancellation waitlist" subtitle="Offer available times to waiting clients" onClick={() => setLocation("/waitlist")} />}
           {/* ═══ PROFILE & IDENTITY ═══ */}
           <section>
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 mb-2">

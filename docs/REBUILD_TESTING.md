@@ -16,9 +16,19 @@ This is a substantial test branch, not a certification that every production wor
 
 Inactive studio prototype screens that referenced nonexistent APIs/schema were removed; their source remains in the baseline Git commit. Existing studio membership APIs and settings remain. The test subscription bypass is restricted to the test environment. This does **not** complete studio billing or entitlement enforcement.
 
+## Completion pass (version 2.11.0)
+
+- Project details are reachable from chat and bookings, with session totals, required-form status, proposals and linked deposit/balance/refund history. Historical imports without ledger rows are explicitly identified as incomplete history.
+- Cancellation waitlist opt-in, artist offers with a 1–72 hour response deadline, availability rechecks, and a pending proposal using the existing deposit checkout. Manual waitlist offers are included in all tiers. Accepting an offer does not move an existing appointment or hold a slot before payment; the UI states this.
+- CSV column/service mapping, server preview, normalized contact matching, duplicate/overlap detection, per-row transactional imports, and selective retries retaining original CSV row numbers. Existing client profiles are preserved.
+- Durable notification retries, provider failures visible in Operations, stable Resend retry identities, and queued Shopify draft handoffs from both Checkout and PaymentIntent paths. Shopify retries look up a stable order tag before creation; remote search indexing and provider/local commit boundaries still require staging fault tests.
+- Cumulative refunds update the linked session balances and record incremental base/fee refunds, including later fee-only refunds. Multi-session deposit refunds allocate in session order. This does not retroactively reconstruct missing legacy ledger entries.
+- Studio creation no longer grants a paid subscription; invitations check an active/trialing subscription and owner permissions. Public studio responses exclude private billing fields.
+- Read-only `pnpm deploy:check` validates required configuration and compares declared columns with the actual database. `/api/health` checks critical rebuilt tables; Railway uses it before routing to the new deployment. `/api/version` reports version and Railway commit SHA.
+
 ## Verified locally
 
-- 46 tests across 10 files pass, including token isolation, recovery replay, form persistence, session-plan rollback/retry, payment state, deposit confirmation and conversation drafts.
+- 78 tests across 19 files pass, including token isolation, recovery replay, form persistence, session-plan rollback/retry, payment state, deposit confirmation and conversation drafts.
 - Clean TypeScript check: `pnpm exec tsc --noEmit --incremental false`.
 - Vite production bundle, server esbuild bundle and migration-file packaging succeed. Build performs no database migrations.
 - Local browser inspection confirms the sign-in page exposes its labelled fields and links, and the recovery route shows its reset form.
@@ -29,11 +39,11 @@ Transaction tests use controlled in-memory fixtures. They do not establish MySQL
 
 ## Existing staging environment required
 
-No staging URL, database connection or Stripe test-mode configuration was available in the workspace. No production database was migrated, and no real payments or customer messages were sent.
+The user identified `https://www.tattoi.app` as the existing test target and confirmed Stripe test mode with no real user data. Its public version endpoint returned 2.10.0 before this completion pass. Database/service credentials were not available in the workspace. Railway account selection is being handled by the user; no deployment or database migration has been performed in this pass. No real payments or customer messages were sent.
 
 Use the existing hosting service's staging environment variables. Do not commit credentials. Configure `APP_URL`, `DATABASE_URL`, a strong random `JWT_SECRET`, `STRIPE_SECRET_KEY` (test mode), `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY` and a verified `EMAIL_FROM`. Configure the existing storage, Google sign-in and notification integrations separately where those paths are tested.
 
-The branch adds migrations `0023_webhook_receipts.sql` and `0024_retain_procedure_snapshots.sql`. Before applying them, back up staging and compare its actual schema and migration journal. The baseline already contains schema/snapshot drift in appointments, session plans, aftercare, suppliers and other tables. The new snapshots preserve that baseline instead of silently incorporating unrun historical changes. Do not blindly generate or push the entire schema. Old balance-link tokens must be regenerated because they are now purpose-bound to the booking.
+The branch adds migrations `0023_webhook_receipts.sql`, `0024_retain_procedure_snapshots.sql` and `0025_cancellation_waitlist.sql`. Before applying them, back up staging and compare its actual schema and migration journal. The baseline already contains schema/snapshot drift in appointments, session plans, aftercare, suppliers and other tables. The new snapshots preserve that baseline instead of silently incorporating unrun historical changes. Do not blindly generate or push the entire schema. Old balance-link tokens must be regenerated because they are now purpose-bound to the booking.
 
 Staging acceptance must cover:
 
@@ -42,7 +52,8 @@ Staging acceptance must cover:
 3. Deposit/balance payment, manual claims and artist verification, partial/full refunds, rejected payment methods and abandoned/redirected checkout.
 4. Form signing and required answers, procedure completion, aftercare assignment/history and rescheduling.
 5. Merchant inventory, checkout, stock/fulfilment and existing Shopify synchronization.
-6. Mobile/desktop layout, keyboard focus, screen reader flow, native navigation, push opt-in, permissions and reconnect behaviour.
+6. Waitlist expiry, two clients competing for one time, withdrawn offers, retrying deposit checkout, CSV reimports and conflicting contacts/times.
+7. Mobile/desktop layout, keyboard focus, screen reader flow, native navigation, push opt-in, permissions and reconnect behaviour.
 
 ## Native testing
 
@@ -53,9 +64,8 @@ Xcode is available on this Mac. Run `pnpm build`, then `CAPACITOR_SERVER_URL=htt
 ## Still outstanding
 
 - Live staging acceptance and database migration/schema reconciliation.
-- Expiring waitlist offers, import duplicate matching, and a complete project financial history.
 - Full studio product workflows, paid entitlement enforcement, settlement and verified merchant ownership transfer.
-- Durable outbox coverage for external side effects in older payment handlers; provider-wide duplicate/refund reconciliation and real MySQL concurrency tests.
+- Provider-wide historical duplicate/refund reconciliation, Shopify retry fault tests and real MySQL concurrency tests.
 - Clinical/legal review of retention, consent wording, procedure logs and jurisdiction-specific requirements. No legal compliance certification is claimed.
 
 These items remain explicit rather than being represented by simulated success states.
@@ -63,3 +73,13 @@ These items remain explicit rather than being represented by simulated success s
 ## GitHub CI credential limit
 
 The saved GitHub credential cannot create Actions workflows (missing workflow scope). `.github/verify.example.yml` preserves the proposed checks without activating a workflow. An account with workflow permission can place it in `.github/workflows/verify.yml`. GitHub CI has not run; the checks above were executed locally.
+
+## Deployment sequence
+
+1. Select the correct existing Railway service for `www.tattoi.app`; confirm its database and Stripe test-mode configuration without copying secrets into Git or chat. Set `REQUIRE_STRIPE_TEST_MODE=true` for the deployment check.
+2. Back up the test database and inspect the actual schema/migration journal. Run `pnpm deploy:check`; resolve baseline drift deliberately and apply the outstanding versioned migrations. Do not run schema push or initialization against the existing database.
+3. Configure the service to build `codex/tattoi-frictionless-rebuild` at the latest verified GitHub commit. `railway.json` builds with `pnpm build`, starts with `pnpm start`, and checks `/api/health`.
+4. Verify `/api/version` reports 2.11.0 and the deployed GitHub SHA, then run the acceptance scenarios above with test accounts. A failed health check must be investigated before accepting the rollout.
+5. On iPhone, open `https://www.tattoi.app` in Safari and use Share → Add to Home Screen. An existing PWA uses the same deployed service; close/reopen and accept the app's update prompt if shown. A native device build still requires Apple signing/provisioning.
+
+Shopify request fields follow the official [DraftOrderInput](https://shopify.dev/docs/api/admin-graphql/latest/input-objects/DraftOrderInput) and [MailingAddressInput](https://shopify.dev/docs/api/admin-graphql/latest/input-objects/MailingAddressInput) references (Admin GraphQL 2026-07). Actual merchant scopes and provider delivery have not been verified against a connected test shop.

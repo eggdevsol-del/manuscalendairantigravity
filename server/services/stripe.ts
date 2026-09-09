@@ -1,3 +1,7 @@
+import { or } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
+import { reconcileChargeRefund } from "./refundReconciliation";
+import { notificationOutbox } from "../../drizzle/schema";
 import { settledBalance } from "../domain/paymentState";
 import { processWebhookOnce } from "./webhookProcessing";
 import { fulfillSessionPlan } from "./sessionPlanFulfillment";
@@ -907,73 +911,8 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                   paymentMethod: session.payment_method_types?.[0] || "card",
                 });
 
-                // 3. Create Shopify draft order if supplier has Shopify connected
-                if (order.supplier?.merchantId) {
-                  try {
-                    const merchant = await db.query.merchants.findFirst({
-                      where: eq(merchants.id, order.supplier.merchantId),
-                    });
-
-                    if (merchant?.shopifyDomain && merchant?.shopifyToken) {
-                      const { createShopifyDraftOrder } =
-                        await import("./shopifyAdminApi");
-
-                      const stripeAddr = shippingDetails?.address;
-                      const shippingAddress = stripeAddr
-                        ? {
-                            first_name:
-                              shippingDetails?.name?.split(" ")[0] || "",
-                            last_name:
-                              shippingDetails?.name
-                                ?.split(" ")
-                                .slice(1)
-                                .join(" ") || "",
-                            address1: stripeAddr.line1 || "",
-                            address2: stripeAddr.line2 || undefined,
-                            city: stripeAddr.city || "",
-                            province: stripeAddr.state || "",
-                            zip: stripeAddr.postal_code || "",
-                            country: stripeAddr.country || "",
-                          }
-                        : undefined;
-
-                      const artistUser = await db.query.users.findFirst({
-                        where: eq(users.id, order.artistId),
-                      });
-
-                      const result = await createShopifyDraftOrder(
-                        merchant.shopifyDomain,
-                        merchant.shopifyToken,
-                        {
-                          lineItems: order.items
-                            .filter((item: any) => item.shopifyVariantId)
-                            .map((item: any) => ({
-                              shopifyVariantId: item.shopifyVariantId!,
-                              quantity: item.quantity,
-                            })),
-                          shippingAddress,
-                          note: `Order via d.o.t.s — Artist: ${artistUser?.name || "Unknown"}`,
-                          email: artistUser?.email || undefined,
-                        }
-                      );
-
-                      if (result) {
-                        await db
-                          .update(supplierOrders)
-                          .set({
-                            shopifyDraftOrderId: result.draftOrderId,
-                            shopifyDraftOrderName: result.draftOrderName,
-                          })
-                          .where(eq(supplierOrders.id, orderId));
-                      }
-                    }
-                  } catch (shopifyError: any) {
-                    console.error(
-                      `[Stripe] Shopify draft order failed for supplier order ${orderId}:`,
-                      shopifyError.message
-                    );
-                  }
-                }
+                // Commit fulfilment work with the payment receipt; retry provider failures.
+                if (order.supplier?.merchantId) await db.insert(notificationOutbox).values({eventType:'shopify_supplier_order',payloadJson:JSON.stringify({orderId})});
 
                 console.log(
                   `[Stripe] Supplier Order ${orderId} completed successfully`
@@ -1058,23 +997,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                   paymentMethod: "card",
                 });
 
-                // 4. Send push notification to artist
-                try {
-                  const { sendPushNotification } =
-                    await import("./pushService");
-                  const client = await db.query.users.findFirst({
-                    where: eq(users.id, booking.clientId),
-                  });
-                  const formatCents = (c: number) =>
-                    `$${(c / 100).toLocaleString("en-AU", { minimumFractionDigits: 0 })}`;
-                  await sendPushNotification(booking.artistId, {
-                    title: "Payment Received 💰",
-                    body: `${client?.name || "Your client"} paid ${formatCents(baseAmountCents)}`,
-                    data: { type: "payment_received", appointmentId },
-                  });
-                } catch (e) {
-                  console.warn("[Stripe] Push to artist failed:", e);
-                }
+                await db.insert(notificationOutbox).values({eventType:'push_message',payloadJson:JSON.stringify({targetUserId:booking.artistId,title:'Payment received',body:`Your client paid $${(baseAmountCents/100).toFixed(2)}.`,url:`/chat/${booking.conversationId}`,data:{type:'payment_received',appointmentId}})});
 
                 console.log(
                   `[Stripe] Payment request ${requestId} completed for Booking ${appointmentId}, paid: ${baseAmountCents}c`
@@ -1419,6 +1342,8 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                   paymentMethod: "card",
                 });
 
+                if (order.supplier?.merchantId) await db.insert(notificationOutbox).values({eventType:'shopify_supplier_order',payloadJson:JSON.stringify({orderId})});
+
                 console.log(`[Stripe PI] Supplier Order ${orderId} completed`);
               }
             }
@@ -1620,7 +1545,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                     const { notificationOutbox } =
                       await import("../../drizzle/schema");
                     await tx.insert(notificationOutbox).values({
-                      eventType: "merchant_store_live",
+                      eventType: "email",
                       payloadJson: JSON.stringify({
                         to: user.email,
                         subject: "Your store is now live",
@@ -1645,40 +1570,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
 
         // ── Refund Ledger Write ─────────────────────────────────
         case "charge.refunded": {
-          const charge = event.data.object as Stripe.Charge;
-          const priorRefunds = await db
-            .select({ amount: paymentLedger.amountCents })
-            .from(paymentLedger)
-            .where(
-              and(
-                eq(paymentLedger.stripePaymentId, charge.id),
-                eq(paymentLedger.transactionType, "refund")
-              )
-            );
-          const alreadyRecorded = priorRefunds.reduce(
-            (sum, row) => sum - row.amount,
-            0
-          );
-          const refundAmount = Math.max(
-            0,
-            (charge.amount_refunded || 0) - alreadyRecorded
-          );
-
-          if (refundAmount > 0) {
-            await db.insert(paymentLedger).values({
-              transactionType: "refund",
-              amountCents: -refundAmount, // Negative for refunds
-              platformFeeCents: 0,
-              artistFeeCents: 0,
-              stripePaymentId: charge.id,
-              metadata: JSON.stringify({
-                refundReason: charge.metadata?.refundReason || "unknown",
-              }),
-            });
-            console.log(
-              `[Stripe] Refund ledger entry: ${charge.id}, amount: -${refundAmount}`
-            );
-          }
+          await reconcileChargeRefund(db,event.data.object as Stripe.Charge);
           break;
         }
 
@@ -1758,7 +1650,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             .then((rows: any[]) => rows[0]);
 
           if (payoutArtist?.stripeConnectAccountType === "custom") {
-            const { sendEmail } = await import("./email");
+            const sendEmail = async (payload: {to:string;subject:string;body:string}) => { await db.insert(notificationOutbox).values({eventType:"email",payloadJson:JSON.stringify(payload),status:"pending"}); };
             const amountFormatted = `$${((payout.amount || 0) / 100).toFixed(2)}`;
             await sendEmail({
               to: payoutArtist.businessEmail || "",
@@ -1789,7 +1681,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             .then((rows: any[]) => rows[0]);
 
           if (payoutArtist?.stripeConnectAccountType === "custom") {
-            const { sendEmail } = await import("./email");
+            const sendEmail = async (payload: {to:string;subject:string;body:string}) => { await db.insert(notificationOutbox).values({eventType:"email",payloadJson:JSON.stringify(payload),status:"pending"}); };
             const amountFormatted = `$${((payout.amount || 0) / 100).toFixed(2)}`;
             await sendEmail({
               to: payoutArtist.businessEmail || "",

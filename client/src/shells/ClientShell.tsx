@@ -1,3 +1,5 @@
+import WaitlistPage from "@/features/bookings/WaitlistPage";
+import ProjectSummary from "@/features/bookings/ProjectSummary";
 import React from "react";
 import { Redirect, Route, Switch } from "wouter";
 import BottomNav from "@/components/BottomNav";
@@ -22,6 +24,8 @@ export default function ClientShell() {
           <Route path="/profile" component={ClientProfilePage} />
           <Route path="/conversations" component={Conversations} />
           <Route path="/chat/:id" component={Chat} />
+          <Route path="/projects/:id" component={ProjectSummary} />
+          <Route path="/waitlist" component={WaitlistPage} />
           <Route path="/bookings" component={BookingsPage} />
           <Route path="/settings" component={Settings} />
           <Route component={NotFound} />

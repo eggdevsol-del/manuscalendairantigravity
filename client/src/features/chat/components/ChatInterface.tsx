@@ -501,13 +501,13 @@ export function ChatInterface({
                     {otherUserName}
                   </h1>
                   <p className="text-xs text-primary font-medium flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)] animate-pulse" />
-                    Online
+                    Conversation
                   </p>
                 </div>
               </div>
             </div>
 
+            <Button variant="ghost" className="min-h-11 mr-2" onClick={() => setLocation(`/projects/${conversationId}`)}>Details</Button>
             {/* BOOK button (artist-only) */}
             {isArtist && (
               <button

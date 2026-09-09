@@ -282,6 +282,7 @@ export function UpcomingTab() {
                 </button>
               )}
 
+              {appt.conversationId && <button className="w-full min-h-11 underline text-foreground mb-2" onClick={() => setLocation(`/projects/${appt.conversationId}`)}>Project details & payment history</button>}
               {/* Footer buttons — only on confirmed sessions */}
               {isConfirmed && (
                 <div className="flex gap-2">

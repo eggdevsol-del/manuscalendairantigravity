@@ -1,3 +1,4 @@
+import { requireConversationAccess } from "../services/access";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
@@ -51,7 +52,8 @@ export const conversationsRouter = router({
         clientId: z.string(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      if((ctx.user.role === "client" && ctx.user.id !== input.clientId) || (["artist","admin"].includes(ctx.user.role) && ctx.user.id !== input.artistId) || !["client","artist","admin"].includes(ctx.user.role)) throw new TRPCError({code:"FORBIDDEN",message:"You must be a participant in the conversation."});
       let conversation = await db.getConversation(
         input.artistId,
         input.clientId
@@ -108,6 +110,8 @@ export const conversationsRouter = router({
   markAsRead: protectedProcedure
     .input(z.number())
     .mutation(async ({ input, ctx }) => {
+      const database=await getDb();if(!database)throw new TRPCError({code:"INTERNAL_SERVER_ERROR"});
+      await requireConversationAccess(database,input,ctx.user.id);
       await db.markMessagesAsRead(input, ctx.user.id);
       if (ctx.user.role === "artist" || ctx.user.role === "admin") {
         await db.markConsultationAsViewed(input);

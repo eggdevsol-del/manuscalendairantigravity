@@ -1,3 +1,4 @@
+import { databaseReady } from "../services/readiness";
 import "dotenv/config";
 import fs from "fs";
 import express from "express";
@@ -196,12 +197,17 @@ async function startServer() {
   // Version endpoint for cache-busting (returns current server version)
   // This is used by the client to detect version mismatches and force updates.
   // Note: X-App-Version header is also injected on every response by the middleware above.
+  app.get("/api/health", async (_req, res) => {
+    const ready = await databaseReady();
+    res.status(ready ? 200 : 503).json({status:ready?"ok":"database_not_ready",version:packageJson.version});
+  });
   app.get("/api/version", (_req, res) => {
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
     res.json({
       version: packageJson.version,
+      commit: process.env.RAILWAY_GIT_COMMIT_SHA || null,
       timestamp: Date.now(),
     });
   });

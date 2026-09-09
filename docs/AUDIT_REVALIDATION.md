@@ -40,3 +40,7 @@ Baseline: aca9ee8df96102f5b05fa2f0bdfa520576a50919. This document records the pr
 These are source findings except the explicitly observed public navigation. They are not claims of successful live exploitation. Legal/compliance assertions in local skills are design intentions and require independent jurisdiction-specific review; they are not legal authority.
 
 Further review found a test-only studio subscription bypass exposed without an environment guard. The rebuild restricts it to NODE_ENV=test. Studio creation and subscription entitlement still need a complete staging review before enabling that unfinished product surface.
+
+## Completion-pass status
+
+The 2.11.0 completion pass implements the previously missing duplicate-aware import, expiring cancellation offers and linked project payment history. These were real gaps at the audited baseline; the basic CSV preview and session summaries already existed. Notification delivery and refund coverage were also extended. Live behaviour remains subject to the deployment acceptance record in REBUILD_TESTING.md; source implementation and mocked tests are not evidence of provider delivery.

@@ -8,13 +8,14 @@ export function requireEmailDelivery(): void {
     throw new Error("Email delivery is unavailable. Please contact support.");
 }
 /** Send via Resend. Never log recipients, recovery links or message bodies. */
-export async function sendEmail(payload: EmailPayload): Promise<void> {
+export async function sendEmail(payload: EmailPayload, idempotencyKey?: string): Promise<void> {
   requireEmailDelivery();
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       "Content-Type": "application/json",
+      ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
     },
     body: JSON.stringify({
       from: process.env.EMAIL_FROM,

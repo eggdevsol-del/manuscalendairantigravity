@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import React, { useState } from "react";
 import { PageHeader } from "@/components/ui/ssot/PageHeader";
 import { SegmentedHeader } from "@/components/ui/ssot/SegmentedHeader";
@@ -33,6 +34,7 @@ export default function BookingsPage() {
       <div className="px-4 pb-[110px]">
         {activeTab === 0 ? (
           <>
+            <Link href="/waitlist" className="inline-flex min-h-11 items-center underline mb-3">Cancellation offers</Link>
             <PendingPlans />
             <UpcomingTab />
           </>

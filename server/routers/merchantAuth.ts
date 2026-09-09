@@ -39,7 +39,7 @@ export const merchantAuthRouter = router({
     .input(z.object({ abn: z.string().min(1) })) // Actual length validation would be .length(11) usually
     .query(async ({ input }) => {
       // Stub: in future, hit ABR API using process.env.ABR_API_KEY
-      return { valid: true, businessName: null };
+      return { valid: /^\d{11}$/.test(input.abn.replace(/\s/g, "")), verified: false, businessName: null };
     }),
 
   /**
@@ -49,7 +49,7 @@ export const merchantAuthRouter = router({
     .input(z.object({ nzbn: z.string().min(1) })) // Actual length validation would be .length(13) usually
     .query(async ({ input }) => {
       // Stub: in future, hit NZBN API
-      return { valid: true, businessName: null };
+      return { valid: /^\d{13}$/.test(input.nzbn.replace(/\s/g, "")), verified: false, businessName: null };
     }),
 
   /**

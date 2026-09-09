@@ -2834,3 +2834,13 @@ export const stripeWebhookEvents = mysqlTable("stripe_webhook_events", {
   processedAt: datetime({ mode: "string" }),
   createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
 });
+
+/** Client opt-in and expiring offers for cancellation slots. */
+export const waitlistEntries = mysqlTable('waitlist_entries', {
+  id: int().autoincrement().primaryKey(),
+  artistId: varchar({length:64}).notNull(), clientId: varchar({length:64}).notNull(), conversationId: int().notNull(),
+  note: varchar({length:500}).notNull().default(''),
+  status: mysqlEnum(['waiting','offered','accepted','declined','cancelled']).notNull().default('waiting'),
+  startsAt: datetime({mode:'string'}), durationMinutes: int(), estimateCents: int(), depositCents: int(), expiresAt: datetime({mode:'string'}),
+  sessionPlanId: int(), createdAt: timestamp({mode:'string'}).default(sql`(now())`),
+}, table => [index('waitlist_artist_status_idx').on(table.artistId,table.status),index('waitlist_client_idx').on(table.clientId)]);
