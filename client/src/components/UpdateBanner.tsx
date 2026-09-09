@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { triggerSWUpdate } from "@/lib/pwa";
+import { triggerSWUpdate, forceUpdate } from "@/lib/pwa";
 import { RefreshCw } from "lucide-react";
 
 /**
@@ -31,15 +31,18 @@ export function UpdateBanner() {
     };
 
     window.addEventListener("pwa-update-available", onUpdate);
+    navigator.serviceWorker?.getRegistration().then(registration => {
+      if(registration?.waiting)onUpdate();
+    }).catch(()=>{});
     return () => window.removeEventListener("pwa-update-available", onUpdate);
   }, [dismissed]);
 
   const handleUpdate = async () => {
     setUpdating(true);
-    triggerSWUpdate();
+    void triggerSWUpdate().catch(() => forceUpdate());
     // If the page hasn't reloaded after 5 seconds, force a hard reload
     setTimeout(() => {
-      window.location.href = window.location.href.split("?")[0] + "?_v=" + Date.now();
+      void forceUpdate();
     }, 5000);
   };
 

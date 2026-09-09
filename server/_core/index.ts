@@ -1,3 +1,4 @@
+import { appUpdatePage } from "../services/appUpdatePage";
 import { databaseReady } from "../services/readiness";
 import "dotenv/config";
 import fs from "fs";
@@ -197,6 +198,11 @@ async function startServer() {
   // Version endpoint for cache-busting (returns current server version)
   // This is used by the client to detect version mismatches and force updates.
   // Note: X-App-Version header is also injected on every response by the middleware above.
+  // The /api prefix bypasses older PWA navigation caches for recovery.
+  app.get("/api/app-update", (_req, res) => {
+    res.setHeader("Cache-Control", "no-store");
+    res.type("html").send(appUpdatePage);
+  });
   app.get("/api/health", async (_req, res) => {
     const ready = await databaseReady();
     res.status(ready ? 200 : 503).json({status:ready?"ok":"database_not_ready",version:packageJson.version});

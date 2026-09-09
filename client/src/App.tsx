@@ -230,13 +230,12 @@ function Router() {
   );
 }
 
-/** Only show UpdateBanner + InstallAppBanner when user is signed in */
+/** Account-specific banners only; updates must also work before sign-in. */
 function AuthOnlyBanners() {
   const { user } = useAuth();
   if (!user) return null;
   return (
     <>
-      <UpdateBanner />
       <InstallAppBanner />
       <PaymentRequestBanner />
     </>
@@ -269,6 +268,7 @@ function App() {
             <TooltipTourProvider>
               <TooltipProvider>
                 <Toaster />
+                <UpdateBanner />
                 <AuthOnlyBanners />
                 <TooltipOverlay />
                 <ErrorBoundary boundary="app-root">

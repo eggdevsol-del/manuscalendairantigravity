@@ -28,7 +28,7 @@ Inactive studio prototype screens that referenced nonexistent APIs/schema were r
 
 ## Verified locally
 
-- 81 tests across 20 files pass, including token isolation, recovery replay, form persistence, session-plan rollback/retry, payment state, deposit confirmation and conversation drafts.
+- 83 tests across 21 files pass, including token isolation, recovery replay, form persistence, session-plan rollback/retry, payment state, deposit confirmation and conversation drafts.
 - Clean TypeScript check: `pnpm exec tsc --noEmit --incremental false`.
 - Vite production bundle, server esbuild bundle and migration-file packaging succeed. Build performs no database migrations.
 - Local browser inspection confirms the sign-in page exposes its labelled fields and links, and the recovery route shows its reset form.
@@ -79,7 +79,7 @@ The saved GitHub credential cannot create Actions workflows (missing workflow sc
 1. Select the correct existing Railway service for `www.tattoi.app`; confirm its database and Stripe test-mode configuration without copying secrets into Git or chat. Set `REQUIRE_STRIPE_TEST_MODE=true` for the deployment check.
 2. Back up the test database and inspect the actual schema/migration journal. Run `pnpm deploy:check`; resolve baseline drift deliberately and apply the outstanding versioned migrations. Do not run schema push or initialization against the existing database.
 3. Configure the service to build `codex/tattoi-frictionless-rebuild` at the latest verified GitHub commit. `railway.json` builds with `pnpm build`, starts with `pnpm start`, and checks `/api/health`.
-4. Verify `/api/version` reports 2.11.1 and the deployed GitHub SHA, then run the acceptance scenarios above with test accounts. A failed health check must be investigated before accepting the rollout.
+4. Verify `/api/version` reports 2.11.2 and the deployed GitHub SHA, then run the acceptance scenarios above with test accounts. A failed health check must be investigated before accepting the rollout.
 5. On iPhone, open `https://www.tattoi.app` in Safari and use Share → Add to Home Screen. An existing PWA uses the same deployed service; close/reopen and accept the app's update prompt if shown. A native device build still requires Apple signing/provisioning.
 
 Shopify request fields follow the official [DraftOrderInput](https://shopify.dev/docs/api/admin-graphql/latest/input-objects/DraftOrderInput) and [MailingAddressInput](https://shopify.dev/docs/api/admin-graphql/latest/input-objects/MailingAddressInput) references (Admin GraphQL 2026-07). Actual merchant scopes and provider delivery have not been verified against a connected test shop.
@@ -91,3 +91,9 @@ A final type check exposed an older supplier-confirmation caller. That path also
 At the 2.11.0 deployment check, Stripe test mode and the JWT secret length were verified without displaying credentials. `RESEND_API_KEY` and `EMAIL_FROM` were absent; the user has been asked to configure them in Railway. Email recovery/delivery cannot be accepted until those settings are supplied and tested. The previously missing `APP_URL` was configured and deployed.
 
 `pnpm deploy:reconcile` defaults to preview; `--apply` is an explicit one-time reconciliation for this audited test database. It preserves backups and establishes an adoption boundary; it does not assert that historical migrations were executed. `pnpm deploy:test-flows` exercises real MySQL waitlist, project authorization and import paths in a transaction that intentionally rolls back all fixtures and queued notifications. It is restricted to Stripe test configuration.
+
+## PWA recovery correction (2.11.2)
+
+The live browser retained the old 2.10.0 sign-in interface after backend deployment. Source review confirmed the update banner was restricted to signed-in users. The banner is now mounted for every route and detects workers already waiting before mount. The service worker uses the actual build version and fetches API responses from the network instead of caching account/message/form/payment responses. The independent `/api/app-update` page bypasses the old navigation cache and offers an explicit update action that retains cookies and local saved drafts.
+
+The real MySQL acceptance script passed waitlist join/retry, offer and pending acceptance/retry, project summary and unauthorized access rejection, and CSV preview/import/retry. The enclosing transaction rolled back all fixtures and queued side effects. This verifies actual database execution and rollback; it does not substitute for Stripe, Shopify, email or push delivery tests.

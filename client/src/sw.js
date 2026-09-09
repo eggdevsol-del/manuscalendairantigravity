@@ -3,7 +3,7 @@ import { clientsClaim, setCacheNameDetails } from "workbox-core";
 import { registerRoute } from "workbox-routing";
 import {
   CacheFirst,
-  NetworkFirst,
+  NetworkOnly,
   StaleWhileRevalidate,
 } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
@@ -25,7 +25,7 @@ try {
 }
 
 // Get app version from Vite define
-const APP_VERSION = self.__APP_VERSION__ || "0.0.0";
+const APP_VERSION = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "0.0.0";
 console.log(`[SW] Service Worker v${APP_VERSION} initializing...`);
 
 // Configuration to enforce versioning in cache names
@@ -50,7 +50,7 @@ self.addEventListener("activate", event => {
           cacheNames
             .filter(cacheName => {
               // Delete any cache that doesn't match current version
-              return !cacheName.includes(`v${APP_VERSION}`);
+              return cacheName.startsWith("api-") || (["artist-booking-", "google-fonts-", "images-", "static-resources-"].some(prefix => cacheName.startsWith(prefix)) && !cacheName.includes(`v${APP_VERSION}`));
             })
             .map(cacheName => {
               console.log(`[SW] Deleting old cache: ${cacheName}`);
@@ -131,23 +131,8 @@ registerRoute(
   })
 );
 
-// 3. API Requests (Network First) - always try network first
-registerRoute(
-  ({ url }) => url.pathname.startsWith("/api/"),
-  new NetworkFirst({
-    cacheName: `api-v${APP_VERSION}`,
-    networkTimeoutSeconds: 10,
-    plugins: [
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-      new ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 5 * 60, // 5 minutes freshness
-      }),
-    ],
-  })
-);
+// Never replay cached account, message, consent or payment responses across sessions.
+registerRoute(({ url }) => url.pathname.startsWith("/api/"), new NetworkOnly());
 
 import { NavigationRoute } from "workbox-routing";
 import { createHandlerBoundToURL } from "workbox-precaching";
