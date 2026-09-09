@@ -288,6 +288,7 @@ export const billingRouter = router({
           });
         }
 
+        await db.insert(artistSettings).values({userId:ctx.user.id,workSchedule:'{}',services:'[]'}).onDuplicateKeyUpdate({set:{userId:ctx.user.id}});
         const [settings] = await db
           .select()
           .from(artistSettings)

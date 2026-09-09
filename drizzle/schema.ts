@@ -621,7 +621,7 @@ export const studioMembers = mysqlTable(
     role: mysqlEnum(["owner", "manager", "artist", "apprentice"])
       .default("artist")
       .notNull(),
-    status: mysqlEnum(["active", "inactive", "pending_invite", "declined"])
+    status: mysqlEnum(["active", "inactive", "pending_invite", "declined", "removed"])
       .default("active")
       .notNull(),
     createdAt: timestamp({ mode: "string" }).default(sql`(now())`),

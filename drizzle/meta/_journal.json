@@ -190,6 +190,13 @@
       "when": 1788948000000,
       "tag": "0026_stable_catalogue_ids",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "5",
+      "when": 1788954000000,
+      "tag": "0027_studio_departure_status",
+      "breakpoints": true
     }
   ]
 }

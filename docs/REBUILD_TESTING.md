@@ -124,3 +124,12 @@ Railway check confirmed Stripe test mode; email configuration and `STRIPE_STUDIO
 
 
 User authorized three artist tiers and delegated prices during this pass: Free, Pro A$99/month, Studio A$499/month including 10 artists. Stripe test prices were created under stable lookup keys; Railway Pro/Studio price variables were configured. Public pricing now derives from shared fee configuration and checkout verifies the provider price matches it. Three new entitlement regressions verify that paid labels alone cannot remove fees, active Pro has 0% artist fee, and Studio extends benefits only while membership/billing remain active. Real checkout/subscription browser acceptance is still pending at this checkpoint.
+
+
+### Deployed acceptance follow-up (2.12.1)
+
+Real MySQL `check-all-roles.ts` passed on 2026-09-09: stable product and variant IDs, publication state, local stock retained across catalogue re-import, expiry release exactly once, provider credentials excluded, purchase ownership, nested savepoint rollback, paid studio invitation/acceptance, non-artist rejection, pending/departed access denied, owner removal blocked, independent calendar excluded and artist history retained. All fixtures and queued side effects rolled back.
+
+The first run identified a deployed enum drift: `studio_members.status` had `removed` but not `inactive`. Migration 0027 retains both states, backs up the membership table/DDL and records the migration hash. It was applied explicitly, and the acceptance run then passed. Pro checkout also now creates an absent artist settings record transactionally, avoiding a dead-end for newly onboarded accounts.
+
+Both configured Stripe plan IDs were compared directly to lookup-key results after correcting visually ambiguous O/0 characters; exact proposed IDs matched A$99/A$499 monthly test prices. This verification resolved the automatic approval rejection before the configuration was deployed.
