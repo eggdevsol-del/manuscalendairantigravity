@@ -1,0 +1,24 @@
+{
+  "originHash" : "ab9466c8b040b19b1f1fb72b0050b981a928c3971823949544e89c46eeebf01f",
+  "pins" : [
+    {
+      "identity" : "capacitor-swift-pm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ionic-team/capacitor-swift-pm.git",
+      "state" : {
+        "revision" : "1f324fe7bdbdc8c5cc28bea48a231545a8c2e823",
+        "version" : "8.1.0"
+      }
+    },
+    {
+      "identity" : "onesignal-ios-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OneSignal/OneSignal-iOS-SDK.git",
+      "state" : {
+        "revision" : "cdb9edfa545d1280248f8aab641a95844c76ae64",
+        "version" : "5.4.1"
+      }
+    }
+  ],
+  "version" : 3
+}

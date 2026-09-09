@@ -82,9 +82,14 @@ export const messagesRouter = router({
         let metaObj: any = null;
         try {
           if (input.metadata) metaObj = JSON.parse(input.metadata);
-        } catch (e) { }
+        } catch (e) {}
 
-        if (metaObj && metaObj.status === "pending" && Array.isArray(metaObj.dates) && metaObj.dates.length > 0) {
+        if (
+          metaObj &&
+          metaObj.status === "pending" &&
+          Array.isArray(metaObj.dates) &&
+          metaObj.dates.length > 0
+        ) {
           // --- BEGIN VALIDATION ---
           const searchStart = new Date();
           searchStart.setHours(0, 0, 0, 0);
@@ -95,8 +100,8 @@ export const messagesRouter = router({
           );
 
           const existingAppointments = rawAppointments
-            .filter((a) => a.status !== "cancelled" && a.status !== "rejected")
-            .map((a) => ({
+            .filter(a => a.status !== "cancelled" && a.status !== "rejected")
+            .map(a => ({
               ...a,
               startTime: new Date(a.startTime),
               endTime: new Date(a.endTime),
@@ -105,7 +110,9 @@ export const messagesRouter = router({
           for (const dateStr of metaObj.dates) {
             const startTime = new Date(dateStr);
             const duration = metaObj.serviceDuration || 60;
-            const endTime = new Date(startTime.getTime() + duration * 60 * 1000);
+            const endTime = new Date(
+              startTime.getTime() + duration * 60 * 1000
+            );
 
             const hasCollision = existingAppointments.some(appt => {
               const apptStart = new Date(appt.startTime);
@@ -116,16 +123,20 @@ export const messagesRouter = router({
             if (hasCollision) {
               throw new TRPCError({
                 code: "CONFLICT",
-                message: "One or more selected dates conflict with existing appointments.",
+                message:
+                  "One or more selected dates conflict with existing appointments.",
               });
             }
           }
           // --- END VALIDATION ---
 
           const appointmentIds: number[] = [];
-          
+
           // Even Spread Deposit Allocation
-          const projectDeposit = typeof metaObj.depositAmount === "number" ? metaObj.depositAmount : 0;
+          const projectDeposit =
+            typeof metaObj.depositAmount === "number"
+              ? metaObj.depositAmount
+              : 0;
           const totalDepositCents = Math.round(projectDeposit * 100);
           const numSittings = metaObj.dates.length;
           const baseAllocCents = Math.floor(totalDepositCents / numSittings);
@@ -135,13 +146,17 @@ export const messagesRouter = router({
             const dateStr = metaObj.dates[i];
             const startTime = new Date(dateStr);
             const duration = metaObj.serviceDuration || 60;
-            const endTime = new Date(startTime.getTime() + duration * 60 * 1000);
+            const endTime = new Date(
+              startTime.getTime() + duration * 60 * 1000
+            );
 
-            const safePrice = typeof metaObj.price === "number" ? metaObj.price : 0;
+            const safePrice =
+              typeof metaObj.price === "number" ? metaObj.price : 0;
             const expectedCents = Math.round(safePrice * 100);
-            
+
             // Allocate cents (add 1 cent to early sittings if there's a remainder)
-            const allocatedDepositCents = baseAllocCents + (i < remainderCents ? 1 : 0);
+            const allocatedDepositCents =
+              baseAllocCents + (i < remainderCents ? 1 : 0);
             const allocatedDepositDollars = allocatedDepositCents / 100;
             const balanceCents = expectedCents - allocatedDepositCents;
 
@@ -237,20 +252,16 @@ export const messagesRouter = router({
         const dbInst = await db.getDb();
         if (dbInst) {
           try {
-            await dbInst
-              .insert(
-                notificationOutbox
-              )
-              .values({
-                eventType: "message.created",
-                payloadJson: JSON.stringify({
-                  targetUserId: recipientId,
-                  title: ctx.user.name || "Someone",
-                  body: messagePreview,
-                  data: { conversationId: input.conversationId },
-                }),
-                status: "pending",
-              });
+            await dbInst.insert(notificationOutbox).values({
+              eventType: "message.created",
+              payloadJson: JSON.stringify({
+                targetUserId: recipientId,
+                title: ctx.user.name || "Someone",
+                body: messagePreview,
+                data: { conversationId: input.conversationId },
+              }),
+              status: "pending",
+            });
           } catch (err) {
             console.error(
               "[Outbox] Failed to insert message.created event:",
@@ -271,20 +282,16 @@ export const messagesRouter = router({
         const dbInst = await db.getDb();
         if (dbInst) {
           try {
-            await dbInst
-              .insert(
-                notificationOutbox
-              )
-              .values({
-                eventType: "appointment.confirmed",
-                payloadJson: JSON.stringify({
-                  targetUserId: recipientId,
-                  title: ctx.user.name || "A client",
-                  body: `Appointment confirmed for ${firstDate}`, // Assuming body logic needed here or generic?
-                  data: { conversationId: input.conversationId },
-                }),
-                status: "pending",
-              });
+            await dbInst.insert(notificationOutbox).values({
+              eventType: "appointment.confirmed",
+              payloadJson: JSON.stringify({
+                targetUserId: recipientId,
+                title: ctx.user.name || "A client",
+                body: `Appointment confirmed for ${firstDate}`, // Assuming body logic needed here or generic?
+                data: { conversationId: input.conversationId },
+              }),
+              status: "pending",
+            });
           } catch (err) {
             console.error(
               "[Outbox] Failed to insert appointment.confirmed event:",
@@ -349,11 +356,17 @@ export const messagesRouter = router({
     .mutation(async ({ input, ctx }) => {
       const conversation = await db.getConversationById(input.conversationId);
       if (!conversation) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Conversation not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Conversation not found",
+        });
       }
 
       if (conversation.artistId !== ctx.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can request balance" });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only artists can request balance",
+        });
       }
 
       const dbInst = await db.getDb();
@@ -369,7 +382,10 @@ export const messagesRouter = router({
       });
 
       if (pendingSittings.length === 0) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "No sittings have a remaining balance." });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No sittings have a remaining balance.",
+        });
       }
 
       const nextSitting = pendingSittings[0];
@@ -380,13 +396,16 @@ export const messagesRouter = router({
       let totalPaid = nextSitting.totalPaidAmountCents || 0;
       const totalExpected = nextSitting.totalExpectedAmountCents || 0;
       const depositDollars = nextSitting.depositAmount || 0;
-      
+
       // If totalPaid exactly equals depositDollars, it means it missed the * 100 multiplier!
       if (totalPaid > 0 && totalPaid === depositDollars) {
-          totalPaid = depositDollars * 100;
-          await dbInst.update(appointments).set({
-            totalPaidAmountCents: totalPaid
-          }).where(eq(appointments.id, nextSitting.id));
+        totalPaid = depositDollars * 100;
+        await dbInst
+          .update(appointments)
+          .set({
+            totalPaidAmountCents: totalPaid,
+          })
+          .where(eq(appointments.id, nextSitting.id));
       }
 
       if (totalPaid > 0 && totalExpected > 0) {
@@ -395,9 +414,12 @@ export const messagesRouter = router({
         if (recalculated > 0 && recalculated !== effectiveBalance) {
           effectiveBalance = recalculated;
           // Persist the corrected value
-          await dbInst.update(appointments).set({
-            remainingBalanceCents: effectiveBalance,
-          }).where(eq(appointments.id, nextSitting.id));
+          await dbInst
+            .update(appointments)
+            .set({
+              remainingBalanceCents: effectiveBalance,
+            })
+            .where(eq(appointments.id, nextSitting.id));
         }
       } else if (totalExpected > 0 && depositDollars > 0) {
         // Fallback: use depositAmount field (dollars) if totalPaidAmountCents was never set
@@ -405,25 +427,39 @@ export const messagesRouter = router({
         const recalculated = totalExpected - depositCents;
         if (recalculated > 0 && recalculated < effectiveBalance) {
           effectiveBalance = recalculated;
-          await dbInst.update(appointments).set({
-            remainingBalanceCents: effectiveBalance,
-            totalPaidAmountCents: depositCents,
-          }).where(eq(appointments.id, nextSitting.id));
+          await dbInst
+            .update(appointments)
+            .set({
+              remainingBalanceCents: effectiveBalance,
+              totalPaidAmountCents: depositCents,
+            })
+            .where(eq(appointments.id, nextSitting.id));
         }
       }
 
-      const { createDepositToken } = await import("../services/depositToken");
-      const token = createDepositToken(nextSitting.id);
-      
-      const appUrl = process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
+      const { createBalanceToken } = await import("../services/depositToken");
+      const token = createBalanceToken(nextSitting.id);
+
+      const appUrl =
+        process.env.APP_URL ||
+        process.env.VITE_APP_URL ||
+        "https://www.tattoi.app";
       const checkoutLink = `${appUrl}/balance/${nextSitting.id}?token=${token}`;
 
       // Format sitting date for the card
       const sittingDate = nextSitting.startTime
-        ? new Date(nextSitting.startTime).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
+        ? new Date(nextSitting.startTime).toLocaleDateString("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
         : undefined;
       const sittingTime = nextSitting.startTime
-        ? new Date(nextSitting.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+        ? new Date(nextSitting.startTime).toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          })
         : undefined;
 
       await db.createMessage({
@@ -456,7 +492,10 @@ export const messagesRouter = router({
           status: "pending",
         });
       } catch (err) {
-        console.error("[Outbox] Failed to insert balance.requested event:", err);
+        console.error(
+          "[Outbox] Failed to insert balance.requested event:",
+          err
+        );
       }
 
       return { success: true };
@@ -473,11 +512,17 @@ export const messagesRouter = router({
     .mutation(async ({ input, ctx }) => {
       const conversation = await db.getConversationById(input.conversationId);
       if (!conversation) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Conversation not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Conversation not found",
+        });
       }
 
       if (conversation.artistId !== ctx.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can request additional payment" });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only artists can request additional payment",
+        });
       }
 
       const dbInst = await db.getDb();
@@ -494,22 +539,32 @@ export const messagesRouter = router({
       });
 
       if (!fullyPaidAppointment) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "No fully-paid appointment found." });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No fully-paid appointment found.",
+        });
       }
 
       const amountCents = Math.round(input.amountDollars * 100);
 
       // Update the appointment to reflect the new additional charges
-      await dbInst.update(appointments).set({
-        totalExpectedAmountCents: (fullyPaidAppointment.totalExpectedAmountCents || 0) + amountCents,
-        remainingBalanceCents: amountCents,
-        paymentStatus: "deposit_paid" as any, // Flip back from fully_paid
-      }).where(eq(appointments.id, fullyPaidAppointment.id));
+      await dbInst
+        .update(appointments)
+        .set({
+          totalExpectedAmountCents:
+            (fullyPaidAppointment.totalExpectedAmountCents || 0) + amountCents,
+          remainingBalanceCents: amountCents,
+          paymentStatus: "deposit_paid" as any, // Flip back from fully_paid
+        })
+        .where(eq(appointments.id, fullyPaidAppointment.id));
 
-      const { createDepositToken } = await import("../services/depositToken");
-      const token = createDepositToken(fullyPaidAppointment.id);
+      const { createBalanceToken } = await import("../services/depositToken");
+      const token = createBalanceToken(fullyPaidAppointment.id);
 
-      const appUrl = process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
+      const appUrl =
+        process.env.APP_URL ||
+        process.env.VITE_APP_URL ||
+        "https://www.tattoi.app";
       const checkoutLink = `${appUrl}/balance/${fullyPaidAppointment.id}?token=${token}`;
 
       await db.createMessage({
@@ -541,10 +596,12 @@ export const messagesRouter = router({
           status: "pending",
         });
       } catch (err) {
-        console.error("[Outbox] Failed to insert additional.requested event:", err);
+        console.error(
+          "[Outbox] Failed to insert additional.requested event:",
+          err
+        );
       }
 
       return { success: true };
     }),
 });
-

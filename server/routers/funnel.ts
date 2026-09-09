@@ -47,9 +47,7 @@ export const funnelRouter = router({
   getDepositInfo: publicProcedure
     .input(z.object({ token: z.string() }))
     .query(async ({ input }) => {
-      const { verifyDepositToken } = await import(
-        "../services/depositToken"
-      );
+      const { verifyDepositToken } = await import("../services/depositToken");
       const result = verifyDepositToken(input.token);
       if (!result.valid) {
         return null;
@@ -64,11 +62,6 @@ export const funnelRouter = router({
       });
 
       if (!lead || !lead.depositAmount) {
-        return null;
-      }
-
-      // Already paid?
-      if (lead.depositVerifiedAt) {
         return null;
       }
 
@@ -91,9 +84,8 @@ export const funnelRouter = router({
       const pms = paymentSettings[0];
 
       // Compute fee breakdown server-side (SSOT — fee engine is the authority)
-      const { calculateTransactionFees, resolvePaymentTier } = await import(
-        "../domain/fees"
-      );
+      const { calculateTransactionFees, resolvePaymentTier } =
+        await import("../domain/fees");
       const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
       const fees = calculateTransactionFees(lead.depositAmount, tier);
 
@@ -114,24 +106,24 @@ export const funnelRouter = router({
         depositAmount: lead.depositAmount,
         clientTotalCents: fees.clientTotalCents,
         platformFeeCents: fees.platformFeeCents,
-        status: lead.status,
+        status: lead.depositVerifiedAt ? "deposit_verified" : lead.status,
         paymentMethods: {
           stripe: pms?.stripeEnabled === 1,
-          paypal: pms?.paypalEnabled === 1,
+          paypal: false,
           bank: pms?.bankEnabled === 1,
           cash: pms?.cashEnabled === 1,
         },
         bankDetails:
           pms?.bankEnabled === 1 && artistSettingsRow
             ? {
-              bankName: "Artist Bank", // Placeholder — could add to artistSettings
-              accountName:
-                artistSettingsRow.businessName ||
-                artist?.name ||
-                "Account Holder",
-              bsb: artistSettingsRow.bsb || "",
-              accountNumber: artistSettingsRow.accountNumber || "",
-            }
+                bankName: "Artist Bank", // Placeholder — could add to artistSettings
+                accountName:
+                  artistSettingsRow.businessName ||
+                  artist?.name ||
+                  "Account Holder",
+                bsb: artistSettingsRow.bsb || "",
+                accountNumber: artistSettingsRow.accountNumber || "",
+              }
             : undefined,
       };
     }),
@@ -141,15 +133,15 @@ export const funnelRouter = router({
    * PUBLIC - no auth required (uses HMAC-signed token)
    */
   createDepositCheckout: publicProcedure
-    .input(z.object({
-      token: z.string(),
-      messageId: z.number().optional(),
-      returnUrl: z.string().optional()
-    }))
+    .input(
+      z.object({
+        token: z.string(),
+        messageId: z.number().optional(),
+        returnUrl: z.string().optional(),
+      })
+    )
     .mutation(async ({ input }) => {
-      const { verifyDepositToken } = await import(
-        "../services/depositToken"
-      );
+      const { verifyDepositToken } = await import("../services/depositToken");
       const result = verifyDepositToken(input.token);
       if (!result.valid) {
         throw new Error("Invalid or expired deposit link");
@@ -179,9 +171,12 @@ export const funnelRouter = router({
       });
 
       // Fee calculation — per-transaction (§4.2), integer cents (§4.3)
-      const { calculateTransactionFees, resolvePaymentTier, resolveDepositPercentage, roundCents } = await import(
-        "../domain/fees"
-      );
+      const {
+        calculateTransactionFees,
+        resolvePaymentTier,
+        resolveDepositPercentage,
+        roundCents,
+      } = await import("../domain/fees");
       const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
 
       // ── Deposit % Enforcement (v2.3 §3) ──────────────────────
@@ -195,23 +190,42 @@ export const funnelRouter = router({
       // We need the day rate to validate. Get it from artist settings or lead total.
       const dayRateCents = (lead as any).totalAmountCents || lead.depositAmount;
       if (dayRateCents) {
-        const minDepositCents = roundCents(dayRateCents * (enforcedDepositPercent / 100));
+        const minDepositCents = roundCents(
+          dayRateCents * (enforcedDepositPercent / 100)
+        );
         if (lead.depositAmount < minDepositCents) {
           throw new Error(
             `Deposit amount ($${(lead.depositAmount / 100).toFixed(2)}) is below the ` +
-            `minimum required deposit of ${enforcedDepositPercent}% ` +
-            `($${(minDepositCents / 100).toFixed(2)}) for ${tier} tier.`
+              `minimum required deposit of ${enforcedDepositPercent}% ` +
+              `($${(minDepositCents / 100).toFixed(2)}) for ${tier} tier.`
           );
         }
       }
 
       const fees = calculateTransactionFees(lead.depositAmount, tier);
 
-      const { createDepositCheckoutSession } = await import(
-        "../services/stripe"
-      );
+      const { createDepositPaymentIntent } =
+        await import("../services/paymentIntents");
 
-      const checkoutResult = await createDepositCheckoutSession({
+      if (
+        !artistSettingsRow?.stripeConnectAccountId ||
+        artistSettingsRow.stripeConnectOnboardingComplete !== 1
+      )
+        throw new Error("Your artist needs to finish payment setup.");
+      if (lead.depositVerifiedAt)
+        throw new Error("This deposit has already been paid.");
+      if (input.messageId) {
+        const message = await db.query.messages.findFirst({
+          where: eq(schema.messages.id, input.messageId),
+        });
+        if (
+          !message ||
+          !lead.conversationId ||
+          message.conversationId !== lead.conversationId
+        )
+          throw new Error("Payment message does not belong to this booking.");
+      }
+      const checkoutResult = await createDepositPaymentIntent({
         leadId: lead.id,
         depositAmountCents: fees.baseAmountCents,
         platformFeeCents: fees.platformFeeCents,
@@ -227,10 +241,14 @@ export const funnelRouter = router({
         messageId: input.messageId,
         stripeConnectAccountId: artistSettingsRow?.stripeConnectAccountId,
         tier,
-        successUrl: input.returnUrl,
+        idempotencyKey: `lead-${lead.id}-deposit-${fees.clientTotalCents}`,
       });
 
-      return { url: checkoutResult.url, clientSecret: checkoutResult.clientSecret, fees };
+      return {
+        url: null as string | null,
+        clientSecret: checkoutResult.clientSecret,
+        fees,
+      };
     }),
 
   getBalanceInfo: publicProcedure
@@ -243,17 +261,15 @@ export const funnelRouter = router({
         where: eq(schema.appointments.id, input.bookingId),
       });
 
-      if (!booking || !booking.remainingBalanceCents || booking.remainingBalanceCents <= 0 || booking.status === "cancelled") {
+      if (!booking || booking.status === "cancelled") {
         return null;
       }
 
       // If token provided, verify it
       if (input.token) {
-        const { verifyDepositToken } = await import(
-          "../services/depositToken"
-        );
-        const result = verifyDepositToken(input.token);
-        if (!result.valid) return null;
+        const { verifyBalanceToken } = await import("../services/depositToken");
+        const result = verifyBalanceToken(input.token);
+        if (!result.valid || result.bookingId !== input.bookingId) return null;
       } else {
         // If no token, verify they are the client
         if (!ctx.user || ctx.user.id !== booking.clientId) {
@@ -281,11 +297,13 @@ export const funnelRouter = router({
 
       const pms = paymentSettings[0];
 
-      const { calculateTransactionFees, resolvePaymentTier } = await import(
-        "../domain/fees"
-      );
+      const { calculateTransactionFees, resolvePaymentTier } =
+        await import("../domain/fees");
       const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
-      const fees = calculateTransactionFees(booking.remainingBalanceCents, tier);
+      const fees = calculateTransactionFees(
+        booking.remainingBalanceCents || 0,
+        tier
+      );
 
       return {
         bookingId: booking.id,
@@ -299,14 +317,19 @@ export const funnelRouter = router({
         clientName: client?.name || "Client",
         clientEmail: client?.email || "",
         projectType: booking.title || undefined,
-        selectedDate: booking.startTime ? new Date(booking.startTime).toISOString() : "TBC",
-        selectedTime: booking.startTime ? new Date(booking.startTime).toISOString() : "TBC",
-        remainingBalanceCents: booking.remainingBalanceCents,
+        selectedDate: booking.startTime
+          ? new Date(booking.startTime).toISOString()
+          : "TBC",
+        selectedTime: booking.startTime
+          ? new Date(booking.startTime).toISOString()
+          : "TBC",
+        remainingBalanceCents: booking.remainingBalanceCents || 0,
+        status: booking.paymentStatus,
         clientTotalCents: fees.clientTotalCents,
         platformFeeCents: fees.platformFeeCents,
         paymentMethods: {
           stripe: pms?.stripeEnabled === 1,
-          paypal: pms?.paypalEnabled === 1,
+          paypal: false,
           bank: pms?.bankEnabled === 1,
           cash: pms?.cashEnabled === 1,
         },
@@ -333,11 +356,13 @@ export const funnelRouter = router({
    * Supports morning-of auto-link and manual payment.
    */
   createBalanceCheckout: publicProcedure
-    .input(z.object({
-      bookingId: z.number(),
-      balanceToken: z.string().optional(),
-      returnUrl: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        bookingId: z.number(),
+        balanceToken: z.string().optional(),
+        returnUrl: z.string().optional(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
@@ -350,9 +375,9 @@ export const funnelRouter = router({
 
       // Verify token or auth
       if (input.balanceToken) {
-        const { verifyDepositToken } = await import("../services/depositToken");
-        const tokenResult = verifyDepositToken(input.balanceToken);
-        if (!tokenResult.valid) {
+        const { verifyBalanceToken } = await import("../services/depositToken");
+        const tokenResult = verifyBalanceToken(input.balanceToken);
+        if (!tokenResult.valid || tokenResult.bookingId !== input.bookingId) {
           throw new Error("Invalid or expired payment link");
         }
       } else {
@@ -373,8 +398,12 @@ export const funnelRouter = router({
       let remaining = booking.remainingBalanceCents;
       if (remaining === null || remaining === undefined) {
         // Legacy appointment — derive from price and deposit
-        const expected = booking.totalExpectedAmountCents || (booking.price ? booking.price * 100 : 0);
-        const paid = booking.totalPaidAmountCents || (booking.depositPaid ? (booking.depositAmount || 0) * 100 : 0);
+        const expected =
+          booking.totalExpectedAmountCents ||
+          (booking.price ? booking.price * 100 : 0);
+        const paid =
+          booking.totalPaidAmountCents ||
+          (booking.depositPaid ? (booking.depositAmount || 0) * 100 : 0);
         remaining = Math.max(0, expected - paid);
 
         // Persist the backfill so future calls don't need to recompute
@@ -385,7 +414,9 @@ export const funnelRouter = router({
               remainingBalanceCents: remaining,
               totalExpectedAmountCents: expected || undefined,
               totalPaidAmountCents: paid || undefined,
-              paymentStatus: booking.depositPaid ? "deposit_paid" as any : booking.paymentStatus,
+              paymentStatus: booking.depositPaid
+                ? ("deposit_paid" as any)
+                : booking.paymentStatus,
             })
             .where(eq(schema.appointments.id, booking.id));
         }
@@ -421,11 +452,15 @@ export const funnelRouter = router({
       // Payment methods enforced at backend (card-only)
       const paymentMethods = getAllowedPaymentMethods(tier, false);
 
-      const { createBalanceCheckoutSession } = await import(
-        "../services/stripe"
-      );
+      const { createBalancePaymentIntent } =
+        await import("../services/paymentIntents");
 
-      const checkoutResult = await createBalanceCheckoutSession({
+      if (
+        !artistSettingsRow?.stripeConnectAccountId ||
+        artistSettingsRow.stripeConnectOnboardingComplete !== 1
+      )
+        throw new Error("Your artist needs to finish payment setup.");
+      const checkoutResult = await createBalancePaymentIntent({
         bookingId: booking.id,
         balanceAmountCents: remaining,
         platformFeeCents: fees.platformFeeCents,
@@ -437,32 +472,105 @@ export const funnelRouter = router({
           artistSettingsRow?.displayName ||
           artist?.name ||
           "Artist",
-        paymentMethods,
         stripeConnectAccountId: artistSettingsRow?.stripeConnectAccountId,
         tier,
         balanceToken: input.balanceToken,
-        returnUrl: input.returnUrl,
       });
 
-      return { url: checkoutResult.url, clientSecret: checkoutResult.clientSecret, fees, remainingBalanceCents: remaining, paymentMethods };
+      return {
+        url: null as string | null,
+        clientSecret: checkoutResult.clientSecret,
+        fees,
+        remainingBalanceCents: remaining,
+        paymentMethods,
+      };
     }),
 
   /**
    * Confirm deposit payment (for non-Stripe methods: bank/cash)
    * PUBLIC - no auth required (uses HMAC-signed token)
    */
+  confirmBalance: publicProcedure
+    .input(
+      z.object({
+        bookingId: z.number().int().positive(),
+        token: z.string().optional(),
+        paymentMethod: z.enum(["bank", "cash"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const database = await getDb();
+      if (!database) throw new Error("Database connection failed");
+      const booking = await database.query.appointments.findFirst({
+        where: eq(schema.appointments.id, input.bookingId),
+      });
+      if (
+        !booking ||
+        booking.status === "cancelled" ||
+        (booking.remainingBalanceCents || 0) <= 0
+      )
+        throw new Error("This booking is not awaiting payment.");
+      const { verifyBalanceToken } = await import("../services/depositToken");
+      const token = input.token ? verifyBalanceToken(input.token) : null;
+      if (
+        ctx.user?.id !== booking.clientId &&
+        !(token?.valid && token.bookingId === booking.id)
+      )
+        throw new Error("Invalid or expired balance link");
+      const [settings] = await database
+        .select()
+        .from(schema.paymentMethodSettings)
+        .where(eq(schema.paymentMethodSettings.artistId, booking.artistId));
+      if (
+        (input.paymentMethod === "bank"
+          ? settings?.bankEnabled
+          : settings?.cashEnabled) !== 1
+      )
+        throw new Error("This payment method is not offered by your artist.");
+      return database.transaction(async tx => {
+        const [locked] = await tx
+          .select()
+          .from(schema.appointments)
+          .where(eq(schema.appointments.id, booking.id))
+          .for("update");
+        const claim = JSON.stringify({
+          type: "balance_claim",
+          method: input.paymentMethod,
+          status: "pending_verification",
+        });
+        if (locked.paymentProof === claim) return { success: true };
+        await tx
+          .update(schema.appointments)
+          .set({ paymentProof: claim })
+          .where(eq(schema.appointments.id, booking.id));
+        if (booking.conversationId)
+          await tx
+            .insert(schema.messages)
+            .values({
+              conversationId: booking.conversationId,
+              senderId: booking.clientId,
+              messageType: "system",
+              content: `Client reports balance payment by ${input.paymentMethod}. Artist verification required.`,
+              metadata: JSON.stringify({
+                type: "balance_claim",
+                appointmentId: booking.id,
+                paymentMethod: input.paymentMethod,
+              }),
+            });
+        return { success: true };
+      });
+    }),
+
   confirmDeposit: publicProcedure
     .input(
       z.object({
         token: z.string(),
-        paymentMethod: z.enum(["stripe", "paypal", "bank", "cash"]),
+        paymentMethod: z.enum(["bank", "cash"]),
         proofUrl: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
-      const { verifyDepositToken } = await import(
-        "../services/depositToken"
-      );
+      const { verifyDepositToken } = await import("../services/depositToken");
       const result = verifyDepositToken(input.token);
       if (!result.valid) {
         throw new Error("Invalid or expired deposit link");
@@ -471,6 +579,21 @@ export const funnelRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
 
+      const lead = await db.query.leads.findFirst({
+        where: eq(schema.leads.id, result.leadId),
+      });
+      if (!lead || lead.depositVerifiedAt)
+        throw new Error("This deposit is no longer awaiting payment.");
+      const [settings] = await db
+        .select()
+        .from(schema.paymentMethodSettings)
+        .where(eq(schema.paymentMethodSettings.artistId, lead.artistId));
+      if (
+        (input.paymentMethod === "bank"
+          ? settings?.bankEnabled
+          : settings?.cashEnabled) !== 1
+      )
+        throw new Error("This payment method is not offered by your artist.");
       const now = formatDateForMySQL(new Date());
 
       if (input.paymentMethod === "bank") {
@@ -541,12 +664,13 @@ export const funnelRouter = router({
         .where(eq(schema.leads.id, input.leadId));
 
       // Generate secure token
-      const { createDepositToken } = await import(
-        "../services/depositToken"
-      );
+      const { createDepositToken } = await import("../services/depositToken");
       const token = createDepositToken(input.leadId);
 
-      const baseUrl = process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
+      const baseUrl =
+        process.env.APP_URL ||
+        process.env.VITE_APP_URL ||
+        "https://www.tattoi.app";
       const depositUrl = `${baseUrl}/deposit/${token}`;
 
       return { url: depositUrl, token };
@@ -657,7 +781,9 @@ export const funnelRouter = router({
                 // metadata.depositAmount is stored in DOLLARS by handleConfirmBooking
                 depositCents = Math.round(Number(meta.depositAmount) * 100);
               }
-            } catch { /* ignore parse errors */ }
+            } catch {
+              /* ignore parse errors */
+            }
           }
         }
 
@@ -666,9 +792,8 @@ export const funnelRouter = router({
           const artistSettingsRow = await db.query.artistSettings.findFirst({
             where: eq(schema.artistSettings.userId, lead.artistId),
           });
-          const { resolvePaymentTier, resolveDepositPercentage, roundCents } = await import(
-            "../domain/fees"
-          );
+          const { resolvePaymentTier, resolveDepositPercentage, roundCents } =
+            await import("../domain/fees");
           const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
           const depositPercent = resolveDepositPercentage(
             tier,
@@ -681,12 +806,18 @@ export const funnelRouter = router({
             depositCents = roundCents(totalCents * (depositPercent / 100));
           } else if (artistSettingsRow?.depositAmount) {
             // Last resort: legacy flat-rate from artist settings (converted to cents)
-            depositCents = Math.round((artistSettingsRow.depositAmount as number) * 100);
+            depositCents = Math.round(
+              (artistSettingsRow.depositAmount as number) * 100
+            );
           }
         }
 
         // Update lead if we derived a new deposit amount
-        if (depositCents && depositCents > 0 && depositCents !== lead.depositAmount) {
+        if (
+          depositCents &&
+          depositCents > 0 &&
+          depositCents !== lead.depositAmount
+        ) {
           const now = formatDateForMySQL(new Date());
           await db
             .update(schema.leads)
@@ -702,11 +833,12 @@ export const funnelRouter = router({
       }
 
       // Generate token
-      const { createDepositToken } = await import(
-        "../services/depositToken"
-      );
+      const { createDepositToken } = await import("../services/depositToken");
       const token = createDepositToken(lead.id);
-      const baseUrl = process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
+      const baseUrl =
+        process.env.APP_URL ||
+        process.env.VITE_APP_URL ||
+        "https://www.tattoi.app";
 
       let depositUrl = `${baseUrl}/deposit/${token}`;
       if (input.messageId) {
@@ -766,7 +898,11 @@ export const funnelRouter = router({
 
       return {
         id: artist.id,
-        displayName: settings.businessName || settings.displayName || artist.name || "Artist",
+        displayName:
+          settings.businessName ||
+          settings.displayName ||
+          artist.name ||
+          "Artist",
         profileImage: artist.avatar || null,
         bio: artist.bio || settings.funnelWelcomeMessage || "Tattoo Artist",
         city: artist.city || null,
@@ -1091,9 +1227,9 @@ export const funnelRouter = router({
       let query = db.query.leads.findMany({
         where: input.status
           ? and(
-            eq(schema.leads.artistId, user.id),
-            eq(schema.leads.status, input.status as any)
-          )
+              eq(schema.leads.artistId, user.id),
+              eq(schema.leads.status, input.status as any)
+            )
           : eq(schema.leads.artistId, user.id),
         orderBy: [desc(schema.leads.createdAt)],
         limit: input.limit,
@@ -1358,7 +1494,11 @@ export const funnelRouter = router({
       }
 
       const fileName = `${input.folder}/${Date.now()}-${input.filename}`;
-      const url = await MediaService.saveBase64(fileData, fileName, contentType);
+      const url = await MediaService.saveBase64(
+        fileData,
+        fileName,
+        contentType
+      );
       return { url, success: true };
     }),
 
@@ -1514,7 +1654,8 @@ export const funnelRouter = router({
       // Fire-and-forget so the client gets the response immediately
       (async () => {
         try {
-          let summaryText = `New consultation request via booking link:\n\n` +
+          let summaryText =
+            `New consultation request via booking link:\n\n` +
             `**Client:** ${fullName}\n` +
             `**Description:** ${input.description}\n` +
             `**Style:** ${input.styles.join(", ")}\n` +
@@ -1529,7 +1670,8 @@ export const funnelRouter = router({
               messages: [
                 {
                   role: "system" as const,
-                  content: "You are a tattoo studio assistant. Summarise this booking request in natural language for the artist. Be concise, accurate, and professional. Include: what they want, style, size, placement, timeframe. Max 80 words. Do not include contact details.",
+                  content:
+                    "You are a tattoo studio assistant. Summarise this booking request in natural language for the artist. Be concise, accurate, and professional. Include: what they want, style, size, placement, timeframe. Max 80 words. Do not include contact details.",
                 },
                 {
                   role: "user" as const,
@@ -1543,7 +1685,10 @@ export const funnelRouter = router({
               summaryText = llmContent.trim();
             }
           } catch (e) {
-            console.error("[PublicBooking] LLM summary failed, using fallback:", e);
+            console.error(
+              "[PublicBooking] LLM summary failed, using fallback:",
+              e
+            );
           }
 
           // Post summary as system message
@@ -1585,7 +1730,10 @@ export const funnelRouter = router({
             });
           }
         } catch (bgErr) {
-          console.error("[PublicBooking] Background message posting failed:", bgErr);
+          console.error(
+            "[PublicBooking] Background message posting failed:",
+            bgErr
+          );
         }
       })();
 
@@ -1616,9 +1764,8 @@ export const funnelRouter = router({
   getPaymentRequestInfo: publicProcedure
     .input(z.object({ token: z.string() }))
     .query(async ({ input }) => {
-      const { verifyPaymentRequestToken } = await import(
-        "../services/paymentRequestToken"
-      );
+      const { verifyPaymentRequestToken } =
+        await import("../services/paymentRequestToken");
       const result = verifyPaymentRequestToken(input.token);
 
       if (!result.valid) {
@@ -1668,7 +1815,9 @@ export const funnelRouter = router({
         sessionDate: appointment.startTime,
         sessionTimeZone: appointment.timeZone,
         serviceName: appointment.serviceName || appointment.title || "Session",
-        totalPriceCents: appointment.totalExpectedAmountCents || (appointment.price ? appointment.price * 100 : 0),
+        totalPriceCents:
+          appointment.totalExpectedAmountCents ||
+          (appointment.price ? appointment.price * 100 : 0),
         paidSoFarCents: appointment.totalPaidAmountCents || 0,
       };
     }),
@@ -1680,9 +1829,8 @@ export const funnelRouter = router({
   createPaymentRequestCheckout: publicProcedure
     .input(z.object({ token: z.string() }))
     .mutation(async ({ input }) => {
-      const { verifyPaymentRequestToken } = await import(
-        "../services/paymentRequestToken"
-      );
+      const { verifyPaymentRequestToken } =
+        await import("../services/paymentRequestToken");
       const tokenResult = verifyPaymentRequestToken(input.token);
       if (!tokenResult.valid || !tokenResult.requestId) {
         return { error: "invalid_token" };
@@ -1695,7 +1843,10 @@ export const funnelRouter = router({
         where: eq(schema.paymentRequests.id, tokenResult.requestId),
       });
       if (!request || request.status !== "pending") {
-        return { error: request?.status === "paid" ? "already_paid" : "invalid_request" };
+        return {
+          error:
+            request?.status === "paid" ? "already_paid" : "invalid_request",
+        };
       }
 
       // Fetch appointment + artist settings for fee calculation
@@ -1717,16 +1868,14 @@ export const funnelRouter = router({
       });
 
       // Calculate fees
-      const { calculateTransactionFees, resolvePaymentTier } = await import(
-        "../domain/fees"
-      );
+      const { calculateTransactionFees, resolvePaymentTier } =
+        await import("../domain/fees");
       const tier = resolvePaymentTier(artistSettings?.subscriptionTier);
       const fees = calculateTransactionFees(request.amountCents, tier);
 
       // Create Stripe Checkout Session
-      const { createPaymentRequestCheckoutSession } = await import(
-        "../services/stripe"
-      );
+      const { createPaymentRequestCheckoutSession } =
+        await import("../services/stripe");
 
       const artistName =
         artistSettings?.businessName ||
@@ -1743,14 +1892,16 @@ export const funnelRouter = router({
         clientTotalCents: fees.clientTotalCents,
         clientEmail: client?.email || "",
         artistName,
-        stripeConnectAccountId: artistSettings?.stripeConnectAccountId || undefined,
+        stripeConnectAccountId:
+          artistSettings?.stripeConnectAccountId || undefined,
         tier,
         token: input.token,
       });
 
       // Update payment request with checkout session ID
       if (session.sessionId) {
-        await db.update(schema.paymentRequests)
+        await db
+          .update(schema.paymentRequests)
           .set({ stripeCheckoutSessionId: session.sessionId })
           .where(eq(schema.paymentRequests.id, request.id));
       }

@@ -43,11 +43,12 @@ export function AftercareTimeline({
 
   // Find current phase
   const currentPhase = phases.find(
-    (p) => daysSince >= p.fromDay && daysSince <= p.toDay
+    p => daysSince >= p.fromDay && daysSince <= p.toDay
   );
-  const todaysCopy = currentPhase?.instruction || phases[phases.length - 1]?.instruction || "";
+  const todaysCopy =
+    currentPhase?.instruction || phases[phases.length - 1]?.instruction || "";
   const currentPhaseLabel = isHealed
-    ? "Healed"
+    ? "Aftercare timeline complete"
     : currentPhase?.label || "Settling";
 
   // Clamp display day
@@ -119,36 +120,39 @@ export function AftercareTimeline({
             const dotBg = isDone
               ? "#4ade80"
               : isCurrent
-              ? "#F8D057"
-              : "#1B1B1B";
+                ? "#F8D057"
+                : "#1B1B1B";
             const dotBorder = isDone
               ? "#4ade80"
               : isCurrent
-              ? "#F8D057"
-              : "rgba(255,255,255,0.18)";
+                ? "#F8D057"
+                : "rgba(255,255,255,0.18)";
             const connectorColor = isDone
               ? "rgba(74,222,128,.35)"
               : "rgba(255,255,255,0.1)";
 
             // Status label
-            const status = isDone
-              ? "DONE"
-              : isCurrent
-              ? "TODAY"
-              : "AHEAD";
+            const status = isDone ? "DONE" : isCurrent ? "TODAY" : "AHEAD";
             const statusColor = isDone
               ? "#4ade80"
               : isCurrent
-              ? "#F8D057"
-              : "#7A7A7A";
+                ? "#F8D057"
+                : "#7A7A7A";
 
             // Window label color
             const windowColor = isCurrent ? "#F8D057" : "#FFFFFF";
 
             return (
-              <div key={phase.id} className="flex gap-3" style={{ minHeight: 8 }}>
+              <div
+                key={phase.id}
+                className="flex gap-3"
+                style={{ minHeight: 8 }}
+              >
                 {/* Rail: dot + connector */}
-                <div className="flex flex-col items-center shrink-0" style={{ width: 11 }}>
+                <div
+                  className="flex flex-col items-center shrink-0"
+                  style={{ width: 11 }}
+                >
                   {/* Dot */}
                   <div
                     className="shrink-0"

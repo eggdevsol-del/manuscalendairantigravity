@@ -1,198 +1,144 @@
 import React, { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { trpc } from "@/lib/trpc";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
-import { X, Check, Lock, ArrowLeft } from "lucide-react";
+import { Check, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { UserAvatar } from "@/components/ui/ssot/UserAvatar";
+import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 
-type Step = "review" | "payment" | "success";
-
+type Step = "review" | "payment" | "confirming" | "success";
 interface SessionPlanCheckoutSheetProps {
   sessionPlanId: number;
   onClose: () => void;
   conversationId: number;
 }
-
 export function SessionPlanCheckoutSheet({
   sessionPlanId,
   onClose,
   conversationId,
 }: SessionPlanCheckoutSheetProps) {
   const [step, setStep] = useState<Step>("review");
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [paying, setPaying] = useState(false);
-  const [checkoutData, setCheckoutData] = useState<any>(null);
+  const [checkout, setCheckout] = useState<{
+    clientSecret: string;
+    totalCents: number;
+  } | null>(null);
+  const [timedOut, setTimedOut] = useState(false);
   const { user } = useAuth();
-
   const utils = trpc.useUtils();
-
-  // Get plan details
-  const { data: plan } = trpc.sessionPlans.getById.useQuery({
-    sessionPlanId,
-  });
-
-  const acceptMutation = trpc.sessionPlans.accept.useMutation({
-    onSuccess: (data) => {
-      setClientSecret(data.clientSecret);
-      setCheckoutData(data);
+  const query = trpc.sessionPlans.getById.useQuery(
+    { sessionPlanId },
+    { refetchInterval: step === "confirming" && !timedOut ? 2000 : false }
+  );
+  const plan = query.data;
+  const accept = trpc.sessionPlans.accept.useMutation({
+    onSuccess: data => {
+      setCheckout(data);
       setStep("payment");
     },
   });
-
-  // Artist info
-  const artistName =
-    (plan?.artist as any)?.name || "Artist";
-
-  const handleContinueToCheckout = () => {
-    setPaying(true);
-    acceptMutation.mutate(
-      { sessionPlanId },
-      {
-        onSettled: () => setPaying(false),
+  useEffect(() => {
+    if (plan?.status === "accepted") {
+      setStep("success");
+      void utils.appointments.invalidate();
+      void utils.messages.list.invalidate({ conversationId });
+    }
+  }, [plan?.status, conversationId, utils]);
+  useEffect(() => {
+    if (step !== "confirming") return;
+    const timer = setTimeout(() => setTimedOut(true), 60000);
+    return () => clearTimeout(timer);
+  }, [step]);
+  return (
+    <SheetShell
+      isOpen
+      onClose={onClose}
+      title={
+        step === "success"
+          ? "Your sessions are confirmed"
+          : step === "confirming"
+            ? "Confirming your booking"
+            : "Review your session plan"
       }
-    );
-  };
-
-  const refreshChatAndBookingsState = () => {
-    // 1. Immediate invalidation
-    utils.sessionPlans.getById.invalidate({ sessionPlanId });
-    utils.sessionPlans.getByConversation.invalidate({ conversationId });
-    utils.messages.list.invalidate({ conversationId });
-    utils.conversations.getById.invalidate(conversationId);
-    utils.appointments.getByConversation.invalidate(conversationId);
-    utils.appointments.getClientBookings.invalidate();
-    utils.appointments.getClientCalendar.invalidate();
-    utils.appointments.getArtistCalendar.invalidate();
-    utils.appointments.getStudioCalendar.invalidate();
-
-    // 2. Refresh within 2-second window (at 600ms and 1500ms) for async backend/webhook consistency
-    setTimeout(() => {
-      utils.messages.list.invalidate({ conversationId });
-      utils.sessionPlans.getByConversation.invalidate({ conversationId });
-      utils.sessionPlans.getById.invalidate({ sessionPlanId });
-      utils.appointments.getByConversation.invalidate(conversationId);
-    }, 600);
-
-    setTimeout(() => {
-      utils.messages.list.invalidate({ conversationId });
-      utils.sessionPlans.getByConversation.invalidate({ conversationId });
-      utils.sessionPlans.getById.invalidate({ sessionPlanId });
-      utils.appointments.getByConversation.invalidate(conversationId);
-      utils.appointments.getClientBookings.invalidate();
-    }, 1500);
-  };
-
-  const handlePaymentComplete = () => {
-    setStep("success");
-    refreshChatAndBookingsState();
-  };
-
-  const handleDone = () => {
-    refreshChatAndBookingsState();
-    onClose();
-  };
-
-  const title =
-    step === "success" ? "Payment confirmed" : "Accept session plan";
-
-  const sheetContent = (
-    <>
-      {/* Scrim */}
-      <div
-        className="fixed inset-0"
-        style={{
-          background: "rgba(0,0,0,.62)",
-          animation: "sheetScrimFade 180ms ease-out",
-          zIndex: "var(--z-bottom-sheet)" as any,
-        }}
-        onClick={step !== "payment" ? onClose : undefined}
-      />
-
-      {/* Sheet panel — docked to top of bottom nav */}
-      <div
-        className="fixed left-0 right-0 flex flex-col"
-        style={{
-          bottom: "var(--bottom-nav-height)",
-          zIndex: "var(--z-bottom-sheet)" as any,
-          background: "#1B1B1B",
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          borderTop: "1px solid rgba(255,255,255,0.12)",
-          maxHeight: "85vh",
-          animation: "sheetSlideUp 280ms cubic-bezier(.2,.8,.25,1)",
-        }}
-      >
-        {/* Header */}
-        <div
-          className="flex items-center justify-between px-4 py-3 shrink-0"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
-        >
-          <h2 className="text-[17px] font-bold text-white">{title}</h2>
+      description="Your dates, deposit and next steps in one place."
+    >
+      {query.isLoading && (
+        <p role="status" className="py-8 text-center">
+          Loading your plan…
+        </p>
+      )}
+      {query.error && (
+        <div role="alert" className="space-y-3">
+          <p>We couldn't load your plan.</p>
           <button
-            onClick={onClose}
-            className="flex items-center justify-center"
-            style={{ width: 44, height: 44, color: "#7A7A7A" }}
+            onClick={() => query.refetch()}
+            className="underline min-h-11"
           >
-            <X className="w-5 h-5" />
+            Try again
           </button>
         </div>
-
-        {/* Body — scrollable */}
-        <div
-          className="flex-1 overflow-y-auto p-4"
-          style={{ minHeight: 0 }}
+      )}
+      {accept.error && (
+        <p
+          role="alert"
+          className="mb-4 rounded-xl bg-destructive/10 p-3 text-sm text-destructive"
         >
-          {/* Step 1: Review */}
-          {step === "review" && plan && (
-            <ReviewStep
-              plan={plan}
-              artistName={artistName}
-              paying={paying}
-              onContinue={handleContinueToCheckout}
-            />
-          )}
-
-          {/* Step 2: Payment */}
-          {step === "payment" && clientSecret && checkoutData && (
-            <PaymentStep
-              clientSecret={clientSecret}
-              totalCents={checkoutData.totalCents}
-              onComplete={handlePaymentComplete}
-              onBack={() => setStep("review")}
-            />
-          )}
-
-          {/* Step 3: Success */}
-          {step === "success" && plan && (
-            <SuccessStep
-              plan={plan}
-              userEmail={user?.email || ""}
-              onDone={handleDone}
-            />
+          {accept.error.message}
+        </p>
+      )}
+      {step === "review" && plan && (
+        <ReviewStep
+          plan={plan}
+          artistName={plan.artist?.name || "Your artist"}
+          paying={accept.isPending}
+          onContinue={() => accept.mutate({ sessionPlanId })}
+        />
+      )}
+      {step === "payment" && checkout && (
+        <PaymentStep
+          clientSecret={checkout.clientSecret}
+          totalCents={checkout.totalCents}
+          onComplete={() => {
+            setStep("confirming");
+            setTimedOut(false);
+            void query.refetch();
+          }}
+          onBack={() => setStep("review")}
+        />
+      )}
+      {step === "confirming" && (
+        <div className="py-8 text-center space-y-4" role="status">
+          <Loader2 className="w-8 h-8 mx-auto animate-spin" />
+          <h3 className="text-lg font-semibold">
+            Payment submitted. Confirming your dates.
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Your payment has been submitted. Please don't pay again. You can
+            return to Bookings to check the confirmation.
+          </p>
+          {timedOut && (
+            <>
+              <p className="text-sm">
+                Confirmation is taking longer than usual.
+              </p>
+              <button
+                className="underline min-h-11"
+                onClick={() => query.refetch()}
+              >
+                Check confirmation
+              </button>
+            </>
           )}
         </div>
-      </div>
-
-      <style>{`
-        @keyframes sheetScrimFade {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes sheetSlideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
-        }
-        @keyframes successCheckPop {
-          0% { transform: scale(0); opacity: 0; }
-          60% { transform: scale(1.15); }
-          100% { transform: scale(1); opacity: 1; }
-        }
-      `}</style>
-    </>
+      )}
+      {step === "success" && plan && (
+        <SuccessStep
+          plan={plan}
+          userEmail={user?.email || ""}
+          onDone={onClose}
+        />
+      )}
+    </SheetShell>
   );
-
-  return typeof document !== "undefined" ? createPortal(sheetContent, document.body) : null;
 }
 
 // ── Review Step ──────────────────────────────────────────────
@@ -213,6 +159,7 @@ function ReviewStep({
   const depositTotal = plan.depositTotalCents || 0;
   const platformFee = plan.platformFeeCents || 0;
   const totalDue = depositTotal + platformFee;
+  const remaining = Math.max(0, totalEstimate - depositTotal);
 
   // Get first item's projectName or title for the piece name
   const pieceName = plan.items?.[0]?.appointment?.projectName || "Session plan";
@@ -222,8 +169,8 @@ function ReviewStep({
       {/* Inner card */}
       <div
         style={{
-          background: "#1A1A1E",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           borderRadius: 14,
           padding: 14,
           marginBottom: 16,
@@ -237,24 +184,28 @@ function ReviewStep({
             size="sm"
           />
           <div>
-            <div className="text-[14px] font-semibold text-white">
+            <div className="text-[14px] font-semibold text-foreground">
               Deposit · {items.length} session{items.length !== 1 ? "s" : ""}
             </div>
-            <div className="text-[12.5px] text-[#7A7A7A]">
+            <div className="text-[12.5px] text-muted-foreground">
               {artistName}
             </div>
           </div>
         </div>
 
         {/* Divider */}
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", margin: "0 0 12px" }} />
+        <div
+          style={{ borderTop: "1px solid var(--border)", margin: "0 0 12px" }}
+        />
 
         {/* Line items */}
         <div className="flex flex-col gap-2">
           {/* Plan total */}
           <div className="flex justify-between text-[13px]">
-            <span style={{ color: "#7A7A7A" }}>Session plan total</span>
-            <span style={{ color: "#7A7A7A" }}>
+            <span style={{ color: "var(--muted-foreground)" }}>
+              Session plan total
+            </span>
+            <span style={{ color: "var(--muted-foreground)" }}>
               ${(totalEstimate / 100).toFixed(2)}
             </span>
           </div>
@@ -262,10 +213,18 @@ function ReviewStep({
           {/* Per-session deposits */}
           {items.map((item: any) => (
             <div key={item.id} className="flex justify-between text-[13px]">
-              <span style={{ color: "#7A7A7A" }}>
-                Session {item.sessionIndex} deposit · {Math.round(item.durationMinutes / 60)} hrs
+              <span style={{ color: "var(--muted-foreground)" }}>
+                Session {item.sessionIndex} · {item.durationMinutes} min
+                <br />
+                {new Date(
+                  item.startsAt.replace(" ", "T") +
+                    (item.startsAt.includes("T") ? "" : "Z")
+                ).toLocaleString("en-AU", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
               </span>
-              <span style={{ color: "#7A7A7A" }}>
+              <span style={{ color: "var(--muted-foreground)" }}>
                 ${(item.depositCents / 100).toFixed(2)}
               </span>
             </div>
@@ -273,52 +232,62 @@ function ReviewStep({
 
           {/* Deposit due now */}
           <div className="flex justify-between text-[13px] font-semibold">
-            <span className="text-white">Deposit due now (non-refundable)</span>
-            <span className="text-white">
+            <span className="text-foreground">
+              Deposit due now (non-refundable)
+            </span>
+            <span className="text-foreground">
               ${(depositTotal / 100).toFixed(2)}
             </span>
           </div>
 
           {/* Platform fee */}
           <div className="flex justify-between text-[13px]">
-            <span style={{ color: "#7A7A7A" }}>Platform fee</span>
-            <span style={{ color: "#7A7A7A" }}>
+            <span style={{ color: "var(--muted-foreground)" }}>
+              Platform fee
+            </span>
+            <span style={{ color: "var(--muted-foreground)" }}>
               ${(platformFee / 100).toFixed(2)}
             </span>
           </div>
         </div>
 
         {/* Divider */}
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", margin: "12px 0" }} />
+        <div
+          style={{ borderTop: "1px solid var(--border)", margin: "12px 0" }}
+        />
 
+        <p className="text-sm text-muted-foreground py-3">
+          Estimated remaining balance after this deposit: AUD $
+          {(remaining / 100).toFixed(2)}
+        </p>
         {/* Total */}
         <div className="flex justify-between items-baseline">
-          <span className="text-[14px] font-semibold text-white">
+          <span className="text-[14px] font-semibold text-foreground">
             Total due today
           </span>
-          <span className="text-[20px] font-bold text-white">
+          <span className="text-[20px] font-bold text-foreground">
             ${(totalDue / 100).toFixed(2)}
           </span>
         </div>
       </div>
 
       {/* Footnote */}
-      <p className="text-[12px] text-[#7A7A7A] mb-4 leading-relaxed">
+      <p className="text-[12px] text-muted-foreground mb-4 leading-relaxed">
         Each session's deposit is calculated separately and charged here as one
-        payment. Paying it locks both dates in {artistName}'s calendar — the
-        balance is requested after each session.
+        payment. Confirmation secures these dates in {artistName}'s calendar —
+        the balance is requested after each session.
       </p>
 
       {/* CTA */}
       <button
         onClick={onContinue}
-        disabled={paying}
+        disabled={paying || plan.status !== "pending"}
         className="w-full flex items-center justify-center text-[15px] font-semibold"
         style={{
           height: 52,
           borderRadius: 16,
           background: paying ? "rgba(255,255,255,0.12)" : "#F8D057",
-          color: paying ? "#7A7A7A" : "#1B1B1B",
+          color: paying ? "var(--muted-foreground)" : "#1B1B1B",
           border: "none",
         }}
       >
@@ -384,27 +353,34 @@ function SuccessStep({
       </div>
 
       {/* Headline */}
-      <h3 className="text-[20px] font-bold text-white mb-2">Deposit paid</h3>
+      <h3 className="text-[20px] font-bold text-foreground mb-2">
+        Deposit paid
+      </h3>
 
       {/* Body */}
-      <p className="text-[13.5px] text-[#7A7A7A] mb-6" style={{ maxWidth: 280 }}>
+      <p
+        className="text-[13.5px] text-muted-foreground mb-6"
+        style={{ maxWidth: 280 }}
+      >
         Session{items.length !== 1 ? "s" : ""} {sessionIndices}{" "}
-        {items.length !== 1 ? "are" : "is"} locked in. {plan.artist?.name || "Your artist"} has been
-        notified.
+        {items.length !== 1 ? "are" : "is"} locked in.{" "}
+        {plan.artist?.name || "Your artist"} has been notified.
       </p>
 
       {/* Receipt row */}
       <div
         className="w-full flex items-center justify-between mb-6"
         style={{
-          background: "#1A1A1E",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           borderRadius: 14,
           padding: "12px 14px",
         }}
       >
-        <span className="text-[13px] text-[#7A7A7A]">Receipt sent to</span>
-        <span className="text-[13px] font-semibold text-white">{userEmail}</span>
+        <span className="text-[13px] text-muted-foreground">Payment email</span>
+        <span className="text-[13px] font-semibold text-foreground">
+          {userEmail}
+        </span>
       </div>
 
       {/* Done button */}

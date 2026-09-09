@@ -9,7 +9,8 @@ import { loggy } from "../../lib/loggy";
 
 export function useChatController(conversationId: number) {
   // 1. Initialize State
-  const state = useChatState();
+  const data = useChatData(conversationId);
+  const state = useChatState(conversationId, data.user?.id);
   const {
     messageText,
     setMessageText,
@@ -43,8 +44,7 @@ export function useChatController(conversationId: number) {
     setConfirmDialog,
   } = state;
 
-  // 2. Initialize Data
-  const data = useChatData(conversationId);
+  // 2. Read the conversation data
   const {
     user,
     authLoading,
@@ -243,8 +243,7 @@ export function useChatController(conversationId: number) {
         return;
       }
 
-
-      // We still update the metadata on the server (for discount tracking), 
+      // We still update the metadata on the server (for discount tracking),
       // but NOT the status! Status remains "pending" until deposit paid.
       const dbMetadata = JSON.stringify({
         ...metadata,
@@ -254,10 +253,10 @@ export function useChatController(conversationId: number) {
         promotionName: appliedPromotion ? "Promotion" : undefined,
         appliedPromotion: appliedPromotion
           ? {
-            id: appliedPromotion.id,
-            discountAmount: appliedPromotion.discountAmount,
-            finalAmount: appliedPromotion.finalAmount,
-          }
+              id: appliedPromotion.id,
+              discountAmount: appliedPromotion.discountAmount,
+              finalAmount: appliedPromotion.finalAmount,
+            }
           : undefined,
       });
 
@@ -294,7 +293,7 @@ export function useChatController(conversationId: number) {
       // We manually update the selectedProposal state in-memory so the UI updates instantly:
       setSelectedProposal({
         message: message || selectedProposal?.message,
-        metadata: JSON.parse(localMetadata)
+        metadata: JSON.parse(localMetadata),
       });
     },
     [
@@ -346,7 +345,12 @@ export function useChatController(conversationId: number) {
         },
       }
     );
-  }, [confirmDialog, deleteProposalMutation.mutate, setSelectedProposal, setConfirmDialog]);
+  }, [
+    confirmDialog,
+    deleteProposalMutation.mutate,
+    setSelectedProposal,
+    setConfirmDialog,
+  ]);
 
   const handleConfirmDialogCancel = useCallback(() => {
     setConfirmDialog(null);

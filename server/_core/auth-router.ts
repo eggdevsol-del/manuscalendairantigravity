@@ -1,3 +1,11 @@
+import {
+  createPasswordRecoveryToken,
+  readPasswordRecoveryToken,
+  recoveryMatchesUser,
+} from "../services/passwordRecovery";
+import { sendEmail, requireEmailDelivery } from "../services/email";
+import { isNull } from "drizzle-orm";
+import { users } from "../../drizzle/schema";
 import { router, publicProcedure, protectedProcedure } from "./trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
@@ -38,14 +46,28 @@ export const authRouter = router({
         studioName: z.string().optional(),
         phone: z.string().max(20).optional(),
         birthday: z.string().max(20).optional(),
-        gender: z.enum(["male", "female", "other", "prefer_not_to_say"]).optional(),
+        gender: z
+          .enum(["male", "female", "other", "prefer_not_to_say"])
+          .optional(),
         city: z.string().max(100).optional(),
         country: z.string().max(100).optional(),
         referralArtistId: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
-      const { email, password, name, role = "client", studioName, phone, birthday, gender, city, country, referralArtistId } = input;
+      const {
+        email,
+        password,
+        name,
+        role = "client",
+        studioName,
+        phone,
+        birthday,
+        gender,
+        city,
+        country,
+        referralArtistId,
+      } = input;
 
       // Check if user already exists
       const existingUser = await getUserByEmail(email);
@@ -126,7 +148,10 @@ export const authRouter = router({
           });
         } catch (e) {
           // Non-fatal: conversation may already exist from import
-          console.log("[Auth] Referral conversation creation:", (e as any)?.message || e);
+          console.log(
+            "[Auth] Referral conversation creation:",
+            (e as any)?.message || e
+          );
         }
       }
 
@@ -227,16 +252,17 @@ export const authRouter = router({
       const token = generateMagicLinkToken(email);
       const magicLink = `${process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app"}/auth/magic?token=${token}`;
 
-      // TODO: Send email with magic link
-      // For now, just log it (in production, integrate with email service)
-      console.log(`[Auth] Magic link for ${email}: ${magicLink}`);
+      await sendEmail({
+        to: email,
+        subject: "Sign in to Tattoi",
+        body: `Your sign-in link expires in 15 minutes: ${magicLink}`,
+      });
 
       return {
         success: true,
         message:
           "If an account exists with this email, a magic link has been sent.",
         // In development, return the link
-        ...(process.env.NODE_ENV === "development" && { magicLink }),
       };
     }),
 
@@ -422,42 +448,42 @@ export const authRouter = router({
     .input(
       z.object({
         email: z.string().email(),
-        password: z.string().min(8, "Password must be at least 8 characters"),
+        password: z.string().min(8).max(128),
+        token: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
-      const { email, password } = input;
-
-      // Get user by email
-      const user = await getUserByEmail(email);
-      if (!user) {
+      if (!input.token)
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Account not found. Please submit a consultation first.",
+          code: "FORBIDDEN",
+          message: "Verify your email using a password reset link first.",
         });
-      }
-
-      // Hash new password
-      const hashedPassword = await hashPassword(password);
-
-      // Update password
-      await updateUserPassword(user.id, hashedPassword);
-
-      // Update last signed in
-      await updateUserLastSignedIn(user.id);
-
-      // Generate JWT token
-      const token = generateToken({ id: user.id, email: user.email || "" });
-
+      const user = await getUserByEmail(input.email);
+      if (!user || user.password || !recoveryMatchesUser(input.token, user))
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Invalid or already used account setup link.",
+        });
+      const database = await getDb();
+      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const [result] = await database
+        .update(users)
+        .set({ password: await hashPassword(input.password) })
+        .where(and(eq(users.id, user.id), isNull(users.password)));
+      if (result.affectedRows !== 1)
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "This link has already been used.",
+        });
       return {
         user: {
           id: user.id,
-          email: user.email || "",
+          email: user.email,
           name: user.name,
           role: user.role,
           hasCompletedOnboarding: user.hasCompletedOnboarding,
         },
-        token,
+        token: generateToken({ id: user.id, email: user.email || "" }),
       };
     }),
 
@@ -465,38 +491,23 @@ export const authRouter = router({
    * Request password reset
    */
   requestPasswordReset: publicProcedure
-    .input(
-      z.object({
-        email: z.string().email(),
-      })
-    )
+    .input(z.object({ email: z.string().trim().email() }))
     .mutation(async ({ input }) => {
-      const { email } = input;
-
-      // Check if user exists
-      const user = await getUserByEmail(email);
-      if (!user) {
-        // Don't reveal if user exists or not
-        return {
-          success: true,
-          message:
-            "If an account exists with this email, a password reset link has been sent.",
-        };
+      requireEmailDelivery();
+      const user = await getUserByEmail(input.email);
+      if (user) {
+        const token = createPasswordRecoveryToken(user);
+        const resetLink = `${process.env.APP_URL || "https://www.tattoi.app"}/auth/reset-password?token=${encodeURIComponent(token)}`;
+        await sendEmail({
+          to: input.email,
+          subject: "Reset your Tattoi password",
+          body: `Use this link within 15 minutes to reset your password: ${resetLink}\n\nIf you did not request this, you can ignore this email.`,
+        });
       }
-
-      // Generate reset token (similar to magic link)
-      const token = generateMagicLinkToken(email);
-      const resetLink = `${process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app"}/auth/reset-password?token=${token}`;
-
-      // TODO: Send email with reset link
-      console.log(`[Auth] Password reset link for ${email}: ${resetLink}`);
-
       return {
         success: true,
         message:
-          "If an account exists with this email, a password reset link has been sent.",
-        // In development, return the link
-        ...(process.env.NODE_ENV === "development" && { resetLink }),
+          "If an account exists, a reset link has been sent. Check your inbox.",
       };
     }),
 
@@ -505,40 +516,35 @@ export const authRouter = router({
    */
   resetPassword: publicProcedure
     .input(
-      z.object({
-        token: z.string(),
-        newPassword: z
-          .string()
-          .min(8, "Password must be at least 8 characters"),
-      })
+      z.object({ token: z.string(), newPassword: z.string().min(8).max(128) })
     )
     .mutation(async ({ input }) => {
-      const { token, newPassword } = input;
-
-      // Verify reset token
-      const payload = verifyMagicLinkToken(token);
-      if (!payload) {
+      const payload = readPasswordRecoveryToken(input.token);
+      const user = payload ? await getUserById(payload.userId) : null;
+      if (!user || !recoveryMatchesUser(input.token, user))
         throw new TRPCError({
           code: "UNAUTHORIZED",
-          message: "Invalid or expired reset link",
+          message:
+            "This link is invalid, expired or already used. Request a new one.",
         });
-      }
-
-      // Get user by email
-      const user = await getUserByEmail(payload.email);
-      if (!user) {
+      const database = await getDb();
+      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const [result] = await database
+        .update(users)
+        .set({ password: await hashPassword(input.newPassword) })
+        .where(
+          and(
+            eq(users.id, user.id),
+            user.password === null
+              ? isNull(users.password)
+              : eq(users.password, user.password)
+          )
+        );
+      if (result.affectedRows !== 1)
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User not found",
+          code: "CONFLICT",
+          message: "This link has already been used.",
         });
-      }
-
-      // Hash new password
-      const hashedPassword = await hashPassword(newPassword);
-
-      // Update password
-      await updateUserPassword(user.id, hashedPassword);
-
       return { success: true };
     }),
 
@@ -647,11 +653,14 @@ export const authRouter = router({
             .limit(1);
           if (byGoogleSub.length > 0) {
             user = byGoogleSub[0];
-            console.log("[Auth/Google] Matched by googleSub instead of email:", {
-              googleEmail: googlePayload.email,
-              userEmail: user.email,
-              userId: user.id,
-            });
+            console.log(
+              "[Auth/Google] Matched by googleSub instead of email:",
+              {
+                googleEmail: googlePayload.email,
+                userEmail: user.email,
+                userId: user.id,
+              }
+            );
           }
         }
       }
@@ -705,11 +714,17 @@ export const authRouter = router({
           const { eq } = await import("drizzle-orm");
           await dbInstance
             .update(usersTable)
-            .set({ googleSub: googlePayload.sub, loginMethod: user.loginMethod === "email" ? "email" : "google" })
+            .set({
+              googleSub: googlePayload.sub,
+              loginMethod: user.loginMethod === "email" ? "email" : "google",
+            })
             .where(eq(usersTable.id, user.id));
         }
       } catch (e) {
-        console.warn("[Auth/Google] Failed to persist googleSub (column may not exist yet):", (e as any)?.message);
+        console.warn(
+          "[Auth/Google] Failed to persist googleSub (column may not exist yet):",
+          (e as any)?.message
+        );
       }
 
       // Auto-connect with referring artist (creates conversation)
@@ -721,7 +736,10 @@ export const authRouter = router({
           });
         } catch (e) {
           // Non-fatal: conversation may already exist
-          console.log("[Auth/Google] Referral conversation creation:", (e as any)?.message || e);
+          console.log(
+            "[Auth/Google] Referral conversation creation:",
+            (e as any)?.message || e
+          );
         }
       }
 
@@ -747,11 +765,13 @@ export const authRouter = router({
   /**
    * Silently re-mint a JWT — called once per app load to create a rolling session
    */
-  refreshToken: protectedProcedure
-    .mutation(async ({ ctx }) => {
-      const token = generateToken({ id: ctx.user.id, email: ctx.user.email || "" });
-      return { token };
-    }),
+  refreshToken: protectedProcedure.mutation(async ({ ctx }) => {
+    const token = generateToken({
+      id: ctx.user.id,
+      email: ctx.user.email || "",
+    });
+    return { token };
+  }),
 
   /**
    * Claim a lead from a public booking form — creates user account
@@ -783,7 +803,11 @@ export const authRouter = router({
 
       const { getDb } = await import("../db");
       const drizzleDb = await getDb();
-      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+      if (!drizzleDb)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "DB unavailable",
+        });
 
       const drizzleSchema = await import("../../drizzle/schema");
 
@@ -799,15 +823,27 @@ export const authRouter = router({
       const existingUser = await getUserByEmail(payload.email);
       if (existingUser) {
         // Auto-link: update lead + conversation + consultation with existing user ID
-        await drizzleDb.update(drizzleSchema.leads).set({ clientId: existingUser.id }).where(eq(drizzleSchema.leads.id, lead.id));
+        await drizzleDb
+          .update(drizzleSchema.leads)
+          .set({ clientId: existingUser.id })
+          .where(eq(drizzleSchema.leads.id, lead.id));
         if (lead.conversationId) {
-          await drizzleDb.update(drizzleSchema.conversations).set({ clientId: existingUser.id }).where(eq(drizzleSchema.conversations.id, lead.conversationId));
+          await drizzleDb
+            .update(drizzleSchema.conversations)
+            .set({ clientId: existingUser.id })
+            .where(eq(drizzleSchema.conversations.id, lead.conversationId));
         }
         if (lead.consultationId) {
-          await drizzleDb.update(drizzleSchema.consultations).set({ clientId: existingUser.id }).where(eq(drizzleSchema.consultations.id, lead.consultationId));
+          await drizzleDb
+            .update(drizzleSchema.consultations)
+            .set({ clientId: existingUser.id })
+            .where(eq(drizzleSchema.consultations.id, lead.consultationId));
         }
 
-        const authToken = generateToken({ id: existingUser.id, email: existingUser.email || "" });
+        const authToken = generateToken({
+          id: existingUser.id,
+          email: existingUser.email || "",
+        });
         return {
           user: {
             id: existingUser.id,
@@ -824,9 +860,10 @@ export const authRouter = router({
       // 4. Create new user — populate from lead data
       let userEmail = payload.email;
       // Prefer firstName + lastName for cleaner display name
-      let userName = (lead.clientFirstName && lead.clientLastName)
-        ? `${lead.clientFirstName} ${lead.clientLastName}`
-        : lead.clientName || "Client";
+      let userName =
+        lead.clientFirstName && lead.clientLastName
+          ? `${lead.clientFirstName} ${lead.clientLastName}`
+          : lead.clientName || "Client";
       let userAvatar: string | null = null;
       let loginMethod = "email";
       let hashedPw: string | undefined;
@@ -851,11 +888,18 @@ export const authRouter = router({
           });
           if (tokenRes.ok) {
             const tokens = (await tokenRes.json()) as { access_token: string };
-            const userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-              headers: { Authorization: `Bearer ${tokens.access_token}` },
-            });
+            const userInfoRes = await fetch(
+              "https://www.googleapis.com/oauth2/v3/userinfo",
+              {
+                headers: { Authorization: `Bearer ${tokens.access_token}` },
+              }
+            );
             if (userInfoRes.ok) {
-              const gProfile = (await userInfoRes.json()) as { email?: string; name?: string; picture?: string };
+              const gProfile = (await userInfoRes.json()) as {
+                email?: string;
+                name?: string;
+                picture?: string;
+              };
               if (gProfile.email) userEmail = gProfile.email;
               if (gProfile.name) userName = gProfile.name;
               if (gProfile.picture) userAvatar = gProfile.picture;
@@ -887,16 +931,28 @@ export const authRouter = router({
       });
 
       if (!user) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create user" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create user",
+        });
       }
 
       // 5. Link lead, conversation, consultation to new user
-      await drizzleDb.update(drizzleSchema.leads).set({ clientId: userId }).where(eq(drizzleSchema.leads.id, lead.id));
+      await drizzleDb
+        .update(drizzleSchema.leads)
+        .set({ clientId: userId })
+        .where(eq(drizzleSchema.leads.id, lead.id));
       if (lead.conversationId) {
-        await drizzleDb.update(drizzleSchema.conversations).set({ clientId: userId }).where(eq(drizzleSchema.conversations.id, lead.conversationId));
+        await drizzleDb
+          .update(drizzleSchema.conversations)
+          .set({ clientId: userId })
+          .where(eq(drizzleSchema.conversations.id, lead.conversationId));
       }
       if (lead.consultationId) {
-        await drizzleDb.update(drizzleSchema.consultations).set({ clientId: userId }).where(eq(drizzleSchema.consultations.id, lead.consultationId));
+        await drizzleDb
+          .update(drizzleSchema.consultations)
+          .set({ clientId: userId })
+          .where(eq(drizzleSchema.consultations.id, lead.consultationId));
       }
 
       const authToken = generateToken({ id: user.id, email: user.email || "" });
@@ -914,4 +970,3 @@ export const authRouter = router({
       };
     }),
 });
-

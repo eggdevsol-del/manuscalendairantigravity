@@ -10,21 +10,24 @@ import { geocodeAddress } from "../services/geocode";
 export const artistSettingsRouter = router({
   get: artistProcedure.query(async ({ ctx }) => {
     const settings = await db.getArtistSettings(ctx.user.id);
-    const expressEnabled =
-      process.env.STRIPE_CUSTOM_ENABLED !== "false";
+    const expressEnabled = process.env.STRIPE_CUSTOM_ENABLED !== "false";
 
     // Return default settings if none exist
-    return (
-      settings
-        ? {
+    return settings
+      ? {
           ...settings,
           expressOnboardingEnabled: expressEnabled,
         }
-        : {
+      : {
           id: 0,
           userId: ctx.user.id,
           businessName: null,
           displayName: null,
+          showEmail: 1,
+          showPhone: 1,
+          showCity: 1,
+          showWebsite: 0,
+          websiteUrl: null,
           businessAddress: null,
           businessEmail: null,
           bsb: null,
@@ -67,8 +70,7 @@ export const artistSettingsRouter = router({
           quietHoursEnd: 7,
           createdAt: new Date(),
           updatedAt: new Date(),
-        }
-    );
+        };
   }),
   // Public-safe subset for clients viewing an artist's chat
   getPublicByArtistId: protectedProcedure
@@ -96,9 +98,16 @@ export const artistSettingsRouter = router({
     .mutation(async ({ input }) => {
       try {
         const events = await parseExternalCalendar(input.url);
-        return { success: true, eventCount: events.length, message: "Calendar connected successfully!" };
+        return {
+          success: true,
+          eventCount: events.length,
+          message: "Calendar connected successfully!",
+        };
       } catch (error: any) {
-        return { success: false, message: error.message || "Failed to reach Calendar URL" };
+        return {
+          success: false,
+          message: error.message || "Failed to reach Calendar URL",
+        };
       }
     }),
   upsert: artistProcedure
@@ -273,13 +282,21 @@ export const artistSettingsRouter = router({
       // Custom incomplete → verify it's actually a Custom account on Stripe's side
       if (accountType === "custom") {
         // Self-heal: verify the account has proper controller settings
-        const stripeAccount = await (await import("../services/stripe")).stripe.accounts.retrieve(existing.stripeConnectAccountId);
-        const isRealCustom = stripeAccount.type === "custom" || (stripeAccount as any).controller?.requirement_collection === "application";
+        const stripeAccount = await (
+          await import("../services/stripe")
+        ).stripe.accounts.retrieve(existing.stripeConnectAccountId);
+        const isRealCustom =
+          stripeAccount.type === "custom" ||
+          (stripeAccount as any).controller?.requirement_collection ===
+            "application";
 
         if (!isRealCustom) {
           // Account was created without proper controller (from a failed deploy) — recreate
-          console.log(`[Stripe Connect] Account ${existing.stripeConnectAccountId} is marked as custom but Stripe says type=${stripeAccount.type}. Recreating...`);
-          const { disconnectAccount } = await import("../services/stripeConnect");
+          console.log(
+            `[Stripe Connect] Account ${existing.stripeConnectAccountId} is marked as custom but Stripe says type=${stripeAccount.type}. Recreating...`
+          );
+          const { disconnectAccount } =
+            await import("../services/stripeConnect");
           await disconnectAccount(ctx.user.id);
           const accountId = await createCustomConnectAccount(
             ctx.user.id,
@@ -310,7 +327,9 @@ export const artistSettingsRouter = router({
       if (accountType === "express" && isCustomEnabled()) {
         const { disconnectAccount } = await import("../services/stripeConnect");
         await disconnectAccount(ctx.user.id);
-        console.log(`[Stripe Connect] Auto-migrating Express → Custom for artist ${ctx.user.id}`);
+        console.log(
+          `[Stripe Connect] Auto-migrating Express → Custom for artist ${ctx.user.id}`
+        );
         const accountId = await createCustomConnectAccount(
           ctx.user.id,
           ctx.user.email || "",
@@ -410,9 +429,7 @@ export const artistSettingsRouter = router({
       );
     }
 
-    const { createAccountSession } = await import(
-      "../services/stripeConnect"
-    );
+    const { createAccountSession } = await import("../services/stripeConnect");
     const clientSecret = await createAccountSession(
       settings.stripeConnectAccountId
     );
@@ -508,9 +525,8 @@ export const artistSettingsRouter = router({
         throw new Error("No Stripe Connect account found. Create one first.");
       }
 
-      const { submitOnboardingData, syncAccountStatusToDb } = await import(
-        "../services/stripeConnect"
-      );
+      const { submitOnboardingData, syncAccountStatusToDb } =
+        await import("../services/stripeConnect");
 
       const result = await submitOnboardingData(
         settings.stripeConnectAccountId,
@@ -538,9 +554,8 @@ export const artistSettingsRouter = router({
         throw new Error("No Stripe Connect account found.");
       }
 
-      const { uploadIdentityDocument, syncAccountStatusToDb } = await import(
-        "../services/stripeConnect"
-      );
+      const { uploadIdentityDocument, syncAccountStatusToDb } =
+        await import("../services/stripeConnect");
 
       const fileBuffer = Buffer.from(input.fileBase64, "base64");
       const isTestMode = process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_");
@@ -584,9 +599,8 @@ export const artistSettingsRouter = router({
         throw new Error("No Stripe Connect account found.");
       }
 
-      const { updatePayoutSchedule } = await import(
-        "../services/stripeConnect"
-      );
+      const { updatePayoutSchedule } =
+        await import("../services/stripeConnect");
       await updatePayoutSchedule(
         settings.stripeConnectAccountId,
         input.interval,
@@ -597,4 +611,3 @@ export const artistSettingsRouter = router({
       return { success: true };
     }),
 });
-

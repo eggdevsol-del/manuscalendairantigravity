@@ -1,4 +1,18 @@
-import { and, desc, eq, gte, lte, gt, lt, ne, sql, or, inArray, notInArray } from "drizzle-orm";
+import { withDatabaseTransaction } from "./core";
+import {
+  and,
+  desc,
+  eq,
+  gte,
+  lte,
+  gt,
+  lt,
+  ne,
+  sql,
+  or,
+  inArray,
+  notInArray,
+} from "drizzle-orm";
 import {
   appointments,
   InsertAppointment,
@@ -10,6 +24,7 @@ import {
   consentForms,
   messages,
   studioMembers,
+  aftercareTemplates,
   conversations,
 } from "../../drizzle/schema";
 import { getDb } from "./core";
@@ -48,12 +63,19 @@ function toMySQL(date: any): string | any {
 
 function normalizeAppointment(appt: any) {
   if (!appt) return appt;
-  
+
   // Backfill remainingBalanceCents for legacy appointments
   let computedBalance = appt.remainingBalanceCents;
-  if (!computedBalance && computedBalance !== 0 && appt.paymentStatus !== "fully_paid") {
-    const expected = appt.totalExpectedAmountCents || (appt.price ? appt.price * 100 : 0);
-    const paid = appt.totalPaidAmountCents || (appt.depositPaid ? (appt.depositAmount || 0) * 100 : 0);
+  if (
+    !computedBalance &&
+    computedBalance !== 0 &&
+    appt.paymentStatus !== "fully_paid"
+  ) {
+    const expected =
+      appt.totalExpectedAmountCents || (appt.price ? appt.price * 100 : 0);
+    const paid =
+      appt.totalPaidAmountCents ||
+      (appt.depositPaid ? (appt.depositAmount || 0) * 100 : 0);
     computedBalance = Math.max(0, expected - paid);
   }
 
@@ -74,51 +96,48 @@ function normalizeAppointment(appt: any) {
 // ============================================================================
 
 export async function createAppointment(appointment: InsertAppointment) {
-  const db = await getDb();
-  if (!db) return undefined;
+  return withDatabaseTransaction(async db => {
+    await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.id, appointment.artistId))
+      .for("update");
+    const start = new Date(toISO(appointment.startTime));
+    const end = new Date(toISO(appointment.endTime));
+    if (!Number.isFinite(+start) || !(end > start))
+      throw new Error("Invalid appointment interval");
+    if (
+      appointment.status !== "cancelled" &&
+      (await checkAppointmentOverlap(appointment.artistId, start, end))
+    )
+      throw new Error("This time is already booked.");
+    appointment = {
+      ...appointment,
+      startTime: toMySQL(start),
+      endTime: toMySQL(end),
+    };
 
-  const result = await db.insert(appointments).values(appointment);
-  const appointmentId = Number(result[0].insertId);
+    const result = await db.insert(appointments).values(appointment);
+    const appointmentId = Number(result[0].insertId);
 
-  const inserted = await db
-    .select()
-    .from(appointments)
-    .where(eq(appointments.id, appointmentId))
-    .limit(1);
+    const inserted = await db
+      .select()
+      .from(appointments)
+      .where(eq(appointments.id, appointmentId))
+      .limit(1);
 
-  const appt = normalizeAppointment(inserted[0]);
+    const appt = normalizeAppointment(inserted[0]);
 
-  // Log the creation
-  await logAppointmentAction({
-    appointmentId,
-    action: "created",
-    performedBy: appt.artistId, // For now assuming artist creates, but could be dynamic
-    newValue: JSON.stringify(appt),
+    // Log the creation
+    await logAppointmentAction({
+      appointmentId,
+      action: "created",
+      performedBy: appt.artistId, // For now assuming artist creates, but could be dynamic
+      newValue: JSON.stringify(appt),
+    });
+
+    return appt;
   });
-
-  // Fire-and-forget: generate a descriptive project name from conversation context
-  if (!appt.projectName && appt.conversationId) {
-    (async () => {
-      try {
-        const { generateProjectName } = await import("./llmEnrichment");
-        const name = await generateProjectName(
-          db,
-          appt.conversationId,
-          appt.title || appt.serviceName
-        );
-        if (name && name !== "Custom piece") {
-          await db
-            .update(appointments)
-            .set({ projectName: name })
-            .where(eq(appointments.id, appointmentId));
-        }
-      } catch (e) {
-        console.error("Failed to generate project name:", e);
-      }
-    })();
-  }
-
-  return appt;
 }
 
 export async function logAppointmentAction(log: InsertAppointmentLog) {
@@ -145,97 +164,128 @@ export async function updateAppointment(
   updates: Partial<InsertAppointment>,
   performedBy: string
 ) {
-  const db = await getDb();
-  if (!db) return undefined;
-
-  const oldAppt = await getAppointment(id);
-
-  // Sanitize any incoming date fields for MySQL
-  const sanitizedUpdates: any = { ...updates };
-  const dateFields = [
-    "startTime",
-    "endTime",
-    "actualStartTime",
-    "actualEndTime",
-  ] as const;
-  dateFields.forEach(field => {
-    if (sanitizedUpdates[field]) {
-      sanitizedUpdates[field] = toMySQL(sanitizedUpdates[field]);
+  return withDatabaseTransaction(async db => {
+    const oldAppt = await getAppointment(id);
+    if (!oldAppt) throw new Error("Appointment not found");
+    if (
+      updates.startTime ||
+      updates.endTime ||
+      updates.status === "confirmed"
+    ) {
+      await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.id, oldAppt.artistId))
+        .for("update");
+      const start = new Date(toISO(updates.startTime || oldAppt.startTime));
+      const end = new Date(toISO(updates.endTime || oldAppt.endTime));
+      if (!Number.isFinite(+start) || !(end > start))
+        throw new Error("Invalid appointment interval");
+      if (await checkAppointmentOverlap(oldAppt.artistId, start, end, id))
+        throw new Error("This time is already booked.");
     }
-  });
 
-  await db
-    .update(appointments)
-    .set({ ...sanitizedUpdates, updatedAt: toMySQL(new Date()) })
-    .where(eq(appointments.id, id));
-
-  const newAppt = await getAppointment(id);
-
-  let action: any = "completed"; // default
-  let shouldLogAction = false;
-
-  if (updates.status && updates.status !== oldAppt.status) {
-    const validActions = [
-      "created",
-      "rescheduled",
-      "cancelled",
-      "completed",
-      "proposal_revoked",
-      "no-show",
-    ];
-    if (validActions.includes(updates.status)) {
-      action = updates.status;
-      shouldLogAction = true;
+    if (updates.status === "completed" && !oldAppt.completedAt) {
+      const template = await db.query.aftercareTemplates.findFirst({
+        where: and(
+          eq(aftercareTemplates.artistId, oldAppt.artistId),
+          eq(aftercareTemplates.isDefault, 1)
+        ),
+      });
+      updates = {
+        ...updates,
+        completedAt: toMySQL(new Date()),
+        aftercareTemplateId: template?.id || oldAppt.aftercareTemplateId,
+      };
     }
-  }
 
-  // Only log rescheduled if we aren't already logging a status change
-  if (!shouldLogAction && (updates.startTime || updates.endTime)) {
-    action = "rescheduled";
-    shouldLogAction = true;
-  }
-
-  if (shouldLogAction) {
-    await logAppointmentAction({
-      appointmentId: id,
-      action,
-      performedBy,
-      oldValue: JSON.stringify(oldAppt),
-      newValue: JSON.stringify(newAppt),
+    // Sanitize any incoming date fields for MySQL
+    const sanitizedUpdates: any = { ...updates };
+    const dateFields = [
+      "startTime",
+      "endTime",
+      "actualStartTime",
+      "actualEndTime",
+    ] as const;
+    dateFields.forEach(field => {
+      if (sanitizedUpdates[field]) {
+        sanitizedUpdates[field] = toMySQL(sanitizedUpdates[field]);
+      }
     });
-  }
 
-  // Handle special outcome-based logic
-  if (updates.status === "completed") {
-    // QLD REGULATION: Auto-generate procedure log on completion
-    await createProcedureLog(id);
-  } else if (updates.status === "no-show") {
-    // Ensure revenue is only deposit (revenue metrics usually sum amountPaid)
-    // We calculate this in the analytics, but let's ensure the record is clean
     await db
       .update(appointments)
-      .set({
-        amountPaid: oldAppt.depositPaid ? oldAppt.depositAmount || 0 : 0,
-        clientPaid: 0,
-      })
+      .set({ ...sanitizedUpdates, updatedAt: toMySQL(new Date()) })
       .where(eq(appointments.id, id));
-  }
 
-  // Trigger payment link message if paymentMethod was set but not yet paid
-  if (
-    updates.paymentMethod &&
-    updates.clientPaid === 0 &&
-    updates.status === "completed"
-  ) {
-    await db.insert(messages).values({
-      conversationId: oldAppt.conversationId,
-      senderId: oldAppt.artistId,
-      content: `Session complete! Please pay the balance for "${oldAppt.title}" via ${updates.paymentMethod}.`,
-      messageType: "text",
-    });
-  }
+    const newAppt = await getAppointment(id);
 
-  return newAppt;
+    let action: any = "completed"; // default
+    let shouldLogAction = false;
+
+    if (updates.status && updates.status !== oldAppt.status) {
+      const validActions = [
+        "created",
+        "rescheduled",
+        "cancelled",
+        "completed",
+        "proposal_revoked",
+        "no-show",
+      ];
+      if (validActions.includes(updates.status)) {
+        action = updates.status;
+        shouldLogAction = true;
+      }
+    }
+
+    // Only log rescheduled if we aren't already logging a status change
+    if (!shouldLogAction && (updates.startTime || updates.endTime)) {
+      action = "rescheduled";
+      shouldLogAction = true;
+    }
+
+    if (shouldLogAction) {
+      await logAppointmentAction({
+        appointmentId: id,
+        action,
+        performedBy,
+        oldValue: JSON.stringify(oldAppt),
+        newValue: JSON.stringify(newAppt),
+      });
+    }
+
+    // Handle special outcome-based logic
+    if (updates.status === "completed") {
+      // QLD REGULATION: Auto-generate procedure log on completion
+      await createProcedureLog(id);
+    } else if (updates.status === "no-show") {
+      // Ensure revenue is only deposit (revenue metrics usually sum amountPaid)
+      // We calculate this in the analytics, but let's ensure the record is clean
+      await db
+        .update(appointments)
+        .set({
+          amountPaid: oldAppt.depositPaid ? oldAppt.depositAmount || 0 : 0,
+          clientPaid: 0,
+        })
+        .where(eq(appointments.id, id));
+    }
+
+    // Trigger payment link message if paymentMethod was set but not yet paid
+    if (
+      updates.paymentMethod &&
+      updates.clientPaid === 0 &&
+      updates.status === "completed"
+    ) {
+      await db.insert(messages).values({
+        conversationId: oldAppt.conversationId,
+        senderId: oldAppt.artistId,
+        content: `Session complete! Please pay the balance for "${oldAppt.title}" via ${updates.paymentMethod}.`,
+        messageType: "text",
+      });
+    }
+
+    return newAppt;
+  });
 }
 
 export async function deleteAppointment(id: number, performedBy: string) {
@@ -256,7 +306,12 @@ export async function deleteAppointment(id: number, performedBy: string) {
   return true;
 }
 
-export async function getArtistCalendar(artistId: string, startDate?: Date, endDate?: Date, excludeStatuses: string[] = ["cancelled"]) {
+export async function getArtistCalendar(
+  artistId: string,
+  startDate?: Date,
+  endDate?: Date,
+  excludeStatuses: string[] = ["cancelled"]
+) {
   const db = await getDb();
   if (!db) return [];
 
@@ -266,8 +321,20 @@ export async function getArtistCalendar(artistId: string, startDate?: Date, endD
     conditions.push(notInArray(appointments.status, excludeStatuses as any[]));
   }
 
-  if (startDate) conditions.push(gte(appointments.startTime, startDate.toISOString().slice(0, 19).replace("T", " ")));
-  if (endDate) conditions.push(lte(appointments.startTime, endDate.toISOString().slice(0, 19).replace("T", " ")));
+  if (startDate)
+    conditions.push(
+      gte(
+        appointments.startTime,
+        startDate.toISOString().slice(0, 19).replace("T", " ")
+      )
+    );
+  if (endDate)
+    conditions.push(
+      lte(
+        appointments.startTime,
+        endDate.toISOString().slice(0, 19).replace("T", " ")
+      )
+    );
 
   const results = await db
     .select({
@@ -319,53 +386,69 @@ export async function getArtistCalendar(artistId: string, startDate?: Date, endD
   // Attempt to fetch and overlay external calendar events
   try {
     const settings = await db.query.artistSettings.findFirst({
-      where: eq(artistSettings.userId, artistId)
+      where: eq(artistSettings.userId, artistId),
     });
 
     if (settings?.appleCalendarUrl) {
       const events = await parseExternalCalendar(settings.appleCalendarUrl);
-      const externalAppts = events.filter(e => {
-        if (startDate && e.end < startDate) return false;
-        if (endDate && e.start > endDate) return false;
-        return true;
-      }).map(e => ({
-        id: -Math.floor(Math.random() * 1000000), // Fake negative ID
-        conversationId: 0,
-        artistId,
-        clientId: "external-sync",
-        title: e.summary || "Busy",
-        description: "External Calendar Block",
-        startTime: e.start.toISOString().slice(0, 19).replace("T", " "), // MySQL format emulation
-        endTime: e.end.toISOString().slice(0, 19).replace("T", " "),
-        status: "confirmed",
-        serviceName: "External Sync",
-        price: 0,
-        depositAmount: 0,
-        depositPaid: true,
-        confirmationSent: false,
-        reminderSent: false,
-        followUpSent: false,
-        clientName: "External Event",
-        clientEmail: null,
-        sessionNumber: 1,
-        totalSessions: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }));
+      const externalAppts = events
+        .filter(e => {
+          if (startDate && e.end < startDate) return false;
+          if (endDate && e.start > endDate) return false;
+          return true;
+        })
+        .map(e => ({
+          id: -Math.floor(Math.random() * 1000000), // Fake negative ID
+          conversationId: 0,
+          artistId,
+          clientId: "external-sync",
+          title: e.summary || "Busy",
+          description: "External Calendar Block",
+          startTime: e.start.toISOString().slice(0, 19).replace("T", " "), // MySQL format emulation
+          endTime: e.end.toISOString().slice(0, 19).replace("T", " "),
+          status: "confirmed",
+          serviceName: "External Sync",
+          price: 0,
+          depositAmount: 0,
+          depositPaid: true,
+          confirmationSent: false,
+          reminderSent: false,
+          followUpSent: false,
+          clientName: "External Event",
+          clientEmail: null,
+          sessionNumber: 1,
+          totalSessions: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }));
 
-      mergedResults = [...mergedResults, ...externalAppts.map(normalizeAppointment)];
+      mergedResults = [
+        ...mergedResults,
+        ...externalAppts.map(normalizeAppointment),
+      ];
 
       // Ensure chronological ordering after merge
-      mergedResults.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      mergedResults.sort(
+        (a, b) =>
+          new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+      );
     }
   } catch (err) {
-    console.warn(`[getArtistCalendar] Failed to fetch external calendar for ${artistId}:`, err);
+    console.warn(
+      `[getArtistCalendar] Failed to fetch external calendar for ${artistId}:`,
+      err
+    );
   }
 
   return mergedResults;
 }
 
-export async function getClientCalendar(clientId: string, startDate?: Date, endDate?: Date, excludeStatuses: string[] = ["cancelled"]) {
+export async function getClientCalendar(
+  clientId: string,
+  startDate?: Date,
+  endDate?: Date,
+  excludeStatuses: string[] = ["cancelled"]
+) {
   const db = await getDb();
   if (!db) return [];
 
@@ -375,8 +458,20 @@ export async function getClientCalendar(clientId: string, startDate?: Date, endD
     conditions.push(notInArray(appointments.status, excludeStatuses as any[]));
   }
 
-  if (startDate) conditions.push(gte(appointments.startTime, startDate.toISOString().slice(0, 19).replace("T", " ")));
-  if (endDate) conditions.push(lte(appointments.startTime, endDate.toISOString().slice(0, 19).replace("T", " ")));
+  if (startDate)
+    conditions.push(
+      gte(
+        appointments.startTime,
+        startDate.toISOString().slice(0, 19).replace("T", " ")
+      )
+    );
+  if (endDate)
+    conditions.push(
+      lte(
+        appointments.startTime,
+        endDate.toISOString().slice(0, 19).replace("T", " ")
+      )
+    );
 
   const results = await db
     .select({
@@ -421,7 +516,12 @@ export async function getClientCalendar(clientId: string, startDate?: Date, endD
   return results.map(normalizeAppointment);
 }
 
-export async function getStudioCalendar(studioId: string, startDate?: Date, endDate?: Date, excludeStatuses: string[] = ["cancelled"]) {
+export async function getStudioCalendar(
+  studioId: string,
+  startDate?: Date,
+  endDate?: Date,
+  excludeStatuses: string[] = ["cancelled"]
+) {
   const db = await getDb();
   if (!db) return [];
 
@@ -429,16 +529,18 @@ export async function getStudioCalendar(studioId: string, startDate?: Date, endD
     where: and(
       eq(studioMembers.studioId, studioId),
       eq(studioMembers.status, "active")
-    )
+    ),
   });
   const validArtistIds = studioArtists.map(a => a.userId);
 
   let conditions: any[] = [];
   if (validArtistIds.length > 0) {
-    conditions.push(or(
-      eq(appointments.studioId, studioId),
-      inArray(appointments.artistId, validArtistIds)
-    ));
+    conditions.push(
+      or(
+        eq(appointments.studioId, studioId),
+        inArray(appointments.artistId, validArtistIds)
+      )
+    );
   } else {
     conditions.push(eq(appointments.studioId, studioId));
   }
@@ -447,8 +549,20 @@ export async function getStudioCalendar(studioId: string, startDate?: Date, endD
     conditions.push(notInArray(appointments.status, excludeStatuses as any[]));
   }
 
-  if (startDate) conditions.push(gte(appointments.startTime, startDate.toISOString().slice(0, 19).replace("T", " ")));
-  if (endDate) conditions.push(lte(appointments.startTime, endDate.toISOString().slice(0, 19).replace("T", " ")));
+  if (startDate)
+    conditions.push(
+      gte(
+        appointments.startTime,
+        startDate.toISOString().slice(0, 19).replace("T", " ")
+      )
+    );
+  if (endDate)
+    conditions.push(
+      lte(
+        appointments.startTime,
+        endDate.toISOString().slice(0, 19).replace("T", " ")
+      )
+    );
 
   const results = await db
     .select({
@@ -538,7 +652,7 @@ export async function confirmAppointments(
     confirmationSent: 0, // Will be set to 1 after notification is sent
     updatedAt: new Date(),
     totalPaidAmountCents: sql`COALESCE(totalPaidAmountCents, 0) + (COALESCE(depositAmount, 0) * 100)`,
-    remainingBalanceCents: sql`GREATEST(0, COALESCE(totalExpectedAmountCents, 0) - (COALESCE(totalPaidAmountCents, 0) + (COALESCE(depositAmount, 0) * 100)))`
+    remainingBalanceCents: sql`GREATEST(0, COALESCE(totalExpectedAmountCents, 0) - (COALESCE(totalPaidAmountCents, 0) + (COALESCE(depositAmount, 0) * 100)))`,
   };
 
   if (paymentProof) {
@@ -608,12 +722,7 @@ export async function deleteAppointmentsForClient(
     // (We ensure we never accidentally drop an artist who happened to book an appointment)
     await db
       .delete(users)
-      .where(
-        and(
-          eq(users.id, clientId),
-          eq(users.role, "client")
-        )
-      );
+      .where(and(eq(users.id, clientId), eq(users.role, "client")));
   }
 
   return true;
@@ -641,8 +750,8 @@ export async function checkAppointmentOverlap(
   // We use 'lt' and 'gt' which need to be imported
   const conditions = [
     eq(appointments.artistId, artistId),
-    lt(appointments.startTime, endTime as unknown as string),
-    gt(appointments.endTime, startTime as unknown as string),
+    lt(appointments.startTime, toMySQL(endTime)),
+    gt(appointments.endTime, toMySQL(startTime)),
     ne(appointments.status, "cancelled"),
   ];
 
@@ -664,45 +773,59 @@ export async function checkAppointmentOverlap(
  * Snapshots current data into procedure_logs table
  */
 export async function createProcedureLog(appointmentId: number) {
-  const db = await getDb();
-  if (!db) return;
+  return withDatabaseTransaction(async db => {
+    await db
+      .select({ id: appointments.id })
+      .from(appointments)
+      .where(eq(appointments.id, appointmentId))
+      .for("update");
 
-  const appt = await db.query.appointments.findFirst({
-    where: eq(appointments.id, appointmentId),
-    with: {
-      client: true,
-      artist: true,
-    },
-  });
+    const appt = await db.query.appointments.findFirst({
+      where: eq(appointments.id, appointmentId),
+      with: {
+        client: true,
+        artist: true,
+      },
+    });
 
-  if (!appt) return;
+    if (!appt) return;
 
-  // Get artist settings for license
-  const settings = await db.query.artistSettings.findFirst({
-    where: eq(artistSettings.userId, appt.artistId),
-  });
+    // Get artist settings for license
+    const settings = await db.query.artistSettings.findFirst({
+      where: eq(artistSettings.userId, appt.artistId),
+    });
 
-  await db.insert(procedureLogs).values({
-    appointmentId,
-    artistId: appt.artistId,
-    clientId: appt.clientId,
-    date: appt.actualStartTime || appt.startTime,
-    clientName: appt.client?.name || "Unknown",
-    clientDob: appt.client?.birthday,
-    artistLicenceNumber: settings?.licenceNumber || "000000000",
-    amountPaid: appt.price || 0,
-    paymentMethod: "electronic",
+    const existing = await db.query.procedureLogs.findFirst({
+      where: eq(procedureLogs.appointmentId, appointmentId),
+    });
+    if (existing) return;
+    await db.insert(procedureLogs).values({
+      appointmentId,
+      artistId: appt.artistId,
+      clientId: appt.clientId,
+      date: appt.actualStartTime || appt.startTime,
+      clientName: appt.client?.name || "Unknown",
+      clientDob: appt.client?.birthday,
+      artistLicenceNumber: settings?.licenceNumber || "Not recorded",
+      amountPaid: appt.totalPaidAmountCents ?? (appt.amountPaid || 0) * 100,
+      paymentMethod: appt.paymentMethod || "Not recorded",
+    });
   });
 }
 
 /**
  * Auto-generate required forms for a newly confirmed appointment
  */
-export async function generateRequiredForms(appointmentId: number) {
-  const db = await getDb();
+export async function generateRequiredForms(
+  appointmentId: number,
+  transaction?: any
+) {
+  const db = transaction || (await getDb());
   if (!db) return;
 
-  const appt = await getAppointment(appointmentId);
+  const appt = await db.query.appointments.findFirst({
+    where: eq(appointments.id, appointmentId),
+  });
   if (!appt) return;
 
   const settings = await db.query.artistSettings.findFirst({
@@ -722,7 +845,7 @@ export async function generateRequiredForms(appointmentId: number) {
     title: "Tattoo Procedure Consent",
     content:
       settings.consentTemplate ||
-      "**TATTOO PROCEDURE CONSENT FORM**\nBy signing this form, I acknowledge and agree to the following:\n\n1. I am over the age of 18 and consent to receiving a tattoo.\n2. I have been informed of the nature of the tattoo procedure, the anticipated results, and the potential risks, including but not limited to infection, scarring, allergic reactions, and variations in color or design.\n3. I understand that a tattoo is an irreversible modification to my body.\n4. I have received, read, and understand the aftercare instructions provided to me.\n5. I release the artist and the studio from any liability arising from the procedure or my failure to follow aftercare instructions.\n6. I grant the artist the right to photograph my tattoo and use the images for promotional purposes.",
+      "**TATTOO PROCEDURE CONSENT FORM**\nBy signing this form, I acknowledge and agree to the following:\n\n1. I am over the age of 18 and consent to receiving a tattoo.\n2. I have been informed of the nature of the tattoo procedure, the anticipated results, and the potential risks, including but not limited to infection, scarring, allergic reactions, and variations in color or design.\n3. I understand that a tattoo is an irreversible modification to my body.\n4. I have received, read, and understand the aftercare instructions provided to me.\n5. I release the artist and the studio from any liability arising from the procedure or my failure to follow aftercare instructions.",
     status: "pending" as const,
   });
 
@@ -775,7 +898,8 @@ export async function resolveMysteryAppointments(
     start.setMinutes(start.getMinutes() + mappedDuration);
     const newEndTime = toMySQL(start);
 
-    await db.update(appointments)
+    await db
+      .update(appointments)
       .set({
         serviceName: mappedServiceName,
         title: mappedServiceName,

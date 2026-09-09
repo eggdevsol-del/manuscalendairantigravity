@@ -4,7 +4,16 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Circle, ChevronRight, User, MapPin, Clock, Briefcase, Banknote } from "lucide-react";
+import {
+  CheckCircle2,
+  Circle,
+  ChevronRight,
+  User,
+  MapPin,
+  Clock,
+  Briefcase,
+  Banknote,
+} from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -17,179 +26,221 @@ import { cn } from "@/lib/utils";
  *
  * Tasks:
  *  1. Upload Profile Picture → Settings > Profile
- *  2. Set Studio Location → Settings > Business
+ *  2. Set your tattooing location → Settings > Business
  *  3. Configure Work Hours → Settings > Work Hours
  *  4. Add a Service → Settings > Work Hours (shared panel)
  *  5. Set up Bank Payouts → /bank-payouts (Stripe Express)
  */
 export function SetupChecklistWidget() {
-    const { user, refresh } = useAuth();
-    const [, setLocation] = useLocation();
-    const updateOnboardingMutation = trpc.auth.completeOnboarding.useMutation();
+  const { user, refresh } = useAuth();
+  const [, setLocation] = useLocation();
+  const updateOnboardingMutation = trpc.auth.completeOnboarding.useMutation();
 
-    const { data: artistSettings, isLoading } = trpc.artistSettings.get.useQuery(undefined, {
-        enabled: !!user && user.role === "artist",
-    });
-
-    if (!user || user.role !== "artist" || user.hasCompletedOnboarding !== 0 || isLoading) {
-        return null; // Only show for artists who haven't finished setup
+  const { data: artistSettings, isLoading } = trpc.artistSettings.get.useQuery(
+    undefined,
+    {
+      enabled: !!user && user.role === "artist",
     }
+  );
 
-    // Evaluate Checklist State
-    const hasProfileImage = !!user.avatar && user.avatar.length > 0;
-    const hasPhone = !!user.phone && user.phone.length > 0;
-    const hasProfileComplete = hasProfileImage && hasPhone;
-    const hasBusinessAddress = !!artistSettings?.businessAddress && artistSettings.businessAddress.length > 0;
+  if (
+    !user ||
+    user.role !== "artist" ||
+    user.hasCompletedOnboarding !== 0 ||
+    isLoading
+  ) {
+    return null; // Only show for artists who haven't finished setup
+  }
 
-    // Check if WorkSchedule JSON has valid keys
-    let hasWorkHours = false;
+  // Evaluate Checklist State
+  const hasProfileImage = !!user.avatar && user.avatar.length > 0;
+  const hasPhone = !!user.phone && user.phone.length > 0;
+  const hasProfileComplete = hasProfileImage && hasPhone;
+  const hasBusinessAddress =
+    !!artistSettings?.businessAddress &&
+    artistSettings.businessAddress.length > 0;
+
+  // Check if WorkSchedule JSON has valid keys
+  let hasWorkHours = false;
+  try {
+    const schedule = JSON.parse(artistSettings?.workSchedule || "{}");
+    hasWorkHours = Object.keys(schedule).length > 0;
+  } catch (e) {}
+
+  // Check if Services JSON has at least one service
+  let hasServices = false;
+  try {
+    const servicesArray = JSON.parse(artistSettings?.services || "[]");
+    hasServices = Array.isArray(servicesArray) && servicesArray.length > 0;
+  } catch (e) {}
+
+  const tasks = [
+    {
+      id: "profile",
+      title: "Complete Your Profile",
+      description: "Add a photo and phone number so clients can reach you.",
+      isComplete: hasProfileComplete,
+      icon: User,
+      onClick: () => setLocation("/settings"),
+    },
+    {
+      id: "business",
+      title: "Set your tattooing location",
+      description: "Tell clients where to find you.",
+      isComplete: hasBusinessAddress,
+      icon: MapPin,
+      onClick: () => setLocation("/settings"),
+    },
+    {
+      id: "hours",
+      title: "Configure Work Hours",
+      description: "Define your weekly availability.",
+      isComplete: hasWorkHours,
+      icon: Clock,
+      onClick: () => setLocation("/work-hours"),
+    },
+    {
+      id: "services",
+      title: "Add a Service",
+      description: "What tattoos do you offer?",
+      isComplete: hasServices,
+      icon: Briefcase,
+      onClick: () => setLocation("/work-hours"),
+    },
+    {
+      id: "payments",
+      title: "Set up Bank Payouts",
+      description: "Connect Stripe to receive booking deposits.",
+      isComplete: artistSettings?.stripeConnectPayoutsEnabled === 1,
+      icon: Banknote,
+      onClick: () => {
+        // Navigate to dedicated page (Stripe iframe needs full viewport)
+        window.location.href = "/bank-payouts";
+      },
+    },
+  ];
+
+  const completedTasks = tasks.filter(t => t.isComplete).length;
+  const progressPercentage = Math.round((completedTasks / tasks.length) * 100);
+  const isReadyToComplete = completedTasks === tasks.length;
+
+  const handleFinalizeSetup = async () => {
     try {
-        const schedule = JSON.parse(artistSettings?.workSchedule || "{}");
-        hasWorkHours = Object.keys(schedule).length > 0;
-    } catch (e) { }
+      await updateOnboardingMutation.mutateAsync();
+      await refresh();
+      toast.success("Artist setup Complete! You're ready to accept bookings.");
+    } catch (error) {
+      toast.error("Could not finish setup. Please try again.");
+    }
+  };
 
-    // Check if Services JSON has at least one service
-    let hasServices = false;
-    try {
-        const servicesArray = JSON.parse(artistSettings?.services || "[]");
-        hasServices = Array.isArray(servicesArray) && servicesArray.length > 0;
-    } catch (e) { }
-
-    const tasks = [
-        {
-            id: "profile",
-            title: "Complete Your Profile",
-            description: "Add a photo and phone number so clients can reach you.",
-            isComplete: hasProfileComplete,
-            icon: User,
-            onClick: () => setLocation("/settings"),
-        },
-        {
-            id: "business",
-            title: "Set Studio Location",
-            description: "Tell clients where to find you.",
-            isComplete: hasBusinessAddress,
-            icon: MapPin,
-            onClick: () => setLocation("/settings"),
-        },
-        {
-            id: "hours",
-            title: "Configure Work Hours",
-            description: "Define your weekly availability.",
-            isComplete: hasWorkHours,
-            icon: Clock,
-            onClick: () => setLocation("/work-hours"),
-        },
-        {
-            id: "services",
-            title: "Add a Service",
-            description: "What tattoos do you offer?",
-            isComplete: hasServices,
-            icon: Briefcase,
-            onClick: () => setLocation("/work-hours"),
-        },
-        {
-            id: "payments",
-            title: "Set up Bank Payouts",
-            description: "Connect Stripe to receive booking deposits.",
-            isComplete: artistSettings?.stripeConnectPayoutsEnabled === 1,
-            icon: Banknote,
-            onClick: () => {
-                // Navigate to dedicated page (Stripe iframe needs full viewport)
-                window.location.href = "/bank-payouts";
-            },
-        }
-    ];
-
-    const completedTasks = tasks.filter(t => t.isComplete).length;
-    const progressPercentage = Math.round((completedTasks / tasks.length) * 100);
-    const isReadyToComplete = completedTasks === tasks.length;
-
-    const handleFinalizeSetup = async () => {
-        try {
-            await updateOnboardingMutation.mutateAsync();
-            await refresh();
-            toast.success("Studio Setup Complete! You're ready to accept bookings.");
-        } catch (error) {
-            toast.error("Failed to sequence complete signal.");
-        }
-    };
-
-    return (
-        <div className="w-full rounded-2xl bg-card border border-border/30 overflow-hidden mb-6">
-            <div className="p-5 pb-4">
-                <div className="flex justify-between items-start mb-4">
-                    <div>
-                        <h3 className="text-lg font-bold text-foreground tracking-tight">Studio Setup</h3>
-                        <p className="text-sm text-muted-foreground mt-0.5">Complete these steps to accept bookings.</p>
-                    </div>
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0">
-                        <span className="text-primary font-bold text-xs">{completedTasks}/{tasks.length}</span>
-                    </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                    <motion.div
-                        className="h-full bg-primary rounded-full"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progressPercentage}%` }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
-                    />
-                </div>
-            </div>
-
-            <div className="border-t border-border/30">
-                <AnimatePresence>
-                    {tasks.map((task, index) => (
-                        <motion.button
-                            key={task.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.08 }}
-                            onClick={task.onClick}
-                            className="w-full flex items-center px-5 py-3.5 hover:bg-secondary/50 transition-colors text-left group border-b border-border/20 last:border-b-0"
-                        >
-                            <div className={cn(
-                                "flex items-center justify-center w-8 h-8 rounded-full shrink-0 transition-colors",
-                                task.isComplete ? "text-[var(--color-status-success-text)] bg-[var(--color-status-success-bg)]" : "text-muted-foreground bg-secondary group-hover:text-foreground"
-                            )}>
-                                {task.isComplete ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
-                            </div>
-
-                            <div className="flex-1 ml-3 pr-2">
-                                <h4 className={cn(
-                                    "text-sm font-medium transition-colors",
-                                    task.isComplete ? "text-muted-foreground line-through" : "text-foreground"
-                                )}>
-                                    {task.title}
-                                </h4>
-                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{task.description}</p>
-                            </div>
-
-                            <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </motion.button>
-                    ))}
-                </AnimatePresence>
-            </div>
-
-            <AnimatePresence>
-                {isReadyToComplete && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        className="p-4 bg-[var(--color-status-success-bg)] border-t border-[var(--color-status-success-border)]"
-                    >
-                        <Button
-                            onClick={handleFinalizeSetup}
-                            disabled={updateOnboardingMutation.isPending}
-                            className="w-full h-12 bg-[var(--color-success)] hover:bg-[var(--color-success)] text-white font-semibold rounded-xl transition-all"
-                        >
-                            {updateOnboardingMutation.isPending ? "Finalizing..." : "Complete Setup & Launch"}
-                        </Button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+  return (
+    <div className="w-full rounded-2xl bg-card border border-border/30 overflow-hidden mb-6">
+      <div className="p-5 pb-4">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h3 className="text-lg font-bold text-foreground tracking-tight">
+              Artist setup
+            </h3>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Complete these steps to accept bookings.
+            </p>
+          </div>
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0">
+            <span className="text-primary font-bold text-xs">
+              {completedTasks}/{tasks.length}
+            </span>
+          </div>
         </div>
-    );
+
+        {/* Progress Bar */}
+        <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-primary rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPercentage}%` }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          />
+        </div>
+      </div>
+
+      {artistSettings?.publicSlug && (
+        <a
+          href={`/start/${artistSettings.publicSlug}`}
+          target="_blank"
+          rel="noreferrer"
+          className="mx-5 mb-4 flex items-center justify-between rounded-xl border border-border px-4 py-3 text-sm font-medium"
+        >
+          Preview your booking page <ChevronRight className="w-4 h-4" />
+        </a>
+      )}
+      <div className="border-t border-border/30">
+        <AnimatePresence>
+          {tasks.map((task, index) => (
+            <motion.button
+              key={task.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.08 }}
+              onClick={task.onClick}
+              className="w-full flex items-center px-5 py-3.5 hover:bg-secondary/50 transition-colors text-left group border-b border-border/20 last:border-b-0"
+            >
+              <div
+                className={cn(
+                  "flex items-center justify-center w-8 h-8 rounded-full shrink-0 transition-colors",
+                  task.isComplete
+                    ? "text-[var(--color-status-success-text)] bg-[var(--color-status-success-bg)]"
+                    : "text-muted-foreground bg-secondary group-hover:text-foreground"
+                )}
+              >
+                {task.isComplete ? (
+                  <CheckCircle2 className="w-4 h-4" />
+                ) : (
+                  <Circle className="w-4 h-4" />
+                )}
+              </div>
+
+              <div className="flex-1 ml-3 pr-2">
+                <h4
+                  className={cn(
+                    "text-sm font-medium transition-colors",
+                    task.isComplete
+                      ? "text-muted-foreground line-through"
+                      : "text-foreground"
+                  )}
+                >
+                  {task.title}
+                </h4>
+                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                  {task.description}
+                </p>
+              </div>
+
+              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            </motion.button>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      <AnimatePresence>
+        {isReadyToComplete && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="p-4 bg-[var(--color-status-success-bg)] border-t border-[var(--color-status-success-border)]"
+          >
+            <Button
+              onClick={handleFinalizeSetup}
+              disabled={updateOnboardingMutation.isPending}
+              className="w-full h-12 bg-[var(--color-success)] hover:bg-[var(--color-success)] text-white font-semibold rounded-xl transition-all"
+            >
+              {updateOnboardingMutation.isPending
+                ? "Finalizing..."
+                : "Complete Setup & Launch"}
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }

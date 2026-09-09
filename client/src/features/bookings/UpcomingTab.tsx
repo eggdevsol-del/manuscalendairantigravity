@@ -1,12 +1,7 @@
 import React, { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import {
-  Calendar,
-  CreditCard,
-  MessageCircle,
-  Search,
-} from "lucide-react";
+import { Calendar, CreditCard, MessageCircle, Search } from "lucide-react";
 import { BalanceCheckoutSheet } from "./BalanceCheckoutSheet";
 
 /** Relative countdown helper: "IN 6 DAYS", "TOMORROW", "TODAY" */
@@ -26,11 +21,13 @@ function formatDate(dateStr: string): string {
   const month = d.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
   const day = d.getDate();
   const year = d.getFullYear();
-  const time = d.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  }).toUpperCase();
+  const time = d
+    .toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .toUpperCase();
   return `${month} ${day}, ${year} · ${time}`;
 }
 
@@ -48,15 +45,22 @@ function getRelativeTime(dateStr: string): string {
 /** Format duration */
 function formatDuration(minutes: number | null): string {
   if (!minutes) return "";
-  const hrs = Math.round(minutes / 60);
-  return `${hrs} hr${hrs !== 1 ? "s" : ""}`;
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return [
+    hrs ? `${hrs} hr${hrs !== 1 ? "s" : ""}` : "",
+    mins ? `${mins} min` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 export function UpcomingTab() {
   const [, setLocation] = useLocation();
-  const { data, isLoading } = trpc.appointments.getClientBookings.useQuery({
-    tab: "upcoming",
-  });
+  const { data, isLoading, error, refetch } =
+    trpc.appointments.getClientBookings.useQuery({
+      tab: "upcoming",
+    });
 
   // Balance checkout sheet state
   const [balanceSheet, setBalanceSheet] = useState<{
@@ -65,17 +69,31 @@ export function UpcomingTab() {
     balanceDueCents: number;
     artistName: string;
     projectName: string;
-  }>({ open: false, appointmentId: 0, balanceDueCents: 0, artistName: "", projectName: "" });
+  }>({
+    open: false,
+    appointmentId: 0,
+    balanceDueCents: 0,
+    artistName: "",
+    projectName: "",
+  });
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div
-          className="w-6 h-6 border-2 border-white/20 border-t-white/70 rounded-full animate-spin"
-        />
+        <div className="w-6 h-6 border-2 border-white/20 border-t-white/70 rounded-full animate-spin" />
       </div>
     );
   }
+
+  if (error)
+    return (
+      <div role="alert" className="border rounded-xl p-5">
+        <p>We couldn't load your bookings.</p>
+        <button className="underline min-h-12" onClick={() => refetch()}>
+          Try again
+        </button>
+      </div>
+    );
 
   const appointments = data?.appointments || [];
   const pendingConsults = data?.pendingConsults || [];
@@ -163,7 +181,9 @@ export function UpcomingTab() {
               {/* Meta */}
               <p className="text-[13.5px] text-[#7A7A7A] mb-3">
                 {appt.artist.name}
-                {appt.durationMinutes ? ` · ${formatDuration(appt.durationMinutes)}` : ""}
+                {appt.durationMinutes
+                  ? ` · ${formatDuration(appt.durationMinutes)}`
+                  : ""}
                 {appt.studioName ? ` · ${appt.studioName}` : ""}
                 {appt.sessionIndex && appt.sessionTotal
                   ? ` · session ${appt.sessionIndex} of ${appt.sessionTotal}`
@@ -230,20 +250,30 @@ export function UpcomingTab() {
                   <div className="flex items-center gap-2">
                     <CreditCard
                       className="w-4 h-4"
-                      style={{ color: hasPaymentRequest ? "#f2ca5c" : "#7A7A7A" }}
+                      style={{
+                        color: hasPaymentRequest ? "#f2ca5c" : "#7A7A7A",
+                      }}
                     />
                     <span
                       className="text-[13.5px] font-semibold"
-                      style={{ color: hasPaymentRequest ? "#f2ca5c" : "rgba(255,255,255,.7)" }}
+                      style={{
+                        color: hasPaymentRequest
+                          ? "#f2ca5c"
+                          : "rgba(255,255,255,.7)",
+                      }}
                     >
                       ${(appt.balanceDueCents / 100).toFixed(0)}{" "}
-                      {hasPaymentRequest ? "payment requested" : "remaining balance"}
+                      {hasPaymentRequest
+                        ? "payment requested"
+                        : "remaining balance"}
                     </span>
                   </div>
                   <span
                     className="text-[11px] font-bold uppercase"
                     style={{
-                      color: hasPaymentRequest ? "#1B1B1B" : "rgba(255,255,255,.7)",
+                      color: hasPaymentRequest
+                        ? "#1B1B1B"
+                        : "rgba(255,255,255,.7)",
                       letterSpacing: "0.06em",
                     }}
                   >
@@ -296,7 +326,7 @@ export function UpcomingTab() {
         })}
 
         {/* Pending consult requests — dashed variant */}
-        {pendingConsults.map((consult) => (
+        {pendingConsults.map(consult => (
           <div
             key={`consult-${consult.id}`}
             className="flex items-center justify-between"

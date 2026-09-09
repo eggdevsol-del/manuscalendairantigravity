@@ -1,22 +1,29 @@
-/**
- * Email Service — Placeholder
- *
- * Console.log placeholder for transactional emails.
- * Replace with a real provider (SendGrid, Resend, etc.) before production.
- */
-
 interface EmailPayload {
-    to: string;
-    subject: string;
-    body: string;
+  to: string;
+  subject: string;
+  body: string;
 }
-
-/**
- * Send a transactional email. Currently logs to console.
- * Production: replace with SendGrid/Resend/SES call.
- */
+export function requireEmailDelivery(): void {
+  if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM)
+    throw new Error("Email delivery is unavailable. Please contact support.");
+}
+/** Send via Resend. Never log recipients, recovery links or message bodies. */
 export async function sendEmail(payload: EmailPayload): Promise<void> {
-    console.log(
-        `[Email] TO: ${payload.to} | SUBJECT: ${payload.subject} | BODY: ${payload.body.substring(0, 200)}...`
-    );
+  requireEmailDelivery();
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: process.env.EMAIL_FROM,
+      to: [payload.to],
+      subject: payload.subject,
+      text: payload.body,
+    }),
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!response.ok)
+    throw new Error("Email could not be delivered. Please try again later.");
 }

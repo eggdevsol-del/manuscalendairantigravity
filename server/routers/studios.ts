@@ -53,6 +53,11 @@ export const studiosRouter = router({
   testUpgradeStudio: protectedProcedure
     .input(z.object({ tier: z.enum(["solo", "studio"]) }))
     .mutation(async ({ ctx, input }) => {
+      if (process.env.NODE_ENV !== "test")
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Test upgrades are disabled.",
+        });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -493,8 +498,6 @@ export const studiosRouter = router({
           code: "INTERNAL_SERVER_ERROR",
           message: "Database connection failed",
         });
-
-
 
       const invite = await db.query.studioMembers.findFirst({
         where: and(

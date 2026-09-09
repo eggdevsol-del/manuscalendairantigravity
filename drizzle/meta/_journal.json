@@ -162,6 +162,20 @@
       "when": 1783866483829,
       "tag": "0022_bored_major_mapleleaf",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1788912000000,
+      "tag": "0023_webhook_receipts",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1788912000001,
+      "tag": "0024_retain_procedure_snapshots",
+      "breakpoints": true
     }
   ]
 }

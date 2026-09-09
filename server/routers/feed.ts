@@ -1,7 +1,7 @@
 import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import * as schema from "../../drizzle/schema";
-import { eq, and, asc, desc, sql, isNotNull } from "drizzle-orm";
+import { eq, and, asc, desc, sql, isNotNull, lt } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 
@@ -13,10 +13,17 @@ const R2_PUBLIC = (process.env.R2_PUBLIC_URL || "").replace(/\/$/, "");
  * - Legacy Instagram CDN URLs fall back to the proxy endpoint
  * - Non-video items return null
  */
-function resolveVideoUrl(item: { id: number; mediaType: string | null; cdnUrl: string | null }): string | null {
+function resolveVideoUrl(item: {
+  id: number;
+  mediaType: string | null;
+  cdnUrl: string | null;
+}): string | null {
   if (item.mediaType !== "video" || !item.cdnUrl) return null;
   // If hosted on R2 or Cloudflare CDN, return direct URL (CDN-served, scales infinitely)
-  if (item.cdnUrl.includes(".r2.dev") || (R2_PUBLIC && item.cdnUrl.startsWith(R2_PUBLIC))) {
+  if (
+    item.cdnUrl.includes(".r2.dev") ||
+    (R2_PUBLIC && item.cdnUrl.startsWith(R2_PUBLIC))
+  ) {
     return item.cdnUrl;
   }
   // Stale legacy URL: return null so it renders as a photo rather than stalling video player with a 502
@@ -32,170 +39,86 @@ export const feedRouter = router({
   getDiscoverFeed: protectedProcedure
     .input(
       z.object({
-        cursor: z.number().optional(), // offset-based pagination
-        limit: z.number().min(1).max(20).default(10),
-        tag: z.string().optional(),    // filter by style/location tag
+        cursor: z.number().int().positive().optional(),
+        limit: z.number().int().min(1).max(20).default(10),
+        tag: z.string().max(100).optional(),
       })
     )
     .query(async ({ ctx, input }) => {
       const db = await getDb();
-      if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database connection failed",
-        });
-
-      // 1. Get all artists who have portfolio items and are onboarded
-      const artistsWithPortfolios = await db
-        .select({
-          userId: schema.users.id,
-          name: schema.users.name,
-          avatar: schema.users.avatar,
-          city: schema.users.city,
-          displayName: schema.artistSettings.displayName,
-          publicSlug: schema.artistSettings.publicSlug,
-          keywords: schema.artistSettings.keywords,
-        })
-        .from(schema.users)
-        .innerJoin(
-          schema.artistSettings,
-          eq(schema.users.id, schema.artistSettings.userId)
-        )
-        .where(
-          and(
-            isNotNull(schema.artistSettings.publicSlug),
-            eq(schema.users.hasCompletedOnboarding, 1)
-          )
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const {
+        portfolios: p,
+        users: u,
+        artistSettings: settings,
+        portfolioLikes: likes,
+      } = schema;
+      const conditions = [
+        isNotNull(settings.publicSlug),
+        eq(u.hasCompletedOnboarding, 1),
+      ];
+      if (input.cursor) conditions.push(lt(p.id, input.cursor));
+      if (input.tag)
+        conditions.push(
+          sql`JSON_CONTAINS(IF(JSON_VALID(${p.tags}), LOWER(${p.tags}), '[]'), ${JSON.stringify(input.tag.toLowerCase())})`
         );
-
-      if (artistsWithPortfolios.length === 0) {
-        return { cards: [], nextCursor: null };
-      }
-
-      // 2. Get all portfolio items grouped by artist
-      const artistIds = artistsWithPortfolios.map((a) => a.userId);
-      const allPortfolios = await db.query.portfolios.findMany({
-        where: sql`${schema.portfolios.artistId} IN (${sql.join(
-          artistIds.map((id) => sql`${id}`),
-          sql`, `
-        )})`,
-        orderBy: [desc(schema.portfolios.publishedAt), desc(schema.portfolios.createdAt)],
-        with: {
-          likes: true,
-        },
-      });
-
-      // 2b. If filtering by tag, filter portfolio items that match
-      const filteredPortfolios = input.tag
-        ? allPortfolios.filter((item) => {
-            if (!item.tags) return false;
-            try {
-              const tags: string[] = JSON.parse(item.tags as string);
-              return tags.some(t => t.toLowerCase() === input.tag!.toLowerCase());
-            } catch {
-              return false;
-            }
-          })
-        : allPortfolios;
-
-      // 3. Group portfolios by artist
-      const portfoliosByArtist = new Map<string, typeof allPortfolios>();
-      for (const item of filteredPortfolios) {
-        const existing = portfoliosByArtist.get(item.artistId) || [];
-        existing.push(item);
-        portfoliosByArtist.set(item.artistId, existing);
-      }
-
-      // Filter to only artists that actually have portfolio items
-      const activeArtists = artistsWithPortfolios.filter(
-        (a) => (portfoliosByArtist.get(a.userId)?.length || 0) > 0
-      );
-
-      if (activeArtists.length === 0) {
-        return { cards: [], nextCursor: null };
-      }
-
-      // 4. Round-robin interleave: create feed cards
-      // Each card = one portfolio item with artist info
-      // Cycle through artists equally, wrapping smaller portfolios
-      const feedCards: Array<{
-        id: number;
-        artistId: string;
-        artistName: string;
-        artistAvatar: string | null;
-        artistCity: string | null;
-        artistSlug: string | null;
-        keywords: string[];
-        imageUrl: string;
-        description: string | null;
-        createdAt: string | null;
-        likeCount: number;
-        isLiked: boolean;
-        mediaType: string | null;
-        cdnUrl: string | null;
-        tags: string[];
-      }> = [];
-
-      // Determine max portfolio length for round-robin cycles
-      const maxLen = Math.max(
-        ...activeArtists.map(
-          (a) => portfoliosByArtist.get(a.userId)?.length || 0
-        )
-      );
-
-      // Shuffle artists for variety (seeded by date so consistent within a day)
-      const shuffled = [...activeArtists].sort(
-        () => Math.random() - 0.5
-      );
-
-      for (let i = 0; i < maxLen; i++) {
-        for (const artist of shuffled) {
-          const items = portfoliosByArtist.get(artist.userId) || [];
-          if (items.length === 0) continue;
-          // Wrap around for smaller portfolios
-          const item = items[i % items.length];
-          // Don't add duplicates from wrapping in a single feed load
-          if (i >= items.length) continue;
-
-          feedCards.push({
-            id: item.id,
-            artistId: artist.userId,
-            artistName: artist.displayName || artist.name || "Artist",
-            artistAvatar: artist.avatar,
-            artistCity: artist.city,
-            artistSlug: artist.publicSlug,
-            keywords: artist.keywords
-              ? artist.keywords.split(",").map((k: string) => k.trim())
-              : [],
-            imageUrl: item.imageUrl,
-            description: item.description,
-            createdAt: item.createdAt,
-            mediaType: item.mediaType,
-            videoUrl: resolveVideoUrl(item),
-            likeCount: item.likes.length,
-            isLiked: item.likes.some(
-              (l: { userId: string }) => l.userId === ctx.user.id
+      // A stable primary-key cursor avoids reshuffling, duplicate cards and offset drift.
+      // Only one page and aggregate like counts cross the database boundary.
+      const rows = await db
+        .select({
+          id: p.id,
+          artistId: p.artistId,
+          artistName: sql<string>`COALESCE(${settings.displayName}, ${u.name}, 'Artist')`,
+          artistAvatar: u.avatar,
+          artistCity: u.city,
+          artistSlug: settings.publicSlug,
+          keywords: settings.keywords,
+          imageUrl: p.imageUrl,
+          description: p.description,
+          createdAt: p.createdAt,
+          mediaType: p.mediaType,
+          cdnUrl: p.cdnUrl,
+          tags: p.tags,
+          likeCount:
+            sql<number>`(SELECT COUNT(*) FROM ${likes} WHERE ${likes.portfolioId} = ${p.id})`.mapWith(
+              Number
             ),
-            tags: (() => {
-              try {
-                return item.tags ? JSON.parse(item.tags as string) : [];
-              } catch {
-                return [];
-              }
-            })(),
-          });
-        }
-      }
-
-      // 5. Paginate
-      const offset = input.cursor || 0;
-      const page = feedCards.slice(offset, offset + input.limit);
-      const nextCursor =
-        offset + input.limit < feedCards.length
-          ? offset + input.limit
-          : null;
-
-      return { cards: page, nextCursor };
+          isLiked:
+            sql<number>`EXISTS(SELECT 1 FROM ${likes} WHERE ${likes.portfolioId} = ${p.id} AND ${likes.userId} = ${ctx.user.id})`.mapWith(
+              Number
+            ),
+        })
+        .from(p)
+        .innerJoin(u, eq(u.id, p.artistId))
+        .innerJoin(settings, eq(settings.userId, p.artistId))
+        .where(and(...conditions))
+        .orderBy(desc(p.id))
+        .limit(input.limit + 1);
+      const cards = rows.slice(0, input.limit).map(row => {
+        let tags: string[] = [];
+        try {
+          const value = JSON.parse(row.tags || "[]");
+          if (Array.isArray(value))
+            tags = value.filter(
+              (tag): tag is string => typeof tag === "string"
+            );
+        } catch {}
+        return {
+          ...row,
+          keywords: (row.keywords || "")
+            .split(",")
+            .map(k => k.trim())
+            .filter(Boolean),
+          tags,
+          isLiked: !!row.isLiked,
+          videoUrl: resolveVideoUrl(row),
+        };
+      });
+      return {
+        cards,
+        nextCursor:
+          rows.length > input.limit ? cards[cards.length - 1].id : null,
+      };
     }),
 
   /**
@@ -243,13 +166,16 @@ export const feedRouter = router({
       // Get all portfolio items for this artist
       const portfolios = await db.query.portfolios.findMany({
         where: eq(schema.portfolios.artistId, input.artistId),
-        orderBy: [desc(schema.portfolios.publishedAt), desc(schema.portfolios.createdAt)],
+        orderBy: [
+          desc(schema.portfolios.publishedAt),
+          desc(schema.portfolios.createdAt),
+        ],
         with: {
           likes: true,
         },
       });
 
-      const cards = portfolios.map((item) => ({
+      const cards = portfolios.map(item => ({
         id: item.id,
         artistId: artist.userId,
         artistName: artist.displayName || artist.name || "Artist",
@@ -269,7 +195,11 @@ export const feedRouter = router({
           (l: { userId: string }) => l.userId === ctx.user.id
         ),
         tags: (() => {
-          try { return item.tags ? JSON.parse(item.tags as string) : []; } catch { return []; }
+          try {
+            return item.tags ? JSON.parse(item.tags as string) : [];
+          } catch {
+            return [];
+          }
         })(),
       }));
 
@@ -376,7 +306,7 @@ export const feedRouter = router({
         website: artist.showWebsite ? (artist.websiteUrl ?? null) : null,
         showCity: !!artist.showCity,
         keywords: keywordsArray,
-        portfolio: portfolioItems.map((p) => ({
+        portfolio: portfolioItems.map(p => ({
           id: p.id,
           imageUrl: p.imageUrl,
           description: p.description,
@@ -384,7 +314,11 @@ export const feedRouter = router({
           mediaType: p.mediaType,
           videoUrl: resolveVideoUrl(p),
           tags: (() => {
-            try { return p.tags ? JSON.parse(p.tags) : []; } catch { return []; }
+            try {
+              return p.tags ? JSON.parse(p.tags) : [];
+            } catch {
+              return [];
+            }
           })(),
         })),
         postCount: portfolioItems.length,
@@ -411,9 +345,7 @@ export const feedRouter = router({
       const settingsRows = await db
         .select()
         .from(schema.artistSettings)
-        .where(
-          eq(schema.artistSettings.publicSlug, input.slug.toLowerCase())
-        )
+        .where(eq(schema.artistSettings.publicSlug, input.slug.toLowerCase()))
         .limit(1);
 
       if (settingsRows.length === 0) {
@@ -482,7 +414,7 @@ export const feedRouter = router({
         bio: user.bio,
         showCity: !!settings.showCity,
         keywords: keywordsArray,
-        portfolio: portfolioItems.map((p) => ({
+        portfolio: portfolioItems.map(p => ({
           id: p.id,
           imageUrl: p.imageUrl,
           description: p.description,

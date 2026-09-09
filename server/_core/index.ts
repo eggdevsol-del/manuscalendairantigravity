@@ -11,7 +11,7 @@ import path from "path";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
-import { verifyAndFixDatabase } from "../verify-and-fix-db";
+import { getAuthSecret } from "./auth-secret";
 // storage.ts no longer used — /api/files/* now redirects to R2
 import { startOutboxWorker } from "../workers/outboxProcessor";
 import { registerPublicFunnelRoutes } from "./publicFunnelRoutes";
@@ -69,16 +69,8 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
-  // Initialize database tables if they don't exist
-  try {
-    // Skip automatic migrations in production to prevent Railway health check timeouts
-    if (process.env.NODE_ENV !== "production") {
-      await verifyAndFixDatabase();
-    }
-  } catch (error) {
-    console.error("[Server] Database initialization failed:", error);
-    // Continue anyway - the app might work in read-only mode or with existing tables
-  }
+  getAuthSecret();
+  // Database migrations are explicit deployment steps, never startup side effects.
 
   // Start background workers
   try {
@@ -98,11 +90,15 @@ async function startServer() {
   );
 
   const corsOptions = {
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void
+    ) => {
       // Allow requests with no origin (mobile apps often have no origin header)
       if (!origin) return callback(null, true);
 
       const allowedOrigins = [
+        ...(process.env.APP_URL ? [new URL(process.env.APP_URL).origin] : []),
         "http://localhost",
         "https://localhost",
         "capacitor://localhost",
@@ -113,7 +109,7 @@ async function startServer() {
         "https://artist.tattoi.app",
         "https://merchant.tattoi.app",
         "https://app.tattoi.app",
-        "https://vidabiz.butterfly-effect.dev"
+        "https://vidabiz.butterfly-effect.dev",
       ];
 
       // Allow exact matches or any localhost port
@@ -238,7 +234,8 @@ async function startServer() {
       if (!db) return res.status(500).json({ error: "DB unavailable" });
 
       const portfolioId = parseInt(req.params.id, 10);
-      if (isNaN(portfolioId)) return res.status(400).json({ error: "Invalid ID" });
+      if (isNaN(portfolioId))
+        return res.status(400).json({ error: "Invalid ID" });
 
       const item = await db.query.portfolios.findFirst({
         where: eq(schema.portfolios.id, portfolioId),
@@ -268,15 +265,22 @@ async function startServer() {
         upstreamHeaders["Range"] = rangeHeader;
       }
 
-      const videoResponse = await fetch(item.cdnUrl, { headers: upstreamHeaders });
+      const videoResponse = await fetch(item.cdnUrl, {
+        headers: upstreamHeaders,
+      });
 
       if (!videoResponse.ok && videoResponse.status !== 206) {
-        console.error(`[Video Proxy] Failed: ${videoResponse.status} from ${item.cdnUrl.slice(0, 80)}`);
-        return res.status(502).json({ error: "Failed to fetch video from source" });
+        console.error(
+          `[Video Proxy] Failed: ${videoResponse.status} from ${item.cdnUrl.slice(0, 80)}`
+        );
+        return res
+          .status(502)
+          .json({ error: "Failed to fetch video from source" });
       }
 
       // Forward response headers
-      const contentType = videoResponse.headers.get("content-type") || "video/mp4";
+      const contentType =
+        videoResponse.headers.get("content-type") || "video/mp4";
       const contentLength = videoResponse.headers.get("content-length");
       const contentRange = videoResponse.headers.get("content-range");
       const acceptRanges = videoResponse.headers.get("accept-ranges");
@@ -298,14 +302,16 @@ async function startServer() {
       const pump = async () => {
         while (true) {
           const { done, value } = await reader.read();
-          if (done) { res.end(); return; }
+          if (done) {
+            res.end();
+            return;
+          }
           if (!res.write(value)) {
             await new Promise(resolve => res.once("drain", resolve));
           }
         }
       };
       pump().catch(() => res.end());
-
     } catch (err) {
       console.error("[Video Proxy] Error:", err);
       if (!res.headersSent) res.status(500).json({ error: "Internal error" });
@@ -339,7 +345,9 @@ async function startServer() {
         where: sql`${dbSchema.portfolios.mediaType} = 'video' AND ${dbSchema.portfolios.cdnUrl} IS NOT NULL AND ${dbSchema.portfolios.cdnUrl} NOT LIKE '${sql.raw(R2_PUBLIC)}%'`,
       });
 
-      console.log(`[Admin] Found ${staleVideos.length} videos with non-R2 URLs`);
+      console.log(
+        `[Admin] Found ${staleVideos.length} videos with non-R2 URLs`
+      );
 
       // Return immediately with count, process in background
       res.json({ status: "started", staleCount: staleVideos.length });
@@ -353,49 +361,63 @@ async function startServer() {
 
           // Try to download from the original URL
           const response = await fetch(video.cdnUrl, {
-            headers: { "User-Agent": "Mozilla/5.0 (compatible; TattoiApp/1.0)" },
+            headers: {
+              "User-Agent": "Mozilla/5.0 (compatible; TattoiApp/1.0)",
+            },
           });
 
           if (!response.ok) {
-            console.warn(`[Admin] Cannot download video ${video.id}: HTTP ${response.status}`);
+            console.warn(
+              `[Admin] Cannot download video ${video.id}: HTTP ${response.status}`
+            );
             failed++;
             continue;
           }
 
           const buffer = Buffer.from(await response.arrayBuffer());
           if (buffer.byteLength > 100 * 1024 * 1024) {
-            console.warn(`[Admin] Video ${video.id} too large (${(buffer.byteLength / 1024 / 1024).toFixed(1)}MB)`);
+            console.warn(
+              `[Admin] Video ${video.id} too large (${(buffer.byteLength / 1024 / 1024).toFixed(1)}MB)`
+            );
             failed++;
             continue;
           }
 
-          const contentType = response.headers.get("content-type") || "video/mp4";
+          const contentType =
+            response.headers.get("content-type") || "video/mp4";
           const ext = contentType.includes("mp4") ? "mp4" : "mov";
           const r2Key = `instagram-videos/${video.artistId}/${randomUUID()}.${ext}`;
 
-          await r2Client.send(new PutObjectCommand({
-            Bucket: BUCKET_NAME,
-            Key: r2Key,
-            Body: buffer,
-            ContentType: contentType,
-          }));
+          await r2Client.send(
+            new PutObjectCommand({
+              Bucket: BUCKET_NAME,
+              Key: r2Key,
+              Body: buffer,
+              ContentType: contentType,
+            })
+          );
 
           const r2Url = `${R2_PUBLIC}/${r2Key}`;
 
           // Update DB with new R2 URL
-          await db.update(dbSchema.portfolios)
+          await db
+            .update(dbSchema.portfolios)
             .set({ cdnUrl: r2Url })
             .where(eq(dbSchema.portfolios.id, video.id));
 
           migrated++;
-          console.log(`[Admin] Migrated video ${video.id} → R2 (${(buffer.byteLength / 1024 / 1024).toFixed(1)}MB)`);
+          console.log(
+            `[Admin] Migrated video ${video.id} → R2 (${(buffer.byteLength / 1024 / 1024).toFixed(1)}MB)`
+          );
         } catch (err) {
           console.error(`[Admin] Failed to migrate video ${video.id}:`, err);
           failed++;
         }
       }
 
-      console.log(`[Admin] Video migration complete: ${migrated} migrated, ${failed} failed`);
+      console.log(
+        `[Admin] Video migration complete: ${migrated} migrated, ${failed} failed`
+      );
     } catch (err: any) {
       console.error("[Admin] Migration failed:", err);
       if (!res.headersSent) return res.status(500).json({ error: err.message });
@@ -421,11 +443,17 @@ async function startServer() {
       const R2_PUBLIC = (process.env.R2_PUBLIC_URL || "").replace(/\/$/, "");
 
       // Update all video portfolio items that are not on R2 to mediaType = 'image'
-      const result = await db.update(dbSchema.portfolios)
+      const result = await db
+        .update(dbSchema.portfolios)
         .set({ mediaType: "image", cdnUrl: null })
-        .where(sql`${dbSchema.portfolios.mediaType} = 'video' AND (${dbSchema.portfolios.cdnUrl} IS NULL OR (${dbSchema.portfolios.cdnUrl} NOT LIKE '${sql.raw(R2_PUBLIC)}%' AND ${dbSchema.portfolios.cdnUrl} NOT LIKE 'https://pub-%'))`);
+        .where(
+          sql`${dbSchema.portfolios.mediaType} = 'video' AND (${dbSchema.portfolios.cdnUrl} IS NULL OR (${dbSchema.portfolios.cdnUrl} NOT LIKE '${sql.raw(R2_PUBLIC)}%' AND ${dbSchema.portfolios.cdnUrl} NOT LIKE 'https://pub-%'))`
+        );
 
-      res.json({ status: "success", message: "Purged non-R2 video references to static images" });
+      res.json({
+        status: "success",
+        message: "Purged non-R2 video references to static images",
+      });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -466,7 +494,9 @@ async function startServer() {
         if (appts.length <= 1) continue;
         const [, ...dupes] = appts; // keep first, delete rest
         for (const dupe of dupes) {
-          await db.delete(dbSchema.appointments).where(eq(dbSchema.appointments.id, dupe.id));
+          await db
+            .delete(dbSchema.appointments)
+            .where(eq(dbSchema.appointments.id, dupe.id));
           deletedIds.push(dupe.id);
         }
       }
@@ -488,7 +518,9 @@ async function startServer() {
         if (appts.length <= 1) continue;
         const [, ...dupes] = appts;
         for (const dupe of dupes) {
-          await db.delete(dbSchema.appointments).where(eq(dbSchema.appointments.id, dupe.id));
+          await db
+            .delete(dbSchema.appointments)
+            .where(eq(dbSchema.appointments.id, dupe.id));
           deletedIds.push(dupe.id);
         }
       }
@@ -502,19 +534,36 @@ async function startServer() {
 
       let priceFixCount = 0;
       for (const appt of allSessionPlanAppts) {
-        if (appt.price && appt.totalExpectedAmountCents && appt.price === appt.totalExpectedAmountCents && appt.price > 10000) {
+        if (
+          appt.price &&
+          appt.totalExpectedAmountCents &&
+          appt.price === appt.totalExpectedAmountCents &&
+          appt.price > 10000
+        ) {
           // price matches totalExpectedAmountCents AND is suspiciously large → it's in cents
           const correctedPrice = Math.round(appt.price / 100);
-          await db.update(dbSchema.appointments).set({
-            price: correctedPrice,
-          }).where(eq(dbSchema.appointments.id, appt.id));
+          await db
+            .update(dbSchema.appointments)
+            .set({
+              price: correctedPrice,
+            })
+            .where(eq(dbSchema.appointments.id, appt.id));
           priceFixCount++;
-          console.log(`[Admin] Fixed price for appointment ${appt.id}: ${appt.price} → ${correctedPrice}`);
+          console.log(
+            `[Admin] Fixed price for appointment ${appt.id}: ${appt.price} → ${correctedPrice}`
+          );
         }
       }
 
-      console.log(`[Admin] Cleaned up ${deletedIds.length} duplicates, fixed ${priceFixCount} prices`);
-      return res.json({ status: "done", deleted: deletedIds.length, deletedIds, priceFixed: priceFixCount });
+      console.log(
+        `[Admin] Cleaned up ${deletedIds.length} duplicates, fixed ${priceFixCount} prices`
+      );
+      return res.json({
+        status: "done",
+        deleted: deletedIds.length,
+        deletedIds,
+        priceFixed: priceFixCount,
+      });
     } catch (err: any) {
       console.error("[Admin] Cleanup failed:", err);
       return res.status(500).json({ error: err.message });
@@ -532,7 +581,11 @@ async function startServer() {
     }
 
     // Don't block the request — run in background
-    res.json({ status: "started", message: "Seeding real artists in background. Check server logs for progress." });
+    res.json({
+      status: "started",
+      message:
+        "Seeding real artists in background. Check server logs for progress.",
+    });
 
     // Dynamic import to avoid loading at startup
     try {
@@ -540,49 +593,403 @@ async function startServer() {
       const { getDb } = await import("../db");
       const dbSchema = await import("../../drizzle/schema");
       const { eq, inArray } = await import("drizzle-orm");
-      const { processInstagramImport } = await import("../services/instagramImportWorker");
+      const { processInstagramImport } =
+        await import("../services/instagramImportWorker");
 
       const db = await getDb();
-      if (!db) { console.error("[Seed] No DB"); return; }
+      if (!db) {
+        console.error("[Seed] No DB");
+        return;
+      }
 
       const REAL_ARTISTS = [
         // ── Original 15 artists ──
-        { name: "Jake Jones", businessName: "Jake Jones Tattoo", instagram: "jakejonestattoo", keywords: "realism, portrait, black and grey", bio: "Black & grey realism specialist.", suburb: "Lutwyche", address: "550 Lutwyche Rd, Lutwyche QLD 4030", lat: "-27.4234", lng: "153.0306" },
-        { name: "Cherie Buttons", businessName: "Cherie Buttons Tattoo", instagram: "cheriebuttons", keywords: "illustrative, neo-traditional, colour", bio: "Illustrative and neo-traditional tattoos.", suburb: "Fortitude Valley", address: "52 Brunswick St, Fortitude Valley QLD 4006", lat: "-27.4578", lng: "153.0389" },
-        { name: "Jenny Ink", businessName: "Jenny Ink Studio", instagram: "jennyink_tattoo", keywords: "fine line, botanical, feminine, script", bio: "Delicate fine line work.", suburb: "Taringa", address: "19 Swann Rd, Taringa QLD 4068", lat: "-27.4977", lng: "152.9787" },
-        { name: "Jeje", businessName: "Jeje Ink", instagram: "jeje_ink", keywords: "japanese, irezumi, dragon, koi", bio: "Japanese traditional specialist.", suburb: "Morningside", address: "612 Wynnum Rd, Morningside QLD 4170", lat: "-27.4621", lng: "153.0742" },
-        { name: "Graceful Tattoos", businessName: "Graceful Tattoos", instagram: "graceful_tatt", keywords: "fine line, illustrative, floral", bio: "Fine line and illustrative tattooing.", suburb: "New Farm", address: "14 Merthyr Rd, New Farm QLD 4005", lat: "-27.4683", lng: "153.0442" },
-        { name: "Hailey Blossom", businessName: "Hailey Blossom Tattoo", instagram: "hailey_blossom", keywords: "fine line, pet portraits, floral", bio: "Fine line and detailed tattoos.", suburb: "Spring Hill", address: "20 Leichhardt St, Spring Hill QLD 4000", lat: "-27.4600", lng: "153.0206" },
-        { name: "Cappy Ink", businessName: "Cappy Ink", instagram: "cappy_ink", keywords: "illustrative, unique, colour, custom", bio: "Unique custom designs.", suburb: "Mt Gravatt", address: "1714 Logan Rd, Mt Gravatt QLD 4122", lat: "-27.5399", lng: "153.0796" },
-        { name: "Steve", businessName: "Fable Tattoo", instagram: "tattoos.by.steve", keywords: "colour, pop culture, anime, gaming", bio: "Colour specialist at Fable Tattoo.", suburb: "West End", address: "88 Vulture St, West End QLD 4101", lat: "-27.4795", lng: "153.0118" },
-        { name: "Westside Tattoo", businessName: "Westside Tattoo Brisbane", instagram: "westside_tattoo_brisbane", keywords: "japanese, traditional, portraiture", bio: "Long-standing Brisbane studio.", suburb: "West End", address: "195 Boundary St, West End QLD 4101", lat: "-27.4782", lng: "153.0098" },
-        { name: "Valley Ink", businessName: "Valley Ink", instagram: "valleyink", keywords: "custom, thin line, dot work", bio: "Custom tattoo studio in the Valley.", suburb: "Fortitude Valley", address: "315 Brunswick St, Fortitude Valley QLD 4006", lat: "-27.4542", lng: "153.0380" },
-        { name: "Tailor Made Tattoo", businessName: "Tailor Made Tattoo", instagram: "tailormadetattoo", keywords: "custom, realism, colour, walk-in", bio: "Custom tattoo studio in Woolloongabba.", suburb: "Woolloongabba", address: "71 Logan Rd, Woolloongabba QLD 4102", lat: "-27.4895", lng: "153.0329" },
-        { name: "CB Ink", businessName: "CB Ink Tattoo", instagram: "cbinktattoo", keywords: "realism, portrait, diverse styles", bio: "Large Brisbane studio with 25+ artists.", suburb: "Lutwyche", address: "543 Lutwyche Rd, Lutwyche QLD 4030", lat: "-27.4230", lng: "153.0310" },
-        { name: "Chalice Tattoo", businessName: "Chalice Tattoo Company", instagram: "chalicetattooco", keywords: "blackwork, dark art, occult, gothic", bio: "Blackwork and gothic tattooing.", suburb: "Paddington", address: "210 Given Tce, Paddington QLD 4064", lat: "-27.4597", lng: "152.9989" },
-        { name: "Save Point Tattoo", businessName: "Save Point Tattoo", instagram: "savepointtattoo", keywords: "anime, gaming, neo-japanese, colour", bio: "Anime and gaming tattoo specialists.", suburb: "Greenslopes", address: "162 Logan Rd, Greenslopes QLD 4120", lat: "-27.5035", lng: "153.0466" },
-        { name: "Ink Embassy", businessName: "Ink Embassy", instagram: "inkembassy", keywords: "colour, custom, vibrant, realism", bio: "Vibrant colour work in Bulimba.", suburb: "Bulimba", address: "43 Oxford St, Bulimba QLD 4171", lat: "-27.4617", lng: "153.0622" },
+        {
+          name: "Jake Jones",
+          businessName: "Jake Jones Tattoo",
+          instagram: "jakejonestattoo",
+          keywords: "realism, portrait, black and grey",
+          bio: "Black & grey realism specialist.",
+          suburb: "Lutwyche",
+          address: "550 Lutwyche Rd, Lutwyche QLD 4030",
+          lat: "-27.4234",
+          lng: "153.0306",
+        },
+        {
+          name: "Cherie Buttons",
+          businessName: "Cherie Buttons Tattoo",
+          instagram: "cheriebuttons",
+          keywords: "illustrative, neo-traditional, colour",
+          bio: "Illustrative and neo-traditional tattoos.",
+          suburb: "Fortitude Valley",
+          address: "52 Brunswick St, Fortitude Valley QLD 4006",
+          lat: "-27.4578",
+          lng: "153.0389",
+        },
+        {
+          name: "Jenny Ink",
+          businessName: "Jenny Ink Studio",
+          instagram: "jennyink_tattoo",
+          keywords: "fine line, botanical, feminine, script",
+          bio: "Delicate fine line work.",
+          suburb: "Taringa",
+          address: "19 Swann Rd, Taringa QLD 4068",
+          lat: "-27.4977",
+          lng: "152.9787",
+        },
+        {
+          name: "Jeje",
+          businessName: "Jeje Ink",
+          instagram: "jeje_ink",
+          keywords: "japanese, irezumi, dragon, koi",
+          bio: "Japanese traditional specialist.",
+          suburb: "Morningside",
+          address: "612 Wynnum Rd, Morningside QLD 4170",
+          lat: "-27.4621",
+          lng: "153.0742",
+        },
+        {
+          name: "Graceful Tattoos",
+          businessName: "Graceful Tattoos",
+          instagram: "graceful_tatt",
+          keywords: "fine line, illustrative, floral",
+          bio: "Fine line and illustrative tattooing.",
+          suburb: "New Farm",
+          address: "14 Merthyr Rd, New Farm QLD 4005",
+          lat: "-27.4683",
+          lng: "153.0442",
+        },
+        {
+          name: "Hailey Blossom",
+          businessName: "Hailey Blossom Tattoo",
+          instagram: "hailey_blossom",
+          keywords: "fine line, pet portraits, floral",
+          bio: "Fine line and detailed tattoos.",
+          suburb: "Spring Hill",
+          address: "20 Leichhardt St, Spring Hill QLD 4000",
+          lat: "-27.4600",
+          lng: "153.0206",
+        },
+        {
+          name: "Cappy Ink",
+          businessName: "Cappy Ink",
+          instagram: "cappy_ink",
+          keywords: "illustrative, unique, colour, custom",
+          bio: "Unique custom designs.",
+          suburb: "Mt Gravatt",
+          address: "1714 Logan Rd, Mt Gravatt QLD 4122",
+          lat: "-27.5399",
+          lng: "153.0796",
+        },
+        {
+          name: "Steve",
+          businessName: "Fable Tattoo",
+          instagram: "tattoos.by.steve",
+          keywords: "colour, pop culture, anime, gaming",
+          bio: "Colour specialist at Fable Tattoo.",
+          suburb: "West End",
+          address: "88 Vulture St, West End QLD 4101",
+          lat: "-27.4795",
+          lng: "153.0118",
+        },
+        {
+          name: "Westside Tattoo",
+          businessName: "Westside Tattoo Brisbane",
+          instagram: "westside_tattoo_brisbane",
+          keywords: "japanese, traditional, portraiture",
+          bio: "Long-standing Brisbane studio.",
+          suburb: "West End",
+          address: "195 Boundary St, West End QLD 4101",
+          lat: "-27.4782",
+          lng: "153.0098",
+        },
+        {
+          name: "Valley Ink",
+          businessName: "Valley Ink",
+          instagram: "valleyink",
+          keywords: "custom, thin line, dot work",
+          bio: "Custom tattoo studio in the Valley.",
+          suburb: "Fortitude Valley",
+          address: "315 Brunswick St, Fortitude Valley QLD 4006",
+          lat: "-27.4542",
+          lng: "153.0380",
+        },
+        {
+          name: "Tailor Made Tattoo",
+          businessName: "Tailor Made Tattoo",
+          instagram: "tailormadetattoo",
+          keywords: "custom, realism, colour, walk-in",
+          bio: "Custom tattoo studio in Woolloongabba.",
+          suburb: "Woolloongabba",
+          address: "71 Logan Rd, Woolloongabba QLD 4102",
+          lat: "-27.4895",
+          lng: "153.0329",
+        },
+        {
+          name: "CB Ink",
+          businessName: "CB Ink Tattoo",
+          instagram: "cbinktattoo",
+          keywords: "realism, portrait, diverse styles",
+          bio: "Large Brisbane studio with 25+ artists.",
+          suburb: "Lutwyche",
+          address: "543 Lutwyche Rd, Lutwyche QLD 4030",
+          lat: "-27.4230",
+          lng: "153.0310",
+        },
+        {
+          name: "Chalice Tattoo",
+          businessName: "Chalice Tattoo Company",
+          instagram: "chalicetattooco",
+          keywords: "blackwork, dark art, occult, gothic",
+          bio: "Blackwork and gothic tattooing.",
+          suburb: "Paddington",
+          address: "210 Given Tce, Paddington QLD 4064",
+          lat: "-27.4597",
+          lng: "152.9989",
+        },
+        {
+          name: "Save Point Tattoo",
+          businessName: "Save Point Tattoo",
+          instagram: "savepointtattoo",
+          keywords: "anime, gaming, neo-japanese, colour",
+          bio: "Anime and gaming tattoo specialists.",
+          suburb: "Greenslopes",
+          address: "162 Logan Rd, Greenslopes QLD 4120",
+          lat: "-27.5035",
+          lng: "153.0466",
+        },
+        {
+          name: "Ink Embassy",
+          businessName: "Ink Embassy",
+          instagram: "inkembassy",
+          keywords: "colour, custom, vibrant, realism",
+          bio: "Vibrant colour work in Bulimba.",
+          suburb: "Bulimba",
+          address: "43 Oxford St, Bulimba QLD 4171",
+          lat: "-27.4617",
+          lng: "153.0622",
+        },
         // ── 20 new artists ──
-        { name: "Paragon Tattoo", businessName: "Paragon Tattoo", instagram: "paragontattoo", keywords: "japanese, neo-traditional, black and grey, custom", bio: "Premium custom studio in Chermside. Japanese, neo-trad, and black and grey.", suburb: "Chermside", address: "730 Gympie Rd, Chermside QLD 4032", lat: "-27.3862", lng: "153.0322" },
-        { name: "Shinko Tattoo", businessName: "Shinko Tattoo", instagram: "shinkotattoo", keywords: "black and grey, realism, large scale, custom", bio: "High-end realism and large-scale work in Albion.", suburb: "Albion", address: "62 Sandgate Rd, Albion QLD 4010", lat: "-27.4317", lng: "153.0446" },
-        { name: "Balaclava Ink", businessName: "Balaclava Ink", instagram: "balaclava_ink", keywords: "black and grey, realism, portrait, dark", bio: "Specialising in black and grey realism. Dark, detailed work.", suburb: "Woolloongabba", address: "100 Balaclava St, Woolloongabba QLD 4102", lat: "-27.4880", lng: "153.0355" },
-        { name: "Black Market Tattoo", businessName: "Black Market Tattoo Co", instagram: "blackmarkettattooco", keywords: "custom, mixed styles, colour, realism, walk-in", bio: "Gold Coast's premier multi-style studio. Walk-ins welcome.", suburb: "Burleigh Heads", address: "1/21 James St, Burleigh Heads QLD 4220", lat: "-28.0874", lng: "153.4447" },
-        { name: "Loco Tattoo", businessName: "Loco Tattoo", instagram: "locotattoo", keywords: "realism, black and grey, colour, portrait", bio: "Internationally acclaimed studio on the Gold Coast.", suburb: "Chevron Island", address: "15 Thomas Dr, Chevron Island QLD 4217", lat: "-28.0044", lng: "153.4219" },
-        { name: "Jayla Tattoo", businessName: "Seventh Circle Studio", instagram: "jaylatattoo", keywords: "bold, traditional, colour, neo-traditional", bio: "Bold traditional and neo-traditional at Seventh Circle.", suburb: "Woolloongabba", address: "78 Logan Rd, Woolloongabba QLD 4102", lat: "-27.4890", lng: "153.0335" },
-        { name: "Tim Rix", businessName: "Seventh Circle Studio", instagram: "tim_rix", keywords: "illustrative, bold, colour, custom, dark", bio: "Bold illustrative work. Dark themes with vibrant colour.", suburb: "Woolloongabba", address: "78 Logan Rd, Woolloongabba QLD 4102", lat: "-27.4890", lng: "153.0335" },
-        { name: "Radiance Tattoo", businessName: "Oasis Studio", instagram: "radiance_tattoo", keywords: "fine line, delicate, ornamental, geometric", bio: "Ornamental and geometric fine line specialist.", suburb: "Mt Gravatt East", address: "1880 Logan Rd, Mt Gravatt East QLD 4122", lat: "-27.5410", lng: "153.0810" },
-        { name: "Tatts by Jord", businessName: "Oasis Studio", instagram: "tatts.by.jord", keywords: "cute, kawaii, colour, illustrative, fun", bio: "Cute and kawaii style tattoos. Fun colourful pieces.", suburb: "Mt Gravatt East", address: "1880 Logan Rd, Mt Gravatt East QLD 4122", lat: "-27.5410", lng: "153.0810" },
-        { name: "Raspberry Room", businessName: "The Raspberry Room", instagram: "theraspberryroom", keywords: "fine line, elegant, floral, minimalist, botanical", bio: "Elite fine line artistry on the Gold Coast.", suburb: "Mermaid Beach", address: "2437 Gold Coast Hwy, Mermaid Beach QLD 4218", lat: "-28.0472", lng: "153.4370" },
-        { name: "Anastasia Fine Line", businessName: "Anastasia Fine Line Tattoo", instagram: "anastasiafinelinetattoo", keywords: "fine line, ornamental, botanical, delicate, feminine", bio: "Graceful ornaments and botanical designs. Soft, precise work.", suburb: "Fortitude Valley", address: "30 Duncan St, Fortitude Valley QLD 4006", lat: "-27.4565", lng: "153.0395" },
-        { name: "Dylan Phillips", businessName: "Storm the Gates", instagram: "dyltattoos", keywords: "japanese, bold, traditional, irezumi, colour", bio: "Bold traditional Japanese tattooing on the Gold Coast.", suburb: "Mudgeeraba", address: "45 Railway St, Mudgeeraba QLD 4213", lat: "-28.0778", lng: "153.3700" },
-        { name: "Minamoto Tattoo", businessName: "Minamoto Tattoo", instagram: "minamototattoo", keywords: "japanese, irezumi, large scale, back piece, sleeve", bio: "Traditional Japanese and large-scale irezumi on the Gold Coast.", suburb: "Palm Beach", address: "1128 Gold Coast Hwy, Palm Beach QLD 4221", lat: "-28.1122", lng: "153.4627" },
-        { name: "Penno", businessName: "CB Ink Tattoo", instagram: "penno_tattoo", keywords: "bold, colour, neo-traditional, illustrative", bio: "Bold colour and neo-traditional designs at CB Ink.", suburb: "Lutwyche", address: "543 Lutwyche Rd, Lutwyche QLD 4030", lat: "-27.4230", lng: "153.0310" },
-        { name: "Peta Jameson", businessName: "Tailor Made Tattoo", instagram: "petajamesontattoo", keywords: "colour, illustrative, custom, feminine, floral", bio: "Illustrative colour work at Tailor Made Tattoo.", suburb: "Woolloongabba", address: "71 Logan Rd, Woolloongabba QLD 4102", lat: "-27.4895", lng: "153.0329" },
-        { name: "Chrystal Leigh", businessName: "Ink Embassy", instagram: "chrystaltattoo", keywords: "colour, realism, vibrant, custom, portrait", bio: "Vibrant colour realism. Owner of Ink Embassy, Bulimba.", suburb: "Bulimba", address: "43 Oxford St, Bulimba QLD 4171", lat: "-27.4617", lng: "153.0622" },
-        { name: "Lucky Cat Lane", businessName: "Lucky Cat Lane", instagram: "luckycatlane", keywords: "fine line, illustrative, mixed styles, custom", bio: "Multi-artist Gold Coast studio. Fine line and illustrative.", suburb: "Mermaid Beach", address: "2517 Gold Coast Hwy, Mermaid Beach QLD 4218", lat: "-28.0490", lng: "153.4375" },
-        { name: "Rhys Sharp", businessName: "CB Ink Tattoo", instagram: "rhyssharptattoo", keywords: "japanese, irezumi, sleeve, traditional, colour", bio: "Classic irezumi sleeves and traditional Japanese at CB Ink.", suburb: "Lutwyche", address: "543 Lutwyche Rd, Lutwyche QLD 4030", lat: "-27.4230", lng: "153.0310" },
-        { name: "Sam Walters", businessName: "Tailor Made Tattoo", instagram: "samwalterstattoo", keywords: "realism, black and grey, portrait, detail", bio: "Detailed realism and portraiture at Tailor Made.", suburb: "Woolloongabba", address: "71 Logan Rd, Woolloongabba QLD 4102", lat: "-27.4895", lng: "153.0329" },
-        { name: "Dai Tanabe", businessName: "Lucky Cat Lane", instagram: "dai_tattoo_artist", keywords: "fine line, illustrative, japanese fusion, custom", bio: "Fine line and illustrative work with Japanese influences.", suburb: "Mermaid Beach", address: "2517 Gold Coast Hwy, Mermaid Beach QLD 4218", lat: "-28.0490", lng: "153.4375" },
+        {
+          name: "Paragon Tattoo",
+          businessName: "Paragon Tattoo",
+          instagram: "paragontattoo",
+          keywords: "japanese, neo-traditional, black and grey, custom",
+          bio: "Premium custom studio in Chermside. Japanese, neo-trad, and black and grey.",
+          suburb: "Chermside",
+          address: "730 Gympie Rd, Chermside QLD 4032",
+          lat: "-27.3862",
+          lng: "153.0322",
+        },
+        {
+          name: "Shinko Tattoo",
+          businessName: "Shinko Tattoo",
+          instagram: "shinkotattoo",
+          keywords: "black and grey, realism, large scale, custom",
+          bio: "High-end realism and large-scale work in Albion.",
+          suburb: "Albion",
+          address: "62 Sandgate Rd, Albion QLD 4010",
+          lat: "-27.4317",
+          lng: "153.0446",
+        },
+        {
+          name: "Balaclava Ink",
+          businessName: "Balaclava Ink",
+          instagram: "balaclava_ink",
+          keywords: "black and grey, realism, portrait, dark",
+          bio: "Specialising in black and grey realism. Dark, detailed work.",
+          suburb: "Woolloongabba",
+          address: "100 Balaclava St, Woolloongabba QLD 4102",
+          lat: "-27.4880",
+          lng: "153.0355",
+        },
+        {
+          name: "Black Market Tattoo",
+          businessName: "Black Market Tattoo Co",
+          instagram: "blackmarkettattooco",
+          keywords: "custom, mixed styles, colour, realism, walk-in",
+          bio: "Gold Coast's premier multi-style studio. Walk-ins welcome.",
+          suburb: "Burleigh Heads",
+          address: "1/21 James St, Burleigh Heads QLD 4220",
+          lat: "-28.0874",
+          lng: "153.4447",
+        },
+        {
+          name: "Loco Tattoo",
+          businessName: "Loco Tattoo",
+          instagram: "locotattoo",
+          keywords: "realism, black and grey, colour, portrait",
+          bio: "Internationally acclaimed studio on the Gold Coast.",
+          suburb: "Chevron Island",
+          address: "15 Thomas Dr, Chevron Island QLD 4217",
+          lat: "-28.0044",
+          lng: "153.4219",
+        },
+        {
+          name: "Jayla Tattoo",
+          businessName: "Seventh Circle Studio",
+          instagram: "jaylatattoo",
+          keywords: "bold, traditional, colour, neo-traditional",
+          bio: "Bold traditional and neo-traditional at Seventh Circle.",
+          suburb: "Woolloongabba",
+          address: "78 Logan Rd, Woolloongabba QLD 4102",
+          lat: "-27.4890",
+          lng: "153.0335",
+        },
+        {
+          name: "Tim Rix",
+          businessName: "Seventh Circle Studio",
+          instagram: "tim_rix",
+          keywords: "illustrative, bold, colour, custom, dark",
+          bio: "Bold illustrative work. Dark themes with vibrant colour.",
+          suburb: "Woolloongabba",
+          address: "78 Logan Rd, Woolloongabba QLD 4102",
+          lat: "-27.4890",
+          lng: "153.0335",
+        },
+        {
+          name: "Radiance Tattoo",
+          businessName: "Oasis Studio",
+          instagram: "radiance_tattoo",
+          keywords: "fine line, delicate, ornamental, geometric",
+          bio: "Ornamental and geometric fine line specialist.",
+          suburb: "Mt Gravatt East",
+          address: "1880 Logan Rd, Mt Gravatt East QLD 4122",
+          lat: "-27.5410",
+          lng: "153.0810",
+        },
+        {
+          name: "Tatts by Jord",
+          businessName: "Oasis Studio",
+          instagram: "tatts.by.jord",
+          keywords: "cute, kawaii, colour, illustrative, fun",
+          bio: "Cute and kawaii style tattoos. Fun colourful pieces.",
+          suburb: "Mt Gravatt East",
+          address: "1880 Logan Rd, Mt Gravatt East QLD 4122",
+          lat: "-27.5410",
+          lng: "153.0810",
+        },
+        {
+          name: "Raspberry Room",
+          businessName: "The Raspberry Room",
+          instagram: "theraspberryroom",
+          keywords: "fine line, elegant, floral, minimalist, botanical",
+          bio: "Elite fine line artistry on the Gold Coast.",
+          suburb: "Mermaid Beach",
+          address: "2437 Gold Coast Hwy, Mermaid Beach QLD 4218",
+          lat: "-28.0472",
+          lng: "153.4370",
+        },
+        {
+          name: "Anastasia Fine Line",
+          businessName: "Anastasia Fine Line Tattoo",
+          instagram: "anastasiafinelinetattoo",
+          keywords: "fine line, ornamental, botanical, delicate, feminine",
+          bio: "Graceful ornaments and botanical designs. Soft, precise work.",
+          suburb: "Fortitude Valley",
+          address: "30 Duncan St, Fortitude Valley QLD 4006",
+          lat: "-27.4565",
+          lng: "153.0395",
+        },
+        {
+          name: "Dylan Phillips",
+          businessName: "Storm the Gates",
+          instagram: "dyltattoos",
+          keywords: "japanese, bold, traditional, irezumi, colour",
+          bio: "Bold traditional Japanese tattooing on the Gold Coast.",
+          suburb: "Mudgeeraba",
+          address: "45 Railway St, Mudgeeraba QLD 4213",
+          lat: "-28.0778",
+          lng: "153.3700",
+        },
+        {
+          name: "Minamoto Tattoo",
+          businessName: "Minamoto Tattoo",
+          instagram: "minamototattoo",
+          keywords: "japanese, irezumi, large scale, back piece, sleeve",
+          bio: "Traditional Japanese and large-scale irezumi on the Gold Coast.",
+          suburb: "Palm Beach",
+          address: "1128 Gold Coast Hwy, Palm Beach QLD 4221",
+          lat: "-28.1122",
+          lng: "153.4627",
+        },
+        {
+          name: "Penno",
+          businessName: "CB Ink Tattoo",
+          instagram: "penno_tattoo",
+          keywords: "bold, colour, neo-traditional, illustrative",
+          bio: "Bold colour and neo-traditional designs at CB Ink.",
+          suburb: "Lutwyche",
+          address: "543 Lutwyche Rd, Lutwyche QLD 4030",
+          lat: "-27.4230",
+          lng: "153.0310",
+        },
+        {
+          name: "Peta Jameson",
+          businessName: "Tailor Made Tattoo",
+          instagram: "petajamesontattoo",
+          keywords: "colour, illustrative, custom, feminine, floral",
+          bio: "Illustrative colour work at Tailor Made Tattoo.",
+          suburb: "Woolloongabba",
+          address: "71 Logan Rd, Woolloongabba QLD 4102",
+          lat: "-27.4895",
+          lng: "153.0329",
+        },
+        {
+          name: "Chrystal Leigh",
+          businessName: "Ink Embassy",
+          instagram: "chrystaltattoo",
+          keywords: "colour, realism, vibrant, custom, portrait",
+          bio: "Vibrant colour realism. Owner of Ink Embassy, Bulimba.",
+          suburb: "Bulimba",
+          address: "43 Oxford St, Bulimba QLD 4171",
+          lat: "-27.4617",
+          lng: "153.0622",
+        },
+        {
+          name: "Lucky Cat Lane",
+          businessName: "Lucky Cat Lane",
+          instagram: "luckycatlane",
+          keywords: "fine line, illustrative, mixed styles, custom",
+          bio: "Multi-artist Gold Coast studio. Fine line and illustrative.",
+          suburb: "Mermaid Beach",
+          address: "2517 Gold Coast Hwy, Mermaid Beach QLD 4218",
+          lat: "-28.0490",
+          lng: "153.4375",
+        },
+        {
+          name: "Rhys Sharp",
+          businessName: "CB Ink Tattoo",
+          instagram: "rhyssharptattoo",
+          keywords: "japanese, irezumi, sleeve, traditional, colour",
+          bio: "Classic irezumi sleeves and traditional Japanese at CB Ink.",
+          suburb: "Lutwyche",
+          address: "543 Lutwyche Rd, Lutwyche QLD 4030",
+          lat: "-27.4230",
+          lng: "153.0310",
+        },
+        {
+          name: "Sam Walters",
+          businessName: "Tailor Made Tattoo",
+          instagram: "samwalterstattoo",
+          keywords: "realism, black and grey, portrait, detail",
+          bio: "Detailed realism and portraiture at Tailor Made.",
+          suburb: "Woolloongabba",
+          address: "71 Logan Rd, Woolloongabba QLD 4102",
+          lat: "-27.4895",
+          lng: "153.0329",
+        },
+        {
+          name: "Dai Tanabe",
+          businessName: "Lucky Cat Lane",
+          instagram: "dai_tattoo_artist",
+          keywords: "fine line, illustrative, japanese fusion, custom",
+          bio: "Fine line and illustrative work with Japanese influences.",
+          suburb: "Mermaid Beach",
+          address: "2517 Gold Coast Hwy, Mermaid Beach QLD 4218",
+          lat: "-28.0490",
+          lng: "153.4375",
+        },
       ];
 
       const MESSAGES = [
@@ -594,17 +1001,33 @@ async function startServer() {
       ];
 
       // Find client
-      const [client] = await db.select({ id: dbSchema.users.id }).from(dbSchema.users).where(eq(dbSchema.users.role, "client")).limit(1);
-      if (!client) { console.error("[Seed] No client"); return; }
+      const [client] = await db
+        .select({ id: dbSchema.users.id })
+        .from(dbSchema.users)
+        .where(eq(dbSchema.users.role, "client"))
+        .limit(1);
+      if (!client) {
+        console.error("[Seed] No client");
+        return;
+      }
 
       // Delete existing mock artists (keep pmasontattoo)
-      const allArtists = await db.select({ id: dbSchema.users.id, email: dbSchema.users.email }).from(dbSchema.users).where(eq(dbSchema.users.role, "artist"));
-      const deleteIds = allArtists.filter(a => a.email !== "bookings@pmasontattoo.com").map(a => a.id);
+      const allArtists = await db
+        .select({ id: dbSchema.users.id, email: dbSchema.users.email })
+        .from(dbSchema.users)
+        .where(eq(dbSchema.users.role, "artist"));
+      const deleteIds = allArtists
+        .filter(a => a.email !== "bookings@pmasontattoo.com")
+        .map(a => a.id);
       if (deleteIds.length > 0) {
         for (const id of deleteIds) {
-          await db.delete(dbSchema.portfolios).where(eq(dbSchema.portfolios.artistId, id));
+          await db
+            .delete(dbSchema.portfolios)
+            .where(eq(dbSchema.portfolios.artistId, id));
         }
-        await db.delete(dbSchema.users).where(inArray(dbSchema.users.id, deleteIds));
+        await db
+          .delete(dbSchema.users)
+          .where(inArray(dbSchema.users.id, deleteIds));
         console.log(`[Seed] Deleted ${deleteIds.length} mock artists`);
       }
 
@@ -615,17 +1038,66 @@ async function startServer() {
         const slug = a.instagram.replace(/[^a-z0-9]/gi, "").toLowerCase();
 
         try {
-          await db.insert(dbSchema.users).values({ id: artistId, name: a.name, email: `${a.instagram}@demo.tattoi.app`, role: "artist", bio: a.bio, city: a.suburb, hasCompletedOnboarding: 1 });
-          await db.insert(dbSchema.artistSettings).values({ userId: artistId, businessName: a.businessName, displayName: a.name, businessAddress: a.address, businessCountry: "AU", keywords: a.keywords, publicSlug: slug, funnelEnabled: 1, workSchedule: JSON.stringify({}), services: JSON.stringify([]), lat: a.lat, lng: a.lng });
+          await db
+            .insert(dbSchema.users)
+            .values({
+              id: artistId,
+              name: a.name,
+              email: `${a.instagram}@demo.tattoi.app`,
+              role: "artist",
+              bio: a.bio,
+              city: a.suburb,
+              hasCompletedOnboarding: 1,
+            });
+          await db
+            .insert(dbSchema.artistSettings)
+            .values({
+              userId: artistId,
+              businessName: a.businessName,
+              displayName: a.name,
+              businessAddress: a.address,
+              businessCountry: "AU",
+              keywords: a.keywords,
+              publicSlug: slug,
+              funnelEnabled: 1,
+              workSchedule: JSON.stringify({}),
+              services: JSON.stringify([]),
+              lat: a.lat,
+              lng: a.lng,
+            });
 
           // Conversation
-          const [conv] = await db.insert(dbSchema.conversations).values({ artistId, clientId: client.id }).$returningId();
-          await db.insert(dbSchema.messages).values({ conversationId: conv.id, senderId: artistId, content: MESSAGES[i % MESSAGES.length], messageType: "text" });
+          const [conv] = await db
+            .insert(dbSchema.conversations)
+            .values({ artistId, clientId: client.id })
+            .$returningId();
+          await db
+            .insert(dbSchema.messages)
+            .values({
+              conversationId: conv.id,
+              senderId: artistId,
+              content: MESSAGES[i % MESSAGES.length],
+              messageType: "text",
+            });
 
           // Import first 20 posts
-          const [imp] = await db.insert(dbSchema.instagramImports).values({ artistId, instagramUsername: a.instagram, status: "in_progress" });
-          console.log(`[Seed] ${i+1}/${REAL_ARTISTS.length} Importing @${a.instagram}...`);
-          await processInstagramImport(db, imp.insertId, artistId, a.instagram, 20);
+          const [imp] = await db
+            .insert(dbSchema.instagramImports)
+            .values({
+              artistId,
+              instagramUsername: a.instagram,
+              status: "in_progress",
+            });
+          console.log(
+            `[Seed] ${i + 1}/${REAL_ARTISTS.length} Importing @${a.instagram}...`
+          );
+          await processInstagramImport(
+            db,
+            imp.insertId,
+            artistId,
+            a.instagram,
+            20
+          );
           console.log(`[Seed] ✅ ${a.name} done`);
         } catch (err: any) {
           console.error(`[Seed] ❌ ${a.name} failed: ${err.message}`);
@@ -670,7 +1142,11 @@ async function startServer() {
       const googleRes = await fetch(url);
 
       if (!googleRes.ok) {
-        console.error("[Map Image] Google returned", googleRes.status, await googleRes.text());
+        console.error(
+          "[Map Image] Google returned",
+          googleRes.status,
+          await googleRes.text()
+        );
         return res.status(502).end();
       }
 
@@ -720,20 +1196,24 @@ async function startServer() {
     console.info(`Server running on http://0.0.0.0:${port}/`);
 
     // Start scheduled tasks (balance reminders, etc.)
-    import("../services/scheduler").then(({ startScheduledTasks }) => {
-      startScheduledTasks();
-    }).catch((err) => {
-      console.error("[Scheduler] Failed to start scheduled tasks:", err);
-    });
+    import("../services/scheduler")
+      .then(({ startScheduledTasks }) => {
+        startScheduledTasks();
+      })
+      .catch(err => {
+        console.error("[Scheduler] Failed to start scheduled tasks:", err);
+      });
 
     // One-time: Seed portfolio images for mock artists (idempotent)
-    import("../startup/seedPortfolios").then(({ seedPortfolioImages }) => {
-      seedPortfolioImages().catch((err) => {
-        console.error("[Seed] Portfolio seeding failed:", err);
+    import("../startup/seedPortfolios")
+      .then(({ seedPortfolioImages }) => {
+        seedPortfolioImages().catch(err => {
+          console.error("[Seed] Portfolio seeding failed:", err);
+        });
+      })
+      .catch(() => {
+        // Module not found or import error — silently skip
       });
-    }).catch(() => {
-      // Module not found or import error — silently skip
-    });
   });
 }
 

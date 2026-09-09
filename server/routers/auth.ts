@@ -8,7 +8,11 @@ import * as db from "../db";
 
 export const authRouter = router({
   ...coreAuthRouter._def.procedures,
-  me: publicProcedure.query(opts => opts.ctx.user),
+  me: publicProcedure.query(opts => {
+    if (!opts.ctx.user) return null;
+    const { password, ...profile } = opts.ctx.user;
+    return profile;
+  }),
   logout: publicProcedure.mutation(({ ctx }) => {
     const cookieOptions = getSessionCookieOptions(ctx.req);
     ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -28,7 +32,9 @@ export const authRouter = router({
         city: z.string().max(100).optional(),
         country: z.string().max(100).optional(),
         birthday: z.string().max(20).optional(),
-        gender: z.enum(["male", "female", "other", "prefer_not_to_say"]).optional(),
+        gender: z
+          .enum(["male", "female", "other", "prefer_not_to_say"])
+          .optional(),
         instagramUsername: z.string().max(60).optional(),
       })
     )
@@ -72,11 +78,16 @@ export const authRouter = router({
   }),
   listArtists: protectedProcedure
     .input(
-      z.object({
-        lat: z.number().optional(),
-        lng: z.number().optional(),
-        sortBy: z.enum(["all", "distance", "popularity"]).optional().default("all"),
-      }).optional()
+      z
+        .object({
+          lat: z.number().optional(),
+          lng: z.number().optional(),
+          sortBy: z
+            .enum(["all", "distance", "popularity"])
+            .optional()
+            .default("all"),
+        })
+        .optional()
     )
     .query(async ({ input }) => {
       const database = await db.getDb();
@@ -104,16 +115,21 @@ export const authRouter = router({
         .groupBy(appointments.artistId);
 
       const countMap = new Map<string, number>();
-      bookingCounts.forEach((b) => {
+      bookingCounts.forEach(b => {
         countMap.set(b.artistId, b.bookingCount);
       });
 
       // Enrich artists with booking count and optionally calculate distance
-      let enrichedArtists = artists.map((artist) => {
+      let enrichedArtists = artists.map(artist => {
         const bookingCount = countMap.get(artist.id) || 0;
         let distance: number | null = null;
 
-        if (input?.lat && input?.lng && artist.lat != null && artist.lng != null) {
+        if (
+          input?.lat &&
+          input?.lng &&
+          artist.lat != null &&
+          artist.lng != null
+        ) {
           const clientLat = input.lat;
           const clientLng = input.lng;
           const lat1 = Number(artist.lat);

@@ -72,7 +72,15 @@ export const formsRouter = router({
     .input(
       z.object({
         formId: z.number(),
-        signature: z.string(), // Base64
+        signature: z
+          .string()
+          .max(500000)
+          .regex(
+            /^data:image\/png;base64,[A-Za-z0-9+/=]+$/,
+            "Draw or select a valid signature."
+          ),
+        photoPermission: z.boolean().optional(),
+        answers: z.record(z.string(), z.enum(["yes", "no"])).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -88,15 +96,50 @@ export const formsRouter = router({
 
       if (!form) throw new TRPCError({ code: "NOT_FOUND" });
 
-      await database
+      if (form.status === "signed")
+        throw new TRPCError({
+          code: "CONFLICT",
+          message:
+            "This form is already signed. Contact your artist to record an amendment.",
+        });
+      const questions =
+        form.formType === "medical_release"
+          ? [...(form.content || "").matchAll(/^(\d+)\.\s/gm)].map(
+              match => match[1]
+            )
+          : [];
+      if (questions.some(id => !input.answers?.[id]))
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please answer every medical question.",
+        });
+      const [result] = await database
         .update(consentForms)
         .set({
           signature: input.signature,
+          formData: JSON.stringify({
+            answers: input.answers || {},
+            photoPermission: input.photoPermission === true,
+            content: form.content,
+            title: form.title,
+            version: 1,
+            signedBy: ctx.user.id,
+          }),
           signedAt: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
           status: "signed",
           updatedAt: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
         })
-        .where(eq(consentForms.id, input.formId));
+        .where(
+          and(
+            eq(consentForms.id, input.formId),
+            eq(consentForms.status, "pending")
+          )
+        );
+      if (result.affectedRows !== 1)
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "This form has already been signed.",
+        });
 
       return { success: true };
     }),

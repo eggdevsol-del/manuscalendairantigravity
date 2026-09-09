@@ -29,6 +29,7 @@ export function InlineFormSigning({
     initialForm || pendingForms[0]
   );
   const [isSigningPhysical, setIsSigningPhysical] = useState(false);
+  const [photoPermission, setPhotoPermission] = useState(false);
   const [checkedItems, setCheckedItems] = useState<
     Record<number, "yes" | "no">
   >({});
@@ -52,6 +53,7 @@ export function InlineFormSigning({
 
       if (nextForm) {
         setActiveForm(nextForm);
+        setPhotoPermission(false);
         setIsSigningPhysical(false);
         setCheckedItems({});
       } else {
@@ -72,6 +74,8 @@ export function InlineFormSigning({
       await signFormMutation.mutateAsync({
         formId: activeForm.id,
         signature,
+        answers: checkedItems,
+        photoPermission,
       });
     } catch (err: any) {
       toast.error("Failed to sign: " + err.message);
@@ -121,7 +125,7 @@ export function InlineFormSigning({
               )}
             >
               {activeForm.formType === "medical_release" ? (
-                <div className="space-y-4 text-[10px] text-muted-foreground leading-relaxed">
+                <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
                   {activeForm.content
                     .split("\n")
                     .map((line: string, index: number) => {
@@ -138,7 +142,7 @@ export function InlineFormSigning({
                               "flex flex-col gap-3 p-3 rounded-[4px] border border-border"
                             )}
                           >
-                            <label className="text-[11px] font-medium leading-normal text-foreground/90">
+                            <label className="text-sm font-medium leading-normal text-foreground/90">
                               {itemText}
                             </label>
                             <div className="flex gap-2">
@@ -150,7 +154,7 @@ export function InlineFormSigning({
                                   }))
                                 }
                                 className={cn(
-                                  "flex-1 py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-widest border transition-all",
+                                  "flex-1 py-2 rounded-[4px] text-sm font-bold uppercase tracking-widest border transition-all",
                                   checkedItems[itemNumber] === "yes"
                                     ? "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)] border-[var(--color-status-warning-border)]"
                                     : "bg-transparent text-muted-foreground border-border hover:border-border hover:bg-secondary/50"
@@ -166,7 +170,7 @@ export function InlineFormSigning({
                                   }))
                                 }
                                 className={cn(
-                                  "flex-1 py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-widest border transition-all",
+                                  "flex-1 py-2 rounded-[4px] text-sm font-bold uppercase tracking-widest border transition-all",
                                   checkedItems[itemNumber] === "no"
                                     ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border-[var(--color-status-success-border)]"
                                     : "bg-transparent text-muted-foreground border-border hover:border-border hover:bg-secondary/50"
@@ -194,7 +198,7 @@ export function InlineFormSigning({
                     })}
                 </div>
               ) : (
-                <div className="prose prose-invert prose-sm max-w-none text-muted-foreground leading-relaxed whitespace-pre-wrap text-[10px]">
+                <div className="prose prose-invert prose-sm max-w-none text-muted-foreground leading-relaxed whitespace-pre-wrap text-sm">
                   {activeForm.content}
                 </div>
               )}
@@ -216,7 +220,7 @@ export function InlineFormSigning({
                 <button
                   onClick={() => setIsSigningPhysical(true)}
                   disabled={proceedDisabled}
-                  className="w-full mt-3 py-3 rounded-[4px] text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+                  className="w-full mt-3 py-3 rounded-[4px] text-sm font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
                 >
                   {proceedDisabled
                     ? `Please Review (${currentChecksCount}/${requiredChecksCount})`
@@ -237,7 +241,22 @@ export function InlineFormSigning({
                 "p-4 flex flex-col items-center justify-center gap-4 rounded-[4px] flex-1 overflow-hidden"
               )}
             >
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">
+              {activeForm.formType === "procedure_consent" && (
+                <label className="flex gap-3 items-start text-sm leading-relaxed p-3 border rounded-xl">
+                  <input
+                    type="checkbox"
+                    className="mt-1"
+                    checked={photoPermission}
+                    onChange={e => setPhotoPermission(e.target.checked)}
+                  />
+                  <span>
+                    I allow my artist to publish photos of this tattoo.{" "}
+                    <strong>Optional</strong> — leaving this unchecked does not
+                    affect my booking.
+                  </span>
+                </label>
+              )}
+              <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground text-center">
                 {user?.savedSignature
                   ? "Use Saved Signature or Draw New"
                   : "Physical Signature Required"}
@@ -255,7 +274,7 @@ export function InlineFormSigning({
                   <button
                     onClick={() => handleSign(user.savedSignature!)}
                     disabled={signFormMutation.isPending}
-                    className="w-full py-2.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground flex items-center justify-center gap-2"
+                    className="w-full py-2.5 rounded-[4px] text-sm font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground flex items-center justify-center gap-2"
                   >
                     {signFormMutation.isPending ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -290,7 +309,7 @@ export function InlineFormSigning({
               )}
 
               {signFormMutation.isPending && !user?.savedSignature && (
-                <div className="flex items-center gap-2 text-primary text-[10px] font-bold uppercase tracking-widest animate-pulse">
+                <div className="flex items-center gap-2 text-primary text-sm font-bold uppercase tracking-widest animate-pulse">
                   <Loader2 className="w-3 h-3 animate-spin" />
                   Saving Signature...
                 </div>

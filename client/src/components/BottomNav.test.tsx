@@ -2,6 +2,14 @@ import { render, screen } from "@testing-library/react";
 import BottomNav from "./BottomNav";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
+vi.mock("@/contexts/TeaserContext", () => ({
+  useTeaser: () => ({ isTeaser: false, isTeaserMode: false }),
+}));
+
+vi.mock("@/_core/hooks/useAuth", () => ({
+  useAuth: () => ({ user: { role: "artist" } }),
+}));
+
 // Mocks
 vi.mock("wouter", () => ({
   Link: ({ children, href }: any) => <a href={href}>{children}</a>,

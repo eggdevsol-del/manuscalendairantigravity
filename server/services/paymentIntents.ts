@@ -1,15 +1,15 @@
 /**
  * PaymentIntent Service — Direct PaymentIntent creation for custom checkout UI
- * 
+ *
  * These functions mirror the existing `create*CheckoutSession` functions in stripe.ts
  * but create PaymentIntents directly instead of Checkout Sessions.
- * 
+ *
  * Key differences from Checkout Sessions:
  * - No iframe — the frontend renders its own UI with Stripe's <PaymentElement />
  * - `stripe.confirmPayment()` returns a Promise (no redirect needed)
  * - Receipt emails are sent via `receipt_email` on the PaymentIntent
  * - Metadata is identical — the webhook handler processes both uniformly
- * 
+ *
  * @version 1.0.0
  */
 
@@ -19,6 +19,8 @@ import type Stripe from "stripe";
 // ── Deposit PaymentIntent ────────────────────────────────────────────────────
 export async function createDepositPaymentIntent(opts: {
   leadId: number;
+  sessionPlanId?: number;
+  idempotencyKey?: string;
   depositAmountCents: number;
   platformFeeCents: number;
   artistFeeCents: number;
@@ -39,9 +41,9 @@ export async function createDepositPaymentIntent(opts: {
     receipt_email: opts.clientEmail || undefined,
     description: `Booking Deposit — ${opts.artistName}`,
     metadata: {
-      type: "deposit",
+      type: opts.sessionPlanId ? "session_plan_deposit" : "deposit",
+      sessionPlanId: opts.sessionPlanId ? String(opts.sessionPlanId) : "",
       leadId: String(opts.leadId),
-      depositToken: opts.depositToken,
       messageId: opts.messageId ? String(opts.messageId) : "",
       platformFeeCents: String(opts.platformFeeCents),
       artistFeeCents: String(opts.artistFeeCents),
@@ -60,7 +62,10 @@ export async function createDepositPaymentIntent(opts: {
     };
   }
 
-  const pi = await stripe.paymentIntents.create(piConfig);
+  const pi = await stripe.paymentIntents.create(
+    piConfig,
+    opts.idempotencyKey ? { idempotencyKey: opts.idempotencyKey } : undefined
+  );
   return { clientSecret: pi.client_secret!, paymentIntentId: pi.id };
 }
 
@@ -93,7 +98,6 @@ export async function createBalancePaymentIntent(opts: {
       baseAmountCents: String(opts.balanceAmountCents),
       stripeConnectAccountId: opts.stripeConnectAccountId || "",
       tier: opts.tier,
-      balanceToken: opts.balanceToken || "",
     },
   };
 
@@ -105,7 +109,9 @@ export async function createBalancePaymentIntent(opts: {
     };
   }
 
-  const pi = await stripe.paymentIntents.create(piConfig);
+  const pi = await stripe.paymentIntents.create(piConfig, {
+    idempotencyKey: `booking-${opts.bookingId}-balance-${opts.clientTotalCents}`,
+  });
   return { clientSecret: pi.client_secret!, paymentIntentId: pi.id };
 }
 
@@ -202,7 +208,12 @@ export async function createPaymentRequestPaymentIntent(opts: {
 // ── Supplier Order PaymentIntent ─────────────────────────────────────────────
 export async function createSupplierPaymentIntent(opts: {
   orderId: number;
-  items: { productTitle: string; variantTitle?: string; priceCents: number; quantity: number }[];
+  items: {
+    productTitle: string;
+    variantTitle?: string;
+    priceCents: number;
+    quantity: number;
+  }[];
   supplierName: string;
   totalCents: number;
   platformFeeCents: number;

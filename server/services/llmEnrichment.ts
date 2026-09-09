@@ -97,7 +97,11 @@ export async function compileDesignBrief(
   });
 
   if (tags.length === 0) {
-    return { briefText: "No messages tagged yet. Tap messages in chat to build a design brief.", messageCount: 0 };
+    return {
+      briefText:
+        "No messages tagged yet. Tap messages in chat to build a design brief.",
+      messageCount: 0,
+    };
   }
 
   // Group tagged messages by tag category
@@ -110,7 +114,10 @@ export async function compileDesignBrief(
 
   // Build the user prompt
   const taggedContent = Object.entries(grouped)
-    .map(([tag, msgs]) => `[${tag.toUpperCase()}]\n${msgs.map((m, i) => `${i + 1}. "${m}"`).join("\n")}`)
+    .map(
+      ([tag, msgs]) =>
+        `[${tag.toUpperCase()}]\n${msgs.map((m, i) => `${i + 1}. "${m}"`).join("\n")}`
+    )
     .join("\n\n");
 
   const userPrompt = `Here are the tagged messages from this client conversation:\n\n${taggedContent}\n\nCompile a design brief from these messages.`;
@@ -153,16 +160,19 @@ export async function generatePersonalisedMessage(
     limit: 5,
   });
 
-  const channelGuidance = channel === "sms"
-    ? "Write a SHORT SMS (max 160 characters). Direct and professional. No greeting, no sign-off. Just the message."
-    : "Write a brief email body (2-3 sentences max). Professional tone. Start with 'Hi [client name],' then the message. No sign-off, no signature, no subject line.";
+  const channelGuidance =
+    channel === "sms"
+      ? "Write a SHORT SMS (max 160 characters). Direct and professional. No greeting, no sign-off. Just the message."
+      : "Write a brief email body (2-3 sentences max). Professional tone. Start with 'Hi [client name],' then the message. No sign-off, no signature, no subject line.";
 
   const contextParts: string[] = [];
   if (taskType) contextParts.push(`Task Type: ${taskType}`);
   if (brief?.briefText) contextParts.push(`Design Brief:\n${brief.briefText}`);
   if (taskContext) contextParts.push(`Task Context: ${taskContext}`);
   if (recentMessages.length > 0) {
-    contextParts.push(`Recent messages (newest first):\n${recentMessages.map(m => `- ${m.content}`).join("\n")}`);
+    contextParts.push(
+      `Recent messages (newest first):\n${recentMessages.map(m => `- ${m.content}`).join("\n")}`
+    );
   }
 
   const userPrompt = `Client name: ${clientName}\n\n${contextParts.join("\n\n")}\n\n${channelGuidance}`;
@@ -177,13 +187,19 @@ export async function generatePersonalisedMessage(
   });
 
   // Clean up any residual formatting the LLM might add
-  let draft = extractTextContent(result)
-    || `Hi ${clientName}, just checking in — let me know if you have any questions.`;
+  let draft =
+    extractTextContent(result) ||
+    `Hi ${clientName}, just checking in — let me know if you have any questions.`;
 
   // Strip any "Subject:" line the LLM might include despite instructions
   draft = draft.replace(/^subject:.*\n?/i, "").trim();
   // Strip any trailing sign-offs
-  draft = draft.replace(/\n\n?(best regards|kind regards|regards|cheers|thanks|sincerely|warm regards)[,.]?[\s\S]*/i, "").trim();
+  draft = draft
+    .replace(
+      /\n\n?(best regards|kind regards|regards|cheers|thanks|sincerely|warm regards)[,.]?[\s\S]*/i,
+      ""
+    )
+    .trim();
 
   return draft;
 }
@@ -209,11 +225,9 @@ export async function summariseConversationState(
   });
 
   // Cache is valid if: exists, within TTL, AND no new messages since generation
-  if (
-    cached?.conversationSummary &&
-    cached.summaryGeneratedAt
-  ) {
-    const summaryAge = Date.now() - new Date(cached.summaryGeneratedAt).getTime();
+  if (cached?.conversationSummary && cached.summaryGeneratedAt) {
+    const summaryAge =
+      Date.now() - new Date(cached.summaryGeneratedAt).getTime();
     const lastMsg = conversation?.lastMessageAt
       ? new Date(conversation.lastMessageAt).getTime()
       : 0;
@@ -228,7 +242,7 @@ export async function summariseConversationState(
   // Fetch the entire conversation (up to 100 messages) in chronological order
   const allMessages = await database.query.messages.findMany({
     where: eq(messages.conversationId, conversationId),
-    orderBy: [asc(messages.createdAt)],
+    orderBy: [desc(messages.createdAt)],
     limit: 100,
   });
 
@@ -237,16 +251,19 @@ export async function summariseConversationState(
   }
 
   // Format all messages with timestamps for the LLM
-  const formattedMessages = allMessages.map((m) => {
-    const role = m.senderId === artistId ? "Artist" : "Client";
-    const timestamp = m.createdAt
-      ? new Date(m.createdAt).toLocaleString("en-NZ", {
-          dateStyle: "medium",
-          timeStyle: "short",
-        })
-      : "unknown time";
-    return `[${timestamp}] ${role}: ${m.content}`;
-  }).join("\n");
+  const formattedMessages = allMessages
+    .reverse()
+    .map(m => {
+      const role = m.senderId === artistId ? "Artist" : "Client";
+      const timestamp = m.createdAt
+        ? new Date(m.createdAt).toLocaleString("en-NZ", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          })
+        : "unknown time";
+      return `[${timestamp}] ${role}: ${m.content}`;
+    })
+    .join("\n");
 
   // Build context
   const contextParts: string[] = [
@@ -271,7 +288,10 @@ export async function summariseConversationState(
         .update(designBriefs)
         .set({
           conversationSummary: summary,
-          summaryGeneratedAt: new Date(),
+          summaryGeneratedAt: new Date()
+            .toISOString()
+            .slice(0, 19)
+            .replace("T", " "),
         })
         .where(eq(designBriefs.id, cached.id));
     } else {
@@ -282,7 +302,10 @@ export async function summariseConversationState(
         briefText: "",
         messageCount: 0,
         conversationSummary: summary,
-        summaryGeneratedAt: new Date(),
+        summaryGeneratedAt: new Date()
+          .toISOString()
+          .slice(0, 19)
+          .replace("T", " "),
       });
     }
   } catch (e) {
@@ -333,15 +356,19 @@ export async function generateProjectName(
     // Build context from messages (oldest first)
     const msgContext = recentMessages
       .reverse()
-      .map((m) => `${m.senderRole === "artist" ? "Artist" : "Client"}: ${m.content}`)
+      .map(m => `Participant ${m.senderId}: ${m.content}`)
       .join("\n");
 
     const result = await invokeLLM({
-      model: "gpt-4o-mini",
-      systemPrompt: PROJECT_NAME_SYSTEM_PROMPT,
-      userPrompt: `Based on this conversation, generate a project name:\n\n${msgContext}`,
+      messages: [
+        { role: "system", content: PROJECT_NAME_SYSTEM_PROMPT },
+        {
+          role: "user",
+          content: `Based on this conversation, generate a project name:\n\n${msgContext}`,
+        },
+      ],
       maxTokens: 30,
-      temperature: 0.4,
+      disableThinking: true,
     });
 
     const name = extractTextContent(result)?.trim();
@@ -357,4 +384,3 @@ export async function generateProjectName(
     return fallbackTitle || "Custom piece";
   }
 }
-

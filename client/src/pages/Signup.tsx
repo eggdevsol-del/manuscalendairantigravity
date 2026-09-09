@@ -1,821 +1,174 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
-import {
-  Button,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Input,
-  Label,
-} from "@/components/ui";
-import { PageShell } from "@/components/ui/ssot";
-import { GooglePlacesInput } from "@/components/ui/GooglePlacesInput";
-import { tokens } from "@/ui/tokens";
-import { cn } from "@/lib/utils";
-import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
-import {
-  Eye,
-  EyeOff,
-  Loader2,
-  UserPlus,
-  Mail,
-  User,
-  Phone,
-  CalendarDays,
-  MapPin,
-  Globe,
-  Store,
-} from "lucide-react";
-import { useGoogleAuthReady } from "@/lib/google-auth";
+import { useState, useEffect } from "react";
+import { Link, useSearch } from "wouter";
+import { Loader2, ArrowRight } from "lucide-react";
+import { Button, Input, Label } from "@/components/ui";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
-import ClientTerminalSignup from "./ClientTerminalSignup";
-
-type Step = "form" | "complete-profile";
+import { useGoogleAuthReady } from "@/lib/google-auth";
+import { finishSignIn } from "@/lib/auth-session";
+import { trpc } from "@/lib/trpc";
+import SupplierSignup from "./SupplierSignup";
 
 export default function Signup() {
-  const [, setLocation] = useLocation();
-
-  // Form step (form = normal signup, complete-profile = after Google OAuth)
-  const [step, setStep] = useState<Step>("form");
-
-  // User fields
+  const search = useSearch();
+  const initialRole = new URLSearchParams(search).get("role");
+  const [role, setRole] = useState<"client" | "artist">(
+    initialRole === "artist" ? "artist" : "client"
+  );
+  useEffect(() => {
+    setRole(initialRole === "artist" ? "artist" : "client");
+  }, [initialRole]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [birthday, setBirthday] = useState("");
-  const [gender, setGender] = useState("");
-  const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
-  const [businessName, setBusinessName] = useState("");
-  const [websiteUrl, setWebsiteUrl] = useState("");
-  
-  const currentParams = new URLSearchParams(window.location.search);
-  const isClientRole = currentParams.get("role") === "client";
-  
-  const [accountType, setAccountType] = useState<"artist" | "supplier">(isClientRole ? "artist" : "artist");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-
-
-  // Google OAuth state — stored so we can update profile after completion
-  const [googleToken, setGoogleToken] = useState<string | null>(null);
-
-  const checkEmailMutation = trpc.auth.checkEmailExists.useMutation();
-  const updateProfileMutation = trpc.auth.updateProfile.useMutation();
-  const googleLoginMutation = trpc.auth.googleLogin.useMutation();
-  const utils = trpc.useUtils();
-
-  const handleSignupSuccess = (data: any) => {
-    const userObj = data.user || { 
-      id: data.userId, 
-      role: accountType === "supplier" ? "merchant" : accountType,
-      email: email,
-      name: name
-    };
-    localStorage.setItem("authToken", data.token);
-    localStorage.setItem("user", JSON.stringify(userObj));
-    utils.auth.me.setData(undefined, userObj);
-    toast.success("Account created! Welcome to CalendAIr.");
-    const role = userObj.role;
-    const target = role === "merchant" ? "/dashboard" : role === "client" ? "/discover" : "/dashboard";
-    setLocation(target);
-    setIsLoading(false);
-  };
-
-  const merchantRegisterMutation = trpc.merchantAuth.register.useMutation({
-    onSuccess: handleSignupSuccess,
-    onError: (error) => handleSignupError(error),
+  const [googleError, setGoogleError] = useState("");
+  const ready = useGoogleAuthReady();
+  const register = trpc.auth.register.useMutation({
+    onSuccess: data => finishSignIn(data),
   });
-
-  const registerMutation = trpc.auth.register.useMutation({
-    onSuccess: handleSignupSuccess,
-    onError: (error) => handleSignupError(error),
+  const google = trpc.auth.googleLogin.useMutation({
+    onSuccess: data => finishSignIn(data),
   });
-
-  const handleSignupError = (error: any) => {
-      if (
-        error.data?.code === "CONFLICT" ||
-        error.message.includes("already exists")
-      ) {
-        checkEmailMutation.mutate(
-          { email },
-          {
-            onSuccess: result => {
-              if (result.exists && result.isFunnelClient) {
-                toast.info(
-                  "Looks like you've already been in touch with your artist. Let's set up your password."
-                );
-                setLocation(
-                  `/set-password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(result.name || name)}`
-                );
-              } else if (result.exists) {
-                toast.error(
-                  "An account with this email already exists. Try signing in instead."
-                );
-              }
-              setIsLoading(false);
-            },
-            onError: () => {
-              toast.error("An account with this email already exists.");
-              setIsLoading(false);
-            },
-          }
-        );
-      } else {
-        toast.error(error.message || "Registration failed. Please try again.");
-        setIsLoading(false);
-      }
-    };
-
-  // --- Google Sign-In ---
-  const isGoogleReady = useGoogleAuthReady();
-
-  const handleGoogleSuccess = async (code: string) => {
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const urlRole = params.get("role") as "artist" | "client" | null;
-      const referralArtistId = params.get("referralArtistId") || undefined;
-      
-      const result = await googleLoginMutation.mutateAsync({
-        code,
-        role: urlRole || "artist",
-        referralArtistId,
-      });
-
-      // Store auth immediately so profile update works
-      localStorage.setItem("authToken", result.token);
-      localStorage.setItem("user", JSON.stringify(result.user));
-      setGoogleToken(result.token);
-
-      if (result.isNewUser) {
-        setName(result.user.name || "");
-        setEmail(result.user.email || "");
-        setStep("complete-profile");
-        toast.success("Google account linked! Please complete your profile.");
-      } else {
-        toast.success("Welcome back!");
-        window.location.href = "/discover";
-      }
-    } catch (err: any) {
-      toast.error(err?.message || "Google sign-in failed. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // --- Email/Password Submit ---
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!name || !email || !password || !confirmPassword) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
-    setIsLoading(true);
-
-    let formattedWebsiteUrl = websiteUrl;
-    if (formattedWebsiteUrl && !/^https?:\/\//i.test(formattedWebsiteUrl)) {
-      formattedWebsiteUrl = `https://${formattedWebsiteUrl}`;
-    }
-
-    const params = new URLSearchParams(window.location.search);
-    const urlRole = params.get("role") as "artist" | "client" | null;
-    const referralArtistId = params.get("referralArtistId") || undefined;
-
-    checkEmailMutation.mutate(
-      { email },
-      {
-        onSuccess: result => {
-          if (result.exists && result.isFunnelClient) {
-            toast.info(
-              "Looks like you've already been in touch with your artist. Let's set up your password."
-            );
-            setLocation(
-              `/set-password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(result.name || name)}`
-            );
-            setIsLoading(false);
-          } else if (result.exists) {
-            toast.error(
-              "An account with this email already exists. Try signing in instead."
-            );
-            setIsLoading(false);
-          } else {
-            if (accountType === "supplier") {
-              merchantRegisterMutation.mutate({
-                name,
-                email,
-                password,
-                businessName,
-                country: (country === "New Zealand" || country === "NZ") ? "NZ" : "AU",
-                websiteUrl: formattedWebsiteUrl,
-              });
-            } else {
-              registerMutation.mutate({
-                name,
-                email,
-                password,
-                role: isClientRole ? "client" : "artist",
-                ...(referralArtistId ? { referralArtistId } : {}),
-                ...(phone ? { phone } : {}),
-                ...(birthday ? { birthday } : {}),
-                ...(gender ? { gender: gender as any } : {}),
-                ...(city ? { city } : {}),
-                ...(country ? { country } : {}),
-              });
-            }
-          }
-        },
-        onError: () => {
-          if (accountType === "supplier") {
-            merchantRegisterMutation.mutate({
-              name,
-              email,
-              password,
-              businessName,
-              country: (country === "New Zealand" || country === "NZ") ? "NZ" : "AU",
-              websiteUrl: formattedWebsiteUrl,
-            });
-          } else {
-            registerMutation.mutate({
-              name,
-              email,
-              password,
-              role: isClientRole ? "client" : "artist",
-              ...(referralArtistId ? { referralArtistId } : {}),
-              ...(phone ? { phone } : {}),
-              ...(birthday ? { birthday } : {}),
-              ...(gender ? { gender: gender as any } : {}),
-              ...(city ? { city } : {}),
-              ...(country ? { country } : {}),
-              ...(referralArtistId ? { referralArtistId } : {}),
-            });
-          }
-        },
-      }
-    );
-  };
-
-  // --- Complete Profile (Post-Google) ---
-  const handleCompleteProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      await updateProfileMutation.mutateAsync({
-        ...(phone ? { phone } : {}),
-        ...(birthday ? { birthday } : {}),
-        ...(city ? { city } : {}),
-        ...(name ? { name } : {}),
-      });
-
-      toast.success("Profile complete! Let's get started.");
-      setLocation("/discover");
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to update profile. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // ------- STEP: COMPLETE PROFILE (post-Google OAuth) -------
-  if (step === "complete-profile") {
-    return (
-      <PageShell className="justify-center items-center px-4 py-8 overflow-y-auto mobile-scroll">
-        <div className="w-full max-w-md shrink-0 mt-auto mb-auto">
-          <CardHeader className="space-y-1 text-center pb-6 border-none">
-            <div className={tokens.authFlow.iconContainer}>
-              <UserPlus className="w-8 h-8 text-primary" />
-            </div>
-            <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
-              Complete Your Profile
-            </CardTitle>
-            <CardDescription className="text-sm font-medium">
-              A few more details so your artist can keep in touch
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleCompleteProfile} className="space-y-4">
-              {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="04XX XXX XXX"
-                    value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                    variant="hero"
-                    className="pl-10"
-                    disabled={isLoading}
-                  />
-                </div>
-                <p className="text-[11px] text-muted-foreground/70">
-                  For appointment reminders via SMS
-                </p>
-              </div>
-
-              {/* Birthday */}
-              <div className="space-y-2">
-                <Label htmlFor="birthday">Date of Birth</Label>
-                <div className="relative">
-                  <CalendarDays className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    id="birthday"
-                    type="date"
-                    value={birthday}
-                    onChange={e => setBirthday(e.target.value)}
-                    variant="hero"
-                    className="pl-10"
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-
-              {/* Gender */}
-              <div className="space-y-2">
-                <Label>Gender</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { value: "male", label: "Male" },
-                    { value: "female", label: "Female" },
-                    { value: "other", label: "Other" },
-                  ].map(opt => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setGender(opt.value)}
-                        className={
-                          gender === opt.value
-                            ? tokens.authFlow.genderButtonActive
-                            : tokens.authFlow.genderButton
-                        }
-                      disabled={isLoading}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* City & Country */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <GooglePlacesInput
-                    placeholder="Search city..."
-                    defaultValue={city}
-                    onPlaceSelected={(place) => {
-                      const cityComp = place.address_components.find(c => c.types.includes("locality"));
-                      const countryComp = place.address_components.find(c => c.types.includes("country"));
-                      setCity(cityComp?.long_name || place.name || "");
-                      if (countryComp) setCountry(countryComp.long_name);
-                    }}
-                    className={tokens.authFlow.placesInput}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="country">Country</Label>
-                  <div className="relative">
-                    <Globe className="absolute left-3 top-4 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="country"
-                      type="text"
-                      placeholder="New Zealand"
-                      value={country}
-                      onChange={e => setCountry(e.target.value)}
-                      variant="hero"
-                      className="pl-9"
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className={cn(tokens.button.auth, "mt-4")}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  "Continue"
-                )}
-              </Button>
-
-              <button
-                type="button"
-                onClick={() => setLocation("/discover")}
-                className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors mt-2"
-              >
-                Skip for now
-              </button>
-            </form>
-          </CardContent>
-        </div>
-      </PageShell>
-    );
-  }
-
-  // ------- STEP: MAIN SIGNUP FORM -------
-
-  // Client signup uses the CRT terminal-style form
-  if (isClientRole) {
-    return <ClientTerminalSignup />;
-  }
-
+  const busy = register.isPending || google.isPending;
+  if (initialRole === "supplier") return <SupplierSignup />;
   return (
-    <PageShell className="items-center px-4 py-8 !overflow-y-auto mobile-scroll">
-      <div className="w-full max-w-md shrink-0">
-        <CardHeader className="space-y-1 text-center pb-6 border-none">
-          <div className={tokens.authFlow.iconContainer}>
-            <UserPlus className="w-8 h-8 text-primary" />
-          </div>
-          <CardTitle className="text-3xl font-bold tracking-tight text-foreground">
-            {isClientRole 
-              ? "Create d.o.t.s Account" 
-              : accountType === "supplier" 
-                ? "Create Supplier Account" 
-                : "Create Artist Account"}
-          </CardTitle>
-          <CardDescription className="text-base font-medium">
-            {isClientRole 
-              ? "Sign up to track your orders and chat with your artist"
-              : accountType === "supplier"
-                ? "Start selling products directly to professional tattoo artists"
-                : "Set up your booking link and start managing clients"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Google Sign-In — only rendered when provider is ready and not supplier */}
-          {isGoogleReady && accountType !== "supplier" && (
-            <GoogleLoginButton
-              onSuccess={handleGoogleSuccess}
-              onError={() => toast.error("Google sign-in was cancelled or failed.")}
-              disabled={isLoading}
-            />
-          )}
-
-          {accountType !== "supplier" && (
-            <div className="relative mb-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-[10px] font-bold tracking-widest uppercase">
-                <span className="bg-background px-4 text-muted-foreground">
-                  {isGoogleReady ? "Or sign up with email" : "Sign up with email"}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {!isClientRole && (
-            <div className={tokens.authFlow.toggleContainer}>
-              <button
-                type="button"
-                className={
-                  accountType === "artist" ? tokens.authFlow.toggleButtonActive : tokens.authFlow.toggleButton
-                }
-                onClick={() => setAccountType("artist")}
-              >
-                Tattoo Artist
-              </button>
-              <button
-                type="button"
-                className={
-                  accountType === "supplier" ? tokens.authFlow.toggleButtonActive : tokens.authFlow.toggleButton
-                }
-                onClick={() => setAccountType("supplier")}
-              >
-                Supplier / Brand
-              </button>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Full Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">
-                Full Name <span className="text-[var(--color-status-danger-text)]">*</span>
-              </Label>
-              <div className="relative">
-                <User className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="John Doe"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  variant="hero"
-                  className="pl-10"
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email">
-                Email <span className="text-[var(--color-status-danger-text)]">*</span>
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  variant="hero"
-                  className="pl-10"
-                  disabled={isLoading}
-                  required
-                />
-              </div>
-            </div>
-
-            {accountType === "supplier" && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="businessName">
-                    Business Name <span className="text-[var(--color-status-danger-text)]">*</span>
-                  </Label>
-                  <div className="relative">
-                    <Store className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      id="businessName"
-                      type="text"
-                      placeholder="My Supply Co."
-                      value={businessName}
-                      onChange={e => setBusinessName(e.target.value)}
-                      variant="hero"
-                      className="pl-10"
-                      disabled={isLoading}
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="websiteUrl">
-                    Store Website URL <span className="text-[var(--color-status-danger-text)]">*</span>
-                  </Label>
-                  <div className="relative">
-                    <Globe className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      id="websiteUrl"
-                      type="text"
-                      placeholder="mysupply.co"
-                      value={websiteUrl}
-                      onChange={e => setWebsiteUrl(e.target.value)}
-                      variant="hero"
-                      className="pl-10"
-                      disabled={isLoading}
-                      required
-                    />
-                  </div>
-                  <p className="text-[11px] text-muted-foreground/70">
-                    We'll use this to set up your d.o.t.s profile!
-                  </p>
-                </div>
-              </>
-            )}
-
-            {accountType === "artist" && (
-              <>
-                {/* Phone */}
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="04XX XXX XXX"
-                      value={phone}
-                      onChange={e => setPhone(e.target.value)}
-                      variant="hero"
-                      className="pl-10"
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <p className="text-[11px] text-muted-foreground/70">
-                    So your artist can send you appointment reminders
-                  </p>
-                </div>
-
-                {/* Birthday */}
-                <div className="space-y-2">
-                  <Label htmlFor="birthday">Date of Birth</Label>
-                  <div className="relative">
-                    <CalendarDays className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      id="birthday"
-                      type="date"
-                      value={birthday}
-                      onChange={e => setBirthday(e.target.value)}
-                      variant="hero"
-                      className="pl-10"
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-
-                {/* Gender */}
-                <div className="space-y-2">
-                  <Label>Gender</Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { value: "male", label: "Male" },
-                      { value: "female", label: "Female" },
-                      { value: "other", label: "Other" },
-                    ].map(opt => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => setGender(opt.value)}
-                        className={
-                          gender === opt.value
-                            ? tokens.authFlow.genderButtonActive
-                            : tokens.authFlow.genderButton
-                        }
-                        disabled={isLoading}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* City & Country */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <GooglePlacesInput
-                  placeholder="Search city..."
-                  defaultValue={city}
-                  onPlaceSelected={(place) => {
-                    const cityComp = place.address_components.find(c => c.types.includes("locality"));
-                    const countryComp = place.address_components.find(c => c.types.includes("country"));
-                    setCity(cityComp?.long_name || place.name || "");
-                    if (countryComp) setCountry(countryComp.long_name);
-                  }}
-                  className={tokens.authFlow.placesInput}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
-                <div className="relative">
-                  <Globe className="absolute left-3 top-4 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="country"
-                    type="text"
-                    placeholder="New Zealand"
-                    value={country}
-                    onChange={e => setCountry(e.target.value)}
-                    variant="hero"
-                    className="pl-9"
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Password */}
-            <div className="space-y-2">
-              <Label htmlFor="password">
-                Password <span className="text-[var(--color-status-danger-text)]">*</span>
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="At least 8 characters"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  variant="hero"
-                  className="pr-10"
-                  disabled={isLoading}
-                  required
-                  minLength={8}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-4 text-muted-foreground hover:text-foreground outline-none"
-                  disabled={isLoading}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-6 w-6" />
-                  ) : (
-                    <Eye className="h-6 w-6" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Confirm Password */}
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">
-                Confirm Password <span className="text-[var(--color-status-danger-text)]">*</span>
-              </Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Re-enter your password"
-                  value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
-                  variant="hero"
-                  className="pr-10"
-                  disabled={isLoading}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-4 text-muted-foreground hover:text-foreground outline-none"
-                  disabled={isLoading}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-6 w-6" />
-                  ) : (
-                    <Eye className="h-6 w-6" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              className={cn(tokens.button.auth, "mt-4")}
-              disabled={isLoading}
+    <AuthLayout
+      title={
+        role === "artist"
+          ? "Make more room for your craft"
+          : "Start your tattoo journey"
+      }
+      description={
+        role === "artist"
+          ? "Bring your enquiries, bookings and clients together. Set up the details as you go."
+          : "Save the work you love and connect with your next artist."
+      }
+    >
+      <fieldset className="mb-6">
+        <legend className="text-sm font-medium mb-2">I'm here to</legend>
+        <div className="grid grid-cols-2 gap-2">
+          {(
+            [
+              ["client", "Find an artist"],
+              ["artist", "Manage my work"],
+            ] as const
+          ).map(([value, label]) => (
+            <label
+              key={value}
+              className={`flex gap-2 items-center justify-center border rounded-xl p-3 text-sm cursor-pointer ${role === value ? "border-primary bg-primary/10" : "border-border"}`}
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Creating account...
-                </>
-              ) : (
-                "Create Account"
-              )}
-            </Button>
-          </form>
-
-          <div className="mt-8 space-y-4">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-[10px] font-bold tracking-widest uppercase">
-                <span className="bg-background px-4 text-muted-foreground">
-                  Already have an account?
-                </span>
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              className={tokens.button.authSecondary}
-              onClick={() => setLocation("/login")}
-              disabled={isLoading}
-            >
-              Sign In
-            </Button>
-          </div>
-
-          <p className="mt-4 text-xs text-center text-muted-foreground">
-            By creating an account, you agree to our Terms of Service and
-            Privacy Policy
+              <input
+                type="radio"
+                name="role"
+                checked={role === value}
+                onChange={() => setRole(value)}
+                className="accent-[var(--primary)]"
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      {ready && (
+        <GoogleLoginButton
+          onSuccess={code => google.mutate({ code, role })}
+          onError={() =>
+            setGoogleError(
+              "Google sign-up could not complete. You can use email below."
+            )
+          }
+          disabled={busy}
+        />
+      )}
+      <form
+        className="space-y-4"
+        onSubmit={e => {
+          e.preventDefault();
+          register.mutate({
+            name: name.trim(),
+            email: email.trim(),
+            password,
+            role,
+          });
+        }}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="name">Full name</Label>
+          <Input
+            id="name"
+            autoComplete="name"
+            required
+            value={name}
+            onChange={e => setName(e.target.value)}
+            className="h-12 rounded-xl"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="email">Email address</Label>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            className="h-12 rounded-xl"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="password">Create a password</Label>
+          <Input
+            id="password"
+            type="password"
+            autoComplete="new-password"
+            minLength={8}
+            maxLength={128}
+            required
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            className="h-12 rounded-xl"
+            aria-describedby="password-hint"
+          />
+          <p id="password-hint" className="text-xs text-muted-foreground">
+            At least 8 characters. A longer passphrase is easier to remember.
           </p>
-        </CardContent>
-      </div>
-    </PageShell>
+        </div>
+        {(register.error || google.error || googleError) && (
+          <p role="alert" className="text-sm text-destructive">
+            {register.error?.message || google.error?.message || googleError}
+          </p>
+        )}
+        <Button
+          disabled={busy}
+          type="submit"
+          className="w-full h-12 rounded-xl font-semibold"
+        >
+          {busy ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <>
+              Create account <ArrowRight className="h-4 w-4 ml-2" />
+            </>
+          )}
+        </Button>
+      </form>
+      <p className="text-sm text-center mt-6 text-muted-foreground">
+        Already have an account?{" "}
+        <Link
+          href="/login"
+          className="text-foreground underline underline-offset-4"
+        >
+          Sign in
+        </Link>
+      </p>
+      <p className="text-xs text-center mt-4 text-muted-foreground">
+        <Link
+          href="/signup?role=supplier"
+          className="underline underline-offset-4"
+        >
+          Register a supplier business
+        </Link>
+      </p>
+    </AuthLayout>
   );
 }

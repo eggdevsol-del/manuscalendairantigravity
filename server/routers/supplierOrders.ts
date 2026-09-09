@@ -40,7 +40,7 @@ export const supplierOrdersRouter = router({
       const settings = await db.query.artistSettings.findFirst({
         where: eq(schema.artistSettings.userId, ctx.user.id),
       });
-      const artistCountry = settings?.country || "AU";
+      const artistCountry = settings?.businessCountry || "AU";
 
       // Get shipping zones for this supplier
       const zones = await db.query.supplierShippingZones.findMany({
@@ -59,7 +59,10 @@ export const supplierOrdersRouter = router({
 
       for (const zone of zones) {
         const countryCodes = JSON.parse(zone.countryCodes || "[]");
-        if (countryCodes.includes(artistCountry) || countryCodes.includes("*")) {
+        if (
+          countryCodes.includes(artistCountry) ||
+          countryCodes.includes("*")
+        ) {
           for (const rate of zone.rates) {
             matchingRates.push({
               name: rate.name,
@@ -122,11 +125,11 @@ export const supplierOrdersRouter = router({
 
       if (!artistSettings || !artistUser) throw new Error("Artist not found");
 
-      const artistCountry = artistSettings.country || "AU";
+      const artistCountry = artistSettings.businessCountry || "AU";
       const artistCurrency = currencyForCountry(artistCountry);
 
       // 3. Validate all items and calculate subtotal (in supplier currency)
-      const variantIds = input.items.map((i) => i.variantId);
+      const variantIds = input.items.map(i => i.variantId);
       const variants = await db.query.supplierProductVariants.findMany({
         where: inArray(schema.supplierProductVariants.id, variantIds),
         with: { product: true },
@@ -148,7 +151,7 @@ export const supplierOrdersRouter = router({
       }[] = [];
 
       for (const item of input.items) {
-        const variant = variants.find((v) => v.id === item.variantId);
+        const variant = variants.find(v => v.id === item.variantId);
         if (!variant) throw new Error(`Variant ${item.variantId} not found`);
 
         if (variant.inventoryCount < item.quantity) {
@@ -172,8 +175,13 @@ export const supplierOrdersRouter = router({
       }
 
       // 4. Currency conversion: supplier → artist
-      const exchangeRate = await getExchangeRate(supplierCurrency, artistCurrency);
-      const subtotalArtistCents = Math.round(subtotalSupplierCents * exchangeRate);
+      const exchangeRate = await getExchangeRate(
+        supplierCurrency,
+        artistCurrency
+      );
+      const subtotalArtistCents = Math.round(
+        subtotalSupplierCents * exchangeRate
+      );
 
       // 5. Calculate platform fee on the artist-currency subtotal
       const tier = resolvePaymentTier(artistSettings.subscriptionTier);
@@ -189,9 +197,12 @@ export const supplierOrdersRouter = router({
 
         for (const zone of zones) {
           const countryCodes = JSON.parse(zone.countryCodes || "[]");
-          if (countryCodes.includes(artistCountry) || countryCodes.includes("*")) {
+          if (
+            countryCodes.includes(artistCountry) ||
+            countryCodes.includes("*")
+          ) {
             const matchingRate = zone.rates.find(
-              (r) => r.name === input.shippingRateName
+              r => r.name === input.shippingRateName
             );
             if (matchingRate) {
               shippingSupplierCents = matchingRate.priceCents;
@@ -201,7 +212,9 @@ export const supplierOrdersRouter = router({
         }
       }
 
-      const shippingArtistCents = Math.round(shippingSupplierCents * exchangeRate);
+      const shippingArtistCents = Math.round(
+        shippingSupplierCents * exchangeRate
+      );
 
       // 7. Total in artist currency
       const totalCents =
@@ -246,7 +259,7 @@ export const supplierOrdersRouter = router({
       // 11. Create Stripe checkout session
       const sessionResult = await createSupplierCheckoutSession({
         orderId,
-        items: enrichedItems.map((item) => ({
+        items: enrichedItems.map(item => ({
           productTitle: item.productTitle,
           variantTitle: item.variantTitle,
           priceCents: Math.round(item.priceCents * exchangeRate),
@@ -304,10 +317,13 @@ export const supplierOrdersRouter = router({
       });
 
       if (!order) throw new Error("Order not found");
-      if (order.status === "paid") return { success: true, alreadyConfirmed: true };
+      if (order.status === "paid")
+        return { success: true, alreadyConfirmed: true };
 
       // 2. Verify Stripe session
-      const session = await stripe.checkout.sessions.retrieve(input.stripeSessionId);
+      const session = await stripe.checkout.sessions.retrieve(
+        input.stripeSessionId
+      );
       if (session.payment_status !== "paid") {
         throw new Error("Payment has not been completed");
       }
@@ -322,16 +338,19 @@ export const supplierOrdersRouter = router({
               ? session.payment_intent
               : session.payment_intent?.id,
           stripeCheckoutSessionId: session.id,
-          shippingAddress: session.shipping_details
-            ? JSON.stringify(session.shipping_details)
+          shippingAddress: session.collected_information?.shipping_details
+            ? JSON.stringify(session.collected_information?.shipping_details)
             : null,
-          shippingName: session.shipping_details?.name || null,
+          shippingName:
+            session.collected_information?.shipping_details?.name || null,
         })
         .where(eq(schema.supplierOrders.id, input.orderId));
 
       // 4. Attempt Shopify draft order creation
-      let shopifyResult: { draftOrderId: string; draftOrderName: string } | null =
-        null;
+      let shopifyResult: {
+        draftOrderId: string;
+        draftOrderName: string;
+      } | null = null;
 
       if (order.supplier?.merchantId) {
         try {
@@ -341,12 +360,19 @@ export const supplierOrdersRouter = router({
 
           if (merchant?.shopifyDomain && merchant?.shopifyToken) {
             // Build shipping address from Stripe session
-            const stripeAddr = session.shipping_details?.address;
+            const stripeAddr =
+              session.collected_information?.shipping_details?.address;
             const shippingAddress = stripeAddr
               ? {
-                  first_name: session.shipping_details?.name?.split(" ")[0] || "",
+                  first_name:
+                    session.collected_information?.shipping_details?.name?.split(
+                      " "
+                    )[0] || "",
                   last_name:
-                    session.shipping_details?.name?.split(" ").slice(1).join(" ") || "",
+                    session.collected_information?.shipping_details?.name
+                      ?.split(" ")
+                      .slice(1)
+                      .join(" ") || "",
                   address1: stripeAddr.line1 || "",
                   address2: stripeAddr.line2 || undefined,
                   city: stripeAddr.city || "",
@@ -366,8 +392,8 @@ export const supplierOrdersRouter = router({
               merchant.shopifyToken,
               {
                 lineItems: order.items
-                  .filter((item) => item.shopifyVariantId)
-                  .map((item) => ({
+                  .filter(item => item.shopifyVariantId)
+                  .map(item => ({
                     shopifyVariantId: item.shopifyVariantId!,
                     quantity: item.quantity,
                   })),

@@ -27,8 +27,9 @@ export const appointments = mysqlTable(
   {
     id: int().primaryKey().autoincrement(),
     studioId: varchar({ length: 64 }), // Added later via relations, avoiding circular ref if studios is defined below
-    conversationId: int()
-      .references(() => conversations.id, { onDelete: "cascade" }),
+    conversationId: int().references(() => conversations.id, {
+      onDelete: "cascade",
+    }),
     artistId: varchar({ length: 64 })
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -81,12 +82,12 @@ export const appointments = mysqlTable(
       "refunded",
     ]).default("pending_deposit"),
     // ── Session Plan Linking ──
-    projectName: varchar({ length: 255 }),        // LLM-generated, editable by artist
-    sessionIndex: int(),                           // Which session in a multi-session plan (1, 2, 3…)
-    sessionTotal: int(),                           // Total sessions in the plan
-    sessionPlanId: int(),                          // FK to sessionPlans — added as column, relation handled separately
-    completedAt: timestamp({ mode: "string" }),    // When sitting was marked complete
-    aftercareTemplateId: int(),                    // Artist's aftercare template at time of completion
+    projectName: varchar({ length: 255 }), // LLM-generated, editable by artist
+    sessionIndex: int(), // Which session in a multi-session plan (1, 2, 3…)
+    sessionTotal: int(), // Total sessions in the plan
+    sessionPlanId: int(), // FK to sessionPlans — added as column, relation handled separately
+    completedAt: timestamp({ mode: "string" }), // When sitting was marked complete
+    aftercareTemplateId: int(), // Artist's aftercare template at time of completion
     createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
     updatedAt: timestamp({ mode: "string" }).default(sql`(now())`),
   },
@@ -188,8 +189,8 @@ export const artistSettings = mysqlTable(
     // ── Reschedule Policy ──
     rescheduleNoticePeriodHours: int().default(72), // 24/48/72/168/336/672 hours
     // ── Geo Location ──
-    lat: decimal({ precision: 10, scale: 7 }),  // Latitude for map pin
-    lng: decimal({ precision: 10, scale: 7 }),  // Longitude for map pin
+    lat: decimal({ precision: 10, scale: 7 }), // Latitude for map pin
+    lng: decimal({ precision: 10, scale: 7 }), // Longitude for map pin
     // ── Contact Visibility Toggles ──
     showEmail: tinyint().default(1),
     showPhone: tinyint().default(1),
@@ -197,7 +198,10 @@ export const artistSettings = mysqlTable(
     showWebsite: tinyint().default(0),
     websiteUrl: text(),
     // ── Notification & Automation Settings ──
-    notificationMode: mysqlEnum("notification_mode", ["manual", "automatic"]).default("manual"),
+    notificationMode: mysqlEnum("notification_mode", [
+      "manual",
+      "automatic",
+    ]).default("manual"),
     googlePlaceId: varchar({ length: 255 }),
     quietHoursEnabled: tinyint().default(0),
     quietHoursStart: int().default(21),
@@ -468,18 +472,18 @@ export const portfolios = mysqlTable(
     description: text(),
     sortOrder: int().default(0),
     // ── Instagram import fields ──
-    source: varchar({ length: 20 }).default("upload"),           // "upload" | "instagram"
-    mediaType: varchar({ length: 20 }).default("image"),          // "image" | "video" | "carousel"
-    externalMediaId: varchar({ length: 64 }),                      // Instagram media ID (dedup key)
-    externalPermalink: text(),                                     // Instagram post URL
-    cdnUrl: text(),                                                // Current Instagram CDN URL (refreshed)
-    cdnUrlExpiresAt: timestamp({ mode: "string" }),                // Parsed expiry from oe param
-    thumbnailUrl: text(),                                          // R2 thumbnail URL
-    caption: text(),                                               // Original Instagram caption
-    publishedAt: timestamp({ mode: "string" }),                    // Original publish date
+    source: varchar({ length: 20 }).default("upload"), // "upload" | "instagram"
+    mediaType: varchar({ length: 20 }).default("image"), // "image" | "video" | "carousel"
+    externalMediaId: varchar({ length: 64 }), // Instagram media ID (dedup key)
+    externalPermalink: text(), // Instagram post URL
+    cdnUrl: text(), // Current Instagram CDN URL (refreshed)
+    cdnUrlExpiresAt: timestamp({ mode: "string" }), // Parsed expiry from oe param
+    thumbnailUrl: text(), // R2 thumbnail URL
+    caption: text(), // Original Instagram caption
+    publishedAt: timestamp({ mode: "string" }), // Original publish date
     availabilityState: varchar({ length: 20 }).default("available"), // "available" | "removed" | "restricted"
-    importBatchId: int(),                                          // FK to instagram_imports
-    tags: text(),                                                  // JSON array: ["realism","portrait","brisbane"]
+    importBatchId: int(), // FK to instagram_imports
+    tags: text(), // JSON array: ["realism","portrait","brisbane"]
     createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
     updatedAt: timestamp({ mode: "string" }).default(sql`(now())`),
   },
@@ -1849,15 +1853,9 @@ export const procedureLogs = mysqlTable(
   "procedure_logs",
   {
     id: int().primaryKey().autoincrement(),
-    appointmentId: int()
-      .notNull()
-      .references(() => appointments.id, { onDelete: "cascade" }),
-    artistId: varchar({ length: 64 })
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    clientId: varchar({ length: 64 })
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+    appointmentId: int().notNull(),
+    artistId: varchar({ length: 64 }).notNull(),
+    clientId: varchar({ length: 64 }).notNull(),
     date: datetime({ mode: "string" }).notNull(),
     clientName: varchar({ length: 255 }).notNull(),
     clientDob: datetime({ mode: "string" }),
@@ -1910,9 +1908,15 @@ export const paymentLedger = mysqlTable(
   "payment_ledger",
   {
     id: int().primaryKey().autoincrement(),
-    bookingId: int().references(() => appointments.id, { onDelete: "set null" }),
-    artistId: varchar({ length: 64 }).references(() => users.id, { onDelete: "cascade" }),
-    clientId: varchar({ length: 64 }).references(() => users.id, { onDelete: "set null" }),
+    bookingId: int().references(() => appointments.id, {
+      onDelete: "set null",
+    }),
+    artistId: varchar({ length: 64 }).references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    clientId: varchar({ length: 64 }).references(() => users.id, {
+      onDelete: "set null",
+    }),
     transactionType: mysqlEnum("ledger_transaction_type", [
       "deposit",
       "balance",
@@ -1957,16 +1961,19 @@ export const paymentRequests = mysqlTable(
   "payment_requests",
   {
     id: int().primaryKey().autoincrement(),
-    appointmentId: int().notNull().references(() => appointments.id, { onDelete: "cascade" }),
-    artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
-    clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+    appointmentId: int()
+      .notNull()
+      .references(() => appointments.id, { onDelete: "cascade" }),
+    artistId: varchar({ length: 64 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    clientId: varchar({ length: 64 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     amountCents: int().notNull(),
-    status: mysqlEnum([
-      "pending",
-      "paid",
-      "expired",
-      "cancelled",
-    ]).default("pending").notNull(),
+    status: mysqlEnum(["pending", "paid", "expired", "cancelled"])
+      .default("pending")
+      .notNull(),
     token: varchar({ length: 255 }).notNull(),
     stripeCheckoutSessionId: varchar({ length: 255 }),
     createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
@@ -2018,7 +2025,9 @@ export const products = mysqlTable("products", {
   hasVariants: tinyint().default(0).notNull(),
   basePriceCents: int(),
   inventoryCount: int().default(0).notNull(),
-  fulfillmentType: mysqlEnum(["pickup", "delivery", "both", "digital"]).default("pickup").notNull(),
+  fulfillmentType: mysqlEnum(["pickup", "delivery", "both", "digital"])
+    .default("pickup")
+    .notNull(),
   shippingCents: int().default(0).notNull(),
   imageUrl: text(),
   isActive: tinyint().default(1).notNull(),
@@ -2049,13 +2058,18 @@ export const orders = mysqlTable("orders", {
   artistId: varchar({ length: 64 })
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  clientId: varchar({ length: 64 })
-    .references(() => users.id, { onDelete: "set null" }),
+  clientId: varchar({ length: 64 }).references(() => users.id, {
+    onDelete: "set null",
+  }),
   totalAmountCents: int().notNull(),
   platformFeeCents: int().notNull(),
   artistFeeCents: int().notNull(),
-  status: mysqlEnum(["pending", "paid", "fulfilled", "cancelled"]).default("pending").notNull(),
-  fulfillmentMethod: mysqlEnum(["pickup", "delivery", "digital"]).default("pickup").notNull(),
+  status: mysqlEnum(["pending", "paid", "fulfilled", "cancelled"])
+    .default("pending")
+    .notNull(),
+  fulfillmentMethod: mysqlEnum(["pickup", "delivery", "digital"])
+    .default("pickup")
+    .notNull(),
   shippingAddress: text(), // JSON storing the Stripe shipping address
   shippingCostCents: int().default(0).notNull(),
   buyerName: varchar({ length: 255 }),
@@ -2077,11 +2091,9 @@ export const orderItems = mysqlTable("orderItems", {
   orderId: int()
     .notNull()
     .references(() => orders.id, { onDelete: "cascade" }),
-  productId: int()
-    .references(() => products.id, { onDelete: "set null" }),
+  productId: int().references(() => products.id, { onDelete: "set null" }),
   variantId: int(), // Added below when productVariants is defined, or just int() without foreign key constraint here to avoid circular dep if placed above.
-  seminarId: int()
-    .references(() => seminars.id, { onDelete: "set null" }),
+  seminarId: int().references(() => seminars.id, { onDelete: "set null" }),
   quantity: int().notNull().default(1),
   priceAtPurchaseCents: int().notNull(),
 });
@@ -2124,9 +2136,11 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
   }),
 }));
 
-export const productVariants = mysqlTable('productVariants', {
+export const productVariants = mysqlTable("productVariants", {
   id: int().autoincrement().primaryKey(),
-  productId: int().notNull().references(() => products.id, { onDelete: 'cascade' }),
+  productId: int()
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
   name: varchar({ length: 255 }).notNull(),
   priceCents: int().notNull(),
   inventoryCount: int().default(0).notNull(),
@@ -2136,14 +2150,17 @@ export const productVariants = mysqlTable('productVariants', {
   createdAt: timestamp().notNull().defaultNow(),
 });
 
-export const productVariantsRelations = relations(productVariants, ({ one }) => ({
-  product: one(products, {
-    fields: [productVariants.productId],
-    references: [products.id],
-  }),
-}));
+export const productVariantsRelations = relations(
+  productVariants,
+  ({ one }) => ({
+    product: one(products, {
+      fields: [productVariants.productId],
+      references: [products.id],
+    }),
+  })
+);
 
-export const suppliers = mysqlTable('suppliers', {
+export const suppliers = mysqlTable("suppliers", {
   id: int().autoincrement().primaryKey(),
   name: varchar({ length: 255 }).notNull(),
   websiteUrl: text(),
@@ -2151,13 +2168,15 @@ export const suppliers = mysqlTable('suppliers', {
   contactEmail: varchar({ length: 255 }),
   claimed: tinyint().default(0).notNull(),
   merchantId: int(), // Added as an int to avoid circular dependencies
-  currency: varchar({ length: 3 }).default('AUD'), // Store's base currency from Shopify
+  currency: varchar({ length: 3 }).default("AUD"), // Store's base currency from Shopify
   createdAt: timestamp().notNull().defaultNow(),
 });
 
-export const supplierProducts = mysqlTable('supplierProducts', {
+export const supplierProducts = mysqlTable("supplierProducts", {
   id: int().autoincrement().primaryKey(),
-  supplierId: int().notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
+  supplierId: int()
+    .notNull()
+    .references(() => suppliers.id, { onDelete: "cascade" }),
   title: varchar({ length: 255 }).notNull(),
   description: text(),
   priceCents: int(),
@@ -2167,9 +2186,11 @@ export const supplierProducts = mysqlTable('supplierProducts', {
   createdAt: timestamp().notNull().defaultNow(),
 });
 
-export const supplierProductVariants = mysqlTable('supplierProductVariants', {
+export const supplierProductVariants = mysqlTable("supplierProductVariants", {
   id: int().autoincrement().primaryKey(),
-  supplierProductId: int().notNull().references(() => supplierProducts.id, { onDelete: 'cascade' }),
+  supplierProductId: int()
+    .notNull()
+    .references(() => supplierProducts.id, { onDelete: "cascade" }),
   title: varchar({ length: 255 }).notNull(),
   priceCents: int().notNull(),
   sku: varchar({ length: 100 }),
@@ -2181,20 +2202,26 @@ export const suppliersRelations = relations(suppliers, ({ many }) => ({
   products: many(supplierProducts),
 }));
 
-export const supplierProductsRelations = relations(supplierProducts, ({ one, many }) => ({
-  supplier: one(suppliers, {
-    fields: [supplierProducts.supplierId],
-    references: [suppliers.id],
-  }),
-  variants: many(supplierProductVariants),
-}));
+export const supplierProductsRelations = relations(
+  supplierProducts,
+  ({ one, many }) => ({
+    supplier: one(suppliers, {
+      fields: [supplierProducts.supplierId],
+      references: [suppliers.id],
+    }),
+    variants: many(supplierProductVariants),
+  })
+);
 
-export const supplierProductVariantsRelations = relations(supplierProductVariants, ({ one }) => ({
-  product: one(supplierProducts, {
-    fields: [supplierProductVariants.supplierProductId],
-    references: [supplierProducts.id],
-  }),
-}));
+export const supplierProductVariantsRelations = relations(
+  supplierProductVariants,
+  ({ one }) => ({
+    product: one(supplierProducts, {
+      fields: [supplierProductVariants.supplierProductId],
+      references: [supplierProducts.id],
+    }),
+  })
+);
 
 export type InsertProductVariant = InferInsertModel<typeof productVariants>;
 export type SelectProductVariant = InferSelectModel<typeof productVariants>;
@@ -2202,8 +2229,12 @@ export type InsertSupplier = InferInsertModel<typeof suppliers>;
 export type SelectSupplier = InferSelectModel<typeof suppliers>;
 export type InsertSupplierProduct = InferInsertModel<typeof supplierProducts>;
 export type SelectSupplierProduct = InferSelectModel<typeof supplierProducts>;
-export type InsertSupplierProductVariant = InferInsertModel<typeof supplierProductVariants>;
-export type SelectSupplierProductVariant = InferSelectModel<typeof supplierProductVariants>;
+export type InsertSupplierProductVariant = InferInsertModel<
+  typeof supplierProductVariants
+>;
+export type SelectSupplierProductVariant = InferSelectModel<
+  typeof supplierProductVariants
+>;
 
 export type InsertProduct = InferInsertModel<typeof products>;
 export type SelectProduct = InferSelectModel<typeof products>;
@@ -2299,8 +2330,9 @@ export const stockAdjustments = mysqlTable("stockAdjustments", {
   productId: int()
     .notNull()
     .references(() => products.id, { onDelete: "cascade" }),
-  variantId: int()
-    .references(() => productVariants.id, { onDelete: "set null" }),
+  variantId: int().references(() => productVariants.id, {
+    onDelete: "set null",
+  }),
   adjustment: int().notNull(),
   reason: varchar({ length: 255 }),
   referenceType: mysqlEnum(["sale", "po_receive", "manual", "correction"]),
@@ -2314,10 +2346,8 @@ export const merchantAccountingLog = mysqlTable("merchantAccountingLog", {
   merchantId: int()
     .notNull()
     .references(() => merchants.id, { onDelete: "cascade" }),
-  orderId: int()
-    .references(() => orders.id, { onDelete: "set null" }),
-  poId: int()
-    .references(() => purchaseOrders.id, { onDelete: "set null" }),
+  orderId: int().references(() => orders.id, { onDelete: "set null" }),
+  poId: int().references(() => purchaseOrders.id, { onDelete: "set null" }),
   xeroInvoiceId: varchar({ length: 100 }),
   xeroBillId: varchar({ length: 100 }),
   status: mysqlEnum(["success", "failed", "pending"]),
@@ -2331,7 +2361,9 @@ export type ProductImage = InferSelectModel<typeof productImages>;
 export type PurchaseOrder = InferSelectModel<typeof purchaseOrders>;
 export type PurchaseOrderItem = InferSelectModel<typeof purchaseOrderItems>;
 export type StockAdjustment = InferSelectModel<typeof stockAdjustments>;
-export type MerchantAccountingLog = InferSelectModel<typeof merchantAccountingLog>;
+export type MerchantAccountingLog = InferSelectModel<
+  typeof merchantAccountingLog
+>;
 
 // ── Client Favourites ──
 
@@ -2442,7 +2474,7 @@ export const instagramImports = mysqlTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     instagramUsername: varchar({ length: 100 }).notNull(),
-    status: varchar({ length: 20 }).default("in_progress"),  // "in_progress" | "completed" | "failed"
+    status: varchar({ length: 20 }).default("in_progress"), // "in_progress" | "completed" | "failed"
     totalDiscovered: int().default(0),
     totalProcessed: int().default(0),
     totalAdded: int().default(0),
@@ -2463,49 +2495,65 @@ export const portfolioClassifications = mysqlTable(
     portfolioItemId: int()
       .notNull()
       .references(() => portfolios.id, { onDelete: "cascade" }),
-    category: varchar({ length: 30 }).notNull(),   // "style" | "subject" | "placement" | "state" | "mediaType"
-    value: varchar({ length: 100 }).notNull(),       // e.g. "realism", "forearm", "lion"
+    category: varchar({ length: 30 }).notNull(), // "style" | "subject" | "placement" | "state" | "mediaType"
+    value: varchar({ length: 100 }).notNull(), // e.g. "realism", "forearm", "lion"
     confidence: decimal({ precision: 3, scale: 2 }), // AI confidence 0.00–1.00
-    source: varchar({ length: 20 }).default("ai"),   // "ai" | "artist"
+    source: varchar({ length: 20 }).default("ai"), // "ai" | "artist"
     status: varchar({ length: 20 }).default("suggested"), // "suggested" | "accepted" | "rejected"
     createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
   },
   table => []
 );
 
-export const instagramImportsRelations = relations(instagramImports, ({ one, many }) => ({
-  artist: one(users, {
-    fields: [instagramImports.artistId],
-    references: [users.id],
-  }),
-  portfolioItems: many(portfolios),
-}));
+export const instagramImportsRelations = relations(
+  instagramImports,
+  ({ one, many }) => ({
+    artist: one(users, {
+      fields: [instagramImports.artistId],
+      references: [users.id],
+    }),
+    portfolioItems: many(portfolios),
+  })
+);
 
-export const portfolioClassificationsRelations = relations(portfolioClassifications, ({ one }) => ({
-  portfolioItem: one(portfolios, {
-    fields: [portfolioClassifications.portfolioItemId],
-    references: [portfolios.id],
-  }),
-}));
+export const portfolioClassificationsRelations = relations(
+  portfolioClassifications,
+  ({ one }) => ({
+    portfolioItem: one(portfolios, {
+      fields: [portfolioClassifications.portfolioItemId],
+      references: [portfolios.id],
+    }),
+  })
+);
 
 export type InsertInstagramImport = InferInsertModel<typeof instagramImports>;
 export type SelectInstagramImport = InferSelectModel<typeof instagramImports>;
-export type InsertPortfolioClassification = InferInsertModel<typeof portfolioClassifications>;
-export type SelectPortfolioClassification = InferSelectModel<typeof portfolioClassifications>;
+export type InsertPortfolioClassification = InferInsertModel<
+  typeof portfolioClassifications
+>;
+export type SelectPortfolioClassification = InferSelectModel<
+  typeof portfolioClassifications
+>;
 
 // ── Supplier Orders ─────────────────────────────────────────
 // Artist → Supplier purchases via DOTS checkout
 
-export const supplierOrders = mysqlTable('supplierOrders', {
+export const supplierOrders = mysqlTable("supplierOrders", {
   id: int().autoincrement().primaryKey(),
-  artistId: varchar({ length: 64 }).notNull().references(() => users.id),
-  supplierId: int().notNull().references(() => suppliers.id),
+  artistId: varchar({ length: 64 })
+    .notNull()
+    .references(() => users.id),
+  supplierId: int()
+    .notNull()
+    .references(() => suppliers.id),
   subtotalCents: int().notNull(),
   platformFeeCents: int().notNull(),
   shippingCents: int().notNull().default(0),
   totalCents: int().notNull(),
-  currency: varchar({ length: 3 }).notNull().default('AUD'),
-  status: mysqlEnum(['pending', 'paid', 'failed', 'refunded']).default('pending'),
+  currency: varchar({ length: 3 }).notNull().default("AUD"),
+  status: mysqlEnum(["pending", "paid", "failed", "refunded"]).default(
+    "pending"
+  ),
   stripePaymentIntentId: varchar({ length: 255 }),
   stripeCheckoutSessionId: varchar({ length: 255 }),
   shopifyDraftOrderId: varchar({ length: 255 }),
@@ -2516,10 +2564,14 @@ export const supplierOrders = mysqlTable('supplierOrders', {
   updatedAt: timestamp().notNull().defaultNow(),
 });
 
-export const supplierOrderItems = mysqlTable('supplierOrderItems', {
+export const supplierOrderItems = mysqlTable("supplierOrderItems", {
   id: int().autoincrement().primaryKey(),
-  orderId: int().notNull().references(() => supplierOrders.id, { onDelete: 'cascade' }),
-  supplierProductId: int().notNull().references(() => supplierProducts.id),
+  orderId: int()
+    .notNull()
+    .references(() => supplierOrders.id, { onDelete: "cascade" }),
+  supplierProductId: int()
+    .notNull()
+    .references(() => supplierProducts.id),
   variantId: int().references(() => supplierProductVariants.id),
   productTitle: varchar({ length: 255 }).notNull(),
   variantTitle: varchar({ length: 255 }),
@@ -2528,70 +2580,86 @@ export const supplierOrderItems = mysqlTable('supplierOrderItems', {
   shopifyVariantId: varchar({ length: 255 }),
 });
 
-export const supplierOrdersRelations = relations(supplierOrders, ({ one, many }) => ({
-  artist: one(users, {
-    fields: [supplierOrders.artistId],
-    references: [users.id],
-  }),
-  supplier: one(suppliers, {
-    fields: [supplierOrders.supplierId],
-    references: [suppliers.id],
-  }),
-  items: many(supplierOrderItems),
-}));
+export const supplierOrdersRelations = relations(
+  supplierOrders,
+  ({ one, many }) => ({
+    artist: one(users, {
+      fields: [supplierOrders.artistId],
+      references: [users.id],
+    }),
+    supplier: one(suppliers, {
+      fields: [supplierOrders.supplierId],
+      references: [suppliers.id],
+    }),
+    items: many(supplierOrderItems),
+  })
+);
 
-export const supplierOrderItemsRelations = relations(supplierOrderItems, ({ one }) => ({
-  order: one(supplierOrders, {
-    fields: [supplierOrderItems.orderId],
-    references: [supplierOrders.id],
-  }),
-  product: one(supplierProducts, {
-    fields: [supplierOrderItems.supplierProductId],
-    references: [supplierProducts.id],
-  }),
-}));
+export const supplierOrderItemsRelations = relations(
+  supplierOrderItems,
+  ({ one }) => ({
+    order: one(supplierOrders, {
+      fields: [supplierOrderItems.orderId],
+      references: [supplierOrders.id],
+    }),
+    product: one(supplierProducts, {
+      fields: [supplierOrderItems.supplierProductId],
+      references: [supplierProducts.id],
+    }),
+  })
+);
 
 // ── Supplier Shipping Zones & Rates ─────────────────────────
 // Scraped from Shopify Admin API /shipping_zones.json
 
-export const supplierShippingZones = mysqlTable('supplierShippingZones', {
+export const supplierShippingZones = mysqlTable("supplierShippingZones", {
   id: int().autoincrement().primaryKey(),
-  supplierId: int().notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
+  supplierId: int()
+    .notNull()
+    .references(() => suppliers.id, { onDelete: "cascade" }),
   name: varchar({ length: 255 }).notNull(),
   countryCodes: text().notNull(), // JSON array of country codes e.g. ["AU","NZ"]
   createdAt: timestamp().notNull().defaultNow(),
 });
 
-export const supplierShippingRates = mysqlTable('supplierShippingRates', {
+export const supplierShippingRates = mysqlTable("supplierShippingRates", {
   id: int().autoincrement().primaryKey(),
-  zoneId: int().notNull().references(() => supplierShippingZones.id, { onDelete: 'cascade' }),
+  zoneId: int()
+    .notNull()
+    .references(() => supplierShippingZones.id, { onDelete: "cascade" }),
   name: varchar({ length: 255 }).notNull(),
   priceCents: int().notNull(),
-  currency: varchar({ length: 3 }).notNull().default('AUD'),
+  currency: varchar({ length: 3 }).notNull().default("AUD"),
   minOrderSubtotalCents: int().default(0),
   maxOrderSubtotalCents: int(),
-  rateType: mysqlEnum(['price_based', 'weight_based']).default('price_based'),
+  rateType: mysqlEnum(["price_based", "weight_based"]).default("price_based"),
   createdAt: timestamp().notNull().defaultNow(),
 });
 
-export const supplierShippingZonesRelations = relations(supplierShippingZones, ({ one, many }) => ({
-  supplier: one(suppliers, {
-    fields: [supplierShippingZones.supplierId],
-    references: [suppliers.id],
-  }),
-  rates: many(supplierShippingRates),
-}));
+export const supplierShippingZonesRelations = relations(
+  supplierShippingZones,
+  ({ one, many }) => ({
+    supplier: one(suppliers, {
+      fields: [supplierShippingZones.supplierId],
+      references: [suppliers.id],
+    }),
+    rates: many(supplierShippingRates),
+  })
+);
 
-export const supplierShippingRatesRelations = relations(supplierShippingRates, ({ one }) => ({
-  zone: one(supplierShippingZones, {
-    fields: [supplierShippingRates.zoneId],
-    references: [supplierShippingZones.id],
-  }),
-}));
+export const supplierShippingRatesRelations = relations(
+  supplierShippingRates,
+  ({ one }) => ({
+    zone: one(supplierShippingZones, {
+      fields: [supplierShippingRates.zoneId],
+      references: [supplierShippingZones.id],
+    }),
+  })
+);
 
 // ── Exchange Rate Cache ─────────────────────────────────────
 
-export const exchangeRateCache = mysqlTable('exchangeRateCache', {
+export const exchangeRateCache = mysqlTable("exchangeRateCache", {
   id: int().autoincrement().primaryKey(),
   fromCurrency: varchar({ length: 3 }).notNull(),
   toCurrency: varchar({ length: 3 }).notNull(),
@@ -2601,72 +2669,100 @@ export const exchangeRateCache = mysqlTable('exchangeRateCache', {
 
 export type InsertSupplierOrder = InferInsertModel<typeof supplierOrders>;
 export type SelectSupplierOrder = InferSelectModel<typeof supplierOrders>;
-export type InsertSupplierOrderItem = InferInsertModel<typeof supplierOrderItems>;
-export type SelectSupplierOrderItem = InferSelectModel<typeof supplierOrderItems>;
+export type InsertSupplierOrderItem = InferInsertModel<
+  typeof supplierOrderItems
+>;
+export type SelectSupplierOrderItem = InferSelectModel<
+  typeof supplierOrderItems
+>;
 
 // ── Session Plans ──────────────────────────────────────────
 // A session plan groups one or more proposed sessions sent by an artist to a client.
 // Status lifecycle: pending → accepted (on deposit payment) | declined | withdrawn | refunded
 
-export const sessionPlans = mysqlTable('sessionPlans', {
+export const sessionPlans = mysqlTable("sessionPlans", {
   id: int().autoincrement().primaryKey(),
-  artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
-  clientId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
-  conversationId: int().references(() => conversations.id, { onDelete: 'cascade' }),
-  status: mysqlEnum(['pending', 'accepted', 'declined', 'withdrawn', 'refunded']).default('pending').notNull(),
+  artistId: varchar({ length: 64 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  clientId: varchar({ length: 64 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  conversationId: int().references(() => conversations.id, {
+    onDelete: "cascade",
+  }),
+  status: mysqlEnum([
+    "pending",
+    "accepted",
+    "declined",
+    "withdrawn",
+    "refunded",
+  ])
+    .default("pending")
+    .notNull(),
   totalEstimateCents: int().notNull(),
   depositTotalCents: int().notNull(),
   platformFeeCents: int().default(0),
   stripeSessionId: varchar({ length: 255 }),
-  messageId: int().references(() => messages.id, { onDelete: 'set null' }),
-  acceptedAt: timestamp({ mode: 'string' }),
-  createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+  messageId: int().references(() => messages.id, { onDelete: "set null" }),
+  acceptedAt: timestamp({ mode: "string" }),
+  createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
 });
 
-export const sessionPlanItems = mysqlTable('sessionPlanItems', {
+export const sessionPlanItems = mysqlTable("sessionPlanItems", {
   id: int().autoincrement().primaryKey(),
-  sessionPlanId: int().notNull().references(() => sessionPlans.id, { onDelete: 'cascade' }),
+  sessionPlanId: int()
+    .notNull()
+    .references(() => sessionPlans.id, { onDelete: "cascade" }),
   sessionIndex: int().notNull(),
-  startsAt: datetime({ mode: 'string' }).notNull(),
+  startsAt: datetime({ mode: "string" }).notNull(),
   durationMinutes: int().notNull(),
   estimateCents: int().notNull(),
   depositCents: int().notNull(),
-  appointmentId: int().references(() => appointments.id, { onDelete: 'set null' }),
-  createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+  appointmentId: int().references(() => appointments.id, {
+    onDelete: "set null",
+  }),
+  createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
 });
 
-export const sessionPlansRelations = relations(sessionPlans, ({ one, many }) => ({
-  artist: one(users, {
-    fields: [sessionPlans.artistId],
-    references: [users.id],
-    relationName: 'sessionPlanArtist',
-  }),
-  client: one(users, {
-    fields: [sessionPlans.clientId],
-    references: [users.id],
-    relationName: 'sessionPlanClient',
-  }),
-  conversation: one(conversations, {
-    fields: [sessionPlans.conversationId],
-    references: [conversations.id],
-  }),
-  message: one(messages, {
-    fields: [sessionPlans.messageId],
-    references: [messages.id],
-  }),
-  items: many(sessionPlanItems),
-}));
+export const sessionPlansRelations = relations(
+  sessionPlans,
+  ({ one, many }) => ({
+    artist: one(users, {
+      fields: [sessionPlans.artistId],
+      references: [users.id],
+      relationName: "sessionPlanArtist",
+    }),
+    client: one(users, {
+      fields: [sessionPlans.clientId],
+      references: [users.id],
+      relationName: "sessionPlanClient",
+    }),
+    conversation: one(conversations, {
+      fields: [sessionPlans.conversationId],
+      references: [conversations.id],
+    }),
+    message: one(messages, {
+      fields: [sessionPlans.messageId],
+      references: [messages.id],
+    }),
+    items: many(sessionPlanItems),
+  })
+);
 
-export const sessionPlanItemsRelations = relations(sessionPlanItems, ({ one }) => ({
-  plan: one(sessionPlans, {
-    fields: [sessionPlanItems.sessionPlanId],
-    references: [sessionPlans.id],
-  }),
-  appointment: one(appointments, {
-    fields: [sessionPlanItems.appointmentId],
-    references: [appointments.id],
-  }),
-}));
+export const sessionPlanItemsRelations = relations(
+  sessionPlanItems,
+  ({ one }) => ({
+    plan: one(sessionPlans, {
+      fields: [sessionPlanItems.sessionPlanId],
+      references: [sessionPlans.id],
+    }),
+    appointment: one(appointments, {
+      fields: [sessionPlanItems.appointmentId],
+      references: [appointments.id],
+    }),
+  })
+);
 
 export type InsertSessionPlan = InferInsertModel<typeof sessionPlans>;
 export type SelectSessionPlan = InferSelectModel<typeof sessionPlans>;
@@ -2677,18 +2773,22 @@ export type SelectSessionPlanItem = InferSelectModel<typeof sessionPlanItems>;
 // Artist-defined aftercare instructions. A default 42-day / 5-phase template
 // is seeded on signup. Phases are linked to completed appointments.
 
-export const aftercareTemplates = mysqlTable('aftercareTemplates', {
+export const aftercareTemplates = mysqlTable("aftercareTemplates", {
   id: int().autoincrement().primaryKey(),
-  artistId: varchar({ length: 64 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
-  name: varchar({ length: 255 }).notNull().default('Default'),
+  artistId: varchar({ length: 64 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: varchar({ length: 255 }).notNull().default("Default"),
   totalDays: int().notNull().default(42),
   isDefault: tinyint().default(1),
-  createdAt: timestamp({ mode: 'string' }).default(sql`(now())`),
+  createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
 });
 
-export const aftercarePhases = mysqlTable('aftercarePhases', {
+export const aftercarePhases = mysqlTable("aftercarePhases", {
   id: int().autoincrement().primaryKey(),
-  templateId: int().notNull().references(() => aftercareTemplates.id, { onDelete: 'cascade' }),
+  templateId: int()
+    .notNull()
+    .references(() => aftercareTemplates.id, { onDelete: "cascade" }),
   fromDay: int().notNull(),
   toDay: int().notNull(),
   label: varchar({ length: 100 }).notNull(),
@@ -2696,22 +2796,41 @@ export const aftercarePhases = mysqlTable('aftercarePhases', {
   sortOrder: int().default(0),
 });
 
-export const aftercareTemplatesRelations = relations(aftercareTemplates, ({ one, many }) => ({
-  artist: one(users, {
-    fields: [aftercareTemplates.artistId],
-    references: [users.id],
-  }),
-  phases: many(aftercarePhases),
-}));
+export const aftercareTemplatesRelations = relations(
+  aftercareTemplates,
+  ({ one, many }) => ({
+    artist: one(users, {
+      fields: [aftercareTemplates.artistId],
+      references: [users.id],
+    }),
+    phases: many(aftercarePhases),
+  })
+);
 
-export const aftercarePhasesRelations = relations(aftercarePhases, ({ one }) => ({
-  template: one(aftercareTemplates, {
-    fields: [aftercarePhases.templateId],
-    references: [aftercareTemplates.id],
-  }),
-}));
+export const aftercarePhasesRelations = relations(
+  aftercarePhases,
+  ({ one }) => ({
+    template: one(aftercareTemplates, {
+      fields: [aftercarePhases.templateId],
+      references: [aftercareTemplates.id],
+    }),
+  })
+);
 
-export type InsertAftercareTemplate = InferInsertModel<typeof aftercareTemplates>;
-export type SelectAftercareTemplate = InferSelectModel<typeof aftercareTemplates>;
+export type InsertAftercareTemplate = InferInsertModel<
+  typeof aftercareTemplates
+>;
+export type SelectAftercareTemplate = InferSelectModel<
+  typeof aftercareTemplates
+>;
 export type InsertAftercarePhase = InferInsertModel<typeof aftercarePhases>;
 export type SelectAftercarePhase = InferSelectModel<typeof aftercarePhases>;
+
+/** Durable webhook receipts; committed together with database fulfilment. */
+export const stripeWebhookEvents = mysqlTable("stripe_webhook_events", {
+  id: varchar({ length: 255 }).primaryKey(),
+  eventId: varchar({ length: 255 }).notNull(),
+  eventType: varchar({ length: 100 }).notNull(),
+  processedAt: datetime({ mode: "string" }),
+  createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
+});

@@ -17,23 +17,27 @@ export function UpcomingWidget({ upcoming }: UpcomingWidgetProps) {
   const [, setLocation] = useLocation();
 
   // Fetch pending payment requests for this client
-  const { data: paymentRequests } = trpc.clientProfile.getMyPaymentRequests.useQuery(
-    undefined,
-    { refetchOnWindowFocus: true }
-  );
+  const { data: paymentRequests } =
+    trpc.clientProfile.getMyPaymentRequests.useQuery(undefined, {
+      refetchOnWindowFocus: true,
+    });
 
   // Show max 2 upcoming appointments
   const items = (upcoming || []).slice(0, 2);
 
   // Build a map: appointmentId → payment request
-  const requestsByApptId = new Map<number, typeof paymentRequests extends (infer T)[] ? T : never>();
+  const requestsByApptId = new Map<
+    number,
+    NonNullable<typeof paymentRequests>[number]
+  >();
   if (paymentRequests) {
     for (const pr of paymentRequests) {
       requestsByApptId.set(pr.appointmentId, pr);
     }
   }
 
-  if (items.length === 0 && (!paymentRequests || paymentRequests.length === 0)) return null;
+  if (items.length === 0 && (!paymentRequests || paymentRequests.length === 0))
+    return null;
 
   return (
     <div className="space-y-3">
@@ -107,19 +111,33 @@ export function UpcomingWidget({ upcoming }: UpcomingWidgetProps) {
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <CreditCard className="w-4 h-4" style={{ color: "#f2ca5c" }} />
-                    <span className="text-sm font-semibold" style={{ color: "#f2ca5c" }}>
-                      ${(pendingRequest.amountCents / 100).toLocaleString("en-AU")} payment requested
+                    <CreditCard
+                      className="w-4 h-4"
+                      style={{ color: "#f2ca5c" }}
+                    />
+                    <span
+                      className="text-sm font-semibold"
+                      style={{ color: "#f2ca5c" }}
+                    >
+                      $
+                      {(pendingRequest.amountCents / 100).toLocaleString(
+                        "en-AU"
+                      )}{" "}
+                      payment requested
                     </span>
                   </div>
-                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#f2ca5c" }}>
+                  <span
+                    className="text-xs font-bold uppercase tracking-wider"
+                    style={{ color: "#f2ca5c" }}
+                  >
                     Pay now
                   </span>
                 </button>
               )}
 
               {/* Existing balance button — only if no payment request pending */}
-              {!pendingRequest && item.remainingBalanceCents > 0 &&
+              {!pendingRequest &&
+                item.remainingBalanceCents > 0 &&
                 item.paymentStatus !== "fully_paid" && (
                   <Button
                     onClick={() => setLocation(`/balance/${item.id}`)}

@@ -1,4 +1,10 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 import { trpc } from "@/lib/trpc";
 import {
   Search,
@@ -20,7 +26,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTooltipTarget } from "@/components/tooltip-tour";
 import { DEMO_CLIENTS } from "./dashboardDemoData";
 import { format, isPast, isFuture } from "date-fns";
-import { tokens, statusColor, typography, surfaces, borders, colors } from "@/ui/tokens";
+import {
+  tokens,
+  statusColor,
+  typography,
+  surfaces,
+  borders,
+  colors,
+} from "@/ui/tokens";
 import { formatMoney, formatCents } from "@/lib/formatMoney";
 import { utcToLocal } from "@shared/utils/timezone";
 
@@ -130,7 +143,10 @@ function ensureUTC(raw: string): string {
 /** Format date in the session's stored timezone (studio tz), not the device's.
  *  Falls back to UTC if no timezone. Returns "Time TBC" for midnight UTC
  *  (which means no real time was set — BUG-2 fix). */
-function formatSessionDate(startTime: string, tz: string | null): { date: string; time: string } {
+function formatSessionDate(
+  startTime: string,
+  tz: string | null
+): { date: string; time: string } {
   const utcStr = ensureUTC(startTime);
   const timezone = tz || "UTC";
   const localDate = utcToLocal(utcStr, timezone);
@@ -164,7 +180,11 @@ function relativeLabel(startTime: string): string {
 function getExceptionFlag(session: SessionData): string | null {
   if (session.paidCents === 0) return "no deposit";
   if (session.status === "pending") return "unconfirmed";
-  if (isPast(new Date(ensureUTC(session.startTime))) && session.remainingCents > 0) return "overdue";
+  if (
+    isPast(new Date(ensureUTC(session.startTime))) &&
+    session.remainingCents > 0
+  )
+    return "overdue";
   return null;
 }
 
@@ -182,16 +202,69 @@ const DEMO_GROUPED: GroupedProject[] = [
     priceEach: 450,
     project: null,
     sessions: [
-      { id: 9001, title: "Sleeve 1", serviceName: "Full Sleeve", startTime: new Date(Date.now() - 14 * 86400000).toISOString(), endTime: "", timeZone: "Australia/Brisbane", status: "completed", price: 450, priceCents: 45000, paidCents: 45000, remainingCents: 0, depositAmount: null, depositPaid: null, paymentStatus: "fully_paid" },
-      { id: 9002, title: "Sleeve 2", serviceName: "Full Sleeve", startTime: new Date(Date.now() + 3 * 86400000).toISOString(), endTime: "", timeZone: "Australia/Brisbane", status: "confirmed", price: 450, priceCents: 45000, paidCents: 11200, remainingCents: 33800, depositAmount: null, depositPaid: null, paymentStatus: "deposit_paid" },
-      { id: 9003, title: "Sleeve 3", serviceName: "Full Sleeve", startTime: new Date(Date.now() + 17 * 86400000).toISOString(), endTime: "", timeZone: "Australia/Brisbane", status: "pending", price: 450, priceCents: 45000, paidCents: 0, remainingCents: 45000, depositAmount: null, depositPaid: null, paymentStatus: null },
+      {
+        id: 9001,
+        title: "Sleeve 1",
+        serviceName: "Full Sleeve",
+        startTime: new Date(Date.now() - 14 * 86400000).toISOString(),
+        endTime: "",
+        timeZone: "Australia/Brisbane",
+        status: "completed",
+        price: 450,
+        priceCents: 45000,
+        paidCents: 45000,
+        remainingCents: 0,
+        depositAmount: null,
+        depositPaid: null,
+        paymentStatus: "fully_paid",
+      },
+      {
+        id: 9002,
+        title: "Sleeve 2",
+        serviceName: "Full Sleeve",
+        startTime: new Date(Date.now() + 3 * 86400000).toISOString(),
+        endTime: "",
+        timeZone: "Australia/Brisbane",
+        status: "confirmed",
+        price: 450,
+        priceCents: 45000,
+        paidCents: 11200,
+        remainingCents: 33800,
+        depositAmount: null,
+        depositPaid: null,
+        paymentStatus: "deposit_paid",
+      },
+      {
+        id: 9003,
+        title: "Sleeve 3",
+        serviceName: "Full Sleeve",
+        startTime: new Date(Date.now() + 17 * 86400000).toISOString(),
+        endTime: "",
+        timeZone: "Australia/Brisbane",
+        status: "pending",
+        price: 450,
+        priceCents: 45000,
+        paidCents: 0,
+        remainingCents: 45000,
+        depositAmount: null,
+        depositPaid: null,
+        paymentStatus: null,
+      },
     ],
-    totalValueCents: 135000, collectedCents: 56200, outstandingCents: 78800, paidPct: 42,
-    upcomingSessions: [], completedSessions: [],
+    totalValueCents: 135000,
+    collectedCents: 56200,
+    outstandingCents: 78800,
+    paidPct: 42,
+    upcomingSessions: [],
+    completedSessions: [],
   },
 ];
-DEMO_GROUPED[0].upcomingSessions = DEMO_GROUPED[0].sessions.filter(s => isFuture(new Date(ensureUTC(s.startTime))));
-DEMO_GROUPED[0].completedSessions = DEMO_GROUPED[0].sessions.filter(s => s.status === "completed" || isPast(new Date(ensureUTC(s.startTime))));
+DEMO_GROUPED[0].upcomingSessions = DEMO_GROUPED[0].sessions.filter(s =>
+  isFuture(new Date(ensureUTC(s.startTime)))
+);
+DEMO_GROUPED[0].completedSessions = DEMO_GROUPED[0].sessions.filter(
+  s => s.status === "completed" || isPast(new Date(ensureUTC(s.startTime)))
+);
 
 // ══════════════════════════════════════════════════════════
 //  MAIN: ClientsTab
@@ -209,11 +282,12 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
     isLoading: sessionsLoading,
     isError: sessionsError,
     refetch: refetchSessions,
-  } = trpc.dashboard.getClientSessions.useQuery(undefined, { enabled: !demoMode });
+  } = trpc.dashboard.getClientSessions.useQuery(undefined, {
+    enabled: !demoMode,
+  });
 
-  const { data: clients, isLoading: clientsLoading } = trpc.conversations.getClients.useQuery(
-    undefined, { enabled: !demoMode }
-  );
+  const { data: clients, isLoading: clientsLoading } =
+    trpc.conversations.getClients.useQuery(undefined, { enabled: !demoMode });
 
   // ── Group sessions by client, derive money ──────────────
   const groupedProjects: GroupedProject[] = useMemo(() => {
@@ -234,9 +308,14 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
           clientCity: appt.client?.city || "",
           project: appt.project,
           sessions: [],
-          totalValueCents: 0, collectedCents: 0, outstandingCents: 0, paidPct: 0,
-          upcomingSessions: [], completedSessions: [],
-          serviceName: "", priceEach: null,
+          totalValueCents: 0,
+          collectedCents: 0,
+          outstandingCents: 0,
+          paidPct: 0,
+          upcomingSessions: [],
+          completedSessions: [],
+          serviceName: "",
+          priceEach: null,
         });
       }
       groups.get(clientId)!.sessions.push({
@@ -258,35 +337,54 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
     }
 
     // Derive everything at render time — never stored
-    return Array.from(groups.values()).map(group => {
-      const totalValue = group.sessions.reduce((sum, s) => sum + s.priceCents, 0);
-      const collected = group.sessions.reduce((sum, s) => sum + s.paidCents, 0);
-      const outstanding = Math.max(0, totalValue - collected);
+    return Array.from(groups.values())
+      .map(group => {
+        const totalValue = group.sessions.reduce(
+          (sum, s) => sum + s.priceCents,
+          0
+        );
+        const collected = group.sessions.reduce(
+          (sum, s) => sum + s.paidCents,
+          0
+        );
+        const outstanding = Math.max(0, totalValue - collected);
 
-      const prices = [...new Set(group.sessions.map(s => s.price).filter(Boolean))];
-      const priceEach = prices.length === 1 ? prices[0]! : null;
-      const serviceName = group.sessions[0]?.serviceName || group.sessions[0]?.title || "Project";
+        const prices = [
+          ...new Set(group.sessions.map(s => s.price).filter(Boolean)),
+        ];
+        const priceEach = prices.length === 1 ? prices[0]! : null;
+        const serviceName =
+          group.sessions[0]?.serviceName ||
+          group.sessions[0]?.title ||
+          "Project";
 
-      // Partition on timestamp, not status field (README line 229)
-      const upcoming = group.sessions.filter(s =>
-        isFuture(new Date(ensureUTC(s.startTime))) && s.status !== "cancelled"
-      );
-      const completed = group.sessions.filter(s =>
-        (isPast(new Date(ensureUTC(s.startTime))) || s.status === "completed") && s.status !== "cancelled"
-      );
+        // Partition on timestamp, not status field (README line 229)
+        const upcoming = group.sessions.filter(
+          s =>
+            isFuture(new Date(ensureUTC(s.startTime))) &&
+            s.status !== "cancelled"
+        );
+        const completed = group.sessions.filter(
+          s =>
+            (isPast(new Date(ensureUTC(s.startTime))) ||
+              s.status === "completed") &&
+            s.status !== "cancelled"
+        );
 
-      return {
-        ...group,
-        totalValueCents: totalValue,
-        collectedCents: collected,
-        outstandingCents: outstanding,
-        paidPct: totalValue > 0 ? Math.round((collected / totalValue) * 100) : 0,
-        upcomingSessions: upcoming,
-        completedSessions: completed,
-        serviceName,
-        priceEach,
-      };
-    }).filter(g => g.upcomingSessions.length > 0);
+        return {
+          ...group,
+          totalValueCents: totalValue,
+          collectedCents: collected,
+          outstandingCents: outstanding,
+          paidPct:
+            totalValue > 0 ? Math.round((collected / totalValue) * 100) : 0,
+          upcomingSessions: upcoming,
+          completedSessions: completed,
+          serviceName,
+          priceEach,
+        };
+      })
+      .filter(g => g.upcomingSessions.length > 0);
   }, [demoMode, allSessions]);
 
   // ── Client list ─────────────────────────────────────────
@@ -299,10 +397,15 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
       else if (c.hasLead) status = "lead";
       else status = "imported";
       return {
-        id: c.id, name: titleCase(c.name || "Unknown"), email: c.email || "",
-        phone: c.phone || "", avatar: c.avatar || null,
+        id: c.id,
+        name: titleCase(c.name || "Unknown"),
+        email: c.email || "",
+        phone: c.phone || "",
+        avatar: c.avatar || null,
         city: c.city ? `${c.city}${c.country ? `, ${c.country}` : ""}` : "",
-        tlv: c.tlv || 0, sittings: c.sittings || 0, status,
+        tlv: c.tlv || 0,
+        sittings: c.sittings || 0,
+        status,
       };
     });
   }, [demoMode, clients]);
@@ -311,13 +414,23 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
     if (!searchQuery.trim()) return displayClients;
     const q = searchQuery.toLowerCase();
     return displayClients.filter(
-      (c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.city.toLowerCase().includes(q)
+      c =>
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        c.city.toLowerCase().includes(q)
     );
   }, [displayClients, searchQuery]);
 
-  const selectedClient = selectedClientId ? displayClients.find((c) => c.id === selectedClientId) : null;
+  const selectedClient = selectedClientId
+    ? displayClients.find(c => c.id === selectedClientId)
+    : null;
   if (selectedClient && !demoMode) {
-    return <ClientProfile client={selectedClient} onBack={() => setSelectedClientId(null)} />;
+    return (
+      <ClientProfile
+        client={selectedClient}
+        onBack={() => setSelectedClientId(null)}
+      />
+    );
   }
 
   const isLoading = !demoMode && (sessionsLoading || clientsLoading);
@@ -326,10 +439,24 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
   if (isLoading) {
     return (
       <div className="space-y-6 pb-40 animate-pulse">
-        <div className="relative px-1"><div className="h-[44px] rounded-[12px] bg-[rgba(255,255,255,.05)]" /></div>
-        <div className="px-1"><div className="h-5 w-20 rounded bg-[rgba(255,255,255,.06)] mb-4" /></div>
-        <div style={{ borderRadius: 18, background: DT.card, border: `1px solid ${DT.hairline}`, overflow: "hidden" }}>
-          <div className="p-5 pb-[18px]" style={{ borderBottom: `1px solid ${DT.hairline}` }}>
+        <div className="relative px-1">
+          <div className="h-[44px] rounded-[12px] bg-[rgba(255,255,255,.05)]" />
+        </div>
+        <div className="px-1">
+          <div className="h-5 w-20 rounded bg-[rgba(255,255,255,.06)] mb-4" />
+        </div>
+        <div
+          style={{
+            borderRadius: 18,
+            background: DT.card,
+            border: `1px solid ${DT.hairline}`,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            className="p-5 pb-[18px]"
+            style={{ borderBottom: `1px solid ${DT.hairline}` }}
+          >
             <div className="flex items-center gap-3.5">
               <div className="w-[46px] h-[46px] rounded-[12px] bg-[rgba(255,255,255,.06)]" />
               <div className="flex-1 space-y-2">
@@ -344,8 +471,11 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
             <div className="mt-3 h-[5px] rounded-full bg-[rgba(255,255,255,.05)]" />
           </div>
           <div className="px-5 pt-4 pb-0 space-y-[7px]">
-            {[1,2,3,4].map(i => (
-              <div key={i} className="h-[62px] rounded-[13px] bg-[rgba(255,255,255,.03)]" />
+            {[1, 2, 3, 4].map(i => (
+              <div
+                key={i}
+                className="h-[62px] rounded-[13px] bg-[rgba(255,255,255,.03)]"
+              />
             ))}
           </div>
           <div className="p-5 flex gap-2.5">
@@ -371,8 +501,12 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
           type="text"
           placeholder="Search clients..."
           value={demoMode ? "" : searchQuery}
-          onChange={(e) => !demoMode && setSearchQuery(e.target.value)}
-          className={cn(tokens.input.base, tokens.input.search, "w-full border-border")}
+          onChange={e => !demoMode && setSearchQuery(e.target.value)}
+          className={cn(
+            tokens.input.base,
+            tokens.input.search,
+            "w-full border-border"
+          )}
           readOnly={demoMode}
         />
       </div>
@@ -382,8 +516,14 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
         <section>
           <div className="flex items-center justify-between mb-4 px-1">
             <h2 className={typography.h3}>Projects</h2>
-            <span className={cn(tokens.display.badge, tokens.display.badgeSecondary)}>
-              {groupedProjects.length} client{groupedProjects.length !== 1 ? "s" : ""}
+            <span
+              className={cn(
+                tokens.display.badge,
+                tokens.display.badgeSecondary
+              )}
+            >
+              {groupedProjects.length} client
+              {groupedProjects.length !== 1 ? "s" : ""}
             </span>
           </div>
           <div className="space-y-3">
@@ -392,9 +532,11 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
                 key={group.clientId}
                 group={group}
                 index={i}
-                onViewProfile={(id) => setSelectedClientId(id)}
+                onViewProfile={id => setSelectedClientId(id)}
                 demoMode={demoMode}
-                demoRef={demoMode && i === 0 ? (demoClientCardRef as any) : undefined}
+                demoRef={
+                  demoMode && i === 0 ? (demoClientCardRef as any) : undefined
+                }
               />
             ))}
           </div>
@@ -404,10 +546,17 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
       {/* ── Error state ────────────────────────────── */}
       {sessionsError && !demoMode && (
         <div
-          style={{ borderRadius: 18, background: DT.card, border: `1px solid ${DT.hairline}` }}
+          style={{
+            borderRadius: 18,
+            background: DT.card,
+            border: `1px solid ${DT.hairline}`,
+          }}
           className="p-6 text-center"
         >
-          <AlertCircle className="w-8 h-8 mx-auto mb-3" style={{ color: DT.textTertiary }} />
+          <AlertCircle
+            className="w-8 h-8 mx-auto mb-3"
+            style={{ color: DT.textTertiary }}
+          />
           <p style={{ color: DT.textSecondary }} className="text-[14px] mb-4">
             Couldn't load sessions. Check your connection and try again.
           </p>
@@ -427,7 +576,9 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
           <div className={tokens.display.emptyStateIcon}>
             <Calendar className="w-8 h-8" />
           </div>
-          <p className={tokens.display.emptyStateText}>No projects yet. Sessions appear here once clients book.</p>
+          <p className={tokens.display.emptyStateText}>
+            No projects yet. Sessions appear here once clients book.
+          </p>
         </div>
       )}
 
@@ -435,26 +586,46 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
       <section>
         <div className="flex items-center justify-between mb-4 px-1">
           <h2 className={typography.h3}>
-            {demoMode ? "All Clients" : `${filteredClients.length} Client${filteredClients.length !== 1 ? "s" : ""}`}
+            {demoMode
+              ? "All Clients"
+              : `${filteredClients.length} Client${filteredClients.length !== 1 ? "s" : ""}`}
           </h2>
         </div>
         {filteredClients.length === 0 ? (
           <div className={tokens.display.emptyState}>
-            <div className={tokens.display.emptyStateIcon}><Users className="w-8 h-8" /></div>
-            <p className={tokens.display.emptyStateText}>Clients appear here once they book or message you.</p>
+            <div className={tokens.display.emptyStateIcon}>
+              <Users className="w-8 h-8" />
+            </div>
+            <p className={tokens.display.emptyStateText}>
+              Clients appear here once they book or message you.
+            </p>
           </div>
         ) : (
           <div className="space-y-2">
             {filteredClients.map((client, i) => {
               const sc = STATUS_CONFIG[client.status];
               return (
-                <motion.div key={client.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.03 }}>
+                <motion.div
+                  key={client.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + i * 0.03 }}
+                >
                   <button
                     onClick={() => !demoMode && setSelectedClientId(client.id)}
-                    className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "w-full text-left p-3.5 flex items-center gap-3")}
+                    className={cn(
+                      tokens.card.base,
+                      tokens.card.bg,
+                      tokens.card.interactive,
+                      "w-full text-left p-3.5 flex items-center gap-3"
+                    )}
                   >
                     {client.avatar ? (
-                      <img src={client.avatar} alt={client.name} className={cn(tokens.photography.avatar, "w-10 h-10")} />
+                      <img
+                        src={client.avatar}
+                        alt={client.name}
+                        className={cn(tokens.photography.avatar, "w-10 h-10")}
+                      />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm border-2 border-background shrink-0">
                         {client.name.charAt(0)}
@@ -462,13 +633,48 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className={cn(typography.bodySm, "font-bold truncate")}>{client.name}</span>
-                        <span className={cn(tokens.display.badge, sc.tokenClass)}>{sc.label}</span>
+                        <span
+                          className={cn(
+                            typography.bodySm,
+                            "font-bold truncate"
+                          )}
+                        >
+                          {client.name}
+                        </span>
+                        <span
+                          className={cn(tokens.display.badge, sc.tokenClass)}
+                        >
+                          {sc.label}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
-                        {client.sittings > 0 && <span className={typography.label + " text-muted-foreground"}>{client.sittings} session{client.sittings !== 1 ? "s" : ""}</span>}
-                        {client.tlv > 0 && <span className={cn(typography.label, "font-semibold")} style={{ color: DT.green }}>{formatMoney(client.tlv)}</span>}
-                        {client.city && <span className={typography.label + " text-muted-foreground"}>{client.city.split(",")[0]}</span>}
+                        {client.sittings > 0 && (
+                          <span
+                            className={
+                              typography.label + " text-muted-foreground"
+                            }
+                          >
+                            {client.sittings} session
+                            {client.sittings !== 1 ? "s" : ""}
+                          </span>
+                        )}
+                        {client.tlv > 0 && (
+                          <span
+                            className={cn(typography.label, "font-semibold")}
+                            style={{ color: DT.green }}
+                          >
+                            {formatMoney(client.tlv)}
+                          </span>
+                        )}
+                        {client.city && (
+                          <span
+                            className={
+                              typography.label + " text-muted-foreground"
+                            }
+                          >
+                            {client.city.split(",")[0]}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -483,11 +689,17 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
   );
 }
 
-const STATUS_CONFIG: Record<ClientStatus, { label: string; tokenClass: string }> = {
-  active:      { label: "Active",      tokenClass: statusColor.success.full },
+const STATUS_CONFIG: Record<
+  ClientStatus,
+  { label: string; tokenClass: string }
+> = {
+  active: { label: "Active", tokenClass: statusColor.success.full },
   past_client: { label: "Past Client", tokenClass: statusColor.neutral.full },
-  lead:        { label: "Lead",        tokenClass: statusColor.info.full },
-  imported:    { label: "Imported",    tokenClass: "bg-purple-500/10 text-purple-400 border border-purple-500/20" },
+  lead: { label: "Lead", tokenClass: statusColor.info.full },
+  imported: {
+    label: "Imported",
+    tokenClass: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
+  },
 };
 
 // ══════════════════════════════════════════════════════════
@@ -502,14 +714,26 @@ interface ProjectCardProps {
   demoRef?: any;
 }
 
-function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: ProjectCardProps) {
-  const [expandedSessionId, setExpandedSessionId] = useState<number | null>(null);
-  const [completedOpen, setCompletedOpen] = useState(group.completedSessions.length <= 3);
+function ProjectCard({
+  group,
+  index,
+  onViewProfile,
+  demoMode,
+  demoRef,
+}: ProjectCardProps) {
+  const [expandedSessionId, setExpandedSessionId] = useState<number | null>(
+    null
+  );
+  const [completedOpen, setCompletedOpen] = useState(
+    group.completedSessions.length <= 3
+  );
   const [menuOpen, setMenuOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetSessionId, setSheetSessionId] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const toastTimer = useRef<ReturnType<typeof setTimeout>>();
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
   const menuRef = useRef<HTMLDivElement>(null);
 
   const utils = trpc.useUtils();
@@ -517,7 +741,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
     onSuccess: () => {
       utils.dashboard.getClientSessions.invalidate();
     },
-    onError: (err) => {
+    onError: err => {
       showToast(err.message || "Failed to send payment request");
     },
   });
@@ -533,7 +757,8 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
   useEffect(() => {
     if (!menuOpen) return;
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+      if (menuRef.current && !menuRef.current.contains(e.target as Node))
+        setMenuOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -543,13 +768,21 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
   useEffect(() => {
     if (!menuOpen && !sheetOpen) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setMenuOpen(false); setSheetOpen(false); }
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        setSheetOpen(false);
+      }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [menuOpen, sheetOpen]);
 
-  useEffect(() => () => { if (toastTimer.current) clearTimeout(toastTimer.current); }, []);
+  useEffect(
+    () => () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    },
+    []
+  );
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -557,14 +790,17 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
     toastTimer.current = setTimeout(() => setToast(null), 2600);
   }, []);
 
-  const handleRequestPayment = useCallback((sessionId: number, amountCents: number) => {
-    requestPaymentMutation.mutate({ appointmentId: sessionId, amountCents });
-    setSheetOpen(false);
-    setSheetSessionId(null);
-    setExpandedSessionId(null);
-    const firstName = group.clientName.split(" ")[0];
-    showToast(`Payment request sent to ${firstName}`);
-  }, [requestPaymentMutation, showToast, group.clientName]);
+  const handleRequestPayment = useCallback(
+    (sessionId: number, amountCents: number) => {
+      requestPaymentMutation.mutate({ appointmentId: sessionId, amountCents });
+      setSheetOpen(false);
+      setSheetSessionId(null);
+      setExpandedSessionId(null);
+      const firstName = group.clientName.split(" ")[0];
+      showToast(`Payment request sent to ${firstName}`);
+    },
+    [requestPaymentMutation, showToast, group.clientName]
+  );
 
   const isFullyPaid = group.outstandingCents <= 0;
   const isEmptyProject = group.sessions.length === 0;
@@ -596,7 +832,12 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
         }}
       >
         {/* ── 1. HEADER ─────────────────────────────── */}
-        <div style={{ padding: "20px 20px 18px", borderBottom: `1px solid ${DT.hairline}` }}>
+        <div
+          style={{
+            padding: "20px 20px 18px",
+            borderBottom: `1px solid ${DT.hairline}`,
+          }}
+        >
           {/* Identity row */}
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             {/* Avatar — 46×46, rounded-square 12px */}
@@ -604,31 +845,67 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
               <img
                 src={group.clientAvatar}
                 alt={group.clientName}
-                style={{ width: 46, height: 46, borderRadius: 12, objectFit: "cover", background: DT.avatarFallback, flexShrink: 0 }}
+                style={{
+                  width: 46,
+                  height: 46,
+                  borderRadius: 12,
+                  objectFit: "cover",
+                  background: DT.avatarFallback,
+                  flexShrink: 0,
+                }}
               />
             ) : (
-              <div style={{
-                width: 46, height: 46, borderRadius: 12, background: DT.avatarFallback,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 15, fontWeight: 600, lineHeight: 1, color: "rgba(255,255,255,.6)", flexShrink: 0,
-              }}>
-                {group.clientName.split(" ").map(n => n[0]).join("").slice(0, 2)}
+              <div
+                style={{
+                  width: 46,
+                  height: 46,
+                  borderRadius: 12,
+                  background: DT.avatarFallback,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 15,
+                  fontWeight: 600,
+                  lineHeight: 1,
+                  color: "rgba(255,255,255,.6)",
+                  flexShrink: 0,
+                }}
+              >
+                {group.clientName
+                  .split(" ")
+                  .map(n => n[0])
+                  .join("")
+                  .slice(0, 2)}
               </div>
             )}
 
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{
-                fontSize: 18, fontWeight: 600, lineHeight: 1.25,
-                letterSpacing: "-.01em", color: DT.textPrimary,
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-              }}>
+              <div
+                style={{
+                  fontSize: 18,
+                  fontWeight: 600,
+                  lineHeight: 1.25,
+                  letterSpacing: "-.01em",
+                  color: DT.textPrimary,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {group.clientName}
               </div>
-              <div style={{
-                fontSize: 13.5, fontWeight: 400, lineHeight: 1.4,
-                color: DT.textSecondary, marginTop: 2,
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-              }}>
+              <div
+                style={{
+                  fontSize: 13.5,
+                  fontWeight: 400,
+                  lineHeight: 1.4,
+                  color: DT.textSecondary,
+                  marginTop: 2,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {metaLine}
               </div>
             </div>
@@ -638,17 +915,28 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="More options"
               style={{
-                width: 44, height: 44, flexShrink: 0, display: "flex",
-                alignItems: "center", justifyContent: "center", cursor: "pointer",
+                width: 44,
+                height: 44,
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
                 marginRight: -5, // offset to compensate touch padding vs visual
               }}
             >
-              <div style={{
-                width: 34, height: 34, borderRadius: 9,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "rgba(255,255,255,.5)", fontSize: 15,
-                transition: "background .16s",
-              }}
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 9,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "rgba(255,255,255,.5)",
+                  fontSize: 15,
+                  transition: "background .16s",
+                }}
                 className="hover:bg-[rgba(255,255,255,.07)]"
               >
                 •••
@@ -659,30 +947,76 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
           {/* Money block — always visible unless empty project */}
           {!isEmptyProject && (
             <>
-              <div style={{ marginTop: 20, display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
+              <div
+                style={{
+                  marginTop: 20,
+                  display: "flex",
+                  alignItems: "flex-end",
+                  justifyContent: "space-between",
+                  gap: 12,
+                }}
+              >
                 <div>
-                  <div style={{ fontSize: 10.5, fontWeight: 500, lineHeight: 1, letterSpacing: ".14em", color: DT.textTertiary }}>
+                  <div
+                    style={{
+                      fontSize: 10.5,
+                      fontWeight: 500,
+                      lineHeight: 1,
+                      letterSpacing: ".14em",
+                      color: DT.textTertiary,
+                    }}
+                  >
                     {isFullyPaid ? "PAID IN FULL" : "OUTSTANDING"}
                   </div>
-                  <div style={{
-                    fontSize: 30, fontWeight: 600, lineHeight: 1.1,
-                    letterSpacing: "-.02em", marginTop: 7,
-                    color: isFullyPaid ? DT.green : DT.textPrimary,
-                  }}>
-                    {isFullyPaid ? formatCents(group.totalValueCents) : formatCents(group.outstandingCents)}
+                  <div
+                    style={{
+                      fontSize: 30,
+                      fontWeight: 600,
+                      lineHeight: 1.1,
+                      letterSpacing: "-.02em",
+                      marginTop: 7,
+                      color: isFullyPaid ? DT.green : DT.textPrimary,
+                    }}
+                  >
+                    {isFullyPaid
+                      ? formatCents(group.totalValueCents)
+                      : formatCents(group.outstandingCents)}
                   </div>
                 </div>
-                <div style={{ textAlign: "right", fontSize: 12.5, fontWeight: 400, lineHeight: 1.6, color: DT.textSecondary }}>
-                  <div><span style={{ color: DT.green }}>{formatCents(group.collectedCents)}</span> collected</div>
+                <div
+                  style={{
+                    textAlign: "right",
+                    fontSize: 12.5,
+                    fontWeight: 400,
+                    lineHeight: 1.6,
+                    color: DT.textSecondary,
+                  }}
+                >
+                  <div>
+                    <span style={{ color: DT.green }}>
+                      {formatCents(group.collectedCents)}
+                    </span>{" "}
+                    collected
+                  </div>
                   <div>of {formatCents(group.totalValueCents)}</div>
                 </div>
               </div>
 
               {/* Progress bar — 5px, transition .45s */}
-              <div style={{ marginTop: 11, height: 5, borderRadius: 99, background: DT.track, overflow: "hidden" }}>
+              <div
+                style={{
+                  marginTop: 11,
+                  height: 5,
+                  borderRadius: 99,
+                  background: DT.track,
+                  overflow: "hidden",
+                }}
+              >
                 <div
                   style={{
-                    height: "100%", borderRadius: 99, background: DT.green,
+                    height: "100%",
+                    borderRadius: 99,
+                    background: DT.green,
                     transition: "width .45s cubic-bezier(.2,.7,.3,1)",
                     width: `${group.paidPct}%`,
                   }}
@@ -701,14 +1035,28 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
         {isEmptyProject ? (
           /* Empty state — no sessions */
           <div style={{ padding: "40px 20px", textAlign: "center" }}>
-            <p style={{ fontSize: 14, fontWeight: 400, lineHeight: 1.5, color: DT.textSecondary, marginBottom: 16 }}>
+            <p
+              style={{
+                fontSize: 14,
+                fontWeight: 400,
+                lineHeight: 1.5,
+                color: DT.textSecondary,
+                marginBottom: 16,
+              }}
+            >
               No sessions booked yet
             </p>
             <button
               style={{
-                background: DT.amber, color: DT.amberOnColor, borderRadius: 12,
-                padding: "13px 24px", fontSize: 15, fontWeight: 600, lineHeight: 1,
-                cursor: "pointer", border: "none",
+                background: DT.amber,
+                color: DT.amberOnColor,
+                borderRadius: 12,
+                padding: "13px 24px",
+                fontSize: 15,
+                fontWeight: 600,
+                lineHeight: 1,
+                cursor: "pointer",
+                border: "none",
               }}
             >
               Book first session
@@ -719,79 +1067,177 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
             {/* UPCOMING */}
             {group.upcomingSessions.length > 0 && (
               <div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 11 }}>
-                  <span style={{ fontSize: 10.5, fontWeight: 500, lineHeight: 1, letterSpacing: ".14em", color: DT.textTertiary }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 11,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 10.5,
+                      fontWeight: 500,
+                      lineHeight: 1,
+                      letterSpacing: ".14em",
+                      color: DT.textTertiary,
+                    }}
+                  >
                     UPCOMING
                   </span>
-                  <span style={{ fontSize: 12, fontWeight: 400, lineHeight: 1, color: DT.textTertiary }}>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 400,
+                      lineHeight: 1,
+                      color: DT.textTertiary,
+                    }}
+                  >
                     {group.upcomingSessions.length} left
                   </span>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 7 }}
+                >
                   {group.upcomingSessions.map(session => {
                     const isOpen = expandedSessionId === session.id;
                     const flag = getExceptionFlag(session);
-                    const sessionPct = session.priceCents > 0 ? Math.round((session.paidCents / session.priceCents) * 100) : 0;
+                    const sessionPct =
+                      session.priceCents > 0
+                        ? Math.round(
+                            (session.paidCents / session.priceCents) * 100
+                          )
+                        : 0;
                     const balance = session.priceCents - session.paidCents;
-                    const { date, time } = formatSessionDate(session.startTime, session.timeZone);
+                    const { date, time } = formatSessionDate(
+                      session.startTime,
+                      session.timeZone
+                    );
 
                     return (
                       <div key={session.id}>
                         <div
-                          onClick={() => !demoMode && setExpandedSessionId(isOpen ? null : session.id)}
+                          onClick={() =>
+                            !demoMode &&
+                            setExpandedSessionId(isOpen ? null : session.id)
+                          }
                           role="button"
                           aria-expanded={isOpen}
                           style={{
-                            borderRadius: 13, cursor: "pointer",
+                            borderRadius: 13,
+                            cursor: "pointer",
                             background: isOpen ? DT.rowHover : DT.row,
                             border: `1px solid ${isOpen ? DT.rowBorderExpanded : DT.rowBorder}`,
                             transition: "background .16s",
                           }}
                         >
                           {/* Session row */}
-                          <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 14px" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 14,
+                              padding: "13px 14px",
+                            }}
+                          >
                             {/* Date column — 94px fixed */}
                             <div style={{ width: 94, flexShrink: 0 }}>
-                              <div style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.2, color: DT.textPrimary }}>
+                              <div
+                                style={{
+                                  fontSize: 14.5,
+                                  fontWeight: 600,
+                                  lineHeight: 1.2,
+                                  color: DT.textPrimary,
+                                }}
+                              >
                                 {date}
                               </div>
-                              <div style={{
-                                fontSize: 12, fontWeight: 400, lineHeight: 1.4,
-                                color: "rgba(255,255,255,.36)", marginTop: 2, whiteSpace: "nowrap",
-                              }}>
+                              <div
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: 400,
+                                  lineHeight: 1.4,
+                                  color: "rgba(255,255,255,.36)",
+                                  marginTop: 2,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
                                 {time}
                               </div>
                             </div>
 
                             {/* Middle — money + progress */}
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-                                <span style={{ fontSize: 13, fontWeight: 400, lineHeight: 1.3, color: DT.textMoney }}>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "baseline",
+                                  justifyContent: "space-between",
+                                  gap: 8,
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    fontSize: 13,
+                                    fontWeight: 400,
+                                    lineHeight: 1.3,
+                                    color: DT.textMoney,
+                                  }}
+                                >
                                   {session.paidCents >= session.priceCents
                                     ? "Paid in full"
-                                    : `${formatCents(session.paidCents)} of ${formatCents(session.priceCents)}`
-                                  }
+                                    : `${formatCents(session.paidCents)} of ${formatCents(session.priceCents)}`}
                                 </span>
-                                <span style={{ fontSize: 11.5, fontWeight: 400, lineHeight: 1.3, color: DT.textQuaternary, whiteSpace: "nowrap" }}>
+                                <span
+                                  style={{
+                                    fontSize: 11.5,
+                                    fontWeight: 400,
+                                    lineHeight: 1.3,
+                                    color: DT.textQuaternary,
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
                                   {relativeLabel(session.startTime)}
                                 </span>
                               </div>
-                              <div style={{ marginTop: 7, height: 3, borderRadius: 99, background: DT.track, overflow: "hidden" }}>
-                                <div style={{
-                                  height: "100%", borderRadius: 99, background: DT.green,
-                                  transition: "width .4s", width: `${sessionPct}%`,
-                                }} />
+                              <div
+                                style={{
+                                  marginTop: 7,
+                                  height: 3,
+                                  borderRadius: 99,
+                                  background: DT.track,
+                                  overflow: "hidden",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    height: "100%",
+                                    borderRadius: 99,
+                                    background: DT.green,
+                                    transition: "width .4s",
+                                    width: `${sessionPct}%`,
+                                  }}
+                                />
                               </div>
                             </div>
 
                             {/* Exception pill — only if not healthy */}
                             {flag && (
-                              <span style={{
-                                fontSize: 11, fontWeight: 500, lineHeight: 1,
-                                color: DT.amber, border: `1px solid ${DT.amberBorder}`,
-                                borderRadius: 99, padding: "5px 8px", whiteSpace: "nowrap", flexShrink: 0,
-                              }}>
+                              <span
+                                style={{
+                                  fontSize: 11,
+                                  fontWeight: 500,
+                                  lineHeight: 1,
+                                  color: DT.amber,
+                                  border: `1px solid ${DT.amberBorder}`,
+                                  borderRadius: 99,
+                                  padding: "5px 8px",
+                                  whiteSpace: "nowrap",
+                                  flexShrink: 0,
+                                }}
+                              >
                                 {flag}
                               </span>
                             )}
@@ -806,41 +1252,68 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                                 exit={{ height: 0, opacity: 0 }}
                                 style={{ overflow: "hidden" }}
                               >
-                                <div style={{ padding: "2px 14px 13px", display: "flex", gap: 8 }}>
+                                <div
+                                  style={{
+                                    padding: "2px 14px 13px",
+                                    display: "flex",
+                                    gap: 8,
+                                  }}
+                                >
                                   {balance > 0 && (
                                     <button
-                                      onClick={(e) => {
+                                      onClick={e => {
                                         e.stopPropagation();
                                         setSheetSessionId(session.id);
                                         setSheetOpen(true);
                                         setMenuOpen(false);
                                       }}
                                       style={{
-                                        flex: 1, textAlign: "center",
-                                        background: DT.amber, color: DT.amberOnColor,
-                                        borderRadius: 10, padding: 11, border: "none",
-                                        fontSize: 13.5, fontWeight: 600, lineHeight: 1, cursor: "pointer",
+                                        flex: 1,
+                                        textAlign: "center",
+                                        background: DT.amber,
+                                        color: DT.amberOnColor,
+                                        borderRadius: 10,
+                                        padding: 11,
+                                        border: "none",
+                                        fontSize: 13.5,
+                                        fontWeight: 600,
+                                        lineHeight: 1,
+                                        cursor: "pointer",
                                       }}
                                     >
                                       Take {formatCents(balance)}
                                     </button>
                                   )}
                                   <button
-                                    onClick={(e) => e.stopPropagation()}
+                                    onClick={e => e.stopPropagation()}
                                     style={{
-                                      flexShrink: 0, border: "1px solid rgba(255,255,255,.16)",
-                                      borderRadius: 10, padding: "11px 14px", background: "none",
-                                      fontSize: 13.5, fontWeight: 400, lineHeight: 1, color: "rgba(255,255,255,.8)", cursor: "pointer",
+                                      flexShrink: 0,
+                                      border: "1px solid rgba(255,255,255,.16)",
+                                      borderRadius: 10,
+                                      padding: "11px 14px",
+                                      background: "none",
+                                      fontSize: 13.5,
+                                      fontWeight: 400,
+                                      lineHeight: 1,
+                                      color: "rgba(255,255,255,.8)",
+                                      cursor: "pointer",
                                     }}
                                   >
                                     Reschedule
                                   </button>
                                   <button
-                                    onClick={(e) => e.stopPropagation()}
+                                    onClick={e => e.stopPropagation()}
                                     style={{
-                                      flexShrink: 0, border: "1px solid rgba(255,255,255,.16)",
-                                      borderRadius: 10, padding: "11px 14px", background: "none",
-                                      fontSize: 13.5, fontWeight: 400, lineHeight: 1, color: "rgba(255,255,255,.8)", cursor: "pointer",
+                                      flexShrink: 0,
+                                      border: "1px solid rgba(255,255,255,.16)",
+                                      borderRadius: 10,
+                                      padding: "11px 14px",
+                                      background: "none",
+                                      fontSize: 13.5,
+                                      fontWeight: 400,
+                                      lineHeight: 1,
+                                      color: "rgba(255,255,255,.8)",
+                                      cursor: "pointer",
                                     }}
                                   >
                                     Note
@@ -863,15 +1336,34 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                 <div
                   onClick={() => setCompletedOpen(!completedOpen)}
                   style={{
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                    margin: "20px 0 11px", cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    margin: "20px 0 11px",
+                    cursor: "pointer",
                   }}
                 >
-                  <span style={{ fontSize: 10.5, fontWeight: 500, lineHeight: 1, letterSpacing: ".14em", color: DT.textTertiary }}>
+                  <span
+                    style={{
+                      fontSize: 10.5,
+                      fontWeight: 500,
+                      lineHeight: 1,
+                      letterSpacing: ".14em",
+                      color: DT.textTertiary,
+                    }}
+                  >
                     COMPLETED
                   </span>
-                  <span style={{ fontSize: 12, fontWeight: 400, lineHeight: 1, color: DT.textTertiary }}>
-                    {completedOpen ? "Hide" : "Show"} {group.completedSessions.length}
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 400,
+                      lineHeight: 1,
+                      color: DT.textTertiary,
+                    }}
+                  >
+                    {completedOpen ? "Hide" : "Show"}{" "}
+                    {group.completedSessions.length}
                   </span>
                 </div>
 
@@ -883,24 +1375,61 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                       exit={{ height: 0, opacity: 0 }}
                       style={{ overflow: "hidden" }}
                     >
-                      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 7,
+                        }}
+                      >
                         {group.completedSessions.map(session => {
-                          const { date, time } = formatSessionDate(session.startTime, session.timeZone);
+                          const { date, time } = formatSessionDate(
+                            session.startTime,
+                            session.timeZone
+                          );
                           return (
                             <div
                               key={session.id}
                               style={{
-                                display: "flex", alignItems: "center", gap: 14,
-                                padding: "11px 14px", borderRadius: 13, background: DT.completedRow,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 14,
+                                padding: "11px 14px",
+                                borderRadius: 13,
+                                background: DT.completedRow,
                               }}
                             >
-                              <div style={{ width: 94, flexShrink: 0, fontSize: 13.5, fontWeight: 500, lineHeight: 1.2, color: "rgba(255,255,255,.55)" }}>
+                              <div
+                                style={{
+                                  width: 94,
+                                  flexShrink: 0,
+                                  fontSize: 13.5,
+                                  fontWeight: 500,
+                                  lineHeight: 1.2,
+                                  color: "rgba(255,255,255,.55)",
+                                }}
+                              >
                                 {date}
                               </div>
-                              <div style={{ flex: 1, fontSize: 12.5, fontWeight: 400, lineHeight: 1.3, color: DT.textTertiary }}>
+                              <div
+                                style={{
+                                  flex: 1,
+                                  fontSize: 12.5,
+                                  fontWeight: 400,
+                                  lineHeight: 1.3,
+                                  color: DT.textTertiary,
+                                }}
+                              >
                                 {time}
                               </div>
-                              <span style={{ fontSize: 12.5, fontWeight: 400, lineHeight: 1, color: "rgba(255,255,255,.4)" }}>
+                              <span
+                                style={{
+                                  fontSize: 12.5,
+                                  fontWeight: 400,
+                                  lineHeight: 1,
+                                  color: "rgba(255,255,255,.4)",
+                                }}
+                              >
                                 {formatCents(session.paidCents)} paid
                               </span>
                             </div>
@@ -917,11 +1446,16 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
 
         {/* ── 3. ACTION BAR ─────────────────────────── */}
         {!isEmptyProject && (
-          <div style={{
-            padding: 20, display: "flex", gap: 10,
-            position: "sticky", bottom: 0,
-            background: `linear-gradient(180deg, rgba(19,19,20,0), ${DT.card} 22%)`,
-          }}>
+          <div
+            style={{
+              padding: 20,
+              display: "flex",
+              gap: 10,
+              position: "sticky",
+              bottom: 0,
+              background: `linear-gradient(180deg, rgba(19,19,20,0), ${DT.card} 22%)`,
+            }}
+          >
             <button
               onClick={() => {
                 if (!isFullyPaid) {
@@ -932,10 +1466,16 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
               }}
               disabled={isFullyPaid}
               style={{
-                flex: 1.6, textAlign: "center",
+                flex: 1.6,
+                textAlign: "center",
                 background: isFullyPaid ? `${DT.amber}66` : DT.amber,
-                color: DT.amberOnColor, borderRadius: 12, padding: 15, border: "none",
-                fontSize: 15.5, fontWeight: 600, lineHeight: 1,
+                color: DT.amberOnColor,
+                borderRadius: 12,
+                padding: 15,
+                border: "none",
+                fontSize: 15.5,
+                fontWeight: 600,
+                lineHeight: 1,
                 cursor: isFullyPaid ? "not-allowed" : "pointer",
                 opacity: isFullyPaid ? 0.4 : 1,
               }}
@@ -945,10 +1485,20 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
             <a
               href={`sms:${group.clientPhone}`}
               style={{
-                flex: 1, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center",
-                border: "1px solid rgba(255,255,255,.18)", borderRadius: 12, padding: 15,
-                fontSize: 15.5, fontWeight: 500, lineHeight: 1, color: DT.textPrimary,
-                textDecoration: "none", cursor: "pointer",
+                flex: 1,
+                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                border: "1px solid rgba(255,255,255,.18)",
+                borderRadius: 12,
+                padding: 15,
+                fontSize: 15.5,
+                fontWeight: 500,
+                lineHeight: 1,
+                color: DT.textPrimary,
+                textDecoration: "none",
+                cursor: "pointer",
               }}
             >
               Message
@@ -966,26 +1516,47 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.12 }}
               style={{
-                position: "absolute", top: 60, right: 18,
-                background: DT.menu, border: "1px solid rgba(255,255,255,.1)",
-                borderRadius: 12, padding: 6, minWidth: 170,
-                boxShadow: "0 18px 40px rgba(0,0,0,.55)", zIndex: 5,
+                position: "absolute",
+                top: 60,
+                right: 18,
+                background: DT.menu,
+                border: "1px solid rgba(255,255,255,.1)",
+                borderRadius: 12,
+                padding: 6,
+                minWidth: 170,
+                boxShadow: "0 18px 40px rgba(0,0,0,.55)",
+                zIndex: 5,
               }}
             >
               {[
-                { label: `Call ${firstName}`, href: `tel:${group.clientPhone}` },
-                { label: "View profile", action: () => { setMenuOpen(false); onViewProfile(group.clientId); } },
+                {
+                  label: `Call ${firstName}`,
+                  href: `tel:${group.clientPhone}`,
+                },
+                {
+                  label: "View profile",
+                  action: () => {
+                    setMenuOpen(false);
+                    onViewProfile(group.clientId);
+                  },
+                },
                 { label: "Add session", action: () => setMenuOpen(false) },
-              ].map(item => (
+              ].map(item =>
                 item.href ? (
                   <a
                     key={item.label}
                     href={item.href}
                     onClick={() => setMenuOpen(false)}
                     style={{
-                      display: "block", padding: "10px 12px", borderRadius: 8,
-                      fontSize: 14, fontWeight: 400, lineHeight: 1, color: DT.textPrimary,
-                      textDecoration: "none", cursor: "pointer",
+                      display: "block",
+                      padding: "10px 12px",
+                      borderRadius: 8,
+                      fontSize: 14,
+                      fontWeight: 400,
+                      lineHeight: 1,
+                      color: DT.textPrimary,
+                      textDecoration: "none",
+                      cursor: "pointer",
                     }}
                     className="hover:bg-[rgba(255,255,255,.08)]"
                   >
@@ -996,9 +1567,17 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                     key={item.label}
                     onClick={item.action}
                     style={{
-                      display: "block", width: "100%", textAlign: "left",
-                      padding: "10px 12px", borderRadius: 8, border: "none", background: "none",
-                      fontSize: 14, fontWeight: 400, lineHeight: 1, color: DT.textPrimary,
+                      display: "block",
+                      width: "100%",
+                      textAlign: "left",
+                      padding: "10px 12px",
+                      borderRadius: 8,
+                      border: "none",
+                      background: "none",
+                      fontSize: 14,
+                      fontWeight: 400,
+                      lineHeight: 1,
+                      color: DT.textPrimary,
                       cursor: "pointer",
                     }}
                     className="hover:bg-[rgba(255,255,255,.08)]"
@@ -1006,7 +1585,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                     {item.label}
                   </button>
                 )
-              ))}
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -1017,7 +1596,10 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
             <PaymentSheet
               group={group}
               preSelectedSessionId={sheetSessionId}
-              onClose={() => { setSheetOpen(false); setSheetSessionId(null); }}
+              onClose={() => {
+                setSheetOpen(false);
+                setSheetSessionId(null);
+              }}
               onConfirm={handleRequestPayment}
               demoMode={demoMode}
             />
@@ -1032,10 +1614,18 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
               style={{
-                position: "absolute", left: 20, right: 20, bottom: 88,
-                background: DT.toastBg, border: `1px solid ${DT.toastBorder}`,
-                borderRadius: 12, padding: "13px 15px",
-                fontSize: 13.5, fontWeight: 500, lineHeight: 1.3, color: DT.toastText,
+                position: "absolute",
+                left: 20,
+                right: 20,
+                bottom: 88,
+                background: DT.toastBg,
+                border: `1px solid ${DT.toastBorder}`,
+                borderRadius: 12,
+                padding: "13px 15px",
+                fontSize: 13.5,
+                fontWeight: 500,
+                lineHeight: 1.3,
+                color: DT.toastText,
                 zIndex: 10,
               }}
               role="status"
@@ -1062,12 +1652,24 @@ interface PaymentSheetProps {
   demoMode: boolean;
 }
 
-function PaymentSheet({ group, preSelectedSessionId, onClose, onConfirm, demoMode }: PaymentSheetProps) {
-  const [selectedId, setSelectedId] = useState<number | null>(preSelectedSessionId);
+function PaymentSheet({
+  group,
+  preSelectedSessionId,
+  onClose,
+  onConfirm,
+  demoMode,
+}: PaymentSheetProps) {
+  const [selectedId, setSelectedId] = useState<number | null>(
+    preSelectedSessionId
+  );
 
-  const unsettledSessions = group.upcomingSessions.filter(s => s.paidCents < s.priceCents);
+  const unsettledSessions = group.upcomingSessions.filter(
+    s => s.paidCents < s.priceCents
+  );
   const selected = unsettledSessions.find(s => s.id === selectedId);
-  const selectedBalance = selected ? selected.priceCents - selected.paidCents : 0;
+  const selectedBalance = selected
+    ? selected.priceCents - selected.paidCents
+    : 0;
 
   return (
     <motion.div
@@ -1076,8 +1678,12 @@ function PaymentSheet({ group, preSelectedSessionId, onClose, onConfirm, demoMod
       exit={{ opacity: 0 }}
       onClick={onClose}
       style={{
-        position: "absolute", inset: 0, background: DT.scrim,
-        zIndex: 9, display: "flex", alignItems: "flex-end",
+        position: "absolute",
+        inset: 0,
+        background: DT.scrim,
+        zIndex: 9,
+        display: "flex",
+        alignItems: "flex-end",
       }}
     >
       <motion.div
@@ -1085,41 +1691,95 @@ function PaymentSheet({ group, preSelectedSessionId, onClose, onConfirm, demoMod
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 30, stiffness: 300 }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
         style={{
-          width: "100%", background: DT.sheet,
+          width: "100%",
+          background: DT.sheet,
           borderTop: "1px solid rgba(255,255,255,.1)",
-          borderRadius: "20px 20px 0 0", padding: "22px 20px 20px",
+          borderRadius: "20px 20px 0 0",
+          padding: "22px 20px 20px",
         }}
       >
-        <div style={{ fontSize: 17, fontWeight: 600, lineHeight: 1.2, color: DT.textPrimary }}>Take payment</div>
-        <div style={{ fontSize: 13, fontWeight: 400, lineHeight: 1.4, color: DT.textSecondary, marginTop: 4 }}>
-          {group.clientName} · {formatCents(group.outstandingCents)} outstanding across {unsettledSessions.length} session{unsettledSessions.length !== 1 ? "s" : ""}
+        <div
+          style={{
+            fontSize: 17,
+            fontWeight: 600,
+            lineHeight: 1.2,
+            color: DT.textPrimary,
+          }}
+        >
+          Take payment
+        </div>
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 400,
+            lineHeight: 1.4,
+            color: DT.textSecondary,
+            marginTop: 4,
+          }}
+        >
+          {group.clientName} · {formatCents(group.outstandingCents)} outstanding
+          across {unsettledSessions.length} session
+          {unsettledSessions.length !== 1 ? "s" : ""}
         </div>
 
         {/* Session picker */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 7,
+            marginTop: 16,
+          }}
+        >
           {unsettledSessions.map(session => {
             const isSelected = selectedId === session.id;
             const balance = session.priceCents - session.paidCents;
-            const pct = session.priceCents > 0 ? Math.round((session.paidCents / session.priceCents) * 100) : 0;
-            const { date } = formatSessionDate(session.startTime, session.timeZone);
+            const pct =
+              session.priceCents > 0
+                ? Math.round((session.paidCents / session.priceCents) * 100)
+                : 0;
+            const { date } = formatSessionDate(
+              session.startTime,
+              session.timeZone
+            );
 
             return (
               <div
                 key={session.id}
                 onClick={() => setSelectedId(session.id)}
                 style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  padding: "13px 14px", borderRadius: 12, cursor: "pointer",
-                  background: isSelected ? DT.sheetSelected : DT.sheetUnselected,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "13px 14px",
+                  borderRadius: 12,
+                  cursor: "pointer",
+                  background: isSelected
+                    ? DT.sheetSelected
+                    : DT.sheetUnselected,
                   border: `1px solid ${isSelected ? DT.sheetSelectedBorder : DT.sheetUnselectedBorder}`,
                 }}
               >
-                <span style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.2, color: DT.textPrimary }}>
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 500,
+                    lineHeight: 1.2,
+                    color: DT.textPrimary,
+                  }}
+                >
                   {date} · {formatCents(balance)} due
                 </span>
-                <span style={{ fontSize: 13, fontWeight: 400, lineHeight: 1.2, color: DT.textSecondary }}>
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 400,
+                    lineHeight: 1.2,
+                    color: DT.textSecondary,
+                  }}
+                >
                   {pct > 0 ? `${pct}% paid` : "no deposit"}
                 </span>
               </div>
@@ -1134,15 +1794,24 @@ function PaymentSheet({ group, preSelectedSessionId, onClose, onConfirm, demoMod
           }}
           disabled={!selected}
           style={{
-            marginTop: 16, width: "100%", textAlign: "center",
+            marginTop: 16,
+            width: "100%",
+            textAlign: "center",
             background: selected ? DT.amber : `${DT.amber}66`,
-            color: DT.amberOnColor, borderRadius: 12, padding: 15, border: "none",
-            fontSize: 15.5, fontWeight: 600, lineHeight: 1,
+            color: DT.amberOnColor,
+            borderRadius: 12,
+            padding: 15,
+            border: "none",
+            fontSize: 15.5,
+            fontWeight: 600,
+            lineHeight: 1,
             cursor: selected ? "pointer" : "not-allowed",
             opacity: selected ? 1 : 0.4,
           }}
         >
-          {selected ? `Charge ${formatCents(selectedBalance)}` : "Select a session"}
+          {selected
+            ? `Charge ${formatCents(selectedBalance)}`
+            : "Select a session"}
         </button>
       </motion.div>
     </motion.div>
@@ -1155,55 +1824,109 @@ function PaymentSheet({ group, preSelectedSessionId, onClose, onConfirm, demoMod
 
 interface ClientProfileProps {
   client: {
-    id: string; name: string; email: string; phone: string;
-    avatar: string | null; city: string; tlv: number; sittings: number;
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    avatar: string | null;
+    city: string;
+    tlv: number;
+    sittings: number;
   };
   onBack: () => void;
 }
 
 function ClientProfile({ client, onBack }: ClientProfileProps) {
-  const [activeSection, setActiveSection] = useState<"appointments" | "orders" | "notes">("appointments");
+  const [activeSection, setActiveSection] = useState<
+    "appointments" | "orders" | "notes"
+  >("appointments");
 
   const { data: appointments } = trpc.clientProfile.getHistory.useQuery(
-    { clientId: client.id }, { enabled: !!client.id }
+    { clientId: client.id },
+    { enabled: !!client.id }
   );
-  const { data: orders } = trpc.storefront.getOrders.useQuery(undefined, { enabled: !!client.id });
+  const { data: orders } = trpc.storefront.getOrders.useQuery(undefined, {
+    enabled: !!client.id,
+  });
   const { data: notes } = trpc.clientProfile.getClientNotes.useQuery(
-    { clientId: client.id }, { enabled: !!client.id }
+    { clientId: client.id },
+    { enabled: !!client.id }
   );
 
   const clientOrders = useMemo(() => {
     if (!orders || !client.email) return [];
-    return orders.filter((o: any) => o.buyerEmail?.toLowerCase() === client.email.toLowerCase());
+    return orders.filter(
+      (o: any) => o.buyerEmail?.toLowerCase() === client.email.toLowerCase()
+    );
   }, [orders, client.email]);
 
   return (
     <div className="animate-in slide-in-from-right duration-300 pb-40">
       <button
         onClick={onBack}
-        className={cn(tokens.button.ghost, "flex items-center gap-2 px-2 py-2 mb-6")}
+        className={cn(
+          tokens.button.ghost,
+          "flex items-center gap-2 px-2 py-2 mb-6"
+        )}
       >
         <ChevronLeft className="w-4 h-4" />
-        <span className={cn(typography.bodySm, "font-semibold")}>Back to clients</span>
+        <span className={cn(typography.bodySm, "font-semibold")}>
+          Back to clients
+        </span>
       </button>
 
       <div className="flex items-center gap-4 mb-6">
         {client.avatar ? (
-          <img src={client.avatar} alt={client.name} style={{ width: 64, height: 64, borderRadius: 12, objectFit: "cover", background: DT.avatarFallback }} />
+          <img
+            src={client.avatar}
+            alt={client.name}
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 12,
+              objectFit: "cover",
+              background: DT.avatarFallback,
+            }}
+          />
         ) : (
-          <div style={{
-            width: 64, height: 64, borderRadius: 12, background: DT.avatarFallback,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 20, fontWeight: 600, lineHeight: 1, color: "rgba(255,255,255,.6)",
-          }}>
-            {client.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 12,
+              background: DT.avatarFallback,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 20,
+              fontWeight: 600,
+              lineHeight: 1,
+              color: "rgba(255,255,255,.6)",
+            }}
+          >
+            {client.name
+              .split(" ")
+              .map(n => n[0])
+              .join("")
+              .slice(0, 2)}
           </div>
         )}
         <div className="flex-1 min-w-0">
           <h2 className={cn(typography.h2, "truncate")}>{client.name}</h2>
           <div className="flex items-center gap-3 mt-1">
-            {client.sittings > 0 && <span className={cn(typography.label, "text-muted-foreground")}>{client.sittings} session{client.sittings !== 1 ? "s" : ""}</span>}
-            {client.tlv > 0 && <span className={cn(typography.label, "font-semibold")} style={{ color: DT.green }}>{formatMoney(client.tlv)} TLV</span>}
+            {client.sittings > 0 && (
+              <span className={cn(typography.label, "text-muted-foreground")}>
+                {client.sittings} session{client.sittings !== 1 ? "s" : ""}
+              </span>
+            )}
+            {client.tlv > 0 && (
+              <span
+                className={cn(typography.label, "font-semibold")}
+                style={{ color: DT.green }}
+              >
+                {formatMoney(client.tlv)} TLV
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -1214,22 +1937,35 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
           { icon: Phone, label: "Call", href: `tel:${client.phone}` },
           { icon: Mail, label: "Email", href: `mailto:${client.email}` },
         ].map(({ icon: Icon, label, href }) => (
-          <a key={label} href={href} className={cn(tokens.button.outline, "flex-1 flex flex-col items-center justify-center gap-1.5")}>
+          <a
+            key={label}
+            href={href}
+            className={cn(
+              tokens.button.outline,
+              "flex-1 flex flex-col items-center justify-center gap-1.5"
+            )}
+          >
             <Icon className="w-5 h-5 text-primary" />
-            <span className={cn(typography.label, "text-muted-foreground")}>{label}</span>
+            <span className={cn(typography.label, "text-muted-foreground")}>
+              {label}
+            </span>
           </a>
         ))}
       </div>
 
-      <div className={cn(tokens.calendar.viewToggle.container, "h-[44px] mb-6")}>
-        {(["appointments", "orders", "notes"] as const).map((s) => (
+      <div
+        className={cn(tokens.calendar.viewToggle.container, "h-[44px] mb-6")}
+      >
+        {(["appointments", "orders", "notes"] as const).map(s => (
           <button
             key={s}
             onClick={() => setActiveSection(s)}
             className={cn(
               tokens.calendar.viewToggle.button,
               "flex-1 capitalize",
-              activeSection === s ? tokens.calendar.viewToggle.active : tokens.calendar.viewToggle.inactive
+              activeSection === s
+                ? tokens.calendar.viewToggle.active
+                : tokens.calendar.viewToggle.inactive
             )}
           >
             {s}
@@ -1238,22 +1974,55 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
       </div>
 
       <AnimatePresence mode="wait">
-        <motion.div key={activeSection} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15 }}>
+        <motion.div
+          key={activeSection}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.15 }}
+        >
           {activeSection === "appointments" && (
             <div className="space-y-3">
               {!appointments || appointments.length === 0 ? (
                 <EmptySection icon={Calendar} text="No appointments yet" />
               ) : (
                 appointments.map((apt: any) => (
-                  <div key={apt.id} className={cn(tokens.card.base, "border-border/30 p-4")}>
+                  <div
+                    key={apt.id}
+                    className={cn(tokens.card.base, "border-border/30 p-4")}
+                  >
                     <div className="flex items-center justify-between mb-1">
-                      <span className={cn(typography.bodySm, "font-bold")}>{apt.title || apt.description || "Session"}</span>
-                      <span className={cn(tokens.display.badge, apt.status === "completed" ? statusColor.success.full : apt.status === "confirmed" ? statusColor.info.full : statusColor.warning.full)}>
+                      <span className={cn(typography.bodySm, "font-bold")}>
+                        {apt.title || apt.description || "Session"}
+                      </span>
+                      <span
+                        className={cn(
+                          tokens.display.badge,
+                          apt.status === "completed"
+                            ? statusColor.success.full
+                            : apt.status === "confirmed"
+                              ? statusColor.info.full
+                              : statusColor.warning.full
+                        )}
+                      >
                         {apt.status}
                       </span>
                     </div>
-                    <p className={cn(typography.label, "text-muted-foreground")}>{apt.date ? format(new Date(apt.date), "MMM d, yyyy · h:mm a") : "No date"}</p>
-                    {apt.price && <p className={cn(typography.label, "font-semibold mt-1")} style={{ color: DT.green }}>{formatMoney(apt.price)}</p>}
+                    <p
+                      className={cn(typography.label, "text-muted-foreground")}
+                    >
+                      {apt.date
+                        ? format(new Date(apt.date), "MMM d, yyyy · h:mm a")
+                        : "No date"}
+                    </p>
+                    {apt.price && (
+                      <p
+                        className={cn(typography.label, "font-semibold mt-1")}
+                        style={{ color: DT.green }}
+                      >
+                        {formatMoney(apt.price)}
+                      </p>
+                    )}
                   </div>
                 ))
               )}
@@ -1263,18 +2032,44 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
           {activeSection === "orders" && (
             <div className="space-y-3">
               {clientOrders.length === 0 ? (
-                <EmptySection icon={Package} text="No orders from this client" />
+                <EmptySection
+                  icon={Package}
+                  text="No orders from this client"
+                />
               ) : (
                 clientOrders.map((order: any) => (
-                  <div key={order.id} className={cn(tokens.card.base, "border-border/30 p-4")}>
+                  <div
+                    key={order.id}
+                    className={cn(tokens.card.base, "border-border/30 p-4")}
+                  >
                     <div className="flex items-center justify-between mb-1">
-                      <span className={cn(typography.bodySm, "font-bold")}>Order #{order.id}</span>
-                      <span className={cn(tokens.display.badge, order.status === "fulfilled" ? statusColor.success.full : statusColor.warning.full)}>
-                        {order.status === "fulfilled" ? "Dispatched" : "Pending"}
+                      <span className={cn(typography.bodySm, "font-bold")}>
+                        Order #{order.id}
+                      </span>
+                      <span
+                        className={cn(
+                          tokens.display.badge,
+                          order.status === "fulfilled"
+                            ? statusColor.success.full
+                            : statusColor.warning.full
+                        )}
+                      >
+                        {order.status === "fulfilled"
+                          ? "Dispatched"
+                          : "Pending"}
                       </span>
                     </div>
-                    <p className={cn(typography.label, "text-muted-foreground")}>{format(new Date(order.createdAt), "MMM d, yyyy")}</p>
-                    <p className={cn(typography.label, "font-semibold mt-1")} style={{ color: DT.green }}>{formatCents(order.totalAmountCents)}</p>
+                    <p
+                      className={cn(typography.label, "text-muted-foreground")}
+                    >
+                      {format(new Date(order.createdAt), "MMM d, yyyy")}
+                    </p>
+                    <p
+                      className={cn(typography.label, "font-semibold mt-1")}
+                      style={{ color: DT.green }}
+                    >
+                      {formatCents(order.totalAmountCents)}
+                    </p>
                   </div>
                 ))
               )}
@@ -1287,9 +2082,23 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
                 <EmptySection icon={FileText} text="No notes for this client" />
               ) : (
                 notes.map((note: any) => (
-                  <div key={note.id} className={cn(tokens.card.base, "border-border/30 p-4")}>
-                    <p className={cn(typography.body, "whitespace-pre-wrap")}>{note.note}</p>
-                    {note.createdAt && <p className={cn(typography.label, "text-muted-foreground mt-2")}>{format(new Date(note.createdAt), "MMM d, yyyy")}</p>}
+                  <div
+                    key={note.id}
+                    className={cn(tokens.card.base, "border-border/30 p-4")}
+                  >
+                    <p className={cn(typography.body, "whitespace-pre-wrap")}>
+                      {note.note}
+                    </p>
+                    {note.createdAt && (
+                      <p
+                        className={cn(
+                          typography.label,
+                          "text-muted-foreground mt-2"
+                        )}
+                      >
+                        {format(new Date(note.createdAt), "MMM d, yyyy")}
+                      </p>
+                    )}
                   </div>
                 ))
               )}
@@ -1304,7 +2113,9 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
 function EmptySection({ icon: Icon, text }: { icon: any; text: string }) {
   return (
     <div className={tokens.display.emptyState}>
-      <div className={tokens.display.emptyStateIcon}><Icon className="w-8 h-8" /></div>
+      <div className={tokens.display.emptyStateIcon}>
+        <Icon className="w-8 h-8" />
+      </div>
       <p className={tokens.display.emptyStateText}>{text}</p>
     </div>
   );

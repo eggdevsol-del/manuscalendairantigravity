@@ -1,3 +1,4 @@
+import { requireArtist, requireConversationAccess } from "../services/access";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { artistProcedure, protectedProcedure, router } from "../_core/trpc";
@@ -27,16 +28,25 @@ export const appointmentsRouter = router({
 
         // Permit studio managers/owners to view their artist's standalone calendar scopes directly if queried
         const member = await dbRef.query.studioMembers.findFirst({
-          where: (sm, { eq, and }) => and(eq(sm.userId, input.artistId), eq(sm.status, "active"))
+          where: (sm, { eq, and }) =>
+            and(eq(sm.userId, input.artistId), eq(sm.status, "active")),
         });
 
         const requesterMember = member?.studioId
           ? await dbRef.query.studioMembers.findFirst({
-            where: (sm, { eq, and }) => and(eq(sm.studioId, member.studioId), eq(sm.userId, ctx.user.id))
-          })
+              where: (sm, { eq, and }) =>
+                and(
+                  eq(sm.studioId, member.studioId),
+                  eq(sm.userId, ctx.user.id)
+                ),
+            })
           : null;
 
-        if (!requesterMember || (requesterMember.role !== "owner" && requesterMember.role !== "manager")) {
+        if (
+          !requesterMember ||
+          (requesterMember.role !== "owner" &&
+            requesterMember.role !== "manager")
+        ) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: "Not authorized to view this calendar",
@@ -139,12 +149,14 @@ export const appointmentsRouter = router({
    * No conversationId, artistId, or clientId required — uses authenticated user.
    */
   createPersonal: protectedProcedure
-    .input(z.object({
-      title: z.string().min(1),
-      startTime: z.string(),
-      endTime: z.string(),
-      description: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        title: z.string().min(1),
+        startTime: z.string(),
+        endTime: z.string(),
+        description: z.string().optional(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const timezone = getBusinessTimezone();
       const startTimeUTC = localToUTC(input.startTime, timezone);
@@ -157,8 +169,14 @@ export const appointmentsRouter = router({
         clientId: ctx.user.id, // Self-referencing
         title: input.title,
         description: input.description || null,
-        startTime: new Date(startTimeUTC).toISOString().slice(0, 19).replace("T", " "),
-        endTime: new Date(endTimeUTC).toISOString().slice(0, 19).replace("T", " "),
+        startTime: new Date(startTimeUTC)
+          .toISOString()
+          .slice(0, 19)
+          .replace("T", " "),
+        endTime: new Date(endTimeUTC)
+          .toISOString()
+          .slice(0, 19)
+          .replace("T", " "),
         timeZone: timezone,
         status: "confirmed",
         serviceName: "personal",
@@ -182,7 +200,19 @@ export const appointmentsRouter = router({
         depositAmount: z.number().optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      requireArtist(ctx.user);
+      if (input.artistId !== ctx.user.id)
+        throw new TRPCError({ code: "FORBIDDEN" });
+      const accessDb = await db.getDb();
+      const conversation = await requireConversationAccess(
+        accessDb,
+        input.conversationId,
+        ctx.user.id,
+        true
+      );
+      if (conversation.clientId !== input.clientId)
+        throw new TRPCError({ code: "FORBIDDEN" });
       const timezone = input.timeZone || getBusinessTimezone();
 
       // Convert local times to UTC
@@ -198,8 +228,25 @@ export const appointmentsRouter = router({
       if (maxAppts !== Infinity) {
         const dbRef = await db.getDb();
         if (dbRef) {
-          const startOfMonth = new Date(new Date(startTimeUTC).getFullYear(), new Date(startTimeUTC).getMonth(), 1).toISOString().slice(0, 19).replace('T', ' ');
-          const endOfMonth = new Date(new Date(startTimeUTC).getFullYear(), new Date(startTimeUTC).getMonth() + 1, 0, 23, 59, 59).toISOString().slice(0, 19).replace('T', ' ');
+          const startOfMonth = new Date(
+            new Date(startTimeUTC).getFullYear(),
+            new Date(startTimeUTC).getMonth(),
+            1
+          )
+            .toISOString()
+            .slice(0, 19)
+            .replace("T", " ");
+          const endOfMonth = new Date(
+            new Date(startTimeUTC).getFullYear(),
+            new Date(startTimeUTC).getMonth() + 1,
+            0,
+            23,
+            59,
+            59
+          )
+            .toISOString()
+            .slice(0, 19)
+            .replace("T", " ");
 
           const currentMonthAppts = await dbRef.query.appointments.findMany({
             where: and(
@@ -212,7 +259,7 @@ export const appointmentsRouter = router({
           if (currentMonthAppts.length >= maxAppts) {
             throw new TRPCError({
               code: "FORBIDDEN",
-              message: `You have reached your free tier limit of ${maxAppts} appointments per month. Please upgrade your subscription.`
+              message: `You have reached your free tier limit of ${maxAppts} appointments per month. Please upgrade your subscription.`,
             });
           }
         }
@@ -223,7 +270,8 @@ export const appointmentsRouter = router({
         if (!canAccessFeature(tier, "canUseDepositEngine")) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "Your current subscription tier does not support automated deposit collection."
+            message:
+              "Your current subscription tier does not support automated deposit collection.",
           });
         }
       }
@@ -327,6 +375,20 @@ export const appointmentsRouter = router({
         });
       }
 
+      if (
+        appointment.clientId === ctx.user.id &&
+        appointment.artistId !== ctx.user.id
+      ) {
+        const forbidden = Object.keys(input).some(
+          key => !["id", "clientArrived"].includes(key)
+        );
+        if (forbidden)
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "Contact your artist to change booking or payment details.",
+          });
+      }
       const { id, ...updates } = input;
 
       // Convert times if provided
@@ -346,102 +408,99 @@ export const appointmentsRouter = router({
         }
       }
 
+      if (updates.startTime || updates.endTime) {
+        const start = new Date(
+          processedUpdates.startTime || appointment.startTime
+        );
+        const end = new Date(processedUpdates.endTime || appointment.endTime);
+        if (!Number.isFinite(+start) || !(end > start))
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Choose a valid appointment interval.",
+          });
+        if (
+          await db.checkAppointmentOverlap(appointment.artistId, start, end, id)
+        )
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "This time is already booked.",
+          });
+      }
       return db.updateAppointment(id, processedUpdates, ctx.user.id);
     }),
 
   /**
    * Reschedule an appointment to a new date.
-   * Checks the artist's notice period setting to determine if the deposit
-   * carries over or is forfeited (requiring a new deposit from the client).
+   * Artist-initiated moves preserve the existing payment and confirmation state.
    */
   reschedule: artistProcedure
-    .input(z.object({
-      appointmentId: z.number(),
-      newStartTime: z.string(), // ISO string
-      newEndTime: z.string(),   // ISO string
-    }))
+    .input(
+      z.object({
+        appointmentId: z.number(),
+        newStartTime: z.string(), // ISO string
+        newEndTime: z.string(), // ISO string
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const appointment = await db.getAppointment(input.appointmentId);
       if (!appointment) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Appointment not found",
+        });
       }
       if (appointment.artistId !== ctx.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Not your appointment" });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not your appointment",
+        });
       }
 
-      // Get artist's reschedule notice period
-      const settings = await db.getArtistSettings(ctx.user.id);
-      const noticePeriodHours = settings?.rescheduleNoticePeriodHours ?? 72;
-
-      // Check if reschedule is within notice period
-      const now = new Date();
-      const originalStart = new Date(appointment.startTime);
-      const hoursUntilAppointment = (originalStart.getTime() - now.getTime()) / (1000 * 60 * 60);
-      const sufficientNotice = hoursUntilAppointment >= noticePeriodHours;
+      const start = new Date(input.newStartTime);
+      const end = new Date(input.newEndTime);
+      if (!Number.isFinite(+start) || !(end > start))
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Choose a valid appointment interval.",
+        });
+      if (
+        await db.checkAppointmentOverlap(
+          appointment.artistId,
+          start,
+          end,
+          appointment.id
+        )
+      )
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "This time is already booked.",
+        });
 
       const nowStr = new Date().toISOString().slice(0, 19).replace("T", " ");
 
-      if (sufficientNotice) {
-        // Deposit carries over — simple date move
-        await db.updateAppointment(input.appointmentId, {
+      // Deposit carries over — simple date move
+      await db.updateAppointment(
+        input.appointmentId,
+        {
           startTime: input.newStartTime,
           endTime: input.newEndTime,
-          status: "confirmed" as any,
+
           updatedAt: nowStr,
-        }, ctx.user.id);
+        },
+        ctx.user.id
+      );
 
-        // Send reschedule confirmation message to conversation
-        if (appointment.conversationId) {
-          await db.createMessage({
-            conversationId: appointment.conversationId,
-            senderId: ctx.user.id,
-            content: `Appointment rescheduled to ${new Date(input.newStartTime).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}. Your existing deposit has been transferred.`,
-            messageType: "system" as any,
-          });
-        }
-
-        return { success: true, depositForfeited: false };
-      } else {
-        // Insufficient notice — deposit forfeited, new deposit required
-        const depositAmountCents = appointment.depositAmount || 0;
-        const servicePriceCents = appointment.price || 0;
-
-        // Update appointment to new date, reset payment status for new deposit
-        await db.updateAppointment(input.appointmentId, {
-          startTime: input.newStartTime,
-          endTime: input.newEndTime,
-          status: "pending" as any,
-          depositPaid: 0,
-          totalPaidAmountCents: 0,
-          remainingBalanceCents: appointment.totalExpectedAmountCents || servicePriceCents,
-          paymentStatus: "pending_deposit" as any,
-          updatedAt: nowStr,
-        }, ctx.user.id);
-
-        // Create reschedule chat card requiring new deposit
-        if (appointment.conversationId) {
-          const meta = {
-            type: "reschedule_deposit",
-            appointmentId: input.appointmentId,
-            originalDate: appointment.startTime,
-            newDate: input.newStartTime,
-            depositAmount: depositAmountCents, // in cents or dollars depending on source
-            serviceName: appointment.serviceName || appointment.title,
-            forfeitedDepositAmount: depositAmountCents,
-            status: "pending", // pending → confirmed when new deposit paid
-          };
-
-          await db.createMessage({
-            conversationId: appointment.conversationId,
-            senderId: ctx.user.id,
-            content: `Your appointment has been rescheduled. As this was within the ${noticePeriodHours}-hour notice period, a new deposit is required to confirm the new date.`,
-            messageType: "system" as any,
-            metadata: JSON.stringify(meta),
-          });
-        }
-
-        return { success: true, depositForfeited: true, forfeitedAmount: depositAmountCents };
+      // Send reschedule confirmation message to conversation
+      if (appointment.conversationId) {
+        await db.createMessage({
+          conversationId: appointment.conversationId,
+          senderId: ctx.user.id,
+          content: `Appointment rescheduled to ${new Date(input.newStartTime).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}. Your existing deposit has been transferred.`,
+          messageType: "system" as any,
+        });
       }
+
+      return { success: true, depositForfeited: false };
     }),
   delete: protectedProcedure
     .input(z.number())
@@ -473,7 +532,7 @@ export const appointmentsRouter = router({
     .input(
       z.object({
         clientId: z.string(),
-        deleteProfile: z.boolean().optional()
+        deleteProfile: z.boolean().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -484,26 +543,31 @@ export const appointmentsRouter = router({
         });
       }
 
-      return db.deleteAppointmentsForClient(ctx.user.id, input.clientId, input.deleteProfile);
+      return db.deleteAppointmentsForClient(
+        ctx.user.id,
+        input.clientId,
+        input.deleteProfile
+      );
     }),
 
-  deleteAllForArtist: protectedProcedure
-    .mutation(async ({ ctx }) => {
-      if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only artists can delete all their bookings",
-        });
-      }
+  deleteAllForArtist: protectedProcedure.mutation(async ({ ctx }) => {
+    if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Only artists can delete all their bookings",
+      });
+    }
 
-      const database = await db.getDb();
-      if (!database) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-      }
+    const database = await db.getDb();
+    if (!database) {
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    }
 
-      await database.delete(schema.appointments).where(eq(schema.appointments.artistId, ctx.user.id));
-      return { success: true };
-    }),
+    await database
+      .delete(schema.appointments)
+      .where(eq(schema.appointments.artistId, ctx.user.id));
+    return { success: true };
+  }),
 
   resolveMysteryAppointments: protectedProcedure
     .input(
@@ -778,7 +842,9 @@ export const appointmentsRouter = router({
         }
 
         const sittingPriceCents = Math.round(appt.price * 100);
-        const sittingDepositCents = appt.depositAmount ? Math.round(appt.depositAmount * 100) : 0;
+        const sittingDepositCents = appt.depositAmount
+          ? Math.round(appt.depositAmount * 100)
+          : 0;
 
         const created = await db.createAppointment({
           conversationId: input.conversationId,
@@ -873,12 +939,14 @@ export const appointmentsRouter = router({
       let metadata: any = {};
       try {
         metadata = message.metadata ? JSON.parse(message.metadata) : {};
-      } catch (e) { }
+      } catch (e) {}
 
       const singleApptId = metadata.appointmentId || metadata.id;
       const appointmentIds: number[] = Array.isArray(metadata.appointmentIds)
         ? metadata.appointmentIds
-        : (singleApptId ? [singleApptId] : []);
+        : singleApptId
+          ? [singleApptId]
+          : [];
 
       if (appointmentIds.length > 0) {
         for (const appId of appointmentIds) {
@@ -959,18 +1027,22 @@ export const appointmentsRouter = router({
         if (!database) return null;
 
         const allInConvo = await database.query.appointments.findMany({
-          where: (a, { and, eq, ne, isNotNull }) => and(
-            eq(a.conversationId, appointment.conversationId),
-            isNotNull(a.serviceName),
-            eq(a.serviceName, appointment.serviceName || ""),
-            ne(a.status, "cancelled")
-          ),
+          where: (a, { and, eq, ne, isNotNull }) =>
+            and(
+              eq(a.conversationId, appointment.conversationId),
+              isNotNull(a.serviceName),
+              eq(a.serviceName, appointment.serviceName || ""),
+              ne(a.status, "cancelled")
+            ),
           orderBy: (a, { asc }) => [asc(a.startTime)],
         });
 
         // Only group if there are matching appointments
         if (allInConvo.length > 0) {
-          const totalCost = allInConvo.reduce((sum: number, a: any) => sum + (a.price || 0), 0);
+          const totalCost = allInConvo.reduce(
+            (sum: number, a: any) => sum + (a.price || 0),
+            0
+          );
 
           return {
             message: { id: -1, messageType: "appointment_request" },
@@ -979,8 +1051,16 @@ export const appointmentsRouter = router({
               serviceName: appointment.serviceName || "Imported Project",
               sittings: allInConvo.length,
               totalCost: totalCost,
-              dates: allInConvo.map((a: any) => new Date(a.startTime).toISOString()),
-              serviceDuration: appointment.endTime ? Math.round((new Date(appointment.endTime).getTime() - new Date(appointment.startTime).getTime()) / 60000) : 60,
+              dates: allInConvo.map((a: any) =>
+                new Date(a.startTime).toISOString()
+              ),
+              serviceDuration: appointment.endTime
+                ? Math.round(
+                    (new Date(appointment.endTime).getTime() -
+                      new Date(appointment.startTime).getTime()) /
+                      60000
+                  )
+                : 60,
               isImported: true,
             },
           };
@@ -999,21 +1079,26 @@ export const appointmentsRouter = router({
     }),
 
   batchUpdateClientPrices: protectedProcedure
-    .input(z.object({
-      clientId: z.string(),
-      artistId: z.string(),
-      price: z.number().min(0),
-      serviceName: z.string().optional()
-    }))
+    .input(
+      z.object({
+        clientId: z.string(),
+        artistId: z.string(),
+        price: z.number().min(0),
+        serviceName: z.string().optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       if (ctx.user.id !== input.artistId && ctx.user.role !== "admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized to batch update this context." });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not authorized to batch update this context.",
+        });
       }
 
       const database = await db.getDb();
       if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-      const nowString = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      const nowString = new Date().toISOString().slice(0, 19).replace("T", " ");
 
       const { and, eq, gte } = await import("drizzle-orm");
 
@@ -1022,7 +1107,8 @@ export const appointmentsRouter = router({
         payload.serviceName = input.serviceName;
       }
 
-      await database.update(schema.appointments)
+      await database
+        .update(schema.appointments)
         .set(payload)
         .where(
           and(
@@ -1085,20 +1171,26 @@ export const appointmentsRouter = router({
       });
 
       // Fee calculation
-      const {
-        calculateTransactionFees,
-        resolvePaymentTier,
-      } = await import("../domain/fees");
+      const { calculateTransactionFees, resolvePaymentTier } =
+        await import("../domain/fees");
 
       const tier = resolvePaymentTier(artistSettings?.subscriptionTier);
       const fees = calculateTransactionFees(remaining, tier);
 
       // Create PaymentIntent
-      const { createBalancePaymentIntent } = await import(
-        "../services/paymentIntents"
-      );
+      const { createBalancePaymentIntent } =
+        await import("../services/paymentIntents");
 
-      const balanceToken = `bal_${appointment.id}_${Date.now()}`;
+      if (
+        appointment.status === "cancelled" ||
+        !artistSettings?.stripeConnectAccountId ||
+        artistSettings.stripeConnectOnboardingComplete !== 1
+      )
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "This booking cannot accept a card payment yet.",
+        });
+      const balanceToken = `bal_${appointment.id}`;
       const paymentResult = await createBalancePaymentIntent({
         bookingId: appointment.id,
         balanceAmountCents: remaining,
@@ -1121,8 +1213,7 @@ export const appointmentsRouter = router({
         balanceAmountCents: remaining,
         platformFeeCents: fees.platformFeeCents,
         totalCents: fees.clientTotalCents,
-        artistName:
-          artistSettings?.displayName || artist?.name || "Artist",
+        artistName: artistSettings?.displayName || artist?.name || "Artist",
         projectName: appointment.projectName || appointment.title || "Session",
         depositPaidCents: appointment.totalPaidAmountCents || 0,
       };
@@ -1133,9 +1224,11 @@ export const appointmentsRouter = router({
    * Returns upcoming and past appointments with artist info, payment status, and aftercare data.
    */
   getClientBookings: protectedProcedure
-    .input(z.object({
-      tab: z.enum(["upcoming", "past"]),
-    }))
+    .input(
+      z.object({
+        tab: z.enum(["upcoming", "past"]),
+      })
+    )
     .query(async ({ ctx, input }) => {
       const dbRef = await db.getDb();
       if (!dbRef) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -1149,54 +1242,62 @@ export const appointmentsRouter = router({
           where: and(
             eq(schema.appointments.clientId, clientId),
             gte(schema.appointments.startTime, now),
-            not(eq(schema.appointments.status, "cancelled")),
+            not(eq(schema.appointments.status, "cancelled"))
           ),
           orderBy: (appointments, { asc }) => [asc(appointments.startTime)],
         });
 
         // Enrich with artist info
         const artistIds = [...new Set(upcoming.map(a => a.artistId))];
-        const artists = artistIds.length > 0
-          ? await dbRef.query.users.findMany({
-              where: inArray(schema.users.id, artistIds),
-            })
-          : [];
-        const artistSettings = artistIds.length > 0
-          ? await dbRef.query.artistSettings.findMany({
-              where: inArray(schema.artistSettings.userId, artistIds),
-            })
-          : [];
+        const artists =
+          artistIds.length > 0
+            ? await dbRef.query.users.findMany({
+                where: inArray(schema.users.id, artistIds),
+              })
+            : [];
+        const artistSettings =
+          artistIds.length > 0
+            ? await dbRef.query.artistSettings.findMany({
+                where: inArray(schema.artistSettings.userId, artistIds),
+              })
+            : [];
 
         // Get pending consult requests
         const pendingConsults = await dbRef.query.consultations.findMany({
           where: and(
             eq(schema.consultations.clientId, clientId),
-            eq(schema.consultations.status, "pending"),
+            eq(schema.consultations.status, "pending")
           ),
         });
 
         // Get payment requests for upcoming appointments
         const appointmentIds = upcoming.map(a => a.id);
-        const paymentRequests = appointmentIds.length > 0
-          ? await dbRef.query.paymentRequests.findMany({
-              where: and(
-                inArray(schema.paymentRequests.appointmentId, appointmentIds),
-                eq(schema.paymentRequests.status, "pending"),
-              ),
-            })
-          : [];
+        const paymentRequests =
+          appointmentIds.length > 0
+            ? await dbRef.query.paymentRequests.findMany({
+                where: and(
+                  inArray(schema.paymentRequests.appointmentId, appointmentIds),
+                  eq(schema.paymentRequests.status, "pending")
+                ),
+              })
+            : [];
 
         const artistMap = new Map(artists.map(a => [a.id, a]));
         const settingsMap = new Map(artistSettings.map(s => [s.userId, s]));
-        const paymentRequestMap = new Map(paymentRequests.map(pr => [pr.appointmentId, pr]));
+        const paymentRequestMap = new Map(
+          paymentRequests.map(pr => [pr.appointmentId, pr])
+        );
 
         // Get consult artist info
-        const consultArtistIds = [...new Set(pendingConsults.map(c => c.artistId))];
-        const consultArtists = consultArtistIds.length > 0
-          ? await dbRef.query.users.findMany({
-              where: inArray(schema.users.id, consultArtistIds),
-            })
-          : [];
+        const consultArtistIds = [
+          ...new Set(pendingConsults.map(c => c.artistId)),
+        ];
+        const consultArtists =
+          consultArtistIds.length > 0
+            ? await dbRef.query.users.findMany({
+                where: inArray(schema.users.id, consultArtistIds),
+              })
+            : [];
         const consultArtistMap = new Map(consultArtists.map(a => [a.id, a]));
 
         return {
@@ -1204,14 +1305,19 @@ export const appointmentsRouter = router({
             const artist = artistMap.get(a.artistId);
             const settings = settingsMap.get(a.artistId);
             const payReq = paymentRequestMap.get(a.id);
-            const durationMinutes = a.startTime && a.endTime
-              ? Math.round((new Date(a.endTime).getTime() - new Date(a.startTime).getTime()) / 60000)
-              : null;
+            const durationMinutes =
+              a.startTime && a.endTime
+                ? Math.round(
+                    (new Date(a.endTime).getTime() -
+                      new Date(a.startTime).getTime()) /
+                      60000
+                  )
+                : null;
 
             return {
               id: a.id,
-              startsAt: a.startTime,
-              endsAt: a.endTime,
+              startsAt: a.startTime.replace(" ", "T") + "Z",
+              endsAt: a.endTime.replace(" ", "T") + "Z",
               durationMinutes,
               status: a.status,
               title: a.title,
@@ -1224,15 +1330,24 @@ export const appointmentsRouter = router({
                 id: a.artistId,
                 name: settings?.displayName || artist?.name || "Artist",
               },
-              depositPaidCents: a.depositPaid ? (a.depositAmount || 0) * 100 : 0,
-              estimateCents: a.totalExpectedAmountCents || (a.price ? a.price * 100 : 0),
+              amountPaidCents:
+                a.totalPaidAmountCents ?? (a.amountPaid || 0) * 100,
+              completedAt: a.completedAt,
+              aftercareTemplateId: a.aftercareTemplateId,
+              depositPaidCents: a.depositPaid
+                ? (a.depositAmount || 0) * 100
+                : 0,
+              estimateCents:
+                a.totalExpectedAmountCents || (a.price ? a.price * 100 : 0),
               balanceDueCents: a.remainingBalanceCents || 0,
               paymentStatus: a.paymentStatus,
-              paymentRequest: payReq ? {
-                id: payReq.id,
-                amountCents: payReq.amountCents,
-                status: payReq.status,
-              } : null,
+              paymentRequest: payReq
+                ? {
+                    id: payReq.id,
+                    amountCents: payReq.amountCents,
+                    status: payReq.status,
+                  }
+                : null,
               conversationId: a.conversationId,
             };
           }),
@@ -1253,23 +1368,25 @@ export const appointmentsRouter = router({
         const past = await dbRef.query.appointments.findMany({
           where: and(
             eq(schema.appointments.clientId, clientId),
-            eq(schema.appointments.status, "completed"),
+            eq(schema.appointments.status, "completed")
           ),
           orderBy: (appointments, { desc: d }) => [d(appointments.startTime)],
         });
 
         // Enrich with artist info
         const artistIds = [...new Set(past.map(a => a.artistId))];
-        const artists = artistIds.length > 0
-          ? await dbRef.query.users.findMany({
-              where: inArray(schema.users.id, artistIds),
-            })
-          : [];
-        const artistSettings = artistIds.length > 0
-          ? await dbRef.query.artistSettings.findMany({
-              where: inArray(schema.artistSettings.userId, artistIds),
-            })
-          : [];
+        const artists =
+          artistIds.length > 0
+            ? await dbRef.query.users.findMany({
+                where: inArray(schema.users.id, artistIds),
+              })
+            : [];
+        const artistSettings =
+          artistIds.length > 0
+            ? await dbRef.query.artistSettings.findMany({
+                where: inArray(schema.artistSettings.userId, artistIds),
+              })
+            : [];
 
         const artistMap = new Map(artists.map(a => [a.id, a]));
         const settingsMap = new Map(artistSettings.map(s => [s.userId, s]));
@@ -1278,14 +1395,19 @@ export const appointmentsRouter = router({
           appointments: past.map(a => {
             const artist = artistMap.get(a.artistId);
             const settings = settingsMap.get(a.artistId);
-            const durationMinutes = a.startTime && a.endTime
-              ? Math.round((new Date(a.endTime).getTime() - new Date(a.startTime).getTime()) / 60000)
-              : null;
+            const durationMinutes =
+              a.startTime && a.endTime
+                ? Math.round(
+                    (new Date(a.endTime).getTime() -
+                      new Date(a.startTime).getTime()) /
+                      60000
+                  )
+                : null;
 
             return {
               id: a.id,
-              startsAt: a.startTime,
-              endsAt: a.endTime,
+              startsAt: a.startTime.replace(" ", "T") + "Z",
+              endsAt: a.endTime.replace(" ", "T") + "Z",
               durationMinutes,
               status: a.status,
               title: a.title,
@@ -1298,7 +1420,15 @@ export const appointmentsRouter = router({
                 id: a.artistId,
                 name: settings?.displayName || artist?.name || "Artist",
               },
-              amountPaidCents: a.totalPaidAmountCents || (a.amountPaid ? a.amountPaid * 100 : 0),
+              depositPaidCents: a.depositPaid
+                ? (a.depositAmount || 0) * 100
+                : 0,
+              estimateCents: a.totalExpectedAmountCents ?? (a.price || 0) * 100,
+              balanceDueCents: a.remainingBalanceCents ?? 0,
+              paymentRequest: null,
+              amountPaidCents:
+                a.totalPaidAmountCents ||
+                (a.amountPaid ? a.amountPaid * 100 : 0),
               completedAt: a.completedAt || a.actualEndTime || a.endTime,
               aftercareTemplateId: a.aftercareTemplateId,
               paymentStatus: a.paymentStatus,
@@ -1313,21 +1443,33 @@ export const appointmentsRouter = router({
    * Artist cancels a single session. Sets status to "cancelled" and sends a system message.
    */
   cancelSession: artistProcedure
-    .input(z.object({
-      appointmentId: z.number(),
-    }))
+    .input(
+      z.object({
+        appointmentId: z.number(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const appointment = await db.getAppointment(input.appointmentId);
       if (!appointment) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Appointment not found",
+        });
       }
       if (appointment.artistId !== ctx.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Not your appointment" });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not your appointment",
+        });
       }
 
-      await db.updateAppointment(input.appointmentId, {
-        status: "cancelled" as any,
-      }, ctx.user.id);
+      await db.updateAppointment(
+        input.appointmentId,
+        {
+          status: "cancelled" as any,
+        },
+        ctx.user.id
+      );
 
       await db.logAppointmentAction({
         appointmentId: input.appointmentId,
@@ -1341,7 +1483,9 @@ export const appointmentsRouter = router({
         const title = appointment.title || "Session";
         const dateStr = appointment.startTime
           ? new Date(appointment.startTime).toLocaleDateString("en-AU", {
-              weekday: "short", day: "numeric", month: "short",
+              weekday: "short",
+              day: "numeric",
+              month: "short",
             })
           : "";
         await db.createMessage({
@@ -1360,9 +1504,11 @@ export const appointmentsRouter = router({
    * Sets all matching appointments to "cancelled" and sends a single system message.
    */
   cancelProjectSessions: artistProcedure
-    .input(z.object({
-      sessionPlanId: z.number(),
-    }))
+    .input(
+      z.object({
+        sessionPlanId: z.number(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const dbRef = await db.getDb();
       if (!dbRef) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -1371,19 +1517,26 @@ export const appointmentsRouter = router({
       const planAppointments = await dbRef.query.appointments.findMany({
         where: and(
           eq(schema.appointments.sessionPlanId, input.sessionPlanId),
-          eq(schema.appointments.artistId, ctx.user.id),
+          eq(schema.appointments.artistId, ctx.user.id)
         ),
       });
 
       if (planAppointments.length === 0) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "No sessions found for this project" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No sessions found for this project",
+        });
       }
 
       const apptIds = planAppointments.map(a => a.id);
 
       // Batch cancel all
-      await dbRef.update(schema.appointments)
-        .set({ status: "cancelled", updatedAt: new Date() })
+      await dbRef
+        .update(schema.appointments)
+        .set({
+          status: "cancelled",
+          updatedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
+        })
         .where(inArray(schema.appointments.id, apptIds));
 
       // Log each
@@ -1392,7 +1545,11 @@ export const appointmentsRouter = router({
           appointmentId: appt.id,
           action: "cancelled",
           performedBy: ctx.user.id,
-          newValue: JSON.stringify({ cancelledBy: "artist", batchCancel: true, sessionPlanId: input.sessionPlanId }),
+          newValue: JSON.stringify({
+            cancelledBy: "artist",
+            batchCancel: true,
+            sessionPlanId: input.sessionPlanId,
+          }),
         });
       }
 
@@ -1430,8 +1587,8 @@ async function sendDepositMessage(
 
   const lead = conversation?.leadId
     ? await database.query.leads.findFirst({
-      where: eq(schema.leads.id, conversation.leadId),
-    })
+        where: eq(schema.leads.id, conversation.leadId),
+      })
     : null;
 
   if (lead) {
@@ -1449,7 +1606,10 @@ async function sendDepositMessage(
 
     const { createDepositToken } = await import("../services/depositToken");
     const token = createDepositToken(lead.id);
-    const baseUrl = process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
+    const baseUrl =
+      process.env.APP_URL ||
+      process.env.VITE_APP_URL ||
+      "https://www.tattoi.app";
     const depositUrl = `${baseUrl}/deposit/${token}`;
 
     const content =
@@ -1471,7 +1631,9 @@ async function sendDepositMessage(
     if (artistSettings.businessName)
       content += `Business: ${artistSettings.businessName}\n`;
 
-    const bankLabels = getBankDetailLabels(artistSettings.businessCountry || 'AU');
+    const bankLabels = getBankDetailLabels(
+      artistSettings.businessCountry || "AU"
+    );
 
     if (artistSettings.bsb && bankLabels.bankCodeLabel) {
       content += `${bankLabels.bankCodeLabel}: ${artistSettings.bsb}\n`;

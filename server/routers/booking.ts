@@ -45,9 +45,7 @@ export const bookingRouter = router({
           resolvedArtistId = conversation.artistId;
         }
 
-        const artistSettings = await db.getArtistSettings(
-          resolvedArtistId
-        );
+        const artistSettings = await db.getArtistSettings(resolvedArtistId);
 
         if (!artistSettings) {
           throw new TRPCError({
@@ -132,11 +130,14 @@ export const bookingRouter = router({
       try {
         services = JSON.parse(artistSettings.services);
       } catch (e) {
-        console.error("[BookingRouter] Failed to parse services json for indicators", e);
+        console.error(
+          "[BookingRouter] Failed to parse services json for indicators",
+          e
+        );
       }
 
       const serviceColorMap: Record<string, string> = {};
-      services.forEach((s) => {
+      services.forEach(s => {
         if (s.name && s.color) {
           serviceColorMap[s.name] = s.color;
         }
@@ -145,7 +146,7 @@ export const bookingRouter = router({
       const rawAppts = await db.getArtistCalendar(artistId, startDate, endDate);
       // Only show confirmed and completed — pending bookings should NOT block public calendar
       const validAppts = rawAppts.filter(
-        (a) =>
+        a =>
           a.status === "confirmed" ||
           a.status === "completed" ||
           a.status === "no-show"
@@ -167,10 +168,9 @@ export const bookingRouter = router({
         if (durationMinutes <= 0) continue;
 
         // Use standard YYYY-MM-DD local format
-        const dateKey = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(
-          2,
-          "0"
-        )}-${String(start.getDate()).padStart(2, "0")}`;
+        const dateKey = `${start.getFullYear()}-${String(
+          start.getMonth() + 1
+        ).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`;
 
         let percentage = 25; // partial / quarter day
         if (durationMinutes >= 300) {
@@ -213,7 +213,7 @@ export const bookingRouter = router({
         ),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const conversation = await db.getConversationById(input.conversationId);
       if (!conversation)
         throw new TRPCError({
@@ -221,10 +221,14 @@ export const bookingRouter = router({
           message: "Conversation not found",
         });
 
+      if (conversation.artistId !== ctx.user.id)
+        throw new TRPCError({ code: "FORBIDDEN" });
+
       if (!conversation.artistId || !conversation.clientId)
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Conversation is missing required artist or client references",
+          message:
+            "Conversation is missing required artist or client references",
         });
 
       // Validate Work Hours
@@ -255,13 +259,11 @@ export const bookingRouter = router({
       }
 
       // Check for collisions
-      const rawAppointments = await db.getArtistCalendar(
-        conversation.artistId
-      );
+      const rawAppointments = await db.getArtistCalendar(conversation.artistId);
 
       const existingAppointments = rawAppointments
-        .filter((a) => a.status !== "cancelled" && a.status !== "rejected")
-        .map((a) => ({
+        .filter(a => a.status !== "cancelled" && a.status !== "rejected")
+        .map(a => ({
           ...a,
           startTime: new Date(a.startTime),
           endTime: new Date(a.endTime),
@@ -277,7 +279,8 @@ export const bookingRouter = router({
         if (hasCollision) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "One or more selected dates conflict with existing appointments.",
+            message:
+              "One or more selected dates conflict with existing appointments.",
           });
         }
       }

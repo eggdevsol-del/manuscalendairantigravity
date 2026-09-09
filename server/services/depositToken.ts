@@ -1,3 +1,4 @@
+import { getAuthSecret } from "../_core/auth-secret";
 /**
  * Deposit Token Service
  *
@@ -12,9 +13,6 @@
 
 import crypto from "crypto";
 
-const DEPOSIT_TOKEN_SECRET =
-  process.env.JWT_SECRET || "your-secret-key-change-in-production";
-
 /** Token validity duration: 48 hours */
 const TOKEN_EXPIRY_MS = 48 * 60 * 60 * 1000;
 
@@ -23,7 +21,7 @@ const TOKEN_EXPIRY_MS = 48 * 60 * 60 * 1000;
  */
 function sign(leadId: number, expiry: number): string {
   return crypto
-    .createHmac("sha256", DEPOSIT_TOKEN_SECRET)
+    .createHmac("sha256", getAuthSecret())
     .update(`${leadId}.${expiry}`)
     .digest("hex");
 }
@@ -57,6 +55,8 @@ export function verifyDepositToken(
   const leadId = parseInt(parts[0], 10);
   const expiry = parseInt(parts[1], 10);
   const providedSignature = parts[2];
+  if (!/^[a-f0-9]{64}$/i.test(providedSignature))
+    return { valid: false, reason: "Invalid signature" };
 
   if (isNaN(leadId) || isNaN(expiry)) {
     return { valid: false, reason: "Invalid token data" };
@@ -79,4 +79,42 @@ export function verifyDepositToken(
   }
 
   return { valid: true, leadId };
+}
+
+/** Balance links use a separate signature domain so a lead link cannot authorise a booking. */
+export function createBalanceToken(bookingId: number): string {
+  const expiry = Date.now() + TOKEN_EXPIRY_MS;
+  const payload = `balance.${bookingId}.${expiry}`;
+  return `${payload}.${crypto.createHmac("sha256", getAuthSecret()).update(payload).digest("hex")}`;
+}
+export function verifyBalanceToken(
+  token: string
+): { valid: true; bookingId: number } | { valid: false } {
+  const [purpose, rawId, rawExpiry, signature, extra] = token.split(".");
+  if (
+    purpose !== "balance" ||
+    extra ||
+    !/^[1-9]\d*$/.test(rawId || "") ||
+    !/^\d+$/.test(rawExpiry || "") ||
+    !/^[a-f0-9]{64}$/.test(signature || "")
+  )
+    return { valid: false };
+  const bookingId = Number(rawId);
+  const expiry = Number(rawExpiry);
+  if (
+    !Number.isSafeInteger(bookingId) ||
+    !Number.isSafeInteger(expiry) ||
+    Date.now() >= expiry
+  )
+    return { valid: false };
+  const expected = crypto
+    .createHmac("sha256", getAuthSecret())
+    .update(`balance.${rawId}.${rawExpiry}`)
+    .digest("hex");
+  return crypto.timingSafeEqual(
+    Buffer.from(signature, "hex"),
+    Buffer.from(expected, "hex")
+  )
+    ? { valid: true, bookingId }
+    : { valid: false };
 }

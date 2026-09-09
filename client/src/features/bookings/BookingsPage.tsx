@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { PageHeader } from "@/components/ui/ssot/PageHeader";
 import { SegmentedHeader } from "@/components/ui/ssot/SegmentedHeader";
 import { UpcomingTab } from "./UpcomingTab";
+import { PendingPlans } from "./PendingPlans";
 import { PastTab } from "./PastTab";
 
 const TABS = ["Upcoming", "Past"];
@@ -30,7 +31,14 @@ export default function BookingsPage() {
       </div>
 
       <div className="px-4 pb-[110px]">
-        {activeTab === 0 ? <UpcomingTab /> : <PastTab />}
+        {activeTab === 0 ? (
+          <>
+            <PendingPlans />
+            <UpcomingTab />
+          </>
+        ) : (
+          <PastTab />
+        )}
       </div>
     </div>
   );

@@ -98,7 +98,11 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
   const { data: dateIndicators } = trpc.booking.getCalendarIndicators.useQuery(
     {
       artistId: user?.id || "",
-      startDate: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1),
+      startDate: new Date(
+        new Date().getFullYear(),
+        new Date().getMonth() - 1,
+        1
+      ),
       endDate: new Date(new Date().getFullYear(), new Date().getMonth() + 3, 0),
     },
     { enabled: !!user?.id }
@@ -112,15 +116,14 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
 
   // ── mutations ─────────────────────────────────────────────────────────
   const utils = trpc.useUtils();
-  const getOrCreateConversation =
-    trpc.conversations.getOrCreate.useMutation();
+  const getOrCreateConversation = trpc.conversations.getOrCreate.useMutation();
   const sendMessageMutation = trpc.messages.send.useMutation({
     onSuccess: () => {
       toast.success("Proposal sent to client");
       onSuccess();
       onClose();
     },
-    onError: (err) => {
+    onError: err => {
       toast.error("Failed to send proposal: " + err.message);
       setSubmitting(false);
     },
@@ -132,7 +135,7 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
       onSuccess();
       onClose();
     },
-    onError: (err) => {
+    onError: err => {
       toast.error("Failed to send session plan: " + err.message);
       setSubmitting(false);
     },
@@ -175,11 +178,7 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
 
   // ── can submit ────────────────────────────────────────────────────────
   const canSubmit =
-    selectedClientId &&
-    selectedService &&
-    date &&
-    time &&
-    !submitting;
+    selectedClientId && selectedService && date && time && !submitting;
 
   // ── submit ────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
@@ -205,7 +204,7 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
       if (isMultiSitting) {
         // Multi-sitting: call checkAvailability to find dates server-side
         const startDate = new Date(`${date}T${time}`);
-        const availResult = await utils.client.booking.checkAvailability.fetch({
+        const availResult = await utils.booking.checkAvailability.fetch({
           conversationId: convo.id,
           artistId: user.id,
           serviceName: selectedService.name,
@@ -218,7 +217,9 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
         });
 
         if (!availResult?.dates || availResult.dates.length === 0) {
-          toast.error("Could not find enough available dates. Try a different start date or frequency.");
+          toast.error(
+            "Could not find enough available dates. Try a different start date or frequency."
+          );
           setSubmitting(false);
           return;
         }
@@ -248,7 +249,7 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
         startsAt: new Date(d).toISOString(),
         durationMinutes,
         estimateCents: pricePerSittingCents,
-        depositCents: Math.round(pricePerSittingCents * depositPercent / 100),
+        depositCents: Math.round((pricePerSittingCents * depositPercent) / 100),
       }));
 
       // 3. Create session plan (server sends the chat message)
@@ -277,14 +278,19 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
         <button onClick={onClose} className={fab.itemButton}>
           <ArrowLeft className={fab.itemIconSize} />
         </button>
-        <span className={cn(typography.h3, "text-foreground flex-1 text-right")}>
+        <span
+          className={cn(typography.h3, "text-foreground flex-1 text-right")}
+        >
           Quick Book
         </span>
       </motion.div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-4 w-full">
         {/* ── Client Select ──────────────────────────────────────── */}
-        <motion.div variants={fab.animation.item} className="flex flex-col gap-1">
+        <motion.div
+          variants={fab.animation.item}
+          className="flex flex-col gap-1"
+        >
           <label className={cn(typography.label, "text-muted-foreground pl-1")}>
             Client
           </label>
@@ -316,7 +322,7 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
                   type="text"
                   placeholder="Search clients..."
                   value={clientSearch}
-                  onChange={(e) => setClientSearch(e.target.value)}
+                  onChange={e => setClientSearch(e.target.value)}
                   className={cn(inputClass, "pl-11")}
                 />
               </div>
@@ -364,7 +370,10 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
         </motion.div>
 
         {/* ── Service Select ──────────────────────────────────────── */}
-        <motion.div variants={fab.animation.item} className="flex flex-col gap-1">
+        <motion.div
+          variants={fab.animation.item}
+          className="flex flex-col gap-1"
+        >
           <label className={cn(typography.label, "text-muted-foreground pl-1")}>
             Service
           </label>
@@ -372,7 +381,7 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
             <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <select
               value={selectedServiceIdx}
-              onChange={(e) => handleServiceSelect(Number(e.target.value))}
+              onChange={e => handleServiceSelect(Number(e.target.value))}
               className={cn(inputClass, "pl-11 appearance-none")}
             >
               <option value={-1} disabled>
@@ -381,7 +390,9 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
               {services.map((svc: any, idx: number) => (
                 <option key={idx} value={idx}>
                   {svc.name} — ${svc.price} ({svc.duration}min)
-                  {Number(svc.sittings) > 1 ? ` · ${svc.sittings} sittings` : ""}
+                  {Number(svc.sittings) > 1
+                    ? ` · ${svc.sittings} sittings`
+                    : ""}
                 </option>
               ))}
             </select>
@@ -390,8 +401,13 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
 
         {/* ── Frequency (multi-sitting only) ──────────────────────── */}
         {isMultiSitting && (
-          <motion.div variants={fab.animation.item} className="flex flex-col gap-1">
-            <label className={cn(typography.label, "text-muted-foreground pl-1")}>
+          <motion.div
+            variants={fab.animation.item}
+            className="flex flex-col gap-1"
+          >
+            <label
+              className={cn(typography.label, "text-muted-foreground pl-1")}
+            >
               Frequency ({sittings} sittings)
             </label>
             <div className="flex flex-wrap gap-2">
@@ -416,7 +432,10 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
         )}
 
         {/* ── Date ───────────────────────────────────────────────── */}
-        <motion.div variants={fab.animation.item} className="flex flex-col gap-1">
+        <motion.div
+          variants={fab.animation.item}
+          className="flex flex-col gap-1"
+        >
           <label className={cn(typography.label, "text-muted-foreground pl-1")}>
             {isMultiSitting ? "Start Date" : "Date"}
           </label>
@@ -426,7 +445,7 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
               type="date"
               required
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={e => setDate(e.target.value)}
               className={cn(inputClass, "pl-11")}
             />
           </div>
@@ -447,7 +466,9 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
         {/* ── Time + Duration (side by side) ──────────────────────── */}
         <motion.div variants={fab.animation.item} className="flex gap-3">
           <div className="flex flex-col gap-1 flex-1">
-            <label className={cn(typography.label, "text-muted-foreground pl-1")}>
+            <label
+              className={cn(typography.label, "text-muted-foreground pl-1")}
+            >
               Start Time
             </label>
             <div className="relative">
@@ -456,18 +477,20 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
                 type="time"
                 required
                 value={time}
-                onChange={(e) => setTime(e.target.value)}
+                onChange={e => setTime(e.target.value)}
                 className={cn(inputClass, "pl-11")}
               />
             </div>
           </div>
           <div className="flex flex-col gap-1 flex-1">
-            <label className={cn(typography.label, "text-muted-foreground pl-1")}>
+            <label
+              className={cn(typography.label, "text-muted-foreground pl-1")}
+            >
               Duration
             </label>
             <select
               value={durationMinutes}
-              onChange={(e) => setDurationMinutes(Number(e.target.value))}
+              onChange={e => setDurationMinutes(Number(e.target.value))}
               className={cn(inputClass, "appearance-none")}
             >
               <option value={30}>30 min</option>
@@ -483,7 +506,10 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
         </motion.div>
 
         {/* ── Price ───────────────────────────────────────────────── */}
-        <motion.div variants={fab.animation.item} className="flex flex-col gap-1">
+        <motion.div
+          variants={fab.animation.item}
+          className="flex flex-col gap-1"
+        >
           <label className={cn(typography.label, "text-muted-foreground pl-1")}>
             Price{" "}
             <span className="text-muted-foreground/60">(per sitting)</span>
@@ -496,23 +522,25 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
               step={1}
               placeholder="0"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={e => setPrice(e.target.value)}
               className={cn(inputClass, "pl-11")}
             />
           </div>
         </motion.div>
 
         {/* ── Notes ───────────────────────────────────────────────── */}
-        <motion.div variants={fab.animation.item} className="flex flex-col gap-1">
+        <motion.div
+          variants={fab.animation.item}
+          className="flex flex-col gap-1"
+        >
           <label className={cn(typography.label, "text-muted-foreground pl-1")}>
-            Notes{" "}
-            <span className="text-muted-foreground/60">(optional)</span>
+            Notes <span className="text-muted-foreground/60">(optional)</span>
           </label>
           <textarea
             rows={2}
             placeholder="Any extra details…"
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={e => setNotes(e.target.value)}
             className={cn(inputClass, "h-auto py-3 resize-none")}
           />
         </motion.div>

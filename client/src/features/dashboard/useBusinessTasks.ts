@@ -27,8 +27,8 @@ export interface BusinessTask {
   emailBody: string | null;
   deepLink: string | null;
   conversationId: number | null;
-  dueAt: string | null;
-  expiresAt: string | null;
+  dueAt: Date | string | null;
+  expiresAt: Date | string | null;
 }
 
 interface TaskStartInfo {
@@ -218,7 +218,9 @@ export function useBusinessTasks() {
         default:
           return {
             subject: task.emailSubject || `Following up`,
-            body: task.emailBody || `Hi ${cFirst},\n\nJust reaching out regarding your project. Let me know if you have any questions.`,
+            body:
+              task.emailBody ||
+              `Hi ${cFirst},\n\nJust reaching out regarding your project. Let me know if you have any questions.`,
           };
       }
     },

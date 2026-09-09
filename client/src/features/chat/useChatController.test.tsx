@@ -24,12 +24,21 @@ vi.mock("@/lib/trpc", () => ({
       list: { useQuery: vi.fn() },
     },
     artistSettings: {
+      getPublicByArtistId: { useQuery: vi.fn(() => ({})) },
       get: { useQuery: vi.fn() },
     },
     consultations: {
       list: { useQuery: vi.fn() },
     },
+    promotions: {
+      redeemPromotion: {
+        useMutation: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
+      },
+    },
     appointments: {
+      deleteProposal: {
+        useMutation: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
+      },
       bookProject: { useMutation: vi.fn() },
     },
     upload: {

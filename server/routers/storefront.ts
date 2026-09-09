@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { getDb } from "../db";
@@ -17,8 +18,10 @@ export const storefrontRouter = router({
     return db.query.products.findMany({
       where: and(
         eq(schema.products.artistId, ctx.user.id),
-        eq(schema.products.ownerType, "artist"),
-        eq(schema.products.isActive, 1)
+        eq(
+          schema.products.ownerType,
+          ctx.user.role === "merchant" ? "merchant" : "artist"
+        )
       ),
       with: { variants: true },
       orderBy: [desc(schema.products.createdAt)],
@@ -49,20 +52,23 @@ export const storefrontRouter = router({
       z.object({
         title: z.string().min(1, "Title is required"),
         description: z.string(),
-        priceCents: z.number().positive(),
-        shippingCents: z.number().min(0).optional(),
-        inventoryCount: z.number().min(0),
+        priceCents: z.number().int().positive(),
+        shippingCents: z.number().int().min(0).optional(),
+        inventoryCount: z.number().int().min(0),
         fulfillmentType: z.enum(["pickup", "delivery", "both", "digital"]),
-        imageUrl: z.string().optional(),
+        imageUrl: z.string().url().optional(),
+        isActive: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
 
+      if (!["artist", "admin", "merchant"].includes(ctx.user.role))
+        throw new TRPCError({ code: "FORBIDDEN" });
       const [result] = await db.insert(schema.products).values({
         artistId: ctx.user.id,
-        ownerType: "artist",
+        ownerType: ctx.user.role === "merchant" ? "merchant" : "artist",
         title: input.title,
         description: input.description,
         priceCents: input.priceCents,
@@ -70,7 +76,7 @@ export const storefrontRouter = router({
         inventoryCount: input.inventoryCount,
         fulfillmentType: input.fulfillmentType,
         imageUrl: input.imageUrl,
-        isActive: 1,
+        isActive: input.isActive === false ? 0 : 1,
       });
 
       return { success: true, id: result.insertId };
@@ -85,11 +91,12 @@ export const storefrontRouter = router({
         id: z.number(),
         title: z.string().min(1, "Title is required"),
         description: z.string(),
-        priceCents: z.number().positive(),
-        shippingCents: z.number().min(0).optional(),
-        inventoryCount: z.number().min(0),
+        priceCents: z.number().int().positive(),
+        shippingCents: z.number().int().min(0).optional(),
+        inventoryCount: z.number().int().min(0),
         fulfillmentType: z.enum(["pickup", "delivery", "both", "digital"]),
-        imageUrl: z.string().optional(),
+        imageUrl: z.string().url().optional(),
+        isActive: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -105,7 +112,8 @@ export const storefrontRouter = router({
         throw new Error("Product not found or unauthorized");
       }
 
-      await db.update(schema.products)
+      await db
+        .update(schema.products)
         .set({
           title: input.title,
           description: input.description,
@@ -114,6 +122,9 @@ export const storefrontRouter = router({
           inventoryCount: input.inventoryCount,
           fulfillmentType: input.fulfillmentType,
           ...(input.imageUrl !== undefined ? { imageUrl: input.imageUrl } : {}),
+          ...(input.isActive !== undefined
+            ? { isActive: input.isActive ? 1 : 0 }
+            : {}),
           updatedAt: new Date(),
         })
         .where(eq(schema.products.id, input.id));
@@ -163,7 +174,11 @@ export const storefrontRouter = router({
 
       return {
         artistId,
-        artistName: settings.businessName || settings.displayName || artist?.name || "Artist",
+        artistName:
+          settings.businessName ||
+          settings.displayName ||
+          artist?.name ||
+          "Artist",
         products,
         seminars,
       };
@@ -210,7 +225,11 @@ export const storefrontRouter = router({
 
       return {
         artistId: input.artistId,
-        artistName: settings.businessName || settings.displayName || artist?.name || "Artist",
+        artistName:
+          settings.businessName ||
+          settings.displayName ||
+          artist?.name ||
+          "Artist",
         artistSlug: settings.publicSlug || "",
         products,
         seminars,
@@ -223,13 +242,15 @@ export const storefrontRouter = router({
   createStorefrontCheckout: publicProcedure
     .input(
       z.object({
-        items: z.array(
-          z.object({
-            productId: z.number(),
-            variantId: z.number().optional(),
-            quantity: z.number().min(1),
-          })
-        ).min(1),
+        items: z
+          .array(
+            z.object({
+              productId: z.number(),
+              variantId: z.number().optional(),
+              quantity: z.number().int().min(1).max(100),
+            })
+          )
+          .min(1),
         fulfillmentMethod: z.enum(["pickup", "delivery", "digital"]),
       })
     )
@@ -251,27 +272,51 @@ export const storefrontRouter = router({
       let totalAmountCents = 0;
       let totalShippingCents = 0;
       const artistId = products[0].artistId;
-      
+
       const enrichedItems = input.items.map(item => {
         const product = products.find(p => p.id === item.productId)!;
-        const variant = item.variantId 
-          ? product.variants.find(v => v.id === item.variantId) 
+        const variant = item.variantId
+          ? product.variants.find(v => v.id === item.variantId)
           : null;
-        
+
         if (product.artistId !== artistId) {
-          throw new Error("Cannot checkout items from multiple artists at once.");
+          throw new Error(
+            "Cannot checkout items from multiple artists at once."
+          );
         }
-        
-        const checkInventory = variant ? variant.inventoryCount : product.inventoryCount;
+
+        if (item.variantId && !variant)
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Product variant is unavailable.",
+          });
+        if (
+          product.fulfillmentType !== input.fulfillmentMethod &&
+          !(
+            product.fulfillmentType === "both" &&
+            ["pickup", "delivery"].includes(input.fulfillmentMethod)
+          )
+        )
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Choose an available delivery method.",
+          });
+        const checkInventory = variant
+          ? variant.inventoryCount
+          : product.inventoryCount;
         if (!product.isActive || checkInventory < item.quantity) {
-          throw new Error(`Product '${product.title}' is unavailable or out of stock.`);
+          throw new Error(
+            `Product '${product.title}' is unavailable or out of stock.`
+          );
         }
 
         const priceCents = variant ? variant.priceCents : product.priceCents;
-        const productName = variant ? `${product.title} - ${variant.name}` : product.title;
+        const productName = variant
+          ? `${product.title} - ${variant.name}`
+          : product.title;
 
         totalAmountCents += priceCents * item.quantity;
-        
+
         if (input.fulfillmentMethod === "delivery") {
           totalShippingCents += (product.shippingCents || 0) * item.quantity;
         }
@@ -363,7 +408,7 @@ export const storefrontRouter = router({
         date: z.string(), // ISO date string
         locationUrl: z.string().optional(),
         capacity: z.number().min(1),
-        priceCents: z.number().positive(),
+        priceCents: z.number().int().positive(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -402,7 +447,7 @@ export const storefrontRouter = router({
 
     // Fetch order items for each order
     const ordersWithItems = await Promise.all(
-      orders.map(async (order) => {
+      orders.map(async order => {
         const items = await db.query.orderItems.findMany({
           where: eq(schema.orderItems.orderId, order.id),
           with: { product: true },
@@ -437,10 +482,24 @@ export const storefrontRouter = router({
 
       if (!order) throw new Error("Order not found");
 
-      await db.update(schema.orders).set({
-        status: input.status,
-        updatedAt: new Date(),
-      }).where(eq(schema.orders.id, input.orderId));
+      if (input.status === "cancelled")
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "Refund the payment through Stripe before cancelling a paid order.",
+        });
+      if (order.status !== "paid")
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Only a paid order can be marked fulfilled.",
+        });
+      await db
+        .update(schema.orders)
+        .set({
+          status: input.status,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.orders.id, input.orderId));
 
       return { success: true };
     }),
@@ -464,7 +523,7 @@ export const storefrontRouter = router({
       const seminars = await db.query.seminars.findMany({
         where: and(
           eq(schema.seminars.artistId, settings.userId),
-          eq(schema.seminars.isActive, 1),
+          eq(schema.seminars.isActive, 1)
         ),
         orderBy: [schema.seminars.date],
       });
@@ -512,10 +571,7 @@ export const storefrontRouter = router({
       }
 
       const tier = resolvePaymentTier(settings.subscriptionTier);
-      const fees = calculateTransactionFees(
-        seminar.priceCents,
-        tier
-      );
+      const fees = calculateTransactionFees(seminar.priceCents, tier);
 
       // Create order record for the seminar
       const [orderResult] = await db.insert(schema.orders).values({
@@ -543,12 +599,14 @@ export const storefrontRouter = router({
 
       const sessionResult = await createStorefrontCheckoutSession({
         orderId,
-        items: [{
-          productId: seminar.id,
-          productName: `${seminar.title} (${seminar.type === "virtual" ? "Virtual" : "In-Person"} Seminar)`,
-          priceCents: seminar.priceCents,
-          quantity: 1,
-        }],
+        items: [
+          {
+            productId: seminar.id,
+            productName: `${seminar.title} (${seminar.type === "virtual" ? "Virtual" : "In-Person"} Seminar)`,
+            priceCents: seminar.priceCents,
+            quantity: 1,
+          },
+        ],
         artistName: settings.displayName || artistUser.name || "Artist",
         clientTotalCents: seminar.priceCents,
         platformFeeCents: fees.platformFeeCents,
@@ -564,11 +622,13 @@ export const storefrontRouter = router({
       }
 
       // Increment tickets sold
-      await db.update(schema.seminars).set({
-        ticketsSold: (seminar.ticketsSold || 0) + 1,
-      }).where(eq(schema.seminars.id, seminar.id));
+      await db
+        .update(schema.seminars)
+        .set({
+          ticketsSold: (seminar.ticketsSold || 0) + 1,
+        })
+        .where(eq(schema.seminars.id, seminar.id));
 
       return sessionResult;
     }),
 });
-

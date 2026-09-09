@@ -1,10 +1,14 @@
+import { requireConversationAccess, requireArtist } from "../services/access";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "../_core/trpc";
 import { designBriefs } from "../../drizzle/schema";
 import { and, eq } from "drizzle-orm";
 import * as db from "../db";
-import { generatePersonalisedMessage, summariseConversationState } from "../services/llmEnrichment";
+import {
+  generatePersonalisedMessage,
+  summariseConversationState,
+} from "../services/llmEnrichment";
 
 export const designBriefRouter = router({
   /**
@@ -19,7 +23,18 @@ export const designBriefRouter = router({
     )
     .query(async ({ input, ctx }) => {
       const database = await db.getDb();
-      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+      if (!database)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database unavailable",
+        });
+      requireArtist(ctx.user);
+      await requireConversationAccess(
+        database,
+        input.conversationId,
+        ctx.user.id,
+        true
+      );
 
       try {
         const summary = await summariseConversationState(
@@ -46,11 +61,14 @@ export const designBriefRouter = router({
 
         let userError = "Failed to generate brief.";
         if (errMsg.includes("insufficient_quota") || errMsg.includes("429")) {
-          userError = "LLM quota exceeded — please top up your OpenAI billing or use a different API key.";
+          userError =
+            "LLM quota exceeded — please top up your OpenAI billing or use a different API key.";
         } else if (errMsg.includes("401") || errMsg.includes("Unauthorized")) {
-          userError = "LLM API key is invalid — check OPENAI_API_KEY in your .env file.";
+          userError =
+            "LLM API key is invalid — check OPENAI_API_KEY in your .env file.";
         } else if (errMsg.includes("OPENAI_API_KEY is not configured")) {
-          userError = "No LLM API key configured — add OPENAI_API_KEY to your .env file.";
+          userError =
+            "No LLM API key configured — add OPENAI_API_KEY to your .env file.";
         } else {
           userError = `LLM error: ${errMsg.substring(0, 120)}`;
         }
@@ -82,7 +100,18 @@ export const designBriefRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const database = await db.getDb();
-      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+      if (!database)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database unavailable",
+        });
+      requireArtist(ctx.user);
+      await requireConversationAccess(
+        database,
+        input.conversationId,
+        ctx.user.id,
+        true
+      );
 
       // Clear cached summary to force regeneration
       const existing = await database.query.designBriefs.findFirst({
@@ -122,7 +151,18 @@ export const designBriefRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const database = await db.getDb();
-      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+      if (!database)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database unavailable",
+        });
+      requireArtist(ctx.user);
+      await requireConversationAccess(
+        database,
+        input.conversationId,
+        ctx.user.id,
+        true
+      );
 
       const draft = await generatePersonalisedMessage(
         database,
@@ -146,7 +186,18 @@ export const designBriefRouter = router({
     )
     .query(async ({ input, ctx }) => {
       const database = await db.getDb();
-      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+      if (!database)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database unavailable",
+        });
+      requireArtist(ctx.user);
+      await requireConversationAccess(
+        database,
+        input.conversationId,
+        ctx.user.id,
+        true
+      );
 
       const summary = await summariseConversationState(
         database,

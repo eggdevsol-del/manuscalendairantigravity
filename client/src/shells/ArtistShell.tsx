@@ -17,6 +17,7 @@ import PayoutHistory from "@/pages/PayoutHistory";
 import NotificationsManagement from "@/pages/NotificationsManagement";
 import Subscriptions from "@/pages/Subscriptions";
 import LeadDetail from "@/pages/LeadDetail";
+import Reconciliation from "@/pages/admin/Reconciliation";
 import ErrorDashboard from "@/pages/admin/ErrorDashboard";
 import NotFound from "@/pages/NotFound";
 import { useAppointmentCheckIn } from "@/features/appointments/useAppointmentCheckIn";
@@ -27,7 +28,9 @@ export default function ArtistShell() {
     <div className="min-h-screen pb-16">
       <AnimatedSwitch>
         <Switch>
-          <Route path="/"><Redirect to="/dashboard" /></Route>
+          <Route path="/">
+            <Redirect to="/dashboard" />
+          </Route>
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/conversations" component={Conversations} />
           <Route path="/chat/:id" component={Chat} />
@@ -38,9 +41,13 @@ export default function ArtistShell() {
           <Route path="/clients" component={Clients} />
           <Route path="/bank-payouts" component={BankPayoutsPage} />
           <Route path="/payout-history" component={PayoutHistory} />
-          <Route path="/notifications-management" component={NotificationsManagement} />
+          <Route
+            path="/notifications-management"
+            component={NotificationsManagement}
+          />
           <Route path="/subscriptions" component={Subscriptions} />
           <Route path="/lead/:id" component={LeadDetail} />
+          <Route path="/admin/operations" component={Reconciliation} />
           <Route path="/admin/errors" component={ErrorDashboard} />
           <Route component={NotFound} />
         </Switch>
@@ -49,7 +56,7 @@ export default function ArtistShell() {
       <ErrorBoundary boundary="fab">
         <BottomNav />
       </ErrorBoundary>
-      
+
       <ArrivalOverlay />
     </div>
   );
@@ -68,7 +75,11 @@ function ArrivalOverlay() {
   }, [activeId, dismissed]);
 
   // Only show for arrival phase — completion is handled by Stripe balance payment
-  if (!activeCheckIn || activeCheckIn.phase !== "arrival" || dismissed === activeCheckIn.appointment.id) {
+  if (
+    !activeCheckIn ||
+    activeCheckIn.phase !== "arrival" ||
+    dismissed === activeCheckIn.appointment.id
+  ) {
     return null;
   }
 
@@ -77,7 +88,9 @@ function ArrivalOverlay() {
   return (
     <ArrivalToast
       isOpen={true}
-      clientName={appointment.clientName || appointment.client?.name || "Client"}
+      clientName={
+        appointment.clientName || appointment.client?.name || "Client"
+      }
       onArrived={() => {
         updateAppointment.mutate({
           id: appointment.id,

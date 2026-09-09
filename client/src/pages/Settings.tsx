@@ -2,7 +2,12 @@ import React from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useUIDebug } from "@/_core/contexts/UIDebugContext";
 import { Card, Switch } from "@/components/ui";
-import { LoadingState, PageShell, PageHeader, UserAvatar } from "@/components/ui/ssot";
+import {
+  LoadingState,
+  PageShell,
+  PageHeader,
+  UserAvatar,
+} from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import {
@@ -22,8 +27,6 @@ import {
   MapPin,
   Plane,
   RefreshCw,
-
-
   Users,
   Zap,
   Moon,
@@ -79,7 +82,14 @@ interface SettingsRowProps {
   trailing?: React.ReactNode;
 }
 
-function SettingsRow({ icon: Icon, iconColor, title, subtitle, onClick, trailing }: SettingsRowProps) {
+function SettingsRow({
+  icon: Icon,
+  iconColor,
+  title,
+  subtitle,
+  onClick,
+  trailing,
+}: SettingsRowProps) {
   return (
     <div
       className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer active:scale-[0.99]"
@@ -109,27 +119,35 @@ function PaymentProcessingRow() {
 
   const status = connectStatus.data;
   const isConnected = status?.connected && status?.onboardingComplete;
-  const isPending   = status?.connected && !status?.onboardingComplete;
+  const isPending = status?.connected && !status?.onboardingComplete;
 
   return (
     <SettingsRow
       icon={Banknote}
       iconColor={
-        isConnected ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)]"
-          : isPending ? "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
+        isConnected
+          ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)]"
+          : isPending
+            ? "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
             : "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]"
       }
       title="Payment Processing"
       subtitle={
-        isConnected ? "Stripe Connected ✓"
-          : isPending ? "Complete onboarding →"
+        isConnected
+          ? "Stripe Connected ✓"
+          : isPending
+            ? "Complete onboarding →"
             : "Connect Stripe to receive payments"
       }
       onClick={() => setLocation("/bank-payouts")}
       trailing={
         <>
-          {isConnected && <span className="w-2 h-2 rounded-full bg-[var(--color-success)] animate-pulse" />}
-          {isPending   && <span className="w-2 h-2 rounded-full bg-[var(--color-warning)] animate-pulse" />}
+          {isConnected && (
+            <span className="w-2 h-2 rounded-full bg-[var(--color-success)] animate-pulse" />
+          )}
+          {isPending && (
+            <span className="w-2 h-2 rounded-full bg-[var(--color-warning)] animate-pulse" />
+          )}
         </>
       }
     />
@@ -165,26 +183,58 @@ export default function Settings() {
   if (loading) return <LoadingState message="Loading..." fullScreen />;
 
   const isArtist = user?.role === "artist" || user?.role === "admin";
-  const isStudio = user?.role === "studio"  || user?.role === "admin";
+  const isStudio = user?.role === "studio" || user?.role === "admin";
 
   if (section) {
     const panel = (() => {
       switch (section) {
-        case "profile":       return <ProfileSettings onBack={handleBack} onNavigateToInstagram={nav("instagram")} />;
-        case "portfolio":     return <ProfileSettings onBack={handleBack} onNavigateToInstagram={nav("instagram")} />;
-        case "booking-link":  return <FunnelSettings onBack={handleBack} />;
-        case "business":      return <BusinessSettings onBack={handleBack} />;
-        case "work-hours":    return <WorkHoursAndServicesSettings onBack={handleBack} />;
-        case "travel":        return <TravelSettings onBack={handleBack} onNavigateToClients={() => setLocation("/clients")} />;
-        case "data-import":   return <DataImportSettings onBack={handleBack} />;
-        case "regulation":    return <RegulationSettings onBack={handleBack} />;
-        case "consultations": return <ConsultationSettings onBack={handleBack} />;
-        case "studio":        return (isStudio) ? <StudioDashboardSettings onBack={handleBack} /> : null;
-        case "notifications": return <NotificationSettings onBack={handleBack} />;
-        case "instagram":     return <InstagramImportSettings onBack={handleBack} />;
-        case "how-tos":        return <HowTosSettings onBack={handleBack} />;
-        case "danger-zone":   return <DangerZoneSettings onBack={handleBack} />;
-        default:              return null;
+        case "profile":
+          return (
+            <ProfileSettings
+              onBack={handleBack}
+              onNavigateToInstagram={nav("instagram")}
+            />
+          );
+        case "portfolio":
+          return (
+            <ProfileSettings
+              onBack={handleBack}
+              onNavigateToInstagram={nav("instagram")}
+            />
+          );
+        case "booking-link":
+          return <FunnelSettings onBack={handleBack} />;
+        case "business":
+          return <BusinessSettings onBack={handleBack} />;
+        case "work-hours":
+          return <WorkHoursAndServicesSettings onBack={handleBack} />;
+        case "travel":
+          return (
+            <TravelSettings
+              onBack={handleBack}
+              onNavigateToClients={() => setLocation("/clients")}
+            />
+          );
+        case "data-import":
+          return <DataImportSettings onBack={handleBack} />;
+        case "regulation":
+          return <RegulationSettings onBack={handleBack} />;
+        case "consultations":
+          return <ConsultationSettings onBack={handleBack} />;
+        case "studio":
+          return isStudio ? (
+            <StudioDashboardSettings onBack={handleBack} />
+          ) : null;
+        case "notifications":
+          return <NotificationSettings onBack={handleBack} />;
+        case "instagram":
+          return <InstagramImportSettings onBack={handleBack} />;
+        case "how-tos":
+          return <HowTosSettings onBack={handleBack} />;
+        case "danger-zone":
+          return <DangerZoneSettings onBack={handleBack} />;
+        default:
+          return null;
       }
     })();
 
@@ -206,23 +256,48 @@ export default function Settings() {
       {/* Scrollable list */}
       <div className="flex-1 overflow-y-auto mobile-scroll px-4 pt-2 pb-32">
         <div className="max-w-lg mx-auto space-y-6">
-
+          {user?.role === "admin" && (
+            <SettingsRow
+              icon={RefreshCw}
+              iconColor="bg-secondary text-foreground"
+              title="Operations"
+              subtitle="Review payments, notifications and forms"
+              onClick={() => setLocation("/admin/operations")}
+            />
+          )}
           {/* ═══ PROFILE & IDENTITY ═══ */}
           <section>
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 mb-2">
               Profile & Identity
             </h2>
-            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden", "settings-card-override")}>
+            <Card
+              className={cn(
+                tokens.card.base,
+                tokens.card.bg,
+                "border-0 p-0 overflow-hidden",
+                "settings-card-override"
+              )}
+            >
               <div className="divide-y divide-border/30">
                 {/* Avatar summary row */}
                 <div
                   className="p-4 flex items-center gap-4 cursor-pointer hover:bg-secondary/50 transition-colors"
-                  onClick={isArtist ? nav("profile") : () => setLocation("/profile")}
+                  onClick={
+                    isArtist ? nav("profile") : () => setLocation("/profile")
+                  }
                 >
-                  <UserAvatar name={user?.name} avatar={user?.avatar} size="xl" />
+                  <UserAvatar
+                    name={user?.name}
+                    avatar={user?.avatar}
+                    size="xl"
+                  />
                   <div className="flex-1">
-                    <p className="text-base font-bold text-foreground">{user?.name || "User"}</p>
-                    <p className="text-sm text-muted-foreground capitalize">{user?.role || "Account"}</p>
+                    <p className="text-base font-bold text-foreground">
+                      {user?.name || "User"}
+                    </p>
+                    <p className="text-sm text-muted-foreground capitalize">
+                      {user?.role || "Account"}
+                    </p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </div>
@@ -255,7 +330,14 @@ export default function Settings() {
               <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 mb-2">
                 Business
               </h2>
-              <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden", "settings-card-override")}>
+              <Card
+                className={cn(
+                  tokens.card.base,
+                  tokens.card.bg,
+                  "border-0 p-0 overflow-hidden",
+                  "settings-card-override"
+                )}
+              >
                 <div className="divide-y divide-border/30">
                   <SettingsRow
                     icon={MapPin}
@@ -333,7 +415,14 @@ export default function Settings() {
               <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 mb-2">
                 Payments
               </h2>
-              <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden", "settings-card-override")}>
+              <Card
+                className={cn(
+                  tokens.card.base,
+                  tokens.card.bg,
+                  "border-0 p-0 overflow-hidden",
+                  "settings-card-override"
+                )}
+              >
                 <div className="divide-y divide-border/30">
                   <PaymentProcessingRow />
                   <SettingsRow
@@ -353,7 +442,14 @@ export default function Settings() {
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 mb-2">
               Preferences
             </h2>
-            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden", "settings-card-override")}>
+            <Card
+              className={cn(
+                tokens.card.base,
+                tokens.card.bg,
+                "border-0 p-0 overflow-hidden",
+                "settings-card-override"
+              )}
+            >
               <div className="divide-y divide-border/30">
                 <SettingsRow
                   icon={Bell}
@@ -366,14 +462,23 @@ export default function Settings() {
                 <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-xl bg-background0/20 text-muted-foreground">
-                      {theme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                      {theme === "dark" ? (
+                        <Moon className="w-5 h-5" />
+                      ) : (
+                        <Sun className="w-5 h-5" />
+                      )}
                     </div>
                     <div className="text-left">
                       <p className="font-semibold text-foreground">Dark Mode</p>
-                      <p className="text-xs text-muted-foreground">{theme === "dark" ? "On" : "Off"}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {theme === "dark" ? "On" : "Off"}
+                      </p>
                     </div>
                   </div>
-                  <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
+                  <Switch
+                    checked={theme === "dark"}
+                    onCheckedChange={toggleTheme}
+                  />
                 </div>
                 {/* UI Debug toggle */}
                 <div className="p-4 flex items-center justify-between hover:bg-secondary/50 transition-colors">
@@ -383,10 +488,15 @@ export default function Settings() {
                     </div>
                     <div className="text-left">
                       <p className="font-semibold text-foreground">UI Debug</p>
-                      <p className="text-xs text-muted-foreground">Show technical IDs</p>
+                      <p className="text-xs text-muted-foreground">
+                        Show technical IDs
+                      </p>
                     </div>
                   </div>
-                  <Switch checked={showDebugLabels} onCheckedChange={setShowDebugLabels} />
+                  <Switch
+                    checked={showDebugLabels}
+                    onCheckedChange={setShowDebugLabels}
+                  />
                 </div>
               </div>
             </Card>
@@ -397,7 +507,14 @@ export default function Settings() {
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 mb-2">
               System
             </h2>
-            <Card className={cn(tokens.card.base, tokens.card.bg, "border-0 p-0 overflow-hidden", "settings-card-override")}>
+            <Card
+              className={cn(
+                tokens.card.base,
+                tokens.card.bg,
+                "border-0 p-0 overflow-hidden",
+                "settings-card-override"
+              )}
+            >
               <div className="divide-y divide-border/30">
                 {/* Check for updates */}
                 <div
@@ -412,8 +529,12 @@ export default function Settings() {
                       <RefreshCw className="w-5 h-5" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-foreground">Check for Updates</p>
-                      <p className="text-xs text-muted-foreground">Force refresh to latest version</p>
+                      <p className="font-semibold text-foreground">
+                        Check for Updates
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Force refresh to latest version
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -440,7 +561,13 @@ export default function Settings() {
           {/* ═══ LOG OUT ═══ */}
           <section>
             <Card
-              className={cn(tokens.card.base, tokens.card.bg, tokens.card.interactive, "border-0 group", "settings-card-override")}
+              className={cn(
+                tokens.card.base,
+                tokens.card.bg,
+                tokens.card.interactive,
+                "border-0 group",
+                "settings-card-override"
+              )}
               onClick={handleLogout}
             >
               <div className="p-4 flex items-center justify-between">
@@ -452,13 +579,14 @@ export default function Settings() {
                     <p className="font-semibold text-foreground group-hover:text-destructive transition-colors">
                       Log Out
                     </p>
-                    <p className="text-xs text-muted-foreground">Sign out of your account</p>
+                    <p className="text-xs text-muted-foreground">
+                      Sign out of your account
+                    </p>
                   </div>
                 </div>
               </div>
             </Card>
           </section>
-
         </div>
       </div>
     </PageShell>

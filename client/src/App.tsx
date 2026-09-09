@@ -17,10 +17,11 @@ import { TooltipTourProvider, TooltipOverlay } from "@/components/tooltip-tour";
 import { useVersionCheck } from "@/lib/useVersionCheck";
 import PublicArtistProfile from "@/pages/public/PublicArtistProfile";
 
-
+import MagicLink from "./pages/MagicLink";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import SetPassword from "./pages/SetPassword";
+import PasswordRecovery from "./pages/PasswordRecovery";
 import CompleteProfile from "./pages/CompleteProfile";
 import PublicStudioFunnel from "./pages/funnel/PublicStudioFunnel";
 import { PublicFunnel } from "./pages/funnel";
@@ -40,7 +41,11 @@ function getRedirectUrlForRole(role: string, path: string = "") {
   const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
   // Localhost dev setup mapping
-  if (LOCAL_HOSTS.has(hostname) || hostname.endsWith(".localhost") || hostname.endsWith(".lvh.me")) {
+  if (
+    LOCAL_HOSTS.has(hostname) ||
+    hostname.endsWith(".localhost") ||
+    hostname.endsWith(".lvh.me")
+  ) {
     const baseHost = hostname.replace(/^(artist|merchant|app)\./, "");
     let subdomain = "";
     if (role === "artist" || role === "admin") subdomain = "artist.";
@@ -94,10 +99,24 @@ function GuardedShell() {
 // Known first-segment app routes used by the shells.
 // Any path starting with one of these is an authenticated app route, not an artist slug.
 const KNOWN_APP_ROUTES = new Set([
-  "calendar", "conversations", "chat", "dashboard", "settings",
-  "work-hours", "clients", "bank-payouts", "payout-history",
-  "notifications-management", "subscriptions", "lead", "admin",
-  "profile", "merchant", "discover", "complete-profile", "bookings",
+  "calendar",
+  "conversations",
+  "chat",
+  "dashboard",
+  "settings",
+  "work-hours",
+  "clients",
+  "bank-payouts",
+  "payout-history",
+  "notifications-management",
+  "subscriptions",
+  "lead",
+  "admin",
+  "profile",
+  "merchant",
+  "discover",
+  "complete-profile",
+  "bookings",
 ]);
 
 /**
@@ -140,15 +159,18 @@ function Router() {
   const [location] = useLocation();
   const { user } = useAuth();
 
-  // iOS Cold-Boot Deeplink Failsafe
+  // Only relative app paths can be opened through a cold-start deep link.
   React.useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const deeplink = params.get("deeplink");
-    if (deeplink) {
-      window.history.replaceState({}, document.title, window.location.pathname);
-      setTimeout(() => {
-        window.location.href = deeplink;
-      }, 50);
+    const deeplink = new URLSearchParams(window.location.search).get(
+      "deeplink"
+    );
+    if (
+      deeplink &&
+      deeplink.startsWith("/") &&
+      !deeplink.startsWith("//") &&
+      !deeplink.includes("\\")
+    ) {
+      window.location.replace(deeplink);
     }
   }, []);
 
@@ -162,18 +184,9 @@ function Router() {
   // Initialize OneSignal user & request push permissions
   React.useEffect(() => {
     if (user?.id) {
-      import("@/lib/onesignal").then(
-        ({ setExternalUserId, requestNotificationPermission }) => {
-          setExternalUserId(user.id).then(() => {
-            requestNotificationPermission().catch(err => {
-              console.error(
-                "[OneSignal] Failed to request permission on login:",
-                err
-              );
-            });
-          });
-        }
-      );
+      import("@/lib/onesignal").then(({ setExternalUserId }) => {
+        void setExternalUserId(user.id);
+      });
     }
   }, [user?.id]);
 
@@ -193,6 +206,9 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
         <Route path="/set-password" component={SetPassword} />
+        <Route path="/forgot-password" component={PasswordRecovery} />
+        <Route path="/auth/magic" component={MagicLink} />
+        <Route path="/auth/reset-password" component={PasswordRecovery} />
         <Route path="/complete-profile" component={CompleteProfile} />
 
         {/* Public funnel - no auth required */}

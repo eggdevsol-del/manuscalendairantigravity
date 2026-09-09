@@ -5,17 +5,21 @@
   "license": "MIT",
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx watch server/_core/index.ts",
-    "build": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && tsx server/scripts/copy-drizzle.ts && tsx scripts/migrate-add-columns.ts",
+    "build": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && tsx server/scripts/copy-drizzle.ts",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
     "db:push": "drizzle-kit push",
-    "db:migrate": "drizzle-kit generate && drizzle-kit migrate",
+    "db:migrate": "drizzle-kit migrate",
     "db:init": "tsx server/init-db.ts",
     "check-overlays": "node scripts/check-overlays.js",
     "db:verify": "tsx server/verify-and-fix-db.ts",
-    "git-push": "tsx server/scripts/bump-version.ts && git add . && git commit -m \"chore: bump version\" && git push"
+    "git-push": "tsx server/scripts/bump-version.ts && git add . && git commit -m \"chore: bump version\" && git push",
+    "db:legacy-migrate": "tsx scripts/migrate-add-columns.ts",
+    "ios:sync": "node scripts/sync-ios.mjs",
+    "ios:build": "xcodebuild -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug -destination generic/platform=iOS\\ Simulator CODE_SIGNING_ALLOWED=NO build",
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.967.0",

@@ -7,7 +7,10 @@
 
 import * as schema from "../../drizzle/schema";
 import { getBankDetailLabels } from "../../shared/utils/bankDetails";
-import { formatLocalTime, getBusinessTimezone } from "../../shared/utils/timezone";
+import {
+  formatLocalTime,
+  getBusinessTimezone,
+} from "../../shared/utils/timezone";
 
 /** Extract first name from a full name string */
 function firstName(name: string | null | undefined): string {
@@ -198,7 +201,9 @@ async function generateNewLeadTasks(
       deepLink: `/conversations?leadId=${lead.id}`,
       conversationId: null,
       dueAt: new Date(new Date(lead.createdAt!).getTime() + 60 * 60 * 1000), // 1 hour after creation
-      expiresAt: new Date(new Date(lead.createdAt!).getTime() + 14 * 24 * 60 * 60 * 1000), // Hard expiry at 14 days
+      expiresAt: new Date(
+        new Date(lead.createdAt!).getTime() + 14 * 24 * 60 * 60 * 1000
+      ), // Hard expiry at 14 days
     });
   }
 
@@ -249,7 +254,9 @@ async function generateLeadFollowUpTasks(
 
     const followUpMessage = `Hi ${firstName(lead.clientName)}, just following up on your ${lead.projectType?.replace(/-/g, " ") || "tattoo"} enquiry. Let me know if you have any questions or would like to go ahead with booking.`;
 
-    const contactDate = lead.lastContactedAt ? new Date(lead.lastContactedAt) : new Date(lead.createdAt!);
+    const contactDate = lead.lastContactedAt
+      ? new Date(lead.lastContactedAt)
+      : new Date(lead.createdAt!);
 
     tasks.push({
       taskType: "lead_follow_up",
@@ -347,7 +354,9 @@ async function generateNewConsultationTasks(
       deepLink: `/conversations?consultationId=${consult.id}`,
       conversationId: consult.conversationId ?? null,
       dueAt: new Date(new Date(consult.createdAt!).getTime() + 60 * 60 * 1000), // 1 hour after creation
-      expiresAt: new Date(new Date(consult.createdAt!).getTime() + 14 * 24 * 60 * 60 * 1000), // 14-day expiry
+      expiresAt: new Date(
+        new Date(consult.createdAt!).getTime() + 14 * 24 * 60 * 60 * 1000
+      ), // 14-day expiry
     });
   }
 
@@ -425,10 +434,10 @@ async function generateDepositTasks(
     let emailMsgBody = `Hi ${clientFirst},\n\nJust a reminder about the ${depositFormatted} deposit for your upcoming appointment on ${dateFormatted}.\n\nYou can pay securely here: https://tattoi.com/pay/${appt.id}\n\n`;
 
     const artistSettings = await db.query.artistSettings.findFirst({
-      where: eq(schema.artistSettings.userId, appt.artistId)
+      where: eq(schema.artistSettings.userId, appt.artistId),
     });
 
-    const countryCode = artistSettings?.businessCountry || 'AU';
+    const countryCode = artistSettings?.businessCountry || "AU";
     const bsbValue = artistSettings?.bsb;
     const accountValue = artistSettings?.accountNumber;
 
@@ -436,8 +445,10 @@ async function generateDepositTasks(
     if (bsbValue || accountValue) {
       const labels = getBankDetailLabels(countryCode);
       emailMsgBody += `\nAlternatively, you can bank transfer directly:\n`;
-      if (labels.bankCodeLabel && bsbValue) emailMsgBody += `${labels.bankCodeLabel}: ${bsbValue}\n`;
-      if (accountValue) emailMsgBody += `${labels.accountLabel}: ${accountValue}\n`;
+      if (labels.bankCodeLabel && bsbValue)
+        emailMsgBody += `${labels.bankCodeLabel}: ${bsbValue}\n`;
+      if (accountValue)
+        emailMsgBody += `${labels.accountLabel}: ${accountValue}\n`;
     }
 
     // No sign-off — artist has email signature
@@ -613,7 +624,9 @@ async function generateFollowUpTasks(
       deepLink: conversationId ? `/chat/${conversationId}` : `/conversations`,
       conversationId: conversationId ?? null,
       dueAt: null,
-      expiresAt: new Date(new Date(consult.updatedAt!).getTime() + 21 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(
+        new Date(consult.updatedAt!).getTime() + 21 * 24 * 60 * 60 * 1000
+      ),
     });
   }
 
@@ -682,7 +695,9 @@ async function generateStaleConversationTasks(
       deepLink: `/chat/${conv.id}`,
       conversationId: conv.id,
       dueAt: null,
-      expiresAt: new Date(new Date(lastMessage.createdAt!).getTime() + 30 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(
+        new Date(lastMessage.createdAt!).getTime() + 30 * 24 * 60 * 60 * 1000
+      ),
     });
   }
 
@@ -905,7 +920,9 @@ async function generateHealedPhotoTasks(
         : `/conversations`,
       conversationId: appt.conversationId ?? null,
       dueAt: null,
-      expiresAt: new Date(new Date(appt.endTime!).getTime() + 35 * 24 * 60 * 60 * 1000), // Expires 35 days after session
+      expiresAt: new Date(
+        new Date(appt.endTime!).getTime() + 35 * 24 * 60 * 60 * 1000
+      ), // Expires 35 days after session
     });
   }
 
@@ -1001,10 +1018,11 @@ async function generateUpcomingWarningTasks(
   const fourWeeksFromNow = new Date(now.getTime() + 28 * 24 * 60 * 60 * 1000);
 
   const artistSettings = await db.query.artistSettings.findFirst({
-    where: eq(schema.artistSettings.userId, artistId)
+    where: eq(schema.artistSettings.userId, artistId),
   });
 
-  const artistCountry = artistSettings?.businessCountry?.trim().toLowerCase() || 'au';
+  const artistCountry =
+    artistSettings?.businessCountry?.trim().toLowerCase() || "au";
 
   const upcomingAppointments = await db.query.appointments.findMany({
     where: and(
@@ -1042,7 +1060,9 @@ async function generateUpcomingWarningTasks(
     tasks.push({
       taskType: isOverseas ? "upcoming_overseas" : "upcoming_local",
       taskTier: isOverseas ? "tier1" : "tier2",
-      title: isOverseas ? `Overseas Client: ${appt.client.name}` : `Upcoming: ${appt.client.name}`,
+      title: isOverseas
+        ? `Overseas Client: ${appt.client.name}`
+        : `Upcoming: ${appt.client.name}`,
       context: `Arriving in ${daysLabel} days for ${appt.title}`,
       priorityScore: baseScore,
       priorityLevel: getPriorityLevel(baseScore),
@@ -1056,7 +1076,9 @@ async function generateUpcomingWarningTasks(
       emailRecipient: null,
       emailSubject: null,
       emailBody: null,
-      deepLink: appt.conversationId ? `/chat/${appt.conversationId}` : `/conversations`,
+      deepLink: appt.conversationId
+        ? `/chat/${appt.conversationId}`
+        : `/conversations`,
       conversationId: appt.conversationId ?? null,
       dueAt: null,
       expiresAt: new Date(appt.startTime),
@@ -1097,20 +1119,24 @@ async function generateInvoiceDeliveredWorkTasks(
   });
 
   // Group by client — one task per client, not per session
-  const clientGroups = new Map<string, {
-    clientId: string;
-    clientName: string;
-    clientEmail: string | null;
-    clientPhone: string | null;
-    conversationId: number | null;
-    sessions: typeof completedUnpaid;
-    totalOwed: number;
-    totalPaid: number;
-    oldestUnpaid: Date;
-  }>();
+  const clientGroups = new Map<
+    string,
+    {
+      clientId: string;
+      clientName: string;
+      clientEmail: string | null;
+      clientPhone: string | null;
+      conversationId: number | null;
+      sessions: typeof completedUnpaid;
+      totalOwed: number;
+      totalPaid: number;
+      oldestUnpaid: Date;
+    }
+  >();
 
   for (const appt of completedUnpaid) {
-    const remaining = (appt.priceCents || 0) - (appt.paidCents || 0);
+    const remaining =
+      (appt.totalExpectedAmountCents || 0) - (appt.totalPaidAmountCents || 0);
     if (remaining <= 0) continue; // Fully paid
 
     const cid = appt.clientId!;
@@ -1131,7 +1157,7 @@ async function generateInvoiceDeliveredWorkTasks(
     const group = clientGroups.get(cid)!;
     group.sessions.push(appt);
     group.totalOwed += remaining;
-    group.totalPaid += (appt.paidCents || 0);
+    group.totalPaid += appt.totalPaidAmountCents || 0;
 
     const apptDate = new Date(appt.startTime);
     if (apptDate < group.oldestUnpaid) {
@@ -1162,7 +1188,8 @@ async function generateInvoiceDeliveredWorkTasks(
 
     // Add payment link for each session
     for (const s of group.sessions) {
-      const remaining = (s.priceCents || 0) - (s.paidCents || 0);
+      const remaining =
+        (s.totalExpectedAmountCents || 0) - (s.totalPaidAmountCents || 0);
       emailBody += `• ${(s as any).title || "Session"} — $${(remaining / 100).toFixed(0)} remaining: https://tattoi.com/pay/${s.id}\n`;
     }
 
@@ -1328,7 +1355,11 @@ export async function generateBusinessTasks(
   );
 
   // Deduplicate: for certain task types, only keep the highest-priority task per client
-  const DEDUP_TASK_TYPES = new Set(["stale_conversation", "upcoming_overseas", "upcoming_local"]);
+  const DEDUP_TASK_TYPES = new Set([
+    "stale_conversation",
+    "upcoming_overseas",
+    "upcoming_local",
+  ]);
   const deduped: BusinessTask[] = [];
   const seenClientTaskKeys = new Set<string>();
 
@@ -1339,7 +1370,9 @@ export async function generateBusinessTasks(
     if (DEDUP_TASK_TYPES.has(task.taskType) && task.clientId) {
       const dedupKey = `${task.taskType}-${task.clientId}`;
       if (seenClientTaskKeys.has(dedupKey)) {
-        console.log(`[BusinessTaskGenerator] Deduped: ${task.title} (${dedupKey})`);
+        console.log(
+          `[BusinessTaskGenerator] Deduped: ${task.title} (${dedupKey})`
+        );
         continue;
       }
       seenClientTaskKeys.add(dedupKey);

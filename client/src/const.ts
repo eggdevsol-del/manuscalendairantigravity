@@ -2,11 +2,12 @@ export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { Capacitor } from "@capacitor/core";
 
 export const API_BASE_URL =
-  typeof window !== "undefined"
+  import.meta.env.VITE_API_BASE_URL ||
+  (typeof window !== "undefined"
     ? window.location.origin
-    : "https://www.tattoi.app";
+    : "https://www.tattoi.app");
 
-export const APP_TITLE = import.meta.env.VITE_APP_TITLE || "TOI";
+export const APP_TITLE = import.meta.env.VITE_APP_TITLE || "Tattoi";
 
 export const APP_LOGO =
   import.meta.env.VITE_APP_LOGO || `/veil-logo.png?v=${Date.now()}`;
@@ -17,6 +18,7 @@ export const getLoginUrl = () => {
   const appId = import.meta.env.VITE_APP_ID;
   const origin = API_BASE_URL || window.location.origin;
   const redirectUri = `${origin}/api/oauth/callback`;
+  if (!oauthPortalUrl || !appId) return "/login";
   const state = btoa(redirectUri);
 
   const url = new URL(`${oauthPortalUrl}/app-auth`);

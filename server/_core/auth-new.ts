@@ -1,10 +1,9 @@
+import { getAuthSecret } from "./auth-secret";
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { getUserById } from "../db";
 
-const JWT_SECRET =
-  process.env.JWT_SECRET || "your-secret-key-change-in-production";
 // 90 days — user stays signed in as long as they open the app within this window
 const JWT_EXPIRES_IN = "90d";
 
@@ -29,7 +28,7 @@ export function generateToken(user: { id: string; email: string }): string {
     userId: user.id,
     email: user.email,
   };
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign(payload, getAuthSecret(), { expiresIn: JWT_EXPIRES_IN });
 }
 
 /**
@@ -37,7 +36,12 @@ export function generateToken(user: { id: string; email: string }): string {
  */
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const payload = jwt.verify(token, getAuthSecret(), {
+      algorithms: ["HS256"],
+    }) as jwt.JwtPayload;
+    if (typeof payload.userId !== "string" || typeof payload.email !== "string")
+      return null;
+    return { userId: payload.userId, email: payload.email };
   } catch (error) {
     return null;
   }
@@ -174,7 +178,7 @@ export function generateMagicLinkToken(email: string): string {
     type: "magic-link",
     exp: Math.floor(Date.now() / 1000) + 15 * 60, // 15 minutes
   };
-  return jwt.sign(payload, JWT_SECRET);
+  return jwt.sign(payload, getAuthSecret());
 }
 
 /**
@@ -182,7 +186,7 @@ export function generateMagicLinkToken(email: string): string {
  */
 export function verifyMagicLinkToken(token: string): { email: string } | null {
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as any;
+    const payload = jwt.verify(token, getAuthSecret()) as any;
     if (payload.type === "magic-link" && payload.email) {
       return { email: payload.email };
     }

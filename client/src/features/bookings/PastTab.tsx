@@ -13,8 +13,14 @@ function formatPastDate(dateStr: string): string {
 /** Format duration */
 function formatDuration(minutes: number | null): string {
   if (!minutes) return "";
-  const hrs = Math.round(minutes / 60);
-  return `${hrs} hr${hrs !== 1 ? "s" : ""}`;
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return [
+    hrs ? `${hrs} hr${hrs !== 1 ? "s" : ""}` : "",
+    mins ? `${mins} min` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 /** Check if a completed appointment is within the 42-day healing window */
@@ -30,9 +36,10 @@ function isWithinHealingWindow(completedAt: string | null): boolean {
 
 export function PastTab() {
   const [, setLocation] = useLocation();
-  const { data, isLoading } = trpc.appointments.getClientBookings.useQuery({
-    tab: "past",
-  });
+  const { data, isLoading, error, refetch } =
+    trpc.appointments.getClientBookings.useQuery({
+      tab: "past",
+    });
 
   if (isLoading) {
     return (
@@ -41,6 +48,16 @@ export function PastTab() {
       </div>
     );
   }
+
+  if (error)
+    return (
+      <div role="alert" className="border rounded-xl p-5">
+        <p>We couldn't load your bookings.</p>
+        <button className="underline min-h-12" onClick={() => refetch()}>
+          Try again
+        </button>
+      </div>
+    );
 
   const appointments = data?.appointments || [];
 
@@ -57,7 +74,7 @@ export function PastTab() {
 
   // Find the most recent appointment within the healing window for top aftercare
   const healingAppointment = appointments.find(
-    (appt) => appt.completedAt && isWithinHealingWindow(appt.completedAt)
+    appt => appt.completedAt && isWithinHealingWindow(appt.completedAt)
   );
 
   return (
@@ -96,7 +113,7 @@ export function PastTab() {
       )}
 
       {/* ── Past appointment cards ────────────────────────────────── */}
-      {appointments.map((appt) => (
+      {appointments.map(appt => (
         <div
           key={appt.id}
           style={{
@@ -123,7 +140,9 @@ export function PastTab() {
           {/* Meta */}
           <p className="text-[13.5px] text-[#7A7A7A] mb-3">
             {appt.artist.name}
-            {appt.durationMinutes ? ` · ${formatDuration(appt.durationMinutes)}` : ""}
+            {appt.durationMinutes
+              ? ` · ${formatDuration(appt.durationMinutes)}`
+              : ""}
             {appt.amountPaidCents > 0
               ? ` · $${(appt.amountPaidCents / 100).toFixed(0)} paid in full`
               : ""}

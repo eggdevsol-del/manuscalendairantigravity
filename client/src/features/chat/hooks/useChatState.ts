@@ -1,7 +1,11 @@
+import { useConversationDraft } from "./useConversationDraft";
 import { useState, useRef, useCallback, useMemo } from "react";
 
-export function useChatState() {
-  const [messageText, setMessageText] = useState("");
+export function useChatState(conversationId?: number, userId?: string) {
+  const [messageText, setMessageText] = useConversationDraft(
+    conversationId,
+    userId
+  );
 
   // Scroll Logic
   const viewportRef = useRef<HTMLDivElement>(null);

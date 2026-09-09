@@ -29,10 +29,10 @@ const loggingMiddleware = t.middleware(async opts => {
         type,
         durationMs,
         ok: result.ok,
-        error: !result.ok 
-          ? { message: result.error?.message, code: result.error?.code } 
+        error: !result.ok
+          ? { message: result.error?.message, code: result.error?.code }
           : undefined,
-        input: type === "mutation" && input ? input : undefined,
+        // Deliberately omit request inputs: these may contain passwords or medical data.
       }),
       userId: ctx.user?.id,
     });
