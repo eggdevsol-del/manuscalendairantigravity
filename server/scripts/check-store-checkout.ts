@@ -18,7 +18,7 @@ try{
  const pid=await withDatabaseTransaction(async tx=>{
   await tx.insert(s.users).values({id:userId,role:'merchant',name:'TEST ONLY Checkout QA'});
   await tx.insert(s.merchants).values({userId,businessName:'TEST ONLY Checkout QA',country:'AU',contactName:'TEST ONLY',phone:'0400000000',address:'TEST ONLY',status:'active',stripeAccountId:account.id});
-  const [product]=await tx.insert(s.products).values({artistId:userId,ownerType:'merchant',title:'TEST ONLY stock reservation',priceCents:1000,inventoryCount:3,fulfillmentType:'pickup',isActive:1});return product.insertId;
+  const [product]=await tx.insert(s.products).values({artistId:userId,ownerType:'merchant',title:'TEST ONLY stock reservation',description:'Ephemeral acceptance fixture',priceCents:1000,inventoryCount:3,fulfillmentType:'pickup',isActive:1});return product.insertId;
  });
  const caller=storefrontRouter.createCaller({user:null,req:{},res:{}} as any);
  const checkout=await caller.createStorefrontCheckout({items:[{productId:pid,quantity:2}],fulfillmentMethod:'pickup'});
