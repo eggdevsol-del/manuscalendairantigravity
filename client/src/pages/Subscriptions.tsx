@@ -1,9 +1,12 @@
+import { useState } from "react";
+import { SubscriptionCheckoutSheet } from "@/components/settings/SubscriptionCheckoutSheet";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { PageShell, PageHeader } from "@/components/ui/ssot";
 import { Button } from "@/components/ui";
 import { PricingPage } from "@/features/pricing/PricingPage";
 export default function Subscriptions() {
+  const [checkoutSecret, setCheckoutSecret] = useState<string | null>(null);
   const [, navigate] = useLocation();
   const status = trpc.billing.subscriptionStatus.useQuery(undefined, {
     refetchInterval: 15000,
@@ -11,7 +14,7 @@ export default function Subscriptions() {
   const offer = trpc.billing.artistOffer.useQuery();
   const checkout = trpc.billing.createArtistCheckoutSession.useMutation({
     onSuccess: data => {
-      if (data.url) window.location.assign(data.url);
+      setCheckoutSecret(data.clientSecret);
     },
   });
   const portal = trpc.billing.createArtistPortalSession.useMutation({
@@ -22,6 +25,15 @@ export default function Subscriptions() {
   const error = checkout.error || portal.error;
   return (
     <PageShell>
+      {checkoutSecret && (
+        <SubscriptionCheckoutSheet
+          clientSecret={checkoutSecret}
+          name="Pro"
+          active={status.data?.tier === "pro"}
+          onClose={() => setCheckoutSecret(null)}
+          onRefresh={() => void status.refetch()}
+        />
+      )}
       <PageHeader title="Plans" onBack={() => navigate("/settings")} />
       <div className="flex-1 overflow-y-auto mobile-scroll pt-4">
         {status.isLoading && (

@@ -25,6 +25,7 @@ try{
  orderId=checkout.orderId;sessionId=checkout.sessionId;
  assert.equal((await db.query.products.findFirst({where:eq(s.products.id,pid)}))?.inventoryCount,1);
  const session=await stripe.checkout.sessions.retrieve(sessionId);
+ assert.equal(session.ui_mode,'custom');assert.ok(session.client_secret);
  assert.equal(session.amount_total,checkout.totalCents);assert.equal(session.metadata?.stockReserved,'1');assert.equal(session.metadata?.orderId,String(orderId));
  await stripe.checkout.sessions.expire(sessionId);
  for(let i=0;i<45;i++){
@@ -36,7 +37,7 @@ try{
  assert.equal((await db.query.products.findFirst({where:eq(s.products.id,pid)}))?.inventoryCount,3);
  await caller.cancelStoreCheckout({orderId,sessionId});
  assert.equal((await db.query.products.findFirst({where:eq(s.products.id,pid)}))?.inventoryCount,3);
- console.log('PASS: real Stripe embedded session, server total, inventory held, provider expiry delivered to deployed webhook, stock restored exactly once. No card charge.');
+ console.log('PASS: real Stripe custom session, server total, inventory held, provider expiry delivered to deployed webhook, stock restored exactly once. No card charge.');
  await db.delete(s.users).where(eq(s.users.id,userId));
  console.log('PASS: test merchant/product/order fixtures removed; webhook receipt retained.');
 }catch(error){if(sessionId){const session=await stripe.checkout.sessions.retrieve(sessionId);if(session.status==='open')await stripe.checkout.sessions.expire(sessionId);}console.error('TEST ONLY fixtures retained for diagnosis',{userId,orderId});throw error;}

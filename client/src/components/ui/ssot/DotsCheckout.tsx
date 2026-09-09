@@ -8,7 +8,7 @@
  * EVERY checkout in the app MUST use this component.
  *
  * Features:
- * - Apple Pay / Google Pay (via Payment Request Button)
+ * - Apple Pay / Google Pay when available through Stripe Elements
  * - Card payment (via Payment Element)
  * - Stripe Link integration (auto-detected by Payment Element)
  * - Dark theme matching d.o.t.s design system
@@ -17,7 +17,7 @@
  * @version 1.0.0
  */
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { type Appearance } from "@stripe/stripe-js";
 import {
   Elements,
@@ -25,10 +25,15 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { Loader2, Lock, ArrowLeft } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
 
-import { stripePromise } from '@/lib/stripe';
-import { EmbeddedStripeCheckout } from '@/features/stripe/EmbeddedStripeCheckout';
+import { stripePromise } from "@/lib/stripe";
+import {
+  CheckoutElementsProvider,
+  useCheckoutElements,
+  PaymentElement as SessionPaymentElement,
+  ShippingAddressElement,
+} from "@stripe/react-stripe-js/checkout";
 
 // ── Stripe Elements Appearance (Dark Theme) ──────────────────────────────────
 const appearance: Appearance = {
@@ -93,8 +98,10 @@ const appearance: Appearance = {
 
 // ── Props ────────────────────────────────────────────────────────────────────
 export interface DotsCheckoutProps {
-  /** PaymentIntent or embedded Checkout Session client_secret from the server */
+  /** PaymentIntent or custom Checkout Session client_secret from the server */
   clientSecret: string;
+  /** Required only by store orders that collect a contact phone. */
+  collectPhone?: boolean;
   /** Total amount in cents (for display) */
   amountCents: number;
   /** Currency code (default: "aud") */
@@ -112,6 +119,7 @@ export interface DotsCheckoutProps {
 // ── Main Component (wraps Elements provider) ─────────────────────────────────
 export function DotsCheckout({
   clientSecret,
+  collectPhone,
   amountCents,
   currency = "aud",
   artistName,
@@ -120,8 +128,28 @@ export function DotsCheckout({
   onBack,
 }: DotsCheckoutProps) {
   if (!clientSecret) return null;
-  if (!stripePromise) return <p role="alert" className="p-5">Card payments are temporarily unavailable. Please contact your artist or try again later.</p>;
-  if (clientSecret.startsWith('cs_')) return <EmbeddedStripeCheckout clientSecret={clientSecret} onComplete={onComplete}/>;
+  if (!stripePromise)
+    return (
+      <p role="alert" className="p-5">
+        Card payments are temporarily unavailable. Please contact your artist or
+        try again later.
+      </p>
+    );
+  if (clientSecret.startsWith("cs_"))
+    return (
+      <CheckoutElementsProvider
+        key={clientSecret}
+        stripe={stripePromise}
+        options={{ clientSecret, elementsOptions: { appearance } }}
+      >
+        <SessionCheckoutForm
+          collectPhone={collectPhone}
+          onComplete={onComplete}
+          onError={onError}
+          onBack={onBack}
+        />
+      </CheckoutElementsProvider>
+    );
 
   return (
     <Elements
@@ -174,7 +202,7 @@ function CheckoutForm({
         const { error } = await stripe.confirmPayment({
           elements,
           confirmParams: {
-            // No return_url needed — we handle completion inline
+            // Authentication redirects return to this app; ordinary card payments complete inline.
             return_url: window.location.href,
           },
           redirect: "if_required",
@@ -203,12 +231,172 @@ function CheckoutForm({
   );
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <CheckoutLayout
+      amount={formattedAmount}
+      onSubmit={handleSubmit}
+      processing={isProcessing}
+      ready={!!stripe && !!elements && isReady}
+      error={errorMessage}
+      onBack={onBack}
+    >
+      <PaymentElement
+        onReady={() => setIsReady(true)}
+        onLoadError={() => {
+          setErrorMessage(
+            "Payment form could not load. Please reopen checkout."
+          );
+        }}
+        options={{
+          layout: { type: "tabs", defaultCollapsed: false },
+          wallets: { applePay: "auto", googlePay: "auto" },
+        }}
+      />
+    </CheckoutLayout>
+  );
+}
+
+function SessionCheckoutForm({
+  onComplete,
+  onError,
+  onBack,
+  collectPhone,
+}: Pick<
+  DotsCheckoutProps,
+  "onComplete" | "onError" | "onBack" | "collectPhone"
+>) {
+  const state = useCheckoutElements();
+  const [processing, setProcessing] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const submitting = useRef(false);
+  if (state.type === "loading")
+    return (
+      <p role="status" className="p-4 text-white">
+        Loading secure payment form…
+      </p>
+    );
+  if (state.type === "error")
+    return (
+      <div role="alert" className="p-4 text-white">
+        {state.error.message}
+        <button type="button" onClick={onBack} className="block py-3 underline">
+          Back to checkout
+        </button>
+      </div>
+    );
+  const { checkout } = state;
+  const recurring = !!checkout.recurring;
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (submitting.current) return;
+    submitting.current = true;
+    setProcessing(true);
+    setError(null);
+    try {
+      const result = await checkout.confirm({
+        redirect: "if_required",
+        ...(!checkout.email ? { email } : {}),
+        ...(phone ? { phoneNumber: phone } : {}),
+      });
+      if (result.type === "error") throw new Error(result.error.message);
+      onComplete(); // Callers verify paid/active state through the server webhook.
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Payment failed. Please try again.";
+      setError(message);
+      onError?.(message);
+    } finally {
+      submitting.current = false;
+      setProcessing(false);
+    }
+  };
+  return (
+    <CheckoutLayout
+      amount={formatCurrency(
+        checkout.total.total.minorUnitsAmount,
+        checkout.currency
+      )}
+      onSubmit={submit}
+      processing={processing}
+      ready={ready}
+      error={error}
+      onBack={onBack}
+      recurring={recurring}
+    >
+      {!checkout.email && (
+        <label className="block mb-4 text-sm text-white">
+          Email
+          <input
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            className="block w-full mt-2 rounded-xl border border-white/20 bg-[#1A1A1E] p-3"
+          />
+        </label>
+      )}
+      {collectPhone && !checkout.phoneNumber && (
+        <label className="block mb-4 text-sm text-white">
+          Phone
+          <input
+            type="tel"
+            required
+            autoComplete="tel"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            className="block w-full mt-2 rounded-xl border border-white/20 bg-[#1A1A1E] p-3"
+          />
+        </label>
+      )}
+      {checkout.shippingOptions.length > 0 && (
+        <div className="mb-4">
+          <h3 className="text-sm text-white mb-3">Delivery address</h3>
+          <ShippingAddressElement />
+        </div>
+      )}
+      <SessionPaymentElement
+        onReady={() => setReady(true)}
+        onLoadError={() =>
+          setError("Payment form could not load. Please reopen checkout.")
+        }
+        options={{ layout: { type: "tabs", defaultCollapsed: false } }}
+      />
+    </CheckoutLayout>
+  );
+}
+
+function CheckoutLayout({
+  amount: formattedAmount,
+  onSubmit: handleSubmit,
+  processing: isProcessing,
+  ready: isReady,
+  error: errorMessage,
+  onBack,
+  recurring,
+  children,
+}: {
+  amount: string;
+  onSubmit: (event: React.FormEvent) => void;
+  processing: boolean;
+  ready: boolean;
+  error: string | null;
+  onBack?: () => void;
+  recurring?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-4 rounded-2xl bg-[#232326] p-4"
+    >
       {/* Amount display */}
       <div className="flex items-center justify-between px-1 pt-1 pb-2">
-        <span
-          style={{ color: "#7A7A7A", fontSize: 13, fontWeight: 500 }}
-        >
+        <span style={{ color: "#7A7A7A", fontSize: 13, fontWeight: 500 }}>
           Paying
         </span>
         <span
@@ -242,24 +430,13 @@ function CheckoutForm({
             />
           </div>
         )}
-        <PaymentElement
-          onReady={() => setIsReady(true)}
-          options={{
-            layout: {
-              type: "tabs",
-              defaultCollapsed: false,
-            },
-            wallets: {
-              applePay: "auto",
-              googlePay: "auto",
-            },
-          }}
-        />
+        {children}
       </div>
 
       {/* Error message */}
       {errorMessage && (
         <div
+          role="alert"
           style={{
             background: "rgba(255,77,79,0.1)",
             border: "1px solid rgba(255,77,79,0.3)",
@@ -274,6 +451,12 @@ function CheckoutForm({
         </div>
       )}
 
+      {recurring && (
+        <p className="text-sm text-white/70">
+          {formattedAmount} charged monthly until canceled. Manage or cancel
+          your subscription in Billing.
+        </p>
+      )}
       {/* Trust badge */}
       <div
         className="flex items-center justify-center gap-1.5"
@@ -286,7 +469,7 @@ function CheckoutForm({
       {/* Pay button */}
       <button
         type="submit"
-        disabled={!stripe || !elements || isProcessing || !isReady}
+        disabled={isProcessing || !isReady}
         className="w-full flex items-center justify-center gap-2 font-bold transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
         style={{
           height: 52,
@@ -308,7 +491,10 @@ function CheckoutForm({
             <span>Processing…</span>
           </>
         ) : (
-          <span>Pay {formattedAmount}</span>
+          <span>
+            {recurring ? "Subscribe for" : "Pay"} {formattedAmount}
+            {recurring ? "/month" : ""}
+          </span>
         )}
       </button>
 
@@ -317,6 +503,7 @@ function CheckoutForm({
         <button
           type="button"
           onClick={onBack}
+          disabled={isProcessing}
           className="flex items-center justify-center gap-1 transition-colors"
           style={{
             color: "#7A7A7A",

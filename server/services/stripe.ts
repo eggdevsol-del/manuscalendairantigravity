@@ -116,8 +116,8 @@ export async function createStudioCheckoutSession(
         quantity: 1,
       },
     ],
-    success_url: `${appUrl}/studio?success=true&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${appUrl}/subscriptions?canceled=true`,
+    ui_mode: "custom",
+    return_url: `${appUrl}/studio?success=true&session_id={CHECKOUT_SESSION_ID}`,
     subscription_data: {
       metadata: {
         studioId: studioId,
@@ -125,7 +125,7 @@ export async function createStudioCheckoutSession(
     },
   });
 
-  return { url: session.url, sessionId: session.id };
+  return { clientSecret: session.client_secret!, sessionId: session.id };
 }
 
 /**
@@ -164,8 +164,8 @@ export async function createArtistCheckoutSession(
         quantity: 1,
       },
     ],
-    success_url: `${appUrl}/subscriptions?success=true&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${appUrl}/subscriptions?canceled=true`,
+    ui_mode: "custom",
+    return_url: `${appUrl}/subscriptions?success=true&session_id={CHECKOUT_SESSION_ID}`,
     subscription_data: {
       metadata: {
         artistId: artistId,
@@ -174,7 +174,7 @@ export async function createArtistCheckoutSession(
     },
   });
 
-  return session.url;
+  return { clientSecret: session.client_secret!, sessionId: session.id };
 }
 
 /**
@@ -226,7 +226,7 @@ export async function createDepositCheckoutSession(opts: {
 
   // Build the session config
   const sessionConfig: any = {
-    ui_mode: "embedded",
+    ui_mode: "custom",
     payment_method_types: ["card"],
     mode: "payment",
     customer_email: opts.clientEmail,
@@ -329,7 +329,7 @@ export async function createBalanceCheckoutSession(opts: {
       tier: opts.tier,
       balanceToken: opts.balanceToken || "",
     },
-    ui_mode: "embedded",
+    ui_mode: "custom",
     return_url: opts.returnUrl
       ? `${opts.returnUrl}${opts.returnUrl.includes("?") ? "&" : "?"}status=success&session_id={CHECKOUT_SESSION_ID}`
       : `${baseUrl}/balance/${opts.bookingId}?status=success&session_id={CHECKOUT_SESSION_ID}`,
@@ -404,7 +404,7 @@ export async function createStorefrontCheckoutSession(opts: {
       quantity: 1,
     });
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
-    payment_method_types: ["card"], // 'apple_pay' and 'google_pay' are auto-handled by Stripe in embedded mode if available
+    payment_method_types: ["card"], // 'apple_pay' and 'google_pay' are auto-handled by Stripe through Elements when available
     mode: "payment",
     expires_at: Math.floor(Date.now() / 1000) + 1800,
     line_items,
@@ -419,7 +419,7 @@ export async function createStorefrontCheckoutSession(opts: {
     phone_number_collection: {
       enabled: true,
     },
-    ui_mode: "embedded",
+    ui_mode: "custom",
     return_url: `${baseUrl}${opts.returnPath || `/shop/${opts.slug}`}?status=success&session_id={CHECKOUT_SESSION_ID}&order_id=${opts.orderId}`,
   };
 
@@ -522,7 +522,7 @@ export async function createPaymentRequestCheckoutSession(opts: {
       stripeConnectAccountId: opts.stripeConnectAccountId || "",
       tier: opts.tier,
     },
-    ui_mode: "embedded",
+    ui_mode: "custom",
     return_url: `${baseUrl}/pay/${opts.token}?status=success&session_id={CHECKOUT_SESSION_ID}`,
   };
 
@@ -1935,7 +1935,7 @@ export async function createSupplierCheckoutSession(opts: {
       platformFeeCents: String(opts.platformFeeCents),
       supplierName: opts.supplierName,
     },
-    ui_mode: "embedded",
+    ui_mode: "custom",
     return_url: `${baseUrl}/dashboard?supplier_order=success&order_id=${opts.orderId}&session_id={CHECKOUT_SESSION_ID}`,
     // Collect shipping address
     shipping_address_collection: {

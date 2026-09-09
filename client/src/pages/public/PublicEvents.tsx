@@ -101,6 +101,7 @@ export default function PublicEvents() {
           <OrderConfirmation identity={identity} />
         ) : secret ? (
           <DotsCheckout
+            collectPhone
             clientSecret={secret}
             amountCents={0}
             onComplete={() => setConfirming(true)}

@@ -161,8 +161,14 @@ export const billingRouter = router({
           const existing = await stripe.checkout.sessions.retrieve(
             studio.stripeCheckoutSessionId
           );
-          if (existing.status === "open" && existing.url)
-            return { url: existing.url };
+          if (existing.status === "open") {
+            if (existing.ui_mode === "custom" && existing.client_secret)
+              return {
+                clientSecret: existing.client_secret,
+                sessionId: existing.id,
+              };
+            await stripe.checkout.sessions.expire(existing.id);
+          }
           if (existing.status === "complete" && !studio.stripeSubscriptionId)
             throw new TRPCError({
               code: "CONFLICT",
@@ -180,7 +186,7 @@ export const billingRouter = router({
             .update(studios)
             .set({ stripeCheckoutSessionId: checkout.sessionId })
             .where(eq(studios.id, input.studioId));
-          return { url: checkout.url };
+          return checkout;
         } catch (error: any) {
           console.error("[Stripe Checkout Error]", error);
           throw new TRPCError({
@@ -288,7 +294,10 @@ export const billingRouter = router({
           });
         }
 
-        await db.insert(artistSettings).values({userId:ctx.user.id,workSchedule:'{}',services:'[]'}).onDuplicateKeyUpdate({set:{userId:ctx.user.id}});
+        await db
+          .insert(artistSettings)
+          .values({ userId: ctx.user.id, workSchedule: "{}", services: "[]" })
+          .onDuplicateKeyUpdate({ set: { userId: ctx.user.id } });
         const [settings] = await db
           .select()
           .from(artistSettings)
@@ -348,7 +357,14 @@ export const billingRouter = router({
             session.status === "open" &&
             session.metadata?.artistId === ctx.user.id
         );
-        if (existing?.url) return { url: existing.url };
+        if (existing) {
+          if (existing.ui_mode === "custom" && existing.client_secret)
+            return {
+              clientSecret: existing.client_secret,
+              sessionId: existing.id,
+            };
+          await stripe.checkout.sessions.expire(existing.id);
+        }
         try {
           const checkoutUrl = await createArtistCheckoutSession(
             ctx.user.id,
@@ -356,7 +372,7 @@ export const billingRouter = router({
             process.env.STRIPE_PRO_PRICE_ID || "",
             customerId
           );
-          return { url: checkoutUrl };
+          return checkoutUrl;
         } catch (error: any) {
           console.error("[Stripe Artist Checkout Error]", error);
           throw new TRPCError({

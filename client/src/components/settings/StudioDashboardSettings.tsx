@@ -1,3 +1,4 @@
+import { SubscriptionCheckoutSheet } from "./SubscriptionCheckoutSheet";
 import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -7,6 +8,7 @@ import { trpc } from "@/lib/trpc";
 import ArtistInvitations from "@/features/studio/ArtistInvitations";
 
 export function StudioDashboardSettings({ onBack }: { onBack: () => void }) {
+  const [checkoutSecret, setCheckoutSecret] = useState<string | null>(null);
   const { user } = useAuth();
   const [, navigate] = useLocation();
   const utils = trpc.useUtils();
@@ -53,7 +55,7 @@ export function StudioDashboardSettings({ onBack }: { onBack: () => void }) {
   });
   const checkout = trpc.billing.createCheckoutSession.useMutation({
     onSuccess: data => {
-      if (data.url) window.location.assign(data.url);
+      setCheckoutSecret(data.clientSecret);
     },
   });
   const portal = trpc.billing.createPortalSession.useMutation({
@@ -77,6 +79,15 @@ export function StudioDashboardSettings({ onBack }: { onBack: () => void }) {
     return <ArtistInvitations onBack={() => setShowInvites(false)} />;
   return (
     <PageShell>
+      {checkoutSecret && (
+        <SubscriptionCheckoutSheet
+          clientSecret={checkoutSecret}
+          name="Studio"
+          active={active}
+          onClose={() => setCheckoutSecret(null)}
+          onRefresh={() => void studio.refetch()}
+        />
+      )}
       <PageHeader
         title={current?.name || "Your studio"}
         subtitle="Your team and shared schedule."

@@ -234,6 +234,7 @@ export function StorefrontCheckoutFAB({
       {step === "payment" && secret && (
         <div className="min-h-[500px]">
           <DotsCheckout
+            collectPhone
             clientSecret={secret}
             amountCents={chargedTotal}
             onComplete={() => setStep("confirming")}
