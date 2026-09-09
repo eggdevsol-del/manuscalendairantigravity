@@ -7,7 +7,7 @@ Scope: navigable artist, client, supplier/merchant, studio, public booking and p
 | Finding | Correction |
 |---|---|
 | Body padding did not protect fixed full-screen sheets; the checkout header could reach the status bar. | Full-screen roots own top/side insets, nested headers consume them once, and body padding is removed. Public document layouts have their own bounded scrolling viewport. |
-| Several legacy management pages had bespoke headings, spacing and controls. | Shared PageHeader, wrapping business names, readable labels, semantic colors, consistent control/card rounding and bounded tablet content widths. |
+| Several legacy management pages, including bank payouts, had bespoke headings, spacing and controls. | Shared PageHeader, wrapping business names, readable labels, semantic colors, consistent control/card rounding and bounded tablet content widths. |
 | Subscriptions used a full-screen container, unlike the original deposit bottom sheet; the new checkout added an extra outer card. | Subscriptions now use the same SheetShell as deposits and balance payments. Removed the extra checkout card; retained the existing Payment Element layout, order total, security badge and completion behavior. |
 | Supplier/payment screens duplicated dark-only palette objects. | Shared commerce tokens and theme-aware Stripe appearance use the same semantic palette as the dashboard. |
 | Sheets/dialogs used fixed viewport-height limits or oversized tablet widths. | Dynamic viewport caps, safe close controls, scrollable content and centered 640px bottom sheets/dialogs. |
@@ -38,3 +38,7 @@ All 108 viewport/theme/layout cases passed after the corrections.
 The source inventory covers 228 imported JSX modules and 95 page/layout/overlay records. TypeScript, all 103 automated tests, production web/server builds and the Xcode simulator build passed.
 
 Payment submission and every external-provider/account/data state are outside this UI verification. No new financial charge is necessary for this audit.
+
+## Deployed checkout inspection
+
+The in-app Pro checkout renders the A$99 monthly total, card fields, subscription terms and app-owned header in the deposit-style SheetShell. No payment was submitted. Removed an unsupported `defaultCollapsed` option from the tabs layout after Stripe logged a warning. Stripe also reports that Apple Pay is unavailable because this test domain has not been registered/verified; card checkout renders. This provider configuration is not solved by the UI changes.

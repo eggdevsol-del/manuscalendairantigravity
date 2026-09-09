@@ -59,7 +59,7 @@ Scanned 228 imported JSX files; 95 page/layout/overlay records below.
 | client/src/pages/admin/ErrorDashboard.tsx | /admin/errors | Specialised layout | Explicit safe-area contract |
 | client/src/pages/admin/Reconciliation.tsx | /admin/operations | PageShell, PageHeader | Inherited shared shell |
 | client/src/pages/ArtistProfileTab.tsx | /artist-profile | Specialised layout | Parent layout; inspect local controls |
-| client/src/pages/BankPayoutsPage.tsx | /bank-payouts | Specialised layout | Parent layout; inspect local controls |
+| client/src/pages/BankPayoutsPage.tsx | /bank-payouts | PageShell, PageHeader | Inherited shared shell |
 | client/src/pages/Calendar.tsx | /calendar | Specialised layout | Parent layout; inspect local controls |
 | client/src/pages/calendar/CalendarAgendaPage.tsx | Nested/component | PageShell, PageHeader | Inherited shared shell |
 | client/src/pages/calendar/components/AgendaBreakdownList.tsx | Nested/component | Specialised layout | Parent layout; inspect local controls |

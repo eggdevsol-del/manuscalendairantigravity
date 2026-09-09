@@ -310,7 +310,7 @@ function CheckoutForm({
           );
         }}
         options={{
-          layout: { type: "tabs", defaultCollapsed: false },
+          layout: { type: "tabs" },
           wallets: { applePay: "auto", googlePay: "auto" },
         }}
       />
@@ -427,7 +427,7 @@ function SessionCheckoutForm({
         onLoadError={() =>
           setError("Payment form could not load. Please reopen checkout.")
         }
-        options={{ layout: { type: "tabs", defaultCollapsed: false } }}
+        options={{ layout: { type: "tabs" } }}
       />
     </CheckoutLayout>
   );

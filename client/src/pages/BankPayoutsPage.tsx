@@ -1,8 +1,9 @@
-import { ChevronLeft, Banknote, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { Banknote, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { OnboardingWizard } from "@/features/stripe/OnboardingWizard";
 import { PayoutDashboard } from "@/features/stripe/PayoutDashboard";
+import { PageShell, PageHeader } from "@/components/ui/ssot";
 import { Button } from "@/components/ui";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
@@ -61,15 +62,10 @@ export default function BankPayoutsPage() {
   };
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden">
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 shrink-0 border-b border-border">
-        <button onClick={() => setLocation("/")} className="p-2 -ml-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors">
-          <ChevronLeft className="w-5 h-5 text-foreground" />
-        </button>
-        <h1 className="text-xl font-semibold text-foreground">Bank Payouts</h1>
-      </div>
+    <PageShell>
+      <PageHeader title="Bank Payouts" onBack={() => setLocation("/settings")} />
 
-      <div className="flex-1 w-full overflow-y-auto px-4 py-6 mobile-scroll touch-pan-y">
+      <div className="flex-1 min-h-0 w-full max-w-5xl mx-auto overflow-y-auto px-4 pt-6 pb-32 mobile-scroll touch-pan-y">
         {phase === "loading" && (
           <div className="flex flex-col items-center justify-center p-8 mt-10 space-y-4">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -114,6 +110,6 @@ export default function BankPayoutsPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

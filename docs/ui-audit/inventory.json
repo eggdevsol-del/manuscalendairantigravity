@@ -1767,11 +1767,14 @@
   },
   {
     "file": "client/src/pages/BankPayoutsPage.tsx",
-    "primitives": [],
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
     "headers": 0,
     "fixed": false,
     "localSafe": false,
-    "palette": true,
+    "palette": false,
     "routes": [
       "/bank-payouts"
     ]
