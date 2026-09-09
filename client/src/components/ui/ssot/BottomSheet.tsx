@@ -81,6 +81,7 @@ export function BottomSheet({
               "will-change-transform",
               className
             )}
+            style={{ paddingBottom: "var(--app-safe-bottom)" }}
             drag="y"
             dragConstraints={{ top: 0 }}
             dragElastic={tokens.motion.dragGesture.elastic}
@@ -132,7 +133,7 @@ export function ActionSheet({
   children,
   title = "Action Sheet",
   className,
-  maxHeight = "85vh",
+  maxHeight = "85dvh",
 }: ActionSheetProps) {
   // Support both prop naming conventions
   const isSheetOpen = open ?? isOpen ?? false;
@@ -149,9 +150,10 @@ export function ActionSheet({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className={tokens.sheetSecondary.overlay} />
         <DialogPrimitive.Content
-          style={{ maxHeight }}
+          data-side="bottom"
+          style={{ maxHeight: `min(${maxHeight}, calc(100dvh - var(--app-safe-top) - 16px))`, paddingBottom: "calc(var(--app-safe-bottom) + 24px)", paddingLeft: "calc(var(--app-safe-left) + 24px)", paddingRight: "calc(var(--app-safe-right) + 24px)" }}
           className={cn(
-            "fixed inset-x-0 bottom-0 z-[101] w-full outline-none will-change-transform",
+            "app-safe-sheet fixed inset-x-0 bottom-0 z-[101] w-full outline-none will-change-transform overflow-y-auto",
             tokens.sheetSecondary.glass,
             "p-6 pb-12 shadow-2xl space-y-6",
             tokens.animations.sheetSlideUp,

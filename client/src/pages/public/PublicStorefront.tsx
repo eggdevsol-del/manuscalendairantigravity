@@ -29,7 +29,7 @@ function StorefrontContent({
   const { items, addItem, totalItems, setIsCartOpen } = useCart();
 
   return (
-    <div className="h-[100dvh] overflow-y-auto overflow-x-hidden bg-background text-foreground font-sans pb-32">
+    <div className="app-document h-[100dvh] overflow-y-auto overflow-x-hidden bg-background text-foreground font-sans pb-32">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border px-4 py-4 flex items-center justify-between">
         <button

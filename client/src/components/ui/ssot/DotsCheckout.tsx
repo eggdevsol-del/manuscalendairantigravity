@@ -11,13 +11,13 @@
  * - Apple Pay / Google Pay when available through Stripe Elements
  * - Card payment (via Payment Element)
  * - Stripe Link integration (auto-detected by Payment Element)
- * - Dark theme matching d.o.t.s design system
+ * - Theme-aware appearance matching the app design system
  * - 🔒 "Payments secured by Stripe" trust badge
  *
  * @version 1.0.0
  */
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { type Appearance } from "@stripe/stripe-js";
 import {
   Elements,
@@ -36,7 +36,7 @@ import {
 } from "@stripe/react-stripe-js/checkout";
 
 // ── Stripe Elements Appearance (Dark Theme) ──────────────────────────────────
-const appearance: Appearance = {
+const originalAppearance: Appearance = {
   theme: "night",
   variables: {
     colorPrimary: "#F8D057",
@@ -64,7 +64,7 @@ const appearance: Appearance = {
       boxShadow: "0 0 0 2px rgba(248,208,87,0.15)",
     },
     ".Input::placeholder": {
-      color: "#555",
+      color: "#7A7A7A",
     },
     ".Label": {
       color: "#999",
@@ -95,6 +95,68 @@ const appearance: Appearance = {
     },
   },
 };
+
+// Stripe requires resolved colours rather than CSS var() expressions. Resolve the
+// same app tokens for both payment integrations, preserving the deposit layout.
+function usePaymentAppearance() {
+  const [appearance, setAppearance] = useState(originalAppearance);
+  useEffect(() => {
+    const update = () => {
+      const root = document.documentElement;
+      const css = getComputedStyle(root);
+      const value = (name: string, fallback: string) =>
+        css.getPropertyValue(name).trim() || fallback;
+      const foreground = value("--foreground", "#FFFFFF");
+      const surface = value("--card", "#1A1A1E");
+      const muted = value("--muted-foreground", "#7A7A7A");
+      const border = value("--border", "rgba(255,255,255,0.12)");
+      setAppearance({
+        ...originalAppearance,
+        theme: root.classList.contains("dark") ? "night" : "stripe",
+        variables: {
+          ...originalAppearance.variables,
+          colorPrimary: value("--primary", "#F8D057"),
+          colorBackground: surface,
+          colorText: foreground,
+          colorTextSecondary: muted,
+          colorDanger: value("--destructive", "#EF4444"),
+          fontSizeBase: "16px",
+        },
+        rules: {
+          ...originalAppearance.rules,
+          ".Input": {
+            ...originalAppearance.rules?.[".Input"],
+            backgroundColor: surface,
+            color: foreground,
+            border: `1px solid ${border}`,
+            fontSize: "16px",
+          },
+          ".Input::placeholder": { color: muted },
+          ".Label": { ...originalAppearance.rules?.[".Label"], color: muted },
+          ".Tab": {
+            ...originalAppearance.rules?.[".Tab"],
+            backgroundColor: surface,
+            color: foreground,
+            border: `1px solid ${border}`,
+          },
+          ".Tab--selected": {
+            ...originalAppearance.rules?.[".Tab--selected"],
+            backgroundColor: surface,
+            color: foreground,
+          },
+        },
+      });
+    };
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+  return appearance;
+}
 
 // ── Props ────────────────────────────────────────────────────────────────────
 export interface DotsCheckoutProps {
@@ -127,6 +189,7 @@ export function DotsCheckout({
   onError,
   onBack,
 }: DotsCheckoutProps) {
+  const appearance = usePaymentAppearance();
   if (!clientSecret) return null;
   if (!stripePromise)
     return (
@@ -273,13 +336,13 @@ function SessionCheckoutForm({
   const submitting = useRef(false);
   if (state.type === "loading")
     return (
-      <p role="status" className="p-4 text-white">
+      <p role="status" className="p-4 text-foreground">
         Loading secure payment form…
       </p>
     );
   if (state.type === "error")
     return (
-      <div role="alert" className="p-4 text-white">
+      <div role="alert" className="p-4 text-foreground">
         {state.error.message}
         <button type="button" onClick={onBack} className="block py-3 underline">
           Back to checkout
@@ -328,7 +391,7 @@ function SessionCheckoutForm({
       recurring={recurring}
     >
       {!checkout.email && (
-        <label className="block mb-4 text-sm text-white">
+        <label className="block mb-4 text-sm text-foreground">
           Email
           <input
             type="email"
@@ -336,12 +399,12 @@ function SessionCheckoutForm({
             autoComplete="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="block w-full mt-2 rounded-xl border border-white/20 bg-[#1A1A1E] p-3"
+            className="block w-full mt-2 rounded-xl border border-border bg-card p-3"
           />
         </label>
       )}
       {collectPhone && !checkout.phoneNumber && (
-        <label className="block mb-4 text-sm text-white">
+        <label className="block mb-4 text-sm text-foreground">
           Phone
           <input
             type="tel"
@@ -349,13 +412,13 @@ function SessionCheckoutForm({
             autoComplete="tel"
             value={phone}
             onChange={e => setPhone(e.target.value)}
-            className="block w-full mt-2 rounded-xl border border-white/20 bg-[#1A1A1E] p-3"
+            className="block w-full mt-2 rounded-xl border border-border bg-card p-3"
           />
         </label>
       )}
       {checkout.shippingOptions.length > 0 && (
         <div className="mb-4">
-          <h3 className="text-sm text-white mb-3">Delivery address</h3>
+          <h3 className="text-sm text-foreground mb-3">Delivery address</h3>
           <ShippingAddressElement />
         </div>
       )}
@@ -390,18 +453,21 @@ function CheckoutLayout({
   children: React.ReactNode;
 }) {
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-4 rounded-2xl bg-[#232326] p-4"
-    >
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {/* Amount display */}
       <div className="flex items-center justify-between px-1 pt-1 pb-2">
-        <span style={{ color: "#7A7A7A", fontSize: 13, fontWeight: 500 }}>
+        <span
+          style={{
+            color: "var(--muted-foreground)",
+            fontSize: 13,
+            fontWeight: 500,
+          }}
+        >
           Paying
         </span>
         <span
           style={{
-            color: "#FFFFFF",
+            color: "var(--foreground)",
             fontSize: 22,
             fontWeight: 700,
             fontFamily: '"DM Sans", sans-serif',
@@ -414,8 +480,8 @@ function CheckoutLayout({
       {/* Stripe Payment Element — renders card, Apple Pay, Google Pay, Link */}
       <div
         style={{
-          background: "#1A1A1E",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           borderRadius: 16,
           padding: 16,
           minHeight: isReady ? undefined : 200,
@@ -452,7 +518,7 @@ function CheckoutLayout({
       )}
 
       {recurring && (
-        <p className="text-sm text-white/70">
+        <p className="text-sm text-muted-foreground">
           {formattedAmount} charged monthly until canceled. Manage or cancel
           your subscription in Billing.
         </p>
@@ -460,7 +526,11 @@ function CheckoutLayout({
       {/* Trust badge */}
       <div
         className="flex items-center justify-center gap-1.5"
-        style={{ color: "#555", fontSize: 12, padding: "4px 0" }}
+        style={{
+          color: "var(--muted-foreground)",
+          fontSize: 12,
+          padding: "4px 0",
+        }}
       >
         <Lock className="w-3 h-3" />
         <span>Payments secured by Stripe</span>
@@ -506,7 +576,7 @@ function CheckoutLayout({
           disabled={isProcessing}
           className="flex items-center justify-center gap-1 transition-colors"
           style={{
-            color: "#7A7A7A",
+            color: "var(--muted-foreground)",
             fontSize: 14,
             fontWeight: 500,
             padding: "8px 0",

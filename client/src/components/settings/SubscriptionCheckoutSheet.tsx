@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FullScreenSheet } from "@/components/ui/ssot/FullScreenSheet";
+import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 
 export function SubscriptionCheckoutSheet({
@@ -17,14 +17,17 @@ export function SubscriptionCheckoutSheet({
 }) {
   const [submitted, setSubmitted] = useState(false);
   return (
-    <FullScreenSheet
-      open
-      surfaceClassName="bg-background"
+    <SheetShell
+      isOpen
       onClose={onClose}
       title={`${name} subscription`}
-      contextTitle={active ? `${name} is active` : `Join ${name}`}
+      description={
+        active
+          ? `${name} is active`
+          : `Review your monthly plan and pay securely.`
+      }
     >
-      <div className="max-w-lg mx-auto w-full pb-24">
+      <div className="max-w-lg mx-auto w-full pb-4">
         {active ? (
           <div role="status" className="space-y-4">
             <p>Your subscription is active. Your plan benefits are ready.</p>
@@ -54,6 +57,6 @@ export function SubscriptionCheckoutSheet({
           />
         )}
       </div>
-    </FullScreenSheet>
+    </SheetShell>
   );
 }

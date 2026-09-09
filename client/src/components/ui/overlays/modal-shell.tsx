@@ -39,14 +39,14 @@ export function ModalShell({
     <Dialog open={isOpen} onOpenChange={v => !v && onClose()}>
       <DialogContent
         className={cn(
-          "sm:max-w-[480px] max-h-[90vh] flex flex-col p-0 gap-0 border border-border bg-background/95 backdrop-blur-[20px] shadow-2xl rounded-[2.5rem] overflow-hidden text-foreground outline-none",
+          "sm:max-w-[480px] max-h-[90dvh] flex flex-col p-0 gap-0 border border-border bg-popover shadow-xl rounded-[24px] overflow-hidden text-foreground outline-none",
           className
         )}
         data-overlay-id={overlayId}
       >
-        <DialogHeader className="p-8 pb-4 shrink-0 border-b border-border space-y-2">
+        <DialogHeader className="p-5 pb-4 shrink-0 border-b border-border space-y-2">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold tracking-tight text-center flex-1">
+            <DialogTitle className="text-xl font-semibold tracking-tight text-center flex-1">
               {title}
             </DialogTitle>
             {showDebugLabels && overlayName && (
@@ -67,12 +67,12 @@ export function ModalShell({
           )}
         </DialogHeader>
 
-        <div className="px-8 py-4 overflow-y-auto flex-1 scrollbar-hide">
+        <div className="px-5 py-4 overflow-y-auto flex-1 min-h-0 mobile-scroll">
           {children}
         </div>
 
         {footer && (
-          <DialogFooter className="p-8 pt-4 shrink-0 border-t border-border">
+          <DialogFooter className="p-5 pt-4 shrink-0 border-t border-border">
             {footer}
           </DialogFooter>
         )}

@@ -5,6 +5,7 @@
  * Selecting a tour navigates to the relevant page and starts it.
  */
 import React from "react";
+import { PageHeader } from "@/components/ui/ssot/PageHeader";
 import { useTooltipTour, getToursForRole, type TourConfig } from "@/components/tooltip-tour";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
@@ -45,17 +46,7 @@ export function HowTosSettings({ onBack }: HowTosSettingsProps) {
 
   return (
     <div style={{ padding: "0 16px" }}>
-      {/* Back header */}
-      <button
-        onClick={onBack}
-        style={{
-          background: "none", border: "none", color: "var(--foreground)",
-          fontSize: 14, fontWeight: 600, cursor: "pointer",
-          display: "flex", alignItems: "center", gap: 4, padding: "12px 0",
-        }}
-      >
-        ← How to&apos;s
-      </button>
+      <PageHeader title="How to's" onBack={onBack} />
 
       <p style={{
         fontSize: 13, color: "var(--muted-foreground, #888)",

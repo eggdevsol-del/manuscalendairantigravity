@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 
 export default function FunnelLoadingState() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="app-document min-h-[100dvh] bg-background flex items-center justify-center">
       <motion.div
         className="text-center"
         initial={{ opacity: 0 }}

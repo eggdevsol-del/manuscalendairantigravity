@@ -73,7 +73,7 @@ export default function CompleteProfile() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="app-document min-h-[100dvh] flex flex-col bg-background">
       <main className="flex-1 flex items-center justify-center px-4 py-8">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">

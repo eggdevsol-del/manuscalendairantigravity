@@ -48,7 +48,7 @@ export default function WaitlistPage() {
   const leave = trpc.waitlist.leave.useMutation({ onSuccess: refresh });
   const error = query.error || offer.error || accept.error || leave.error;
   return (
-    <main className="h-[calc(100dvh-5rem)] overflow-y-auto touch-pan-y bg-background pb-24">
+    <main className="app-document h-[calc(100dvh-5rem)] overflow-y-auto touch-pan-y bg-background pb-24">
       <PageHeader
         title={artist ? "Cancellation waitlist" : "Cancellation offers"}
         subtitle={

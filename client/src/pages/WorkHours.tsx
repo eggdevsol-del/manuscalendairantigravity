@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/ssot/PageHeader";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
   Button,
@@ -252,24 +253,10 @@ export default function WorkHours() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
-      <header className="mobile-header px-4 py-4 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setLocation("/settings")}
-            className="tap-target"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-2xl font-bold text-foreground">
-            Work Hours & Services
-          </h1>
-        </div>
-      </header>
+    <div className="app-viewport fixed inset-0 h-[100dvh] flex flex-col overflow-hidden">
+      <PageHeader title="Work Hours & Services" onBack={() => setLocation("/settings")} />
 
-      <main className="flex-1 px-4 py-4 overflow-y-auto space-y-6 pb-safe">
+      <main className="flex-1 min-h-0 w-full max-w-5xl mx-auto px-4 py-4 overflow-y-auto space-y-6 pb-28">
         {/* Work Hours */}
         <Card>
           <CardHeader>

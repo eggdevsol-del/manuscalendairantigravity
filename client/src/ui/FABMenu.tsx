@@ -111,8 +111,8 @@ export function FABMenu(props: FABMenuProps) {
               className={cn(
                 fab.panel,
                 props.panelClassName,
-                "overflow-y-auto max-h-[70vh] pointer-events-auto",
-                isIPad && "w-[440px] max-h-[60vh] p-6 gap-5"
+                "overflow-y-auto max-h-[70dvh] pointer-events-auto",
+                isIPad && "w-[440px] max-h-[60dvh] p-6 gap-5"
               )}
             >
               {props.items && props.items.length > 0

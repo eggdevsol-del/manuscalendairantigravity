@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/ssot/PageHeader";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
   Button,
@@ -153,22 +154,10 @@ export default function Clients() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
-      <header className="mobile-header px-4 py-4">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setLocation("/settings")}
-            className="tap-target"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-2xl font-bold text-foreground">Clients</h1>
-        </div>
-      </header>
+    <div className="app-viewport fixed inset-0 h-[100dvh] flex flex-col overflow-hidden">
+      <PageHeader title="Clients" onBack={() => setLocation("/settings")} />
 
-      <main className="flex-1 px-4 py-4 mobile-scroll overflow-y-auto space-y-4">
+      <main className="flex-1 min-h-0 w-full max-w-5xl mx-auto px-4 py-4 mobile-scroll overflow-y-auto space-y-4 pb-28">
         {/* Search and Add */}
         <div className="flex gap-2">
           <div className="flex-1 relative">

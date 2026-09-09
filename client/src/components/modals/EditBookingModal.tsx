@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -416,7 +417,7 @@ export function EditBookingModal({
         </div>
     );
 
-    return (
+    return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <>
@@ -432,7 +433,7 @@ export function EditBookingModal({
                         animate={{ y: 0 }}
                         exit={{ y: "100%" }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed bottom-0 left-0 right-0 bg-background border-t border-border/50 rounded-t-2xl z-[991] max-h-[90vh] flex flex-col pt-3 pb-8 px-4"
+                        className="fixed bottom-0 left-0 right-0 bg-background border-t border-border/50 rounded-t-2xl z-[991] max-h-[calc(100dvh-var(--app-safe-top)-16px)] flex flex-col pt-3 pb-8 px-4"
                     >
                         {/* Minimal Header */}
                         <div className="flex items-center justify-between mb-4">
@@ -490,5 +491,5 @@ export function EditBookingModal({
                 </>
             )}
         </AnimatePresence>
-    );
+    , document.body);
 }

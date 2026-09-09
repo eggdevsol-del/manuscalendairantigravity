@@ -61,9 +61,9 @@ export default function OnboardingTutorial({
   const Icon = screen.icon;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col">
+    <div className="app-viewport fixed inset-0 z-50 bg-background flex flex-col">
       {/* Skip button */}
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute right-4 z-10" style={{top: "calc(var(--app-safe-top) + 16px)"}}>
         <Button
           variant="ghost"
           size="icon"

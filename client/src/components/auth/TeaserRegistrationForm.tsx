@@ -120,7 +120,7 @@ export function TeaserRegistrationForm({
   };
 
   return (
-    <Card className="w-full max-w-md bg-background border-border shadow-xl rounded-[4px] overflow-hidden">
+    <Card className="w-full max-w-md bg-background border-border shadow-xl rounded-2xl overflow-hidden">
       <CardHeader className="text-center pt-8 pb-4">
         <CardTitle className="text-2xl font-bold text-foreground">
           Create your client account
@@ -141,7 +141,7 @@ export function TeaserRegistrationForm({
                 type="email"
                 value={email}
                 disabled
-                className="bg-muted border-border text-muted-foreground rounded-[4px]"
+                className="bg-muted border-border text-muted-foreground rounded-2xl"
               />
               {isCheckingEmail ? (
                 <span className="absolute right-3 top-2.5 text-xs text-muted-foreground animate-pulse">
@@ -175,7 +175,7 @@ export function TeaserRegistrationForm({
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="Min. 8 characters"
-                  className="pr-10 border-border focus:border-foreground focus:ring-foreground text-foreground placeholder:text-muted-foreground rounded-[4px]"
+                  className="pr-10 border-border focus:border-foreground focus:ring-foreground text-foreground placeholder:text-muted-foreground rounded-2xl"
                   required
                   minLength={8}
                 />

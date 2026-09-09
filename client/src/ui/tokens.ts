@@ -120,7 +120,7 @@ export const tokens = {
   sheetSecondary: {
     overlay: "fixed inset-0 z-[100] bg-background/80",
     content:
-      "fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col gap-0 overflow-hidden",
+      "app-viewport fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col gap-0 overflow-hidden bg-background",
     container:
       "flex-1 z-20 flex flex-col bg-popover rounded-t-[24px] overflow-hidden relative will-change-transform",
     glass:
@@ -214,28 +214,28 @@ export const tokens = {
   input: {
     base: "flex w-full min-w-0 border bg-card px-4 py-1 text-[15px] transition-[color,box-shadow] duration-[150ms] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm placeholder:text-disabled focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/15 aria-invalid:ring-destructive/20 aria-invalid:border-destructive file:text-foreground selection:bg-primary selection:text-primary-foreground",
     default: "h-[48px] rounded-[16px]",
-    hero: "h-[48px] rounded-[16px] px-5 text-[15px] border-border bg-card hover:bg-card/90 focus-visible:border-primary text-foreground",
+    hero: "h-[48px] rounded-[16px] px-5 text-[16px] border-border bg-card hover:bg-card/90 focus-visible:border-primary text-foreground",
     search: "h-[44px] rounded-full pl-10 pr-4 text-[14px] border-border bg-secondary/50 focus-visible:bg-card placeholder:text-muted-foreground",
   },
 
   // 5c. Auth Flow Components
   authFlow: {
-    iconContainer: "mx-auto w-16 h-16 rounded-[4px] bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(248,208,87,0.2)]",
-    genderButton: "h-14 flex items-center justify-center px-3 rounded-[4px] border-2 text-sm font-medium transition-all outline-none border-border bg-secondary/50 text-foreground hover:bg-secondary/50",
-    genderButtonActive: "h-14 flex items-center justify-center px-3 rounded-[4px] border-2 text-sm font-medium transition-all outline-none border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(248,208,87,0.15)]",
-    placesInput: "bg-secondary/50 border-border h-14 rounded-[4px] pl-3",
-    toggleContainer: "flex bg-secondary/50 p-1 rounded-[4px] mb-6 h-14 items-stretch",
-    toggleButton: "flex-1 flex items-center justify-center text-sm font-bold rounded-[4px] transition-all text-muted-foreground hover:text-foreground",
-    toggleButtonActive: "flex-1 flex items-center justify-center text-sm font-bold rounded-[4px] transition-all bg-background text-foreground shadow-sm",
+    iconContainer: "mx-auto w-16 h-16 rounded-[16px] bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(248,208,87,0.2)]",
+    genderButton: "h-14 flex items-center justify-center px-3 rounded-[16px] border-2 text-sm font-medium transition-all outline-none border-border bg-secondary/50 text-foreground hover:bg-secondary/50",
+    genderButtonActive: "h-14 flex items-center justify-center px-3 rounded-[16px] border-2 text-sm font-medium transition-all outline-none border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(248,208,87,0.15)]",
+    placesInput: "bg-secondary/50 border-border h-14 rounded-[16px] pl-3",
+    toggleContainer: "flex bg-secondary/50 p-1 rounded-[16px] mb-6 h-14 items-stretch",
+    toggleButton: "flex-1 flex items-center justify-center text-sm font-bold rounded-[16px] transition-all text-muted-foreground hover:text-foreground",
+    toggleButtonActive: "flex-1 flex items-center justify-center text-sm font-bold rounded-[16px] transition-all bg-background text-foreground shadow-sm",
   },
 
   // 6. Typography — CalendAIr DS v3.0
   header: {
-    pageTitle: "text-[28px] font-bold leading-[1.2] text-foreground tracking-tight",
+    pageTitle: "text-[22px] sm:text-[28px] font-bold leading-[1.2] text-foreground tracking-tight",
     pageSubtitle: "ml-2 text-[14px] font-normal text-muted-foreground",
     sectionTitle:
       "text-[11px] font-[500] text-muted-foreground tracking-[0.08em] uppercase",
-    sheetTitle: "text-[28px] font-bold leading-[1.2] text-foreground tracking-tight",
+    sheetTitle: "text-[20px] sm:text-[24px] font-bold leading-[1.2] text-foreground tracking-tight",
     sheetSubtitle: "text-[14px] text-muted-foreground mt-1",
     contextTitle: "text-[28px] font-bold text-foreground tracking-tight",
     contextSubtitle: "text-muted-foreground text-[14px] font-normal mt-1",
@@ -251,7 +251,7 @@ export const tokens = {
 
   // 8. Page Shell
   shell: {
-    base: "fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden bg-background",
+    base: "app-viewport fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden bg-background",
     header: "px-4 py-4 z-10 shrink-0 flex items-center bg-[var(--color-bg-header)]",
   },
 
@@ -701,37 +701,37 @@ export const tokens = {
 // ═══════════════════════════════════════════════════════════
 
 export const surfaces = {
-  pageBg: "#111112",
-  card: "#1a1a1b",
-  cardAlt: "#131314",
-  cardHighlight: "#1A1A1E",
-  row: "#1a1a1b",
-  rowHover: "#212123",
-  quietRow: "rgba(255,255,255,.02)",
-  sheet: "#1c1c1e",
-  sheetPanel: "#1B1B1B",
-  menu: "#232325",
-  avatarFallback: "#2a2a2c",
-  factPanel: "rgba(255,255,255,.03)",
+  pageBg: "var(--background)",
+  card: "var(--card)",
+  cardAlt: "var(--card)",
+  cardHighlight: "var(--secondary)",
+  row: "var(--card)",
+  rowHover: "var(--secondary)",
+  quietRow: "var(--secondary)",
+  sheet: "var(--popover)",
+  sheetPanel: "var(--popover)",
+  menu: "var(--popover)",
+  avatarFallback: "var(--secondary)",
+  factPanel: "var(--secondary)",
   scrim: "rgba(0,0,0,.62)",
-  segmentPill: "rgba(255,255,255,.1)",
+  segmentPill: "var(--card)",
 } as const;
 
 export const borders = {
-  hairline: "rgba(255,255,255,.06)",
-  hairlineLight: "rgba(255,255,255,.08)",
-  subtle: "rgba(255,255,255,.12)",
+  hairline: "var(--border)",
+  hairlineLight: "var(--border)",
+  subtle: "var(--border)",
   emphasisAmber: "rgba(242,202,92,.3)",
   amberBorder40: "rgba(242,202,92,.4)",
   progressTrack: "rgba(255,255,255,.09)",
 } as const;
 
 export const colors = {
-  textPrimary: "#f5f5f4",
-  textSecondary: "rgba(255,255,255,.62)",
-  textTertiary: "rgba(255,255,255,.58)",
-  mutedGrey: "#7A7A7A",
-  green: "#4ade80",
+  textPrimary: "var(--foreground)",
+  textSecondary: "var(--muted-foreground)",
+  textTertiary: "var(--muted-foreground)",
+  mutedGrey: "var(--muted-foreground)",
+  green: "var(--color-success)",
   amber: "#f2ca5c",
   amberGold: "#F8D057",
   amberHover: "#f6d472",
@@ -800,3 +800,11 @@ export const DType = typeScale;
 export const DSpace = space;
 export const DRadius = radii;
 
+
+/** Payment and supplier surfaces share the dashboard palette and app theme. */
+export const commerceTokens = {
+  bg: 'var(--background)', card: 'var(--card)', cardBorder: 'var(--border)',
+  textPrimary: 'var(--foreground)', textSecondary: 'var(--muted-foreground)',
+  textTertiary: 'var(--muted-foreground)', green: 'var(--color-success)',
+  amber: 'var(--primary)', amberOnColor: 'var(--primary-foreground)', track: 'var(--border)',
+} as const;

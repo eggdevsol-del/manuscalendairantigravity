@@ -215,7 +215,7 @@ export function SendPromotionSheet({
           </div>
 
           {/* Client List */}
-          <div className="space-y-2 max-h-[40vh] overflow-y-auto">
+          <div className="space-y-2 max-h-[40dvh] overflow-y-auto">
             {loadingClients ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />

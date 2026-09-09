@@ -343,11 +343,11 @@ export function MoneyScreen({ onBack }: MoneyScreenProps) {
 
   return (
     <div style={{
-      minHeight: "100vh",
+      minHeight: 0, height: "100%", overflowY: "auto",
       background: DT.pageBg,
     }}>
       {/* Header */}
-      <div style={{
+      <div className="app-safe-header" style={{
         display: "flex",
         alignItems: "center",
         gap: DSpace[3],

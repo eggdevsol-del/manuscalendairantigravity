@@ -57,7 +57,7 @@ export function NativeConfirmToast({
 
                     {/* Notification banner */}
                     <motion.div
-                        className="fixed top-3 left-3 right-3 z-[9999] mx-auto max-w-[420px]"
+                        className="fixed top-[calc(var(--app-safe-top)+12px)] left-[max(12px,var(--app-safe-left))] right-[max(12px,var(--app-safe-right))] z-[9999] mx-auto max-w-[420px]"
                         initial={{ y: -120, opacity: 0, scale: 0.92 }}
                         animate={{ y: 0, opacity: 1, scale: 1 }}
                         exit={{ y: -120, opacity: 0, scale: 0.92 }}

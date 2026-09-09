@@ -25,7 +25,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/10">
+    <div className="app-document min-h-[100dvh] flex flex-col bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/10">
       {/* Header */}
       <header className="mobile-header px-4 py-4">
         <div className="flex items-center justify-between">

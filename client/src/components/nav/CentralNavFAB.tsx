@@ -53,7 +53,7 @@ const isMenuView = (view: ClientView) =>
 /** Panel wrapper for client FAB content views */
 function ClientPanel({ onBack, title, children }: { onBack: () => void; title: string; children: React.ReactNode }) {
   return (
-    <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
+    <div className="w-full h-[85dvh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0">
         <button
           onClick={onBack}
@@ -288,13 +288,13 @@ export function CentralNavFAB({ className }: CentralNavFABProps) {
       >
         {/* ── Client settings panels ──────────────────────────────────── */}
         {isClient && clientView === "profile" && (
-          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
+          <div className="w-full h-[85dvh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <ProfileSettings onBack={() => handleClientView("settings-menu")} />
           </div>
         )}
 
         {isClient && clientView === "policies" && panelReady && (
-          <div className="w-full h-[85vh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
+          <div className="w-full h-[85dvh] max-h-[calc(100dvh-130px)] relative flex flex-col overflow-hidden">
             <PolicySettings onBack={() => handleClientView("settings-menu")} />
           </div>
         )}

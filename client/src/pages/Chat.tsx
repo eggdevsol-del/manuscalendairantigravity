@@ -17,7 +17,7 @@ export default function Chat() {
       </div>
 
       {/* iPad/Desktop: Split View */}
-      <div className="hidden md:flex h-full overflow-hidden pt-6">
+      <div className="hidden md:flex h-full overflow-hidden">
         {/* Left Panel: List (50%) */}
         <div className="w-1/2 border-r border-border flex flex-col h-full">
           <PageHeader title="Messages" className="bg-transparent" />

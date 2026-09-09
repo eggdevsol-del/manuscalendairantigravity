@@ -98,7 +98,7 @@ export function RefundConfirmationFAB({
         onClick={handleRefund}
         disabled={isRefunding}
         className={cn(
-          "w-full flex items-center justify-center py-3 rounded-[4px] text-xs font-bold uppercase tracking-wider transition-all active:scale-95",
+          "w-full flex items-center justify-center py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95",
           "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)] border border-[var(--color-status-danger-border)] hover:bg-[var(--color-status-danger-bg)] disabled:opacity-50"
         )}
       >

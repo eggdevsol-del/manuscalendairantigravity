@@ -152,7 +152,7 @@ export function ConversationsList({
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Scrollable Content */}
         <div className="flex-1 w-full h-full px-4 pt-4 overflow-y-auto mobile-scroll touch-pan-y will-change-scroll transform-gpu">
-          <div className="pb-32 max-w-lg mx-auto space-y-4 min-h-[50vh]">
+          <div className="pb-32 max-w-lg mx-auto space-y-4 min-h-[50dvh]">
             {filteredRequests.length > 0 ||
             (filteredConversations && filteredConversations.length > 0) ? (
               <div className="space-y-1">

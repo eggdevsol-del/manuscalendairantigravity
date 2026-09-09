@@ -94,7 +94,7 @@ export function PaymentLinkPage({
           paymentMethod: method,
         });
   return (
-    <main className="min-h-[100dvh] bg-background text-foreground px-5 py-8 pb-12">
+    <main className="app-document min-h-[100dvh] bg-background text-foreground px-5 py-8 pb-12">
       <div className="max-w-lg mx-auto">
         <Link
           href="/login"

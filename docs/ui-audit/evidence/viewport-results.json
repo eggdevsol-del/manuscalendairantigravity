@@ -1,0 +1,2702 @@
+[
+  {
+    "device": "iphone-portrait",
+    "theme": "light",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 60,
+        "y": 88.25,
+        "right": 240.640625,
+        "bottom": 170.75
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 854,
+      "width": 408,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "light",
+    "kind": "document",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 60,
+        "y": 78,
+        "right": 240.640625,
+        "bottom": 160.5
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 0,
+      "y": 769.5,
+      "width": 440,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "light",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 16,
+        "y": 113.320068359375,
+        "right": 372,
+        "bottom": 161.320068359375
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 781.390625,
+      "width": 408,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "light",
+    "kind": "half",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 98.60372161865234,
+        "right": 416,
+        "bottom": 146.60372924804688
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 838,
+      "width": 408,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "light",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 25,
+        "y": 172.37142944335938,
+        "right": 380,
+        "bottom": 228.37142944335938
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 25,
+      "y": 853.78125,
+      "width": 391,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "light",
+    "kind": "side",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 135,
+        "y": 90,
+        "right": 380,
+        "bottom": 174
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 135,
+      "y": 854,
+      "width": 281,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "light",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 37,
+        "y": 99,
+        "right": 363,
+        "bottom": 155
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 37,
+      "y": 837,
+      "width": 366,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "dark",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 60,
+        "y": 88.25,
+        "right": 240.640625,
+        "bottom": 170.75
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 854,
+      "width": 408,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "dark",
+    "kind": "document",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 60,
+        "y": 78,
+        "right": 240.640625,
+        "bottom": 160.5
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 0,
+      "y": 769.5,
+      "width": 440,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "dark",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 16,
+        "y": 120.039794921875,
+        "right": 372,
+        "bottom": 168.039794921875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 781.390625,
+      "width": 408,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "dark",
+    "kind": "half",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 98.64331817626953,
+        "right": 416,
+        "bottom": 146.643310546875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 838,
+      "width": 408,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "dark",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 25,
+        "y": 172.27151489257812,
+        "right": 380,
+        "bottom": 228.27151489257812
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 25,
+      "y": 853.78125,
+      "width": 391,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "dark",
+    "kind": "side",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 164.36456298828125,
+        "y": 90,
+        "right": 409.36456298828125,
+        "bottom": 174
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 135,
+      "y": 854,
+      "width": 281,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "dark",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 37,
+        "y": 99,
+        "right": 363,
+        "bottom": 155
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 37,
+      "y": 837,
+      "width": 366,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "light",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 130,
+        "y": 16,
+        "right": 528.734375,
+        "bottom": 86
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 78,
+      "y": 351,
+      "width": 800,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "light",
+    "kind": "document",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 130,
+        "y": 16,
+        "right": 528.734375,
+        "bottom": 86
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 62,
+      "y": 267,
+      "width": 832,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "light",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 80.46875,
+        "y": 51.40045166015625,
+        "right": 707.28125,
+        "bottom": 80.19732666015625
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 222,
+      "y": 260,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "light",
+    "kind": "half",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 182,
+        "y": 38.379005432128906,
+        "right": 774,
+        "bottom": 95.9727554321289
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 174,
+      "y": 334.59375,
+      "width": 608,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "light",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 245,
+        "y": 78.13064575195312,
+        "right": 676,
+        "bottom": 134.13064575195312
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 245,
+      "y": 351.296875,
+      "width": 467,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "light",
+    "kind": "side",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 693.169677734375,
+        "y": 28,
+        "right": 868.169677734375,
+        "bottom": 112
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 659,
+      "y": 351,
+      "width": 211,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "light",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 179,
+        "y": 37,
+        "right": 737,
+        "bottom": 65
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 179,
+      "y": 334,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "dark",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 130,
+        "y": 16,
+        "right": 528.734375,
+        "bottom": 86
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 78,
+      "y": 351,
+      "width": 800,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "dark",
+    "kind": "document",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 130,
+        "y": 16,
+        "right": 528.734375,
+        "bottom": 86
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 62,
+      "y": 267,
+      "width": 832,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "dark",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 79.8125,
+        "y": 51.37406921386719,
+        "right": 706.625,
+        "bottom": 80.17094421386719
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 222,
+      "y": 260,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "dark",
+    "kind": "half",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 182,
+        "y": 38.466434478759766,
+        "right": 774,
+        "bottom": 96.0601806640625
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 174,
+      "y": 334.59375,
+      "width": 608,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "dark",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 245,
+        "y": 78.0782470703125,
+        "right": 676,
+        "bottom": 134.0782470703125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 245,
+      "y": 351.296875,
+      "width": 467,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "dark",
+    "kind": "side",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 693.454833984375,
+        "y": 28,
+        "right": 868.454833984375,
+        "bottom": 112
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 659,
+      "y": 351,
+      "width": 211,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "dark",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 179,
+        "y": 37,
+        "right": 737,
+        "bottom": 65
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 179,
+      "y": 334,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "light",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 40,
+        "right": 459.765625,
+        "bottom": 110
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 1092,
+      "width": 788,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "light",
+    "kind": "document",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 40,
+        "right": 459.765625,
+        "bottom": 110
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 0,
+      "y": 1008,
+      "width": 820,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "light",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 104.7679443359375,
+        "right": 650.8125,
+        "bottom": 133.5648193359375
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 154,
+      "y": 1002,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "light",
+    "kind": "half",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 114,
+        "y": 59.813350677490234,
+        "right": 706,
+        "bottom": 117.4071044921875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 106,
+      "y": 1075.59375,
+      "width": 608,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "light",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 134.234375,
+        "y": 166.69134521484375,
+        "right": 650.765625,
+        "bottom": 194.69134521484375
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 115,
+      "y": 1092.109375,
+      "width": 591,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "light",
+    "kind": "side",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 495.21710205078125,
+        "y": 52,
+        "right": 794.2171020507812,
+        "bottom": 108
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 461,
+      "y": 1092,
+      "width": 335,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "light",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 111,
+        "y": 61,
+        "right": 669,
+        "bottom": 89
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 111,
+      "y": 1075,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "dark",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 40,
+        "right": 459.765625,
+        "bottom": 110
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 1092,
+      "width": 788,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "dark",
+    "kind": "document",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 40,
+        "right": 459.765625,
+        "bottom": 110
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 0,
+      "y": 1008,
+      "width": 820,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "dark",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 104.704345703125,
+        "right": 650.8125,
+        "bottom": 133.501220703125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 154,
+      "y": 1002,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "dark",
+    "kind": "half",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 114,
+        "y": 59.94330978393555,
+        "right": 706,
+        "bottom": 117.53706359863281
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 106,
+      "y": 1075.59375,
+      "width": 608,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "dark",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 134.234375,
+        "y": 155.3359375,
+        "right": 650.765625,
+        "bottom": 183.3359375
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 115,
+      "y": 1092.109375,
+      "width": 591,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "dark",
+    "kind": "side",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 495.21710205078125,
+        "y": 52,
+        "right": 794.2171020507812,
+        "bottom": 108
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 461,
+      "y": 1092,
+      "width": 335,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "dark",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 111,
+        "y": 61,
+        "right": 669,
+        "bottom": 89
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 111,
+      "y": 1075,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "light",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 40,
+        "right": 604.53125,
+        "bottom": 75
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 732,
+      "width": 1148,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "light",
+    "kind": "document",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 40,
+        "right": 604.53125,
+        "bottom": 75
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 0,
+      "y": 648,
+      "width": 1180,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "light",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 93.80453491210938,
+        "right": 650.8125,
+        "bottom": 122.60140991210938
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 334,
+      "y": 642,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "light",
+    "kind": "half",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 294,
+        "y": 61.2721061706543,
+        "right": 886,
+        "bottom": 118.86585998535156
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 286,
+      "y": 715.59375,
+      "width": 608,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "light",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 314.234375,
+        "y": 134.31863403320312,
+        "right": 830.765625,
+        "bottom": 162.31863403320312
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 295,
+      "y": 731.71875,
+      "width": 591,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "light",
+    "kind": "side",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 854.7450561523438,
+        "y": 52,
+        "right": 1153.7451171875,
+        "bottom": 108
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 821,
+      "y": 732,
+      "width": 335,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "light",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 291,
+        "y": 61,
+        "right": 849,
+        "bottom": 89
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 291,
+      "y": 715,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "dark",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 40,
+        "right": 604.53125,
+        "bottom": 75
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 732,
+      "width": 1148,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "dark",
+    "kind": "document",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 40,
+        "right": 604.53125,
+        "bottom": 75
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 0,
+      "y": 648,
+      "width": 1180,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "dark",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 93.50537109375,
+        "right": 650.8125,
+        "bottom": 122.30224609375
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 334,
+      "y": 642,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "dark",
+    "kind": "half",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 294,
+        "y": 61.09426498413086,
+        "right": 886,
+        "bottom": 118.68801879882812
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 286,
+      "y": 715.59375,
+      "width": 608,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "dark",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 314.234375,
+        "y": 134.22222900390625,
+        "right": 830.765625,
+        "bottom": 162.22222900390625
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 295,
+      "y": 731.71875,
+      "width": 591,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "dark",
+    "kind": "side",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 855.169677734375,
+        "y": 52,
+        "right": 1154.169677734375,
+        "bottom": 108
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 821,
+      "y": 732,
+      "width": 335,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "dark",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 291,
+        "y": 61,
+        "right": 849,
+        "bottom": 89
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 291,
+      "y": 715,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "light",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 40,
+        "right": 578.09375,
+        "bottom": 110
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 1278,
+      "width": 992,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "light",
+    "kind": "document",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 40,
+        "right": 578.09375,
+        "bottom": 110
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 0,
+      "y": 1194,
+      "width": 1024,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "light",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 130.805419921875,
+        "right": 650.8125,
+        "bottom": 159.602294921875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 256,
+      "y": 1187.890625,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "light",
+    "kind": "half",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 216,
+        "y": 59.281429290771484,
+        "right": 808,
+        "bottom": 116.87518310546875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 208,
+      "y": 1261.59375,
+      "width": 608,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "light",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 236.234375,
+        "y": 183.79632568359375,
+        "right": 752.765625,
+        "bottom": 211.79632568359375
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 217,
+      "y": 1278.3125,
+      "width": 591,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "light",
+    "kind": "side",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 695.5233154296875,
+        "y": 52,
+        "right": 994.5233154296875,
+        "bottom": 108
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 665,
+      "y": 1278,
+      "width": 335,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "light",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 213,
+        "y": 61,
+        "right": 771,
+        "bottom": 89
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 213,
+      "y": 1261,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "dark",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 40,
+        "right": 578.09375,
+        "bottom": 110
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 1278,
+      "width": 992,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "dark",
+    "kind": "document",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 40,
+        "right": 578.09375,
+        "bottom": 110
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 0,
+      "y": 1194,
+      "width": 1024,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "dark",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 123.28021240234375,
+        "right": 650.8125,
+        "bottom": 152.07708740234375
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 256,
+      "y": 1187.890625,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "dark",
+    "kind": "half",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 216,
+        "y": 58.578514099121094,
+        "right": 808,
+        "bottom": 116.1722640991211
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 208,
+      "y": 1261.59375,
+      "width": 608,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "dark",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 236.234375,
+        "y": 183.4683837890625,
+        "right": 752.765625,
+        "bottom": 211.4683837890625
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 217,
+      "y": 1278.3125,
+      "width": 591,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "dark",
+    "kind": "side",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 695.435791015625,
+        "y": 52,
+        "right": 994.435791015625,
+        "bottom": 108
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 665,
+      "y": 1278,
+      "width": 335,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "dark",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 213,
+        "y": 61,
+        "right": 771,
+        "bottom": 89
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 213,
+      "y": 1261,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "light",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 60,
+        "y": 50.5,
+        "right": 202.953125,
+        "bottom": 160.5
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 936,
+      "width": 343,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "light",
+    "kind": "document",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 60,
+        "y": 40,
+        "right": 202.953125,
+        "bottom": 150
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 0,
+      "y": 852,
+      "width": 375,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "light",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 16,
+        "y": 87.8262939453125,
+        "right": 307,
+        "bottom": 135.8262939453125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 846.59375,
+      "width": 343,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "light",
+    "kind": "half",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 60.386260986328125,
+        "right": 351,
+        "bottom": 108.38626098632812
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 920,
+      "width": 343,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "light",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 25,
+        "y": 142.89794921875,
+        "right": 315,
+        "bottom": 198.89794921875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 25,
+      "y": 935.90625,
+      "width": 326,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "light",
+    "kind": "side",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 143.84609985351562,
+        "y": 52,
+        "right": 340.0960998535156,
+        "bottom": 136
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 118.75,
+      "y": 936,
+      "width": 232.25,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "light",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 37,
+        "y": 61,
+        "right": 298,
+        "bottom": 117
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 37,
+      "y": 919,
+      "width": 301,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "dark",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 60,
+        "y": 50.5,
+        "right": 202.953125,
+        "bottom": 160.5
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 936,
+      "width": 343,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "dark",
+    "kind": "document",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 60,
+        "y": 40,
+        "right": 202.953125,
+        "bottom": 150
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 0,
+      "y": 852,
+      "width": 375,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "dark",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 16,
+        "y": 88.0919189453125,
+        "right": 307,
+        "bottom": 136.0919189453125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 846.59375,
+      "width": 343,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "dark",
+    "kind": "half",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 60.19369125366211,
+        "right": 351,
+        "bottom": 108.19369506835938
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 920,
+      "width": 343,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "dark",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 25,
+        "y": 152.5875244140625,
+        "right": 315,
+        "bottom": 208.5875244140625
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 25,
+      "y": 935.90625,
+      "width": 326,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "dark",
+    "kind": "side",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 143.81134033203125,
+        "y": 52,
+        "right": 340.06134033203125,
+        "bottom": 136
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 118.75,
+      "y": 936,
+      "width": 232.25,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "dark",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 37,
+        "y": 61,
+        "right": 298,
+        "bottom": 117
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 37,
+      "y": 919,
+      "width": 301,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "light",
+    "kind": "action",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 231.81234741210938,
+        "right": 416,
+        "bottom": 287.8123474121094
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 24,
+      "y": 849.40625,
+      "width": 392,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "light",
+    "kind": "bottom",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 60,
+        "y": 118.0552978515625,
+        "right": 240.640625,
+        "bottom": 200.5552978515625
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 861.5,
+      "width": 408,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "dark",
+    "kind": "action",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 239.81405639648438,
+        "right": 416,
+        "bottom": 295.8140563964844
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 24,
+      "y": 849.40625,
+      "width": 392,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "dark",
+    "kind": "bottom",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 60,
+        "y": 111.31317138671875,
+        "right": 240.640625,
+        "bottom": 193.81317138671875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 862.5,
+      "width": 408,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "light",
+    "kind": "action",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 238.453125,
+        "y": 123.37225341796875,
+        "right": 717.546875,
+        "bottom": 179.37225341796875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 244,
+      "y": 345,
+      "width": 468,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "light",
+    "kind": "bottom",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 125.0625,
+        "y": 36.77178955078125,
+        "right": 529.515625,
+        "bottom": 106.77178955078125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 78,
+      "y": 353,
+      "width": 800,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "dark",
+    "kind": "action",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 238.390625,
+        "y": 120.02815246582031,
+        "right": 717.609375,
+        "bottom": 176.0281524658203
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 244,
+      "y": 345,
+      "width": 468,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "dark",
+    "kind": "bottom",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 124.390625,
+        "y": 34.192138671875,
+        "right": 529.625,
+        "bottom": 104.192138671875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 78,
+      "y": 353,
+      "width": 800,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "light",
+    "kind": "action",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 114,
+        "y": 290.37432861328125,
+        "right": 706,
+        "bottom": 318.37432861328125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 114,
+      "y": 1086,
+      "width": 592,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "light",
+    "kind": "bottom",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 93.3447265625,
+        "right": 459.765625,
+        "bottom": 163.3447265625
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 1096,
+      "width": 788,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "dark",
+    "kind": "action",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 114,
+        "y": 290.37432861328125,
+        "right": 706,
+        "bottom": 318.37432861328125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 114,
+      "y": 1086,
+      "width": 592,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "dark",
+    "kind": "bottom",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 93.6094970703125,
+        "right": 459.765625,
+        "bottom": 163.6094970703125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 1096,
+      "width": 788,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "light",
+    "kind": "action",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 294,
+        "y": 209.02154541015625,
+        "right": 886,
+        "bottom": 237.02154541015625
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 294,
+      "y": 726,
+      "width": 592,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "light",
+    "kind": "bottom",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 76.43814086914062,
+        "right": 604.53125,
+        "bottom": 111.43814086914062
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 736,
+      "width": 1148,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "dark",
+    "kind": "action",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 294,
+        "y": 202.16482543945312,
+        "right": 886,
+        "bottom": 230.16482543945312
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 294,
+      "y": 726,
+      "width": 592,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "dark",
+    "kind": "bottom",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 71.17782592773438,
+        "right": 604.53125,
+        "bottom": 106.17782592773438
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 736,
+      "width": 1148,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "light",
+    "kind": "action",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 216,
+        "y": 332.94268798828125,
+        "right": 808,
+        "bottom": 360.94268798828125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 216,
+      "y": 1271.90625,
+      "width": 592,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "light",
+    "kind": "bottom",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 102.56512451171875,
+        "right": 578.09375,
+        "bottom": 172.56512451171875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 1282,
+      "width": 992,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "dark",
+    "kind": "action",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 216,
+        "y": 332.5113525390625,
+        "right": 808,
+        "bottom": 360.5113525390625
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 216,
+      "y": 1271.90625,
+      "width": 592,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "dark",
+    "kind": "bottom",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 68,
+        "y": 93.90155029296875,
+        "right": 578.09375,
+        "bottom": 163.90155029296875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 1282,
+      "width": 992,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "light",
+    "kind": "action",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 246.49737548828125,
+        "right": 351,
+        "bottom": 302.49737548828125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 24,
+      "y": 929.609375,
+      "width": 327,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "light",
+    "kind": "bottom",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 60,
+        "y": 80.2987060546875,
+        "right": 202.953125,
+        "bottom": 190.2987060546875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 940,
+      "width": 343,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "dark",
+    "kind": "action",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 238.7020263671875,
+        "right": 351,
+        "bottom": 294.7020263671875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 24,
+      "y": 929.609375,
+      "width": 327,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "dark",
+    "kind": "bottom",
+    "boxes": [
+      {
+        "text": "A very long studio and artist business name",
+        "x": 60,
+        "y": 72.2581787109375,
+        "right": 202.953125,
+        "bottom": 182.2581787109375
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 939,
+      "width": 343,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  }
+]

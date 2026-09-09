@@ -498,7 +498,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                 onClose={() => setShowDialog(false)}
                 title={editingTemplate ? "Edit Template" : "New Template"}
                 description="Create automated notification messages for clients"
-                className="max-w-md max-h-[90vh] overflow-y-auto"
+                className="max-w-md max-h-[90dvh] overflow-y-auto"
                 overlayName="Notification Template"
                 overlayId="notifications.template_editor"
                 footer={
@@ -621,7 +621,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                 onClose={() => setPushDialog({ isOpen: false, template: null })}
                 title="Send Test Push"
                 description="Select a client to send this notification to"
-                className="max-w-md max-h-[80vh] overflow-y-auto"
+                className="max-w-md max-h-[80dvh] overflow-y-auto"
                 overlayName="Push Target Selection"
                 overlayId="notifications.push_target"
             >

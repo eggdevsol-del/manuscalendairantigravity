@@ -470,8 +470,7 @@ export function ChatInterface({
       {/* Fixed Header & Consultation Pin */}
       <div className="flex-none z-50 bg-transparent">
         <header
-          className="sticky top-0 z-50 px-4 py-3 pb-4 bg-transparent"
-          style={{ paddingTop: "env(safe-area-inset-top)", transform: 'translate(1px, 9px)' }}
+          className="app-safe-header sticky top-0 z-50 px-4 py-3 pb-4 bg-background"
         >
           <div className="flex items-center justify-between">
             {/* Left Group: Back + Avatar + Name */}

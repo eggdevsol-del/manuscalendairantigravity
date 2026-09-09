@@ -1,3 +1,5 @@
+import { createPortal } from "react-dom";
+import { commerceTokens as DT } from "@/ui/tokens";
 /**
  * SupplierCheckoutSheet — Multi-step checkout for supplier orders.
  *
@@ -28,18 +30,7 @@ import { Link } from "wouter";
 
 // ── Design Tokens ────────────────────────────────────────────
 
-const DT = {
-  bg: "#0d0d0e",
-  card: "#131314",
-  cardBorder: "rgba(255,255,255,.08)",
-  textPrimary: "rgba(255,255,255,.95)",
-  textSecondary: "rgba(255,255,255,.55)",
-  textTertiary: "rgba(255,255,255,.36)",
-  green: "#34c759",
-  amber: "#f2ca5c",
-  amberOnColor: "#1a1a00",
-  track: "rgba(255,255,255,.08)",
-};
+// Canonical palette shared with the dashboard and booking review.
 
 function formatCents(cents: number, currency: string = "AUD"): string {
   const abs = Math.abs(cents);
@@ -94,7 +85,7 @@ function SuccessScreen({
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCountdown((prev) => {
+      setCountdown(prev => {
         if (prev <= 1) {
           clearInterval(timer);
           onClose();
@@ -152,7 +143,8 @@ function SuccessScreen({
           marginBottom: 4,
         }}
       >
-        Your payment for <strong>{supplierName}</strong> is confirmed. Supplier handoff is being processed.
+        Your payment for <strong>{supplierName}</strong> is confirmed. Supplier
+        handoff is being processed.
       </div>
       <div
         style={{
@@ -210,7 +202,9 @@ export function SupplierCheckoutSheet({
     supplierId,
   });
 
-  const [selectedShippingRate, setSelectedShippingRate] = useState<string | undefined>();
+  const [selectedShippingRate, setSelectedShippingRate] = useState<
+    string | undefined
+  >();
 
   // Auto-select first shipping rate
   useEffect(() => {
@@ -219,16 +213,23 @@ export function SupplierCheckoutSheet({
     }
   }, [shippingData]);
 
-  const checkoutMutation = trpc.supplierOrders.createSupplierCheckout.useMutation();
+  const checkoutMutation =
+    trpc.supplierOrders.createSupplierCheckout.useMutation();
   const confirmation = trpc.supplierOrders.getSupplierOrderStatus.useQuery(
-    {orderId:orderId || 0},
-    {enabled:step==='confirming' && !!orderId,refetchInterval:step==='confirming'?2000:false}
+    { orderId: orderId || 0 },
+    {
+      enabled: step === "confirming" && !!orderId,
+      refetchInterval: step === "confirming" ? 2000 : false,
+    }
   );
-  useEffect(()=>{if(step==='confirming' && confirmation.data?.success)setStep('success');},[step,confirmation.data?.success]);
+  useEffect(() => {
+    if (step === "confirming" && confirmation.data?.success) setStep("success");
+  }, [step, confirmation.data?.success]);
 
   // Local subtotal (from cart items — before server calculation)
   const localSubtotal = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.priceCents * item.quantity, 0),
+    () =>
+      cartItems.reduce((sum, item) => sum + item.priceCents * item.quantity, 0),
     [cartItems]
   );
 
@@ -238,7 +239,7 @@ export function SupplierCheckoutSheet({
 
       const res = await checkoutMutation.mutateAsync({
         supplierId,
-        items: cartItems.map((item) => ({
+        items: cartItems.map(item => ({
           productId: item.productId,
           variantId: item.variantId,
           quantity: item.quantity,
@@ -267,7 +268,9 @@ export function SupplierCheckoutSheet({
     }
   };
 
-  const handlePaymentComplete = () => { if(orderId)setStep('confirming'); };
+  const handlePaymentComplete = () => {
+    if (orderId) setStep("confirming");
+  };
 
   const handleClose = () => {
     if (step === "success") {
@@ -278,7 +281,7 @@ export function SupplierCheckoutSheet({
 
   const currency = checkoutData?.currency || "AUD";
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
@@ -294,7 +297,7 @@ export function SupplierCheckoutSheet({
           alignItems: "flex-end",
           justifyContent: "center",
         }}
-        onClick={(e) => {
+        onClick={e => {
           if (e.target === e.currentTarget && step !== "payment") handleClose();
         }}
       >
@@ -305,8 +308,10 @@ export function SupplierCheckoutSheet({
           transition={{ type: "spring", damping: 28, stiffness: 300 }}
           style={{
             width: "100%",
-            maxWidth: 480,
-            maxHeight: "90vh",
+            maxWidth:
+              "min(480px, calc(100vw - var(--app-safe-left) - var(--app-safe-right)))",
+            maxHeight: "calc(100dvh - var(--app-safe-top) - 16px)",
+            paddingBottom: "var(--app-safe-bottom)",
             background: DT.bg,
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
@@ -353,8 +358,10 @@ export function SupplierCheckoutSheet({
               {step === "review"
                 ? "Review Order"
                 : step === "payment"
-                ? "Payment"
-                : step === "confirming" ? "Confirming payment" : "Complete"}
+                  ? "Payment"
+                  : step === "confirming"
+                    ? "Confirming payment"
+                    : "Complete"}
             </span>
             <button
               onClick={handleClose}
@@ -371,7 +378,15 @@ export function SupplierCheckoutSheet({
 
           {/* Content */}
           {step === "review" && (
-            <div style={{ padding: "20px", paddingBottom: 0, flex: 1, overflowY: "auto", minHeight: 0 }}>
+            <div
+              style={{
+                padding: "20px",
+                paddingBottom: 0,
+                flex: 1,
+                overflowY: "auto",
+                minHeight: 0,
+              }}
+            >
               {/* Supplier name */}
               <div
                 style={{
@@ -488,7 +503,7 @@ export function SupplierCheckoutSheet({
                   >
                     <Truck size={12} /> Shipping
                   </div>
-                  {shippingData.rates.map((rate) => (
+                  {shippingData.rates.map(rate => (
                     <label
                       key={rate.name}
                       style={{
@@ -499,7 +514,13 @@ export function SupplierCheckoutSheet({
                         cursor: "pointer",
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
                         <input
                           type="radio"
                           name="shipping"
@@ -662,7 +683,16 @@ export function SupplierCheckoutSheet({
           )}
 
           {step === "payment" && clientSecret && (
-            <div style={{ padding: "20px", paddingBottom: 120, flex: 1, overflowY: "auto", minHeight: 0, WebkitOverflowScrolling: "touch" }}>
+            <div
+              style={{
+                padding: "20px",
+                paddingBottom: 120,
+                flex: 1,
+                overflowY: "auto",
+                minHeight: 0,
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
               {/* Show final totals from server */}
               {checkoutData && (
                 <div
@@ -691,7 +721,10 @@ export function SupplierCheckoutSheet({
                         fontWeight: 600,
                       }}
                     >
-                      {formatCents(checkoutData.subtotalCents, checkoutData.currency)}
+                      {formatCents(
+                        checkoutData.subtotalCents,
+                        checkoutData.currency
+                      )}
                     </span>
                   </div>
                   <div
@@ -711,7 +744,10 @@ export function SupplierCheckoutSheet({
                         fontWeight: 600,
                       }}
                     >
-                      {formatCents(checkoutData.platformFeeCents, checkoutData.currency)}
+                      {formatCents(
+                        checkoutData.platformFeeCents,
+                        checkoutData.currency
+                      )}
                     </span>
                   </div>
                   {checkoutData.shippingCents > 0 && (
@@ -732,7 +768,10 @@ export function SupplierCheckoutSheet({
                           fontWeight: 600,
                         }}
                       >
-                        {formatCents(checkoutData.shippingCents, checkoutData.currency)}
+                        {formatCents(
+                          checkoutData.shippingCents,
+                          checkoutData.currency
+                        )}
                       </span>
                     </div>
                   )}
@@ -770,7 +809,10 @@ export function SupplierCheckoutSheet({
                     <span
                       style={{ fontSize: 15, fontWeight: 700, color: DT.amber }}
                     >
-                      {formatCents(checkoutData.totalCents, checkoutData.currency)}
+                      {formatCents(
+                        checkoutData.totalCents,
+                        checkoutData.currency
+                      )}
                     </span>
                   </div>
                 </div>
@@ -785,14 +827,44 @@ export function SupplierCheckoutSheet({
             </div>
           )}
 
-          {step === 'confirming' && <div className="p-6 space-y-4 text-white" role="status">
-            <h2 className="text-xl font-semibold">Waiting for payment confirmation</h2>
-            <p>Your order is confirmed once the payment has been recorded. You can close this screen and check your order history.</p>
-            {confirmation.error && <p role="alert">We could not refresh your order. Check your connection and try again.</p>}
-            {['failed','refunded'].includes(confirmation.data?.status||'') && <p>Order status: {confirmation.data?.status}. Contact support if you need help.</p>}
-            <button className="min-h-12 rounded-xl border px-5" onClick={()=>void confirmation.refetch()}>Check again</button>
-            <Link href="/supply-orders" onClick={onClose} className="block underline min-h-11 py-3">View order history</Link>
-          </div>}
+          {step === "confirming" && (
+            <div className="p-6 space-y-4 text-white" role="status">
+              <h2 className="text-xl font-semibold">
+                Waiting for payment confirmation
+              </h2>
+              <p>
+                Your order is confirmed once the payment has been recorded. You
+                can close this screen and check your order history.
+              </p>
+              {confirmation.error && (
+                <p role="alert">
+                  We could not refresh your order. Check your connection and try
+                  again.
+                </p>
+              )}
+              {["failed", "refunded"].includes(
+                confirmation.data?.status || ""
+              ) && (
+                <p>
+                  Order status: {confirmation.data?.status}. Contact support if
+                  you need help.
+                </p>
+              )}
+              <button
+                className="min-h-12 rounded-xl border px-5"
+                onClick={() => void confirmation.refetch()}
+              >
+                Check again
+              </button>
+              <Link
+                href="/supply-orders"
+                onClick={onClose}
+                className="block underline min-h-11 py-3"
+              >
+                View order history
+              </Link>
+            </div>
+          )}
           {step === "success" && orderId && (
             <SuccessScreen
               supplierName={supplierName}
@@ -801,8 +873,8 @@ export function SupplierCheckoutSheet({
             />
           )}
         </motion.div>
-
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

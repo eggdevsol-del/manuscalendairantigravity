@@ -64,7 +64,7 @@ export default function PublicEvents() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-document min-h-[100dvh] bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
       </div>
     );
@@ -72,7 +72,7 @@ export default function PublicEvents() {
 
   if (error || !seminars) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+      <div className="app-document min-h-[100dvh] bg-background flex flex-col items-center justify-center p-6 text-center">
         <h1 className="text-2xl font-bold text-foreground mb-2">
           Events Not Found
         </h1>
@@ -90,7 +90,7 @@ export default function PublicEvents() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden font-sans pb-20">
+    <div className="app-document min-h-[100dvh] bg-background text-foreground overflow-x-hidden font-sans pb-20">
       <SheetShell
         isOpen={showCheckout}
         onClose={() => setShowCheckout(false)}

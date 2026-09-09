@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 /**
  * Weekly Snapshot Modal
  *
@@ -124,7 +125,7 @@ export function WeeklySnapshotModal({
     ? `${new Date(data.weekStart).toLocaleDateString("en-AU", { month: "short", day: "numeric" })} - ${new Date(data.weekEnd).toLocaleDateString("en-AU", { month: "short", day: "numeric" })}`
     : "";
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <>
@@ -133,7 +134,7 @@ export function WeeklySnapshotModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100]"
             onClick={onClose}
           />
 
@@ -143,7 +144,7 @@ export function WeeklySnapshotModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={tokens.motion.springModal}
-            className="fixed inset-x-4 top-[10%] bottom-[10%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-md z-50 flex flex-col"
+            className="fixed inset-x-4 top-[calc(var(--app-safe-top)+16px)] bottom-[calc(var(--app-safe-bottom)+16px)] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-md z-[101] flex flex-col"
           >
             <div className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border shadow-2xl flex flex-col h-full overflow-hidden">
               {/* Header */}
@@ -345,5 +346,5 @@ export function WeeklySnapshotModal({
         </>
       )}
     </AnimatePresence>
-  );
+  , document.body);
 }

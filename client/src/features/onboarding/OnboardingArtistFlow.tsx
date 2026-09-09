@@ -488,7 +488,7 @@ export function OnboardingArtistFlow({ onComplete }: OnboardingArtistFlowProps) 
                             initial="initial"
                             animate="animate"
                             exit="exit"
-                            className={cn("space-y-4", showImporter ? "h-[65vh] min-h-[500px] relative" : "h-full relative")}
+                            className={cn("space-y-4", showImporter ? "h-[65dvh] min-h-[500px] relative" : "h-full relative")}
                         >
                             {showImporter ? (
                                 <DataImportSettings onBack={() => setShowImporter(false)} />

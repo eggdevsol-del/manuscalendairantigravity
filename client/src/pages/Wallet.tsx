@@ -18,7 +18,7 @@ export default function Wallet() {
       <PageHeader title={isArtist ? "Vouchers" : "Wallet"} />
 
       {/* 2. Top Context Area */}
-      <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
+      <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20dvh] opacity-80">
         <p className="text-4xl font-light text-foreground/90 tracking-tight">
           {isArtist ? "Promotions" : "Wallet"}
         </p>

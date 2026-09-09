@@ -312,7 +312,7 @@ export default function CalendarAgendaPage() {
             "absolute inset-0 flex flex-col transition-transform duration-500 ease-in-out z-10",
             "md:relative md:inset-auto md:w-1/2 md:translate-y-0 md:bg-transparent md:border-l md:border-border md:pt-5",
             controller.isBreakdownOpen
-              ? "translate-y-[55vh] rounded-t-[2.5rem] bg-background shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden cursor-pointer"
+              ? "translate-y-[55dvh] rounded-t-[2.5rem] bg-background shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden cursor-pointer"
               : "translate-y-0 bg-transparent"
           )}
           onClick={controller.isBreakdownOpen ? controller.toggleBreakdown : undefined}

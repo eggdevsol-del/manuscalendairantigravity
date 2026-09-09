@@ -20,7 +20,7 @@ export default function PublicStudioFunnel() {
 
   if (error || !data?.studio) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background text-foreground">
+      <div className="flex flex-col items-center justify-center app-document min-h-[100dvh] p-4 bg-background text-foreground">
         <h1 className="text-2xl font-bold mb-2">Studio Not Found</h1>
         <p className="text-muted-foreground mb-6">
           The booking link you used is invalid or the studio no longer exists.
@@ -53,7 +53,7 @@ export default function PublicStudioFunnel() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="app-document min-h-[100dvh] bg-background text-foreground flex flex-col">
       <header className="pt-12 pb-6 px-4 shrink-0 border-b border-border/10 bg-background/80 text-center">
         {studio.logoUrl && (
           <div className="w-24 h-24 mx-auto bg-secondary/50 rounded-full mb-4 overflow-hidden border-2 border-primary/20">

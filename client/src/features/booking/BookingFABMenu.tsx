@@ -84,7 +84,7 @@ function PolicyDropdown({
         : "Contact the artist for deposit requirements.";
 
   return (
-    <div className="rounded-[4px] border border-border overflow-hidden">
+    <div className="rounded-[16px] border border-border overflow-hidden">
       <button
         type="button"
         className="flex items-center justify-between w-full px-2.5 py-2 text-[10px] font-semibold text-foreground/80 hover:bg-secondary/50 transition-colors"
@@ -445,7 +445,7 @@ export function BookingFABMenu({
               variants={fab.animation.item}
               className={cn(
                 card.base,
-                "grid grid-cols-3 gap-px rounded-[4px] overflow-hidden bg-secondary/50"
+                "grid grid-cols-3 gap-px rounded-[16px] overflow-hidden bg-secondary/50"
               )}
             >
               {[
@@ -467,7 +467,7 @@ export function BookingFABMenu({
                   key={label}
                   className="p-2 flex flex-col items-center gap-0.5"
                 >
-                  <span className="text-[8px] text-muted-foreground uppercase tracking-wider font-medium">
+                  <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">
                     {label}
                   </span>
                   <span
@@ -486,7 +486,7 @@ export function BookingFABMenu({
             {hasDiscount && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-[var(--color-status-success-bg)]"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-[16px] bg-[var(--color-status-success-bg)]"
               >
                 <Tag className="w-3 h-3 text-[var(--color-status-success-text)]" />
                 <span className="text-[9px] font-medium text-[var(--color-status-success-text)]">
@@ -501,7 +501,7 @@ export function BookingFABMenu({
             {/* Dates */}
             {proposalDates.length > 0 && (
               <motion.div variants={fab.animation.item} className="space-y-1">
-                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
                   Schedule
                 </p>
                 {proposalDates.slice(0, 4).map((dateStr: string, i: number) => (
@@ -510,17 +510,17 @@ export function BookingFABMenu({
                     className={cn(
                       card.base,
                       card.bg,
-                      "flex items-center gap-2 p-1.5 rounded-[4px]"
+                      "flex items-center gap-2 p-1.5 rounded-[16px]"
                     )}
                   >
-                    <span className="w-4 h-4 rounded-full bg-secondary/50 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
+                    <span className="w-4 h-4 rounded-full bg-secondary/50 flex items-center justify-center text-[11px] font-bold text-muted-foreground shrink-0">
                       {i + 1}
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-[10px] font-semibold text-foreground truncate">
                         {format(new Date(dateStr), "EEE, MMM d")}
                       </p>
-                      <p className="text-[8px] text-muted-foreground">
+                      <p className="text-[11px] text-muted-foreground">
                         {format(new Date(dateStr), "h:mm a")} -�{" "}
                         {proposalMeta.serviceDuration}m
                       </p>
@@ -542,7 +542,7 @@ export function BookingFABMenu({
                       card.base,
                       card.bg,
                       card.interactive,
-                      "flex items-center gap-2 p-2 w-full rounded-[4px]"
+                      "flex items-center gap-2 p-2 w-full rounded-[16px]"
                     )}
                     onClick={() => setShowVoucherList(true)}
                   >
@@ -579,7 +579,7 @@ export function BookingFABMenu({
                   <button
                     onClick={onRejectProposal}
                     disabled={isPendingProposalAction}
-                    className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-[var(--color-status-danger-bg)] hover:text-[var(--color-status-danger-text)]"
+                    className="py-2 rounded-[16px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-[var(--color-status-danger-bg)] hover:text-[var(--color-status-danger-text)]"
                   >
                     Decline
                   </button>
@@ -596,12 +596,12 @@ export function BookingFABMenu({
                       )
                     }
                     disabled={isPendingProposalAction}
-                    className="py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="py-2 rounded-[16px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     {isPendingProposalAction ? "..." : "Accept"}
                   </button>
                 </div>
-                <p className="text-[8px] text-muted-foreground text-center leading-tight">
+                <p className="text-[11px] text-muted-foreground text-center leading-tight">
                   By accepting, you agree to the cancellation and deposit
                   policies above.
                 </p>
@@ -614,7 +614,7 @@ export function BookingFABMenu({
                 variants={fab.animation.item}
                 className="space-y-2 pt-1"
               >
-                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] bg-[var(--color-status-warning-bg)]">
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-[16px] bg-[var(--color-status-warning-bg)]">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-warning)] opacity-75" />
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--color-warning)]" />
@@ -625,7 +625,7 @@ export function BookingFABMenu({
                 </div>
                 <button
                   onClick={onCancelProposal}
-                  className="w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-[var(--color-status-danger-bg)] hover:text-[var(--color-status-danger-text)]"
+                  className="w-full py-2 rounded-[16px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-secondary/50 text-muted-foreground hover:bg-[var(--color-status-danger-bg)] hover:text-[var(--color-status-danger-text)]"
                 >
                   Cancel Proposal
                 </button>
@@ -636,7 +636,7 @@ export function BookingFABMenu({
             {proposalMeta.status === "accepted" && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-[var(--color-status-success-bg)]"
+                className="flex items-center gap-1.5 px-2 py-2 rounded-[16px] bg-[var(--color-status-success-bg)]"
               >
                 <Check className="w-3.5 h-3.5 text-[var(--color-status-success-text)]" />
                 <span className="text-[10px] font-bold text-[var(--color-status-success-text)]">
@@ -655,7 +655,7 @@ export function BookingFABMenu({
                       card.base,
                       card.bg,
                       card.interactive,
-                      "flex items-center gap-2 p-2 w-full rounded-[4px]"
+                      "flex items-center gap-2 p-2 w-full rounded-[16px]"
                     )}
                     onClick={() => {
                       const addr = encodeURIComponent(
@@ -688,7 +688,7 @@ export function BookingFABMenu({
             {proposalMeta.status === "rejected" && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-[var(--color-status-danger-bg)]"
+                className="flex items-center gap-1.5 px-2 py-2 rounded-[16px] bg-[var(--color-status-danger-bg)]"
               >
                 <AlertCircle className="w-3.5 h-3.5 text-[var(--color-status-danger-text)]" />
                 <span className="text-[10px] font-bold text-[var(--color-status-danger-text)]">
@@ -809,7 +809,7 @@ export function BookingFABMenu({
 
             {step === "custom_dates" && (
               <div className="flex flex-col gap-4 pt-1 items-center pb-2">
-                <div className={cn(card.base, card.bg, "p-3 w-full rounded-[4px]")}>
+                <div className={cn(card.base, card.bg, "p-3 w-full rounded-[16px]")}>
                   <p className="text-[11px] text-muted-foreground text-center mb-1">
                     Select one or more dates for this project
                   </p>
@@ -845,7 +845,7 @@ export function BookingFABMenu({
                   disabled={
                     sendMessageMutation.isPending || (frequency !== "single" && !availability?.dates) || (frequency === "single" && customDates.length === 0)
                   }
-                  className="w-full py-3 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(var(--primary),0.3)] disabled:opacity-50 mt-2"
+                  className="w-full py-3 rounded-[16px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(var(--primary),0.3)] disabled:opacity-50 mt-2"
                 >
                   Confirm Dates ({customDates.length})
                 </button>
@@ -917,7 +917,7 @@ export function BookingFABMenu({
 
                     {frequency === "single" ? (
                       <div className="space-y-2">
-                        <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                           Selected Dates
                         </p>
                         <div className="max-h-[120px] overflow-y-auto no-scrollbar space-y-1 pr-1">

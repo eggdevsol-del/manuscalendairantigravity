@@ -125,7 +125,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-document min-h-[100dvh] bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="text-muted-foreground mb-2">Loading...</div>
         </div>
@@ -136,7 +136,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
   // Error state
   if (error || !artistProfile) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+      <div className="app-document min-h-[100dvh] bg-background flex items-center justify-center px-6">
         <div className="text-center max-w-md">
           <h1 className="text-2xl font-semibold text-foreground mb-2">
             Not Available
@@ -181,7 +181,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
 
   return (
     <div className={artistProfile.theme === "dark" ? "dark" : ""}>
-      <div className="min-h-[100dvh] w-full flex flex-col bg-background font-sans relative overflow-y-auto">
+      <div className="app-document w-full flex flex-col bg-background font-sans">
         {/* Banner Image */}
         {artistProfile.bannerUrl && (
           <div className="absolute top-0 left-0 w-full h-[200px] sm:h-[240px] pointer-events-none z-0">
@@ -198,7 +198,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
 
         {/* Header Profile Section */}
         {/* Fixed Header */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+        <div className="app-safe-header app-fixed-header fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
           <div className="h-1 bg-secondary/50" />
           <div className="px-4 py-3 flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
@@ -212,7 +212,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
 
         {/* Content */}
         {/* Scrollable Content — padded for fixed header/footer */}
-        <div className="pt-16 pb-28 px-6 max-w-lg mx-auto w-full relative z-10">
+        <div style={{paddingTop: "80px"}} className="pb-28 px-6 max-w-lg mx-auto w-full relative z-10">
           <h2 className="text-2xl font-semibold text-foreground mb-6 mt-4">
             {STEP_TITLES[currentStep]}
           </h2>
@@ -481,7 +481,7 @@ export default function FunnelWrapper({ artistSlug }: FunnelWrapperProps) {
         </div>
 
         {/* Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-md border-t border-border p-4 z-50">
+        <div style={{paddingBottom: "calc(var(--app-safe-bottom) + 16px)"}} className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-md border-t border-border p-4 z-50">
           <div className="max-w-lg mx-auto flex gap-3">
             {currentStep > 0 && (
               <button

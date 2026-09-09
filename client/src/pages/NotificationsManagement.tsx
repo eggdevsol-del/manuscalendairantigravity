@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/ssot/PageHeader";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
   Button,
@@ -201,21 +202,9 @@ export default function NotificationsManagement() {
 
   return (
     <PageShell>
-      <header className="mobile-header px-4 py-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setLocation("/settings")}
-            className="tap-target"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
-        </div>
-      </header>
+      <PageHeader title="Notifications" onBack={() => setLocation("/settings")} />
 
-      <main className="flex-1 px-4 py-4 mobile-scroll overflow-y-auto space-y-4">
+      <main className="flex-1 min-h-0 w-full max-w-5xl mx-auto px-4 py-4 mobile-scroll overflow-y-auto space-y-4 pb-28">
         <Card className="bg-gradient-to-br from-primary/10 to-accent/10">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
@@ -341,7 +330,7 @@ export default function NotificationsManagement() {
         onClose={() => setShowDialog(false)}
         title={editingTemplate ? "Edit Template" : "New Template"}
         description="Create automated notification messages for clients"
-        className="max-w-md max-h-[90vh] overflow-y-auto"
+        className="max-w-md max-h-[90dvh] overflow-y-auto"
         overlayName="Notification Template"
         overlayId="notifications.template_editor"
         footer={
@@ -461,7 +450,7 @@ export default function NotificationsManagement() {
         onClose={() => setPushDialog({ isOpen: false, template: null })}
         title="Send Test Push"
         description="Select a client to send this notification to"
-        className="max-w-md max-h-[80vh] overflow-y-auto"
+        className="max-w-md max-h-[80dvh] overflow-y-auto"
         overlayName="Push Target Selection"
         overlayId="notifications.push_target"
       >

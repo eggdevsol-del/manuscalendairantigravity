@@ -129,3 +129,6 @@ create-test-session.ts
 test_*.ts
 test-*.ts
 pnpm-workspace.yaml
+
+# Vite development service worker artifacts
+client/dev-dist/

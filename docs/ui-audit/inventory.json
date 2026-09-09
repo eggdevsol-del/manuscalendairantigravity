@@ -1,0 +1,2308 @@
+[
+  {
+    "file": "client/src/_core/contexts/UIDebugContext.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/App.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/",
+      "/login",
+      "/signup",
+      "/set-password",
+      "/forgot-password",
+      "/auth/magic",
+      "/auth/reset-password",
+      "/complete-profile",
+      "/shop/:slug",
+      "/events/:slug",
+      "/studio/:slug",
+      "/start/:slug",
+      "/book/:slug",
+      "/deposit/:token",
+      "/balance/:id",
+      "/pay/:token",
+      "*"
+    ]
+  },
+  {
+    "file": "client/src/components/AnimatedSwitch.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ArrivalToast.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/auth/AuthLayout.tsx",
+    "primitives": [],
+    "headers": 1,
+    "fixed": true,
+    "localSafe": true,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/auth/GoogleLoginButton.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/auth/TeaserRegistrationForm.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/BottomNav.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/BottomNavRow.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/chat/PaymentRequestCard.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/chat/ProjectProposalMessage.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/chat/RescheduleDepositCard.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/chat/StudioInviteMessage.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ErrorBoundary.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/FunnelSettings.tsx",
+    "primitives": [
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/InstallAppBanner.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/IOSInstallPrompt.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/modals/EditBookingModal.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/PaymentRequestBanner.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/settings/BusinessSettings.tsx",
+    "primitives": [
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/settings/ConsultationSettings.tsx",
+    "primitives": [
+      "PageHeader",
+      "ModalShell"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/settings/DangerZoneSettings.tsx",
+    "primitives": [
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/settings/DataImportSettings.tsx",
+    "primitives": [
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/settings/HowTosSettings.tsx",
+    "primitives": [
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/settings/InstagramImportSettings.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/settings/NotificationSettings.tsx",
+    "primitives": [
+      "PageHeader",
+      "ModalShell"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/settings/PortfolioSettings.tsx",
+    "primitives": [
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/settings/ProfileSettings.tsx",
+    "primitives": [
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/settings/RegulationSettings.tsx",
+    "primitives": [
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/settings/StudioDashboardSettings.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/settings/SubscriptionCheckoutSheet.tsx",
+    "primitives": [
+      "SheetShell"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/settings/TravelSettings.tsx",
+    "primitives": [
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/settings/WorkHoursAndServicesSettings.tsx",
+    "primitives": [
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/SplashScreen.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/tooltip-tour/TooltipOverlay.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/tooltip-tour/TooltipTourProvider.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/accordion.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/alert-dialog.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/alert.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/aspect-ratio.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/avatar.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/badge.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/breadcrumb.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/button-group.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/button.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/calendar.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/card.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/carousel.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/chart.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/checkbox.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/collapsible.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/command.tsx",
+    "primitives": [
+      "DialogContent"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/context-menu.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/dialog.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/drawer.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/dropdown-menu.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/empty.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/field.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/form.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/GooglePlacesInput.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/hover-card.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ImageUpload.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/input-group.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/input-otp.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/input.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/item.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/kbd.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/label.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/menubar.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/NativeConfirmToast.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/navigation-menu.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/overlays/modal-shell.tsx",
+    "primitives": [
+      "DialogContent"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/overlays/sheet-shell.tsx",
+    "primitives": [
+      "SheetContent"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/pagination.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/popover.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/progress.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/radio-group.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/resizable.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/safe-select.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/safe-switch.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/scroll-area.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/select.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/separator.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/sheet.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/sidebar.tsx",
+    "primitives": [
+      "SheetContent"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/SignaturePad.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/skeleton.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/slider.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/sonner.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/spinner.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/BottomSheet.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/ConsultationCard.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/ConversationCard.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/DotsCheckout.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/FullScreenSheet.tsx",
+    "primitives": [
+      "FullScreenSheet"
+    ],
+    "headers": 1,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/GlassSheet.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/HalfSheet.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/LoadingState.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/NavActionButton.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/PageHeader.tsx",
+    "primitives": [],
+    "headers": 1,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/PageShell.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/PageWrapper.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/SegmentedHeader.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/SelectionCard.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/SheetHeader.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/TaskCard.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/UserAvatar.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/ssot/WeeklySnapshotModal.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/switch.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/table.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/tabs.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/textarea.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/toggle-group.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/toggle.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/ui/tooltip.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/UpdateBanner.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/components/WebPushSettings.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/contexts/BottomNavContext.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/contexts/TeaserContext.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/contexts/ThemeContext.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/booking/BookingWizardContent.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/booking/components/InlineFormSigning.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/bookings/AftercareTimeline.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/bookings/BalanceCheckoutSheet.tsx",
+    "primitives": [
+      "SheetShell"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/bookings/BookingsPage.tsx",
+    "primitives": [
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": false,
+    "routes": [
+      "/bookings"
+    ]
+  },
+  {
+    "file": "client/src/features/bookings/PastTab.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/bookings/PendingPlans.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/bookings/ProjectSummary.tsx",
+    "primitives": [
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": false,
+    "routes": [
+      "/projects/:id"
+    ]
+  },
+  {
+    "file": "client/src/features/bookings/SessionPlanCheckoutSheet.tsx",
+    "primitives": [
+      "SheetShell"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/bookings/UpcomingTab.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/bookings/WaitlistPage.tsx",
+    "primitives": [
+      "PageHeader",
+      "SheetShell"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": false,
+    "routes": [
+      "/waitlist"
+    ]
+  },
+  {
+    "file": "client/src/features/calendar/PersonalReminderForm.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/calendar/QuickBookingSheet.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/chat/ClientProfileSheet.tsx",
+    "primitives": [
+      "BottomSheet"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/chat/components/ChatInterface.tsx",
+    "primitives": [
+      "BottomSheet",
+      "ActionSheet"
+    ],
+    "headers": 1,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/chat/components/ConversationsList.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/chat/components/QuickActionsRow.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/chat/components/SessionPlanCard.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/client-home/ArtistPortfolioFeed.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/client-home/ArtistProfileOverlay.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/client-home/BookingFormModal.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/client-home/ClientHome.tsx",
+    "primitives": [],
+    "headers": 1,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/discover"
+    ]
+  },
+  {
+    "file": "client/src/features/client-home/DiscoverFeedContent.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/client-profile/ArtistMapOverlay.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/client-profile/ClientArtistCard.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/client-profile/ClientFeedTab.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/client-profile/FavouriteHeartButton.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/client-profile/MyArtistsSection.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/client-profile/PortfolioExpand.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/client-profile/UpcomingWidget.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/dashboard/ClientsTab.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/dashboard/DashboardActions.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/dashboard/MoneyScreen.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/dashboard/MoneyStrip.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/dashboard/SupplierCheckoutSheet.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/dashboard/SupplierOrderHistory.tsx",
+    "primitives": [
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": false,
+    "routes": [
+      "/supply-orders"
+    ]
+  },
+  {
+    "file": "client/src/features/dashboard/SupplierStorefront.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/dashboard/SuppliesSegment.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/dashboard/TodaySegment.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/feed/FeedCard.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/merchant/Dashboard.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/merchant/Orders.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/merchant/Products.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader",
+      "SheetShell"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/merchant/Settings.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/merchant/ShopifySyncTier.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/onboarding/MerchantSetupStepper.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/onboarding/SetupChecklistWidget.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/payouts/RefundConfirmationFAB.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/pricing/PricingPage.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/profile/components/ContentCards.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/storefront/CartContext.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/storefront/OrderConfirmation.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/storefront/Purchases.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/purchases"
+    ]
+  },
+  {
+    "file": "client/src/features/storefront/StorefrontCheckoutFAB.tsx",
+    "primitives": [
+      "SheetShell"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/storefront/StorefrontProductCard.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/stripe/OnboardingWizard.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/stripe/PayoutDashboard.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/features/studio/ArtistInvitations.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/hooks/useMobile.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/lib/google-auth.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/admin/ErrorDashboard.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": [
+      "/admin/errors"
+    ]
+  },
+  {
+    "file": "client/src/pages/admin/Reconciliation.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/admin/operations"
+    ]
+  },
+  {
+    "file": "client/src/pages/ArtistProfileTab.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/artist-profile"
+    ]
+  },
+  {
+    "file": "client/src/pages/BankPayoutsPage.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": [
+      "/bank-payouts"
+    ]
+  },
+  {
+    "file": "client/src/pages/Calendar.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/calendar"
+    ]
+  },
+  {
+    "file": "client/src/pages/calendar/CalendarAgendaPage.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/calendar/components/AgendaBreakdownList.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/calendar/components/AgendaDayList.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/calendar/components/CalendarDateStrip7.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/calendar/components/CalendarMonthHeader.tsx",
+    "primitives": [],
+    "headers": 1,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/Chat.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/chat/:id"
+    ]
+  },
+  {
+    "file": "client/src/pages/Clients.tsx",
+    "primitives": [
+      "PageHeader",
+      "ModalShell"
+    ],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": true,
+    "routes": [
+      "/clients"
+    ]
+  },
+  {
+    "file": "client/src/pages/CompleteProfile.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": [
+      "/complete-profile"
+    ]
+  },
+  {
+    "file": "client/src/pages/Conversations.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": [
+      "/conversations"
+    ]
+  },
+  {
+    "file": "client/src/pages/Dashboard.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": [
+      "/dashboard"
+    ]
+  },
+  {
+    "file": "client/src/pages/funnel/BalanceSheet.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/funnel/components/ArtistSelectionGrid.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/funnel/components/FunnelStepWrapper.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/funnel/components/ImageUploadSheet.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/funnel/DepositSheet.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/funnel/FunnelWrapper.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/funnel/PaymentLinkPage.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/funnel/PaymentRequestSheet.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/funnel/PublicFunnel.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/funnel/PublicStudioFunnel.tsx",
+    "primitives": [],
+    "headers": 1,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": [
+      "/studio/:slug"
+    ]
+  },
+  {
+    "file": "client/src/pages/funnel/steps/FunnelContactStep.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/LeadDetail.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": [
+      "/lead/:id"
+    ]
+  },
+  {
+    "file": "client/src/pages/Login.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/",
+      "/login"
+    ]
+  },
+  {
+    "file": "client/src/pages/MagicLink.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/auth/magic"
+    ]
+  },
+  {
+    "file": "client/src/pages/NotFound.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": false,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/NotificationsManagement.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader",
+      "ModalShell"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/notifications-management"
+    ]
+  },
+  {
+    "file": "client/src/pages/PasswordRecovery.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/forgot-password",
+      "/auth/reset-password"
+    ]
+  },
+  {
+    "file": "client/src/pages/PayoutHistory.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": [
+      "/payout-history"
+    ]
+  },
+  {
+    "file": "client/src/pages/profile/ClientProfilePage.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": [
+      "/profile"
+    ]
+  },
+  {
+    "file": "client/src/pages/public/ArtistHub.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/public/PublicArtistProfile.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/book/:slug"
+    ]
+  },
+  {
+    "file": "client/src/pages/public/PublicEvents.tsx",
+    "primitives": [
+      "SheetShell"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": [
+      "/events/:slug"
+    ]
+  },
+  {
+    "file": "client/src/pages/public/PublicStorefront.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": true,
+    "palette": true,
+    "routes": [
+      "/shop/:slug"
+    ]
+  },
+  {
+    "file": "client/src/pages/SetPassword.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/set-password"
+    ]
+  },
+  {
+    "file": "client/src/pages/Settings.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": [
+      "/settings",
+      "/account-settings"
+    ]
+  },
+  {
+    "file": "client/src/pages/Signup.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/signup"
+    ]
+  },
+  {
+    "file": "client/src/pages/Subscriptions.tsx",
+    "primitives": [
+      "PageShell",
+      "PageHeader"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/subscriptions"
+    ]
+  },
+  {
+    "file": "client/src/pages/SupplierSignup.tsx",
+    "primitives": [
+      "PageShell"
+    ],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  },
+  {
+    "file": "client/src/pages/WorkHours.tsx",
+    "primitives": [
+      "PageHeader",
+      "DialogContent"
+    ],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": true,
+    "palette": false,
+    "routes": [
+      "/work-hours"
+    ]
+  },
+  {
+    "file": "client/src/shells/ArtistShell.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/studio",
+      "/purchases",
+      "/",
+      "/dashboard",
+      "/conversations",
+      "/chat/:id",
+      "/projects/:id",
+      "/waitlist",
+      "/supply-orders",
+      "/calendar",
+      "/settings",
+      "/artist-profile",
+      "/work-hours",
+      "/clients",
+      "/bank-payouts",
+      "/payout-history",
+      "/notifications-management",
+      "/subscriptions",
+      "/lead/:id",
+      "/admin/operations",
+      "/admin/errors"
+    ]
+  },
+  {
+    "file": "client/src/shells/ClientShell.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/purchases",
+      "/",
+      "/discover",
+      "/profile",
+      "/conversations",
+      "/chat/:id",
+      "/projects/:id",
+      "/waitlist",
+      "/bookings",
+      "/settings"
+    ]
+  },
+  {
+    "file": "client/src/shells/MerchantShell.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": false,
+    "localSafe": false,
+    "palette": false,
+    "routes": [
+      "/purchases",
+      "/",
+      "/dashboard",
+      "/merchant/orders",
+      "/merchant/products",
+      "/settings",
+      "/account-settings",
+      "/onboarding/merchant",
+      "/conversations",
+      "/chat/:id",
+      "/merchant"
+    ]
+  },
+  {
+    "file": "client/src/ui/FABMenu.tsx",
+    "primitives": [],
+    "headers": 0,
+    "fixed": true,
+    "localSafe": false,
+    "palette": true,
+    "routes": []
+  }
+]

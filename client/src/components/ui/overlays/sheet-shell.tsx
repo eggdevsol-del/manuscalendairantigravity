@@ -41,8 +41,8 @@ export function SheetShell({
       <SheetContent
         side={side}
         className={cn(
-          "flex flex-col p-0 gap-0 border-border bg-background/95 backdrop-blur-[20px] shadow-2xl overflow-hidden text-foreground outline-none",
-          side === "bottom" ? "rounded-t-[2.5rem] border-t-0 max-h-[85vh]" : "",
+          "flex flex-col p-0 gap-0 border-border bg-popover shadow-xl overflow-hidden text-foreground outline-none",
+          side === "bottom" ? "rounded-t-[24px] border-t-0 max-h-[85dvh]" : "",
           side === "left" || side === "right"
             ? "h-full border-l border-border"
             : "",
@@ -53,7 +53,7 @@ export function SheetShell({
         <div className="h-1 w-full bg-[rgba(255,255,255,0.12)]" />
         <SheetHeader className="p-6 pb-4 shrink-0 border-b border-border space-y-2 relative">
           <div className="flex items-center justify-center relative">
-            <SheetTitle className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/80 text-center">
+            <SheetTitle className="text-xl font-semibold tracking-tight text-foreground text-center">
               {title}
             </SheetTitle>
             {showDebugLabels && overlayName && (
@@ -69,7 +69,7 @@ export function SheetShell({
           )}
         </SheetHeader>
 
-        <div className="px-6 py-4 overflow-y-auto flex-1 scrollbar-hide">
+        <div className="px-6 py-4 overflow-y-auto flex-1 min-h-0 mobile-scroll">
           {children}
         </div>
 

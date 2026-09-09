@@ -1,3 +1,4 @@
+import { commerceTokens as DT } from "@/ui/tokens";
 /**
  * PaymentRequestSheet — Public page at /pay/:token
  *
@@ -19,18 +20,7 @@ import { trpc } from "@/lib/trpc";
 import { format } from "date-fns";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 
-const DT = {
-  bg: "#0d0d0e",
-  card: "#131314",
-  cardBorder: "rgba(255,255,255,.08)",
-  textPrimary: "rgba(255,255,255,.95)",
-  textSecondary: "rgba(255,255,255,.55)",
-  textTertiary: "rgba(255,255,255,.36)",
-  green: "#34c759",
-  amber: "#f2ca5c",
-  amberOnColor: "#1a1a00",
-  track: "rgba(255,255,255,.08)",
-};
+// Canonical palette shared with the dashboard and booking review.
 
 function formatCents(cents: number): string {
   const abs = Math.abs(cents);
@@ -43,7 +33,7 @@ function SuccessScreen({ info, onClose }: { info: any; onClose: () => void }) {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCountdown((prev) => {
+      setCountdown(prev => {
         if (prev <= 1) {
           clearInterval(timer);
           onClose();
@@ -56,39 +46,74 @@ function SuccessScreen({ info, onClose }: { info: any; onClose: () => void }) {
   }, [onClose]);
 
   return (
-    <div style={{
-      minHeight: "100vh", background: DT.bg,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      padding: 20,
-    }}>
-      <div style={{
-        maxWidth: 400, width: "100%", textAlign: "center",
-        background: DT.card, border: `1px solid ${DT.cardBorder}`,
-        borderRadius: 20, padding: "40px 24px",
-      }}>
-        <div style={{
-          width: 64, height: 64, borderRadius: 32, background: DT.green,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          margin: "0 auto 20px",
-          animation: "popIn 0.4s cubic-bezier(.2,.7,.3,1.4)",
-        }}>
+    <div
+      style={{
+        height: "100dvh",
+        overflowY: "auto",
+        paddingTop: "calc(var(--app-safe-top) + 24px)",
+        paddingBottom: "calc(var(--app-safe-bottom) + 24px)",
+        paddingLeft: "calc(var(--app-safe-left) + 20px)",
+        paddingRight: "calc(var(--app-safe-right) + 20px)",
+        background: DT.bg,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 400,
+          width: "100%",
+          textAlign: "center",
+          background: DT.card,
+          border: `1px solid ${DT.cardBorder}`,
+          borderRadius: 20,
+          padding: "40px 24px",
+        }}
+      >
+        <div
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: 32,
+            background: DT.green,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 20px",
+            animation: "popIn 0.4s cubic-bezier(.2,.7,.3,1.4)",
+          }}
+        >
           <Check size={32} color="#fff" />
         </div>
-        <div style={{ fontSize: 22, fontWeight: 600, color: DT.textPrimary, marginBottom: 8 }}>
+        <div
+          style={{
+            fontSize: 22,
+            fontWeight: 600,
+            color: DT.textPrimary,
+            marginBottom: 8,
+          }}
+        >
           Payment Confirmed
         </div>
         <div style={{ fontSize: 14, lineHeight: 1.5, color: DT.textSecondary }}>
-          {info ? `${formatCents(info.amountCents)} paid to ${info.artistName}` : "Your payment has been processed."}
+          {info
+            ? `${formatCents(info.amountCents)} paid to ${info.artistName}`
+            : "Your payment has been processed."}
         </div>
 
         <button
           onClick={onClose}
           style={{
-            marginTop: 24, width: "100%",
+            marginTop: 24,
+            width: "100%",
             background: "rgba(255,255,255,.08)",
             border: `1px solid ${DT.cardBorder}`,
-            borderRadius: 12, padding: "14px 20px",
-            fontSize: 14, fontWeight: 600, color: DT.textPrimary,
+            borderRadius: 12,
+            padding: "14px 20px",
+            fontSize: 14,
+            fontWeight: 600,
+            color: DT.textPrimary,
             cursor: "pointer",
             transition: "background .2s",
           }}
@@ -111,17 +136,19 @@ export function PaymentRequestSheet() {
   const paymentStatus = urlParams.get("status");
 
   // Fetch payment request info
-  const { data, isLoading, isError } = trpc.funnel.getPaymentRequestInfo.useQuery(
-    { token },
-    { enabled: !!token }
-  );
+  const { data, isLoading, isError } =
+    trpc.funnel.getPaymentRequestInfo.useQuery({ token }, { enabled: !!token });
 
   const createCheckout = trpc.funnel.createPaymentRequestCheckout.useMutation();
 
-  const [phase, setPhase] = useState<"loading" | "ready" | "checkout" | "success" | "error">("loading");
+  const [phase, setPhase] = useState<
+    "loading" | "ready" | "checkout" | "success" | "error"
+  >("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null);
+  const [checkoutClientSecret, setCheckoutClientSecret] = useState<
+    string | null
+  >(null);
 
   // Process server response
   useEffect(() => {
@@ -136,9 +163,14 @@ export function PaymentRequestSheet() {
     if (!data || "error" in data) {
       setPhase("error");
       const err = (data as any)?.error;
-      if (err === "expired") setErrorMessage("This payment link has expired. Please ask your artist to send a new one.");
-      else if (err === "already_paid") setErrorMessage("This payment has already been completed. ✓");
-      else if (err === "cancelled") setErrorMessage("This payment request was cancelled.");
+      if (err === "expired")
+        setErrorMessage(
+          "This payment link has expired. Please ask your artist to send a new one."
+        );
+      else if (err === "already_paid")
+        setErrorMessage("This payment has already been completed. ✓");
+      else if (err === "cancelled")
+        setErrorMessage("This payment request was cancelled.");
       else setErrorMessage("Invalid payment link.");
       return;
     }
@@ -159,9 +191,11 @@ export function PaymentRequestSheet() {
     try {
       const result = await createCheckout.mutateAsync({ token });
       if ("error" in result) {
-        setErrorMessage((result as any).error === "already_paid"
-          ? "This payment has already been completed."
-          : "Failed to create checkout. Please try again.");
+        setErrorMessage(
+          (result as any).error === "already_paid"
+            ? "This payment has already been completed."
+            : "Failed to create checkout. Please try again."
+        );
         setPhase("error");
         return;
       }
@@ -185,17 +219,35 @@ export function PaymentRequestSheet() {
   // ── Loading ───────────────────────────────────────────────
   if (phase === "loading") {
     return (
-      <div style={{
-        minHeight: "100vh", background: DT.bg,
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
+      <div
+        style={{
+          height: "100dvh",
+          overflowY: "auto",
+          paddingTop: "calc(var(--app-safe-top) + 24px)",
+          paddingBottom: "calc(var(--app-safe-bottom) + 24px)",
+          paddingLeft: "calc(var(--app-safe-left) + 20px)",
+          paddingRight: "calc(var(--app-safe-right) + 20px)",
+          background: DT.bg,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <div style={{ textAlign: "center" }}>
-          <div style={{
-            width: 40, height: 40, borderRadius: 20,
-            border: `3px solid ${DT.track}`, borderTopColor: DT.amber,
-            animation: "spin 0.8s linear infinite", margin: "0 auto 16px",
-          }} />
-          <div style={{ fontSize: 14, color: DT.textSecondary }}>Verifying payment link…</div>
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              border: `3px solid ${DT.track}`,
+              borderTopColor: DT.amber,
+              animation: "spin 0.8s linear infinite",
+              margin: "0 auto 16px",
+            }}
+          />
+          <div style={{ fontSize: 14, color: DT.textSecondary }}>
+            Verifying payment link…
+          </div>
         </div>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -206,37 +258,75 @@ export function PaymentRequestSheet() {
   if (phase === "error") {
     const isAlreadyPaid = errorMessage.includes("already been completed");
     return (
-      <div style={{
-        minHeight: "100vh", background: DT.bg,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 20,
-      }}>
-        <div style={{
-          maxWidth: 400, width: "100%", textAlign: "center",
-          background: DT.card, border: `1px solid ${DT.cardBorder}`,
-          borderRadius: 20, padding: "40px 24px",
-        }}>
+      <div
+        style={{
+          height: "100dvh",
+          overflowY: "auto",
+          paddingTop: "calc(var(--app-safe-top) + 24px)",
+          paddingBottom: "calc(var(--app-safe-bottom) + 24px)",
+          paddingLeft: "calc(var(--app-safe-left) + 20px)",
+          paddingRight: "calc(var(--app-safe-right) + 20px)",
+          background: DT.bg,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 400,
+            width: "100%",
+            textAlign: "center",
+            background: DT.card,
+            border: `1px solid ${DT.cardBorder}`,
+            borderRadius: 20,
+            padding: "40px 24px",
+          }}
+        >
           {isAlreadyPaid ? (
-            <div style={{
-              width: 56, height: 56, borderRadius: 28, background: DT.green,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 20px",
-            }}>
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                background: DT.green,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 20px",
+              }}
+            >
               <Check size={28} color="#fff" />
             </div>
           ) : (
-            <div style={{
-              width: 56, height: 56, borderRadius: 28, background: "rgba(255,59,48,.15)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 20px",
-            }}>
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                background: "rgba(255,59,48,.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 20px",
+              }}
+            >
               <AlertCircle size={28} color="#ff3b30" />
             </div>
           )}
-          <div style={{ fontSize: 18, fontWeight: 600, color: DT.textPrimary, marginBottom: 8 }}>
+          <div
+            style={{
+              fontSize: 18,
+              fontWeight: 600,
+              color: DT.textPrimary,
+              marginBottom: 8,
+            }}
+          >
             {isAlreadyPaid ? "Payment Complete" : "Link Unavailable"}
           </div>
-          <div style={{ fontSize: 14, lineHeight: 1.5, color: DT.textSecondary }}>
+          <div
+            style={{ fontSize: 14, lineHeight: 1.5, color: DT.textSecondary }}
+          >
             {errorMessage}
           </div>
         </div>
@@ -249,21 +339,17 @@ export function PaymentRequestSheet() {
     const info = data && !("error" in data) ? data : null;
     const handleClose = () => setLocation("/");
 
-    return (
-      <SuccessScreen
-        info={info}
-        onClose={handleClose}
-      />
-    );
+    return <SuccessScreen info={info} onClose={handleClose} />;
   }
 
   // ── Ready / Checkout — show payment details ───────────────
   const info = data && !("error" in data) ? data : null;
   if (!info) return null;
 
-  const paidPct = info.totalPriceCents > 0
-    ? Math.round((info.paidSoFarCents / info.totalPriceCents) * 100)
-    : 0;
+  const paidPct =
+    info.totalPriceCents > 0
+      ? Math.round((info.paidSoFarCents / info.totalPriceCents) * 100)
+      : 0;
 
   // Parse session date
   let sessionDateDisplay = "";
@@ -278,17 +364,31 @@ export function PaymentRequestSheet() {
   }
 
   return (
-    <div style={{
-      minHeight: "100vh", background: DT.bg,
-      display: "flex", flexDirection: "column", alignItems: "center",
-      justifyContent: phase === "checkout" ? "flex-start" : "center",
-      padding: phase === "checkout" ? "40px 20px 20px" : 20,
-    }}>
-      <div style={{
-        maxWidth: 400, width: "100%",
-        background: DT.card, border: `1px solid ${DT.cardBorder}`,
-        borderRadius: 20, overflow: "hidden",
-      }}>
+    <div
+      style={{
+        height: "100dvh",
+        overflowY: "auto",
+        paddingTop: "calc(var(--app-safe-top) + 24px)",
+        paddingBottom: "calc(var(--app-safe-bottom) + 24px)",
+        paddingLeft: "calc(var(--app-safe-left) + 20px)",
+        paddingRight: "calc(var(--app-safe-right) + 20px)",
+        background: DT.bg,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: phase === "checkout" ? "flex-start" : "center",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 400,
+          width: "100%",
+          background: DT.card,
+          border: `1px solid ${DT.cardBorder}`,
+          borderRadius: 20,
+          overflow: "hidden",
+        }}
+      >
         {/* Header */}
         <div style={{ padding: "28px 24px 24px", textAlign: "center" }}>
           {/* Artist avatar */}
@@ -297,23 +397,46 @@ export function PaymentRequestSheet() {
               src={info.artistImage}
               alt={info.artistName}
               style={{
-                width: 56, height: 56, borderRadius: 14, objectFit: "cover",
-                margin: "0 auto 16px", display: "block",
+                width: 56,
+                height: 56,
+                borderRadius: 14,
+                objectFit: "cover",
+                margin: "0 auto 16px",
+                display: "block",
               }}
             />
           ) : (
-            <div style={{
-              width: 56, height: 56, borderRadius: 14,
-              background: "rgba(255,255,255,.08)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 16px",
-              fontSize: 18, fontWeight: 600, color: DT.textSecondary,
-            }}>
-              {info.artistName.split(" ").map(n => n[0]).join("").slice(0, 2)}
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 14,
+                background: "rgba(255,255,255,.08)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 16px",
+                fontSize: 18,
+                fontWeight: 600,
+                color: DT.textSecondary,
+              }}
+            >
+              {info.artistName
+                .split(" ")
+                .map(n => n[0])
+                .join("")
+                .slice(0, 2)}
             </div>
           )}
 
-          <div style={{ fontSize: 13, fontWeight: 500, color: DT.textSecondary, marginBottom: 4 }}>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 500,
+              color: DT.textSecondary,
+              marginBottom: 4,
+            }}
+          >
             Payment Request
           </div>
           <div style={{ fontSize: 20, fontWeight: 600, color: DT.textPrimary }}>
@@ -323,19 +446,41 @@ export function PaymentRequestSheet() {
 
         {/* Session details card */}
         <div style={{ padding: "0 20px" }}>
-          <div style={{
-            background: "rgba(255,255,255,.04)",
-            border: `1px solid ${DT.cardBorder}`,
-            borderRadius: 14, padding: "16px 18px",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+          <div
+            style={{
+              background: "rgba(255,255,255,.04)",
+              border: `1px solid ${DT.cardBorder}`,
+              borderRadius: 14,
+              padding: "16px 18px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 12,
+              }}
+            >
               <Calendar size={16} color={DT.textTertiary} />
               <div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: DT.textPrimary }}>
+                <div
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 600,
+                    color: DT.textPrimary,
+                  }}
+                >
                   {sessionDateDisplay} · {info.serviceName}
                 </div>
                 {sessionTimeDisplay && (
-                  <div style={{ fontSize: 12, color: DT.textTertiary, marginTop: 2 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: DT.textTertiary,
+                      marginTop: 2,
+                    }}
+                  >
                     {sessionTimeDisplay}
                   </div>
                 )}
@@ -343,12 +488,20 @@ export function PaymentRequestSheet() {
             </div>
 
             {/* Amount due */}
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              marginTop: 4,
-            }}>
-              <span style={{ fontSize: 14, color: DT.textSecondary }}>Amount due</span>
-              <span style={{ fontSize: 22, fontWeight: 600, color: DT.textPrimary }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginTop: 4,
+              }}
+            >
+              <span style={{ fontSize: 14, color: DT.textSecondary }}>
+                Amount due
+              </span>
+              <span
+                style={{ fontSize: 22, fontWeight: 600, color: DT.textPrimary }}
+              >
                 {formatCents(info.amountCents)}
               </span>
             </div>
@@ -356,17 +509,38 @@ export function PaymentRequestSheet() {
             {/* Progress bar */}
             {paidPct > 0 && (
               <div style={{ marginTop: 10 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: 6,
+                  }}
+                >
                   <span style={{ fontSize: 11, color: DT.textTertiary }}>
-                    {formatCents(info.paidSoFarCents)} of {formatCents(info.totalPriceCents)} paid
+                    {formatCents(info.paidSoFarCents)} of{" "}
+                    {formatCents(info.totalPriceCents)} paid
                   </span>
-                  <span style={{ fontSize: 11, color: DT.green }}>{paidPct}%</span>
+                  <span style={{ fontSize: 11, color: DT.green }}>
+                    {paidPct}%
+                  </span>
                 </div>
-                <div style={{ height: 4, borderRadius: 99, background: DT.track, overflow: "hidden" }}>
-                  <div style={{
-                    height: "100%", borderRadius: 99, background: DT.green,
-                    width: `${paidPct}%`, transition: "width .4s",
-                  }} />
+                <div
+                  style={{
+                    height: 4,
+                    borderRadius: 99,
+                    background: DT.track,
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      height: "100%",
+                      borderRadius: 99,
+                      background: DT.green,
+                      width: `${paidPct}%`,
+                      transition: "width .4s",
+                    }}
+                  />
                 </div>
               </div>
             )}
@@ -380,23 +554,38 @@ export function PaymentRequestSheet() {
               onClick={handlePay}
               disabled={isSubmitting}
               style={{
-                width: "100%", textAlign: "center",
-                background: DT.amber, color: DT.amberOnColor,
-                borderRadius: 14, padding: "16px 20px",
-                fontSize: 16, fontWeight: 600, lineHeight: 1,
-                border: "none", cursor: isSubmitting ? "wait" : "pointer",
+                width: "100%",
+                textAlign: "center",
+                background: DT.amber,
+                color: DT.amberOnColor,
+                borderRadius: 14,
+                padding: "16px 20px",
+                fontSize: 16,
+                fontWeight: 600,
+                lineHeight: 1,
+                border: "none",
+                cursor: isSubmitting ? "wait" : "pointer",
                 opacity: isSubmitting ? 0.7 : 1,
                 transition: "opacity .2s",
               }}
             >
-              {isSubmitting ? "Preparing Secure Checkout…" : `Pay ${formatCents(info.amountCents)}`}
+              {isSubmitting
+                ? "Preparing Secure Checkout…"
+                : `Pay ${formatCents(info.amountCents)}`}
             </button>
 
-            <div style={{
-              textAlign: "center", marginTop: 14,
-              fontSize: 11, color: DT.textTertiary,
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
-            }}>
+            <div
+              style={{
+                textAlign: "center",
+                marginTop: 14,
+                fontSize: 11,
+                color: DT.textTertiary,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 4,
+              }}
+            >
               <Clock size={11} /> Secure payment powered by Stripe
             </div>
           </div>
@@ -427,7 +616,14 @@ export function PaymentRequestSheet() {
       </div>
 
       {/* Branding */}
-      <div style={{ marginTop: 24, fontSize: 12, color: DT.textTertiary, textAlign: "center" }}>
+      <div
+        style={{
+          marginTop: 24,
+          fontSize: 12,
+          color: DT.textTertiary,
+          textAlign: "center",
+        }}
+      >
         Powered by Tattoi
       </div>
     </div>

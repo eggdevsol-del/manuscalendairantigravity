@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/ssot/PageHeader";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
   Button,
@@ -154,24 +155,10 @@ export default function QuickActionsManagement() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="mobile-header px-4 py-4">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setLocation("/settings")}
-            className="tap-target"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-2xl font-bold text-foreground">
-            Quick Action Buttons
-          </h1>
-        </div>
-      </header>
+    <div className="app-document min-h-[100dvh] flex flex-col">
+      <PageHeader title="Quick Action Buttons" onBack={() => setLocation("/settings")} />
 
-      <main className="flex-1 px-4 py-4 mobile-scroll overflow-y-auto space-y-4">
+      <main className="flex-1 min-h-0 w-full max-w-5xl mx-auto px-4 py-4 mobile-scroll overflow-y-auto space-y-4 pb-28">
         <Card className="bg-accent/5 border-accent/20">
           <CardHeader>
             <CardTitle className="text-base">About Quick Actions</CardTitle>

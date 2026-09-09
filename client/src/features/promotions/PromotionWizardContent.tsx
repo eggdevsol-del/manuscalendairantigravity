@@ -354,7 +354,7 @@ export function PromotionWizardContent({
           >
             {getStepTitle(step)}
           </p>
-          <p className="text-[8px] text-muted-foreground font-mono">
+          <p className="text-[11px] text-muted-foreground font-mono">
             STEP {getStepIndex(step)} OF 5
           </p>
         </div>
@@ -451,7 +451,7 @@ export function PromotionWizardContent({
       <div className="p-4 pt-2 border-t border-border flex gap-2 shrink-0">
         {step === "preview" ? (
           <button
-            className="flex-1 py-3 rounded-[4px] text-xs font-bold uppercase tracking-widest transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            className="flex-1 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             onClick={handleSave}
             disabled={
               !canProceed() ||
@@ -467,7 +467,7 @@ export function PromotionWizardContent({
           </button>
         ) : (
           <button
-            className="flex-1 py-3 rounded-[4px] text-xs font-bold uppercase tracking-widest transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            className="flex-1 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             onClick={goNext}
             disabled={!canProceed()}
           >
@@ -575,7 +575,7 @@ function ValueConfigStep({
   return (
     <div className="flex flex-col gap-3 w-full">
       <motion.div variants={fab.animation.item} className="space-y-1">
-        <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
           Identity
         </p>
         <div className={cn(card.base, card.bg, "p-2 space-y-2")}>
@@ -595,7 +595,7 @@ function ValueConfigStep({
       </motion.div>
 
       <motion.div variants={fab.animation.item} className="space-y-1">
-        <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
           Configuration
         </p>
         <div className={cn(card.base, card.bg, "p-2 space-y-2")}>
@@ -603,7 +603,7 @@ function ValueConfigStep({
             <button
               onClick={() => setValueType("fixed")}
               className={cn(
-                "flex-1 py-1.5 rounded-[4px] text-[10px] font-bold transition-all",
+                "flex-1 py-1.5 rounded-2xl text-[10px] font-bold transition-all",
                 valueType === "fixed"
                   ? "bg-primary text-primary-foreground"
                   : "bg-secondary/50 text-muted-foreground"
@@ -614,7 +614,7 @@ function ValueConfigStep({
             <button
               onClick={() => setValueType("percentage")}
               className={cn(
-                "flex-1 py-1.5 rounded-[4px] text-[10px] font-bold transition-all",
+                "flex-1 py-1.5 rounded-2xl text-[10px] font-bold transition-all",
                 valueType === "percentage"
                   ? "bg-primary text-primary-foreground"
                   : "bg-secondary/50 text-muted-foreground"
@@ -660,7 +660,7 @@ function RulesConfigStep({
   return (
     <div className="flex flex-col gap-3 w-full">
       <motion.div variants={fab.animation.item} className="space-y-1">
-        <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
           Validity
         </p>
         <div className={cn(card.base, card.bg, "p-2 space-y-3")}>
@@ -692,7 +692,7 @@ function RulesConfigStep({
       </motion.div>
 
       <motion.div variants={fab.animation.item} className="space-y-1">
-        <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
           Auto-Apply Trigger
         </p>
         <div className="flex flex-col gap-1">
@@ -807,7 +807,7 @@ function DesignCustomizationStep({
       <div className="space-y-3">
         {/* Theme Toggle */}
         <motion.div variants={fab.animation.item} className="space-y-1">
-          <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
             Theme Mode
           </p>
           <div className="flex gap-1">
@@ -816,7 +816,7 @@ function DesignCustomizationStep({
                 key={m}
                 onClick={() => setColorMode(m as any)}
                 className={cn(
-                  "flex-1 py-1.5 rounded-[4px] text-[9px] font-bold uppercase transition-all",
+                  "flex-1 py-1.5 rounded-2xl text-[9px] font-bold uppercase transition-all",
                   colorMode === m
                     ? "bg-primary text-primary-foreground"
                     : "bg-secondary/50 text-muted-foreground"
@@ -832,7 +832,7 @@ function DesignCustomizationStep({
         {colorMode === "gradient" && (
           <motion.div
             variants={fab.animation.item}
-            className="grid grid-cols-4 gap-1.5 p-2 bg-secondary/50 rounded-[4px]"
+            className="grid grid-cols-4 gap-1.5 p-2 bg-secondary/50 rounded-2xl"
           >
             {GRADIENTS.map(gradient => (
               <button
@@ -852,7 +852,7 @@ function DesignCustomizationStep({
 
         {/* Typography / Font Style */}
         <motion.div variants={fab.animation.item} className="space-y-1">
-          <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
             Typography
           </p>
           <div className="grid grid-cols-2 gap-1.5">
@@ -861,7 +861,7 @@ function DesignCustomizationStep({
                 key={font.id}
                 onClick={() => setFontFamily(font.id)}
                 className={cn(
-                  "p-2 rounded-[4px] text-xs transition-all border",
+                  "p-2 rounded-2xl text-xs transition-all border",
                   font.className,
                   fontFamily === font.id
                     ? "bg-primary/20 border-primary text-foreground"
@@ -876,7 +876,7 @@ function DesignCustomizationStep({
 
         {/* Background Customization */}
         <motion.div variants={fab.animation.item} className="space-y-1">
-          <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
             Card Background
           </p>
           <div className={cn(card.base, card.bg, "p-2 space-y-3")}>
@@ -908,7 +908,7 @@ function DesignCustomizationStep({
 
         {/* Logo Branding */}
         <motion.div variants={fab.animation.item} className="space-y-1">
-          <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
             Branding
           </p>
           <div
@@ -985,7 +985,7 @@ function PreviewStep({
             can issue it to clients directly from your dashboard."
           </p>
         </div>
-        <div className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[4px] bg-[var(--color-status-success-bg)]">
+        <div className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl bg-[var(--color-status-success-bg)]">
           <Check className="w-3.5 h-3.5 text-[var(--color-status-success-text)]" />
           <span className="text-[10px] font-bold text-[var(--color-status-success-text)] uppercase tracking-widest">
             Validated

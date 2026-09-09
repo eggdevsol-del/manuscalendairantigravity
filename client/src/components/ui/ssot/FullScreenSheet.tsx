@@ -52,7 +52,7 @@ interface FullScreenSheetProps {
   className?: string;
   /** Optional solid surface for focused payment flows. */
   surfaceClassName?: string;
-  /** Height of the context area (default: "h-[15vh]") */
+  /** Height of the context area (default: "h-[15dvh]") */
   contextHeight?: string;
 }
 
@@ -67,7 +67,7 @@ export function FullScreenSheet({
   children,
   className,
   surfaceClassName,
-  contextHeight = "h-[15vh]",
+  contextHeight = "h-[15dvh]",
 }: FullScreenSheetProps) {
   return (
     <DialogPrimitive.Root
@@ -108,8 +108,8 @@ export function FullScreenSheet({
                 }}
               >
                 {/* 1. Header */}
-                <header className="px-4 py-4 z-10 shrink-0 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                <header className="app-safe-header px-4 py-4 z-10 shrink-0 flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
                     {onBack && (
                       <Button
                         variant="ghost"
@@ -120,7 +120,7 @@ export function FullScreenSheet({
                         <ArrowLeft className="w-5 h-5" />
                       </Button>
                     )}
-                    <DialogPrimitive.Title className={tokens.header.sheetTitle}>
+                    <DialogPrimitive.Title className={cn(tokens.header.sheetTitle, "min-w-0 break-words")}>
                       {title}
                     </DialogPrimitive.Title>
                   </div>
@@ -130,6 +130,7 @@ export function FullScreenSheet({
                     size="icon"
                     className={tokens.button.icon}
                     onClick={onClose}
+                    aria-label="Close"
                   >
                     <X className="w-5 h-5" />
                   </Button>
@@ -180,7 +181,7 @@ export function FullScreenSheet({
                   {/* Scrollable Content */}
                   <div
                     className={cn(
-                      "relative z-10 flex-1 w-full h-full px-4 pt-8 overflow-y-auto mobile-scroll touch-pan-y",
+                      "relative z-10 flex-1 min-h-0 w-full h-full px-4 pt-8 overflow-y-auto mobile-scroll touch-pan-y",
                       className
                     )}
                   >

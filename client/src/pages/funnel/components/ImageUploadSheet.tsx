@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 /**
  * Image Upload Sheet Component
  *
@@ -118,8 +119,8 @@ export default function ImageUploadSheet({
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+  return createPortal(
+    <div className="fixed inset-0 z-[101] flex items-end justify-center">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-background/80 backdrop-blur-sm"
@@ -128,7 +129,7 @@ export default function ImageUploadSheet({
 
       {/* Sheet */}
       <div
-        className="relative w-full max-w-lg bg-background rounded-t-3xl max-h-[85vh] overflow-hidden animate-slide-up"
+        className="relative w-full max-w-lg bg-background rounded-t-3xl max-h-[calc(100dvh-var(--app-safe-top)-16px)] overflow-hidden animate-slide-up"
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
@@ -151,7 +152,7 @@ export default function ImageUploadSheet({
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[60vh]">
+        <div className="p-6 overflow-y-auto max-h-[60dvh]">
           {/* Upload area */}
           {images.length < maxImages && (
             <div
@@ -309,5 +310,5 @@ export default function ImageUploadSheet({
         }
       `}</style>
     </div>
-  );
+  , document.body);
 }

@@ -97,75 +97,75 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  --background: #F5F5F7;
-  --foreground: #1A1A1E;
-  --card: #FFFFFF;
-  --card-foreground: #1A1A1E;
-  --popover: #EBEBEF;
-  --popover-foreground: #1A1A1E;
-  --secondary: #EBEBEF;
-  --secondary-foreground: #1A1A1E;
-  --muted: #EBEBEF;
-  --muted-foreground: #6A6A72;
-  --primary: #F8D057;
-  --primary-foreground: #1B1B1B;
+  --background: #f5f5f7;
+  --foreground: #1a1a1e;
+  --card: #ffffff;
+  --card-foreground: #1a1a1e;
+  --popover: #ebebef;
+  --popover-foreground: #1a1a1e;
+  --secondary: #ebebef;
+  --secondary-foreground: #1a1a1e;
+  --muted: #ebebef;
+  --muted-foreground: #6a6a72;
+  --primary: #f8d057;
+  --primary-foreground: #1b1b1b;
   --primary-rgb: 248, 208, 87;
-  --accent: #FEF9E7;
-  --accent-foreground: #1B1B1B;
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
-  --border: #E0E0E8;
-  --input: #FFFFFF;
-  --ring: #F8D057;
-  --chart-1: #F8D057;
-  --chart-2: #E6BF3A;
-  --chart-3: #6A6A72;
-  --chart-4: #AEAEB8;
-  --chart-5: #E0E0E8;
-  --sidebar: #F8F8FA;
-  --sidebar-foreground: #1A1A1E;
-  --sidebar-primary: #F8D057;
-  --sidebar-primary-foreground: #1B1B1B;
-  --sidebar-accent: #FEF9E7;
-  --sidebar-accent-foreground: #1A1A1E;
-  --sidebar-border: #E0E0E8;
-  --sidebar-ring: #F8D057;
-  --color-bg-base: #F5F5F7;
-  --color-bg-surface: #FFFFFF;
-  --color-bg-elevated: #EBEBEF;
-  --color-bg-header: #F8F8FA;
-  --color-text-primary: #1A1A1E;
-  --color-text-secondary: #6A6A72;
-  --color-text-disabled: #AEAEB8;
-  --color-text-on-accent: #1B1B1B;
-  --color-text-on-image: #FFFFFF;
-  --color-accent-yellow: #F8D057;
-  --color-accent-dim: #FEF9E7;
-  --color-frosted-light: rgba(255,255,255,0.18);
-  --color-frosted-dark: rgba(0,0,0,0.30);
-  --color-bg-overlay: rgba(0,0,0,0.35);
-  --color-success: #22A65E;
-  --color-warning: #D97706;
-  --color-danger: #EF4444;
-  --color-gold: #B8924A;
-  --color-status-success-bg: rgba(34,166,94,0.10);
-  --color-status-success-text: #22A65E;
-  --color-status-success-border: rgba(34,166,94,0.20);
-  --color-status-warning-bg: rgba(217,119,6,0.10);
-  --color-status-warning-text: #D97706;
-  --color-status-warning-border: rgba(217,119,6,0.20);
-  --color-status-danger-bg: rgba(239,68,68,0.10);
-  --color-status-danger-text: #EF4444;
-  --color-status-danger-border: rgba(239,68,68,0.20);
-  --color-status-info-bg: rgba(59,130,246,0.10);
-  --color-status-info-text: #3B82F6;
-  --color-status-info-border: rgba(59,130,246,0.20);
-  --color-status-neutral-bg: rgba(107,114,128,0.10);
-  --color-status-neutral-text: #6B7280;
-  --color-status-neutral-border: rgba(107,114,128,0.20);
-  --color-border: #E0E0E8;
-  --color-divider: #EDEDF2;
-  --color-divider-light: #E8E8E8;
+  --accent: #fef9e7;
+  --accent-foreground: #1b1b1b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e0e0e8;
+  --input: #ffffff;
+  --ring: #f8d057;
+  --chart-1: #f8d057;
+  --chart-2: #e6bf3a;
+  --chart-3: #6a6a72;
+  --chart-4: #aeaeb8;
+  --chart-5: #e0e0e8;
+  --sidebar: #f8f8fa;
+  --sidebar-foreground: #1a1a1e;
+  --sidebar-primary: #f8d057;
+  --sidebar-primary-foreground: #1b1b1b;
+  --sidebar-accent: #fef9e7;
+  --sidebar-accent-foreground: #1a1a1e;
+  --sidebar-border: #e0e0e8;
+  --sidebar-ring: #f8d057;
+  --color-bg-base: #f5f5f7;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated: #ebebef;
+  --color-bg-header: #f8f8fa;
+  --color-text-primary: #1a1a1e;
+  --color-text-secondary: #6a6a72;
+  --color-text-disabled: #aeaeb8;
+  --color-text-on-accent: #1b1b1b;
+  --color-text-on-image: #ffffff;
+  --color-accent-yellow: #f8d057;
+  --color-accent-dim: #fef9e7;
+  --color-frosted-light: rgba(255, 255, 255, 0.18);
+  --color-frosted-dark: rgba(0, 0, 0, 0.3);
+  --color-bg-overlay: rgba(0, 0, 0, 0.35);
+  --color-success: #22a65e;
+  --color-warning: #d97706;
+  --color-danger: #ef4444;
+  --color-gold: #b8924a;
+  --color-status-success-bg: rgba(34, 166, 94, 0.1);
+  --color-status-success-text: #22a65e;
+  --color-status-success-border: rgba(34, 166, 94, 0.2);
+  --color-status-warning-bg: rgba(217, 119, 6, 0.1);
+  --color-status-warning-text: #d97706;
+  --color-status-warning-border: rgba(217, 119, 6, 0.2);
+  --color-status-danger-bg: rgba(239, 68, 68, 0.1);
+  --color-status-danger-text: #ef4444;
+  --color-status-danger-border: rgba(239, 68, 68, 0.2);
+  --color-status-info-bg: rgba(59, 130, 246, 0.1);
+  --color-status-info-text: #3b82f6;
+  --color-status-info-border: rgba(59, 130, 246, 0.2);
+  --color-status-neutral-bg: rgba(107, 114, 128, 0.1);
+  --color-status-neutral-text: #6b7280;
+  --color-status-neutral-border: rgba(107, 114, 128, 0.2);
+  --color-border: #e0e0e8;
+  --color-divider: #ededf2;
+  --color-divider-light: #e8e8e8;
   --page-margin: 20px;
   --section-gap: 28px;
   --row-height: 56px;
@@ -185,7 +185,7 @@
   --duration-slow: 400ms;
   --easing-default: cubic-bezier(0.4, 0, 0.2, 1);
   --easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --bg-gradient: #F5F5F7;
+  --bg-gradient: #f5f5f7;
 
   /* ── Bottom Sheet SSOT ─────────────────────────────────────────────────
      All bottom sheets originate from the top of the bottom nav.
@@ -202,75 +202,75 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .dark {
-  --background: #1B1B1B;
-  --foreground: #FFFFFF;
+  --background: #1b1b1b;
+  --foreground: #ffffff;
   --card: #242424;
-  --card-foreground: #FFFFFF;
-  --popover: #2A2A2A;
-  --popover-foreground: #FFFFFF;
-  --secondary: #2A2A2A;
-  --secondary-foreground: #FFFFFF;
+  --card-foreground: #ffffff;
+  --popover: #2a2a2a;
+  --popover-foreground: #ffffff;
+  --secondary: #2a2a2a;
+  --secondary-foreground: #ffffff;
   --muted: #242424;
-  --muted-foreground: #7A7A7A;
-  --primary: #F8D057;
-  --primary-foreground: #1B1B1B;
+  --muted-foreground: #7a7a7a;
+  --primary: #f8d057;
+  --primary-foreground: #1b1b1b;
   --primary-rgb: 248, 208, 87;
-  --accent: #3A2F00;
-  --accent-foreground: #F8D057;
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
-  --border: rgba(255,255,255,0.12);
+  --accent: #3a2f00;
+  --accent-foreground: #f8d057;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.12);
   --input: #242424;
-  --ring: #F8D057;
-  --chart-1: #F8D057;
-  --chart-2: #E6BF3A;
-  --chart-3: #7A7A7A;
-  --chart-4: #4A4A52;
-  --chart-5: rgba(255,255,255,0.12);
-  --sidebar: #1B1B1B;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #F8D057;
-  --sidebar-primary-foreground: #1B1B1B;
-  --sidebar-accent: #3A2F00;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: rgba(255,255,255,0.12);
-  --sidebar-ring: #F8D057;
-  --color-bg-base: #1B1B1B;
+  --ring: #f8d057;
+  --chart-1: #f8d057;
+  --chart-2: #e6bf3a;
+  --chart-3: #7a7a7a;
+  --chart-4: #4a4a52;
+  --chart-5: rgba(255, 255, 255, 0.12);
+  --sidebar: #1b1b1b;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #f8d057;
+  --sidebar-primary-foreground: #1b1b1b;
+  --sidebar-accent: #3a2f00;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: #f8d057;
+  --color-bg-base: #1b1b1b;
   --color-bg-surface: #242424;
-  --color-bg-elevated: #2A2A2A;
-  --color-bg-header: #1B1B1B;
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: #7A7A7A;
-  --color-text-disabled: #4A4A52;
-  --color-text-on-accent: #1B1B1B;
-  --color-text-on-image: #FFFFFF;
-  --color-accent-yellow: #F8D057;
-  --color-accent-dim: #3A2F00;
-  --color-frosted-light: rgba(255,255,255,0.18);
-  --color-frosted-dark: rgba(0,0,0,0.30);
-  --color-bg-overlay: rgba(0,0,0,0.35);
-  --color-success: #34C77B;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
-  --color-gold: #C9A96E;
-  --color-status-success-bg: rgba(52,199,123,0.10);
-  --color-status-success-text: #34C77B;
-  --color-status-success-border: rgba(52,199,123,0.20);
-  --color-status-warning-bg: rgba(245,158,11,0.10);
-  --color-status-warning-text: #F59E0B;
-  --color-status-warning-border: rgba(245,158,11,0.20);
-  --color-status-danger-bg: rgba(239,68,68,0.10);
-  --color-status-danger-text: #EF4444;
-  --color-status-danger-border: rgba(239,68,68,0.20);
-  --color-status-info-bg: rgba(59,130,246,0.10);
-  --color-status-info-text: #60A5FA;
-  --color-status-info-border: rgba(59,130,246,0.20);
-  --color-status-neutral-bg: rgba(107,114,128,0.10);
-  --color-status-neutral-text: #9CA3AF;
-  --color-status-neutral-border: rgba(107,114,128,0.20);
-  --color-border: rgba(255,255,255,0.12);
-  --color-divider: rgba(255,255,255,0.08);
-  --color-divider-light: rgba(255,255,255,0.06);
+  --color-bg-elevated: #2a2a2a;
+  --color-bg-header: #1b1b1b;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #7a7a7a;
+  --color-text-disabled: #4a4a52;
+  --color-text-on-accent: #1b1b1b;
+  --color-text-on-image: #ffffff;
+  --color-accent-yellow: #f8d057;
+  --color-accent-dim: #3a2f00;
+  --color-frosted-light: rgba(255, 255, 255, 0.18);
+  --color-frosted-dark: rgba(0, 0, 0, 0.3);
+  --color-bg-overlay: rgba(0, 0, 0, 0.35);
+  --color-success: #34c77b;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-gold: #c9a96e;
+  --color-status-success-bg: rgba(52, 199, 123, 0.1);
+  --color-status-success-text: #34c77b;
+  --color-status-success-border: rgba(52, 199, 123, 0.2);
+  --color-status-warning-bg: rgba(245, 158, 11, 0.1);
+  --color-status-warning-text: #f59e0b;
+  --color-status-warning-border: rgba(245, 158, 11, 0.2);
+  --color-status-danger-bg: rgba(239, 68, 68, 0.1);
+  --color-status-danger-text: #ef4444;
+  --color-status-danger-border: rgba(239, 68, 68, 0.2);
+  --color-status-info-bg: rgba(59, 130, 246, 0.1);
+  --color-status-info-text: #60a5fa;
+  --color-status-info-border: rgba(59, 130, 246, 0.2);
+  --color-status-neutral-bg: rgba(107, 114, 128, 0.1);
+  --color-status-neutral-text: #9ca3af;
+  --color-status-neutral-border: rgba(107, 114, 128, 0.2);
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-divider: rgba(255, 255, 255, 0.08);
+  --color-divider-light: rgba(255, 255, 255, 0.06);
   --page-margin: 20px;
   --section-gap: 28px;
   --row-height: 56px;
@@ -285,7 +285,7 @@
   --radius-xl: 32px;
   --radius-pill: 999px;
   --radius: 16px;
-  --bg-gradient: #1B1B1B;
+  --bg-gradient: #1b1b1b;
 }
 
 @layer base {
@@ -339,7 +339,12 @@
 
   body {
     @apply bg-transparent text-foreground;
-    font-family: 'DM Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family:
+      "DM Sans",
+      "SF Pro Display",
+      -apple-system,
+      BlinkMacSystemFont,
+      sans-serif;
     min-height: 100%;
     min-height: 100dvh;
     overflow: hidden;
@@ -347,9 +352,7 @@
     -moz-osx-font-smoothing: grayscale;
     touch-action: manipulation;
     overscroll-behavior-y: none;
-    padding-top: calc(env(safe-area-inset-top) + 6px);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    padding: 0;
   }
 
   button:not(:disabled),
@@ -366,7 +369,6 @@
 }
 
 @layer components {
-
   .container {
     width: 100%;
     margin-left: auto;
@@ -420,7 +422,7 @@
     -webkit-backdrop-filter: blur(8px);
   }
   .frosted-dark {
-    background: rgba(0, 0, 0, 0.30);
+    background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
   }
@@ -504,4 +506,140 @@
 
 [class*="bg-[#111]"] svg {
   color: rgba(255, 255, 255, 0.9) !important;
+}
+/* Viewport contract: a full-screen root consumes safe areas once. Nested headers
+   inherit zero; portalled roots establish their own safe area. Test overrides
+   use these same variables without altering device-specific app code. */
+:root {
+  --app-safe-top: env(safe-area-inset-top, 0px);
+  --app-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --app-safe-left: env(safe-area-inset-left, 0px);
+  --app-safe-right: env(safe-area-inset-right, 0px);
+  --app-gutter: clamp(16px, 3vw, 24px);
+}
+.app-viewport,
+.app-document {
+  padding-top: var(--app-safe-top);
+  padding-left: var(--app-safe-left);
+  padding-right: var(--app-safe-right);
+  --header-safe-top: 0px;
+  --header-safe-left: 0px;
+  --header-safe-right: 0px;
+}
+.app-document {
+  position: fixed;
+  inset: 0;
+  top: var(--app-safe-top);
+  height: calc(100dvh - var(--app-safe-top));
+  min-height: 0;
+  padding-top: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: calc(100px + var(--app-safe-bottom));
+  -webkit-overflow-scrolling: touch;
+}
+.app-safe-header,
+.mobile-header {
+  padding-top: calc(var(--header-safe-top, var(--app-safe-top)) + 16px);
+  padding-left: max(
+    var(--app-gutter),
+    var(--header-safe-left, var(--app-safe-left))
+  );
+  padding-right: max(
+    var(--app-gutter),
+    var(--header-safe-right, var(--app-safe-right))
+  );
+  flex-shrink: 0;
+}
+.app-safe-dialog {
+  max-height: calc(
+    100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 32px
+  );
+  top: calc(50% + (var(--app-safe-top) - var(--app-safe-bottom)) / 2);
+  max-width: min(
+    640px,
+    calc(100% - var(--app-safe-left) - var(--app-safe-right) - 32px)
+  );
+  overflow-y: auto;
+}
+.app-safe-sheet {
+  max-height: calc(100dvh - var(--app-safe-top) - 16px);
+  padding-bottom: var(--app-safe-bottom);
+  padding-left: var(--app-safe-left);
+  padding-right: var(--app-safe-right);
+  --header-safe-top: 0px;
+}
+.app-safe-sheet[data-side="top"],
+.app-safe-sheet[data-side="left"],
+.app-safe-sheet[data-side="right"] {
+  padding-top: var(--app-safe-top);
+}
+.app-safe-sheet[data-side="left"],
+.app-safe-sheet[data-side="right"] {
+  max-height: 100dvh;
+}
+.app-safe-sheet > [data-slot="sheet-close"] {
+  top: calc(var(--sheet-close-top, 0px) + 12px);
+  right: max(12px, var(--app-safe-right));
+}
+.app-safe-sheet:not([data-side="bottom"]) {
+  --sheet-close-top: var(--app-safe-top);
+}
+.app-safe-sheet[data-side="bottom"],
+.app-safe-sheet[data-side="top"] {
+  width: min(100%, 640px);
+  margin-left: auto;
+  margin-right: auto;
+}
+.app-safe-sheet [data-slot="sheet-header"],
+.app-safe-dialog [data-slot="dialog-header"] {
+  padding-right: 60px;
+}
+.app-safe-sheet [data-slot="sheet-title"],
+.app-safe-dialog [data-slot="dialog-title"] {
+  overflow-wrap: anywhere;
+}
+.app-viewport > .app-safe-header {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+}
+/* Native form controls must not trigger iOS focus zoom or clip translated text. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: max(16px, 1em);
+  }
+  [data-slot="button"],
+  [data-slot="dialog-close"],
+  [data-slot="sheet-close"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+.app-safe-drawer {
+  padding-bottom: var(--app-safe-bottom);
+  padding-inline: var(--app-safe-left) var(--app-safe-right);
+}
+.app-safe-drawer[data-vaul-drawer-direction="top"],
+.app-safe-drawer[data-vaul-drawer-direction="left"],
+.app-safe-drawer[data-vaul-drawer-direction="right"] {
+  padding-top: var(--app-safe-top);
+}
+.app-safe-drawer[data-vaul-drawer-direction="bottom"] {
+  max-height: calc(100dvh - var(--app-safe-top) - 16px);
+}
+.client-home-header,
+.artist-profile-header {
+  padding-left: max(16px, var(--app-safe-left));
+  padding-right: max(16px, var(--app-safe-right));
+}
+
+/* Fixed headers do not participate in an ancestor's inset padding. */
+.app-fixed-header {
+  --header-safe-top: var(--app-safe-top);
+  --header-safe-left: var(--app-safe-left);
+  --header-safe-right: var(--app-safe-right);
 }

@@ -61,7 +61,7 @@ export function HalfSheet({
             {/* Sheet — anchored bottom, grows upward with content */}
             <DialogPrimitive.Content asChild>
               <motion.div
-                className="fixed inset-x-0 bottom-0 z-[101] flex flex-col"
+                className="fixed inset-x-0 bottom-0 z-[101] flex flex-col w-full max-w-[640px] mx-auto"
                 initial={tokens.motion.sheetSlide.initial}
                 animate={tokens.motion.sheetSlide.animate}
                 exit={tokens.motion.sheetSlide.exit}
@@ -94,7 +94,7 @@ export function HalfSheet({
                     tokens.sheetSecondary.glass
                   )}
                   style={{
-                    maxHeight: "calc(90dvh - env(safe-area-inset-top, 0px))",
+                    maxHeight: "calc(100dvh - var(--app-safe-top) - 16px)",
                   }}
                 >
                   {/* Drag handle — always at top, never compresses */}
@@ -138,7 +138,7 @@ export function HalfSheet({
                   {/* Safe area padding — always present at bottom, never scrolls */}
                   <div
                     className="shrink-0"
-                    style={{ paddingBottom: "env(safe-area-inset-bottom, 20px)" }}
+                    style={{ paddingBottom: "var(--app-safe-bottom)" }}
                   />
                 </div>
               </motion.div>

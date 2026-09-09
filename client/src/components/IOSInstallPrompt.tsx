@@ -106,7 +106,7 @@ export default function IOSInstallPrompt({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
         <div
-          className="w-full max-w-sm max-h-[70vh] overflow-y-auto rounded-2xl p-6"
+          className="w-full max-w-sm max-h-[70dvh] overflow-y-auto rounded-2xl p-6"
           style={{
             background:
               "var(--background)",
@@ -220,7 +220,7 @@ export default function IOSInstallPrompt({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
       <div
-        className="w-full max-w-sm max-h-[70vh] overflow-y-auto rounded-2xl p-6"
+        className="w-full max-w-sm max-h-[70dvh] overflow-y-auto rounded-2xl p-6"
         style={{
           background:
             "var(--background)",

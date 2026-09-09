@@ -238,7 +238,7 @@ export function ProposalFABMenu({
               variants={fab.animation.item}
               className={cn(
                 card.base,
-                "grid grid-cols-3 gap-px rounded-[4px] overflow-hidden bg-secondary/50"
+                "grid grid-cols-3 gap-px rounded-2xl overflow-hidden bg-secondary/50"
               )}
             >
               {[
@@ -254,11 +254,11 @@ export function ProposalFABMenu({
                   key={label}
                   className="p-2 flex flex-col items-center gap-0.5"
                 >
-                  <span className="text-[8px] text-muted-foreground uppercase tracking-wider font-medium">
+                  <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">
                     {label}
                   </span>
                   {strike && (
-                    <span className="text-[8px] line-through text-muted-foreground">
+                    <span className="text-[11px] line-through text-muted-foreground">
                       {strike}
                     </span>
                   )}
@@ -280,7 +280,7 @@ export function ProposalFABMenu({
             {hasDiscount && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-[var(--color-status-success-bg)]"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-2xl bg-[var(--color-status-success-bg)]"
               >
                 <Tag className="w-3 h-3 text-[var(--color-status-success-text)]" />
                 <span className="text-[9px] font-medium text-[var(--color-status-success-text)]">
@@ -292,7 +292,7 @@ export function ProposalFABMenu({
             {/* Dates list */}
             {dateList.length > 0 && (
               <motion.div variants={fab.animation.item} className="space-y-1">
-                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
                   Schedule
                 </p>
                 <div className="max-h-[220px] overflow-y-auto pr-1 -mr-1 space-y-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
@@ -302,17 +302,17 @@ export function ProposalFABMenu({
                       className={cn(
                         card.base,
                         card.bg,
-                        "flex items-center gap-2 p-1.5 rounded-[4px]"
+                        "flex items-center gap-2 p-1.5 rounded-2xl"
                       )}
                     >
-                      <span className="w-4 h-4 rounded-full bg-secondary/50 flex items-center justify-center text-[8px] font-bold text-muted-foreground shrink-0">
+                      <span className="w-4 h-4 rounded-full bg-secondary/50 flex items-center justify-center text-[11px] font-bold text-muted-foreground shrink-0">
                         {i + 1}
                       </span>
                       <div className="flex-1 min-w-0">
                         <p className="text-[10px] font-semibold text-foreground truncate">
                           {format(new Date(dateStr), "EEE, MMM d")}
                         </p>
-                        <p className="text-[8px] text-muted-foreground">
+                        <p className="text-[11px] text-muted-foreground">
                           {format(new Date(dateStr), "h:mm a")} ·{" "}
                           {serviceDuration}m
                         </p>
@@ -337,7 +337,7 @@ export function ProposalFABMenu({
                       card.base,
                       card.bg,
                       card.interactive,
-                      "flex items-center gap-2 p-2 w-full rounded-[4px]"
+                      "flex items-center gap-2 p-2 w-full rounded-2xl"
                     )}
                     onClick={() => setShowVoucherList(true)}
                   >
@@ -356,7 +356,7 @@ export function ProposalFABMenu({
                     onClick={onReject}
                     disabled={isPendingAction}
                     className={cn(
-                      "py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95",
+                      "py-2 rounded-2xl text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95",
                       "bg-secondary/50 text-muted-foreground hover:bg-[var(--color-status-danger-bg)] hover:text-[var(--color-status-danger-text)]"
                     )}
                   >
@@ -376,7 +376,7 @@ export function ProposalFABMenu({
                     }
                     disabled={isPendingAction}
                     className={cn(
-                      "py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95",
+                      "py-2 rounded-2xl text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95",
                       "bg-primary text-primary-foreground hover:bg-primary/90"
                     )}
                   >
@@ -392,7 +392,7 @@ export function ProposalFABMenu({
                 variants={fab.animation.item}
                 className="space-y-2 pt-1"
               >
-                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] bg-[var(--color-status-warning-bg)]">
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-2xl bg-[var(--color-status-warning-bg)]">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-warning)] opacity-75" />
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--color-warning)]" />
@@ -404,7 +404,7 @@ export function ProposalFABMenu({
                 <button
                   onClick={onCancel}
                   className={cn(
-                    "w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95",
+                    "w-full py-2 rounded-2xl text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95",
                     "bg-secondary/50 text-muted-foreground hover:bg-[var(--color-status-danger-bg)] hover:text-[var(--color-status-danger-text)]"
                   )}
                 >
@@ -419,7 +419,7 @@ export function ProposalFABMenu({
                 variants={fab.animation.item}
                 className="flex flex-col gap-2 w-full pt-1"
               >
-                <div className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-[var(--color-status-success-bg)]">
+                <div className="flex items-center gap-1.5 px-2 py-2 rounded-2xl bg-[var(--color-status-success-bg)]">
                   <Check className="w-3.5 h-3.5 text-[var(--color-status-success-text)]" />
                   <span className="text-[10px] font-bold text-[var(--color-status-success-text)]">
                     Accepted
@@ -430,7 +430,7 @@ export function ProposalFABMenu({
                     onClick={onRequestBalance}
                     disabled={isPendingAction}
                     className={cn(
-                      "w-full py-2 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95",
+                      "w-full py-2 rounded-2xl text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95",
                       "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border border-[var(--color-status-success-border)] hover:bg-[var(--color-status-success-bg)] flex items-center justify-center gap-1.5"
                     )}
                   >
@@ -450,7 +450,7 @@ export function ProposalFABMenu({
             {status === "rejected" && (
               <motion.div
                 variants={fab.animation.item}
-                className="flex items-center gap-1.5 px-2 py-2 rounded-[4px] bg-[var(--color-status-danger-bg)]"
+                className="flex items-center gap-1.5 px-2 py-2 rounded-2xl bg-[var(--color-status-danger-bg)]"
               >
                 <AlertCircle className="w-3.5 h-3.5 text-[var(--color-status-danger-text)]" />
                 <span className="text-[10px] font-bold text-[var(--color-status-danger-text)]">

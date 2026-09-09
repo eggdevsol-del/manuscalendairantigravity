@@ -17,7 +17,7 @@ export default function FunnelSuccessStep({
   leadId,
 }: FunnelSuccessStepProps) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+    <div className="app-document min-h-[100dvh] flex flex-col items-center justify-center px-6 py-12">
       {/* Success animation */}
       <motion.div
         initial={{ scale: 0 }}

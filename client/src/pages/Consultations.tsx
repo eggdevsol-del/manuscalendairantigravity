@@ -119,7 +119,7 @@ export default function Consultations() {
       <PageHeader title="Consultations" />
 
       {/* 2. Top Context Area (Stats/Info) */}
-      <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
+      <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20dvh] opacity-80">
         <p className="text-4xl font-light text-foreground/90 tracking-tight">
           Requests
         </p>
@@ -165,7 +165,7 @@ export default function Consultations() {
                     }
                   }}
                 >
-                  <div className="absolute inset-0 rounded-[4px] bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                   <div className="p-5 relative z-10">
                     <div className="flex items-start justify-between mb-3">

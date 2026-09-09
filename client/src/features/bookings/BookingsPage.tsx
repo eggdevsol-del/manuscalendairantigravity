@@ -20,7 +20,7 @@ export default function BookingsPage() {
   });
 
   return (
-    <div className="min-h-screen" style={{ background: "#1B1B1B" }}>
+    <div className="app-document bg-background">
       <PageHeader title="Bookings" subtitle={dateStr} />
 
       <div className="px-4 pt-2 pb-3">
@@ -31,7 +31,7 @@ export default function BookingsPage() {
         />
       </div>
 
-      <div className="px-4 pb-[110px]">
+      <div className="px-4 pb-[110px] max-w-5xl mx-auto">
         {activeTab === 0 ? (
           <>
             <Link href="/waitlist" className="inline-flex min-h-11 items-center underline mb-3">Cancellation offers</Link>

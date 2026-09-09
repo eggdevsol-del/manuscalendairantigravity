@@ -25,24 +25,12 @@ export default function ErrorDashboard() {
     const [page, setPage] = useState(0);
     const PAGE_SIZE = 50;
 
-    // Admin guard
-    if (user?.role !== "admin") {
-        return (
-            <div
-                className="flex items-center justify-center min-h-screen"
-                style={{ color: "#e8e6f0" }}
-            >
-                <p>Access denied. Admin role required.</p>
-            </div>
-        );
-    }
-
     const resolvedParam =
         filter === "unresolved" ? false : filter === "resolved" ? true : undefined;
 
     const { data, isLoading, refetch } = trpc.errorLog.list.useQuery(
         { limit: PAGE_SIZE, offset: page * PAGE_SIZE, resolved: resolvedParam },
-        { refetchOnWindowFocus: false }
+        { refetchOnWindowFocus: false, enabled: user?.role === "admin" }
     );
 
     const resolveMutation = trpc.errorLog.resolve.useMutation({
@@ -61,6 +49,18 @@ export default function ErrorDashboard() {
     const total = data?.total || 0;
     const totalPages = Math.ceil(total / PAGE_SIZE);
 
+    // Admin guard
+    if (user?.role !== "admin") {
+        return (
+            <div
+                className="flex items-center justify-center app-document min-h-[100dvh]"
+                style={{ color: "var(--foreground)" }}
+            >
+                <p>Access denied. Admin role required.</p>
+            </div>
+        );
+    }
+
     const formatTime = (date: string | Date) => {
         const d = new Date(date);
         return d.toLocaleString("en-AU", {
@@ -73,7 +73,7 @@ export default function ErrorDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="app-document min-h-[100dvh] bg-background text-foreground">
             {/* Header */}
             <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
                 <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">

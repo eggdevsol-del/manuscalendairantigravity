@@ -22,7 +22,7 @@ export default function ProjectSummary() {
   const join = trpc.waitlist.join.useMutation();
   const data = query.data;
   return (
-    <main className="h-[calc(100dvh-5rem)] overflow-y-auto touch-pan-y bg-background text-foreground pb-24">
+    <main className="app-document h-[calc(100dvh-5rem)] overflow-y-auto touch-pan-y bg-background text-foreground pb-24">
       <PageHeader
         title="Project details"
         subtitle="Sessions, forms and payment history"

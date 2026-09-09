@@ -18,7 +18,7 @@ export default function ArtistHub() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-document min-h-[100dvh] bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
       </div>
     );
@@ -26,7 +26,7 @@ export default function ArtistHub() {
 
   if (error || !artist) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+      <div className="app-document min-h-[100dvh] bg-background flex flex-col items-center justify-center p-6 text-center">
         <h1 className="text-2xl font-bold text-white mb-2">Artist Not Found</h1>
         <p className="text-muted-foreground mb-6">The link you followed may be broken or the artist no longer exists.</p>
         <button 
@@ -60,7 +60,7 @@ export default function ArtistHub() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-white overflow-x-hidden font-sans relative selection:bg-secondary/50">
+    <div className="app-document min-h-[100dvh] bg-background text-white overflow-x-hidden font-sans relative selection:bg-secondary/50">
       {/* Background Gradients & Effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[500px] bg-gradient-to-b from-[var(--color-status-info-bg)] via-purple-500/5 to-transparent blur-[120px] rounded-full opacity-60 mix-blend-screen" />

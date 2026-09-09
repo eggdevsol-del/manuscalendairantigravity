@@ -121,7 +121,7 @@ export function InlineFormSigning({
               className={cn(
                 card.base,
                 card.bg,
-                "flex-1 overflow-auto rounded-[4px] p-4 border-border"
+                "flex-1 overflow-auto rounded-[16px] p-4 border-border"
               )}
             >
               {activeForm.formType === "medical_release" ? (
@@ -139,7 +139,7 @@ export function InlineFormSigning({
                             className={cn(
                               card.base,
                               card.bg,
-                              "flex flex-col gap-3 p-3 rounded-[4px] border border-border"
+                              "flex flex-col gap-3 p-3 rounded-[16px] border border-border"
                             )}
                           >
                             <label className="text-sm font-medium leading-normal text-foreground/90">
@@ -154,7 +154,7 @@ export function InlineFormSigning({
                                   }))
                                 }
                                 className={cn(
-                                  "flex-1 py-2 rounded-[4px] text-sm font-bold uppercase tracking-widest border transition-all",
+                                  "flex-1 py-2 rounded-[16px] text-sm font-bold uppercase tracking-widest border transition-all",
                                   checkedItems[itemNumber] === "yes"
                                     ? "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)] border-[var(--color-status-warning-border)]"
                                     : "bg-transparent text-muted-foreground border-border hover:border-border hover:bg-secondary/50"
@@ -170,7 +170,7 @@ export function InlineFormSigning({
                                   }))
                                 }
                                 className={cn(
-                                  "flex-1 py-2 rounded-[4px] text-sm font-bold uppercase tracking-widest border transition-all",
+                                  "flex-1 py-2 rounded-[16px] text-sm font-bold uppercase tracking-widest border transition-all",
                                   checkedItems[itemNumber] === "no"
                                     ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border-[var(--color-status-success-border)]"
                                     : "bg-transparent text-muted-foreground border-border hover:border-border hover:bg-secondary/50"
@@ -220,7 +220,7 @@ export function InlineFormSigning({
                 <button
                   onClick={() => setIsSigningPhysical(true)}
                   disabled={proceedDisabled}
-                  className="w-full mt-3 py-3 rounded-[4px] text-sm font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+                  className="w-full mt-3 py-3 rounded-[16px] text-sm font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
                 >
                   {proceedDisabled
                     ? `Please Review (${currentChecksCount}/${requiredChecksCount})`
@@ -238,7 +238,7 @@ export function InlineFormSigning({
               className={cn(
                 card.base,
                 card.bg,
-                "p-4 flex flex-col items-center justify-center gap-4 rounded-[4px] flex-1 overflow-hidden"
+                "p-4 flex flex-col items-center justify-center gap-4 rounded-[16px] flex-1 overflow-hidden"
               )}
             >
               {activeForm.formType === "procedure_consent" && (
@@ -264,7 +264,7 @@ export function InlineFormSigning({
 
               {user?.savedSignature ? (
                 <div className="w-full space-y-3 flex flex-col items-center">
-                  <div className="bg-secondary/50 rounded-[4px] border border-border p-4 flex justify-center w-full">
+                  <div className="bg-secondary/50 rounded-[16px] border border-border p-4 flex justify-center w-full">
                     <img
                       src={user.savedSignature}
                       alt="Saved Signature"
@@ -274,7 +274,7 @@ export function InlineFormSigning({
                   <button
                     onClick={() => handleSign(user.savedSignature!)}
                     disabled={signFormMutation.isPending}
-                    className="w-full py-2.5 rounded-[4px] text-sm font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground flex items-center justify-center gap-2"
+                    className="w-full py-2.5 rounded-[16px] text-sm font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground flex items-center justify-center gap-2"
                   >
                     {signFormMutation.isPending ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -295,7 +295,7 @@ export function InlineFormSigning({
                   <div className="w-full min-h-[140px] flex-1">
                     <SignaturePad
                       onSave={handleSign}
-                      className="w-full rounded-[4px] h-full"
+                      className="w-full rounded-[16px] h-full"
                     />
                   </div>
                 </div>
@@ -303,7 +303,7 @@ export function InlineFormSigning({
                 <div className="w-full flex-1">
                   <SignaturePad
                     onSave={handleSign}
-                    className="w-full rounded-[4px] h-full"
+                    className="w-full rounded-[16px] h-full"
                   />
                 </div>
               )}

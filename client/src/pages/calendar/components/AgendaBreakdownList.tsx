@@ -100,7 +100,7 @@ export function AgendaBreakdownList({
     <div
       ref={scrollRef}
       onScroll={handleScroll}
-      className="w-full h-full flex-1 overflow-y-auto px-4 pb-[60vh] pt-4 touch-pan-y overscroll-contain"
+      className="w-full h-full flex-1 overflow-y-auto px-4 pb-[60dvh] pt-4 touch-pan-y overscroll-contain"
     >
       {allEvents.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">

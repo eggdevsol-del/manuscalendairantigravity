@@ -27,8 +27,8 @@ export function PageShell({ children, className }: PageShellProps) {
       style={{
         // Use dvh for dynamic viewport, fallback to vh
         height: "100dvh",
-        // Account for safe areas - top is handled by body padding
-        paddingBottom: "env(safe-area-inset-bottom)",
+        // The shared app-viewport class owns top and horizontal safe areas
+        paddingBottom: "var(--app-safe-bottom)",
       }}
     >
       {children}

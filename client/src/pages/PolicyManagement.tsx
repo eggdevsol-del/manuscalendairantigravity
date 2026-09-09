@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/ui/ssot/PageHeader";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
   Button,
@@ -116,7 +117,7 @@ export default function PolicyManagement() {
   // Policy editor view
   if (selectedType) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="app-document min-h-[100dvh] flex flex-col">
         <header className="mobile-header px-4 py-4">
           <div className="flex items-center gap-3">
             <Button
@@ -133,7 +134,7 @@ export default function PolicyManagement() {
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-4 mobile-scroll overflow-y-auto">
+        <main className="flex-1 min-h-0 w-full max-w-5xl mx-auto px-4 py-4 mobile-scroll overflow-y-auto">
           <Card>
             <CardHeader>
               <CardTitle>Policy Details</CardTitle>
@@ -208,24 +209,10 @@ export default function PolicyManagement() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="mobile-header px-4 py-4">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setLocation("/settings")}
-            className="tap-target"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-2xl font-bold text-foreground">
-            Manage Policies
-          </h1>
-        </div>
-      </header>
+    <div className="app-document min-h-[100dvh] flex flex-col">
+      <PageHeader title="Manage Policies" onBack={() => setLocation("/settings")} />
 
-      <main className="flex-1 px-4 py-4 mobile-scroll overflow-y-auto">
+      <main className="flex-1 min-h-0 w-full max-w-5xl mx-auto px-4 py-4 mobile-scroll overflow-y-auto">
         <div className="space-y-3">
           {policyTypesList.map(type => {
             const policy = policies?.find(p => p.policyType === type);

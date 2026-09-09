@@ -693,7 +693,7 @@ export default function Calendar() {
                       <div
                         key={apt.id}
                         className={cn(
-                          "text-[8px] px-1 py-0.5 rounded-sm truncate font-medium",
+                          "text-[11px] px-1 py-0.5 rounded-sm truncate font-medium",
                           s.className,
                           "border-l-2"
                         )}
@@ -703,7 +703,7 @@ export default function Calendar() {
                     );
                   })}
                   {apps.length > 3 && (
-                    <div className="text-[8px] text-center opacity-50">
+                    <div className="text-[11px] text-center opacity-50">
                       +{apps.length - 3} more
                     </div>
                   )}
@@ -806,7 +806,7 @@ export default function Calendar() {
       <PageHeader title="Calendar" />
 
       {/* Context Header */}
-      <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80 pointer-events-none">
+      <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20dvh] opacity-80 pointer-events-none">
         <p className="text-4xl font-light text-foreground/90 tracking-tight">
           {selectedDate.toLocaleDateString("en-US", { weekday: "long" })}
         </p>

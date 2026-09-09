@@ -316,7 +316,7 @@ export default function WorkHoursAndServices({
       <PageHeader title="Work Hours & Services" onBack={onBack} />
 
       {/* 2. Top Context Area */}
-      <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20vh] opacity-80">
+      <div className="px-6 pt-4 pb-8 z-10 shrink-0 flex flex-col justify-center h-[20dvh] opacity-80">
         <p className="text-4xl font-light text-foreground/90 tracking-tight">
           Schedule
         </p>
@@ -467,7 +467,7 @@ export default function WorkHoursAndServices({
                 {services.map((service, index) => (
                   <div
                     key={index}
-                    className="p-4 border border-border rounded-[4px] bg-secondary/50"
+                    className="p-4 border border-border rounded-2xl bg-secondary/50"
                   >
                     {editingIndex === index && editingService ? (
                       // Edit Mode
@@ -601,7 +601,7 @@ export default function WorkHoursAndServices({
                 ))}
 
                 {showAddForm && (
-                  <div className="p-4 border border-dashed border-border rounded-[4px] space-y-3 bg-secondary/50">
+                  <div className="p-4 border border-dashed border-border rounded-2xl space-y-3 bg-secondary/50">
                     <h3 className="font-semibold text-sm">
                       New Service Details
                     </h3>
