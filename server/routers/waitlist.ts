@@ -1,3 +1,4 @@
+import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { z } from "zod";
 import { and, eq, desc, lt, gt, ne } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
@@ -98,14 +99,12 @@ export const waitlistRouter = router({
               e.expiresAt > mysql(new Date()))
         );
         if (current) return { id: current.id };
-        const [entry] = await db
-          .insert(schema.waitlistEntries)
-          .values({
-            artistId: conv.artistId,
-            clientId: ctx.user.id,
-            conversationId: conv.id,
-            note: input.note,
-          });
+        const [entry] = await db.insert(schema.waitlistEntries).values({
+          artistId: conv.artistId,
+          clientId: ctx.user.id,
+          conversationId: conv.id,
+          note: input.note,
+        });
         return { id: entry.insertId };
       })
     ),
@@ -179,30 +178,26 @@ export const waitlistRouter = router({
             expiresAt: mysql(expiry),
           })
           .where(eq(schema.waitlistEntries.id, entry.id));
-        await db
-          .insert(schema.messages)
-          .values({
-            conversationId: entry.conversationId,
-            senderId: ctx.user.id,
-            messageType: "text",
-            content: `A cancellation slot is available on ${start.toISOString()}. Review your offer in Bookings → Cancellation offers before ${expiry.toISOString()}. The session is confirmed after payment.`,
-          });
+        await db.insert(schema.messages).values({
+          conversationId: entry.conversationId,
+          senderId: ctx.user.id,
+          messageType: "text",
+          content: `A cancellation slot is available on ${start.toISOString()}. Review your offer in Bookings → Cancellation offers before ${expiry.toISOString()}. The session is confirmed after payment.`,
+        });
         await db
           .update(schema.conversations)
           .set({ lastMessageAt: mysql(new Date()) })
           .where(eq(schema.conversations.id, entry.conversationId));
-        await db
-          .insert(schema.notificationOutbox)
-          .values({
-            eventType: "push_message",
-            payloadJson: JSON.stringify({
-              targetUserId: entry.clientId,
-              title: "A cancellation slot is available",
-              body: "Your artist has offered you a time. Review it before the offer expires.",
-              url: "/waitlist",
-            }),
-            status: "pending",
-          });
+        await db.insert(schema.notificationOutbox).values({
+          eventType: "push_message",
+          payloadJson: JSON.stringify({
+            targetUserId: entry.clientId,
+            title: "A cancellation slot is available",
+            body: "Your artist has offered you a time. Review it before the offer expires.",
+            url: "/waitlist",
+          }),
+          status: "pending",
+        });
         return { offered: true };
       })
     ),
@@ -264,18 +259,16 @@ export const waitlistRouter = router({
         });
       const fees = calculateTransactionFees(
         entry.depositCents!,
-        resolvePaymentTier(settings.subscriptionTier)
+        await effectivePaymentTier(settings)
       );
-      const [plan] = await db
-        .insert(schema.sessionPlans)
-        .values({
-          artistId: entry.artistId,
-          clientId: entry.clientId,
-          conversationId: entry.conversationId,
-          totalEstimateCents: entry.estimateCents!,
-          depositTotalCents: entry.depositCents!,
-          platformFeeCents: fees.platformFeeCents,
-        });
+      const [plan] = await db.insert(schema.sessionPlans).values({
+        artistId: entry.artistId,
+        clientId: entry.clientId,
+        conversationId: entry.conversationId,
+        totalEstimateCents: entry.estimateCents!,
+        depositTotalCents: entry.depositCents!,
+        platformFeeCents: fees.platformFeeCents,
+      });
       const session = {
         sessionIndex: 1,
         startsAt: startsAt.replace(" ", "T") + "Z",
@@ -286,22 +279,20 @@ export const waitlistRouter = router({
       await db
         .insert(schema.sessionPlanItems)
         .values({ ...session, startsAt, sessionPlanId: plan.insertId });
-      const [message] = await db
-        .insert(schema.messages)
-        .values({
-          conversationId: entry.conversationId,
-          senderId: entry.artistId,
-          messageType: "session_plan",
-          content: "Cancellation slot · review and pay the deposit to confirm",
-          metadata: JSON.stringify({
-            type: "session_plan",
-            sessionPlanId: plan.insertId,
-            sessionCount: 1,
-            totalEstimateCents: entry.estimateCents,
-            depositTotalCents: entry.depositCents,
-            sessions: [session],
-          }),
-        });
+      const [message] = await db.insert(schema.messages).values({
+        conversationId: entry.conversationId,
+        senderId: entry.artistId,
+        messageType: "session_plan",
+        content: "Cancellation slot · review and pay the deposit to confirm",
+        metadata: JSON.stringify({
+          type: "session_plan",
+          sessionPlanId: plan.insertId,
+          sessionCount: 1,
+          totalEstimateCents: entry.estimateCents,
+          depositTotalCents: entry.depositCents,
+          sessions: [session],
+        }),
+      });
       await db
         .update(schema.sessionPlans)
         .set({ messageId: message.insertId })

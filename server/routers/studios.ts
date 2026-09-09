@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, inArray, ne } from "drizzle-orm";
 import {
   studios,
+  notificationOutbox,
   studioMembers,
   users,
   conversations,
@@ -104,48 +105,57 @@ export const studiosRouter = router({
         name: z.string().min(2, "Studio name must be at least 2 characters"),
       })
     )
-    .mutation(async ({ ctx, input }) => withDatabaseTransaction(async db => {
-      requireArtist(ctx.user);
-      await db.select({id:users.id}).from(users).where(eq(users.id,ctx.user.id)).for("update");
-      if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database connection failed",
+    .mutation(async ({ ctx, input }) =>
+      withDatabaseTransaction(async db => {
+        requireArtist(ctx.user);
+        await db
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.id, ctx.user.id))
+          .for("update");
+        if (!db)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
+
+        // 1. Check if user is already in a studio
+        const existingMember = await db.query.studioMembers.findFirst({
+          where: and(
+            eq(studioMembers.userId, ctx.user.id),
+            eq(studioMembers.status, "active")
+          ),
         });
 
-      // 1. Check if user is already in a studio
-      const existingMember = await db.query.studioMembers.findFirst({
-        where: eq(studioMembers.userId, ctx.user.id),
-      });
+        if (existingMember) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "User is already part of a studio.",
+          });
+        }
 
-      if (existingMember) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "User is already part of a studio.",
+        const studioId = crypto.randomUUID();
+
+        // 2. Create the studio
+        await db.insert(studios).values({
+          id: studioId,
+          name: input.name,
+          ownerId: ctx.user.id,
+          subscriptionTier: "studio",
+          subscriptionStatus: "canceled", // Paid access is granted only by the subscription webhook.
         });
-      }
 
-      const studioId = crypto.randomUUID();
+        // 3. Make the user the owner
+        await db.insert(studioMembers).values({
+          studioId,
+          userId: ctx.user.id,
+          role: "owner",
+          status: "active",
+        });
 
-      // 2. Create the studio
-      await db.insert(studios).values({
-        id: studioId,
-        name: input.name,
-        ownerId: ctx.user.id,
-        subscriptionTier: "studio",
-        subscriptionStatus: "canceled", // Paid access is granted only by the subscription webhook.
-      });
-
-      // 3. Make the user the owner
-      await db.insert(studioMembers).values({
-        studioId,
-        userId: ctx.user.id,
-        role: "owner",
-        status: "active",
-      });
-
-      return { success: true, studioId };
-    })),
+        return { success: true, studioId };
+      })
+    ),
 
   // Get all members of a studio
   getStudioMembers: protectedProcedure
@@ -166,7 +176,8 @@ export const studiosRouter = router({
       const isMember = await db.query.studioMembers.findFirst({
         where: and(
           eq(studioMembers.studioId, input.studioId),
-          eq(studioMembers.userId, ctx.user.id)
+          eq(studioMembers.userId, ctx.user.id),
+          eq(studioMembers.status, "active")
         ),
       });
 
@@ -206,65 +217,83 @@ export const studiosRouter = router({
         userId: z.string(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
-      if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database connection failed",
-        });
-
-      const requester = await db.query.studioMembers.findFirst({
-        where: and(
-          eq(studioMembers.studioId, input.studioId),
-          eq(studioMembers.userId, ctx.user.id)
-        ),
-      });
-
-      if (!requester) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
-
-      // Only owners or the user themselves can remove a member
-      if (requester.role !== "owner" && ctx.user.id !== input.userId) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only owners can remove other members.",
-        });
-      }
-
-      // Prevent removing the sole owner without transferring ownership first
-      if (requester.role === "owner" && ctx.user.id === input.userId) {
-        const ownerCount = await db
-          .select()
-          .from(studioMembers)
-          .where(
-            and(
-              eq(studioMembers.studioId, input.studioId),
-              eq(studioMembers.role, "owner")
-            )
-          );
-
-        if (ownerCount.length <= 1) {
+    .mutation(async ({ ctx, input }) =>
+      withDatabaseTransaction(async db => {
+        if (!db)
           throw new TRPCError({
-            code: "PRECONDITION_FAILED",
-            message:
-              "Cannot leave studio as the sole owner. Transfer ownership or delete the studio.",
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
+
+        await db
+          .select({ id: studios.id })
+          .from(studios)
+          .where(eq(studios.id, input.studioId))
+          .for("update");
+        const requester = await db.query.studioMembers.findFirst({
+          where: and(
+            eq(studioMembers.studioId, input.studioId),
+            eq(studioMembers.userId, ctx.user.id),
+            eq(studioMembers.status, "active")
+          ),
+        });
+
+        if (!requester) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+
+        // Only owners or the user themselves can remove a member
+        if (requester.role !== "owner" && ctx.user.id !== input.userId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only owners can remove other members.",
           });
         }
-      }
 
-      await db
-        .delete(studioMembers)
-        .where(
-          and(
+        const target = await db.query.studioMembers.findFirst({
+          where: and(
             eq(studioMembers.studioId, input.studioId),
             eq(studioMembers.userId, input.userId)
-          )
-        );
+          ),
+        });
+        if (!target)
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Member not found.",
+          });
+        const studio = await db.query.studios.findFirst({
+          where: eq(studios.id, input.studioId),
+        });
+        if (target.userId === studio?.ownerId)
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "Transfer studio ownership before removing its owner.",
+          });
+        if (target.role === "owner" && target.status === "active") {
+          const owners = await db
+            .select()
+            .from(studioMembers)
+            .where(
+              and(
+                eq(studioMembers.studioId, input.studioId),
+                eq(studioMembers.role, "owner"),
+                eq(studioMembers.status, "active")
+              )
+            );
+          if (owners.length <= 1)
+            throw new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message: "A studio must retain an active owner.",
+            });
+        }
+        await db
+          .update(studioMembers)
+          .set({ status: "inactive" })
+          .where(eq(studioMembers.id, target.id));
 
-      return { success: true };
-    }),
+        return { success: true };
+      })
+    ),
 
   // Get public studio profile by slug, including active artists
   getStudioProfile: publicProcedure
@@ -309,7 +338,13 @@ export const studiosRouter = router({
         );
 
       return {
-        studio: {id:studio.id,name:studio.name,publicSlug:studio.publicSlug,logoUrl:studio.logoUrl,description:studio.description},
+        studio: {
+          id: studio.id,
+          name: studio.name,
+          publicSlug: studio.publicSlug,
+          logoUrl: studio.logoUrl,
+          description: studio.description,
+        },
         artists: members,
       };
     }),
@@ -323,138 +358,176 @@ export const studiosRouter = router({
         role: z.enum(["owner", "manager", "artist", "apprentice"]),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
-      if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database connection failed",
-        });
-
-      // 1. Verify access (must be owner or manager)
-      const requester = await db.query.studioMembers.findFirst({
-        where: and(
-          eq(studioMembers.studioId, input.studioId),
-          eq(studioMembers.userId, ctx.user.id),
-          eq(studioMembers.status, "active")
-        ),
-      });
-
-      if (
-        !requester ||
-        (requester.role !== "owner" && requester.role !== "manager")
-      ) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only owners or managers can invite artists.",
-        });
-      }
-
-      if (input.role === "owner" && requester.role !== "owner") throw new TRPCError({code:"FORBIDDEN",message:"Only an owner can invite another owner."});
-      const entitlement = await db.query.studios.findFirst({where:eq(studios.id,input.studioId)});
-      if (!entitlement?.stripeSubscriptionId || !["active","trialing"].includes(entitlement.subscriptionStatus || "")) throw new TRPCError({code:"PRECONDITION_FAILED",message:"Activate studio billing before inviting team members."});
-      // 2. Find the user by email
-      const invitedUser = await db.query.users.findFirst({
-        where: eq(users.email, input.artistEmail),
-      });
-
-      if (!invitedUser) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User with this email not found.",
-        });
-      }
-
-      // 3. Check if they are already in the studio
-      const existingMember = await db.query.studioMembers.findFirst({
-        where: and(
-          eq(studioMembers.studioId, input.studioId),
-          eq(studioMembers.userId, invitedUser.id)
-        ),
-      });
-
-      let newMemberId: number;
-
-      if (existingMember) {
-        if (existingMember.status === "active") {
+    .mutation(async ({ ctx, input }) =>
+      withDatabaseTransaction(async db => {
+        if (!db)
           throw new TRPCError({
-            code: "CONFLICT",
-            message: "User is already an active member of this studio.",
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
           });
-        } else if (existingMember.status === "pending_invite") {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "User already has a pending invite.",
-          });
-        } else {
-          // They declined or were inactive, re-invite them
-          await db
-            .update(studioMembers)
-            .set({ status: "pending_invite", role: input.role })
-            .where(eq(studioMembers.id, existingMember.id));
-          newMemberId = existingMember.id;
-        }
-      } else {
-        // 4. Create pending invite
-        // Using a unique constraint on studioId + userId, so insert is safe
-        const [memberInsertResult] = await db.insert(studioMembers).values({
-          studioId: input.studioId,
-          userId: invitedUser.id,
-          role: input.role,
-          status: "pending_invite",
-        });
-        newMemberId = memberInsertResult.insertId;
-      }
 
-      // 5. Fetch Studio Details for the Message
-      const studio = await db.query.studios.findFirst({
-        where: eq(studios.id, input.studioId),
-      });
-
-      if (studio) {
-        // 6. Find or Create a Conversation between the Owner and the Artist
-        let conversation = await db.query.conversations.findFirst({
+        // 1. Verify access (must be owner or manager)
+        await db
+          .select({ id: studios.id })
+          .from(studios)
+          .where(eq(studios.id, input.studioId))
+          .for("update");
+        const requester = await db.query.studioMembers.findFirst({
           where: and(
-            eq(conversations.artistId, invitedUser.id), // Invited artist receiving message
-            eq(conversations.clientId, ctx.user.id) // Studio Owner sending as 'client' in this context
+            eq(studioMembers.studioId, input.studioId),
+            eq(studioMembers.userId, ctx.user.id),
+            eq(studioMembers.status, "active")
           ),
         });
 
-        if (!conversation) {
-          const [convResult] = await db.insert(conversations).values({
-            artistId: invitedUser.id,
-            clientId: ctx.user.id,
-          });
-          conversation = await db.query.conversations.findFirst({
-            where: eq(conversations.id, convResult.insertId),
+        if (
+          !requester ||
+          (requester.role !== "owner" && requester.role !== "manager")
+        ) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only owners or managers can invite artists.",
           });
         }
 
-        if (conversation) {
-          // 7. Insert the 'studio_invite' message
-          await db.insert(messages).values({
-            conversationId: conversation.id,
-            senderId: ctx.user.id,
-            content: `I've invited you to join ${studio.name} as a resident artist!`,
-            messageType: "studio_invite",
-            metadata: JSON.stringify({
-              studioId: studio.id,
-              studioName: studio.name,
-              inviteId: newMemberId, // Store the pending invite ID so we can respond to it easily
-              status: "pending", // 'pending', 'accepted', 'declined'
-            }),
+        if (input.role === "owner" && requester.role !== "owner")
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only an owner can invite another owner.",
+          });
+        const entitlement = await db.query.studios.findFirst({
+          where: eq(studios.id, input.studioId),
+        });
+        if (
+          !entitlement?.stripeSubscriptionId ||
+          !["active", "trialing"].includes(entitlement.subscriptionStatus || "")
+        )
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "Activate studio billing before inviting team members.",
+          });
+        // 2. Find the user by email
+        const invitedUser = await db.query.users.findFirst({
+          where: eq(users.email, input.artistEmail.trim().toLowerCase()),
+        });
+
+        if (!invitedUser) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User with this email not found.",
+          });
+        }
+
+        if (!["artist", "admin"].includes(invitedUser.role))
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Only artist accounts can join a studio.",
+          });
+        const seats = await db
+          .select({ id: studioMembers.id })
+          .from(studioMembers)
+          .where(
+            and(
+              eq(studioMembers.studioId, input.studioId),
+              inArray(studioMembers.status, ["active", "pending_invite"])
+            )
+          );
+        if (seats.length >= 10)
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "This studio has reached its 10-member limit.",
+          });
+        // 3. Check if they are already in the studio
+        const existingMember = await db.query.studioMembers.findFirst({
+          where: and(
+            eq(studioMembers.studioId, input.studioId),
+            eq(studioMembers.userId, invitedUser.id)
+          ),
+        });
+
+        let newMemberId: number;
+
+        if (existingMember) {
+          if (existingMember.status === "active") {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "User is already an active member of this studio.",
+            });
+          } else if (existingMember.status === "pending_invite") {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "User already has a pending invite.",
+            });
+          } else {
+            // They declined or were inactive, re-invite them
+            await db
+              .update(studioMembers)
+              .set({ status: "pending_invite", role: input.role })
+              .where(eq(studioMembers.id, existingMember.id));
+            newMemberId = existingMember.id;
+          }
+        } else {
+          // 4. Create pending invite
+          // Using a unique constraint on studioId + userId, so insert is safe
+          const [memberInsertResult] = await db.insert(studioMembers).values({
+            studioId: input.studioId,
+            userId: invitedUser.id,
+            role: input.role,
+            status: "pending_invite",
+          });
+          newMemberId = memberInsertResult.insertId;
+        }
+
+        // 5. Fetch Studio Details for the Message
+        const studio = await db.query.studios.findFirst({
+          where: eq(studios.id, input.studioId),
+        });
+
+        if (studio) {
+          // 6. Find or Create a Conversation between the Owner and the Artist
+          let conversation = await db.query.conversations.findFirst({
+            where: and(
+              eq(conversations.artistId, invitedUser.id), // Invited artist receiving message
+              eq(conversations.clientId, ctx.user.id) // Studio Owner sending as 'client' in this context
+            ),
           });
 
-          // Update conversation timestamp formats cleanly for MySQL Date types
-          await db
-            .update(conversations)
-            .set({ lastMessageAt: sql`now()` })
-            .where(eq(conversations.id, conversation.id));
-        }
-      }
+          if (!conversation) {
+            const [convResult] = await db.insert(conversations).values({
+              artistId: invitedUser.id,
+              clientId: ctx.user.id,
+            });
+            conversation = await db.query.conversations.findFirst({
+              where: eq(conversations.id, convResult.insertId),
+            });
+          }
 
-      return { success: true };
-    }),
+          if (conversation) {
+            // 7. Insert the 'studio_invite' message
+            await db.insert(messages).values({
+              conversationId: conversation.id,
+              senderId: ctx.user.id,
+              content: `I've invited you to join ${studio.name} as a resident artist!`,
+              messageType: "studio_invite",
+              metadata: JSON.stringify({
+                studioId: studio.id,
+                studioName: studio.name,
+                inviteId: newMemberId, // Store the pending invite ID so we can respond to it easily
+                status: "pending", // 'pending', 'accepted', 'declined'
+              }),
+            });
+
+            // Update conversation timestamp formats cleanly for MySQL Date types
+            await db
+              .update(conversations)
+              .set({ lastMessageAt: sql`now()` })
+              .where(eq(conversations.id, conversation.id));
+          }
+        }
+
+        return { success: true };
+      })
+    ),
 
   // Get pending invites for the logged-in user
   getPendingInvites: protectedProcedure.query(async ({ ctx }) => {
@@ -496,65 +569,145 @@ export const studiosRouter = router({
         response: z.enum(["accept", "decline"]),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
-      if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database connection failed",
+    .mutation(async ({ ctx, input }) =>
+      withDatabaseTransaction(async db => {
+        if (!db)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
+
+        requireArtist(ctx.user);
+        const identity = await db.query.studioMembers.findFirst({
+          where: and(
+            eq(studioMembers.id, input.inviteId),
+            eq(studioMembers.userId, ctx.user.id)
+          ),
+        });
+        if (!identity)
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Invitation not found.",
+          });
+        await db
+          .select({ id: studios.id })
+          .from(studios)
+          .where(eq(studios.id, identity.studioId))
+          .for("update");
+        await db
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.id, ctx.user.id))
+          .for("update");
+        const [invite] = await db
+          .select()
+          .from(studioMembers)
+          .where(
+            and(
+              eq(studioMembers.id, input.inviteId),
+              eq(studioMembers.userId, ctx.user.id),
+              eq(studioMembers.status, "pending_invite")
+            )
+          )
+          .for("update");
+
+        if (!invite) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Invite not found or already processed.",
+          });
+        }
+
+        if (input.response === "accept") {
+          const [studio] = await db
+            .select()
+            .from(studios)
+            .where(eq(studios.id, invite.studioId))
+            .for("update");
+          if (
+            !studio?.stripeSubscriptionId ||
+            !["active", "trialing"].includes(studio.subscriptionStatus || "")
+          )
+            throw new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message: "The studio must activate billing before you can join.",
+            });
+          const active = await db
+            .select()
+            .from(studioMembers)
+            .where(
+              and(
+                eq(studioMembers.userId, ctx.user.id),
+                eq(studioMembers.status, "active")
+              )
+            )
+            .for("update");
+          if (active.length)
+            throw new TRPCError({
+              code: "CONFLICT",
+              message:
+                "Leave your current studio before accepting another invitation.",
+            });
+          const seats = await db
+            .select()
+            .from(studioMembers)
+            .where(
+              and(
+                eq(studioMembers.studioId, invite.studioId),
+                eq(studioMembers.status, "active")
+              )
+            )
+            .for("update");
+          if (seats.length >= 10)
+            throw new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message: "This studio has reached its 10-member limit.",
+            });
+          await db
+            .update(studioMembers)
+            .set({ status: "active" })
+            .where(eq(studioMembers.id, input.inviteId));
+          await db
+            .insert(notificationOutbox)
+            .values({
+              eventType: "studio_cancel_pro_renewal",
+              payloadJson: JSON.stringify({ userId: ctx.user.id }),
+            });
+        } else {
+          await db
+            .update(studioMembers)
+            .set({ status: "declined" })
+            .where(eq(studioMembers.id, input.inviteId));
+        }
+
+        // Also find the message and update its metadata so the UI reflects the decision
+        // Doing a robust search for any message containing this inviteId in metadata
+        const allMessages = await db.query.messages.findMany({
+          where: and(
+            eq(messages.messageType, "studio_invite"),
+            sql`JSON_EXTRACT(CASE WHEN JSON_VALID(${messages.metadata}) THEN ${messages.metadata} ELSE '{}' END, '$.inviteId') = ${input.inviteId}`
+          ),
         });
 
-      const invite = await db.query.studioMembers.findFirst({
-        where: and(
-          eq(studioMembers.id, input.inviteId),
-          eq(studioMembers.userId, ctx.user.id),
-          eq(studioMembers.status, "pending_invite")
-        ),
-      });
-
-      if (!invite) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Invite not found or already processed.",
-        });
-      }
-
-      if (input.response === "accept") {
-        await db
-          .update(studioMembers)
-          .set({ status: "active" })
-          .where(eq(studioMembers.id, input.inviteId));
-      } else {
-        await db
-          .update(studioMembers)
-          .set({ status: "declined" })
-          .where(eq(studioMembers.id, input.inviteId));
-      }
-
-      // Also find the message and update its metadata so the UI reflects the decision
-      // Doing a robust search for any message containing this inviteId in metadata
-      const allMessages = await db.query.messages.findMany({
-        where: eq(messages.messageType, "studio_invite"),
-      });
-
-      for (const msg of allMessages) {
-        if (msg.metadata) {
-          try {
-            const meta = JSON.parse(msg.metadata);
-            if (meta.inviteId === input.inviteId) {
-              meta.status =
-                input.response === "accept" ? "accepted" : "declined";
-              await db
-                .update(messages)
-                .set({ metadata: JSON.stringify(meta) })
-                .where(eq(messages.id, msg.id));
+        for (const msg of allMessages) {
+          if (msg.metadata) {
+            try {
+              const meta = JSON.parse(msg.metadata);
+              if (meta.inviteId === input.inviteId) {
+                meta.status =
+                  input.response === "accept" ? "accepted" : "declined";
+                await db
+                  .update(messages)
+                  .set({ metadata: JSON.stringify(meta) })
+                  .where(eq(messages.id, msg.id));
+              }
+            } catch (e) {
+              // Ignore parse errors from invalid metadata
             }
-          } catch (e) {
-            // Ignore parse errors from invalid metadata
           }
         }
-      }
 
-      return { success: true };
-    }),
+        return { success: true };
+      })
+    ),
 });

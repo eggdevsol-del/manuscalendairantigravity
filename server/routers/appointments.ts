@@ -1,3 +1,4 @@
+import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { requireArtist, requireConversationAccess } from "../services/access";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -44,6 +45,7 @@ export const appointmentsRouter = router({
 
         if (
           !requesterMember ||
+          requesterMember.status !== "active" ||
           (requesterMember.role !== "owner" &&
             requesterMember.role !== "manager")
         ) {
@@ -52,6 +54,15 @@ export const appointmentsRouter = router({
             message: "Not authorized to view this calendar",
           });
         }
+        const scoped = await db.getStudioCalendar(
+          member!.studioId,
+          input.startDate,
+          input.endDate,
+          ["cancelled", "pending"]
+        );
+        return scoped.filter(
+          appointment => appointment.artistId === input.artistId
+        );
       }
       const results = await db.getArtistCalendar(
         input.artistId,
@@ -1174,7 +1185,7 @@ export const appointmentsRouter = router({
       const { calculateTransactionFees, resolvePaymentTier } =
         await import("../domain/fees");
 
-      const tier = resolvePaymentTier(artistSettings?.subscriptionTier);
+      const tier = await effectivePaymentTier(artistSettings);
       const fees = calculateTransactionFees(remaining, tier);
 
       // Create PaymentIntent

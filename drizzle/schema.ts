@@ -589,6 +589,7 @@ export const studios = mysqlTable(
     ownerId: varchar({ length: 64 })
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    stripeCheckoutSessionId: varchar({ length: 255 }),
     stripeSubscriptionId: varchar({ length: 255 }),
     subscriptionStatus: mysqlEnum([
       "active",
@@ -2013,27 +2014,34 @@ export type InsertErrorLog = InferInsertModel<typeof errorLog>;
 export type SelectErrorLog = InferSelectModel<typeof errorLog>;
 
 // ── Storefront & E-Commerce ──
-export const products = mysqlTable("products", {
-  id: int().autoincrement().primaryKey(),
-  artistId: varchar({ length: 64 })
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  ownerType: mysqlEnum(["artist", "merchant"]).default("artist").notNull(),
-  title: varchar({ length: 255 }).notNull(),
-  description: text().notNull(),
-  priceCents: int().notNull(),
-  hasVariants: tinyint().default(0).notNull(),
-  basePriceCents: int(),
-  inventoryCount: int().default(0).notNull(),
-  fulfillmentType: mysqlEnum(["pickup", "delivery", "both", "digital"])
-    .default("pickup")
-    .notNull(),
-  shippingCents: int().default(0).notNull(),
-  imageUrl: text(),
-  isActive: tinyint().default(1).notNull(),
-  createdAt: timestamp().notNull().defaultNow(),
-  updatedAt: timestamp().notNull().defaultNow(),
-});
+export const products = mysqlTable(
+  "products",
+  {
+    externalId: varchar({ length: 255 }),
+    id: int().autoincrement().primaryKey(),
+    artistId: varchar({ length: 64 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    ownerType: mysqlEnum(["artist", "merchant"]).default("artist").notNull(),
+    title: varchar({ length: 255 }).notNull(),
+    description: text().notNull(),
+    priceCents: int().notNull(),
+    hasVariants: tinyint().default(0).notNull(),
+    basePriceCents: int(),
+    inventoryCount: int().default(0).notNull(),
+    fulfillmentType: mysqlEnum(["pickup", "delivery", "both", "digital"])
+      .default("pickup")
+      .notNull(),
+    shippingCents: int().default(0).notNull(),
+    imageUrl: text(),
+    isActive: tinyint().default(1).notNull(),
+    createdAt: timestamp().notNull().defaultNow(),
+    updatedAt: timestamp().notNull().defaultNow(),
+  },
+  table => [
+    unique("products_external_unique").on(table.artistId, table.externalId),
+  ]
+);
 
 export const seminars = mysqlTable("seminars", {
   id: int().autoincrement().primaryKey(),
@@ -2061,6 +2069,7 @@ export const orders = mysqlTable("orders", {
   clientId: varchar({ length: 64 }).references(() => users.id, {
     onDelete: "set null",
   }),
+  currency: varchar({ length: 3 }).notNull().default("aud"),
   totalAmountCents: int().notNull(),
   platformFeeCents: int().notNull(),
   artistFeeCents: int().notNull(),
@@ -2091,6 +2100,7 @@ export const orderItems = mysqlTable("orderItems", {
   orderId: int()
     .notNull()
     .references(() => orders.id, { onDelete: "cascade" }),
+  productName: varchar({ length: 500 }),
   productId: int().references(() => products.id, { onDelete: "set null" }),
   variantId: int(), // Added below when productVariants is defined, or just int() without foreign key constraint here to avoid circular dep if placed above.
   seminarId: int().references(() => seminars.id, { onDelete: "set null" }),
@@ -2136,19 +2146,29 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
   }),
 }));
 
-export const productVariants = mysqlTable("productVariants", {
-  id: int().autoincrement().primaryKey(),
-  productId: int()
-    .notNull()
-    .references(() => products.id, { onDelete: "cascade" }),
-  name: varchar({ length: 255 }).notNull(),
-  priceCents: int().notNull(),
-  inventoryCount: int().default(0).notNull(),
-  sku: varchar({ length: 100 }),
-  imageUrl: text(),
-  sortOrder: int().default(0),
-  createdAt: timestamp().notNull().defaultNow(),
-});
+export const productVariants = mysqlTable(
+  "productVariants",
+  {
+    externalId: varchar({ length: 255 }),
+    id: int().autoincrement().primaryKey(),
+    productId: int()
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    name: varchar({ length: 255 }).notNull(),
+    priceCents: int().notNull(),
+    inventoryCount: int().default(0).notNull(),
+    sku: varchar({ length: 100 }),
+    imageUrl: text(),
+    sortOrder: int().default(0),
+    createdAt: timestamp().notNull().defaultNow(),
+  },
+  table => [
+    unique("productVariants_external_unique").on(
+      table.productId,
+      table.externalId
+    ),
+  ]
+);
 
 export const productVariantsRelations = relations(
   productVariants,
@@ -2836,11 +2856,33 @@ export const stripeWebhookEvents = mysqlTable("stripe_webhook_events", {
 });
 
 /** Client opt-in and expiring offers for cancellation slots. */
-export const waitlistEntries = mysqlTable('waitlist_entries', {
-  id: int().autoincrement().primaryKey(),
-  artistId: varchar({length:64}).notNull(), clientId: varchar({length:64}).notNull(), conversationId: int().notNull(),
-  note: varchar({length:500}).notNull().default(''),
-  status: mysqlEnum(['waiting','offered','accepted','declined','cancelled']).notNull().default('waiting'),
-  startsAt: datetime({mode:'string'}), durationMinutes: int(), estimateCents: int(), depositCents: int(), expiresAt: datetime({mode:'string'}),
-  sessionPlanId: int(), createdAt: timestamp({mode:'string'}).default(sql`(now())`),
-}, table => [index('waitlist_artist_status_idx').on(table.artistId,table.status),index('waitlist_client_idx').on(table.clientId)]);
+export const waitlistEntries = mysqlTable(
+  "waitlist_entries",
+  {
+    id: int().autoincrement().primaryKey(),
+    artistId: varchar({ length: 64 }).notNull(),
+    clientId: varchar({ length: 64 }).notNull(),
+    conversationId: int().notNull(),
+    note: varchar({ length: 500 }).notNull().default(""),
+    status: mysqlEnum([
+      "waiting",
+      "offered",
+      "accepted",
+      "declined",
+      "cancelled",
+    ])
+      .notNull()
+      .default("waiting"),
+    startsAt: datetime({ mode: "string" }),
+    durationMinutes: int(),
+    estimateCents: int(),
+    depositCents: int(),
+    expiresAt: datetime({ mode: "string" }),
+    sessionPlanId: int(),
+    createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
+  },
+  table => [
+    index("waitlist_artist_status_idx").on(table.artistId, table.status),
+    index("waitlist_client_idx").on(table.clientId),
+  ]
+);

@@ -104,6 +104,7 @@ const KNOWN_APP_ROUTES = new Set([
   "chat",
   "dashboard",
   "settings",
+  "account-settings",
   "work-hours",
   "clients",
   "bank-payouts",
@@ -117,6 +118,8 @@ const KNOWN_APP_ROUTES = new Set([
   "discover",
   "complete-profile",
   "bookings",
+  "purchases",
+  "studio",
   "waitlist",
   "projects",
   "supply-orders",
@@ -215,6 +218,8 @@ function Router() {
         <Route path="/complete-profile" component={CompleteProfile} />
 
         {/* Public funnel - no auth required */}
+        <Route path="/shop/:slug" component={PublicStorefront} />
+        <Route path="/events/:slug" component={PublicEvents} />
         <Route path="/studio/:slug" component={PublicStudioFunnel} />
         <Route path="/start/:slug" component={PublicFunnel} />
         <Route path="/book/:slug">

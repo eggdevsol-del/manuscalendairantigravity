@@ -1,3 +1,4 @@
+import Purchases from "@/features/storefront/Purchases";
 import React from "react";
 import { Redirect, Route, Switch, useLocation } from "wouter";
 import BottomNav from "@/components/BottomNav";
@@ -10,16 +11,26 @@ import { MerchantProducts } from "@/features/merchant/Products";
 import Conversations from "@/pages/Conversations";
 import Chat from "@/pages/Chat";
 import NotFound from "@/pages/NotFound";
+import Settings from "@/pages/Settings";
+import { MerchantSettings } from "@/features/merchant/Settings";
 
 export default function MerchantShell() {
   return (
     <div className="min-h-screen pb-16">
       <AnimatedSwitch>
         <Switch>
-          <Route path="/"><Redirect to="/dashboard" /></Route>
+          <Route path="/purchases" component={Purchases} />
+          <Route path="/">
+            <Redirect to="/dashboard" />
+          </Route>
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/merchant/orders" component={MerchantOrders} />
           <Route path="/merchant/products" component={MerchantProducts} />
+          <Route path="/settings" component={MerchantSettings} />
+          <Route path="/account-settings" component={Settings} />
+          <Route path="/onboarding/merchant">
+            <Redirect to="/settings" />
+          </Route>
           <Route path="/conversations" component={Conversations} />
           <Route path="/chat/:id" component={Chat} />
           <Route path="/merchant">

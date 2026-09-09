@@ -1,39 +1,55 @@
 import React, { useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Loader2, ArrowLeft, Package, Truck, Store, Globe, ShoppingCart } from "lucide-react";
+import {
+  Loader2,
+  ArrowLeft,
+  Package,
+  Truck,
+  Store,
+  Globe,
+  ShoppingCart,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { loadStripe } from "@stripe/stripe-js";
+
 import { CartProvider, useCart } from "@/features/storefront/CartContext";
 import { StorefrontCheckoutFAB } from "@/features/storefront/StorefrontCheckoutFAB";
 import { StorefrontProductCard } from "@/features/storefront/StorefrontProductCard";
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "");
-
-function StorefrontContent({ slug, storefront }: { slug: string; storefront: any }) {
+function StorefrontContent({
+  slug,
+  storefront,
+}: {
+  slug: string;
+  storefront: any;
+}) {
   const [, setLocation] = useLocation();
   const { products } = storefront;
   const { items, addItem, totalItems, setIsCartOpen } = useCart();
 
   return (
-    <div className="h-[100dvh] overflow-y-auto overflow-x-hidden bg-background text-white font-sans pb-32">
+    <div className="h-[100dvh] overflow-y-auto overflow-x-hidden bg-background text-foreground font-sans pb-32">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border px-4 py-4 flex items-center justify-between">
-        <button 
-          onClick={() => setLocation(`/${slug}`)}
+        <button
+          onClick={() =>
+            setLocation(slug?.startsWith("supplier-") ? "/" : `/${slug}`)
+          }
           className="p-2 -ml-2 rounded-full hover:bg-secondary/50 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
-        <span className="font-bold tracking-wider uppercase text-sm truncate max-w-[200px]">{storefront.artistName}</span>
-        <button 
+        <span className="font-bold tracking-wider uppercase text-sm truncate max-w-[200px]">
+          {storefront.artistName}
+        </span>
+        <button
           onClick={() => setIsCartOpen(true)}
           className="relative p-2 rounded-full hover:bg-secondary/50 transition-colors"
         >
           <ShoppingCart className="w-5 h-5 text-muted-foreground" />
           {totalItems > 0 && (
-            <span className="absolute top-0 right-0 w-4 h-4 bg-primary text-white text-[10px] font-bold flex items-center justify-center rounded-full">
+            <span className="absolute top-0 right-0 w-4 h-4 bg-primary text-foreground text-[10px] font-bold flex items-center justify-center rounded-full">
               {totalItems}
             </span>
           )}
@@ -47,7 +63,9 @@ function StorefrontContent({ slug, storefront }: { slug: string; storefront: any
           <div className="text-center py-20 bg-secondary/50 rounded-3xl border border-border">
             <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">No Products</h2>
-            <p className="text-muted-foreground text-sm">Check back later for merch and aftercare.</p>
+            <p className="text-muted-foreground text-sm">
+              Check back later for merch and aftercare.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -71,7 +89,7 @@ function StorefrontContent({ slug, storefront }: { slug: string; storefront: any
               onClick={() => setIsCartOpen(true)}
               className="bg-foreground text-background px-6 py-4 rounded-full font-bold shadow-2xl flex items-center gap-3 w-full max-w-sm hover:scale-[1.02] active:scale-95 transition-all"
             >
-              <div className="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
+              <div className="bg-black text-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">
                 {totalItems}
               </div>
               <span className="flex-1 text-center">View Cart</span>
@@ -81,7 +99,12 @@ function StorefrontContent({ slug, storefront }: { slug: string; storefront: any
         )}
       </AnimatePresence>
 
-      <StorefrontCheckoutFAB artistSlug={slug} artistId={storefront.artistId} onClose={() => {}} />
+      <StorefrontCheckoutFAB
+        currency={"currency" in storefront ? storefront.currency : "AUD"}
+        artistSlug={slug}
+        artistId={storefront.artistId}
+        onClose={() => {}}
+      />
     </div>
   );
 }
@@ -91,7 +114,11 @@ export default function PublicStorefront() {
   const [, setLocation] = useLocation();
   const slug = params?.slug;
 
-  const { data: storefront, isLoading, error } = trpc.storefront.getArtistStorefront.useQuery(
+  const {
+    data: storefront,
+    isLoading,
+    error,
+  } = trpc.storefront.getArtistStorefront.useQuery(
     { slug: slug || "" },
     { enabled: !!slug, retry: false }
   );
@@ -107,11 +134,17 @@ export default function PublicStorefront() {
   if (error || !storefront) {
     return (
       <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-2xl font-bold text-white mb-2">Store Not Found</h1>
-        <p className="text-muted-foreground mb-6">This artist may not have their store set up.</p>
-        <button 
-          onClick={() => setLocation(`/${slug}`)}
-          className="px-6 py-3 bg-secondary/50 hover:bg-secondary/50 text-white rounded-full transition-colors font-medium text-sm"
+        <h1 className="text-2xl font-bold text-foreground mb-2">
+          Store Not Found
+        </h1>
+        <p className="text-muted-foreground mb-6">
+          This artist may not have their store set up.
+        </p>
+        <button
+          onClick={() =>
+            setLocation(slug?.startsWith("supplier-") ? "/" : `/${slug}`)
+          }
+          className="px-6 py-3 bg-secondary/50 hover:bg-secondary/50 text-foreground rounded-full transition-colors font-medium text-sm"
         >
           Return to Hub
         </button>
@@ -120,7 +153,7 @@ export default function PublicStorefront() {
   }
 
   return (
-    <CartProvider>
+    <CartProvider key={storefront.artistId} storeId={storefront.artistId}>
       <StorefrontContent slug={slug || ""} storefront={storefront} />
     </CartProvider>
   );

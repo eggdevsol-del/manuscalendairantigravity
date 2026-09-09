@@ -1,3 +1,4 @@
+import { effectivePaymentTier } from "../services/paymentEntitlements";
 /**
  * Supplier Orders Router
  *
@@ -182,7 +183,7 @@ export const supplierOrdersRouter = router({
       );
 
       // 5. Calculate platform fee on the artist-currency subtotal
-      const tier = resolvePaymentTier(artistSettings.subscriptionTier);
+      const tier = await effectivePaymentTier(artistSettings);
       const fees = calculateTransactionFees(subtotalArtistCents, tier);
 
       // 6. Resolve shipping (in supplier currency → convert)
@@ -273,7 +274,10 @@ export const supplierOrdersRouter = router({
         artistEmail: artistUser.email || "",
       });
 
-      await db.update(schema.supplierOrders).set({stripeCheckoutSessionId:sessionResult.sessionId}).where(eq(schema.supplierOrders.id,orderId));
+      await db
+        .update(schema.supplierOrders)
+        .set({ stripeCheckoutSessionId: sessionResult.sessionId })
+        .where(eq(schema.supplierOrders.id, orderId));
 
       if (!sessionResult.clientSecret) {
         throw new Error("Failed to create checkout session");
@@ -294,11 +298,20 @@ export const supplierOrdersRouter = router({
 
   // Payment and fulfilment writes belong to the signed webhook transaction.
   getSupplierOrderStatus: protectedProcedure
-    .input(z.object({orderId:z.number().int().positive()}))
-    .query(({ctx,input})=>readSupplierOrderStatus(ctx.user.id,input.orderId)),
+    .input(z.object({ orderId: z.number().int().positive() }))
+    .query(({ ctx, input }) =>
+      readSupplierOrderStatus(ctx.user.id, input.orderId)
+    ),
   confirmSupplierOrder: protectedProcedure
-    .input(z.object({orderId:z.number().int().positive(),stripeSessionId:z.string().optional()}))
-    .mutation(({ctx,input})=>readSupplierOrderStatus(ctx.user.id,input.orderId)),
+    .input(
+      z.object({
+        orderId: z.number().int().positive(),
+        stripeSessionId: z.string().optional(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      readSupplierOrderStatus(ctx.user.id, input.orderId)
+    ),
 
   /**
    * Get the artist's supplier order history.
@@ -318,9 +331,20 @@ export const supplierOrdersRouter = router({
   }),
 });
 
-async function readSupplierOrderStatus(artistId:string,orderId:number){
-  const db=await getDb();if(!db)throw new Error('Database connection failed');
-  const order=await db.query.supplierOrders.findFirst({where:and(eq(schema.supplierOrders.id,orderId),eq(schema.supplierOrders.artistId,artistId))});
-  if(!order)throw new Error('Order not found');
-  return {success:order.status==='paid',status:order.status,shopifyDraftOrderId:order.shopifyDraftOrderId,shopifyDraftOrderName:order.shopifyDraftOrderName};
+async function readSupplierOrderStatus(artistId: string, orderId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database connection failed");
+  const order = await db.query.supplierOrders.findFirst({
+    where: and(
+      eq(schema.supplierOrders.id, orderId),
+      eq(schema.supplierOrders.artistId, artistId)
+    ),
+  });
+  if (!order) throw new Error("Order not found");
+  return {
+    success: order.status === "paid",
+    status: order.status,
+    shopifyDraftOrderId: order.shopifyDraftOrderId,
+    shopifyDraftOrderName: order.shopifyDraftOrderName,
+  };
 }

@@ -22,11 +22,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  PageShell,
-  PageHeader,
-  SegmentedHeader,
-} from "@/components/ui/ssot";
+import { PageShell, PageHeader, SegmentedHeader } from "@/components/ui/ssot";
 import { tokens } from "@/ui/tokens";
 import { cn } from "@/lib/utils";
 import { Lock } from "lucide-react";
@@ -34,7 +30,11 @@ import { format } from "date-fns";
 import { useTeaser } from "@/contexts/TeaserContext";
 import { SetupChecklistWidget } from "@/features/onboarding/SetupChecklistWidget";
 import { MerchantDashboard } from "@/features/merchant/Dashboard";
-import { useTooltipTour, useTooltipTarget, DASHBOARD_TOUR } from "@/components/tooltip-tour";
+import {
+  useTooltipTour,
+  useTooltipTarget,
+  DASHBOARD_TOUR,
+} from "@/components/tooltip-tour";
 import { DashboardFABActions } from "@/features/dashboard/DashboardActions";
 
 // ── Segments ──────────────────────────────────────────────
@@ -59,7 +59,8 @@ export default function Dashboard() {
   const [showMoney, setShowMoney] = useState(false);
 
   // Tooltip tour
-  const { startTour, isTourCompleted, activeTour, currentStep } = useTooltipTour();
+  const { startTour, isTourCompleted, activeTour, currentStep } =
+    useTooltipTour();
   const dashTourStartedRef = useRef(false);
   const isDemoMode = activeTour?.id === "dashboard-overview";
 
@@ -71,6 +72,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (
       user &&
+      user.role !== "merchant" &&
       !isTourCompleted("dashboard-overview") &&
       !dashTourStartedRef.current
     ) {
@@ -120,7 +122,10 @@ export default function Dashboard() {
 
   const [[page, direction], setPage] = useState([0, 0]);
 
-  const activeCategory = TITLES[activeIndex].toLowerCase() as "today" | "clients" | "supplies";
+  const activeCategory = TITLES[activeIndex].toLowerCase() as
+    | "today"
+    | "clients"
+    | "supplies";
 
   const todayLabel = format(new Date(), "EEEE, d MMMM");
 
@@ -145,9 +150,7 @@ export default function Dashboard() {
       <div className={cn(tokens.contentContainer.base, "relative")}>
         {/* Teaser Mode Overlay */}
         {isTeaserClient && (
-          <div
-            className="absolute inset-0 z-50 bg-background/60 backdrop-blur-[2px] flex items-center justify-center cursor-pointer transition-all hover:bg-background/70"
-          >
+          <div className="absolute inset-0 z-50 bg-background/60 backdrop-blur-[2px] flex items-center justify-center cursor-pointer transition-all hover:bg-background/70">
             <div className="flex flex-col items-center gap-3 p-8 rounded-[2rem] bg-card border border-border shadow-2xl backdrop-blur-md animate-in fade-in zoom-in duration-300">
               <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-2">
                 <Lock className="w-8 h-8 text-primary" />
@@ -182,7 +185,10 @@ export default function Dashboard() {
             )}
           >
             {/* §2: Segmented control — Today · Clients · Supplies */}
-            <div ref={dashboardTabsRef} className="px-6 pb-2 pt-2 shrink-0 relative z-50">
+            <div
+              ref={dashboardTabsRef}
+              className="px-6 pb-2 pt-2 shrink-0 relative z-50"
+            >
               <SegmentedHeader
                 options={TITLES}
                 activeIndex={activeIndex}

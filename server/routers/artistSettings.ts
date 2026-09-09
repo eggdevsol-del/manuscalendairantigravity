@@ -1,3 +1,4 @@
+import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { z } from "zod";
 import { artistProcedure, protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
@@ -10,12 +11,19 @@ import { geocodeAddress } from "../services/geocode";
 export const artistSettingsRouter = router({
   get: artistProcedure.query(async ({ ctx }) => {
     const settings = await db.getArtistSettings(ctx.user.id);
+    const paymentTier = await effectivePaymentTier(settings);
     const expressEnabled = process.env.STRIPE_CUSTOM_ENABLED !== "false";
 
     // Return default settings if none exist
     return settings
       ? {
           ...settings,
+          subscriptionTier:
+            paymentTier === "free"
+              ? ("basic" as const)
+              : paymentTier === "top"
+                ? ("elite" as const)
+                : ("pro" as const),
           expressOnboardingEnabled: expressEnabled,
         }
       : {

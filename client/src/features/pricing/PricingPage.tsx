@@ -1,350 +1,187 @@
-/**
- * PricingPage — Presentational Component (Spec §7)
- *
- * Props-only, stateless, no tRPC or routing awareness.
- * Shows Free vs Pro comparison, fee disclosure FAQ, break-even messaging.
- *
- * ALL fee percentages and prices are derived from props (SSOT via PAYMENT_TIERS).
- * Nothing is hardcoded. If tier config changes, the UI updates automatically.
- *
- * Rules from spec §7:
- * - Two public tiers only: Free + Pro. Top tier is NEVER shown publicly.
- * - No mention of "take rate" anywhere in public-facing copy.
- * - Fee disclosure: client pays 3.4%, never deducted from artist earnings.
- */
-
-import {
-    Check,
-    X,
-    ArrowRight,
-    Zap,
-    Shield,
-    HelpCircle,
-    TrendingUp,
-    CreditCard,
-    Clock,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { tokens } from "@/ui/tokens";
-import { motion } from "framer-motion";
-
+import { Button } from "@/components/ui";
+import { PAYMENT_TIERS, MIN_PLATFORM_FEE_CENTS } from "@shared/fees";
 export interface SubscriptionStatus {
-    tier: "free" | "pro" | "top";
-    tierLabel: string;
-    artistFeeRate: number;
-    platformFeeRate: number;
-    subscriptionPriceCents: number;
-    stripeSubscriptionId: string | null;
-    renewalDate: string | null;
-    cancelAtPeriodEnd: boolean;
-    isActive: boolean;
+  tier: "free" | "pro" | "top";
+  tierLabel: string;
+  artistFeeRate: number;
+  platformFeeRate: number;
+  subscriptionPriceCents: number;
+  stripeSubscriptionId: string | null;
+  renewalDate: string | null;
+  cancelAtPeriodEnd: boolean;
+  isActive: boolean;
 }
-
-/** Tier config passed from container (derived from PAYMENT_TIERS SSOT) */
-export interface TierDisplayConfig {
-    artistFeeRate: number;     // e.g. 0.020
-    platformFeeRate: number;   // e.g. 0.034
-    subscriptionPriceCents: number;
-    defaultDepositPercent: number;
-}
-
-export interface PricingPageProps {
-    status: SubscriptionStatus;
-    freeTier: TierDisplayConfig;
-    proTier: TierDisplayConfig;
-    onUpgradePro: () => void;
-    onManageSubscription: () => void;
-    isLoading: boolean;
-}
-
-/** Format a decimal rate as a display percentage, e.g. 0.020 → "2.0%" */
-function fmtRate(rate: number): string {
-    return `${(rate * 100).toFixed(1)}%`;
-}
-
-/** Format cents as dollars, e.g. 3900 → "$39" */
-function fmtPrice(cents: number): string {
-    return `$${(cents / 100).toFixed(0)}`;
-}
-
 export function PricingPage({
-    status,
-    freeTier,
-    proTier,
-    onUpgradePro,
-    onManageSubscription,
-    isLoading,
-}: PricingPageProps) {
-    const isPro = status.tier === "pro" || status.tier === "top";
-
-    // Derive display strings from tier config (SSOT)
-    const freeArtistFee = fmtRate(freeTier.artistFeeRate);
-    const proArtistFee = fmtRate(proTier.artistFeeRate);
-    const platformFee = fmtRate(proTier.platformFeeRate); // Same for all tiers
-    const proPrice = fmtPrice(proTier.subscriptionPriceCents);
-
-    // Compute worked example from tier config
-    const exampleDayRate = 100000; // $1,000 in cents
-    const exampleClientTotal = exampleDayRate + Math.round(exampleDayRate * proTier.platformFeeRate);
-    const exampleFreeNet = exampleDayRate - Math.round(exampleDayRate * freeTier.artistFeeRate);
-    const exampleProNet = exampleDayRate - Math.round(exampleDayRate * proTier.artistFeeRate);
-
-    const FREE_FEATURES = [
-        { label: "Unlimited bookings", included: true },
-        { label: "Client messaging", included: true },
-        { label: "Automated deposits", included: true },
-        { label: "Booking wizard", included: true },
-        { label: `${freeArtistFee} artist fee per transaction`, included: true, highlight: true },
-        { label: `Deposit locked at ${freeTier.defaultDepositPercent}%`, included: true },
-        { label: "Customisable deposit %", included: false },
-        { label: "Upfront payment option", included: false },
-        { label: "Remove d.o.t.s branding", included: false },
-    ];
-
-    const PRO_FEATURES = [
-        { label: "Everything in Free", included: true },
-        { label: "0% artist fee — keep 100%", included: true, highlight: true },
-        { label: "Customisable deposit %", included: true },
-        { label: "Upfront payment option", included: true },
-        { label: "Automated reminders", included: true },
-        { label: "Remove d.o.t.s branding", included: true },
-        { label: "Custom booking funnel theme", included: true },
-        { label: "Priority support", included: true },
-    ];
-
-    return (
-        <div className="pb-32 max-w-lg mx-auto space-y-8 px-4">
-            {/* Hero */}
-            <div className="text-center pt-4">
-                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400">
-                    Simple, Fair Pricing
-                </h1>
-                <p className="text-muted-foreground mt-2 max-w-sm mx-auto text-sm">
-                    You set your day rate — we never deduct from your earnings.
+  status,
+  onUpgradePro,
+  onStudio,
+  onManageSubscription,
+  isLoading,
+  proAvailable,
+}: {
+  status: SubscriptionStatus;
+  onUpgradePro: () => void;
+  onStudio: () => void;
+  onManageSubscription: () => void;
+  isLoading: boolean;
+  proAvailable: boolean;
+}) {
+  const dollars = (cents: number) =>
+    new Intl.NumberFormat("en-AU", {
+      style: "currency",
+      currency: "AUD",
+      maximumFractionDigits: 0,
+    }).format(cents / 100);
+  const plans = [
+    {
+      key: "free",
+      features: [
+        "Calendar and client messaging",
+        "Bookings and deposits",
+        "25% deposit",
+        "2% Tattoi artist fee",
+      ],
+    },
+    {
+      key: "pro",
+      features: [
+        "Everything in Free",
+        "0% Tattoi artist fee",
+        "Custom deposit percentage",
+        "Optional payment in full",
+      ],
+    },
+    {
+      key: "top",
+      features: [
+        "Pro payment benefits for up to 10 artists",
+        "Shared studio schedule",
+        "Team invitations and access management",
+        "One studio subscription",
+      ],
+    },
+  ] as const;
+  return (
+    <div className="max-w-5xl mx-auto px-4 pb-32 space-y-6">
+      <section className="rounded-2xl bg-secondary p-5">
+        <p className="text-sm text-muted-foreground">Your plan</p>
+        <h2 className="text-2xl font-semibold">{status.tierLabel}</h2>
+        {status.renewalDate && (
+          <p className="text-sm mt-2">
+            {status.cancelAtPeriodEnd ? "Access ends" : "Renews"}{" "}
+            {new Date(status.renewalDate).toLocaleDateString("en-AU")}
+          </p>
+        )}
+        {status.stripeSubscriptionId && (
+          <Button
+            className="mt-3"
+            variant="outline"
+            disabled={isLoading}
+            onClick={onManageSubscription}
+          >
+            Manage Pro billing
+          </Button>
+        )}
+        {status.tier === "top" && (
+          <Button className="mt-3" variant="outline" onClick={onStudio}>
+            Open studio
+          </Button>
+        )}
+      </section>
+      <div className="grid md:grid-cols-3 gap-4">
+        {plans.map(plan => {
+          const config = PAYMENT_TIERS[plan.key];
+          return (
+            <section
+              key={plan.key}
+              className="rounded-2xl border bg-card p-5 flex flex-col gap-4"
+            >
+              <h2 className="text-xl font-semibold">{config.label}</h2>
+              <p>
+                <strong className="text-3xl">
+                  {dollars(config.subscriptionPriceCents)}
+                </strong>
+                <span className="text-sm text-muted-foreground">
+                  {" "}
+                  AUD / month
+                </span>
+              </p>
+              <ul className="space-y-3 flex-1">
+                {plan.features.map(feature => (
+                  <li key={feature} className="text-sm">
+                    ✓ {feature}
+                  </li>
+                ))}
+              </ul>
+              {plan.key === "free" ? (
+                <p className="text-sm text-muted-foreground">
+                  {status.tier === "free"
+                    ? "Your current plan"
+                    : "Manage billing to cancel renewal."}
                 </p>
-            </div>
-
-            {/* ── Free Tier Card ── */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35 }}
-                className={cn(
-                    "relative rounded-2xl p-5 border overflow-hidden",
-                    !isPro
-                        ? "bg-card border-primary/30 shadow-lg shadow-primary/5"
-                        : "bg-secondary/50 border-border"
-                )}
-            >
-                {!isPro && (
-                    <span className="absolute top-3 right-3 bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">
-                        Current Plan
-                    </span>
-                )}
-                <div className="flex items-center gap-2 mb-3">
-                    <Shield className="w-5 h-5 text-foreground/70" />
-                    <h2 className="text-lg font-bold text-foreground">Free</h2>
-                </div>
-                <div className="flex items-baseline gap-1 mb-5">
-                    <span className="text-3xl font-extrabold text-foreground">$0</span>
-                    <span className="text-muted-foreground font-medium">/forever</span>
-                </div>
-                <div className="space-y-2.5">
-                    {FREE_FEATURES.map((f, i) => (
-                        <div key={i} className="flex items-center gap-2.5">
-                            {f.included ? (
-                                <div className="w-4 h-4 rounded-full bg-secondary/50 flex items-center justify-center shrink-0">
-                                    <Check className="w-2.5 h-2.5 text-[var(--color-status-success-text)]" />
-                                </div>
-                            ) : (
-                                <div className="w-4 h-4 rounded-full bg-secondary/50 flex items-center justify-center shrink-0">
-                                    <X className="w-2.5 h-2.5 text-muted-foreground/40" />
-                                </div>
-                            )}
-                            <span
-                                className={cn(
-                                    "text-sm leading-tight",
-                                    f.included
-                                        ? f.highlight
-                                            ? "text-[var(--color-status-warning-text)] font-medium"
-                                            : "text-foreground/80"
-                                        : "text-muted-foreground/50 line-through"
-                                )}
-                            >
-                                {f.label}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            </motion.div>
-
-            {/* ── Pro Tier Card ── */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: 0.1 }}
-                className={cn(
-                    "relative rounded-2xl p-5 border overflow-hidden",
-                    isPro
-                        ? "bg-card border-primary/30 shadow-lg shadow-primary/10"
-                        : "bg-card border-border shadow-xl"
-                )}
-            >
-                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-purple-500 to-primary" />
-
-                {isPro && (
-                    <span className="absolute top-3 right-3 bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">
-                        Current Plan
-                    </span>
-                )}
-
-                <div className="flex items-center gap-2 mb-1">
-                    <Zap className="w-5 h-5 text-primary" />
-                    <h2 className="text-lg font-bold text-foreground">Pro</h2>
-                </div>
-                <p className="text-xs text-muted-foreground mb-4">
-                    {proPrice}/month · 0% artist fee · Keep 100% of your earnings
-                </p>
-
-                <div className="flex items-baseline gap-1 mb-5">
-                    <span className="text-3xl font-extrabold text-foreground">{proPrice}</span>
-                    <span className="text-muted-foreground font-medium">/month</span>
-                </div>
-
-                <div className="space-y-2.5 mb-6">
-                    {PRO_FEATURES.map((f, i) => (
-                        <div key={i} className="flex items-center gap-2.5">
-                            <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                                <Check className="w-2.5 h-2.5 text-primary" />
-                            </div>
-                            <span
-                                className={cn(
-                                    "text-sm leading-tight",
-                                    f.highlight
-                                        ? "text-[var(--color-status-success-text)] font-medium"
-                                        : "text-foreground/80"
-                                )}
-                            >
-                                {f.label}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-
-                {isPro ? (
-                    <button
-                        onClick={onManageSubscription}
-                        disabled={isLoading}
-                        className="w-full py-3 rounded-xl border border-border text-foreground font-semibold text-sm hover:bg-secondary/50 transition-colors disabled:opacity-50"
-                    >
-                        Manage Subscription
-                    </button>
-                ) : (
-                    <button
-                        onClick={onUpgradePro}
-                        disabled={isLoading}
-                        className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-primary/20"
-                    >
-                        {isLoading ? "Loading..." : "Upgrade to Pro"}
-                        {!isLoading && <ArrowRight className="w-4 h-4" />}
-                    </button>
-                )}
-
-                {/* Renewal info */}
-                {isPro && status.renewalDate && (
-                    <p className="text-center text-xs text-muted-foreground mt-3 flex items-center justify-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {status.cancelAtPeriodEnd
-                            ? `Cancels on ${new Date(status.renewalDate).toLocaleDateString("en-AU")}`
-                            : `Renews ${new Date(status.renewalDate).toLocaleDateString("en-AU")}`}
-                    </p>
-                )}
-            </motion.div>
-
-            {/* ── Break-even Messaging ── */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: 0.2 }}
-                className="bg-[var(--color-status-success-bg)] border border-[var(--color-status-success-border)] rounded-2xl p-5"
-            >
-                <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-5 h-5 text-[var(--color-status-success-text)]" />
-                    <h3 className="font-bold text-[var(--color-status-success-text)] text-sm">
-                        Pro pays for itself
-                    </h3>
-                </div>
-                <p className="text-sm text-foreground/80 leading-relaxed">
-                    At just <strong className="text-[var(--color-status-success-text)]">$3,000/month in bookings</strong>,
-                    the {fmtRate(freeTier.artistFeeRate)} fee saving covers
-                    the {proPrice}/month subscription.
-                    After that, you keep every dollar.
-                </p>
-            </motion.div>
-
-            {/* ── Fee Disclosure FAQ ── */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: 0.3 }}
-                className={cn(tokens.card.base, tokens.card.bg, "border-0 p-5 space-y-4")}
-            >
-                <div className="flex items-center gap-2">
-                    <HelpCircle className="w-5 h-5 text-muted-foreground" />
-                    <h3 className="font-bold text-foreground text-sm">
-                        How fees work
-                    </h3>
-                </div>
-
-                <div className="space-y-4">
-                    <div>
-                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
-                            Platform Fee ({platformFee})
-                        </h4>
-                        <p className="text-sm text-foreground/80 leading-relaxed">
-                            Your clients pay a {platformFee} platform fee at checkout.
-                            You set your day rate — the fee is added on top,{" "}
-                            <strong>never deducted from your earnings</strong>.
-                        </p>
-                    </div>
-
-                    <div className="border-t border-border pt-3">
-                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
-                            Artist Fee
-                        </h4>
-                        <p className="text-sm text-foreground/80 leading-relaxed">
-                            A small per-transaction fee for payment processing and platform maintenance.
-                            Free tier: {freeArtistFee}. Pro tier: {proArtistFee}.
-                        </p>
-                    </div>
-
-                    <div className="border-t border-border pt-3">
-                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
-                            Example: $1,000 booking
-                        </h4>
-                        <div className="bg-secondary/50 rounded-lg p-3 space-y-1.5 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-foreground/70">Your day rate</span>
-                                <span className="font-medium">$1,000.00</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-foreground/70">Client pays (+ {platformFee})</span>
-                                <span className="font-medium">${(exampleClientTotal / 100).toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between border-t border-border pt-1.5">
-                                <span className="text-foreground/70">
-                                    You receive ({isPro ? `Pro ${proArtistFee}` : `Free ${freeArtistFee}`} fee)
-                                </span>
-                                <span className="font-bold text-[var(--color-status-success-text)]">
-                                    ${((isPro ? exampleProNet : exampleFreeNet) / 100).toFixed(2)}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-
-                </div>
-            </motion.div>
-        </div>
-    );
+              ) : plan.key === "pro" ? (
+                <Button
+                  disabled={
+                    isLoading || status.tier !== "free" || !proAvailable
+                  }
+                  onClick={onUpgradePro}
+                >
+                  {status.tier === "pro"
+                    ? "Current plan"
+                    : status.tier === "top"
+                      ? "Included in Studio"
+                      : !proAvailable
+                        ? "Billing unavailable"
+                        : "Choose Pro"}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  disabled={isLoading}
+                  onClick={onStudio}
+                >
+                  {status.tier === "top" ? "Manage studio" : "Set up Studio"}
+                </Button>
+              )}
+            </section>
+          );
+        })}
+      </div>
+      <section className="rounded-2xl border p-5 space-y-3">
+        <h2 className="text-lg font-semibold">When does Pro pay for itself?</h2>
+        <p className="text-sm">
+          At{" "}
+          {dollars(
+            Math.round(
+              PAYMENT_TIERS.pro.subscriptionPriceCents /
+                PAYMENT_TIERS.free.artistFeeRate
+            )
+          )}{" "}
+          in monthly artist payments, Free’s 2% artist fees equal Pro’s monthly
+          price. Above that, Pro reduces your Tattoi artist fees.
+        </p>
+        <p className="text-sm text-muted-foreground">
+          On Free, the artist fee is deducted when payment is collected, before
+          payout to your bank. Pro and active Studio members pay no Tattoi
+          artist fee on new payments. Upgrading does not refund fees on past
+          payments.
+        </p>
+      </section>
+      <section className="rounded-2xl border p-5 space-y-3">
+        <h2 className="text-lg font-semibold">Clear payment fees</h2>
+        <p className="text-sm">
+          Clients pay the same{" "}
+          {(PAYMENT_TIERS.free.platformFeeRate * 100).toFixed(1)}% platform fee
+          on every plan, with a {dollars(MIN_PLATFORM_FEE_CENTS)} minimum per
+          payment. The checkout shows the total before payment.
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Studio covers up to 10 active artists, including its owner. Members
+          retain their own clients and personal history. Monthly subscriptions
+          renew until cancelled; Stripe checkout shows the final subscription
+          amount.
+        </p>
+      </section>
+    </div>
+  );
 }

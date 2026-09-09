@@ -86,7 +86,7 @@ export function MerchantOrders() {
               {o.items.map(i => (
                 <li key={i.id} className="flex justify-between gap-3 text-sm">
                   <span>
-                    {i.quantity} × {i.product?.title || "Item"}
+                    {i.quantity} × {i.productName || i.product?.title || "Item"}
                   </span>
                   <span>
                     ${((i.priceAtPurchaseCents * i.quantity) / 100).toFixed(2)}

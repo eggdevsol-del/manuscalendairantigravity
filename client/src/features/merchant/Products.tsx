@@ -16,6 +16,7 @@ type ProductDraft = {
   imageUrl: string;
   fulfillmentType: "pickup" | "delivery" | "both" | "digital";
   isActive: boolean;
+  variants?: { id: number; name: string; price: string; stock: string }[];
 };
 const empty: ProductDraft = {
   title: "",
@@ -63,6 +64,12 @@ export function MerchantProducts() {
             imageUrl: product.imageUrl || "",
             fulfillmentType: product.fulfillmentType,
             isActive: product.isActive === 1,
+            variants: product.variants.map(v => ({
+              id: v.id,
+              name: v.name,
+              price: (v.priceCents / 100).toFixed(2),
+              stock: String(v.inventoryCount),
+            })),
           }
         : { ...empty }
     );
@@ -139,8 +146,10 @@ export function MerchantProducts() {
                   ${(p.priceCents / 100).toFixed(2)}
                 </span>
                 <span className="block text-sm text-muted-foreground mt-2">
-                  {p.inventoryCount} in stock ·{" "}
-                  {p.isActive ? "Published" : "Hidden"}
+                  {p.variants.length
+                    ? p.variants.reduce((sum, v) => sum + v.inventoryCount, 0)
+                    : p.inventoryCount}{" "}
+                  in stock · {p.isActive ? "Published" : "Hidden"}
                 </span>
               </span>
               <span className="text-sm text-primary">Edit</span>
@@ -170,12 +179,23 @@ export function MerchantProducts() {
               const data = {
                 title: draft.title.trim(),
                 description: draft.description,
-                priceCents: Math.round(Number(draft.price) * 100),
+                priceCents: draft.variants?.length
+                  ? Math.min(
+                      ...draft.variants.map(v =>
+                        Math.round(Number(v.price) * 100)
+                      )
+                    )
+                  : Math.round(Number(draft.price) * 100),
                 inventoryCount: Number(draft.stock),
                 shippingCents: Math.round(Number(draft.shipping) * 100),
                 fulfillmentType: draft.fulfillmentType,
                 ...(draft.imageUrl ? { imageUrl: draft.imageUrl } : {}),
                 isActive: draft.isActive,
+                variants: draft.variants?.map(v => ({
+                  id: v.id,
+                  priceCents: Math.round(Number(v.price) * 100),
+                  inventoryCount: Number(v.stock),
+                })),
               };
               if (draft.id) update.mutate({ ...data, id: draft.id });
               else create.mutate(data);
@@ -189,22 +209,78 @@ export function MerchantProducts() {
                 ["shipping", "Delivery charge ($)", "number"],
                 ["imageUrl", "Image URL (optional)", "url"],
               ] as const
-            ).map(([field, label, type]) => (
-              <div key={field} className="space-y-2">
-                <Label htmlFor={`product-${field}`}>{label}</Label>
-                <Input
-                  id={`product-${field}`}
-                  type={type}
-                  min={field === "price" ? "0.01" : "0"}
-                  step={field === "stock" ? "1" : "0.01"}
-                  required={field !== "imageUrl"}
-                  value={draft[field]}
-                  onChange={e =>
-                    setDraft({ ...draft, [field]: e.target.value })
-                  }
-                />
-              </div>
-            ))}
+            )
+              .filter(
+                ([field]) =>
+                  !draft.variants?.length || !["price", "stock"].includes(field)
+              )
+              .map(([field, label, type]) => (
+                <div key={field} className="space-y-2">
+                  <Label htmlFor={`product-${field}`}>{label}</Label>
+                  <Input
+                    id={`product-${field}`}
+                    type={type}
+                    min={field === "price" ? "0.01" : "0"}
+                    step={field === "stock" ? "1" : "0.01"}
+                    required={field !== "imageUrl"}
+                    value={draft[field]}
+                    onChange={e =>
+                      setDraft({ ...draft, [field]: e.target.value })
+                    }
+                  />
+                </div>
+              ))}
+            {!!draft.variants?.length && (
+              <section className="space-y-3">
+                <h3 className="font-semibold">Product options</h3>
+                {draft.variants.map((v, index) => (
+                  <div key={v.id} className="rounded-xl border p-3 space-y-2">
+                    <p className="font-medium">{v.name}</p>
+                    <Label htmlFor={`variant-price-${v.id}`}>Price ($)</Label>
+                    <Input
+                      id={`variant-price-${v.id}`}
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      required
+                      value={v.price}
+                      onChange={e =>
+                        setDraft({
+                          ...draft,
+                          variants: draft.variants!.map((item, i) =>
+                            i === index
+                              ? { ...item, price: e.target.value }
+                              : item
+                          ),
+                        })
+                      }
+                    />
+                    <Label htmlFor={`variant-stock-${v.id}`}>
+                      Available quantity
+                    </Label>
+                    <Input
+                      id={`variant-stock-${v.id}`}
+                      type="number"
+                      min="0"
+                      max="1000000"
+                      step="1"
+                      required
+                      value={v.stock}
+                      onChange={e =>
+                        setDraft({
+                          ...draft,
+                          variants: draft.variants!.map((item, i) =>
+                            i === index
+                              ? { ...item, stock: e.target.value }
+                              : item
+                          ),
+                        })
+                      }
+                    />
+                  </div>
+                ))}
+              </section>
+            )}
             <div className="space-y-2">
               <Label htmlFor="product-description">Description</Label>
               <textarea

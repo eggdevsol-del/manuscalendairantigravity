@@ -117,6 +117,15 @@ export async function createAppointment(appointment: InsertAppointment) {
       endTime: toMySQL(end),
     };
 
+    if (appointment.studioId === undefined) {
+      const membership = await db.query.studioMembers.findFirst({
+        where: and(
+          eq(studioMembers.userId, appointment.artistId),
+          eq(studioMembers.status, "active")
+        ),
+      });
+      appointment.studioId = membership?.studioId || null;
+    }
     const result = await db.insert(appointments).values(appointment);
     const appointmentId = Number(result[0].insertId);
 
@@ -533,17 +542,11 @@ export async function getStudioCalendar(
   });
   const validArtistIds = studioArtists.map(a => a.userId);
 
-  let conditions: any[] = [];
-  if (validArtistIds.length > 0) {
-    conditions.push(
-      or(
-        eq(appointments.studioId, studioId),
-        inArray(appointments.artistId, validArtistIds)
-      )
-    );
-  } else {
-    conditions.push(eq(appointments.studioId, studioId));
-  }
+  if (!validArtistIds.length) return [];
+  const conditions: any[] = [
+    eq(appointments.studioId, studioId),
+    inArray(appointments.artistId, validArtistIds),
+  ];
 
   if (excludeStatuses.length > 0) {
     conditions.push(notInArray(appointments.status, excludeStatuses as any[]));

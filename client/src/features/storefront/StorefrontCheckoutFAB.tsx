@@ -1,254 +1,250 @@
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, ShoppingCart, Plus, Minus, ChevronRight, Loader2, Package, CheckCircle2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useCart } from "./CartContext";
 import { trpc } from "@/lib/trpc";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/_core/hooks/useAuth";
-
-type CheckoutStep = "review" | "details" | "payment" | "success";
+import { SheetShell } from "@/components/ui/overlays/sheet-shell";
+import { Button } from "@/components/ui";
+import { calculateTransactionFees } from "@shared/fees";
+import {
+  OrderConfirmation,
+  returnedOrder,
+  type OrderIdentity,
+} from "./OrderConfirmation";
 
 export function StorefrontCheckoutFAB({
   onClose,
   artistSlug,
   artistId,
+  currency = "AUD",
 }: {
   onClose: () => void;
   artistSlug: string;
   artistId: string;
+  currency?: string;
 }) {
-  const { user } = useAuth();
-  const { items, subtotalCents, totalItems, updateQuantity, removeItem, clearCart, isCartOpen, setIsCartOpen } = useCart();
-  const [step, setStep] = useState<CheckoutStep>("review");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("status") === "success") {
-      setStep("success");
-      setIsCartOpen(true);
-      clearCart();
-      
-      // Clean up the URL so it doesn't trigger again on refresh
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
-    }
-  }, []);
-
-  const checkoutMutation = trpc.storefront.createStorefrontCheckout.useMutation();
-
-  const fulfillmentMethod = items.some((i) => ["delivery", "both"].includes(i.fulfillmentType))
-    ? "delivery"
-    : "pickup";
-
-  const totalShippingCents = fulfillmentMethod === "delivery"
-    ? items.reduce((acc, i) => acc + (i.shippingCents || 0) * i.quantity, 0)
+  const {
+    items,
+    subtotalCents,
+    updateQuantity,
+    removeItem,
+    clearCart,
+    isCartOpen,
+    setIsCartOpen,
+  } = useCart();
+  const [step, setStep] = useState<"review" | "payment" | "confirming">(() =>
+    returnedOrder() ? "confirming" : "review"
+  );
+  const [identity, setIdentity] = useState<OrderIdentity | null>(returnedOrder);
+  const [secret, setSecret] = useState<string | null>(null);
+  const [chargedTotal, setChargedTotal] = useState(0);
+  const available = (["pickup", "delivery", "digital"] as const).filter(
+    method =>
+      items.every(
+        item =>
+          item.fulfillmentType === method ||
+          (item.fulfillmentType === "both" && method !== "digital")
+      )
+  );
+  const [choice, setChoice] = useState<"pickup" | "delivery" | "digital">(
+    "delivery"
+  );
+  const method = available.includes(choice) ? choice : available[0];
+  const shipping =
+    method === "delivery"
+      ? items.reduce((sum, item) => sum + item.shippingCents * item.quantity, 0)
+      : 0;
+  const fee = items.length
+    ? calculateTransactionFees(subtotalCents + shipping, "free")
+        .platformFeeCents
     : 0;
-
-  const totalCents = subtotalCents + totalShippingCents;
-
-  const handleContinueToPayment = async () => {
+  const total = subtotalCents + shipping + fee;
+  const checkout = trpc.storefront.createStorefrontCheckout.useMutation();
+  const cancel = trpc.storefront.cancelStoreCheckout.useMutation();
+  useEffect(() => {
+    if (identity) setIsCartOpen(true);
+  }, []);
+  const pay = async () => {
+    if (!method) return;
     try {
-      setIsGenerating(true);
-      const res = await checkoutMutation.mutateAsync({
-        items: items.map(i => ({ productId: i.productId, quantity: i.quantity })),
-        fulfillmentMethod,
+      const result = await checkout.mutateAsync({
+        items: items.map(item => ({
+          productId: item.productId,
+          variantId: item.variantId,
+          quantity: item.quantity,
+        })),
+        fulfillmentMethod: method,
       });
-
-      if (res.clientSecret) {
-        setClientSecret(res.clientSecret);
+      setIdentity({ orderId: result.orderId, sessionId: result.sessionId });
+      setChargedTotal(result.totalCents);
+      if (result.clientSecret) {
+        setSecret(result.clientSecret);
         setStep("payment");
-      } else if (res.url) {
-        // Fallback to hosted if embedded not available
-        window.location.href = res.url;
+      } else if (result.url) window.location.assign(result.url);
+    } catch {
+      /* Mutation error is rendered below. */
+    }
+  };
+  const edit = async () => {
+    if (identity) {
+      try {
+        const result = await cancel.mutateAsync(identity);
+        if (!result.cancelled) {
+          setStep("confirming");
+          return;
+        }
+      } catch {
+        return;
       }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to initialize checkout");
-    } finally {
-      setIsGenerating(false);
     }
+    setSecret(null);
+    setIdentity(null);
+    setStep("review");
   };
-
-  const handleClose = () => {
-    setIsCartOpen(false);
-    if (step === "success") {
-      clearCart();
-    }
-    setTimeout(onClose, 300);
-  };
-
-  if (!isCartOpen) return null;
-
   return (
-    <AnimatePresence>
-      {isCartOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: "100%" }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: "100%" }}
-          transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="fixed inset-0 z-[100] bg-background flex flex-col sm:p-4"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <ShoppingCart className="w-6 h-6" />
-              {step === "review" ? "Your Cart" : step === "payment" ? "Checkout" : "Order Confirmed"}
-            </h2>
-            <button
-              onClick={handleClose}
-              className="p-2 rounded-full bg-secondary/50 hover:bg-secondary/50 transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto">
-            {step === "review" && (
-              <div className="p-4 max-w-2xl mx-auto space-y-6">
-                {items.length === 0 ? (
-                  <div className="text-center py-20 text-muted-foreground">
-                    <ShoppingCart className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                    <p>Your cart is empty.</p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-4">
-                      {items.map((item) => (
-                        <div key={item.productId} className="flex gap-4 p-4 rounded-[20px] bg-secondary/50 border border-border">
-                          {item.imageUrl ? (
-                            <img src={item.imageUrl} alt={item.title} className="w-20 h-20 rounded-[12px] object-cover bg-background/80" />
-                          ) : (
-                            <div className="w-20 h-20 rounded-[12px] bg-secondary/50 flex items-center justify-center">
-                              <Package className="w-8 h-8 text-muted-foreground" />
-                            </div>
-                          )}
-                          <div className="flex-1 flex flex-col justify-between">
-                            <div className="flex justify-between items-start gap-4">
-                              <h3 className="font-bold leading-tight">{item.title}</h3>
-                              <button onClick={() => removeItem(item.cartItemId)} className="text-muted-foreground hover:text-white p-1">
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                            <div className="flex items-center justify-between mt-2">
-                              <span className="font-bold text-[var(--color-status-info-text)]">${(item.priceCents / 100).toFixed(2)}</span>
-                              
-                              <div className="flex items-center gap-3 bg-background/80 rounded-full px-2 py-1 border border-border">
-                                <button
-                                  onClick={() => updateQuantity(item.cartItemId, -1)}
-                                  className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-secondary/50"
-                                >
-                                  <Minus className="w-3 h-3" />
-                                </button>
-                                <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
-                                <button
-                                  onClick={() => updateQuantity(item.cartItemId, 1)}
-                                  disabled={item.quantity >= item.maxInventory}
-                                  className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-secondary/50 disabled:opacity-30"
-                                >
-                                  <Plus className="w-3 h-3" />
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="p-5 rounded-[20px] bg-[var(--color-status-info-bg)] border border-[var(--color-status-info-border)] space-y-3">
-                      <div className="flex justify-between text-muted-foreground">
-                        <span>Subtotal</span>
-                        <span>${(subtotalCents / 100).toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between text-muted-foreground">
-                        <span>Shipping ({fulfillmentMethod === "pickup" ? "Pickup" : "Standard"})</span>
-                        <span>{totalShippingCents > 0 ? `$${(totalShippingCents / 100).toFixed(2)}` : "Free"}</span>
-                      </div>
-                      <div className="border-t border-[var(--color-status-info-border)] pt-3 flex justify-between font-bold text-lg">
-                        <span>Total</span>
-                        <span>${(totalCents / 100).toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {step === "payment" && clientSecret && (
-              <div className="p-4 max-w-xl mx-auto h-full min-h-[500px]">
-                <DotsCheckout
-                  clientSecret={clientSecret}
-                  amountCents={0}
-                  onComplete={() => {
-                    setStep("success");
-                    clearCart();
-                  }}
-                  onBack={() => setStep("review")}
-                />
-              </div>
-            )}
-
-            {step === "success" && (
-              <div className="p-4 max-w-xl mx-auto flex flex-col items-center justify-center min-h-[500px] text-center space-y-6">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", bounce: 0.5 }}
+    <SheetShell
+      isOpen={isCartOpen}
+      onClose={() => {
+        setIsCartOpen(false);
+        onClose();
+      }}
+      title={
+        step === "review"
+          ? "Your cart"
+          : step === "payment"
+            ? "Checkout"
+            : "Order status"
+      }
+      description="Review your items and payment securely."
+      className="h-[90dvh] max-h-[90dvh]"
+    >
+      {step === "review" && (
+        <div className="max-w-xl mx-auto space-y-5 pb-6">
+          {!items.length ? (
+            <p className="text-center py-8">Your cart is empty.</p>
+          ) : (
+            <>
+              {items.map(item => (
+                <article
+                  key={item.cartItemId}
+                  className="rounded-2xl border p-4 space-y-3"
                 >
-                  <CheckCircle2 className="w-24 h-24 text-[var(--color-success)]" />
-                </motion.div>
-                <div className="space-y-2">
-                  <h2 className="text-3xl font-black">Order Confirmed!</h2>
-                  <p className="text-muted-foreground">Your order has been placed. You will receive an email receipt shortly.</p>
+                  <div className="flex justify-between gap-3">
+                    <h3 className="font-semibold">
+                      {item.title}
+                      {item.variantName && (
+                        <span className="block text-sm text-muted-foreground">
+                          {item.variantName}
+                        </span>
+                      )}
+                    </h3>
+                    <strong>
+                      ${((item.priceCents * item.quantity) / 100).toFixed(2)}
+                    </strong>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      aria-label={`Decrease ${item.title}`}
+                      onClick={() => updateQuantity(item.cartItemId, -1)}
+                    >
+                      −
+                    </Button>
+                    <span>{item.quantity}</span>
+                    <Button
+                      variant="outline"
+                      aria-label={`Increase ${item.title}`}
+                      disabled={item.quantity >= item.maxInventory}
+                      onClick={() => updateQuantity(item.cartItemId, 1)}
+                    >
+                      +
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => removeItem(item.cartItemId)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </article>
+              ))}
+              <label className="block space-y-2">
+                <span className="font-medium">Delivery method</span>
+                <select
+                  className="w-full rounded-xl border bg-background p-3"
+                  value={method || ""}
+                  onChange={e => setChoice(e.target.value as typeof choice)}
+                >
+                  {available.map(option => (
+                    <option key={option} value={option}>
+                      {option === "digital"
+                        ? "Digital delivery"
+                        : option === "pickup"
+                          ? "Pick up"
+                          : "Ship to me"}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {!method && (
+                <p role="alert">
+                  These items need different delivery methods. Check them out
+                  separately.
+                </p>
+              )}
+              <dl className="rounded-2xl bg-secondary p-5 space-y-2">
+                <div className="flex justify-between">
+                  <dt>Subtotal</dt>
+                  <dd>${(subtotalCents / 100).toFixed(2)}</dd>
                 </div>
-                <div className="p-6 bg-secondary/50 rounded-[24px] border border-border w-full max-w-sm mt-8 space-y-4">
-                  <p className="text-sm text-muted-foreground">You will receive a receipt via email shortly. Your artist will contact you if they need any further details.</p>
-                  
-                  {!user && (
-                    <div className="pt-4 border-t border-border space-y-4">
-                      <p className="text-sm font-medium text-white">Want to track your order easily? Save your details by creating an account!</p>
-                      <button 
-                        onClick={() => {
-                          window.location.href = `/signup?role=client&referralArtistId=${artistId}`;
-                        }}
-                        className="w-full py-3 bg-foreground text-background hover:bg-secondary/50 rounded-full font-bold transition-colors"
-                      >
-                        Create Account
-                      </button>
-                    </div>
-                  )}
-
-                  <button 
-                    onClick={() => {
-                      window.location.href = `/${artistSlug}`;
-                    }}
-                    className="w-full py-3 bg-secondary/50 hover:bg-secondary/50 rounded-full font-bold transition-colors"
-                  >
-                    Return to Artist Hub
-                  </button>
+                <div className="flex justify-between">
+                  <dt>Shipping</dt>
+                  <dd>${(shipping / 100).toFixed(2)}</dd>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* Footer Actions */}
-          {step === "review" && items.length > 0 && (
-            <div className="p-4 border-t border-border bg-background shrink-0 pb-safe">
-              <button
-                onClick={handleContinueToPayment}
-                disabled={isGenerating}
-                className="w-full max-w-2xl mx-auto flex items-center justify-between p-4 bg-foreground text-background rounded-full font-bold hover:bg-secondary/50 transition-colors disabled:opacity-50"
+                <div className="flex justify-between">
+                  <dt>Platform fee</dt>
+                  <dd>${(fee / 100).toFixed(2)}</dd>
+                </div>
+                <div className="flex justify-between font-bold border-t pt-3">
+                  <dt>Total ({currency.toUpperCase()})</dt>
+                  <dd>${(total / 100).toFixed(2)}</dd>
+                </div>
+              </dl>
+              <p className="text-xs text-muted-foreground">
+                Stock is held for 30 minutes after checkout opens. Final prices
+                are confirmed by the store.
+              </p>
+              <Button
+                className="w-full min-h-12"
+                disabled={checkout.isPending || !method}
+                onClick={() => void pay()}
               >
-                <span>{isGenerating ? "Preparing Checkout..." : "Checkout"}</span>
-                {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <span className="flex items-center gap-2">${(totalCents / 100).toFixed(2)} <ChevronRight className="w-5 h-5" /></span>}
-              </button>
-            </div>
+                {checkout.isPending
+                  ? "Preparing checkout…"
+                  : "Continue to payment"}
+              </Button>
+            </>
           )}
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+      {(checkout.error || cancel.error) && (
+        <p role="alert" className="text-destructive">
+          {(checkout.error || cancel.error)?.message}
+        </p>
+      )}
+      {step === "payment" && secret && (
+        <div className="min-h-[500px]">
+          <DotsCheckout
+            clientSecret={secret}
+            amountCents={chargedTotal}
+            onComplete={() => setStep("confirming")}
+            onBack={() => void edit()}
+          />
+          {cancel.isPending && <p role="status">Releasing this checkout…</p>}
+        </div>
+      )}
+      {step === "confirming" && identity && (
+        <OrderConfirmation identity={identity} onConfirmed={clearCart} />
+      )}
+    </SheetShell>
   );
 }

@@ -5,6 +5,9 @@ import {
   appointments,
   sessionPlans,
   sessionPlanItems,
+  orders,
+  orderItems,
+  seminars,
 } from "../../drizzle/schema";
 import { allocateRefund } from "../domain/refunds";
 import type { getDb } from "./core";
@@ -110,22 +113,54 @@ export async function reconcileChargeRefund(
           .where(eq(appointments.id, booking.id));
       }
     }
-    await db
-      .insert(paymentLedger)
-      .values({
-        artistId: original.artistId,
-        clientId: original.clientId,
-        bookingId: original.bookingId,
-        transactionType: "refund",
-        amountCents: -delta || 0,
-        platformFeeCents: -feeDelta || 0,
-        artistFeeCents: 0,
-        stripePaymentId: paymentId,
-        paymentMethod: original.paymentMethod,
-        metadata: JSON.stringify({
-          chargeId: charge.id,
-          cumulativeBaseRefundCents: totalBaseRefund,
-        }),
-      });
+    if (
+      original.transactionType === "store_order" &&
+      charge.amount_refunded >= charge.amount
+    ) {
+      const [order] = await db
+        .select()
+        .from(orders)
+        .where(eq(orders.stripePaymentIntentId, paymentId))
+        .for("update");
+      if (order && order.status !== "cancelled") {
+        await db
+          .update(orders)
+          .set({ status: "cancelled", updatedAt: new Date() })
+          .where(eq(orders.id, order.id));
+        const items = await db.query.orderItems.findMany({
+          where: eq(orderItems.orderId, order.id),
+        });
+        for (const item of items) {
+          if (!item.seminarId) continue;
+          const [seminar] = await db
+            .select()
+            .from(seminars)
+            .where(eq(seminars.id, item.seminarId))
+            .for("update");
+          if (seminar)
+            await db
+              .update(seminars)
+              .set({
+                ticketsSold: Math.max(0, seminar.ticketsSold - item.quantity),
+              })
+              .where(eq(seminars.id, seminar.id));
+        }
+      }
+    }
+    await db.insert(paymentLedger).values({
+      artistId: original.artistId,
+      clientId: original.clientId,
+      bookingId: original.bookingId,
+      transactionType: "refund",
+      amountCents: -delta || 0,
+      platformFeeCents: -feeDelta || 0,
+      artistFeeCents: 0,
+      stripePaymentId: paymentId,
+      paymentMethod: original.paymentMethod,
+      metadata: JSON.stringify({
+        chargeId: charge.id,
+        cumulativeBaseRefundCents: totalBaseRefund,
+      }),
+    });
   }
 }

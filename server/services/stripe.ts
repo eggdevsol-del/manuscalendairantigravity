@@ -1,3 +1,8 @@
+import { PAYMENT_TIERS } from "../../shared/fees";
+import {
+  changeOrderInventory,
+  releaseExpiredStoreOrder,
+} from "./storeInventory";
 import { or } from "drizzle-orm";
 import { inArray } from "drizzle-orm";
 import { reconcileChargeRefund } from "./refundReconciliation";
@@ -41,6 +46,7 @@ import type { Request, Response } from "express";
  */
 export const REQUIRED_WEBHOOK_EVENTS = [
   // ── Payment Events ──
+  "checkout.session.expired", // Release stock reserved by abandoned store checkouts
   "checkout.session.completed", // Deposit + balance payments → ledger write + status update
   "payment_intent.succeeded", // Direct payment confirmation
 
@@ -81,6 +87,21 @@ export async function createStudioCheckoutSession(
   studioId: string,
   email: string
 ) {
+  if (!process.env.STRIPE_STUDIO_PRICE_ID)
+    throw new Error("Studio billing is not configured yet.");
+  const price = await stripe.prices.retrieve(
+    process.env.STRIPE_STUDIO_PRICE_ID!
+  );
+  if (
+    !price.active ||
+    price.currency !== "aud" ||
+    price.unit_amount !== PAYMENT_TIERS.top.subscriptionPriceCents ||
+    price.recurring?.interval !== "month" ||
+    price.recurring.interval_count !== 1
+  )
+    throw new Error(
+      "Studio price configuration does not match the displayed plan."
+    );
   const appUrl = getAppUrl();
 
   const session = await stripe.checkout.sessions.create({
@@ -88,11 +109,9 @@ export async function createStudioCheckoutSession(
     mode: "subscription",
     customer_email: email,
     client_reference_id: studioId,
+    metadata: { studioId },
     line_items: [
       {
-        // This price ID should be configured in your Stripe Dashboard for a $99 base + $15/seat plan
-        // For a base plan with metered billing, you often pass a base price ID here.
-        // Assuming you have a pre-configured Product Price ID in .env
         price: process.env.STRIPE_STUDIO_PRICE_ID,
         quantity: 1,
       },
@@ -106,7 +125,7 @@ export async function createStudioCheckoutSession(
     },
   });
 
-  return session.url;
+  return { url: session.url, sessionId: session.id };
 }
 
 /**
@@ -115,26 +134,42 @@ export async function createStudioCheckoutSession(
 export async function createArtistCheckoutSession(
   artistId: string,
   email: string,
-  priceId: string
+  priceId: string,
+  customerId?: string
 ) {
+  if (!priceId || priceId !== process.env.STRIPE_PRO_PRICE_ID)
+    throw new Error("Pro billing is not configured.");
+  const price = await stripe.prices.retrieve(priceId);
+  if (
+    !price.active ||
+    price.currency !== "aud" ||
+    price.unit_amount !== PAYMENT_TIERS.pro.subscriptionPriceCents ||
+    price.recurring?.interval !== "month" ||
+    price.recurring.interval_count !== 1
+  )
+    throw new Error(
+      "Pro price configuration does not match the displayed plan."
+    );
   const appUrl = getAppUrl();
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     mode: "subscription",
-    customer_email: email,
+    ...(customerId ? { customer: customerId } : { customer_email: email }),
     client_reference_id: artistId,
+    metadata: { artistId, tier: "pro" },
     line_items: [
       {
         price: priceId,
         quantity: 1,
       },
     ],
-    success_url: `${appUrl}/settings/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${appUrl}/settings/billing?canceled=true`,
+    success_url: `${appUrl}/subscriptions?success=true&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appUrl}/subscriptions?canceled=true`,
     subscription_data: {
       metadata: {
         artistId: artistId,
+        tier: "pro",
       },
     },
   });
@@ -334,16 +369,23 @@ export async function createStorefrontCheckoutSession(opts: {
   fulfillmentMethod: "pickup" | "delivery" | "digital";
   stripeConnectAccountId?: string;
   slug: string;
-}): Promise<{ url: string | null; clientSecret: string | null }> {
+  currency?: string;
+  stockReserved?: boolean;
+  returnPath?: string;
+}): Promise<{
+  url: string | null;
+  clientSecret: string | null;
+  sessionId: string;
+}> {
   const baseUrl =
     process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
 
   // If using connect, GST/platform fee goes to platform account
-  const applicationFeeCents = opts.platformFeeCents;
+  const applicationFeeCents = opts.platformFeeCents + opts.artistFeeCents;
 
   const line_items = opts.items.map(item => ({
     price_data: {
-      currency: "aud",
+      currency: opts.currency || "aud",
       product_data: {
         name: `${item.productName} — ${opts.artistName}`,
       },
@@ -352,12 +394,23 @@ export async function createStorefrontCheckoutSession(opts: {
     quantity: item.quantity,
   }));
 
+  if (opts.platformFeeCents > 0)
+    line_items.push({
+      price_data: {
+        currency: opts.currency || "aud",
+        product_data: { name: "Platform fee" },
+        unit_amount: opts.platformFeeCents,
+      },
+      quantity: 1,
+    });
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
     payment_method_types: ["card"], // 'apple_pay' and 'google_pay' are auto-handled by Stripe in embedded mode if available
     mode: "payment",
+    expires_at: Math.floor(Date.now() / 1000) + 1800,
     line_items,
     metadata: {
       type: "store_order",
+      stockReserved: opts.stockReserved ? "1" : "0",
       orderId: String(opts.orderId),
       platformFeeCents: String(opts.platformFeeCents),
       artistFeeCents: String(opts.artistFeeCents),
@@ -367,7 +420,7 @@ export async function createStorefrontCheckoutSession(opts: {
       enabled: true,
     },
     ui_mode: "embedded",
-    return_url: `${baseUrl}/shop/${opts.slug}?status=success&session_id={CHECKOUT_SESSION_ID}&order_id=${opts.orderId}`,
+    return_url: `${baseUrl}${opts.returnPath || `/shop/${opts.slug}`}?status=success&session_id={CHECKOUT_SESSION_ID}&order_id=${opts.orderId}`,
   };
 
   if (opts.fulfillmentMethod === "delivery") {
@@ -382,7 +435,7 @@ export async function createStorefrontCheckoutSession(opts: {
             type: "fixed_amount",
             fixed_amount: {
               amount: opts.shippingCostCents,
-              currency: "aud",
+              currency: opts.currency || "aud",
             },
             display_name:
               opts.shippingCostCents === 0
@@ -405,8 +458,14 @@ export async function createStorefrontCheckoutSession(opts: {
     };
   }
 
-  const session = await stripe.checkout.sessions.create(sessionConfig);
-  return { url: session.url, clientSecret: session.client_secret };
+  const session = await stripe.checkout.sessions.create(sessionConfig, {
+    idempotencyKey: `store-order-${opts.orderId}`,
+  });
+  return {
+    url: session.url,
+    clientSecret: session.client_secret,
+    sessionId: session.id,
+  };
 }
 
 /**
@@ -751,6 +810,24 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 where: eq(orders.id, orderId),
               });
               if (order) {
+                const [locked] = await db
+                  .select()
+                  .from(orders)
+                  .where(eq(orders.id, orderId))
+                  .for("update");
+                if (
+                  locked.stripeCheckoutSessionId &&
+                  locked.stripeCheckoutSessionId !== session.id
+                )
+                  throw new Error("Order checkout identity does not match.");
+                if (locked.status !== "pending") break;
+                const expected =
+                  locked.totalAmountCents +
+                  (session.metadata?.stockReserved === "1"
+                    ? locked.platformFeeCents
+                    : 0);
+                if (session.amount_total !== expected)
+                  throw new Error("Order payment amount does not match.");
                 const nowStr = new Date()
                   .toISOString()
                   .slice(0, 19)
@@ -758,7 +835,9 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 const nowDate = new Date();
 
                 // 1. Update Order Status, Shipping Address, and Buyer Details
-                const shippingDetails = session.collected_information?.shipping_details || (session as any).shipping_details;
+                const shippingDetails =
+                  session.collected_information?.shipping_details ||
+                  (session as any).shipping_details;
                 const customerDetails = session.customer_details;
 
                 const buyerName =
@@ -793,54 +872,26 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                   })
                   .where(eq(orders.id, orderId));
 
-                // 2. Decrement Inventory for all order items
-                const items = await db.query.orderItems.findMany({
-                  where: (orderItems, { eq }) =>
-                    eq(orderItems.orderId, orderId),
-                });
+                if (session.metadata?.stockReserved !== "1")
+                  await changeOrderInventory(db, orderId, -1);
 
-                for (const item of items) {
-                  if (!item.productId) continue;
-                  const product = await db.query.products.findFirst({
-                    where: eq(products.id, item.productId),
+                // Associate conversations only with the authenticated checkout owner, never an unverified billing email.
+                if (order.clientId && order.clientId !== order.artistId) {
+                  const buyer = await db.query.users.findFirst({
+                    where: eq(users.id, order.clientId),
                   });
-                  if (product && product.inventoryCount >= item.quantity) {
-                    await db
-                      .update(products)
-                      .set({
-                        inventoryCount: product.inventoryCount - item.quantity,
-                        updatedAt: nowDate,
-                      })
-                      .where(eq(products.id, product.id));
-                  }
-                }
-
-                // 3. Auto-link client if user exists with this email
-                if (buyerEmail) {
-                  const existingUser = await db.query.users.findFirst({
-                    where: eq(users.email, buyerEmail),
-                  });
-                  if (existingUser) {
-                    // update order with clientId
-                    await db
-                      .update(orders)
-                      .set({ clientId: existingUser.id })
-                      .where(eq(orders.id, orderId));
-                    // Check if conversation exists
-                    const existingConv = await db.query.conversations.findFirst(
-                      {
-                        where: and(
-                          eq(conversations.artistId, order.artistId),
-                          eq(conversations.clientId, existingUser.id)
-                        ),
-                      }
-                    );
-                    if (!existingConv) {
+                  if (buyer?.role === "client") {
+                    const existing = await db.query.conversations.findFirst({
+                      where: and(
+                        eq(conversations.artistId, order.artistId),
+                        eq(conversations.clientId, order.clientId)
+                      ),
+                    });
+                    if (!existing)
                       await db.insert(conversations).values({
                         artistId: order.artistId,
-                        clientId: existingUser.id,
+                        clientId: order.clientId,
                       });
-                    }
                   }
                 }
 
@@ -884,7 +935,9 @@ export async function handleStripeWebhook(req: Request, res: Response) {
 
               if (order && order.status !== "paid") {
                 // 1. Update order status
-                const shippingDetails = session.collected_information?.shipping_details || (session as any).shipping_details;
+                const shippingDetails =
+                  session.collected_information?.shipping_details ||
+                  (session as any).shipping_details;
                 await db
                   .update(supplierOrders)
                   .set({
@@ -912,7 +965,11 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 });
 
                 // Commit fulfilment work with the payment receipt; retry provider failures.
-                if (order.supplier?.merchantId) await db.insert(notificationOutbox).values({eventType:'shopify_supplier_order',payloadJson:JSON.stringify({orderId})});
+                if (order.supplier?.merchantId)
+                  await db.insert(notificationOutbox).values({
+                    eventType: "shopify_supplier_order",
+                    payloadJson: JSON.stringify({ orderId }),
+                  });
 
                 console.log(
                   `[Stripe] Supplier Order ${orderId} completed successfully`
@@ -997,7 +1054,16 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                   paymentMethod: "card",
                 });
 
-                await db.insert(notificationOutbox).values({eventType:'push_message',payloadJson:JSON.stringify({targetUserId:booking.artistId,title:'Payment received',body:`Your client paid $${(baseAmountCents/100).toFixed(2)}.`,url:`/chat/${booking.conversationId}`,data:{type:'payment_received',appointmentId}})});
+                await db.insert(notificationOutbox).values({
+                  eventType: "push_message",
+                  payloadJson: JSON.stringify({
+                    targetUserId: booking.artistId,
+                    title: "Payment received",
+                    body: `Your client paid $${(baseAmountCents / 100).toFixed(2)}.`,
+                    url: `/chat/${booking.conversationId}`,
+                    data: { type: "payment_received", appointmentId },
+                  }),
+                });
 
                 console.log(
                   `[Stripe] Payment request ${requestId} completed for Booking ${appointmentId}, paid: ${baseAmountCents}c`
@@ -1018,14 +1084,45 @@ export async function handleStripeWebhook(req: Request, res: Response) {
               : null);
 
           if (studioId && subscriptionId) {
+            const subscription =
+              await stripe.subscriptions.retrieve(subscriptionId);
+            if (
+              !subscription.items.data.some(
+                item => item.price.id === process.env.STRIPE_STUDIO_PRICE_ID
+              )
+            )
+              throw new Error(
+                "Studio subscription price does not match configuration."
+              );
             await db
               .update(studios)
               .set({
                 stripeSubscriptionId: subscriptionId,
-                subscriptionStatus: "active",
+                subscriptionStatus:
+                  subscription.status === "trialing"
+                    ? "trialing"
+                    : subscription.status === "active"
+                      ? "active"
+                      : "past_due",
                 subscriptionTier: "studio",
               })
               .where(eq(studios.id, studioId));
+            if (["active", "trialing"].includes(subscription.status)) {
+              const { studioMembers } = await import("../../drizzle/schema");
+              const members = await db.query.studioMembers.findMany({
+                where: and(
+                  eq(studioMembers.studioId, studioId),
+                  eq(studioMembers.status, "active")
+                ),
+              });
+              for (const member of members)
+                await db
+                  .insert(notificationOutbox)
+                  .values({
+                    eventType: "studio_cancel_pro_renewal",
+                    payloadJson: JSON.stringify({ userId: member.userId }),
+                  });
+            }
             console.log(
               `[Stripe] Upgraded Studio ${studioId} to Active Subscription ${subscriptionId}`
             );
@@ -1040,11 +1137,25 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             session.client_reference_id;
 
           if (artistId && subscriptionId && !studioId) {
+            const subscription =
+              await stripe.subscriptions.retrieve(subscriptionId);
+            const isPro = subscription.items.data.some(
+              item => item.price.id === process.env.STRIPE_PRO_PRICE_ID
+            );
             await db
               .update(artistSettings)
               .set({
                 stripeSubscriptionId: subscriptionId,
-                subscriptionStatus: "active",
+                subscriptionStatus:
+                  subscription.status === "trialing"
+                    ? "trialing"
+                    : subscription.status === "active"
+                      ? "active"
+                      : "past_due",
+                subscriptionTier:
+                  isPro && ["active", "trialing"].includes(subscription.status)
+                    ? "pro"
+                    : "basic",
               })
               .where(eq(artistSettings.userId, artistId));
 
@@ -1254,6 +1365,23 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 where: eq(orders.id, orderId),
               });
               if (order) {
+                const [locked] = await db
+                  .select()
+                  .from(orders)
+                  .where(eq(orders.id, orderId))
+                  .for("update");
+                if (
+                  locked.stripePaymentIntentId &&
+                  locked.stripePaymentIntentId !== pi.id
+                )
+                  throw new Error("Order payment identity does not match.");
+                if (locked.stripeCheckoutSessionId)
+                  throw new Error(
+                    "Checkout orders must be fulfilled by their Checkout event."
+                  );
+                if (locked.status !== "pending") break;
+                if (pi.amount_received !== locked.totalAmountCents)
+                  throw new Error("Order payment amount does not match.");
                 const nowStr = new Date()
                   .toISOString()
                   .slice(0, 19)
@@ -1269,26 +1397,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                   })
                   .where(eq(orders.id, orderId));
 
-                // Decrement inventory
-                const items = await db.query.orderItems.findMany({
-                  where: (orderItems, { eq }) =>
-                    eq(orderItems.orderId, orderId),
-                });
-                for (const item of items) {
-                  if (!item.productId) continue;
-                  const product = await db.query.products.findFirst({
-                    where: eq(products.id, item.productId),
-                  });
-                  if (product && product.inventoryCount >= item.quantity) {
-                    await db
-                      .update(products)
-                      .set({
-                        inventoryCount: product.inventoryCount - item.quantity,
-                        updatedAt: nowDate,
-                      })
-                      .where(eq(products.id, product.id));
-                  }
-                }
+                await changeOrderInventory(db, orderId, -1);
 
                 // Ledger write
                 await db.insert(paymentLedger).values({
@@ -1342,7 +1451,11 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                   paymentMethod: "card",
                 });
 
-                if (order.supplier?.merchantId) await db.insert(notificationOutbox).values({eventType:'shopify_supplier_order',payloadJson:JSON.stringify({orderId})});
+                if (order.supplier?.merchantId)
+                  await db.insert(notificationOutbox).values({
+                    eventType: "shopify_supplier_order",
+                    payloadJson: JSON.stringify({ orderId }),
+                  });
 
                 console.log(`[Stripe PI] Supplier Order ${orderId} completed`);
               }
@@ -1439,7 +1552,12 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 subscriptionStatus: "canceled",
                 subscriptionTier: "solo", // Fallback to solo
               })
-              .where(eq(studios.id, studioId));
+              .where(
+                and(
+                  eq(studios.id, studioId),
+                  eq(studios.stripeSubscriptionId, subscription.id)
+                )
+              );
             console.log(
               `[Stripe] Canceled Subscription for Studio ${studioId}`
             );
@@ -1452,7 +1570,12 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 subscriptionStatus: "canceled",
                 subscriptionTier: "basic", // Fallback to basic
               })
-              .where(eq(artistSettings.userId, artistId));
+              .where(
+                and(
+                  eq(artistSettings.userId, artistId),
+                  eq(artistSettings.stripeSubscriptionId, subscription.id)
+                )
+              );
             console.log(
               `[Stripe] Canceled Subscription for Artist ${artistId}`
             );
@@ -1461,7 +1584,9 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         }
 
         case "customer.subscription.updated": {
-          const subscription = event.data.object as Stripe.Subscription;
+          const subscription = await stripe.subscriptions.retrieve(
+            (event.data.object as Stripe.Subscription).id
+          );
           const studioId = subscription.metadata.studioId;
           const artistId = subscription.metadata.artistId;
           const status = subscription.status; // 'active', 'past_due', 'canceled', 'unpaid'
@@ -1470,9 +1595,19 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             await db
               .update(studios)
               .set({
-                subscriptionStatus: status as any,
+                subscriptionStatus:
+                  status === "active" ||
+                  status === "trialing" ||
+                  status === "canceled"
+                    ? status
+                    : "past_due",
               })
-              .where(eq(studios.id, studioId));
+              .where(
+                and(
+                  eq(studios.id, studioId),
+                  eq(studios.stripeSubscriptionId, subscription.id)
+                )
+              );
             console.log(
               `[Stripe] Updated Subscription Status to ${status} for Studio ${studioId}`
             );
@@ -1490,13 +1625,23 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             await db
               .update(artistSettings)
               .set({
-                subscriptionStatus: status as any,
+                subscriptionStatus:
+                  status === "active" ||
+                  status === "trialing" ||
+                  status === "canceled"
+                    ? status
+                    : "past_due",
                 subscriptionTier:
                   status === "active" || status === "trialing"
                     ? (newTier as any)
                     : "basic",
               })
-              .where(eq(artistSettings.userId, artistId));
+              .where(
+                and(
+                  eq(artistSettings.userId, artistId),
+                  eq(artistSettings.stripeSubscriptionId, subscription.id)
+                )
+              );
             console.log(
               `[Stripe] Updated Subscription Status to ${status} (Tier: ${newTier}) for Artist ${artistId}`
             );
@@ -1513,51 +1658,30 @@ export async function handleStripeWebhook(req: Request, res: Response) {
           });
 
           if (merchant) {
-            // If already active, it's idempotent, so skip
-            if (merchant.status !== "active") {
-              const chargesEnabled = account.charges_enabled === true;
-              const payoutsEnabled = account.payouts_enabled === true;
-
-              if (chargesEnabled && payoutsEnabled) {
-                await db.transaction(async tx => {
-                  // Activate products
-                  await tx
-                    .update(products)
-                    .set({ isActive: 1 })
-                    .where(
-                      and(
-                        eq(products.artistId, merchant.userId),
-                        eq(products.ownerType, "merchant")
-                      )
-                    );
-
-                  // Activate merchant
-                  await tx
-                    .update(merchants)
-                    .set({ status: "active" })
-                    .where(eq(merchants.id, merchant.id));
-
-                  // Push notification to outbox
-                  const user = await tx.query.users.findFirst({
-                    where: eq(users.id, merchant.userId),
-                  });
-                  if (user?.email) {
-                    const { notificationOutbox } =
-                      await import("../../drizzle/schema");
-                    await tx.insert(notificationOutbox).values({
-                      eventType: "email",
-                      payloadJson: JSON.stringify({
-                        to: user.email,
-                        subject: "Your store is now live",
-                        body: "Your Stripe account is fully verified. Your products are now active and you can accept payments.",
-                      }),
-                    });
-                  }
+            const ready =
+              account.charges_enabled === true &&
+              account.payouts_enabled === true;
+            if (merchant.status !== "suspended") {
+              await db
+                .update(merchants)
+                .set({ status: ready ? "active" : "pending" })
+                .where(eq(merchants.id, merchant.id));
+              if (ready && merchant.status !== "active") {
+                const user = await db.query.users.findFirst({
+                  where: eq(users.id, merchant.userId),
                 });
-
-                console.log(
-                  `[Stripe Webhook] Merchant ${merchant.id} verified. Products activated.`
-                );
+                if (user?.email) {
+                  const { notificationOutbox } =
+                    await import("../../drizzle/schema");
+                  await db.insert(notificationOutbox).values({
+                    eventType: "email",
+                    payloadJson: JSON.stringify({
+                      to: user.email,
+                      subject: "Your store can accept payments",
+                      body: "Stripe payments and payouts are ready. Review and publish your products from your Tattoi catalogue.",
+                    }),
+                  });
+                }
               }
             }
           } else {
@@ -1569,8 +1693,22 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         }
 
         // ── Refund Ledger Write ─────────────────────────────────
+        case "checkout.session.expired": {
+          const expired = event.data.object as Stripe.Checkout.Session;
+          if (
+            expired.metadata?.type === "store_order" &&
+            expired.metadata.stockReserved === "1"
+          )
+            await releaseExpiredStoreOrder(
+              db,
+              Number(expired.metadata.orderId),
+              expired.id
+            );
+          break;
+        }
+
         case "charge.refunded": {
-          await reconcileChargeRefund(db,event.data.object as Stripe.Charge);
+          await reconcileChargeRefund(db, event.data.object as Stripe.Charge);
           break;
         }
 
@@ -1650,7 +1788,17 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             .then((rows: any[]) => rows[0]);
 
           if (payoutArtist?.stripeConnectAccountType === "custom") {
-            const sendEmail = async (payload: {to:string;subject:string;body:string}) => { await db.insert(notificationOutbox).values({eventType:"email",payloadJson:JSON.stringify(payload),status:"pending"}); };
+            const sendEmail = async (payload: {
+              to: string;
+              subject: string;
+              body: string;
+            }) => {
+              await db.insert(notificationOutbox).values({
+                eventType: "email",
+                payloadJson: JSON.stringify(payload),
+                status: "pending",
+              });
+            };
             const amountFormatted = `$${((payout.amount || 0) / 100).toFixed(2)}`;
             await sendEmail({
               to: payoutArtist.businessEmail || "",
@@ -1681,7 +1829,17 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             .then((rows: any[]) => rows[0]);
 
           if (payoutArtist?.stripeConnectAccountType === "custom") {
-            const sendEmail = async (payload: {to:string;subject:string;body:string}) => { await db.insert(notificationOutbox).values({eventType:"email",payloadJson:JSON.stringify(payload),status:"pending"}); };
+            const sendEmail = async (payload: {
+              to: string;
+              subject: string;
+              body: string;
+            }) => {
+              await db.insert(notificationOutbox).values({
+                eventType: "email",
+                payloadJson: JSON.stringify(payload),
+                status: "pending",
+              });
+            };
             const amountFormatted = `$${((payout.amount || 0) / 100).toFixed(2)}`;
             await sendEmail({
               to: payoutArtist.businessEmail || "",

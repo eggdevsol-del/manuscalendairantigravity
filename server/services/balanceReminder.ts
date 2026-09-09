@@ -1,3 +1,4 @@
+import { effectivePaymentTier } from "./paymentEntitlements";
 /**
  * Balance Payment Reminder Service
  *
@@ -75,7 +76,7 @@ export async function sendMorningBalanceReminders(): Promise<
         where: eq(users.id, booking.artistId),
       });
 
-      const tier = resolvePaymentTier(settings?.subscriptionTier);
+      const tier = await effectivePaymentTier(settings);
       const fees = calculateTransactionFees(remaining, tier);
       const paymentMethods = getAllowedPaymentMethods(tier, false);
 

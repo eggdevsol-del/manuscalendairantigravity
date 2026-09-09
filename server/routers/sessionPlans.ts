@@ -1,3 +1,4 @@
+import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { calculateTransactionFees, resolvePaymentTier } from "../domain/fees";
 import { withDatabaseTransaction } from "../services/core";
 import { stripe } from "../services/stripe";
@@ -85,7 +86,7 @@ export const sessionPlansRouter = router({
         });
         const platformFeeCents = calculateTransactionFees(
           depositTotalCents,
-          resolvePaymentTier(settings?.subscriptionTier)
+          await effectivePaymentTier(settings)
         ).platformFeeCents;
         const sorted = [...input.sessions].sort(
           (a, b) => +new Date(a.startsAt) - +new Date(b.startsAt)
@@ -224,7 +225,7 @@ export const sessionPlansRouter = router({
         const artistName =
           artistSettings?.displayName || artist?.name || "Artist";
         const clientEmail = client?.email || "";
-        const tier = resolvePaymentTier(artistSettings?.subscriptionTier);
+        const tier = await effectivePaymentTier(artistSettings);
 
         // Platform fee (already calculated at plan creation)
         const platformFeeCents = plan.platformFeeCents ?? 0;

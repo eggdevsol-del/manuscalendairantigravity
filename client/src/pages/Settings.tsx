@@ -1,3 +1,4 @@
+import { ShoppingBag } from "lucide-react";
 import React from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useUIDebug } from "@/_core/contexts/UIDebugContext";
@@ -183,7 +184,7 @@ export default function Settings() {
   if (loading) return <LoadingState message="Loading..." fullScreen />;
 
   const isArtist = user?.role === "artist" || user?.role === "admin";
-  const isStudio = user?.role === "studio" || user?.role === "admin";
+  const isStudio = isArtist || user?.role === "studio";
 
   if (section) {
     const panel = (() => {
@@ -265,8 +266,31 @@ export default function Settings() {
               onClick={() => setLocation("/admin/operations")}
             />
           )}
-          {isArtist && <SettingsRow icon={Clock} iconColor="bg-secondary text-foreground" title="Supply orders" subtitle="Track payments and supplier handoffs" onClick={() => setLocation("/supply-orders")} />}
-          {isArtist && <SettingsRow icon={Clock} iconColor="bg-secondary text-foreground" title="Cancellation waitlist" subtitle="Offer available times to waiting clients" onClick={() => setLocation("/waitlist")} />}
+          <SettingsRow
+            icon={ShoppingBag}
+            iconColor="bg-secondary text-foreground"
+            title="Purchase history"
+            subtitle="Store orders and event registrations"
+            onClick={() => setLocation("/purchases")}
+          />
+          {isArtist && (
+            <SettingsRow
+              icon={Clock}
+              iconColor="bg-secondary text-foreground"
+              title="Supply orders"
+              subtitle="Track payments and supplier handoffs"
+              onClick={() => setLocation("/supply-orders")}
+            />
+          )}
+          {isArtist && (
+            <SettingsRow
+              icon={Clock}
+              iconColor="bg-secondary text-foreground"
+              title="Cancellation waitlist"
+              subtitle="Offer available times to waiting clients"
+              onClick={() => setLocation("/waitlist")}
+            />
+          )}
           {/* ═══ PROFILE & IDENTITY ═══ */}
           <section>
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1 mb-2">

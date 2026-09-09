@@ -6,10 +6,18 @@ import { Check, X, Building2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ArtistInvitations({ onBack }: { onBack: () => void }) {
-  const { data: invites, refetch } = trpc.studios.getPendingInvites.useQuery();
+  const utils = trpc.useUtils();
+  const {
+    data: invites,
+    refetch,
+    isLoading,
+    error,
+  } = trpc.studios.getPendingInvites.useQuery();
   const respondMutation = trpc.studios.respondToInvite.useMutation({
     onSuccess: () => {
       refetch();
+      void utils.studios.getCurrentStudio.invalidate();
+      void utils.appointments.invalidate();
       toast.success("Invitation response recorded.");
     },
     onError: err => {
@@ -23,13 +31,23 @@ export default function ArtistInvitations({ onBack }: { onBack: () => void }) {
       <div className={tokens.contentContainer.base}>
         <div className="flex-1 w-full h-full px-4 pt-6 overflow-y-auto">
           <div className="pb-32 max-w-lg mx-auto space-y-4">
+            {isLoading && <p role="status">Loading invitations…</p>}
+            {error && (
+              <div role="alert">
+                <p>Could not load invitations.</p>
+                <Button onClick={() => void refetch()}>Retry</Button>
+              </div>
+            )}
             {invites?.length === 0 && (
               <p className="text-center text-muted-foreground mt-10">
                 No pending invitations.
               </p>
             )}
             {invites?.map(invite => (
-              <Card key={invite.id} className="p-4 bg-secondary/50 border-border">
+              <Card
+                key={invite.id}
+                className="p-4 bg-secondary/50 border-border"
+              >
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center border-2 border-border flex-shrink-0">
                     {invite.studio.logoUrl ? (
@@ -51,6 +69,11 @@ export default function ArtistInvitations({ onBack }: { onBack: () => void }) {
                       <span className="font-medium text-primary">
                         {invite.role}
                       </span>
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Joining an active Studio includes Pro payment benefits.
+                      Any separate Pro renewal will be cancelled; your
+                      already-paid Pro period remains available if you leave.
                     </p>
                     <div className="flex gap-2">
                       <Button

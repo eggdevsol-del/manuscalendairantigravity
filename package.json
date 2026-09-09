@@ -1,6 +1,6 @@
 {
   "name": "tattoi-app",
-  "version": "2.11.6",
+  "version": "2.12.0",
   "type": "module",
   "license": "MIT",
   "scripts": {
@@ -22,7 +22,9 @@
     "db:generate": "drizzle-kit generate",
     "deploy:check": "tsx server/scripts/check-deployment.ts",
     "deploy:reconcile": "node server/scripts/reconcile-rebuild.mjs",
-    "deploy:test-flows": "tsx server/scripts/check-rebuild-flows.ts"
+    "deploy:test-flows": "tsx server/scripts/check-rebuild-flows.ts",
+    "deploy:test-all-roles": "tsx server/scripts/check-all-roles.ts",
+    "deploy:migrate-all-roles": "node server/scripts/migrate-all-roles.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.967.0",

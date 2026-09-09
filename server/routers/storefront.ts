@@ -1,11 +1,17 @@
+import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { getDb } from "../db";
+import { withDatabaseTransaction } from "../services/core";
+import {
+  changeOrderInventory,
+  releaseExpiredStoreOrder,
+} from "../services/storeInventory";
 import { eq, desc, and, ne } from "drizzle-orm";
 import * as schema from "../../drizzle/schema";
 import { calculateTransactionFees, resolvePaymentTier } from "../domain/fees";
-import { createStorefrontCheckoutSession } from "../services/stripe";
+import { createStorefrontCheckoutSession, stripe } from "../services/stripe";
 
 export const storefrontRouter = router({
   /**
@@ -97,40 +103,149 @@ export const storefrontRouter = router({
         fulfillmentType: z.enum(["pickup", "delivery", "both", "digital"]),
         imageUrl: z.string().url().optional(),
         isActive: z.boolean().optional(),
+        variants: z
+          .array(
+            z.object({
+              id: z.number().int().positive(),
+              priceCents: z.number().int().positive(),
+              inventoryCount: z.number().int().min(0).max(1000000),
+            })
+          )
+          .max(250)
+          .optional(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
-      if (!db) throw new Error("Database connection failed");
+    .mutation(async ({ ctx, input }) =>
+      withDatabaseTransaction(async db => {
+        if (!db) throw new Error("Database connection failed");
 
-      // Verify ownership
-      const existingProduct = await db.query.products.findFirst({
-        where: eq(schema.products.id, input.id),
-      });
+        // Verify ownership
+        const existingProduct = await db.query.products.findFirst({
+          where: eq(schema.products.id, input.id),
+        });
 
-      if (!existingProduct || existingProduct.artistId !== ctx.user.id) {
-        throw new Error("Product not found or unauthorized");
-      }
+        if (!existingProduct || existingProduct.artistId !== ctx.user.id) {
+          throw new Error("Product not found or unauthorized");
+        }
 
-      await db
-        .update(schema.products)
-        .set({
-          title: input.title,
-          description: input.description,
-          priceCents: input.priceCents,
-          shippingCents: input.shippingCents || 0,
-          inventoryCount: input.inventoryCount,
-          fulfillmentType: input.fulfillmentType,
-          ...(input.imageUrl !== undefined ? { imageUrl: input.imageUrl } : {}),
-          ...(input.isActive !== undefined
-            ? { isActive: input.isActive ? 1 : 0 }
-            : {}),
-          updatedAt: new Date(),
-        })
-        .where(eq(schema.products.id, input.id));
+        await db
+          .select({ id: schema.products.id })
+          .from(schema.products)
+          .where(eq(schema.products.id, input.id))
+          .for("update");
+        if (input.variants?.length) {
+          const existing = await db
+            .select()
+            .from(schema.productVariants)
+            .where(eq(schema.productVariants.productId, input.id))
+            .for("update");
+          if (
+            new Set(input.variants.map(v => v.id)).size !==
+              input.variants.length ||
+            input.variants.some(v => !existing.some(old => old.id === v.id))
+          )
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Product options changed. Reload and try again.",
+            });
+          for (const variant of input.variants) {
+            const old = existing.find(v => v.id === variant.id)!;
+            await db
+              .update(schema.productVariants)
+              .set({
+                priceCents: variant.priceCents,
+                inventoryCount: variant.inventoryCount,
+              })
+              .where(eq(schema.productVariants.id, variant.id));
+            if (old.inventoryCount !== variant.inventoryCount)
+              await db.insert(schema.stockAdjustments).values({
+                productId: input.id,
+                variantId: variant.id,
+                adjustment: variant.inventoryCount - old.inventoryCount,
+                reason: "Manual catalogue edit",
+                referenceType: "manual",
+                adjustedBy: ctx.user.id,
+              });
+          }
+        }
+        await db
+          .update(schema.products)
+          .set({
+            title: input.title,
+            description: input.description,
+            priceCents: input.variants?.length
+              ? Math.min(...input.variants.map(v => v.priceCents))
+              : input.priceCents,
+            shippingCents: input.shippingCents || 0,
+            inventoryCount: input.variants?.length
+              ? input.variants.reduce((sum, v) => sum + v.inventoryCount, 0)
+              : input.inventoryCount,
+            fulfillmentType: input.fulfillmentType,
+            ...(input.imageUrl !== undefined
+              ? { imageUrl: input.imageUrl }
+              : {}),
+            ...(input.isActive !== undefined
+              ? { isActive: input.isActive ? 1 : 0 }
+              : {}),
+            updatedAt: new Date(),
+          })
+          .where(eq(schema.products.id, input.id));
 
-      return { success: true };
-    }),
+        return { success: true };
+      })
+    ),
+
+  updateVariant: protectedProcedure
+    .input(
+      z.object({
+        productId: z.number().int().positive(),
+        variantId: z.number().int().positive(),
+        priceCents: z.number().int().positive(),
+        inventoryCount: z.number().int().min(0).max(1000000),
+      })
+    )
+    .mutation(async ({ ctx, input }) =>
+      withDatabaseTransaction(async db => {
+        const [product] = await db
+          .select()
+          .from(schema.products)
+          .where(
+            and(
+              eq(schema.products.id, input.productId),
+              eq(schema.products.artistId, ctx.user.id)
+            )
+          )
+          .for("update");
+        if (!product) throw new TRPCError({ code: "NOT_FOUND" });
+        const [variant] = await db
+          .select()
+          .from(schema.productVariants)
+          .where(
+            and(
+              eq(schema.productVariants.id, input.variantId),
+              eq(schema.productVariants.productId, input.productId)
+            )
+          )
+          .for("update");
+        if (!variant) throw new TRPCError({ code: "NOT_FOUND" });
+        await db
+          .update(schema.productVariants)
+          .set({
+            priceCents: input.priceCents,
+            inventoryCount: input.inventoryCount,
+          })
+          .where(eq(schema.productVariants.id, variant.id));
+        await db.insert(schema.stockAdjustments).values({
+          productId: product.id,
+          variantId: variant.id,
+          adjustment: input.inventoryCount - variant.inventoryCount,
+          reason: "Manual variant inventory edit",
+          referenceType: "manual",
+          adjustedBy: ctx.user.id,
+        });
+        return { success: true };
+      })
+    ),
 
   /**
    * Public endpoint to fetch an artist's storefront (products + seminars)
@@ -142,6 +257,28 @@ export const storefrontRouter = router({
       const db = await getDb();
       if (!db) return null;
 
+      const merchantMatch = /^supplier-(\d+)$/.exec(input.slug);
+      if (merchantMatch) {
+        const merchant = await db.query.merchants.findFirst({
+          where: eq(schema.merchants.id, Number(merchantMatch[1])),
+        });
+        if (!merchant || merchant.status !== "active") return null;
+        const products = await db.query.products.findMany({
+          where: and(
+            eq(schema.products.artistId, merchant.userId),
+            eq(schema.products.ownerType, "merchant"),
+            eq(schema.products.isActive, 1)
+          ),
+          with: { variants: true },
+        });
+        return {
+          artistId: merchant.userId,
+          artistName: merchant.businessName,
+          products,
+          seminars: [],
+          currency: merchant.country === "NZ" ? "NZD" : "AUD",
+        };
+      }
       // 1. Find artist by slug
       const settings = await db.query.artistSettings.findFirst({
         where: eq(schema.artistSettings.publicSlug, input.slug.toLowerCase()),
@@ -245,155 +382,232 @@ export const storefrontRouter = router({
         items: z
           .array(
             z.object({
-              productId: z.number(),
-              variantId: z.number().optional(),
+              productId: z.number().int().positive(),
+              variantId: z.number().int().positive().optional(),
               quantity: z.number().int().min(1).max(100),
             })
           )
-          .min(1),
+          .min(1)
+          .max(100),
         fulfillmentMethod: z.enum(["pickup", "delivery", "digital"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) =>
+      withDatabaseTransaction(async db => {
+        const identities = input.items.map(
+          item => `${item.productId}:${item.variantId || 0}`
+        );
+        if (new Set(identities).size !== identities.length)
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Combine duplicate cart items before checkout.",
+          });
+        const productIds = [
+          ...new Set(input.items.map(item => item.productId)),
+        ];
+        const catalogue = await db.query.products.findMany({
+          where: (table, { inArray }) => inArray(table.id, productIds),
+          with: { variants: true },
+        });
+        if (catalogue.length !== productIds.length)
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "A product is no longer available.",
+          });
+        const sellerId = catalogue[0].artistId;
+        let subtotal = 0,
+          shipping = 0;
+        const enriched = input.items.map(item => {
+          const product = catalogue.find(row => row.id === item.productId)!;
+          const variant = item.variantId
+            ? product.variants.find(row => row.id === item.variantId)
+            : undefined;
+          if (product.artistId !== sellerId || !product.isActive)
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Choose available products from one store.",
+            });
+          if (
+            (item.variantId && !variant) ||
+            (!item.variantId && product.variants.length)
+          )
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Choose an available product option.",
+            });
+          if (
+            product.fulfillmentType !== input.fulfillmentMethod &&
+            !(
+              product.fulfillmentType === "both" &&
+              ["pickup", "delivery"].includes(input.fulfillmentMethod)
+            )
+          )
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Choose a delivery method supported by every item.",
+            });
+          const price = variant?.priceCents ?? product.priceCents;
+          if (price <= 0)
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "This product is not available for checkout.",
+            });
+          subtotal += price * item.quantity;
+          if (input.fulfillmentMethod === "delivery")
+            shipping += (product.shippingCents || 0) * item.quantity;
+          return {
+            ...item,
+            productName: variant
+              ? `${product.title} — ${variant.name}`
+              : product.title,
+            priceCents: price,
+          };
+        });
+        const seller = await storeSeller(db, sellerId);
+        const fees = calculateTransactionFees(subtotal + shipping, seller.tier);
+        const [insert] = await db.insert(schema.orders).values({
+          artistId: sellerId,
+          clientId: ctx.user?.id,
+          currency: seller.currency,
+          totalAmountCents: subtotal + shipping,
+          platformFeeCents: fees.platformFeeCents,
+          artistFeeCents: fees.artistFeeCents,
+          shippingCostCents: shipping,
+          status: "pending",
+          fulfillmentMethod: input.fulfillmentMethod,
+        });
+        const orderId = insert.insertId;
+        await db.insert(schema.orderItems).values(
+          enriched.map(item => ({
+            orderId,
+            productId: item.productId,
+            variantId: item.variantId,
+            productName: item.productName,
+            quantity: item.quantity,
+            priceAtPurchaseCents: item.priceCents,
+          }))
+        );
+        await changeOrderInventory(db, orderId, -1);
+        const session = await createStorefrontCheckoutSession({
+          orderId,
+          items: enriched,
+          artistName: seller.name,
+          clientTotalCents: subtotal + shipping + fees.platformFeeCents,
+          platformFeeCents: fees.platformFeeCents,
+          artistFeeCents: fees.artistFeeCents,
+          shippingCostCents: shipping,
+          fulfillmentMethod: input.fulfillmentMethod,
+          stripeConnectAccountId: seller.accountId,
+          slug: seller.slug,
+          currency: seller.currency,
+          stockReserved: true,
+        });
+        await db
+          .update(schema.orders)
+          .set({ stripeCheckoutSessionId: session.sessionId })
+          .where(eq(schema.orders.id, orderId));
+        return {
+          ...session,
+          orderId,
+          totalCents: subtotal + shipping + fees.platformFeeCents,
+          currency: seller.currency,
+        };
+      })
+    ),
+
+  cancelStoreCheckout: publicProcedure
+    .input(
+      z.object({
+        orderId: z.number().int().positive(),
+        sessionId: z.string().startsWith("cs_").max(255),
       })
     )
     .mutation(async ({ input }) => {
       const db = await getDb();
-      if (!db) throw new Error("Database connection failed");
-
-      // Verify all products
-      const productIds = input.items.map(i => i.productId);
-      const products = await db.query.products.findMany({
-        where: (products, { inArray }) => inArray(products.id, productIds),
-        with: { variants: true },
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const order = await db.query.orders.findFirst({
+        where: and(
+          eq(schema.orders.id, input.orderId),
+          eq(schema.orders.stripeCheckoutSessionId, input.sessionId)
+        ),
       });
+      if (!order) throw new TRPCError({ code: "NOT_FOUND" });
+      if (order.status !== "pending")
+        return { cancelled: order.status === "cancelled" };
+      let session = await stripe.checkout.sessions.retrieve(input.sessionId);
+      if (session.status === "open")
+        session = await stripe.checkout.sessions.expire(input.sessionId);
+      if (session.status !== "expired") return { cancelled: false };
+      if (session.metadata?.stockReserved === "1")
+        await withDatabaseTransaction(tx =>
+          releaseExpiredStoreOrder(tx, input.orderId, input.sessionId)
+        );
+      return { cancelled: true };
+    }),
 
-      if (products.length !== input.items.length) {
-        throw new Error("One or more products could not be found.");
-      }
+  getPurchases: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    const found = await db.query.orders.findMany({
+      where: and(
+        eq(schema.orders.clientId, ctx.user.id),
+        ne(schema.orders.status, "pending")
+      ),
+      orderBy: desc(schema.orders.createdAt),
+      limit: 100,
+      with: { items: { with: { product: true, seminar: true } } },
+    });
+    return found.map(order => ({
+      id: order.id,
+      status: order.status,
+      currency: order.currency,
+      totalAmountCents: order.totalAmountCents,
+      platformFeeCents: order.platformFeeCents,
+      fulfillmentMethod: order.fulfillmentMethod,
+      trackingNumber: order.trackingNumber,
+      carrier: order.carrier,
+      createdAt: order.createdAt,
+      items: order.items.map(item => ({
+        id: item.id,
+        name:
+          item.productName ||
+          item.product?.title ||
+          item.seminar?.title ||
+          "Item",
+        quantity: item.quantity,
+        priceCents: item.priceAtPurchaseCents,
+      })),
+    }));
+  }),
 
-      let totalAmountCents = 0;
-      let totalShippingCents = 0;
-      const artistId = products[0].artistId;
-
-      const enrichedItems = input.items.map(item => {
-        const product = products.find(p => p.id === item.productId)!;
-        const variant = item.variantId
-          ? product.variants.find(v => v.id === item.variantId)
-          : null;
-
-        if (product.artistId !== artistId) {
-          throw new Error(
-            "Cannot checkout items from multiple artists at once."
-          );
-        }
-
-        if (item.variantId && !variant)
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Product variant is unavailable.",
-          });
-        if (
-          product.fulfillmentType !== input.fulfillmentMethod &&
-          !(
-            product.fulfillmentType === "both" &&
-            ["pickup", "delivery"].includes(input.fulfillmentMethod)
-          )
-        )
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Choose an available delivery method.",
-          });
-        const checkInventory = variant
-          ? variant.inventoryCount
-          : product.inventoryCount;
-        if (!product.isActive || checkInventory < item.quantity) {
-          throw new Error(
-            `Product '${product.title}' is unavailable or out of stock.`
-          );
-        }
-
-        const priceCents = variant ? variant.priceCents : product.priceCents;
-        const productName = variant
-          ? `${product.title} - ${variant.name}`
-          : product.title;
-
-        totalAmountCents += priceCents * item.quantity;
-
-        if (input.fulfillmentMethod === "delivery") {
-          totalShippingCents += (product.shippingCents || 0) * item.quantity;
-        }
-
-        return {
-          productId: product.id,
-          variantId: variant?.id,
-          productName: productName,
-          priceCents: priceCents,
-          quantity: item.quantity,
-        };
+  getOrderStatus: publicProcedure
+    .input(
+      z.object({
+        orderId: z.number().int().positive(),
+        sessionId: z.string().startsWith("cs_").max(255),
+      })
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const order = await db.query.orders.findFirst({
+        where: and(
+          eq(schema.orders.id, input.orderId),
+          eq(schema.orders.stripeCheckoutSessionId, input.sessionId)
+        ),
       });
-
-      const settings = await db.query.artistSettings.findFirst({
-        where: eq(schema.artistSettings.userId, artistId),
-      });
-
-      const artistUser = await db.query.users.findFirst({
-        where: eq(schema.users.id, artistId),
-      });
-
-      if (!settings || !artistUser) {
-        throw new Error("Artist configuration error");
-      }
-
-      // Fees
-      const tier = resolvePaymentTier(settings.subscriptionTier);
-      const fees = calculateTransactionFees(
-        totalAmountCents + totalShippingCents,
-        tier
-      );
-
-      // 1. Create Order Record
-      const [orderResult] = await db.insert(schema.orders).values({
-        artistId,
-        totalAmountCents: totalAmountCents + totalShippingCents,
-        platformFeeCents: fees.platformFeeCents,
-        artistFeeCents: fees.artistFeeCents,
-        shippingCostCents: totalShippingCents,
-        status: "pending",
-        fulfillmentMethod: input.fulfillmentMethod,
-      });
-
-      const orderId = orderResult.insertId;
-
-      // 2. Create Order Items
-      for (const item of enrichedItems) {
-        await db.insert(schema.orderItems).values({
-          orderId,
-          productId: item.productId,
-          quantity: item.quantity,
-          priceAtPurchaseCents: item.priceCents,
+      if (!order)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Order confirmation is not available for this checkout.",
         });
-      }
-
-      // 3. Get Stripe Account (Fix: from artistSettings)
-      const connectAccountId = settings.stripeConnectAccountId || undefined;
-
-      // 4. Generate Session
-      const sessionResult = await createStorefrontCheckoutSession({
-        orderId,
-        items: enrichedItems,
-        artistName: settings.displayName || artistUser.name || "Artist",
-        clientTotalCents: totalAmountCents + totalShippingCents,
-        platformFeeCents: fees.platformFeeCents,
-        artistFeeCents: fees.artistFeeCents,
-        shippingCostCents: totalShippingCents,
-        fulfillmentMethod: input.fulfillmentMethod,
-        stripeConnectAccountId: connectAccountId,
-        slug: settings.publicSlug || "shop",
-      });
-
-      if (!sessionResult.url && !sessionResult.clientSecret) {
-        throw new Error("Failed to generate checkout session");
-      }
-
-      return sessionResult;
+      return {
+        id: order.id,
+        status: order.status,
+        currency: order.currency,
+        totalAmountCents: order.totalAmountCents,
+        platformFeeCents: order.platformFeeCents,
+      };
     }),
 
   /**
@@ -407,7 +621,7 @@ export const storefrontRouter = router({
         type: z.enum(["in_person", "virtual"]),
         date: z.string(), // ISO date string
         locationUrl: z.string().optional(),
-        capacity: z.number().min(1),
+        capacity: z.number().int().min(1),
         priceCents: z.number().int().positive(),
       })
     )
@@ -415,6 +629,16 @@ export const storefrontRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
 
+      if (!["artist", "admin"].includes(ctx.user.role))
+        throw new TRPCError({ code: "FORBIDDEN" });
+      if (
+        new Date(input.date) <= new Date() ||
+        !Number.isFinite(new Date(input.date).getTime())
+      )
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Choose a future event date.",
+        });
       const [result] = await db.insert(schema.seminars).values({
         artistId: ctx.user.id,
         title: input.title,
@@ -536,99 +760,114 @@ export const storefrontRouter = router({
    * Create a Stripe checkout session for a seminar registration
    */
   createSeminarCheckout: publicProcedure
-    .input(
-      z.object({
-        seminarId: z.number(),
+    .input(z.object({ seminarId: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) =>
+      withDatabaseTransaction(async db => {
+        const seminar = await db.query.seminars.findFirst({
+          where: eq(schema.seminars.id, input.seminarId),
+        });
+        if (
+          !seminar ||
+          !seminar.isActive ||
+          new Date(seminar.date) <= new Date()
+        )
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "This event is no longer available.",
+          });
+        const seller = await storeSeller(db, seminar.artistId);
+        const fees = calculateTransactionFees(seminar.priceCents, seller.tier);
+        const method = seminar.type === "virtual" ? "digital" : "pickup";
+        const [insert] = await db.insert(schema.orders).values({
+          artistId: seminar.artistId,
+          clientId: ctx.user?.id,
+          currency: seller.currency,
+          totalAmountCents: seminar.priceCents,
+          platformFeeCents: fees.platformFeeCents,
+          artistFeeCents: fees.artistFeeCents,
+          status: "pending",
+          fulfillmentMethod: method,
+        });
+        const orderId = insert.insertId;
+        await db.insert(schema.orderItems).values({
+          orderId,
+          seminarId: seminar.id,
+          productName: seminar.title,
+          quantity: 1,
+          priceAtPurchaseCents: seminar.priceCents,
+        });
+        await changeOrderInventory(db, orderId, -1);
+        const session = await createStorefrontCheckoutSession({
+          orderId,
+          items: [
+            {
+              productId: seminar.id,
+              productName: seminar.title,
+              priceCents: seminar.priceCents,
+              quantity: 1,
+            },
+          ],
+          artistName: seller.name,
+          clientTotalCents: seminar.priceCents + fees.platformFeeCents,
+          platformFeeCents: fees.platformFeeCents,
+          artistFeeCents: fees.artistFeeCents,
+          shippingCostCents: 0,
+          fulfillmentMethod: method,
+          stripeConnectAccountId: seller.accountId,
+          slug: seller.slug,
+          currency: seller.currency,
+          stockReserved: true,
+          returnPath: `/events/${seller.slug}`,
+        });
+        await db
+          .update(schema.orders)
+          .set({ stripeCheckoutSessionId: session.sessionId })
+          .where(eq(schema.orders.id, orderId));
+        return { ...session, orderId };
       })
-    )
-    .mutation(async ({ input }) => {
-      const db = await getDb();
-      if (!db) throw new Error("Database connection failed");
-
-      const seminar = await db.query.seminars.findFirst({
-        where: eq(schema.seminars.id, input.seminarId),
-      });
-
-      if (!seminar || !seminar.isActive) {
-        throw new Error("Seminar is unavailable.");
-      }
-
-      const spotsLeft = seminar.capacity - (seminar.ticketsSold || 0);
-      if (spotsLeft <= 0) {
-        throw new Error("This event is sold out.");
-      }
-
-      const settings = await db.query.artistSettings.findFirst({
-        where: eq(schema.artistSettings.userId, seminar.artistId),
-      });
-
-      const artistUser = await db.query.users.findFirst({
-        where: eq(schema.users.id, seminar.artistId),
-      });
-
-      if (!settings || !artistUser) {
-        throw new Error("Artist configuration error");
-      }
-
-      const tier = resolvePaymentTier(settings.subscriptionTier);
-      const fees = calculateTransactionFees(seminar.priceCents, tier);
-
-      // Create order record for the seminar
-      const [orderResult] = await db.insert(schema.orders).values({
-        artistId: seminar.artistId,
-        totalAmountCents: seminar.priceCents,
-        platformFeeCents: fees.platformFeeCents,
-        artistFeeCents: fees.artistFeeCents,
-        status: "pending",
-        fulfillmentMethod: seminar.type === "virtual" ? "digital" : "pickup",
-      });
-
-      const orderId = orderResult.insertId;
-
-      // Create order item linked to seminar
-      await db.insert(schema.orderItems).values({
-        orderId,
-        seminarId: seminar.id,
-        quantity: 1,
-        priceAtPurchaseCents: seminar.priceCents,
-      });
-
-      // Get Stripe Connect Account from artistSettings (already fetched above)
-      const connectAccountId = settings?.stripeConnectAccountId || undefined;
-      const slug = settings.publicSlug || "events";
-
-      const sessionResult = await createStorefrontCheckoutSession({
-        orderId,
-        items: [
-          {
-            productId: seminar.id,
-            productName: `${seminar.title} (${seminar.type === "virtual" ? "Virtual" : "In-Person"} Seminar)`,
-            priceCents: seminar.priceCents,
-            quantity: 1,
-          },
-        ],
-        artistName: settings.displayName || artistUser.name || "Artist",
-        clientTotalCents: seminar.priceCents,
-        platformFeeCents: fees.platformFeeCents,
-        artistFeeCents: fees.artistFeeCents,
-        shippingCostCents: 0,
-        fulfillmentMethod: seminar.type === "virtual" ? "digital" : "pickup",
-        stripeConnectAccountId: connectAccountId,
-        slug,
-      });
-
-      if (!sessionResult.url && !sessionResult.clientSecret) {
-        throw new Error("Failed to generate checkout session");
-      }
-
-      // Increment tickets sold
-      await db
-        .update(schema.seminars)
-        .set({
-          ticketsSold: (seminar.ticketsSold || 0) + 1,
-        })
-        .where(eq(schema.seminars.id, seminar.id));
-
-      return sessionResult;
-    }),
+    ),
 });
+
+async function storeSeller(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  sellerId: string
+) {
+  const user = await db.query.users.findFirst({
+    where: eq(schema.users.id, sellerId),
+  });
+  if (user?.role === "merchant") {
+    const merchant = await db.query.merchants.findFirst({
+      where: eq(schema.merchants.userId, sellerId),
+    });
+    if (!merchant?.stripeAccountId || merchant.status !== "active")
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: "This store is not ready to accept payments.",
+      });
+    return {
+      accountId: merchant.stripeAccountId,
+      name: merchant.businessName,
+      slug: `supplier-${merchant.id}`,
+      currency: merchant.country === "NZ" ? "nzd" : "aud",
+      tier: "free" as const,
+    };
+  }
+  const settings = await db.query.artistSettings.findFirst({
+    where: eq(schema.artistSettings.userId, sellerId),
+  });
+  if (
+    !settings?.stripeConnectAccountId ||
+    !settings.stripeConnectOnboardingComplete
+  )
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: "This artist has not finished payment setup.",
+    });
+  return {
+    accountId: settings.stripeConnectAccountId,
+    name: settings.displayName || user?.name || "Artist",
+    slug: settings.publicSlug || "shop",
+    currency: "aud",
+    tier: await effectivePaymentTier(settings),
+  };
+}

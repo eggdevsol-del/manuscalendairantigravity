@@ -1,9 +1,11 @@
+import { PAYMENT_TIERS } from "../../shared/fees";
+import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { eq, and } from "drizzle-orm";
 import { studios, studioMembers } from "../../drizzle/schema";
-import { getDb } from "../services/core";
+import { getDb, withDatabaseTransaction } from "../services/core";
 import {
   createStudioCheckoutSession,
   createArtistCheckoutSession,
@@ -13,20 +15,58 @@ import {
 import { artistSettings } from "../../drizzle/schema";
 
 export const billingRouter = router({
+  artistOffer: protectedProcedure.query(async () => {
+    const id = process.env.STRIPE_PRO_PRICE_ID;
+    if (!id) return null;
+    const price = await stripe.prices.retrieve(id);
+    if (
+      !price.active ||
+      price.currency !== "aud" ||
+      price.unit_amount !== PAYMENT_TIERS.pro.subscriptionPriceCents ||
+      price.recurring?.interval !== "month" ||
+      price.recurring.interval_count !== 1
+    )
+      return null;
+    return { amountCents: price.unit_amount, currency: price.currency };
+  }),
+  studioOffer: protectedProcedure.query(async () => {
+    const priceId = process.env.STRIPE_STUDIO_PRICE_ID;
+    if (!priceId) return null;
+    const price = await stripe.prices.retrieve(priceId);
+    if (
+      !price.active ||
+      price.currency !== "aud" ||
+      price.unit_amount !== PAYMENT_TIERS.top.subscriptionPriceCents ||
+      price.recurring?.interval !== "month" ||
+      price.recurring.interval_count !== 1
+    )
+      return null;
+    return {
+      amountCents: price.unit_amount,
+      currency: price.currency,
+      interval: price.recurring.interval,
+      intervalCount: price.recurring.interval_count,
+    };
+  }),
   /**
    * Get current subscription status for the logged-in artist.
    */
   subscriptionStatus: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
-    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database connection failed" });
+    if (!db)
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Database connection failed",
+      });
 
     const settings = await db.query.artistSettings.findFirst({
       where: eq(artistSettings.userId, ctx.user.id),
     });
 
     const rawTier = settings?.subscriptionTier || "basic";
-    const { resolvePaymentTier, PAYMENT_TIERS } = await import("../domain/fees");
-    const tier = resolvePaymentTier(rawTier);
+    const { resolvePaymentTier, PAYMENT_TIERS } =
+      await import("../domain/fees");
+    const tier = await effectivePaymentTier(settings);
     const tierConfig = PAYMENT_TIERS[tier];
 
     let renewalDate: string | null = null;
@@ -35,8 +75,13 @@ export const billingRouter = router({
     // If active subscription, fetch renewal date from Stripe
     if (settings?.stripeSubscriptionId) {
       try {
-        const sub = await stripe.subscriptions.retrieve(settings.stripeSubscriptionId);
-        renewalDate = new Date((sub as any).current_period_end * 1000).toISOString();
+        const sub = await stripe.subscriptions.retrieve(
+          settings.stripeSubscriptionId
+        );
+        renewalDate = new Date(
+          ((sub as any).current_period_end ||
+            sub.items.data[0]?.current_period_end) * 1000
+        ).toISOString();
         cancelAtPeriodEnd = (sub as any).cancel_at_period_end;
       } catch {
         // Subscription may have been deleted
@@ -66,45 +111,85 @@ export const billingRouter = router({
         studioId: z.string(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
-      if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database connection failed",
+    .mutation(async ({ ctx, input }) =>
+      withDatabaseTransaction(async db => {
+        if (!db)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
+
+        // Ensure caller is the owner
+        const requester = await db.query.studioMembers.findFirst({
+          where: and(
+            eq(studioMembers.studioId, input.studioId),
+            eq(studioMembers.userId, ctx.user.id),
+            eq(studioMembers.role, "owner"),
+            eq(studioMembers.status, "active")
+          ),
         });
 
-      // Ensure caller is the owner
-      const requester = await db.query.studioMembers.findFirst({
-        where: and(
-          eq(studioMembers.studioId, input.studioId),
-          eq(studioMembers.userId, ctx.user.id),
-          eq(studioMembers.role, "owner")
-        ),
-      });
+        if (!requester) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only studio owners can manage billing.",
+          });
+        }
 
-      if (!requester) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only studio owners can manage billing.",
-        });
-      }
-
-      // Create stripe checkout session
-      try {
-        const checkoutUrl = await createStudioCheckoutSession(
-          input.studioId,
-          ctx.user.email || ""
-        );
-        return { url: checkoutUrl };
-      } catch (error: any) {
-        console.error("[Stripe Checkout Error]", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: error.message || "Failed to create checkout session",
-        });
-      }
-    }),
+        const [studio] = await db
+          .select()
+          .from(studios)
+          .where(eq(studios.id, input.studioId))
+          .for("update");
+        if (!studio) throw new TRPCError({ code: "NOT_FOUND" });
+        if (
+          studio.stripeSubscriptionId &&
+          [
+            "active",
+            "trialing",
+            "past_due",
+            "unpaid",
+            "paused",
+            "incomplete",
+          ].includes(studio.subscriptionStatus || "")
+        )
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Manage the existing subscription in billing.",
+          });
+        if (studio.stripeCheckoutSessionId) {
+          const existing = await stripe.checkout.sessions.retrieve(
+            studio.stripeCheckoutSessionId
+          );
+          if (existing.status === "open" && existing.url)
+            return { url: existing.url };
+          if (existing.status === "complete" && !studio.stripeSubscriptionId)
+            throw new TRPCError({
+              code: "CONFLICT",
+              message:
+                "Your checkout is complete. Refresh studio status while payment confirmation arrives.",
+            });
+        }
+        // Create stripe checkout session
+        try {
+          const checkout = await createStudioCheckoutSession(
+            input.studioId,
+            ctx.user.email || ""
+          );
+          await db
+            .update(studios)
+            .set({ stripeCheckoutSessionId: checkout.sessionId })
+            .where(eq(studios.id, input.studioId));
+          return { url: checkout.url };
+        } catch (error: any) {
+          console.error("[Stripe Checkout Error]", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message || "Failed to create checkout session",
+          });
+        }
+      })
+    ),
 
   /**
    * Creates a customer portal session to manage an existing subscription.
@@ -128,7 +213,8 @@ export const billingRouter = router({
         where: and(
           eq(studioMembers.studioId, input.studioId),
           eq(studioMembers.userId, ctx.user.id),
-          eq(studioMembers.role, "owner")
+          eq(studioMembers.role, "owner"),
+          eq(studioMembers.status, "active")
         ),
       });
 
@@ -184,88 +270,151 @@ export const billingRouter = router({
   createArtistCheckoutSession: protectedProcedure
     .input(
       z.object({
-        priceId: z.string(),
+        priceId: z.string().optional(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
-      if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database connection failed",
-        });
+    .mutation(async ({ ctx, input }) =>
+      withDatabaseTransaction(async db => {
+        if (!db)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database connection failed",
+          });
 
-      if (ctx.user.role !== "artist") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only artists can upgrade artist plans.",
-        });
-      }
+        if (ctx.user.role !== "artist") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only artists can upgrade artist plans.",
+          });
+        }
 
-      try {
-        const checkoutUrl = await createArtistCheckoutSession(
-          ctx.user.id,
-          ctx.user.email || "",
-          input.priceId
+        const [settings] = await db
+          .select()
+          .from(artistSettings)
+          .where(eq(artistSettings.userId, ctx.user.id))
+          .for("update");
+        if (!settings)
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "Complete artist setup first.",
+          });
+        if ((await effectivePaymentTier(settings)) !== "free")
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Your current plan already includes these benefits.",
+          });
+        if (
+          settings.stripeSubscriptionId &&
+          settings.subscriptionStatus !== "canceled"
+        )
+          throw new TRPCError({
+            code: "CONFLICT",
+            message:
+              "Manage your existing subscription to update payment or reactivate it.",
+          });
+        let customerId = settings.stripeCustomerId;
+        if (!customerId) {
+          const customer = await stripe.customers.create({
+            email: ctx.user.email || undefined,
+            metadata: { artistId: ctx.user.id },
+          });
+          customerId = customer.id;
+          await db
+            .update(artistSettings)
+            .set({ stripeCustomerId: customerId })
+            .where(eq(artistSettings.userId, ctx.user.id));
+        }
+        const sessions = await stripe.checkout.sessions.list({
+          customer: customerId,
+          limit: 100,
+        });
+        const completed = sessions.data.find(
+          session =>
+            session.mode === "subscription" &&
+            session.status === "complete" &&
+            session.metadata?.artistId === ctx.user.id &&
+            session.subscription !== settings.stripeSubscriptionId
         );
-        return { url: checkoutUrl };
-      } catch (error: any) {
-        console.error("[Stripe Artist Checkout Error]", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: error.message || "Failed to create artist checkout session",
-        });
-      }
-    }),
+        if (completed)
+          throw new TRPCError({
+            code: "CONFLICT",
+            message:
+              "Payment completed. Refresh your plan while confirmation arrives.",
+          });
+        const existing = sessions.data.find(
+          session =>
+            session.mode === "subscription" &&
+            session.status === "open" &&
+            session.metadata?.artistId === ctx.user.id
+        );
+        if (existing?.url) return { url: existing.url };
+        try {
+          const checkoutUrl = await createArtistCheckoutSession(
+            ctx.user.id,
+            ctx.user.email || "",
+            process.env.STRIPE_PRO_PRICE_ID || "",
+            customerId
+          );
+          return { url: checkoutUrl };
+        } catch (error: any) {
+          console.error("[Stripe Artist Checkout Error]", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message:
+              error.message || "Failed to create artist checkout session",
+          });
+        }
+      })
+    ),
 
   /**
    * Creates a portal session for an Artist.
    */
-  createArtistPortalSession: protectedProcedure
-    .mutation(async ({ ctx }) => {
-      const db = await getDb();
-      if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database connection failed",
-        });
-
-      if (ctx.user.role !== "artist") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only artists can manage artist plans.",
-        });
-      }
-
-      const settings = await db.query.artistSettings.findFirst({
-        where: eq(artistSettings.userId, ctx.user.id),
+  createArtistPortalSession: protectedProcedure.mutation(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db)
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Database connection failed",
       });
 
-      if (!settings || !settings.stripeSubscriptionId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "You do not have an active billing subscription to manage.",
-        });
-      }
+    if (ctx.user.role !== "artist") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Only artists can manage artist plans.",
+      });
+    }
 
-      try {
-        const { stripe } = await import("../services/stripe");
-        const subscription = await stripe.subscriptions.retrieve(
-          settings.stripeSubscriptionId
-        );
-        const customerId =
-          typeof subscription.customer === "string"
-            ? subscription.customer
-            : subscription.customer.id;
+    const settings = await db.query.artistSettings.findFirst({
+      where: eq(artistSettings.userId, ctx.user.id),
+    });
 
-        const portalUrl = await createCustomerPortalSession(customerId);
-        return { url: portalUrl };
-      } catch (error: any) {
-        console.error("[Stripe Artist Portal Error]", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: error.message || "Failed to create artist customer portal session",
-        });
-      }
-    }),
+    if (!settings || !settings.stripeSubscriptionId) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "You do not have an active billing subscription to manage.",
+      });
+    }
+
+    try {
+      const { stripe } = await import("../services/stripe");
+      const subscription = await stripe.subscriptions.retrieve(
+        settings.stripeSubscriptionId
+      );
+      const customerId =
+        typeof subscription.customer === "string"
+          ? subscription.customer
+          : subscription.customer.id;
+
+      const portalUrl = await createCustomerPortalSession(customerId);
+      return { url: portalUrl };
+    } catch (error: any) {
+      console.error("[Stripe Artist Portal Error]", error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message:
+          error.message || "Failed to create artist customer portal session",
+      });
+    }
+  }),
 });

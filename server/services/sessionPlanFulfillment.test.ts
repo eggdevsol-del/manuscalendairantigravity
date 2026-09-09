@@ -39,6 +39,7 @@ function database(status = "pending", conflict = false) {
       }),
     }),
     query: {
+      studioMembers: { findFirst: async () => null },
       sessionPlanItems: {
         findMany: async () =>
           [1, 2].map(i => ({

@@ -44,3 +44,16 @@ export async function withDatabaseTransaction<T>(
     )
   );
 }
+
+/** Roll back a failed job's database writes without losing its retry record. */
+export async function withDatabaseSavepoint<T>(
+  work: (db: MySql2Database<typeof schema>) => Promise<T>
+): Promise<T> {
+  const database = await getDb();
+  if (!database) throw new Error("Database connection failed");
+  return database.transaction(tx =>
+    transactionScope.run(tx as unknown as MySql2Database<typeof schema>, () =>
+      work(tx as unknown as MySql2Database<typeof schema>)
+    )
+  );
+}

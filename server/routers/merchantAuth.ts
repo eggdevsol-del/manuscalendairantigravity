@@ -1,15 +1,20 @@
+import { withDatabaseTransaction } from "../services/core";
 import { z } from "zod";
 import { router, publicProcedure, merchantProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 import * as schema from "../../drizzle/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc, sql, inArray } from "drizzle-orm";
 import { hashPassword, generateToken } from "../_core/auth-new";
 import { getUserByEmail } from "../db";
 import { randomBytes } from "crypto";
 import { resolveCountry } from "../utils/resolveCountry";
 import { scrapeForMerchant } from "../services/scraper";
-import { syncInventoryFromAdmin } from "../services/shopifyAdminApi";
+import {
+  syncInventoryFromAdmin,
+  sanitizeShopDomain,
+  verifyShopifyConnection,
+} from "../services/shopifyAdminApi";
 
 export const merchantAuthRouter = router({
   /**
@@ -39,7 +44,11 @@ export const merchantAuthRouter = router({
     .input(z.object({ abn: z.string().min(1) })) // Actual length validation would be .length(11) usually
     .query(async ({ input }) => {
       // Stub: in future, hit ABR API using process.env.ABR_API_KEY
-      return { valid: /^\d{11}$/.test(input.abn.replace(/\s/g, "")), verified: false, businessName: null };
+      return {
+        valid: /^\d{11}$/.test(input.abn.replace(/\s/g, "")),
+        verified: false,
+        businessName: null,
+      };
     }),
 
   /**
@@ -49,7 +58,11 @@ export const merchantAuthRouter = router({
     .input(z.object({ nzbn: z.string().min(1) })) // Actual length validation would be .length(13) usually
     .query(async ({ input }) => {
       // Stub: in future, hit NZBN API
-      return { valid: /^\d{13}$/.test(input.nzbn.replace(/\s/g, "")), verified: false, businessName: null };
+      return {
+        valid: /^\d{13}$/.test(input.nzbn.replace(/\s/g, "")),
+        verified: false,
+        businessName: null,
+      };
     }),
 
   /**
@@ -64,9 +77,44 @@ export const merchantAuthRouter = router({
     });
 
     if (!merchant) return null;
-    const { shopifyToken, ...profile } = merchant;
-    return { ...profile, shopifyConnected: !!shopifyToken };
+    return {
+      id: merchant.id,
+      userId: merchant.userId,
+      businessName: merchant.businessName,
+      country: merchant.country,
+      abn: merchant.abn,
+      nzbn: merchant.nzbn,
+      contactName: merchant.contactName,
+      phone: merchant.phone,
+      address: merchant.address,
+      integrationType: merchant.integrationType,
+      shopifyDomain: merchant.shopifyDomain,
+      status: merchant.status,
+      verified: merchant.verified,
+      claimed: merchant.claimed,
+      lowStockThreshold: merchant.lowStockThreshold,
+      shopifyConnected: !!merchant.shopifyToken,
+    };
   }),
+
+  updateProfile: merchantProcedure
+    .input(
+      z.object({
+        businessName: z.string().trim().min(1).max(255),
+        contactName: z.string().trim().max(255),
+        phone: z.string().trim().max(50),
+        address: z.string().trim().max(2000),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      await db
+        .update(schema.merchants)
+        .set(input)
+        .where(eq(schema.merchants.userId, ctx.user.id));
+      return { success: true };
+    }),
 
   /**
    * Get merchant dashboard stats
@@ -94,12 +142,13 @@ export const merchantAuthRouter = router({
       if (o.status === "paid" || o.status === "fulfilled") {
         revenueCents += o.totalAmountCents;
       }
-      if (o.status === "pending") {
+      if (o.status === "paid") {
         pendingOrders++;
       }
     }
 
     const products = await db.query.products.findMany({
+      with: { variants: true },
       where: and(
         eq(schema.products.artistId, ctx.user.id),
         eq(schema.products.ownerType, "merchant")
@@ -107,9 +156,14 @@ export const merchantAuthRouter = router({
     });
 
     let lowStockItems = 0;
-    const threshold = merchant.lowStockThreshold || 5;
+    const threshold = merchant.lowStockThreshold ?? 5;
     for (const p of products) {
-      if (p.inventoryCount < threshold) {
+      if (
+        p.isActive &&
+        (p.variants.length
+          ? p.variants.reduce((sum, variant) => sum + variant.inventoryCount, 0)
+          : p.inventoryCount) < threshold
+      ) {
         lowStockItems++;
       }
     }
@@ -118,7 +172,9 @@ export const merchantAuthRouter = router({
       revenueCents,
       pendingOrders,
       lowStockItems,
-      totalOrders: orders.length,
+      totalOrders: orders.filter(order =>
+        ["paid", "fulfilled"].includes(order.status)
+      ).length,
     };
   }),
 
@@ -128,7 +184,7 @@ export const merchantAuthRouter = router({
   register: publicProcedure
     .input(
       z.object({
-        email: z.string().email(),
+        email: z.string().trim().toLowerCase().email(),
         password: z.string().min(8),
         name: z.string().min(1),
         businessName: z.string().min(1),
@@ -186,13 +242,15 @@ export const merchantAuthRouter = router({
 
         const merchantId = merchantResult.insertId;
 
-        // Background Scrape
         if (input.websiteUrl) {
-          setTimeout(() => {
-            scrapeForMerchant(merchantId, userId, input.websiteUrl!).catch(
-              console.error
-            );
-          }, 0);
+          await tx.insert(schema.notificationOutbox).values({
+            eventType: "public_catalogue_import",
+            payloadJson: JSON.stringify({
+              merchantId,
+              storeUrl: input.websiteUrl,
+            }),
+            status: "pending",
+          });
         }
       });
 
@@ -208,7 +266,7 @@ export const merchantAuthRouter = router({
     .input(
       z.object({
         supplierId: z.number(),
-        email: z.string().email(),
+        email: z.string().trim().toLowerCase().email(),
         password: z.string().min(8),
         name: z.string().optional(),
         businessName: z.string().optional(),
@@ -332,24 +390,38 @@ export const merchantAuthRouter = router({
       throw new TRPCError({ code: "NOT_FOUND", message: "Merchant not found" });
     }
 
-    const { syncStatusMap } = await import("../services/scraper");
-
-    // If it's in the map, return it live
-    if (syncStatusMap.has(merchant.id)) {
-      return syncStatusMap.get(merchant.id);
-    }
-
-    // If not in the map, it's either finished a long time ago, or never started
-    // We can count the products to see if they have any
-    const products = await db.query.products.findMany({
-      where: eq(schema.products.artistId, ctx.user.id),
-      limit: 1,
+    const latest = await db.query.notificationOutbox.findFirst({
+      where: and(
+        sql`${schema.notificationOutbox.eventType} IN ('shopify_catalogue_sync','public_catalogue_import')`,
+        sql`JSON_EXTRACT(${schema.notificationOutbox.payloadJson}, '$.merchantId') = ${merchant.id}`
+      ),
+      orderBy: desc(schema.notificationOutbox.id),
     });
-
-    return {
-      status: products.length > 0 ? "complete" : "idle",
-      count: products.length,
-    };
+    const { syncStatusMap } = await import("../services/scraper");
+    const progress = syncStatusMap.get(merchant.id);
+    if (latest) {
+      if (latest.status === "sent")
+        return {
+          status: "complete" as const,
+          count: progress?.count || 0,
+          message: "Last catalogue import completed.",
+        };
+      if (latest.status === "failed")
+        return {
+          status: "failed" as const,
+          count: 0,
+          error: latest.lastError || "Import failed. Retry from this screen.",
+        };
+      return {
+        status: "syncing" as const,
+        count: progress?.count || 0,
+        message:
+          progress?.status === "syncing"
+            ? progress.message
+            : "Catalogue import queued.",
+      };
+    }
+    return progress || { status: "idle" as const, count: 0 };
   }),
 
   /**
@@ -366,23 +438,28 @@ export const merchantAuthRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
 
-      // Format URL to domain
-      let domain = input.shopUrl
-        .trim()
-        .replace(/^https?:\/\//, "")
-        .replace(/\/$/, "");
-      if (!domain.includes(".myshopify.com")) {
-        if (!domain.includes(".")) {
-          domain = `${domain}.myshopify.com`;
-        }
-      }
+      const domain = sanitizeShopDomain(input.shopUrl);
+      const shop = await verifyShopifyConnection(
+        domain,
+        input.accessToken.trim()
+      );
+      const merchant = await db.query.merchants.findFirst({
+        where: eq(schema.merchants.userId, ctx.user.id),
+      });
+      if (!merchant) throw new TRPCError({ code: "NOT_FOUND" });
+      if (shop.currencyCode !== (merchant.country === "NZ" ? "NZD" : "AUD"))
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Shopify currency must match your Tattoi business currency.",
+        });
 
       await db
         .update(schema.merchants)
         .set({
           integrationType: "shopify",
           shopifyDomain: domain,
-          shopifyToken: input.accessToken,
+          shopifyToken: input.accessToken.trim(),
+          shopifyShopId: shop.id,
         })
         .where(eq(schema.merchants.userId, ctx.user.id));
 
@@ -411,15 +488,26 @@ export const merchantAuthRouter = router({
       });
     }
 
-    // Run in background
-    setTimeout(() => {
-      syncInventoryFromAdmin(
-        merchant.id,
-        ctx.user.id,
-        merchant.shopifyDomain!,
-        merchant.shopifyToken!
-      ).catch(console.error);
-    }, 0);
+    await withDatabaseTransaction(async tx => {
+      await tx
+        .select({ id: schema.merchants.id })
+        .from(schema.merchants)
+        .where(eq(schema.merchants.id, merchant.id))
+        .for("update");
+      const queued = await tx.query.notificationOutbox.findFirst({
+        where: and(
+          eq(schema.notificationOutbox.eventType, "shopify_catalogue_sync"),
+          sql`(${schema.notificationOutbox.status} = 'pending' OR (${schema.notificationOutbox.status} = 'failed' AND ${schema.notificationOutbox.attemptCount} < 5))`,
+          sql`JSON_EXTRACT(${schema.notificationOutbox.payloadJson}, '$.merchantId') = ${merchant.id}`
+        ),
+      });
+      if (!queued)
+        await tx.insert(schema.notificationOutbox).values({
+          eventType: "shopify_catalogue_sync",
+          payloadJson: JSON.stringify({ merchantId: merchant.id }),
+          status: "pending",
+        });
+    });
 
     return { success: true };
   }),

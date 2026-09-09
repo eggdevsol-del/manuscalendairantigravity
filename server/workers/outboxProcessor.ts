@@ -1,4 +1,7 @@
-import { withDatabaseTransaction } from "../services/core";
+import {
+  withDatabaseTransaction,
+  withDatabaseSavepoint,
+} from "../services/core";
 import { notificationOutbox, appointments, users } from "../../drizzle/schema";
 import { eq, lt, and, or, isNull, lte, asc } from "drizzle-orm";
 import { sendPushNotification } from "../services/pushService";
@@ -17,6 +20,57 @@ export async function deliverOutboxItem(
   db: any
 ) {
   const payload = JSON.parse(item.payloadJson);
+  if (item.eventType === "studio_cancel_pro_renewal") {
+    const { artistSettings } = await import("../../drizzle/schema");
+    const settings = await db.query.artistSettings.findFirst({
+      where: eq(artistSettings.userId, payload.userId),
+    });
+    if (!settings?.stripeSubscriptionId) return;
+    const { effectivePaymentTier } =
+      await import("../services/paymentEntitlements");
+    if ((await effectivePaymentTier(settings)) !== "top") return;
+    const { stripe } = await import("../services/stripe");
+    const subscription = await stripe.subscriptions.retrieve(
+      settings.stripeSubscriptionId
+    );
+    if (
+      ["active", "trialing", "past_due"].includes(subscription.status) &&
+      !subscription.cancel_at_period_end
+    )
+      await stripe.subscriptions.update(
+        subscription.id,
+        { cancel_at_period_end: true },
+        { idempotencyKey: `studio-stop-pro-renewal-${item.id}` }
+      );
+    return;
+  }
+  if (item.eventType === "public_catalogue_import") {
+    const { merchants } = await import("../../drizzle/schema");
+    const merchant = await db.query.merchants.findFirst({
+      where: eq(merchants.id, payload.merchantId),
+    });
+    if (!merchant) throw new Error("Merchant no longer exists.");
+    const { scrapeForMerchant } = await import("../services/scraper");
+    await scrapeForMerchant(merchant.id, merchant.userId, payload.storeUrl);
+    return;
+  }
+  if (item.eventType === "shopify_catalogue_sync") {
+    const { merchants } = await import("../../drizzle/schema");
+    const merchant = await db.query.merchants.findFirst({
+      where: eq(merchants.id, payload.merchantId),
+    });
+    if (!merchant?.shopifyDomain || !merchant.shopifyToken)
+      throw new Error("Shopify connection is missing.");
+    const { syncInventoryFromAdmin } =
+      await import("../services/shopifyAdminApi");
+    await syncInventoryFromAdmin(
+      merchant.id,
+      merchant.userId,
+      merchant.shopifyDomain,
+      merchant.shopifyToken
+    );
+    return;
+  }
   if (item.eventType === "shopify_supplier_order") {
     await fulfilSupplierOrder(db, payload.orderId);
     return;
@@ -112,7 +166,7 @@ export async function processOutbox() {
           .for("update", { skipLocked: true });
         if (!item) return false;
         try {
-          await deliverOutboxItem(item, db);
+          await withDatabaseSavepoint(inner => deliverOutboxItem(item, inner));
           await db
             .update(notificationOutbox)
             .set({ status: "sent", lastError: null, updatedAt: now })

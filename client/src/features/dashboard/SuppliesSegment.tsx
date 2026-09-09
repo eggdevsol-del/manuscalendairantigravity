@@ -1,3 +1,4 @@
+import { useAuth } from "@/_core/hooks/useAuth";
 /**
  * SuppliesSegment — §6.5 Supplies segment
  *
@@ -14,7 +15,14 @@ import React, { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { DT, DType, DRadius, DSpace } from "./dashboardTokens";
-import { Search, ExternalLink, Plus, Trash2, Package, ChevronRight } from "lucide-react";
+import {
+  Search,
+  ExternalLink,
+  Plus,
+  Trash2,
+  Package,
+  ChevronRight,
+} from "lucide-react";
 import { SupplierStorefront } from "./SupplierStorefront";
 import { AnimatePresence, motion } from "framer-motion";
 import { DEMO_SUPPLIERS } from "./dashboardDemoData";
@@ -22,26 +30,72 @@ import { useTooltipTarget } from "@/components/tooltip-tour";
 
 // Curated supplier directory
 const SUPPLIER_DIRECTORY = [
-  { name: "Pro Tattoo Supply", url: "https://protattoosupply.com.au/", category: "General Supply", bannerUrl: "https://protattoosupply.com.au/cdn/shop/files/image.png" },
-  { name: "Dr Pickles", url: "https://drpickles.com/", category: "Aftercare", bannerUrl: "https://drpickles.com/cdn/shop/files/DrPickles_Homepage_Desktop_1.jpg" },
-  { name: "Tatsup", url: "https://www.tatsup.com/", category: "Equipment", bannerUrl: "https://www.tatsup.com/cdn/shop/files/tatsup-banner.jpg" },
-  { name: "Inkjecta", url: "https://inkjecta.com/", category: "Machines", bannerUrl: "https://inkjecta.com/cdn/shop/files/banner.jpg" },
-  { name: "Dynamic Color", url: "https://dynamiccolor.com/", category: "Inks", bannerUrl: "https://dynamiccolor.com/cdn/shop/files/hero-banner.jpg" },
-  { name: "Bstattoo", url: "https://www.bstattoo.com.au/", category: "General Supply", bannerUrl: "https://www.bstattoo.com.au/cdn/shop/files/banner.jpg" },
+  {
+    name: "Pro Tattoo Supply",
+    url: "https://protattoosupply.com.au/",
+    category: "General Supply",
+    bannerUrl: "https://protattoosupply.com.au/cdn/shop/files/image.png",
+  },
+  {
+    name: "Dr Pickles",
+    url: "https://drpickles.com/",
+    category: "Aftercare",
+    bannerUrl:
+      "https://drpickles.com/cdn/shop/files/DrPickles_Homepage_Desktop_1.jpg",
+  },
+  {
+    name: "Tatsup",
+    url: "https://www.tatsup.com/",
+    category: "Equipment",
+    bannerUrl: "https://www.tatsup.com/cdn/shop/files/tatsup-banner.jpg",
+  },
+  {
+    name: "Inkjecta",
+    url: "https://inkjecta.com/",
+    category: "Machines",
+    bannerUrl: "https://inkjecta.com/cdn/shop/files/banner.jpg",
+  },
+  {
+    name: "Dynamic Color",
+    url: "https://dynamiccolor.com/",
+    category: "Inks",
+    bannerUrl: "https://dynamiccolor.com/cdn/shop/files/hero-banner.jpg",
+  },
+  {
+    name: "Bstattoo",
+    url: "https://www.bstattoo.com.au/",
+    category: "General Supply",
+    bannerUrl: "https://www.bstattoo.com.au/cdn/shop/files/banner.jpg",
+  },
 ];
 
 // ── Section Header ──────────────────────────────────────
 
-function SectionHeader({ label, right }: { label: string; right?: React.ReactNode }) {
+function SectionHeader({
+  label,
+  right,
+}: {
+  label: string;
+  right?: React.ReactNode;
+}) {
   return (
-    <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: DSpace[2] }}>
-      <span style={{
-        fontSize: DType.sectionLabel.fontSize,
-        fontWeight: DType.sectionLabel.fontWeight,
-        letterSpacing: DType.sectionLabel.letterSpacing,
-        color: DT.textTertiary,
-        textTransform: "uppercase",
-      }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "baseline",
+        justifyContent: "space-between",
+        marginBottom: DSpace[2],
+      }}
+    >
+      <span
+        style={{
+          fontSize: DType.sectionLabel.fontSize,
+          fontWeight: DType.sectionLabel.fontWeight,
+          letterSpacing: DType.sectionLabel.letterSpacing,
+          color: DT.textTertiary,
+          textTransform: "uppercase",
+        }}
+      >
         {label}
       </span>
       {right}
@@ -52,10 +106,19 @@ function SectionHeader({ label, right }: { label: string; right?: React.ReactNod
 // ── Supplier Row ────────────────────────────────────────
 
 function SupplierRow({
-  name, url, logoUrl, onTap, onDelete, isLinked,
+  name,
+  url,
+  logoUrl,
+  onTap,
+  onDelete,
+  isLinked,
 }: {
-  name: string; url?: string | null; logoUrl?: string | null;
-  onTap?: () => void; onDelete?: () => void; isLinked?: boolean;
+  name: string;
+  url?: string | null;
+  logoUrl?: string | null;
+  onTap?: () => void;
+  onDelete?: () => void;
+  isLinked?: boolean;
 }) {
   return (
     <div
@@ -72,17 +135,31 @@ function SupplierRow({
         minHeight: 44,
       }}
       onClick={onTap}
-      onMouseEnter={e => { if (onTap) e.currentTarget.style.background = DT.rowHover; }}
-      onMouseLeave={e => e.currentTarget.style.background = DT.cardSurface}
+      onMouseEnter={e => {
+        if (onTap) e.currentTarget.style.background = DT.rowHover;
+      }}
+      onMouseLeave={e => (e.currentTarget.style.background = DT.cardSurface)}
     >
       {/* Logo or placeholder */}
-      <div style={{
-        width: 36, height: 36, borderRadius: 8, overflow: "hidden",
-        background: DT.quietRow, display: "flex", alignItems: "center", justifyContent: "center",
-        flexShrink: 0,
-      }}>
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 8,
+          overflow: "hidden",
+          background: DT.quietRow,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
         {logoUrl ? (
-          <img src={logoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <img
+            src={logoUrl}
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
         ) : (
           <Package size={16} color={DT.textTertiary} />
         )}
@@ -90,18 +167,29 @@ function SupplierRow({
 
       {/* Name */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          fontSize: DType.rowTitle.fontSize,
-          fontWeight: DType.rowTitle.fontWeight,
-          color: DT.textPrimary,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}>
+        <div
+          style={{
+            fontSize: DType.rowTitle.fontSize,
+            fontWeight: DType.rowTitle.fontWeight,
+            color: DT.textPrimary,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
           {name}
         </div>
         {url && (
-          <div style={{ fontSize: DType.rowMeta.fontSize, color: DT.textTertiary, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div
+            style={{
+              fontSize: DType.rowMeta.fontSize,
+              color: DT.textTertiary,
+              marginTop: 1,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
             {url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
           </div>
         )}
@@ -111,7 +199,10 @@ function SupplierRow({
       <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
         {isLinked && onDelete && (
           <button
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            onClick={e => {
+              e.stopPropagation();
+              onDelete();
+            }}
             style={{
               background: "transparent",
               border: "none",
@@ -129,9 +220,7 @@ function SupplierRow({
             <Trash2 size={14} />
           </button>
         )}
-        {onTap && (
-          <ChevronRight size={16} color={DT.textTertiary} />
-        )}
+        {onTap && <ChevronRight size={16} color={DT.textTertiary} />}
       </div>
     </div>
   );
@@ -140,82 +229,129 @@ function SupplierRow({
 // ── Directory Card ──────────────────────────────────────
 
 function DirectoryCard({
-  name, url, category, bannerUrl, isAlreadyAdded, onImport, importing,
+  name,
+  url,
+  category,
+  bannerUrl,
+  isAlreadyAdded,
+  onImport,
+  importing,
+  canImport,
 }: {
-  name: string; url: string; category: string; bannerUrl?: string;
-  isAlreadyAdded: boolean; onImport: () => void; importing: boolean;
+  name: string;
+  url: string;
+  category: string;
+  bannerUrl?: string;
+  isAlreadyAdded: boolean;
+  onImport: () => void;
+  importing: boolean;
+  canImport: boolean;
 }) {
   return (
-    <div style={{
-      position: "relative",
-      borderRadius: DRadius.row,
-      border: `1px solid ${DT.hairline}`,
-      padding: `${DSpace[4]}px ${DSpace[5]}px`,
-      display: "flex",
-      alignItems: "center",
-      gap: DSpace[4],
-      overflow: "hidden",
-      minHeight: 64,
-    }}>
+    <div
+      style={{
+        position: "relative",
+        borderRadius: DRadius.row,
+        border: `1px solid ${DT.hairline}`,
+        padding: `${DSpace[4]}px ${DSpace[5]}px`,
+        display: "flex",
+        alignItems: "center",
+        gap: DSpace[4],
+        overflow: "hidden",
+        minHeight: 64,
+      }}
+    >
       {/* Banner background */}
       {bannerUrl && (
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: `url(${bannerUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          opacity: 0.12,
-          zIndex: 0,
-        }} />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: `url(${bannerUrl})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            opacity: 0.12,
+            zIndex: 0,
+          }}
+        />
       )}
       {/* Dark overlay for text readability */}
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        background: `linear-gradient(90deg, ${DT.cardSurface} 40%, transparent 100%)`,
-        zIndex: 1,
-      }} />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: `linear-gradient(90deg, ${DT.cardSurface} 40%, transparent 100%)`,
+          zIndex: 1,
+        }}
+      />
 
       <div style={{ flex: 1, minWidth: 0, position: "relative", zIndex: 2 }}>
-        <div style={{ fontSize: DType.rowTitle.fontSize, fontWeight: DType.rowTitle.fontWeight, color: DT.textPrimary }}>
+        <div
+          style={{
+            fontSize: DType.rowTitle.fontSize,
+            fontWeight: DType.rowTitle.fontWeight,
+            color: DT.textPrimary,
+          }}
+        >
           {name}
         </div>
-        <div style={{ fontSize: DType.rowMeta.fontSize, color: DT.textTertiary, marginTop: 1 }}>
+        <div
+          style={{
+            fontSize: DType.rowMeta.fontSize,
+            color: DT.textTertiary,
+            marginTop: 1,
+          }}
+        >
           {category}
         </div>
       </div>
-      <div style={{ display: "flex", gap: 8, flexShrink: 0, position: "relative", zIndex: 2 }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          flexShrink: 0,
+          position: "relative",
+          zIndex: 2,
+        }}
+      >
         <a
           href={url}
           target="_blank"
           rel="noopener noreferrer"
           onClick={e => e.stopPropagation()}
           style={{
-            background: "transparent", border: "none", cursor: "pointer",
-            padding: 6, color: DT.textTertiary,
-            minWidth: 44, minHeight: 44,
-            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            padding: 6,
+            color: DT.textTertiary,
+            minWidth: 44,
+            minHeight: 44,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
           aria-label={`Visit ${name}`}
         >
           <ExternalLink size={14} />
         </a>
         {isAlreadyAdded ? (
-          <div style={{
-            borderRadius: DRadius.button,
-            padding: "6px 14px",
-            fontSize: DType.exceptionPill.fontSize,
-            fontWeight: DType.exceptionPill.fontWeight,
-            minHeight: 36,
-            display: "flex",
-            alignItems: "center",
-            color: DT.textTertiary,
-            border: `1px solid ${DT.hairline}`,
-          }}>
+          <div
+            style={{
+              borderRadius: DRadius.button,
+              padding: "6px 14px",
+              fontSize: DType.exceptionPill.fontSize,
+              fontWeight: DType.exceptionPill.fontWeight,
+              minHeight: 36,
+              display: "flex",
+              alignItems: "center",
+              color: DT.textTertiary,
+              border: `1px solid ${DT.hairline}`,
+            }}
+          >
             Added ✓
           </div>
-        ) : (
+        ) : canImport ? (
           <button
             onClick={onImport}
             disabled={importing}
@@ -235,7 +371,7 @@ function DirectoryCard({
           >
             {importing ? "Adding…" : "Add Supplier"}
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   );
@@ -248,7 +384,11 @@ interface SuppliesSegmentProps {
 }
 
 export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
-  const [selectedSupplierId, setSelectedSupplierId] = useState<number | null>(null);
+  const { user } = useAuth();
+  const canManage = user?.role === "admin";
+  const [selectedSupplierId, setSelectedSupplierId] = useState<number | null>(
+    null
+  );
 
   // Tooltip tour targets
   const demoSuppliersAreaRef = useTooltipTarget("demo-suppliers-area");
@@ -256,14 +396,15 @@ export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [importingUrl, setImportingUrl] = useState<string | null>(null);
 
-  const { data: dbSuppliers, refetch: refetchSuppliers } = trpc.suppliers.getSuppliers.useQuery();
+  const { data: dbSuppliers, refetch: refetchSuppliers } =
+    trpc.suppliers.getSuppliers.useQuery();
   const scrapeMutation = trpc.suppliers.scrapeShopifyStore.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(`Imported ${data.productCount} products from ${data.name}`);
       setImportingUrl(null);
       refetchSuppliers();
     },
-    onError: (err) => {
+    onError: err => {
       toast.error(err.message);
       setImportingUrl(null);
     },
@@ -274,7 +415,7 @@ export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
       toast.success("Storefront deleted");
       refetchSuppliers();
     },
-    onError: (err) => toast.error(err.message),
+    onError: err => toast.error(err.message),
   });
 
   const handleDelete = (id: number) => {
@@ -291,20 +432,24 @@ export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
   };
 
   // Data
-  const displaySuppliers = demoMode && (!dbSuppliers || dbSuppliers.length === 0)
-    ? DEMO_SUPPLIERS.map(s => ({
-        id: s.id,
-        name: s.name,
-        websiteUrl: s.url,
-        logoUrl: s.logoUrl,
-      }))
-    : dbSuppliers;
+  const displaySuppliers =
+    demoMode && (!dbSuppliers || dbSuppliers.length === 0)
+      ? DEMO_SUPPLIERS.map(s => ({
+          id: s.id,
+          name: s.name,
+          websiteUrl: s.url,
+          logoUrl: s.logoUrl,
+        }))
+      : dbSuppliers;
 
   const hasMySuppliers = displaySuppliers && displaySuppliers.length > 0;
 
   // Filter directory by search
-  const filteredDirectory = SUPPLIER_DIRECTORY.filter(s =>
-    !searchQuery || s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.category.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredDirectory = SUPPLIER_DIRECTORY.filter(
+    s =>
+      !searchQuery ||
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Supplier storefront pushed
@@ -321,7 +466,16 @@ export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
     <div style={{ display: "flex", flexDirection: "column", gap: DSpace[7] }}>
       {/* Search */}
       <div style={{ position: "relative" }}>
-        <Search size={16} color={DT.textTertiary} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)" }} />
+        <Search
+          size={16}
+          color={DT.textTertiary}
+          style={{
+            position: "absolute",
+            left: 14,
+            top: "50%",
+            transform: "translateY(-50%)",
+          }}
+        />
         <input
           type="text"
           placeholder="Search suppliers…"
@@ -343,16 +497,26 @@ export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
 
       {/* MY SUPPLIERS */}
       <div ref={demoSuppliersAreaRef}>
-        <SectionHeader label="MY SUPPLIERS" right={
-          hasMySuppliers ? (
-            <span style={{ fontSize: DType.sectionCount.fontSize, color: DT.textTertiary }}>
-              {displaySuppliers!.length}
-            </span>
-          ) : undefined
-        } />
+        <SectionHeader
+          label="SUPPLIERS"
+          right={
+            hasMySuppliers ? (
+              <span
+                style={{
+                  fontSize: DType.sectionCount.fontSize,
+                  color: DT.textTertiary,
+                }}
+              >
+                {displaySuppliers!.length}
+              </span>
+            ) : undefined
+          }
+        />
 
         {hasMySuppliers ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: DSpace[1] }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: DSpace[1] }}
+          >
             {displaySuppliers!.map((s: any) => (
               <SupplierRow
                 key={s.id}
@@ -361,22 +525,36 @@ export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
                 logoUrl={s.logoUrl}
                 isLinked
                 onTap={() => !demoMode && setSelectedSupplierId(s.id)}
-                onDelete={() => handleDelete(s.id)}
+                onDelete={canManage ? () => handleDelete(s.id) : undefined}
               />
             ))}
           </div>
         ) : (
-          <div style={{
-            border: `1px dashed ${DT.hairline}`,
-            borderRadius: DRadius.row,
-            padding: DSpace[7],
-            textAlign: "center",
-          }}>
-            <div style={{ color: DT.textPrimary, fontSize: DType.rowTitle.fontSize, fontWeight: DType.rowTitle.fontWeight }}>
-              No suppliers linked
+          <div
+            style={{
+              border: `1px dashed ${DT.hairline}`,
+              borderRadius: DRadius.row,
+              padding: DSpace[7],
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                color: DT.textPrimary,
+                fontSize: DType.rowTitle.fontSize,
+                fontWeight: DType.rowTitle.fontWeight,
+              }}
+            >
+              No supplier catalogues yet
             </div>
-            <div style={{ color: DT.textSecondary, fontSize: DType.rowBody.fontSize, marginTop: 4 }}>
-              Add from the directory below
+            <div
+              style={{
+                color: DT.textSecondary,
+                fontSize: DType.rowBody.fontSize,
+                marginTop: 4,
+              }}
+            >
+              Visit a supplier website from the directory below
             </div>
           </div>
         )}
@@ -385,13 +563,20 @@ export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
       {/* FIND SUPPLIERS */}
       <div ref={demoSupplierCardRef}>
         <SectionHeader label="FIND SUPPLIERS" />
-        <div style={{ display: "flex", flexDirection: "column", gap: DSpace[1] }}>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: DSpace[1] }}
+        >
           {filteredDirectory.map(s => {
-            const alreadyAdded = displaySuppliers?.some((ds: any) => {
-              const dsUrl = (ds.websiteUrl || "").replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
-              const dirUrl = s.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
-              return dsUrl === dirUrl;
-            }) || false;
+            const alreadyAdded =
+              displaySuppliers?.some((ds: any) => {
+                const dsUrl = (ds.websiteUrl || "")
+                  .replace(/^https?:\/\/(www\.)?/, "")
+                  .replace(/\/$/, "");
+                const dirUrl = s.url
+                  .replace(/^https?:\/\/(www\.)?/, "")
+                  .replace(/\/$/, "");
+                return dsUrl === dirUrl;
+              }) || false;
             return (
               <DirectoryCard
                 key={s.url}
@@ -402,6 +587,7 @@ export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
                 isAlreadyAdded={alreadyAdded}
                 onImport={() => handleImport(s.url)}
                 importing={importingUrl === s.url}
+                canImport={canManage}
               />
             );
           })}

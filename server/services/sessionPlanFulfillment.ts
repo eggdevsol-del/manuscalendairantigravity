@@ -55,6 +55,12 @@ export async function fulfillSessionPlan(
       destination !== settings.stripeConnectAccountId
     )
       throw new Error("Payment recipient does not match the artist.");
+    const membership = await tx.query.studioMembers.findFirst({
+      where: and(
+        eq(schema.studioMembers.userId, plan.artistId),
+        eq(schema.studioMembers.status, "active")
+      ),
+    });
     const now = mysqlDate(new Date());
     for (const item of items) {
       const start = utcDate(item.startsAt);
@@ -77,6 +83,7 @@ export async function fulfillSessionPlan(
         );
       const [created] = await tx.insert(schema.appointments).values({
         artistId: plan.artistId,
+        studioId: membership?.studioId || null,
         clientId: plan.clientId,
         conversationId: plan.conversationId,
         title: `Session ${item.sessionIndex}`,
@@ -105,20 +112,18 @@ export async function fulfillSessionPlan(
         .where(eq(schema.sessionPlanItems.id, item.id));
       await generateRequiredForms(created.insertId, tx);
     }
-    await tx
-      .insert(schema.paymentLedger)
-      .values({
-        artistId: plan.artistId,
-        clientId: plan.clientId,
-        transactionType: "deposit",
-        amountCents: plan.depositTotalCents,
-        platformFeeCents: plan.platformFeeCents || 0,
-        artistFeeCents: Number(payment.metadata.artistFeeCents || 0),
-        stripePaymentId: payment.id,
-        stripeConnectAccountId: settings.stripeConnectAccountId,
-        tier: payment.metadata.tier || "free",
-        paymentMethod: "card",
-      });
+    await tx.insert(schema.paymentLedger).values({
+      artistId: plan.artistId,
+      clientId: plan.clientId,
+      transactionType: "deposit",
+      amountCents: plan.depositTotalCents,
+      platformFeeCents: plan.platformFeeCents || 0,
+      artistFeeCents: Number(payment.metadata.artistFeeCents || 0),
+      stripePaymentId: payment.id,
+      stripeConnectAccountId: settings.stripeConnectAccountId,
+      tier: payment.metadata.tier || "free",
+      paymentMethod: "card",
+    });
     if (plan.messageId) {
       const message = await tx.query.messages.findFirst({
         where: eq(schema.messages.id, plan.messageId),

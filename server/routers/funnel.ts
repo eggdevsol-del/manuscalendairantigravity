@@ -1,3 +1,4 @@
+import { effectivePaymentTier } from "../services/paymentEntitlements";
 /**
  * Funnel Router
  *
@@ -86,7 +87,7 @@ export const funnelRouter = router({
       // Compute fee breakdown server-side (SSOT — fee engine is the authority)
       const { calculateTransactionFees, resolvePaymentTier } =
         await import("../domain/fees");
-      const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
+      const tier = await effectivePaymentTier(artistSettingsRow);
       const fees = calculateTransactionFees(lead.depositAmount, tier);
 
       return {
@@ -177,7 +178,7 @@ export const funnelRouter = router({
         resolveDepositPercentage,
         roundCents,
       } = await import("../domain/fees");
-      const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
+      const tier = await effectivePaymentTier(artistSettingsRow);
 
       // ── Deposit % Enforcement (v2.3 §3) ──────────────────────
       // Free tier is locked at 25%. If the lead.depositAmount was
@@ -299,7 +300,7 @@ export const funnelRouter = router({
 
       const { calculateTransactionFees, resolvePaymentTier } =
         await import("../domain/fees");
-      const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
+      const tier = await effectivePaymentTier(artistSettingsRow);
       const fees = calculateTransactionFees(
         booking.remainingBalanceCents || 0,
         tier
@@ -446,7 +447,7 @@ export const funnelRouter = router({
         getAllowedPaymentMethods,
       } = await import("../domain/fees");
 
-      const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
+      const tier = await effectivePaymentTier(artistSettingsRow);
       const fees = calculateTransactionFees(remaining, tier);
 
       // Payment methods enforced at backend (card-only)
@@ -544,19 +545,17 @@ export const funnelRouter = router({
           .set({ paymentProof: claim })
           .where(eq(schema.appointments.id, booking.id));
         if (booking.conversationId)
-          await tx
-            .insert(schema.messages)
-            .values({
-              conversationId: booking.conversationId,
-              senderId: booking.clientId,
-              messageType: "system",
-              content: `Client reports balance payment by ${input.paymentMethod}. Artist verification required.`,
-              metadata: JSON.stringify({
-                type: "balance_claim",
-                appointmentId: booking.id,
-                paymentMethod: input.paymentMethod,
-              }),
-            });
+          await tx.insert(schema.messages).values({
+            conversationId: booking.conversationId,
+            senderId: booking.clientId,
+            messageType: "system",
+            content: `Client reports balance payment by ${input.paymentMethod}. Artist verification required.`,
+            metadata: JSON.stringify({
+              type: "balance_claim",
+              appointmentId: booking.id,
+              paymentMethod: input.paymentMethod,
+            }),
+          });
         return { success: true };
       });
     }),
@@ -794,7 +793,7 @@ export const funnelRouter = router({
           });
           const { resolvePaymentTier, resolveDepositPercentage, roundCents } =
             await import("../domain/fees");
-          const tier = resolvePaymentTier(artistSettingsRow?.subscriptionTier);
+          const tier = await effectivePaymentTier(artistSettingsRow);
           const depositPercent = resolveDepositPercentage(
             tier,
             artistSettingsRow?.depositPercentage ?? null
@@ -1870,7 +1869,7 @@ export const funnelRouter = router({
       // Calculate fees
       const { calculateTransactionFees, resolvePaymentTier } =
         await import("../domain/fees");
-      const tier = resolvePaymentTier(artistSettings?.subscriptionTier);
+      const tier = await effectivePaymentTier(artistSettings);
       const fees = calculateTransactionFees(request.amountCents, tier);
 
       // Create Stripe Checkout Session

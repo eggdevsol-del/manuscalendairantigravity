@@ -1,0 +1,13 @@
+# Artist plans — 2026-09-09
+
+The user authorized three tiers and delegated price selection: Free, Pro, Studio. Implemented launch prices in AUD/month: Free $0 with 2% artist fee, Pro $99 with no artist fee, Studio $499 including Pro payment benefits for up to 10 active artists (owner included). Studio is a shared subscription; departing artists fall back to their own active Pro subscription or Free. No automatic refund of already-collected fees. Existing internal `top` / `elite` aliases are compatibility identifiers; the public label is Studio.
+
+The existing payment engine collects the Free artist fee as part of Stripe's application fee when a payment is collected. It is not an extra fee applied a second time at bank withdrawal. This distinction is explicitly disclosed. Client platform fees remain 3.4%, minimum $5 per payment; this pass does not claim a legal assessment of that structure.
+
+At a 2% Free fee, Pro's fee-only break-even is $4,950 monthly artist payment volume. Studio is $49.90 per included seat at full occupancy. These are simple arithmetic comparisons, not guaranteed business margins.
+
+Cost assumptions for launch planning: Stripe's published Australian domestic card rate is 1.7% + $0.30, international cards 3.5% + $0.30, plus currency conversion where required. Connect when the platform controls pricing is $2 per monthly active account and 0.25% + $0.25 per payout. Billing pay-as-you-go is 0.7% of billing volume. Rates can change and negotiated rates may differ. Sources checked 2026-09-09: https://stripe.com/au/pricing and https://stripe.com/au/connect/pricing.
+
+Illustrative contribution (not an accounting forecast): assume $10,000 artist volume/month, twenty $500 payments using domestic cards, four bank payouts, $20 hosting/AI/support per artist, and standard published fees. Pro brings $99 + $340 client platform fees; subtract ~$181.78 card processing on client totals, $25 payout-volume fees, $2 active-account fee, $1 payout-count fees, $20 operating allowance and ~$2.68 subscription processing/Billing: ~$206.54 before GST, disputes/refunds, acquisition and overhead. Ten comparable artists on Studio produce ~$1,588.92 before those same exclusions. These assumptions must be measured; international-card-heavy usage, refunds or high support/AI consumption compress margins. Scale does not itself guarantee profitability.
+
+Stripe test products are created using stable lookup keys `tattoi_pro_aud_monthly_v1` and `tattoi_studio_aud_monthly_v1`. Production/live-mode products are not created in this pass. Checkout selects configured prices server-side and entitlements require confirmed active/trialing subscriptions. Test plan subscriptions must be cancelled after provider acceptance runs.

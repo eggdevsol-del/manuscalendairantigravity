@@ -1,3 +1,4 @@
+import Purchases from "@/features/storefront/Purchases";
 import WaitlistPage from "@/features/bookings/WaitlistPage";
 import ProjectSummary from "@/features/bookings/ProjectSummary";
 import React from "react";
@@ -19,7 +20,10 @@ export default function ClientShell() {
     <div className="min-h-screen pb-16">
       <AnimatedSwitch>
         <Switch>
-          <Route path="/"><Redirect to="/discover" /></Route>
+          <Route path="/purchases" component={Purchases} />
+          <Route path="/">
+            <Redirect to="/discover" />
+          </Route>
           <Route path="/discover" component={ClientHome} />
           <Route path="/profile" component={ClientProfilePage} />
           <Route path="/conversations" component={Conversations} />

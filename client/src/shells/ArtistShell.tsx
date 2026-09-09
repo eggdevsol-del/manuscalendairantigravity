@@ -1,3 +1,5 @@
+import { StudioDashboardSettings } from "@/components/settings/StudioDashboardSettings";
+import Purchases from "@/features/storefront/Purchases";
 import SupplierOrderHistory from "@/features/dashboard/SupplierOrderHistory";
 import WaitlistPage from "@/features/bookings/WaitlistPage";
 import ProjectSummary from "@/features/bookings/ProjectSummary";
@@ -31,6 +33,12 @@ export default function ArtistShell() {
     <div className="min-h-screen pb-16">
       <AnimatedSwitch>
         <Switch>
+          <Route path="/studio">
+            <StudioDashboardSettings
+              onBack={() => window.location.assign("/settings")}
+            />
+          </Route>
+          <Route path="/purchases" component={Purchases} />
           <Route path="/">
             <Redirect to="/dashboard" />
           </Route>

@@ -1,227 +1,133 @@
-import React, { useState } from "react";
-import {
-  Settings,
-  RefreshCw,
-  CheckCircle2,
-  AlertCircle,
-  KeyRound,
-  Link as LinkIcon,
-  Loader2,
-} from "lucide-react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
-
+import { Button, Input, Label } from "@/components/ui";
 export function ShopifySyncTier() {
-  const [shopUrl, setShopUrl] = useState("");
-  const [accessToken, setAccessToken] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-
   const utils = trpc.useUtils();
-
-  const { data: merchant, isLoading } =
-    trpc.merchantAuth.getMerchantProfile.useQuery();
-
-  const saveCredentialsMutation =
-    trpc.merchantAuth.saveShopifyCredentials.useMutation({
-      onSuccess: () => {
-        toast.success("Shopify credentials saved successfully!");
-        utils.merchantAuth.getMerchantProfile.invalidate();
-        setIsSaving(false);
-      },
-      onError: error => {
-        toast.error(error.message || "Failed to save credentials");
-        setIsSaving(false);
-      },
-    });
-
-  const triggerSyncMutation = trpc.merchantAuth.triggerShopifySync.useMutation({
+  const profile = trpc.merchantAuth.getMerchantProfile.useQuery();
+  const progress = trpc.merchantAuth.getSyncStatus.useQuery(undefined, {
+    refetchInterval: query =>
+      query.state.data?.status === "syncing" ? 3000 : 10000,
+  });
+  const [domain, setDomain] = useState(""),
+    [token, setToken] = useState(""),
+    [edit, setEdit] = useState(false);
+  const save = trpc.merchantAuth.saveShopifyCredentials.useMutation({
     onSuccess: () => {
-      toast.success("Sync started! Your storefront will update shortly.");
-      // The SyncOverlay component will automatically pick up the status via getSyncStatus polling
-    },
-    onError: error => {
-      toast.error(error.message || "Failed to trigger sync");
+      setToken("");
+      setEdit(false);
+      void profile.refetch();
     },
   });
-
-  const handleConnect = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!shopUrl || !accessToken) return;
-    setIsSaving(true);
-    saveCredentialsMutation.mutate({ shopUrl, accessToken });
-  };
-
-  const handleForceSync = () => {
-    triggerSyncMutation.mutate();
-  };
-
-  if (isLoading) {
-    return (
-      <div className="p-6 text-center text-muted-foreground">
-        Loading integration status...
-      </div>
-    );
-  }
-
-  const isConnected =
-    merchant?.integrationType === "shopify" && !!merchant?.shopifyConnected;
-
+  const sync = trpc.merchantAuth.triggerShopifySync.useMutation({
+    onSuccess: () => void progress.refetch(),
+  });
+  const connected = profile.data?.shopifyConnected;
   return (
-    <div className="flex flex-col h-full bg-card">
-      <div className="p-6 border-b border-border/50 flex items-center justify-between">
-        <div>
-          <h3 className="text-xl font-bold text-foreground">
-            Shopify Integration
-          </h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Connect your d.o.t.s storefront to Shopify.
+    <div className="space-y-5">
+      <h2 className="text-lg font-semibold">Shopify catalogue</h2>
+      <p className="text-sm text-muted-foreground">
+        Import products and variants without replacing their order-history
+        references. Newly imported products start hidden so you can review
+        delivery and pricing before publishing. Stock is copied on first import;
+        manage your Tattoi stock allocation in Products. Later imports update
+        catalogue details without replenishing sold or reserved stock.
+      </p>
+      {profile.isLoading && <p role="status">Loading connection…</p>}
+      {profile.error && (
+        <p role="alert">
+          Connection status is unavailable.{" "}
+          <button className="underline" onClick={() => void profile.refetch()}>
+            Retry
+          </button>
+        </p>
+      )}
+      {connected && (
+        <div className="rounded-xl border p-4 space-y-2">
+          <p className="font-medium">{profile.data?.shopifyDomain}</p>
+          <p className="text-sm text-muted-foreground">
+            Connection saved. Imports run when you choose Sync catalogue.
           </p>
+          <Button variant="outline" onClick={() => setEdit(!edit)}>
+            {edit ? "Cancel connection change" : "Change connection"}
+          </Button>
         </div>
-        {isConnected ? (
-          <div className="px-3 py-1 bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] text-xs font-bold rounded-full flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" /> Connected
+      )}
+      {(!connected || edit) && (
+        <form
+          className="space-y-4"
+          onSubmit={e => {
+            e.preventDefault();
+            save.mutate({ shopUrl: domain, accessToken: token });
+          }}
+        >
+          <div className="space-y-2">
+            <Label htmlFor="shopify-domain">Store domain</Label>
+            <Input
+              id="shopify-domain"
+              value={domain}
+              onChange={e => setDomain(e.target.value)}
+              placeholder="your-store.myshopify.com"
+              required
+            />
           </div>
-        ) : (
-          <div className="px-3 py-1 bg-secondary text-muted-foreground text-xs font-bold rounded-full flex items-center gap-1">
-            Disconnected
+          <div className="space-y-2">
+            <Label htmlFor="shopify-token">Admin API token</Label>
+            <Input
+              id="shopify-token"
+              type="password"
+              autoComplete="off"
+              value={token}
+              onChange={e => setToken(e.target.value)}
+              required
+            />
           </div>
-        )}
-      </div>
-
-      <div className="p-6 space-y-6">
-        {!isConnected ? (
-          <form
-            onSubmit={handleConnect}
-            className="bg-secondary/20 border border-border/50 rounded-md p-6 space-y-6"
+          <p className="text-xs text-muted-foreground">
+            The app needs product-read permissions for catalogue imports.
+            Supplier draft-order handoff also requires draft-order permissions.
+          </p>
+          <Button
+            className="min-h-12 w-full"
+            disabled={save.isPending || !domain || !token}
           >
-            <div>
-              <h4 className="text-base font-bold text-foreground mb-2">
-                Connect via Custom App Token
-              </h4>
-              <p className="text-sm text-muted-foreground mb-6">
-                To enable live inventory syncing, create a Custom App in your
-                Shopify Admin dashboard with <strong>Read Products</strong> and{" "}
-                <strong>Read Orders</strong> permissions.
-              </p>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                    Shopify Store URL
-                  </label>
-                  <div className="relative">
-                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      placeholder="e.g. mystudio.myshopify.com"
-                      className="pl-10 bg-background/50 border-border/50 focus:border-primary/50"
-                      value={shopUrl}
-                      onChange={e => setShopUrl(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                    Admin API Access Token
-                  </label>
-                  <div className="relative">
-                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      type="password"
-                      placeholder="shpat_..."
-                      className="pl-10 bg-background/50 border-border/50 focus:border-primary/50"
-                      value={accessToken}
-                      onChange={e => setAccessToken(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-4 border-t border-border/50">
-              <button
-                type="submit"
-                disabled={isSaving || !shopUrl || !accessToken}
-                className="px-6 py-2.5 bg-primary text-primary-foreground text-sm font-bold rounded-full disabled:opacity-50 flex items-center gap-2"
-              >
-                {isSaving ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  "Connect & Save"
-                )}
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="bg-secondary/20 border border-border/50 rounded-md p-6">
-            <div className="flex items-start gap-4 mb-6">
-              <div className="w-12 h-14 rounded-md bg-[var(--color-status-success-bg)] flex items-center justify-center shrink-0">
-                <Settings className="w-6 h-6 text-[var(--color-success)]" />
-              </div>
-              <div>
-                <h4 className="text-base font-bold text-foreground">
-                  Sync Status
-                </h4>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Your store (
-                  <span className="text-foreground font-medium">
-                    {merchant.shopifyDomain}
-                  </span>
-                  ) is connected. You can trigger a manual sync at any time.
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-background/50 rounded-md">
-                <div>
-                  <p className="text-sm font-bold text-foreground">
-                    Products Synced
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Admin API Active
-                  </p>
-                </div>
-                <p className="text-xl font-light text-foreground">Live</p>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-background/50 rounded-md border border-[var(--color-status-warning-border)]">
-                <div className="flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-[var(--color-status-warning-text)]" />
-                  <div>
-                    <p className="text-sm font-bold text-foreground">
-                      Webhooks Not Configured
-                    </p>
-                    <p className="text-xs text-[var(--color-status-warning-text)]/80">
-                      Configure webhooks in Shopify to enable real-time pushing.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-border/50 flex justify-end gap-3">
-              <button
-                onClick={handleForceSync}
-                disabled={triggerSyncMutation.isPending}
-                className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-bold rounded-full flex items-center gap-2 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] disabled:opacity-50"
-              >
-                {triggerSyncMutation.isPending ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-4 h-4" />
-                )}
-                {triggerSyncMutation.isPending
-                  ? "Starting Sync..."
-                  : "Force Deep Sync"}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+            {save.isPending ? "Verifying connection…" : "Verify and save"}
+          </Button>
+        </form>
+      )}
+      {(save.error || sync.error) && (
+        <p role="alert" className="text-destructive">
+          {(save.error || sync.error)?.message}
+        </p>
+      )}
+      {connected && (
+        <section className="space-y-3 rounded-xl bg-secondary p-4">
+          <h3 className="font-semibold">Import status</h3>
+          <p role="status" className="text-sm">
+            {progress.isLoading
+              ? "Checking import status…"
+              : progress.error
+                ? "Import status unavailable."
+                : progress.data?.status === "failed"
+                  ? progress.data.error
+                  : progress.data?.status === "idle"
+                    ? "No import has been started."
+                    : progress.data?.message || progress.data?.status}
+          </p>
+          <Button
+            className="min-h-12"
+            disabled={sync.isPending || progress.data?.status === "syncing"}
+            onClick={() => sync.mutate()}
+          >
+            {sync.isPending
+              ? "Queuing import…"
+              : progress.data?.status === "syncing"
+                ? "Import in progress…"
+                : "Sync catalogue"}
+          </Button>
+          <Button variant="ghost" onClick={() => void progress.refetch()}>
+            Refresh status
+          </Button>
+        </section>
+      )}
     </div>
   );
 }

@@ -1,7 +1,22 @@
+import { SheetShell } from "@/components/ui/overlays/sheet-shell";
+import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
+import {
+  OrderConfirmation,
+  returnedOrder,
+  type OrderIdentity,
+} from "@/features/storefront/OrderConfirmation";
 import { useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Loader2, ArrowLeft, CalendarDays, MapPin, Video, Users, Clock } from "lucide-react";
+import {
+  Loader2,
+  ArrowLeft,
+  CalendarDays,
+  MapPin,
+  Video,
+  Users,
+  Clock,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -11,18 +26,32 @@ export default function PublicEvents() {
   const slug = params?.slug;
   const [checkingOutId, setCheckingOutId] = useState<number | null>(null);
 
-  const { data: seminars, isLoading, error } = trpc.storefront.getPublicSeminars.useQuery(
+  const [identity, setIdentity] = useState<OrderIdentity | null>(returnedOrder);
+  const [secret, setSecret] = useState<string | null>(null);
+  const [showCheckout, setShowCheckout] = useState(() => !!returnedOrder());
+  const [confirming, setConfirming] = useState(() => !!returnedOrder());
+  const {
+    data: seminars,
+    isLoading,
+    error,
+  } = trpc.storefront.getPublicSeminars.useQuery(
     { slug: slug || "" },
     { enabled: !!slug, retry: false }
   );
 
   const checkoutMutation = trpc.storefront.createSeminarCheckout.useMutation({
-    onSuccess: (data) => {
-      if (data.url) {
+    onSuccess: data => {
+      setIdentity({ orderId: data.orderId, sessionId: data.sessionId });
+      setCheckingOutId(null);
+      if (data.clientSecret) {
+        setSecret(data.clientSecret);
+        setConfirming(false);
+        setShowCheckout(true);
+      } else if (data.url) {
         window.location.href = data.url;
       }
     },
-    onError: (err) => {
+    onError: err => {
       toast.error(err.message || "Failed to start checkout");
       setCheckingOutId(null);
     },
@@ -44,11 +73,15 @@ export default function PublicEvents() {
   if (error || !seminars) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-2xl font-bold text-white mb-2">Events Not Found</h1>
-        <p className="text-muted-foreground mb-6">This artist may not have any upcoming events.</p>
+        <h1 className="text-2xl font-bold text-foreground mb-2">
+          Events Not Found
+        </h1>
+        <p className="text-muted-foreground mb-6">
+          This artist may not have any upcoming events.
+        </p>
         <button
           onClick={() => setLocation(`/${slug}`)}
-          className="px-6 py-3 bg-secondary/50 hover:bg-secondary/50 text-white rounded-full transition-colors font-medium text-sm"
+          className="px-6 py-3 bg-secondary/50 hover:bg-secondary/50 text-foreground rounded-full transition-colors font-medium text-sm"
         >
           Return to Hub
         </button>
@@ -57,7 +90,24 @@ export default function PublicEvents() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-white overflow-x-hidden font-sans pb-20">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden font-sans pb-20">
+      <SheetShell
+        isOpen={showCheckout}
+        onClose={() => setShowCheckout(false)}
+        title="Event registration"
+        description="Payment is confirmed when recorded by the server."
+      >
+        {confirming && identity ? (
+          <OrderConfirmation identity={identity} />
+        ) : secret ? (
+          <DotsCheckout
+            clientSecret={secret}
+            amountCents={0}
+            onComplete={() => setConfirming(true)}
+            onBack={() => setShowCheckout(false)}
+          />
+        ) : null}
+      </SheetShell>
       {/* Header */}
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border px-4 py-4 flex items-center justify-between">
         <button
@@ -66,7 +116,9 @@ export default function PublicEvents() {
         >
           <ArrowLeft className="w-5 h-5 text-muted-foreground" />
         </button>
-        <span className="font-bold tracking-wider uppercase text-sm">Upcoming Events</span>
+        <span className="font-bold tracking-wider uppercase text-sm">
+          Upcoming Events
+        </span>
         <div className="w-9" />
       </div>
 
@@ -77,7 +129,9 @@ export default function PublicEvents() {
           <div className="text-center py-20 bg-secondary/50 rounded-3xl border border-border">
             <CalendarDays className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">No Upcoming Events</h2>
-            <p className="text-muted-foreground text-sm">Check back later for live and virtual seminars.</p>
+            <p className="text-muted-foreground text-sm">
+              Check back later for live and virtual seminars.
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -98,8 +152,14 @@ export default function PublicEvents() {
                   <div className="p-6">
                     {/* Type Badge */}
                     <div className="flex items-center gap-2 mb-3">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${isVirtual ? "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] border border-purple-500/20" : "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] border border-[var(--color-status-info-border)]"}`}>
-                        {isVirtual ? <Video className="w-3 h-3" /> : <MapPin className="w-3 h-3" />}
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${isVirtual ? "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] border border-purple-500/20" : "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] border border-[var(--color-status-info-border)]"}`}
+                      >
+                        {isVirtual ? (
+                          <Video className="w-3 h-3" />
+                        ) : (
+                          <MapPin className="w-3 h-3" />
+                        )}
                         {isVirtual ? "Virtual" : "In Person"}
                       </span>
                       {isSoldOut && (
@@ -110,18 +170,38 @@ export default function PublicEvents() {
                     </div>
 
                     {/* Title & Description */}
-                    <h3 className="text-xl font-bold mb-2 leading-tight">{seminar.title}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed mb-4 line-clamp-3">{seminar.description}</p>
+                    <h3 className="text-xl font-bold mb-2 leading-tight">
+                      {seminar.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-4 line-clamp-3">
+                      {seminar.description}
+                    </p>
 
                     {/* Meta Row */}
                     <div className="flex flex-wrap items-center gap-4 mb-5 text-muted-foreground text-xs">
                       <div className="flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>{eventDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })} · {eventDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span>
+                        <span>
+                          {eventDate.toLocaleDateString("en-US", {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}{" "}
+                          ·{" "}
+                          {eventDate.toLocaleTimeString("en-US", {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          })}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Users className="w-3.5 h-3.5" />
-                        <span>{spotsLeft > 0 ? `${spotsLeft} spots left` : "No spots available"}</span>
+                        <span>
+                          {spotsLeft > 0
+                            ? `${spotsLeft} spots left`
+                            : "No spots available"}
+                        </span>
                       </div>
                     </div>
 
@@ -138,7 +218,7 @@ export default function PublicEvents() {
                         <button
                           onClick={() => handleRegister(seminar.id)}
                           disabled={isCheckingOut}
-                          className="bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-6 rounded-full transition-all active:scale-95 text-sm flex items-center gap-2 disabled:opacity-50"
+                          className="bg-primary hover:bg-primary/90 text-foreground font-bold py-2.5 px-6 rounded-full transition-all active:scale-95 text-sm flex items-center gap-2 disabled:opacity-50"
                         >
                           {isCheckingOut ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
