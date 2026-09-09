@@ -1,14 +1,8 @@
-import { useState, useEffect } from "react";
-import { loadStripe } from "@stripe/stripe-js";
+import { stripePromise } from "@/lib/stripe";
 import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout
 } from "@stripe/react-stripe-js";
-import { Loader2 } from "lucide-react";
-
-// Make sure to call `loadStripe` outside of a component’s render to avoid
-// recreating the `Stripe` object on every render.
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
 
 interface EmbeddedStripeCheckoutProps {
   clientSecret: string;
@@ -17,6 +11,7 @@ interface EmbeddedStripeCheckoutProps {
 
 export function EmbeddedStripeCheckout({ clientSecret, onComplete }: EmbeddedStripeCheckoutProps) {
   if (!clientSecret) return null;
+  if (!stripePromise) return <p role="alert">Card payments are temporarily unavailable. Please try again later.</p>;
 
   return (
     <div className="w-full rounded-[12px] border border-border overflow-hidden" style={{ minHeight: "500px" }}>

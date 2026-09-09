@@ -18,7 +18,7 @@
  */
 
 import React, { useState, useCallback } from "react";
-import { loadStripe, type Appearance } from "@stripe/stripe-js";
+import { type Appearance } from "@stripe/stripe-js";
 import {
   Elements,
   PaymentElement,
@@ -27,10 +27,8 @@ import {
 } from "@stripe/react-stripe-js";
 import { Loader2, Lock, ArrowLeft } from "lucide-react";
 
-// Load Stripe outside render to avoid re-creating on every render
-const stripePromise = loadStripe(
-  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ""
-);
+import { stripePromise } from '@/lib/stripe';
+import { EmbeddedStripeCheckout } from '@/features/stripe/EmbeddedStripeCheckout';
 
 // ── Stripe Elements Appearance (Dark Theme) ──────────────────────────────────
 const appearance: Appearance = {
@@ -95,7 +93,7 @@ const appearance: Appearance = {
 
 // ── Props ────────────────────────────────────────────────────────────────────
 export interface DotsCheckoutProps {
-  /** PaymentIntent client_secret from the server */
+  /** PaymentIntent or embedded Checkout Session client_secret from the server */
   clientSecret: string;
   /** Total amount in cents (for display) */
   amountCents: number;
@@ -122,6 +120,8 @@ export function DotsCheckout({
   onBack,
 }: DotsCheckoutProps) {
   if (!clientSecret) return null;
+  if (!stripePromise) return <p role="alert" className="p-5">Card payments are temporarily unavailable. Please contact your artist or try again later.</p>;
+  if (clientSecret.startsWith('cs_')) return <EmbeddedStripeCheckout clientSecret={clientSecret} onComplete={onComplete}/>;
 
   return (
     <Elements

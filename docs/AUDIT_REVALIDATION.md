@@ -44,3 +44,5 @@ Further review found a test-only studio subscription bypass exposed without an e
 ## Completion-pass status
 
 The 2.11.0 completion pass implements the previously missing duplicate-aware import, expiring cancellation offers and linked project payment history. These were real gaps at the audited baseline; the basic CSV preview and session summaries already existed. Notification delivery and refund coverage were also extended. Live behaviour remains subject to the deployment acceptance record in REBUILD_TESTING.md; source implementation and mocked tests are not evidence of provider delivery.
+
+A deployment-check correction: an earlier message incorrectly called the Stripe publishable key and OneSignal app ID missing. The direct full-size console result confirms both are present; the Stripe public key is in test mode. Only the Resend key and sender are missing.

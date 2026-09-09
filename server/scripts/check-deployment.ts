@@ -8,6 +8,7 @@ const required = [
   "APP_URL",
   "JWT_SECRET",
   "STRIPE_SECRET_KEY",
+  "VITE_STRIPE_PUBLISHABLE_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "RESEND_API_KEY",
   "EMAIL_FROM",
@@ -27,6 +28,9 @@ const paymentMode = process.env.STRIPE_SECRET_KEY!.startsWith("sk_test_")
     ? "live"
     : "unknown";
 console.log("Stripe configuration mode:", paymentMode);
+if (paymentMode === "test" && !process.env.VITE_STRIPE_PUBLISHABLE_KEY?.startsWith("pk_test_")) throw new Error("Stripe secret and public keys must both use test mode.");
+if (paymentMode === "live" && !process.env.VITE_STRIPE_PUBLISHABLE_KEY?.startsWith("pk_live_")) throw new Error("Stripe secret and public keys must both use live mode.");
+if (!process.env.VITE_ONESIGNAL_APP_ID) console.warn("OneSignal client app ID is missing; push acceptance is incomplete.");
 if (process.env.REQUIRE_STRIPE_TEST_MODE === "true" && paymentMode !== "test")
   throw new Error("This test deployment requires a Stripe test-mode secret.");
 const db = await mysql.createConnection(process.env.DATABASE_URL!);
