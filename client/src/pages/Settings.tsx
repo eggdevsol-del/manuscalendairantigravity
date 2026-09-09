@@ -265,6 +265,7 @@ export default function Settings() {
               onClick={() => setLocation("/admin/operations")}
             />
           )}
+          {isArtist && <SettingsRow icon={Clock} iconColor="bg-secondary text-foreground" title="Supply orders" subtitle="Track payments and supplier handoffs" onClick={() => setLocation("/supply-orders")} />}
           {isArtist && <SettingsRow icon={Clock} iconColor="bg-secondary text-foreground" title="Cancellation waitlist" subtitle="Offer available times to waiting clients" onClick={() => setLocation("/waitlist")} />}
           {/* ═══ PROFILE & IDENTITY ═══ */}
           <section>

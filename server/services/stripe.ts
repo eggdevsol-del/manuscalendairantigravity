@@ -758,7 +758,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 const nowDate = new Date();
 
                 // 1. Update Order Status, Shipping Address, and Buyer Details
-                const shippingDetails = (session as any).shipping_details;
+                const shippingDetails = session.collected_information?.shipping_details || (session as any).shipping_details;
                 const customerDetails = session.customer_details;
 
                 const buyerName =
@@ -884,7 +884,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
 
               if (order && order.status !== "paid") {
                 // 1. Update order status
-                const shippingDetails = (session as any).shipping_details;
+                const shippingDetails = session.collected_information?.shipping_details || (session as any).shipping_details;
                 await db
                   .update(supplierOrders)
                   .set({
@@ -1730,7 +1730,7 @@ export async function createSupplierCheckoutSession(opts: {
   currency: string;
   stripeCustomerId?: string;
   artistEmail: string;
-}): Promise<{ clientSecret: string | null }> {
+}): Promise<{ clientSecret: string | null; sessionId: string }> {
   const baseUrl = getAppUrl();
   const currencyLower = (opts.currency || "aud").toLowerCase();
 
@@ -1817,7 +1817,7 @@ export async function createSupplierCheckoutSession(opts: {
   }
 
   const session = await stripe.checkout.sessions.create(sessionConfig);
-  return { clientSecret: session.client_secret };
+  return { clientSecret: session.client_secret, sessionId: session.id };
 }
 
 /**

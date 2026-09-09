@@ -3,7 +3,7 @@
  *
  * Handles the checkout flow for artists ordering from suppliers.
  * - createSupplierCheckout: validates cart → calculates fees → creates Stripe session
- * - confirmSupplierOrder: on payment success → creates Shopify draft order
+ * - confirmSupplierOrder: reports webhook-confirmed payment state
  * - getSupplierOrders: order history for the artist
  * - getShippingRates: returns applicable shipping rates for a supplier + country
  */
@@ -17,9 +17,7 @@ import { calculateTransactionFees, resolvePaymentTier } from "../domain/fees";
 import {
   createSupplierCheckoutSession,
   getOrCreateStripeCustomer,
-  stripe,
 } from "../services/stripe";
-import { createShopifyDraftOrder } from "../services/shopifyAdminApi";
 import {
   getExchangeRate,
   convertCents,
@@ -275,6 +273,8 @@ export const supplierOrdersRouter = router({
         artistEmail: artistUser.email || "",
       });
 
+      await db.update(schema.supplierOrders).set({stripeCheckoutSessionId:sessionResult.sessionId}).where(eq(schema.supplierOrders.id,orderId));
+
       if (!sessionResult.clientSecret) {
         throw new Error("Failed to create checkout session");
       }
@@ -292,143 +292,13 @@ export const supplierOrdersRouter = router({
       };
     }),
 
-  /**
-   * Confirm a supplier order after successful payment.
-   * Creates a Shopify draft order on the supplier's store.
-   */
+  // Payment and fulfilment writes belong to the signed webhook transaction.
+  getSupplierOrderStatus: protectedProcedure
+    .input(z.object({orderId:z.number().int().positive()}))
+    .query(({ctx,input})=>readSupplierOrderStatus(ctx.user.id,input.orderId)),
   confirmSupplierOrder: protectedProcedure
-    .input(
-      z.object({
-        orderId: z.number(),
-        stripeSessionId: z.string(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
-      if (!db) throw new Error("Database connection failed");
-
-      // 1. Get the order
-      const order = await db.query.supplierOrders.findFirst({
-        where: and(
-          eq(schema.supplierOrders.id, input.orderId),
-          eq(schema.supplierOrders.artistId, ctx.user.id)
-        ),
-        with: { items: true, supplier: true },
-      });
-
-      if (!order) throw new Error("Order not found");
-      if (order.status === "paid")
-        return { success: true, alreadyConfirmed: true };
-
-      // 2. Verify Stripe session
-      const session = await stripe.checkout.sessions.retrieve(
-        input.stripeSessionId
-      );
-      if (session.payment_status !== "paid") {
-        throw new Error("Payment has not been completed");
-      }
-
-      // 3. Update order status
-      await db
-        .update(schema.supplierOrders)
-        .set({
-          status: "paid",
-          stripePaymentIntentId:
-            typeof session.payment_intent === "string"
-              ? session.payment_intent
-              : session.payment_intent?.id,
-          stripeCheckoutSessionId: session.id,
-          shippingAddress: session.collected_information?.shipping_details
-            ? JSON.stringify(session.collected_information?.shipping_details)
-            : null,
-          shippingName:
-            session.collected_information?.shipping_details?.name || null,
-        })
-        .where(eq(schema.supplierOrders.id, input.orderId));
-
-      // 4. Attempt Shopify draft order creation
-      let shopifyResult: {
-        draftOrderId: string;
-        draftOrderName: string;
-      } | null = null;
-
-      if (order.supplier?.merchantId) {
-        try {
-          const merchant = await db.query.merchants.findFirst({
-            where: eq(schema.merchants.id, order.supplier.merchantId),
-          });
-
-          if (merchant?.shopifyDomain && merchant?.shopifyToken) {
-            // Build shipping address from Stripe session
-            const stripeAddr =
-              session.collected_information?.shipping_details?.address;
-            const shippingAddress = stripeAddr
-              ? {
-                  first_name:
-                    session.collected_information?.shipping_details?.name?.split(
-                      " "
-                    )[0] || "",
-                  last_name:
-                    session.collected_information?.shipping_details?.name
-                      ?.split(" ")
-                      .slice(1)
-                      .join(" ") || "",
-                  address1: stripeAddr.line1 || "",
-                  address2: stripeAddr.line2 || undefined,
-                  city: stripeAddr.city || "",
-                  province: stripeAddr.state || "",
-                  zip: stripeAddr.postal_code || "",
-                  country: stripeAddr.country || "",
-                }
-              : undefined;
-
-            // Get artist info for the note
-            const artistUser = await db.query.users.findFirst({
-              where: eq(schema.users.id, ctx.user.id),
-            });
-
-            shopifyResult = await createShopifyDraftOrder(
-              merchant.shopifyDomain,
-              merchant.shopifyToken,
-              {
-                lineItems: order.items
-                  .filter(item => item.shopifyVariantId)
-                  .map(item => ({
-                    shopifyVariantId: item.shopifyVariantId!,
-                    quantity: item.quantity,
-                  })),
-                shippingAddress,
-                note: `Order via d.o.t.s — Artist: ${artistUser?.name || "Unknown"}`,
-                email: artistUser?.email || undefined,
-              }
-            );
-
-            // Save Shopify order info
-            if (shopifyResult) {
-              await db
-                .update(schema.supplierOrders)
-                .set({
-                  shopifyDraftOrderId: shopifyResult.draftOrderId,
-                  shopifyDraftOrderName: shopifyResult.draftOrderName,
-                })
-                .where(eq(schema.supplierOrders.id, input.orderId));
-            }
-          }
-        } catch (error: any) {
-          // Log but don't fail — payment already succeeded
-          console.error(
-            `[SupplierOrder] Shopify draft order failed for order ${input.orderId}:`,
-            error.message
-          );
-        }
-      }
-
-      return {
-        success: true,
-        shopifyDraftOrderId: shopifyResult?.draftOrderId || null,
-        shopifyDraftOrderName: shopifyResult?.draftOrderName || null,
-      };
-    }),
+    .input(z.object({orderId:z.number().int().positive(),stripeSessionId:z.string().optional()}))
+    .mutation(({ctx,input})=>readSupplierOrderStatus(ctx.user.id,input.orderId)),
 
   /**
    * Get the artist's supplier order history.
@@ -447,3 +317,10 @@ export const supplierOrdersRouter = router({
     });
   }),
 });
+
+async function readSupplierOrderStatus(artistId:string,orderId:number){
+  const db=await getDb();if(!db)throw new Error('Database connection failed');
+  const order=await db.query.supplierOrders.findFirst({where:and(eq(schema.supplierOrders.id,orderId),eq(schema.supplierOrders.artistId,artistId))});
+  if(!order)throw new Error('Order not found');
+  return {success:order.status==='paid',status:order.status,shopifyDraftOrderId:order.shopifyDraftOrderId,shopifyDraftOrderName:order.shopifyDraftOrderName};
+}

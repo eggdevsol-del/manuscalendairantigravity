@@ -28,7 +28,7 @@ Inactive studio prototype screens that referenced nonexistent APIs/schema were r
 
 ## Verified locally
 
-- 78 tests across 19 files pass, including token isolation, recovery replay, form persistence, session-plan rollback/retry, payment state, deposit confirmation and conversation drafts.
+- 81 tests across 20 files pass, including token isolation, recovery replay, form persistence, session-plan rollback/retry, payment state, deposit confirmation and conversation drafts.
 - Clean TypeScript check: `pnpm exec tsc --noEmit --incremental false`.
 - Vite production bundle, server esbuild bundle and migration-file packaging succeed. Build performs no database migrations.
 - Local browser inspection confirms the sign-in page exposes its labelled fields and links, and the recovery route shows its reset form.
@@ -37,9 +37,9 @@ Inactive studio prototype screens that referenced nonexistent APIs/schema were r
 
 Transaction tests use controlled in-memory fixtures. They do not establish MySQL locking behaviour, Stripe delivery behaviour or successful real email delivery. Existing tests include a one-test harness smoke check.
 
-## Existing staging environment required
+## Test deployment
 
-The user identified `https://www.tattoi.app` as the existing test target and confirmed Stripe test mode with no real user data. Its public version endpoint returned 2.10.0 before this completion pass. Database/service credentials were not available in the workspace. Railway account selection is being handled by the user; no deployment or database migration has been performed in this pass. No real payments or customer messages were sent.
+The user identified `https://www.tattoi.app` as the existing test target and confirmed Stripe test mode with no real user data. Its public version endpoint returned 2.10.0 before this completion pass. Database/service credentials were not available in the workspace. The correct Railway service is now identified and version 2.11.0 (`b9ad5dd`) deployed successfully. A targeted, explicit database reconciliation added the webhook/waitlist tables and three missing shipping columns, removed the three procedure-log cascade foreign keys, and established the migration adoption boundary at 0025. Backups of the affected existing tables and original DDL remain in `_tattoi_211_backup_*` and `_tattoi_rebuild_backup_manifest`. The health endpoint returned HTTP 200. `APP_URL` is set to the public HTTPS address. No real payments or customer messages were sent.
 
 Use the existing hosting service's staging environment variables. Do not commit credentials. Configure `APP_URL`, `DATABASE_URL`, a strong random `JWT_SECRET`, `STRIPE_SECRET_KEY` (test mode), `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY` and a verified `EMAIL_FROM`. Configure the existing storage, Google sign-in and notification integrations separately where those paths are tested.
 
@@ -63,7 +63,7 @@ Xcode is available on this Mac. Run `pnpm build`, then `CAPACITOR_SERVER_URL=htt
 
 ## Still outstanding
 
-- Live staging acceptance and database migration/schema reconciliation.
+- Remaining end-to-end acceptance, including email delivery, actual Stripe/Shopify provider behavior, and signed-in mobile flows. The targeted schema reconciliation is complete.
 - Full studio product workflows, paid entitlement enforcement, settlement and verified merchant ownership transfer.
 - Provider-wide historical duplicate/refund reconciliation, Shopify retry fault tests and real MySQL concurrency tests.
 - Clinical/legal review of retention, consent wording, procedure logs and jurisdiction-specific requirements. No legal compliance certification is claimed.
@@ -79,7 +79,15 @@ The saved GitHub credential cannot create Actions workflows (missing workflow sc
 1. Select the correct existing Railway service for `www.tattoi.app`; confirm its database and Stripe test-mode configuration without copying secrets into Git or chat. Set `REQUIRE_STRIPE_TEST_MODE=true` for the deployment check.
 2. Back up the test database and inspect the actual schema/migration journal. Run `pnpm deploy:check`; resolve baseline drift deliberately and apply the outstanding versioned migrations. Do not run schema push or initialization against the existing database.
 3. Configure the service to build `codex/tattoi-frictionless-rebuild` at the latest verified GitHub commit. `railway.json` builds with `pnpm build`, starts with `pnpm start`, and checks `/api/health`.
-4. Verify `/api/version` reports 2.11.0 and the deployed GitHub SHA, then run the acceptance scenarios above with test accounts. A failed health check must be investigated before accepting the rollout.
+4. Verify `/api/version` reports 2.11.1 and the deployed GitHub SHA, then run the acceptance scenarios above with test accounts. A failed health check must be investigated before accepting the rollout.
 5. On iPhone, open `https://www.tattoi.app` in Safari and use Share → Add to Home Screen. An existing PWA uses the same deployed service; close/reopen and accept the app's update prompt if shown. A native device build still requires Apple signing/provisioning.
 
 Shopify request fields follow the official [DraftOrderInput](https://shopify.dev/docs/api/admin-graphql/latest/input-objects/DraftOrderInput) and [MailingAddressInput](https://shopify.dev/docs/api/admin-graphql/latest/input-objects/MailingAddressInput) references (Admin GraphQL 2026-07). Actual merchant scopes and provider delivery have not been verified against a connected test shop.
+
+## Final supplier checkout correction (2.11.1)
+
+A final type check exposed an older supplier-confirmation caller. That path also allowed a supplied paid Checkout session to mark an order paid without binding the payment to that order. Confirmation now reads the ownership-scoped webhook state without performing payment or Shopify writes. The supplier sheet waits for that state and links to an actual Supply orders history page. Checkout session IDs are retained and the webhook reads Stripe's current collected shipping-address field. Regression tests verify that a supplied session ID cannot trigger a paid write.
+
+At the 2.11.0 deployment check, Stripe test mode and the JWT secret length were verified without displaying credentials. `RESEND_API_KEY` and `EMAIL_FROM` were absent; the user has been asked to configure them in Railway. Email recovery/delivery cannot be accepted until those settings are supplied and tested. The previously missing `APP_URL` was configured and deployed.
+
+`pnpm deploy:reconcile` defaults to preview; `--apply` is an explicit one-time reconciliation for this audited test database. It preserves backups and establishes an adoption boundary; it does not assert that historical migrations were executed. `pnpm deploy:test-flows` exercises real MySQL waitlist, project authorization and import paths in a transaction that intentionally rolls back all fixtures and queued notifications. It is restricted to Stripe test configuration.

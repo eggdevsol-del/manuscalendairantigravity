@@ -9,7 +9,7 @@
  * Matches the existing deposit/payment-request flow pattern.
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -24,6 +24,7 @@ import {
 import { trpc } from "@/lib/trpc";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 import { toast } from "sonner";
+import { Link } from "wouter";
 
 // ── Design Tokens ────────────────────────────────────────────
 
@@ -68,7 +69,7 @@ interface CartItem {
   variantTitle: string;
 }
 
-type CheckoutStep = "review" | "payment" | "success";
+type CheckoutStep = "review" | "payment" | "confirming" | "success";
 
 interface SupplierCheckoutSheetProps {
   supplierId: number;
@@ -151,8 +152,7 @@ function SuccessScreen({
           marginBottom: 4,
         }}
       >
-        Your order with <strong>{supplierName}</strong> has been placed
-        successfully.
+        Your payment for <strong>{supplierName}</strong> is confirmed. Supplier handoff is being processed.
       </div>
       <div
         style={{
@@ -220,7 +220,11 @@ export function SupplierCheckoutSheet({
   }, [shippingData]);
 
   const checkoutMutation = trpc.supplierOrders.createSupplierCheckout.useMutation();
-  const confirmMutation = trpc.supplierOrders.confirmSupplierOrder.useMutation();
+  const confirmation = trpc.supplierOrders.getSupplierOrderStatus.useQuery(
+    {orderId:orderId || 0},
+    {enabled:step==='confirming' && !!orderId,refetchInterval:step==='confirming'?2000:false}
+  );
+  useEffect(()=>{if(step==='confirming' && confirmation.data?.success)setStep('success');},[step,confirmation.data?.success]);
 
   // Local subtotal (from cart items — before server calculation)
   const localSubtotal = useMemo(
@@ -263,27 +267,7 @@ export function SupplierCheckoutSheet({
     }
   };
 
-  const handlePaymentComplete = useCallback(async () => {
-    if (!orderId) return;
-
-    // Get the session ID from the URL params (Stripe redirect)
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session_id");
-
-    if (sessionId) {
-      try {
-        await confirmMutation.mutateAsync({
-          orderId,
-          stripeSessionId: sessionId,
-        });
-      } catch (error: any) {
-        console.error("Order confirmation failed:", error);
-        // Payment succeeded but confirmation failed — still show success
-      }
-    }
-
-    setStep("success");
-  }, [orderId]);
+  const handlePaymentComplete = () => { if(orderId)setStep('confirming'); };
 
   const handleClose = () => {
     if (step === "success") {
@@ -370,7 +354,7 @@ export function SupplierCheckoutSheet({
                 ? "Review Order"
                 : step === "payment"
                 ? "Payment"
-                : "Complete"}
+                : step === "confirming" ? "Confirming payment" : "Complete"}
             </span>
             <button
               onClick={handleClose}
@@ -801,6 +785,14 @@ export function SupplierCheckoutSheet({
             </div>
           )}
 
+          {step === 'confirming' && <div className="p-6 space-y-4 text-white" role="status">
+            <h2 className="text-xl font-semibold">Waiting for payment confirmation</h2>
+            <p>Your order is confirmed once the payment has been recorded. You can close this screen and check your order history.</p>
+            {confirmation.error && <p role="alert">We could not refresh your order. Check your connection and try again.</p>}
+            {['failed','refunded'].includes(confirmation.data?.status||'') && <p>Order status: {confirmation.data?.status}. Contact support if you need help.</p>}
+            <button className="min-h-12 rounded-xl border px-5" onClick={()=>void confirmation.refetch()}>Check again</button>
+            <Link href="/supply-orders" onClick={onClose} className="block underline min-h-11 py-3">View order history</Link>
+          </div>}
           {step === "success" && orderId && (
             <SuccessScreen
               supplierName={supplierName}

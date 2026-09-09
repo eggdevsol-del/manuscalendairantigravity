@@ -1,3 +1,4 @@
+import SupplierOrderHistory from "@/features/dashboard/SupplierOrderHistory";
 import WaitlistPage from "@/features/bookings/WaitlistPage";
 import ProjectSummary from "@/features/bookings/ProjectSummary";
 import React from "react";
@@ -38,6 +39,7 @@ export default function ArtistShell() {
           <Route path="/chat/:id" component={Chat} />
           <Route path="/projects/:id" component={ProjectSummary} />
           <Route path="/waitlist" component={WaitlistPage} />
+          <Route path="/supply-orders" component={SupplierOrderHistory} />
           <Route path="/calendar" component={Calendar} />
           <Route path="/settings" component={Settings} />
           <Route path="/artist-profile" component={ArtistProfileTab} />

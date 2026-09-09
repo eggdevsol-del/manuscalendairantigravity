@@ -1,6 +1,6 @@
 {
   "name": "tattoi-app",
-  "version": "2.11.0",
+  "version": "2.11.1",
   "type": "module",
   "license": "MIT",
   "scripts": {
@@ -21,7 +21,8 @@
     "ios:build": "xcodebuild -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug -destination generic/platform=iOS\\ Simulator CODE_SIGNING_ALLOWED=NO build",
     "db:generate": "drizzle-kit generate",
     "deploy:check": "tsx server/scripts/check-deployment.ts",
-    "deploy:reconcile": "node server/scripts/reconcile-rebuild.mjs"
+    "deploy:reconcile": "node server/scripts/reconcile-rebuild.mjs",
+    "deploy:test-flows": "tsx server/scripts/check-rebuild-flows.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.967.0",
