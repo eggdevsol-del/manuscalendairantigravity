@@ -1,0 +1,50 @@
+/** Explicit Stripe TEST payment acceptance. Retains clearly named fixtures for review. */
+import 'dotenv/config';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {eq,sql} from 'drizzle-orm';
+import {getDb,withDatabaseTransaction} from '../services/core';
+import * as schema from '../../drizzle/schema';
+import {stripe} from '../services/stripe';
+import {sessionPlansRouter} from '../routers/sessionPlans';
+import {calculateTransactionFees} from '../domain/fees';
+import type {TrpcContext} from '../_core/context';
+if(!process.argv.includes('--run')||!process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_'))throw new Error('Requires --run and Stripe test mode. Creates only test payments and retained test fixtures.');
+const database=await getDb();if(!database)throw new Error('Database unavailable');
+const [candidates]=await database.execute(sql`SELECT DISTINCT stripeConnectAccountId AS id FROM artistSettings WHERE stripeConnectOnboardingComplete=1 AND stripeConnectAccountId IS NOT NULL LIMIT 5`);
+let accountId='';
+for(const row of candidates as unknown as {id:string}[]){const account=await stripe.accounts.retrieve(row.id);if(account.charges_enabled&&account.payouts_enabled){accountId=row.id;break;}}
+if(!accountId)throw new Error('No ready connected test account.');
+const suffix=randomUUID(),artistId=`test_pay_artist_${suffix}`,clientId=`test_pay_client_${suffix}`;
+const fees=calculateTransactionFees(20000,'free');
+let planId=0;
+await withDatabaseTransaction(async db=>{
+ await db.insert(schema.users).values([{id:artistId,name:'TEST ONLY — Stripe acceptance artist',role:'artist'},{id:clientId,name:'TEST ONLY — Stripe acceptance client',role:'client'}]);
+ await db.insert(schema.artistSettings).values({userId:artistId,workSchedule:'{}',services:'[]',stripeConnectAccountId:accountId,stripeConnectOnboardingComplete:1,subscriptionTier:'basic'});
+ const [conversation]=await db.insert(schema.conversations).values({artistId,clientId});
+ const [plan]=await db.insert(schema.sessionPlans).values({artistId,clientId,conversationId:conversation.insertId,totalEstimateCents:80000,depositTotalCents:20000,platformFeeCents:fees.platformFeeCents});planId=plan.insertId;
+ await db.insert(schema.sessionPlanItems).values([1,2].map(n=>({sessionPlanId:planId,sessionIndex:n,startsAt:`2099-10-0${n} 01:00:00`,durationMinutes:60,estimateCents:40000,depositCents:10000})));
+});
+const caller=sessionPlansRouter.createCaller({user:{id:clientId,role:'client'},req:{},res:{}} as TrpcContext);
+const first=await caller.accept({sessionPlanId:planId});
+const retry=await caller.accept({sessionPlanId:planId});assert.equal(first.clientSecret,retry.clientSecret);
+const plan=await database.query.sessionPlans.findFirst({where:eq(schema.sessionPlans.id,planId)});assert.ok(plan?.stripeSessionId);
+const paymentId=plan.stripeSessionId;
+const payment=await stripe.paymentIntents.confirm(paymentId,{payment_method:'pm_card_visa'});
+assert.equal(payment.livemode,false);assert.equal(payment.status,'succeeded');
+const wait=async(check:()=>Promise<boolean>,label:string)=>{const deadline=Date.now()+60000;while(Date.now()<deadline){if(await check()){console.log('PASS:',label);return;}await new Promise(resolve=>setTimeout(resolve,2000));}throw new Error(`Timed out: ${label}. Review test plan ${planId} and payment ${paymentId}.`);};
+await wait(async()=>{const p=await database.query.sessionPlans.findFirst({where:eq(schema.sessionPlans.id,planId)});return p?.status==='accepted';},'Stripe test webhook accepted the plan');
+const items=await database.query.sessionPlanItems.findMany({where:eq(schema.sessionPlanItems.sessionPlanId,planId)});assert.equal(items.length,2);assert.ok(items.every(item=>item.appointmentId));
+for(const item of items){const forms=await database.query.consentForms.findMany({where:eq(schema.consentForms.appointmentId,item.appointmentId!)});assert.ok(forms.length>0);}
+console.log('PASS: two sessions and required forms created; repeated checkout reused one PaymentIntent.');
+await stripe.refunds.create({payment_intent:paymentId,amount:10000,reverse_transfer:true,refund_application_fee:true},{idempotencyKey:`tattoi-test-${planId}-partial`});
+const totalPaid=async()=>{const rows=await database.query.appointments.findMany({where:eq(schema.appointments.sessionPlanId,planId)});return rows.reduce((sum,row)=>sum+(row.totalPaidAmountCents||0),0);};
+await wait(async()=>await totalPaid()===10000,'Partial refund updated session balances');
+await stripe.refunds.create({payment_intent:paymentId,reverse_transfer:true,refund_application_fee:true},{idempotencyKey:`tattoi-test-${planId}-remaining`});
+await wait(async()=>await totalPaid()===0,'Remaining refund cleared the test deposit');
+const ledger=await database.query.paymentLedger.findMany({where:eq(schema.paymentLedger.stripePaymentId,paymentId)});
+assert.equal(ledger.filter(row=>row.transactionType==='deposit').length,1);
+assert.equal(ledger.filter(row=>row.transactionType==='refund').reduce((sum,row)=>sum+row.amountCents,0),-20000);
+assert.equal(ledger.filter(row=>row.transactionType==='refund').reduce((sum,row)=>sum+row.platformFeeCents,0),-fees.platformFeeCents);
+console.log('PASS: one deposit receipt and exact cumulative refund ledger. Retained TEST ONLY fixtures:',JSON.stringify({planId,paymentId,artistId,clientId}));
+process.exit(0);
