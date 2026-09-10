@@ -1,3 +1,7 @@
+import { MobileCalendar } from "@/features/workspace/MobileCalendar";
+import { WeekCalendar } from "@/features/workspace/WeekCalendar";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { Button } from "@/components/ui";
 import { useCalendarAgendaController } from "./hooks/useCalendarAgendaController";
 import { CalendarMonthHeader } from "./components/CalendarMonthHeader";
 import { CalendarDateStrip7 } from "./components/CalendarDateStrip7";
@@ -25,10 +29,26 @@ type CancelStep = null | "confirm" | "confirmAll";
 
 export default function CalendarAgendaPage() {
   const controller = useCalendarAgendaController();
+  const wide = useMediaQuery("(min-width: 768px)");
   const [, setLocation] = useLocation();
   const { isFABOpen, setFABOpen } = useBottomNav();
   const { user } = useAuth();
   const isClient = user?.role === "client";
+
+  const openedDeepLink = useRef(false);
+  useEffect(() => {
+    const target = Number(
+      new URLSearchParams(window.location.search).get("appointment")
+    );
+    if (!target || openedDeepLink.current) return;
+    const appointment = Object.values(controller.eventsByDay)
+      .flat()
+      .find((a: any) => a.id === target);
+    if (appointment) {
+      openedDeepLink.current = true;
+      controller.handleAppointmentTap(appointment);
+    }
+  }, [controller.eventsByDay, controller.handleAppointmentTap]);
 
   // ── Cancel state ──
   const [cancelTarget, setCancelTarget] = useState<any>(null);
@@ -40,17 +60,18 @@ export default function CalendarAgendaPage() {
       controller.refetch();
       resetCancel();
     },
-    onError: (err) => toast.error(err.message),
+    onError: err => toast.error(err.message),
   });
 
-  const cancelProjectMutation = trpc.appointments.cancelProjectSessions.useMutation({
-    onSuccess: (data) => {
-      toast.success(`${data.cancelledCount} sessions cancelled`);
-      controller.refetch();
-      resetCancel();
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const cancelProjectMutation =
+    trpc.appointments.cancelProjectSessions.useMutation({
+      onSuccess: data => {
+        toast.success(`${data.cancelledCount} sessions cancelled`);
+        controller.refetch();
+        resetCancel();
+      },
+      onError: err => toast.error(err.message),
+    });
 
   const resetCancel = useCallback(() => {
     setCancelTarget(null);
@@ -66,7 +87,11 @@ export default function CalendarAgendaPage() {
     if (!cancelTarget) return;
 
     // If this appointment is part of a multi-session plan, ask about cancelling all
-    if (cancelTarget.sessionPlanId && cancelTarget.sessionTotal && cancelTarget.sessionTotal > 1) {
+    if (
+      cancelTarget.sessionPlanId &&
+      cancelTarget.sessionTotal &&
+      cancelTarget.sessionTotal > 1
+    ) {
       setCancelStep("confirmAll");
     } else {
       // Single session — cancel immediately
@@ -74,15 +99,20 @@ export default function CalendarAgendaPage() {
     }
   }, [cancelTarget, cancelSessionMutation]);
 
-  const handleConfirmAllDecision = useCallback((cancelAll: boolean) => {
-    if (!cancelTarget) return;
+  const handleConfirmAllDecision = useCallback(
+    (cancelAll: boolean) => {
+      if (!cancelTarget) return;
 
-    if (cancelAll) {
-      cancelProjectMutation.mutate({ sessionPlanId: cancelTarget.sessionPlanId });
-    } else {
-      cancelSessionMutation.mutate({ appointmentId: cancelTarget.id });
-    }
-  }, [cancelTarget, cancelSessionMutation, cancelProjectMutation]);
+      if (cancelAll) {
+        cancelProjectMutation.mutate({
+          sessionPlanId: cancelTarget.sessionPlanId,
+        });
+      } else {
+        cancelSessionMutation.mutate({ appointmentId: cancelTarget.id });
+      }
+    },
+    [cancelTarget, cancelSessionMutation, cancelProjectMutation]
+  );
 
   // Reset selection when FAB closes
   useEffect(() => {
@@ -110,7 +140,11 @@ export default function CalendarAgendaPage() {
     }
 
     // Artist role: new booking via "+" → show QuickBookingSheet
-    if (!isClient && controller.isBookingStarted && !controller.selectedAppointment) {
+    if (
+      !isClient &&
+      controller.isBookingStarted &&
+      !controller.selectedAppointment
+    ) {
       return (
         <QuickBookingSheet
           initialDate={controller.bookingInitialDate}
@@ -128,37 +162,56 @@ export default function CalendarAgendaPage() {
     // Artist role: tapped existing appointment → show full BookingWizardContent
     if (controller.selectedAppointment) {
       return (
-        <BookingWizardContent
-          conversationId={controller.selectedAppointment?.conversationId}
-          artistServices={controller.artistServices}
-          artistSettings={controller.artistSettings}
-          isArtist={controller.user?.role === "artist" || controller.user?.role === "admin"}
-          onBookingSuccess={() => {
-            controller.refetch();
-          }}
-          onClose={() => {
-            controller.setSelectedAppointment(null);
-            setFABOpen(false);
-          }}
-          selectedProposal={controller.proposalData}
-          selectedAppointmentRaw={controller.selectedAppointment}
-          clientNameOverride={controller.selectedAppointment?.clientName}
-          isLoadingProposal={controller.isLoadingProposal}
-          showGoToChat={!!controller.selectedAppointment?.conversationId}
-          onGoToChat={() =>
-            setLocation(
-              `/chat/${controller.selectedAppointment?.conversationId}`
-            )
-          }
-          artistId={controller.user?.id}
-          initialDate={controller.bookingInitialDate}
-          onReschedule={(apt: any) => controller.startReschedule(apt)}
-          onNoShow={(apt: any) => {
-            // Mark as no-show immediately
-            controller.refetch();
-            setFABOpen(false);
-          }}
-        />
+        <>
+          <BookingWizardContent
+            conversationId={controller.selectedAppointment?.conversationId}
+            artistServices={controller.artistServices}
+            artistSettings={controller.artistSettings}
+            isArtist={
+              controller.user?.role === "artist" ||
+              controller.user?.role === "admin"
+            }
+            onBookingSuccess={() => {
+              controller.refetch();
+            }}
+            onClose={() => {
+              controller.setSelectedAppointment(null);
+              setFABOpen(false);
+            }}
+            selectedProposal={controller.proposalData}
+            selectedAppointmentRaw={controller.selectedAppointment}
+            clientNameOverride={controller.selectedAppointment?.clientName}
+            isLoadingProposal={controller.isLoadingProposal}
+            showGoToChat={!!controller.selectedAppointment?.conversationId}
+            onGoToChat={() =>
+              setLocation(
+                `/chat/${controller.selectedAppointment?.conversationId}`
+              )
+            }
+            artistId={controller.user?.id}
+            initialDate={controller.bookingInitialDate}
+            onReschedule={(apt: any) => controller.startReschedule(apt)}
+            onNoShow={(apt: any) => {
+              // Mark as no-show immediately
+              controller.refetch();
+              setFABOpen(false);
+            }}
+          />
+          {!isClient &&
+            controller.selectedAppointment.status !== "completed" &&
+            controller.selectedAppointment.status !== "cancelled" && (
+              <Button
+                variant="ghost"
+                className="w-full mt-4 text-destructive"
+                onClick={() => {
+                  handleCancelSession(controller.selectedAppointment);
+                  setFABOpen(false);
+                }}
+              >
+                Cancel session
+              </Button>
+            )}
+        </>
       );
     }
 
@@ -180,39 +233,18 @@ export default function CalendarAgendaPage() {
 
   useRegisterFABActions("calendar", fabActions);
 
-  // Gestures for toggling Agenda View — DISABLED when agenda is open to allow scrolling
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const touchEndX = useRef(0);
-  const touchEndY = useRef(0);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.targetTouches[0].clientX;
-    touchStartY.current = e.targetTouches[0].clientY;
-    touchEndX.current = e.targetTouches[0].clientX;
-    touchEndY.current = e.targetTouches[0].clientY;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.targetTouches[0].clientX;
-    touchEndY.current = e.targetTouches[0].clientY;
-  };
-
-  const handleTouchEnd = () => {
-    // When agenda is open, don't intercept swipes — allow free scrolling
-    if (controller.isBreakdownOpen) return;
-
-    const deltaY = touchEndY.current - touchStartY.current;
-    const deltaX = touchEndX.current - touchStartX.current;
-
-    if (Math.abs(deltaY) > 50 && Math.abs(deltaY) > Math.abs(deltaX)) {
-      // No-op for now: swipe gestures only used in week view
-    }
-  };
-
   return (
     <PageShell>
-      <PageHeader title="Calendar" />
+      <PageHeader
+        title="Calendar"
+        rightAction={
+          !wide ? (
+            <Button onClick={() => controller.startBooking(new Date())}>
+              New booking
+            </Button>
+          ) : undefined
+        }
+      />
 
       {/* ── Cancel Confirmation Banner (SSOT pattern) ── */}
       {cancelStep === "confirm" && (
@@ -276,99 +308,24 @@ export default function CalendarAgendaPage() {
           </button>
         </div>
       )}
-      <div
-        className="relative flex flex-col md:flex-row flex-1 overflow-hidden"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* 1. Underlying Agenda Layer (visible when top layer slides down) */}
-        <div
-          className={cn(
-            "absolute inset-0 flex flex-col w-full h-full transition-opacity duration-300 md:relative md:inset-auto md:w-1/2 md:opacity-100 md:z-0",
-            controller.isBreakdownOpen ? "opacity-100 z-0" : "opacity-0 -z-10"
-          )}
-        >
-          <AgendaBreakdownList
-            eventsByDay={controller.eventsByDay}
-            workSchedule={controller.workSchedule}
-            activeArtists={controller.activeArtists}
-            onAppointmentTap={controller.handleAppointmentTap}
-            onDateTap={controller.startBooking}
-            onCancelSession={handleCancelSession}
-            onMessageClient={(apt: any) => {
-              if (apt.conversationId) {
-                setLocation(`/chat/${apt.conversationId}`);
-              }
-            }}
-            onReschedule={(apt: any) => controller.startReschedule(apt)}
-          />
+      {controller.error && (
+        <div className="px-5 py-3" role="alert">
+          Couldn’t load the calendar.{" "}
+          <Button variant="outline" onClick={controller.refetch}>
+            Try again
+          </Button>
         </div>
-
-        {/* 2. Sliding Main Content Layer */}
-        {/* When agenda is open, tapping this area (which is slid down, showing the calendar) returns to week view */}
-        <div
-          className={cn(
-            "absolute inset-0 flex flex-col transition-transform duration-500 ease-in-out z-10",
-            "md:relative md:inset-auto md:w-1/2 md:translate-y-0 md:bg-transparent md:border-l md:border-border md:pt-5",
-            controller.isBreakdownOpen
-              ? "translate-y-[55dvh] rounded-t-[2.5rem] bg-background shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden cursor-pointer"
-              : "translate-y-0 bg-transparent"
-          )}
-          onClick={controller.isBreakdownOpen ? controller.toggleBreakdown : undefined}
-        >
-          {/* Sticky Header Zone */}
-          <div className="z-20 bg-transparent" onClick={(e) => {
-            // When breakdown is open, clicking the header should close it
-            // But don't prevent button clicks within the header
-            if (controller.isBreakdownOpen) {
-              e.stopPropagation();
-            }
-          }}>
-            <CalendarMonthHeader
-              activeDate={controller.activeDate}
-              onToggleBreakdown={controller.toggleBreakdown}
-              isBreakdownOpen={controller.isBreakdownOpen}
-              onDateChange={controller.handleDateTap}
-            />
-            <CalendarDateStrip7
-              stripDates={controller.stripDates}
-              activeDate={controller.activeDate}
-              onDateTap={controller.handleDateTap}
-            />
-          </div>
-
-          {/* Scrollable Agenda List */}
-          <div className="flex-1 relative overflow-hidden bg-transparent">
-            <AgendaDayList
-              virtualizer={controller.virtualizer}
-              agendaDates={controller.agendaDates}
-              eventsByDay={controller.eventsByDay}
-              parentRef={controller.parentRef}
-              workSchedule={controller.workSchedule}
-              onAppointmentTap={controller.handleAppointmentTap}
-              onDateTap={controller.startBooking}
-              activeArtists={controller.activeArtists}
-              rescheduleAppointmentId={controller.rescheduleAppointment?.id}
-            />
-          </div>
-
-          {/* Weekly Income Bar — inside flow, above bottom nav padding */}
-          {!isClient && (
-            <div className="shrink-0 h-10 flex items-center justify-between px-4 bg-transparent">
-              <span className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
-                This week's income
-              </span>
-              <span className="text-sm font-bold text-foreground">
-                {new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: "USD",
-                }).format(controller.weeklyIncome)}
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
+      )}
+      {controller.isLoading && (
+        <p role="status" className="px-5 py-2">
+          Loading appointments…
+        </p>
+      )}
+      {wide && !isClient ? (
+        <WeekCalendar controller={controller} />
+      ) : (
+        <MobileCalendar controller={controller} />
+      )}
     </PageShell>
   );
 }

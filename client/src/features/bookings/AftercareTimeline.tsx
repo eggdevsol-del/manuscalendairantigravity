@@ -120,12 +120,12 @@ export function AftercareTimeline({
             const dotBg = isDone
               ? "#4ade80"
               : isCurrent
-                ? "#F8D057"
+                ? "var(--primary)"
                 : "#1B1B1B";
             const dotBorder = isDone
               ? "#4ade80"
               : isCurrent
-                ? "#F8D057"
+                ? "var(--primary)"
                 : "rgba(255,255,255,0.18)";
             const connectorColor = isDone
               ? "rgba(74,222,128,.35)"
@@ -136,11 +136,11 @@ export function AftercareTimeline({
             const statusColor = isDone
               ? "#4ade80"
               : isCurrent
-                ? "#F8D057"
-                : "#7A7A7A";
+                ? "var(--primary)"
+                : "var(--muted-foreground)";
 
             // Window label color
-            const windowColor = isCurrent ? "#F8D057" : "#FFFFFF";
+            const windowColor = isCurrent ? "var(--primary)" : "#FFFFFF";
 
             return (
               <div
@@ -216,15 +216,15 @@ export function AftercareTimeline({
           >
             <Info
               className="w-3.5 h-3.5 shrink-0 mt-0.5"
-              style={{ color: "#7A7A7A" }}
+              style={{ color: "var(--muted-foreground)" }}
             />
-            <p className="text-[12px] text-[#7A7A7A]">
+            <p className="text-[12px] text-muted-foreground">
               Something looks wrong?{" "}
               <button
                 onClick={() => {
                   if (conversationId) setLocation(`/chat/${conversationId}`);
                 }}
-                className="font-bold text-white underline-offset-2 hover:underline"
+                className="font-bold text-foreground underline-offset-2 hover:underline"
               >
                 Message {artistName}
               </button>{" "}

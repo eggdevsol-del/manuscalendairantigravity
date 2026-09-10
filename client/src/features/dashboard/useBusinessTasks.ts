@@ -43,7 +43,7 @@ export function useBusinessTasks() {
   const [completingTask, setCompletingTask] = useState<string | null>(null);
 
   // Fetch business tasks from server
-  const { data, isLoading, refetch } =
+  const { data, isLoading, error, refetch } =
     trpc.dashboardTasks.getBusinessTasks.useQuery(undefined, {
       refetchOnWindowFocus: false,
       staleTime: 30000, // 30 seconds
@@ -316,6 +316,7 @@ export function useBusinessTasks() {
   return {
     tasks: transformedTasks,
     isLoading,
+    error,
     settings: {
       maxVisibleTasks: settings?.maxVisibleTasks || 10,
       preferredEmailClient: settings?.preferredEmailClient || "default",

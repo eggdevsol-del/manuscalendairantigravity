@@ -9,7 +9,18 @@ export function finishSignIn(
   const storage = remember ? localStorage : sessionStorage;
   storage.setItem("authToken", data.token);
   storage.setItem("user", JSON.stringify(data.user));
+  const returnTo = sessionStorage.getItem("tattoi-return-to");
+  sessionStorage.removeItem("tattoi-return-to");
+  const safeReturn =
+    returnTo?.startsWith("/") &&
+    !returnTo.startsWith("//") &&
+    !returnTo.includes("\\") &&
+    !/^\/(login|signup|auth)(\/|\?|$)/.test(returnTo);
   window.location.assign(
-    data.user.role === "client" ? "/discover" : "/dashboard"
+    safeReturn && returnTo
+      ? returnTo
+      : data.user.role === "client"
+        ? "/bookings"
+        : "/dashboard"
   );
 }

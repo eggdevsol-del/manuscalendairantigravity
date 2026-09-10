@@ -24,12 +24,9 @@ export function PendingPlans() {
       aria-label="Plans awaiting your response"
       className="space-y-3 mb-6"
     >
-      <h2 className="text-sm font-semibold">Ready for your review</h2>
+      <h2 className="text-sm font-semibold">Confirm your appointment</h2>
       {plans.map(plan => (
-        <article
-          key={plan.id}
-          className="rounded-2xl border border-primary/30 bg-primary/5 p-5 space-y-3"
-        >
+        <article key={plan.id} className="workspace-card !bg-accent space-y-3">
           <div className="flex justify-between gap-3">
             <h3 className="font-semibold">
               {plan.artist?.name || "Your artist"}
@@ -54,7 +51,7 @@ export function PendingPlans() {
               })
             }
           >
-            Review dates and deposit
+            Review dates & pay deposit
           </Button>
         </article>
       ))}

@@ -1,3 +1,6 @@
+import { instant } from "@/features/workspace/bookingPresentation";
+import { formatInTimeZone } from "date-fns-tz";
+import { startOfMonth, endOfMonth } from "date-fns";
 import { useBottomNav } from "@/contexts/BottomNavContext";
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
@@ -14,43 +17,24 @@ import {
   endOfWeek,
   isWithinInterval,
 } from "date-fns";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import { useAgendaScrollSpy } from "./useAgendaScrollSpy";
-
-const BUFFER_DAYS = 1825; // Fetch buffer (5 years) to support historical CSV imports
 
 export function useCalendarAgendaController() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
 
-  // 1. Core State
-  // anchorDate is now fixed to initial load to prevent grid shifting jumps
-  const [anchorDate] = useState<Date>(startOfDay(new Date()));
-  const [activeDate, setActiveDate] = useState<Date>(startOfDay(new Date()));
-  const [windowStart, setWindowStart] = useState<Date>(
-    subDays(startOfDay(new Date()), 3)
-  );
-  const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);
-
-  const toggleBreakdown = useCallback(() => {
-    setIsBreakdownOpen(prev => !prev);
-  }, []);
-
-  // 2. Data Fetching
-  // Static grid: anchor +/- 1 year.
-  const gridStart = useMemo(
-    () => subDays(anchorDate, BUFFER_DAYS),
-    [anchorDate]
-  );
-  const gridEnd = useMemo(() => addDays(anchorDate, BUFFER_DAYS), [anchorDate]);
+  const [activeDate, setActiveDate] = useState<Date>(() => {
+    const raw = new URLSearchParams(window.location.search).get("date");
+    const date = raw ? new Date(raw) : new Date();
+    return startOfDay(Number.isNaN(date.getTime()) ? new Date() : date);
+  });
+  const requestStart = subDays(startOfMonth(activeDate), 7);
+  const requestEnd = addDays(endOfMonth(activeDate), 7);
 
   // Fetch Studio and Artists for the Studio view first so we know if we need a studio calendar
-  const { data: currentStudio, isLoading: isLoadingStudio } = trpc.studios.getCurrentStudio.useQuery(
-    undefined,
-    {
+  const { data: currentStudio, isLoading: isLoadingStudio } =
+    trpc.studios.getCurrentStudio.useQuery(undefined, {
       enabled: !!user && (user.role === "artist" || user.role === "admin"),
-    }
-  );
+    });
 
   const { data: teamMembers } = trpc.studios.getStudioMembers.useQuery(
     { studioId: currentStudio?.id! },
@@ -58,14 +42,23 @@ export function useCalendarAgendaController() {
   );
 
   // 1. Studio Context
-  const isStudioView = !!currentStudio && (user?.role === "artist" || user?.role === "studio" || user?.role === "admin");
+  const isStudioView =
+    !!currentStudio &&
+    (user?.role === "artist" ||
+      user?.role === "studio" ||
+      user?.role === "admin");
   const isArtistLike = user?.role === "artist" || user?.role === "admin";
   const {
     data: studioAppointments,
     isLoading: isLoadingStudioAppts,
     refetch: refetchStudioAppts,
+    error: studioError,
   } = trpc.appointments.getStudioCalendar.useQuery(
-    { studioId: currentStudio?.id!, startDate: gridStart, endDate: gridEnd },
+    {
+      studioId: currentStudio?.id!,
+      startDate: requestStart,
+      endDate: requestEnd,
+    },
     { enabled: isStudioView, placeholderData: prev => prev }
   );
 
@@ -75,8 +68,9 @@ export function useCalendarAgendaController() {
     data: soloAppointments,
     isLoading: isLoadingSoloAppts,
     refetch: refetchSoloAppts,
+    error: soloError,
   } = trpc.appointments.getArtistCalendar.useQuery(
-    { artistId: user?.id!, startDate: gridStart, endDate: gridEnd },
+    { artistId: user?.id!, startDate: requestStart, endDate: requestEnd },
     { enabled: isSoloArtistView, placeholderData: prev => prev }
   );
 
@@ -86,8 +80,9 @@ export function useCalendarAgendaController() {
     data: clientAppointments,
     isLoading: isLoadingClientAppts,
     refetch: refetchClientAppts,
+    error: clientError,
   } = trpc.appointments.getClientCalendar.useQuery(
-    { clientId: user?.id!, startDate: gridStart, endDate: gridEnd },
+    { clientId: user?.id!, startDate: requestStart, endDate: requestEnd },
     { enabled: isClientView, placeholderData: prev => prev }
   );
 
@@ -96,18 +91,20 @@ export function useCalendarAgendaController() {
     if (isSoloArtistView) return soloAppointments;
     if (isClientView) return clientAppointments;
     return [];
-  }, [isStudioView, studioAppointments, isSoloArtistView, soloAppointments, isClientView, clientAppointments]);
+  }, [
+    isStudioView,
+    studioAppointments,
+    isSoloArtistView,
+    soloAppointments,
+    isClientView,
+    clientAppointments,
+  ]);
 
-  useEffect(() => {
-    console.log("[CalendarHook] Payload Size:", appointments?.length);
-    if (appointments?.length) {
-        console.log("[CalendarHook] Sample Event:", appointments[appointments.length - 1]?.title);
-    }
-  }, [appointments]);
-
-  const isLoading = isLoadingStudioAppts || isLoadingSoloAppts || isLoadingClientAppts || isLoadingStudio;
-
-
+  const isLoading =
+    isLoadingStudioAppts ||
+    isLoadingSoloAppts ||
+    isLoadingClientAppts ||
+    isLoadingStudio;
 
   const activeArtists = useMemo(() => {
     if (!teamMembers || teamMembers.length === 0) {
@@ -122,7 +119,7 @@ export function useCalendarAgendaController() {
         uniqueMap.set(m.user.id, {
           userId: m.user.id,
           user: m.user,
-          role: m.role
+          role: m.role,
         });
       }
     });
@@ -133,145 +130,35 @@ export function useCalendarAgendaController() {
     if (isStudioView) refetchStudioAppts();
     else if (isSoloArtistView) refetchSoloAppts();
     else if (isClientView) refetchClientAppts();
-  }, [isStudioView, refetchStudioAppts, isSoloArtistView, refetchSoloAppts, isClientView, refetchClientAppts]);
-
-  // 3. Derived State
-  const stripDates = useMemo(() => {
-    return Array.from({ length: 7 }).map((_, i) => addDays(windowStart, i));
-  }, [windowStart]);
+  }, [
+    isStudioView,
+    refetchStudioAppts,
+    isSoloArtistView,
+    refetchSoloAppts,
+    isClientView,
+    refetchClientAppts,
+  ]);
 
   const eventsByDay = useMemo(() => {
     if (!appointments) return {};
     const groups: Record<string, any[]> = {};
     appointments.forEach((apt: any) => {
-      const dateKey = format(new Date(apt.startTime), "yyyy-MM-dd");
+      const dateKey = formatInTimeZone(
+        instant(apt.startTime),
+        Intl.DateTimeFormat().resolvedOptions().timeZone,
+        "yyyy-MM-dd"
+      );
       if (!groups[dateKey]) groups[dateKey] = [];
       groups[dateKey].push(apt);
     });
     return groups;
   }, [appointments]);
 
-  const agendaDates = useMemo(() => {
-    const days = [];
-    let current = gridStart;
-    while (current <= gridEnd) {
-      days.push(current);
-      current = addDays(current, 1);
-    }
-    return days;
-  }, [gridStart, gridEnd]);
-
-  const parentRef = useRef<HTMLDivElement>(null);
-  // Use state to ensure re-renders trigger the spy enabled/disabled prop
-  const [isScrollingProgrammatically, setIsScrollingProgrammatically] =
-    useState(false);
-  const [isInitialScrollDone, setIsInitialScrollDone] = useState(false);
-  const scrollTimeout = useRef<NodeJS.Timeout>(undefined);
-
-  const virtualizer = useVirtualizer({
-    count: agendaDates.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 100,
-    overscan: 5,
-  });
-
-  // Initial Scroll Effect
-  useEffect(() => {
-    if (!isInitialScrollDone && agendaDates.length > 0) {
-      const index = agendaDates.findIndex(d => isSameDay(d, anchorDate));
-      if (index !== -1) {
-        virtualizer.scrollToIndex(index, { align: "start" });
-        // Enable spy after initial scroll is set
-        // Small timeout to ensure scroll position settles
-        setTimeout(() => {
-          setIsInitialScrollDone(true);
-        }, 100);
-      }
-    }
-  }, [agendaDates, virtualizer, anchorDate, isInitialScrollDone]);
-
   const { setFABOpen } = useBottomNav();
-
-  // 5. Actions
   const handleDateTap = useCallback(
-    (date: Date) => {
-      setIsScrollingProgrammatically(true);
-      setActiveDate(date);
-
-      // Scroll to that date in the list
-      const index = agendaDates.findIndex(d => isSameDay(d, date));
-      if (index !== -1) {
-        virtualizer.scrollToIndex(index, { align: "start" });
-      }
-
-      // Re-center window if needed
-      const diff =
-        (date.getTime() - windowStart.getTime()) / (1000 * 60 * 60 * 24);
-      if (diff < 1 || diff > 5) {
-        setWindowStart(subDays(date, 3));
-      }
-
-      // Reset programmatic flag after scroll settles
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-      scrollTimeout.current = setTimeout(() => {
-        setIsScrollingProgrammatically(false);
-      }, 800);
-    },
-    [agendaDates, virtualizer, windowStart]
+    (date: Date) => setActiveDate(startOfDay(date)),
+    []
   );
-
-  // Sync Strip with Scroll (Scroll Spy)
-  // We need to know which item is at the top of the viewport.
-  // react-virtual doesn't give "current item" easily without tracking scrollTop.
-  // We can use onScroll in the parent.
-
-  // Sync Strip with Scroll (Scroll Spy)
-  // We use a custom hook with RAF throttle for performance
-  const onActiveDayChange = useCallback(
-    (dayKey: string) => {
-      if (isScrollingProgrammatically) return;
-
-      // Find date object from key
-      const date = agendaDates.find(d => format(d, "yyyy-MM-dd") === dayKey);
-
-      if (date && !isSameDay(date, activeDate)) {
-        setActiveDate(date);
-        // Shift window if needed
-        const diff =
-          (date.getTime() - windowStart.getTime()) / (1000 * 60 * 60 * 24);
-        if (diff < 1 || diff > 5) {
-          setWindowStart(subDays(date, 3));
-        }
-
-        // Removed infinite scroll shifting to prevent jumps.
-        // We use a large static buffer (+/- 365 days) instead.
-      }
-    },
-    [agendaDates, activeDate, windowStart, isScrollingProgrammatically]
-  );
-
-  // Initialize Scroll Spy
-  useAgendaScrollSpy({
-    scrollRootRef: parentRef,
-    onActiveDayChange,
-    virtualizer,
-    items: agendaDates,
-    enabled: isInitialScrollDone && !isScrollingProgrammatically,
-  });
-
-  // 6. Calculate Weekly Income
-  const weeklyIncome = useMemo(() => {
-    if (!appointments) return 0;
-    const start = startOfWeek(activeDate, { weekStartsOn: 1 });
-    const end = endOfWeek(activeDate, { weekStartsOn: 1 });
-
-    const weekApps = appointments.filter(a => {
-      const d = new Date(a.startTime);
-      return isWithinInterval(d, { start, end }) && a.status !== "cancelled";
-    });
-
-    return weekApps.reduce((sum, app) => sum + (app.price || 0), 0);
-  }, [appointments, activeDate]);
 
   // 7. Fetch Settings for Schedule (Day Types)
   const { data: artistSettings } = trpc.artistSettings.get.useQuery(undefined, {
@@ -305,16 +192,18 @@ export function useCalendarAgendaController() {
   // ── Reschedule mode ──────────────────────────────────────────────────
   const [rescheduleAppointment, setRescheduleAppointment] = useState<any>(null);
   const reschedule = trpc.appointments.reschedule.useMutation({
-    onSuccess: (result) => {
+    onSuccess: result => {
       if (result.depositForfeited) {
-        toast.info("Appointment rescheduled. New deposit required from client.");
+        toast.info(
+          "Appointment rescheduled. New deposit required from client."
+        );
       } else {
         toast.success("Appointment rescheduled successfully.");
       }
       setRescheduleAppointment(null);
       refetch();
     },
-    onError: (err) => {
+    onError: err => {
       toast.error(err.message || "Failed to reschedule");
     },
   });
@@ -331,6 +220,10 @@ export function useCalendarAgendaController() {
     (apt: any) => {
       // If in reschedule mode, ignore appointment taps
       if (rescheduleAppointment) return;
+      if (apt.id < 0) {
+        toast.info("This event is managed in your connected calendar.");
+        return;
+      }
       setIsBookingStarted(false);
       setSelectedAppointment(apt);
       setFABOpen(true);
@@ -348,7 +241,12 @@ export function useCalendarAgendaController() {
         const newStart = date || new Date();
         const newEnd = new Date(newStart.getTime() + duration);
         // Keep original time, just change the date
-        newStart.setHours(originalStart.getHours(), originalStart.getMinutes(), 0, 0);
+        newStart.setHours(
+          originalStart.getHours(),
+          originalStart.getMinutes(),
+          0,
+          0
+        );
         newEnd.setHours(originalEnd.getHours(), originalEnd.getMinutes(), 0, 0);
 
         reschedule.mutate({
@@ -371,7 +269,9 @@ export function useCalendarAgendaController() {
       setSelectedAppointment(null);
       setFABOpen(false);
       setRescheduleAppointment(appointment);
-      toast.info(`Tap a new date to reschedule ${appointment.clientName || appointment.title}`);
+      toast.info(
+        `Tap a new date to reschedule ${appointment.clientName || appointment.title}`
+      );
     },
     [setFABOpen]
   );
@@ -382,13 +282,10 @@ export function useCalendarAgendaController() {
 
   return {
     user,
+    isLoading,
+    error: studioError || soloError || clientError,
     activeDate,
-    windowStart,
-    stripDates,
     eventsByDay,
-    parentRef,
-    virtualizer,
-    agendaDates,
     handleDateTap,
     handleAppointmentTap,
     startBooking,
@@ -400,9 +297,6 @@ export function useCalendarAgendaController() {
     proposalData,
     isLoadingProposal,
     refetch,
-    weeklyIncome,
-    isBreakdownOpen,
-    toggleBreakdown,
     workSchedule,
     artistServices,
     artistSettings,

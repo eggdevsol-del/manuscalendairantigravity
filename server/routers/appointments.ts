@@ -1009,6 +1009,17 @@ export const appointmentsRouter = router({
           message: "Appointment not found",
         });
 
+      if (
+        appointment.artistId !== ctx.user.id &&
+        appointment.clientId !== ctx.user.id
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not authorized to view this booking",
+        });
+      }
+      if (!appointment.conversationId) return null;
+
       // Find the proposal message in this conversation
       // We search for messages of type 'appointment_request' in the same conversation
       const messages = await db.getMessages(appointment.conversationId);

@@ -72,7 +72,7 @@ export default function Conversations() {
     <PageShell>
       {/* Mobile: Full List */}
       <div className="md:hidden h-full flex flex-col">
-        <PageHeader title="Messages" className="bg-transparent" />
+        <PageHeader title="Inbox" className="bg-transparent" />
 
         {/* Search Bar */}
         <div className="px-4 shrink-0 mb-2">
@@ -80,7 +80,7 @@ export default function Conversations() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search conversations..."
               className="pl-9 pr-9 bg-transparent border-none shadow-none focus:bg-secondary/30 transition-colors"
             />
@@ -95,7 +95,7 @@ export default function Conversations() {
             )}
           </div>
         </div>
-        
+
         {/* Mobile Tabs */}
         {user?.role === "artist" && (
           <div className="flex bg-secondary/50 p-1 mx-4 rounded-xl mb-2 shrink-0">
@@ -103,7 +103,9 @@ export default function Conversations() {
               type="button"
               className={cn(
                 "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
-                currentTab === "clients" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                currentTab === "clients"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               )}
               onClick={() => setActiveTab("clients")}
             >
@@ -113,7 +115,9 @@ export default function Conversations() {
               type="button"
               className={cn(
                 "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
-                currentTab === "contacts" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                currentTab === "contacts"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               )}
               onClick={() => setActiveTab("contacts")}
             >
@@ -130,8 +134,8 @@ export default function Conversations() {
       {/* iPad/Desktop: Split View */}
       <div className="hidden md:flex h-full overflow-hidden">
         {/* Left Panel: List (50%) */}
-        <div className="w-1/2 border-r border-border flex flex-col h-full">
-          <PageHeader title="Messages" className="bg-transparent" />
+        <div className="w-[340px] shrink-0 border-r border-border flex flex-col h-full">
+          <PageHeader title="Inbox" className="bg-transparent" />
 
           {/* Search Bar */}
           <div className="px-4 shrink-0 mb-2">
@@ -139,7 +143,7 @@ export default function Conversations() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search conversations..."
                 className="pl-9 pr-9 bg-transparent border-none shadow-none focus:bg-secondary/30 transition-colors"
               />
@@ -154,7 +158,7 @@ export default function Conversations() {
               )}
             </div>
           </div>
-          
+
           {/* Desktop Tabs */}
           {user?.role === "artist" && (
             <div className="flex bg-secondary/50 p-1 mx-6 rounded-xl mb-4 shrink-0">
@@ -162,7 +166,9 @@ export default function Conversations() {
                 type="button"
                 className={cn(
                   "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
-                  currentTab === "clients" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  currentTab === "clients"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
                 onClick={() => setActiveTab("clients")}
               >
@@ -172,7 +178,9 @@ export default function Conversations() {
                 type="button"
                 className={cn(
                   "flex-1 py-2 text-sm font-bold rounded-lg transition-all",
-                  currentTab === "contacts" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  currentTab === "contacts"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
                 onClick={() => setActiveTab("contacts")}
               >
@@ -181,7 +189,11 @@ export default function Conversations() {
             </div>
           )}
 
-          <ConversationsList className="bg-transparent" filter={currentTab} searchQuery={searchQuery} />
+          <ConversationsList
+            className="bg-transparent"
+            filter={currentTab}
+            searchQuery={searchQuery}
+          />
         </div>
 
         {/* Right Panel: Placeholder */}

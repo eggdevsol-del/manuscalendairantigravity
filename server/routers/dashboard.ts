@@ -1,105 +1,159 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
+import { addDays, format } from "date-fns";
 import * as schema from "../../drizzle/schema";
-import { eq, and, desc, sql, count, asc, gte, lt, inArray, ne } from "drizzle-orm";
+import {
+  eq,
+  and,
+  desc,
+  sql,
+  count,
+  asc,
+  gte,
+  lt,
+  inArray,
+  ne,
+} from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 
 export const dashboardRouter = router({
-  getArtistOverview: protectedProcedure.query(async ({ ctx }) => {
-    const { user } = ctx;
-    if (user.role !== "artist" && user.role !== "admin") {
-      throw new TRPCError({ code: "FORBIDDEN" });
-    }
+  getArtistOverview: protectedProcedure
+    .input(
+      z
+        .object({
+          timeZone: z
+            .string()
+            .refine(value => {
+              try {
+                new Intl.DateTimeFormat("en", { timeZone: value });
+                return true;
+              } catch {
+                return false;
+              }
+            })
+            .optional(),
+        })
+        .optional()
+    )
+    .query(async ({ ctx, input }) => {
+      const { user } = ctx;
+      if (user.role !== "artist" && user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
 
-    const db = await getDb();
-    if (!db) {
-      console.error("[Dashboard] Database connection failed");
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Database connection failed",
-      });
-    }
+      const db = await getDb();
+      if (!db) {
+        console.error("[Dashboard] Database connection failed");
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database connection failed",
+        });
+      }
 
-    // 1. Stats Counters
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
+      // 1. Stats Counters
+      const timezone = input?.timeZone || "Australia/Brisbane";
+      const localDay = formatInTimeZone(new Date(), timezone, "yyyy-MM-dd");
+      const followingDay = format(
+        addDays(new Date(localDay + "T12:00:00"), 1),
+        "yyyy-MM-dd"
+      );
+      const startOfDayIso = fromZonedTime(localDay + "T00:00:00", timezone)
+        .toISOString()
+        .slice(0, 19)
+        .replace("T", " ");
+      const endOfDayIso = fromZonedTime(followingDay + "T00:00:00", timezone)
+        .toISOString()
+        .slice(0, 19)
+        .replace("T", " ");
 
-    const startOfDayIso = startOfDay.toISOString();
-    const endOfDayIso = endOfDay.toISOString();
+      const [appointmentsToday] = await db
+        .select({ count: count() })
+        .from(schema.appointments)
+        .where(
+          and(
+            eq(schema.appointments.artistId, user.id),
+            gte(schema.appointments.startTime, startOfDayIso),
+            lt(schema.appointments.startTime, endOfDayIso)
+          )
+        );
 
-    const [appointmentsToday] = await db
-      .select({ count: count() })
-      .from(schema.appointments)
-      .where(
-        and(
+      const [pendingRequests] = await db
+        .select({ count: count() })
+        .from(schema.consultations)
+        .where(
+          and(
+            eq(schema.consultations.artistId, user.id),
+            eq(schema.consultations.status, "pending"),
+            eq(schema.consultations.viewed, 0)
+          )
+        );
+
+      // Revenue (completed appointments)
+      const [totalRevenue] = await db
+        .select({ value: sql<number>`SUM(${schema.appointments.price})` })
+        .from(schema.appointments)
+        .where(
+          and(
+            eq(schema.appointments.artistId, user.id),
+            eq(schema.appointments.status, "completed")
+          )
+        );
+
+      // 2. Next Appointment (The very next one from now)
+      const nextAppointment = await db.query.appointments.findFirst({
+        where: and(
           eq(schema.appointments.artistId, user.id),
+          gte(schema.appointments.startTime, new Date().toISOString()),
+          eq(schema.appointments.status, "confirmed")
+        ),
+        orderBy: asc(schema.appointments.startTime),
+        with: {
+          client: true,
+        },
+      });
+
+      // 3. Today's Timeline — exclude self-appointments (account holder as own client)
+      const todayTimeline = await db.query.appointments.findMany({
+        where: and(
+          eq(schema.appointments.artistId, user.id),
+          ne(schema.appointments.clientId, user.id),
           gte(schema.appointments.startTime, startOfDayIso),
           lt(schema.appointments.startTime, endOfDayIso)
-        )
-      );
+        ),
+        orderBy: asc(schema.appointments.startTime),
+        with: {
+          client: true,
+        },
+      });
 
-    const [pendingRequests] = await db
-      .select({ count: count() })
-      .from(schema.consultations)
-      .where(
-        and(
-          eq(schema.consultations.artistId, user.id),
-          eq(schema.consultations.status, "pending"),
-          eq(schema.consultations.viewed, 0)
-        )
-      );
-
-    // Revenue (completed appointments)
-    const [totalRevenue] = await db
-      .select({ value: sql<number>`SUM(${schema.appointments.price})` })
-      .from(schema.appointments)
-      .where(
-        and(
-          eq(schema.appointments.artistId, user.id),
-          eq(schema.appointments.status, "completed")
-        )
-      );
-
-    // 2. Next Appointment (The very next one from now)
-    const nextAppointment = await db.query.appointments.findFirst({
-      where: and(
-        eq(schema.appointments.artistId, user.id),
-        gte(schema.appointments.startTime, new Date().toISOString()),
-        eq(schema.appointments.status, "confirmed")
-      ),
-      orderBy: asc(schema.appointments.startTime),
-      with: {
-        client: true,
-      },
-    });
-
-    // 3. Today's Timeline — exclude self-appointments (account holder as own client)
-    const todayTimeline = await db.query.appointments.findMany({
-      where: and(
-        eq(schema.appointments.artistId, user.id),
-        ne(schema.appointments.clientId, user.id),
-        gte(schema.appointments.startTime, startOfDayIso),
-        lt(schema.appointments.startTime, endOfDayIso)
-      ),
-      orderBy: asc(schema.appointments.startTime),
-      with: {
-        client: true,
-      },
-    });
-
-    return {
-      stats: {
-        appointmentsToday: appointmentsToday.count,
-        pendingRequests: pendingRequests.count,
-        totalRevenue: totalRevenue.value || 0,
-      },
-      nextAppointment,
-      todayTimeline,
-    };
-  }),
+      const visibleIds = [
+        ...new Set([
+          ...todayTimeline.map(a => a.id),
+          ...(nextAppointment ? [nextAppointment.id] : []),
+        ]),
+      ];
+      const readinessForms = visibleIds.length
+        ? await db
+            .select({
+              appointmentId: schema.consentForms.appointmentId,
+              status: schema.consentForms.status,
+            })
+            .from(schema.consentForms)
+            .where(inArray(schema.consentForms.appointmentId, visibleIds))
+        : [];
+      return {
+        stats: {
+          appointmentsToday: appointmentsToday.count,
+          pendingRequests: pendingRequests.count,
+          totalRevenue: totalRevenue.value || 0,
+        },
+        nextAppointment,
+        todayTimeline,
+        readinessForms,
+      };
+    }),
 
   getClientOverview: protectedProcedure.query(async ({ ctx }) => {
     const { user } = ctx;

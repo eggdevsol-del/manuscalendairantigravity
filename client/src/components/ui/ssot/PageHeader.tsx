@@ -1,40 +1,17 @@
-/**
- * UI SINGLE SOURCE OF TRUTH (SSOT)
- * -------------------------------
- * PageHeader is the canonical page header component.
- * ALL pages that need a header MUST use this component.
- * DO NOT create custom header styles in page components.
- *
- * Features:
- * - Left: Business branding (name + "by Tattoi")
- * - Right: Current page name
- * - Safe area inset handling for phone notch
- * - Optional back button
- */
-import { tokens } from "@/ui/tokens";
+/** Canonical page hierarchy and safe-area ownership for every role. */
 import { cn } from "@/lib/utils";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, UserRound } from "lucide-react";
 import { Button } from "../button";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { Link } from "wouter";
 import { type ReactNode } from "react";
-import { APP_TITLE } from "@/const";
-
 interface PageHeaderProps {
-  /** Page title — displayed on the right side as the current page indicator */
   title: string;
-  /** Optional subtitle — displayed below title on right side */
   subtitle?: string;
-  /** Additional classes for the header container */
   className?: string;
-  /** Optional back action — renders a back button */
   onBack?: () => void;
-  /** Optional right-side action element (replaces default title display when provided) */
   rightAction?: ReactNode;
 }
-
-/**
- * PageHeader - SSOT header with left branding + right page name
- */
 export function PageHeader({
   title,
   subtitle,
@@ -43,50 +20,45 @@ export function PageHeader({
   rightAction,
 }: PageHeaderProps) {
   const { user } = useAuth();
-
-  // Business name for branding — fallback to user name
-  const artistBranding = (user as any)?.artistSettings?.businessName || user?.name || null;
-
+  const artist = user?.role === "artist" || user?.role === "admin";
   return (
-    <header
-      className={cn(tokens.shell.header, "app-safe-header justify-between gap-3", className)}
-    >
-      {/* Left side — branding or back button */}
-      <div className="flex items-center gap-2 flex-1 min-w-0">
-        {onBack && (
+    <header className={cn("app-safe-header workspace-header", className)}>
+      <div className="workspace-brand-row">
+        {onBack ? (
           <Button
             variant="ghost"
             size="icon"
             onClick={onBack}
             aria-label="Back"
-            className="-ml-2 h-11 w-11 text-foreground/70 hover:text-foreground"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft />
           </Button>
-        )}
-        {artistBranding ? (
-          <div className="flex flex-col min-w-0">
-            <h1 className={cn(tokens.header.pageTitle, "break-words leading-tight")}>{artistBranding}</h1>
-            <span className="text-[10px] uppercase font-bold tracking-widest opacity-50">
-              by {APP_TITLE}
-            </span>
-          </div>
         ) : (
-          <h1 className={cn(tokens.header.pageTitle, "break-words leading-tight")}>{title}</h1>
+          <span className="workspace-wordmark">TATTOI</span>
         )}
+        {rightAction ??
+          (user && (
+            <Link
+              href={
+                artist
+                  ? "/business"
+                  : user.role === "merchant"
+                    ? "/settings"
+                    : "/profile"
+              }
+              className="workspace-avatar"
+              aria-label={artist ? "Business and profile" : "Your profile"}
+            >
+              {user.avatar ? (
+                <img src={user.avatar} alt="" />
+              ) : (
+                <UserRound size={21} />
+              )}
+            </Link>
+          ))}
       </div>
-
-      {/* Right side — page name or custom right action */}
-      <div className="flex flex-col items-end gap-0.5 min-w-0 max-w-[42%] text-right break-words">
-        {rightAction ?? (
-          <span className="text-lg font-light text-muted-foreground tracking-tight">
-            {title}
-          </span>
-        )}
-        {subtitle && (
-          <span className="text-xs text-muted-foreground">{subtitle}</span>
-        )}
-      </div>
+      <h1>{title}</h1>
+      {subtitle && <p className="workspace-subtitle">{subtitle}</p>}
     </header>
   );
 }

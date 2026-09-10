@@ -44,7 +44,7 @@ export function PastTab() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-6 h-6 border-2 border-white/20 border-t-white/70 rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-border border-t-foreground rounded-full animate-spin" />
       </div>
     );
   }
@@ -65,7 +65,7 @@ export function PastTab() {
   if (appointments.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-2">
-        <p className="text-[13.5px] text-[#7A7A7A] text-center">
+        <p className="text-[13.5px] text-muted-foreground text-center">
           No completed sessions yet.
         </p>
       </div>
@@ -83,8 +83,8 @@ export function PastTab() {
       {healingAppointment && (
         <div
           style={{
-            background: "#1A1A1E",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "var(--card)",
+            border: "1px solid var(--border)",
             borderRadius: 16,
             padding: 16,
           }}
@@ -93,11 +93,14 @@ export function PastTab() {
           <div className="flex items-center justify-between mb-2">
             <span
               className="text-[12px] font-bold uppercase"
-              style={{ color: "#7A7A7A", letterSpacing: "0.06em" }}
+              style={{
+                color: "var(--muted-foreground)",
+                letterSpacing: "0.06em",
+              }}
             >
               {healingAppointment.artist.name}
             </span>
-            <span className="text-[12px] text-[#7A7A7A]">
+            <span className="text-[12px] text-muted-foreground">
               {healingAppointment.projectName || healingAppointment.title}
             </span>
           </div>
@@ -117,8 +120,8 @@ export function PastTab() {
         <div
           key={appt.id}
           style={{
-            background: "#1A1A1E",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "var(--card)",
+            border: "1px solid var(--border)",
             borderRadius: 16,
             padding: 16,
           }}
@@ -126,19 +129,22 @@ export function PastTab() {
           {/* Date line */}
           <div
             className="text-[12px] font-bold uppercase mb-1"
-            style={{ color: "#7A7A7A", letterSpacing: "0.06em" }}
+            style={{
+              color: "var(--muted-foreground)",
+              letterSpacing: "0.06em",
+            }}
           >
             {formatPastDate(appt.startsAt)}
           </div>
 
           {/* Title */}
-          <h3 className="text-[16px] font-bold text-white mb-0.5">
+          <h3 className="text-[16px] font-bold text-foreground mb-0.5">
             {appt.projectName || appt.title}
             {appt.sessionIndex ? ` — session ${appt.sessionIndex}` : ""}
           </h3>
 
           {/* Meta */}
-          <p className="text-[13.5px] text-[#7A7A7A] mb-3">
+          <p className="text-[13.5px] text-muted-foreground mb-3">
             {appt.artist.name}
             {appt.durationMinutes
               ? ` · ${formatDuration(appt.durationMinutes)}`
@@ -156,7 +162,7 @@ export function PastTab() {
                 setLocation(`/chat/${appt.conversationId}`);
               }
             }}
-            className="flex items-center justify-center w-full mt-3 text-[13.5px] font-semibold text-white"
+            className="flex items-center justify-center w-full mt-3 text-[13.5px] font-semibold text-foreground"
             style={{
               height: 44,
               borderRadius: 12,

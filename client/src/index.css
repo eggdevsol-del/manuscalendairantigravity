@@ -643,3 +643,5 @@
   --header-safe-left: var(--app-safe-left);
   --header-safe-right: var(--app-safe-right);
 }
+
+/* Workspace theme is the final semantic layer, shared by all navigable roles. */

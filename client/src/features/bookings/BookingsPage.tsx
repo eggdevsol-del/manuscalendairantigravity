@@ -1,47 +1,63 @@
 import { Link } from "wouter";
-import React, { useState } from "react";
-import { PageHeader } from "@/components/ui/ssot/PageHeader";
-import { SegmentedHeader } from "@/components/ui/ssot/SegmentedHeader";
+import { useState } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { PageShell, PageHeader } from "@/components/ui/ssot";
 import { UpcomingTab } from "./UpcomingTab";
 import { PendingPlans } from "./PendingPlans";
 import { PastTab } from "./PastTab";
-
-const TABS = ["Upcoming", "Past"];
-
 export default function BookingsPage() {
-  const [activeTab, setActiveTab] = useState(0);
-
-  // Format today's date like "Monday, 18 August"
-  const today = new Date();
-  const dateStr = today.toLocaleDateString("en-AU", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-
+  const [tab, setTab] = useState("Upcoming");
+  const { user } = useAuth();
   return (
-    <div className="app-document bg-background">
-      <PageHeader title="Bookings" subtitle={dateStr} />
-
-      <div className="px-4 pt-2 pb-3">
-        <SegmentedHeader
-          options={TABS}
-          activeIndex={activeTab}
-          onChange={setActiveTab}
-        />
-      </div>
-
-      <div className="px-4 pb-[110px] max-w-5xl mx-auto">
-        {activeTab === 0 ? (
-          <>
-            <Link href="/waitlist" className="inline-flex min-h-11 items-center underline mb-3">Cancellation offers</Link>
-            <PendingPlans />
-            <UpcomingTab />
-          </>
-        ) : (
-          <PastTab />
-        )}
-      </div>
-    </div>
+    <PageShell>
+      <PageHeader
+        title={`Hi${user?.name ? `, ${user.name.split(" ")[0]}` : ""}`}
+        subtitle="Your tattoo bookings, all in one place"
+      />
+      <main className="workspace-scroll">
+        <div className="workspace-content !max-w-3xl space-y-6">
+          <div
+            className="workspace-tabs"
+            role="tablist"
+            aria-label="Your bookings"
+          >
+            {["Upcoming", "Past"].map(t => (
+              <button
+                key={t}
+                role="tab"
+                aria-selected={tab === t}
+                onClick={() => setTab(t)}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+          {tab === "Upcoming" ? (
+            <>
+              <PendingPlans />
+              <UpcomingTab />
+            </>
+          ) : (
+            <PastTab />
+          )}
+          <details className="border-t pt-4">
+            <summary className="min-h-12 cursor-pointer text-sm">
+              More options
+            </summary>
+            <div className="flex flex-wrap gap-5">
+              <Link className="workspace-link" href="/waitlist">
+                Cancellation offers
+              </Link>
+              <Link className="workspace-link" href="/discover">
+                Explore artists
+              </Link>
+              <Link className="workspace-link" href="/purchases">
+                Your purchases
+              </Link>
+            </div>
+          </details>
+        </div>
+      </main>
+    </PageShell>
   );
 }

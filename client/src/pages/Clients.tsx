@@ -1,417 +1,225 @@
-import { PageHeader } from "@/components/ui/ssot/PageHeader";
 import { useAuth } from "@/_core/hooks/useAuth";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Input,
-  Label,
-} from "@/components/ui";
-import { ModalShell } from "@/components/ui/overlays/modal-shell";
-import { LoadingState } from "@/components/ui/ssot";
-import { trpc } from "@/lib/trpc";
-import {
-  ChevronLeft,
-  Clock,
-  Mail,
-  MessageCircle,
-  Phone,
-  Plus,
-  Search,
-  Trash,
-  User,
-} from "lucide-react";
-import {
-  Empty,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-  EmptyDescription,
-  EmptyContent,
-} from "@/components/ui/empty";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
-import { toast } from "sonner";
-import { useConversations } from "@/hooks/useConversations";
-import { tokens } from "@/ui/tokens";
-import { cn } from "@/lib/utils";
+import { trpc } from "@/lib/trpc";
+import { PageShell, PageHeader } from "@/components/ui/ssot";
+import { Button, Input, Label } from "@/components/ui";
+import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { ClientProfileSheet } from "@/features/chat/ClientProfileSheet";
-
+import { ClientsTab } from "@/features/dashboard/ClientsTab";
+import { Search, Plus, ChevronRight, MessageCircle } from "lucide-react";
 export default function Clients() {
-  const { user, loading } = useAuth();
-  const [, setLocation] = useLocation();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
+  const { user } = useAuth();
+  const query = trpc.conversations.getClients.useQuery();
+  const utils = trpc.useUtils();
+  const [, go] = useLocation();
+  const [search, setSearch] = useState("");
+  const [tab, setTab] = useState("People");
+  const [selected, setSelected] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const create = trpc.conversations.createClient.useMutation({
+    onSuccess: () => {
+      void query.refetch();
+      void utils.conversations.invalidate();
+      setAdding(false);
+      setName("");
+      setEmail("");
+      setPhone("");
+    },
   });
-
-  // Use centralized hook (SSOT)
-  const { data: conversations, refetch } = useConversations();
-
-  const createConversationMutation = trpc.conversations.getOrCreate.useMutation(
-    {
-      onSuccess: () => {
-        toast.success("Client added successfully");
-        setShowAddDialog(false);
-        resetForm();
-        refetch();
-      },
-      onError: (error: any) => {
-        toast.error("Failed to add client: " + error.message);
-      },
-    }
-  );
-
-  const [clientToDelete, setClientToDelete] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
-
-  const deleteBookingsMutation =
-    trpc.appointments.deleteAllForClient.useMutation({
-      onSuccess: () => {
-        toast.success("All bookings deleted for client");
-        setClientToDelete(null);
-      },
-      onError: error => {
-        toast.error("Failed to delete bookings: " + error.message);
-      },
-    });
-
-  const handleDeleteClick = (client: { id: string; name: string }) => {
-    setClientToDelete(client);
-  };
-
-  const confirmDelete = () => {
-    if (clientToDelete) {
-      deleteBookingsMutation.mutate({ clientId: clientToDelete.id });
-    }
-  };
-
-  useEffect(() => {
-    if (!loading && !user) {
-      setLocation("/");
-    }
-    if (!loading && user && user.role !== "artist" && user.role !== "admin") {
-      setLocation("/conversations");
-    }
-  }, [user, loading, setLocation]);
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-    });
-  };
-
-  const handleAddClient = () => {
-    if (!formData.name.trim() || !formData.email.trim()) {
-      toast.error("Name and email are required");
-      return;
-    }
-
-    // For now, we need a client ID. In production, this would create a user first.
-    // As a workaround, we'll show a message that clients need to sign up first
-    toast.error(
-      "Clients must sign up through the app first. Share the app link with them!"
+  const chat = trpc.conversations.getOrCreate.useMutation({
+    onSuccess: data => {
+      if (data?.id) go(`/chat/${data.id}`);
+    },
+  });
+  const clients = (query.data || [])
+    .filter((c): c is NonNullable<typeof c> => !!c)
+    .filter(c =>
+      `${c.name} ${c.email} ${c.phone}`
+        .toLowerCase()
+        .includes(search.toLowerCase())
     );
-    setShowAddDialog(false);
-    resetForm();
-  };
-
-  // Extract unique clients from conversations
-  const clients =
-    conversations
-      ?.map((conv: any) => ({
-        id: conv.clientId || conv.id,
-        name: conv.clientName || conv.otherUser?.name || "Unknown",
-        email: conv.otherUser?.email || "",
-        phone: conv.otherUser?.phone || "",
-        lastMessage: conv.lastMessage,
-        conversationId: conv.id,
-      }))
-      .filter(
-        (client: any, index: number, self: any[]) =>
-          index === self.findIndex((c: any) => c.id === client.id)
-      ) || [];
-
-  const filteredClients = clients.filter(
-    (client: any) =>
-      client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  if (loading) {
-    return <LoadingState message="Loading..." fullScreen />;
-  }
-
   return (
-    <div className="app-viewport fixed inset-0 h-[100dvh] flex flex-col overflow-hidden">
-      <PageHeader title="Clients" onBack={() => setLocation("/settings")} />
-
-      <main className="flex-1 min-h-0 w-full max-w-5xl mx-auto px-4 py-4 mobile-scroll overflow-y-auto space-y-4 pb-28">
-        {/* Search and Add */}
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search clients..."
-              className="pl-9"
-            />
-          </div>
-          <Button onClick={() => setShowAddDialog(true)} className="tap-target">
-            <Plus className="w-4 h-4 mr-2" />
-            Add
+    <PageShell>
+      <PageHeader
+        title="Clients"
+        subtitle="Your people, their pieces, your shared history"
+        rightAction={
+          <Button
+            onClick={() => {
+              create.reset();
+              setAdding(true);
+            }}
+          >
+            <Plus />
+            Add client
           </Button>
-        </div>
-
-        {/* Stats */}
-        <Card
-          className={cn(
-            tokens.card.base,
-            "bg-gradient-to-br from-primary/10 to-accent/10 hover:from-primary/15 hover:to-accent/15"
-          )}
-        >
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-4xl font-bold text-foreground">
-                {clients.length}
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Total Clients
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Client List */}
-        {filteredClients.length === 0 ? (
-          <Card className={cn(tokens.card.base, tokens.card.bg, "p-8")}>
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia
-                  variant="icon"
-                  className="w-16 h-16 rounded-full bg-muted"
-                >
-                  <User className="w-8 h-8" />
-                </EmptyMedia>
-                <EmptyTitle>No clients yet</EmptyTitle>
-                <EmptyDescription>
-                  Add your first client to get started
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <Button onClick={() => setShowAddDialog(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Client
-                </Button>
-              </EmptyContent>
-            </Empty>
-          </Card>
-        ) : (
-          <div className="space-y-1">
-            {filteredClients.map((client: any) => (
-              <Card
-                key={client.id}
-                className={cn(
-                  tokens.card.base,
-                  tokens.card.bg,
-                  tokens.card.interactive,
-                  "border-0"
-                )}
+        }
+      />
+      <main className="workspace-scroll">
+        <div className="workspace-content space-y-5">
+          <div
+            className="workspace-tabs"
+            role="tablist"
+            aria-label="Client views"
+          >
+            {["People", "Session history"].map(t => (
+              <button
+                key={t}
+                role="tab"
+                aria-selected={tab === t}
+                onClick={() => setTab(t)}
               >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-lg">
-                        {client.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base truncate">
-                          {client.name}
-                        </CardTitle>
-                        {client.email && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                            <Mail className="w-3 h-3" />
-                            <span className="truncate">{client.email}</span>
-                          </div>
-                        )}
-                        {client.phone && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                            <Phone className="w-3 h-3" />
-                            <span>{client.phone}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive h-8 w-8 -mr-2 -mt-2"
-                      onClick={e => {
-                        e.stopPropagation();
-                        handleDeleteClick({ id: client.id, name: client.name });
-                      }}
-                      title="Delete all bookings"
-                    >
-                      <Trash className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setLocation(`/chat/${client.conversationId}`)
-                      }
-                      className="w-full"
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Chat
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setSelectedClientId(client.id)}
-                      className="w-full"
-                    >
-                      <Clock className="w-4 h-4 mr-2" />
-                      History
-                    </Button>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedClientId(client.id)}
-                    className="w-full mt-2 text-xs opacity-70"
-                  >
-                    View Full Profile
-                  </Button>
-                </CardContent>
-              </Card>
+                {t}
+              </button>
             ))}
           </div>
-        )}
-      </main>
-
-      {/* Add Client Dialog */}
-      <ModalShell
-        isOpen={showAddDialog}
-        onClose={() => setShowAddDialog(false)}
-        title="Add New Client"
-        description="Create a new client profile and start a conversation"
-        className="max-w-md"
-        overlayName="Add Client"
-        overlayId="clients.add_client"
-        footer={
-          <div className="flex w-full gap-2">
-            <Button
-              onClick={handleAddClient}
-              disabled={createConversationMutation.isPending}
-              className="flex-1"
-            >
-              {createConversationMutation.isPending
-                ? "Adding..."
-                : "Add Client"}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowAddDialog(false);
-                resetForm();
-              }}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-          </div>
-        }
-      >
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name *</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={e => setFormData({ ...formData, name: e.target.value })}
-              placeholder="John Doe"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={e =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              placeholder="john@example.com"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input
-              id="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={e =>
-                setFormData({ ...formData, phone: e.target.value })
-              }
-              placeholder="+1 (555) 123-4567"
-            />
-          </div>
+          {tab === "Session history" ? (
+            <ClientsTab />
+          ) : (
+            <>
+              <div className="relative">
+                <Search className="absolute left-3 top-3.5" size={19} />
+                <Input
+                  aria-label="Search clients"
+                  placeholder="Search name, email or phone"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="pl-10 min-h-12"
+                />
+              </div>
+              {query.isLoading && <p role="status">Loading clients…</p>}
+              {query.error && (
+                <div role="alert">
+                  <p>Couldn’t load clients.</p>
+                  <Button onClick={() => query.refetch()}>Try again</Button>
+                </div>
+              )}
+              {!query.isLoading && !query.error && !clients.length && (
+                <div className="workspace-card">
+                  <h2 className="font-semibold">
+                    {search
+                      ? "No matching clients"
+                      : "Your client list starts here"}
+                  </h2>
+                  <p className="workspace-subtitle">
+                    {search
+                      ? "Try another name, email or phone number."
+                      : "Clients appear here when they enquire. You can also add an existing client."}
+                  </p>
+                </div>
+              )}
+              {clients.map(c => (
+                <div className="workspace-menu-row" key={c.id}>
+                  <button
+                    className="flex items-center gap-4 flex-1 min-w-0 text-left"
+                    onClick={() => setSelected(c.id)}
+                  >
+                    <span className="workspace-avatar">
+                      {c.avatar ? (
+                        <img src={c.avatar} alt="" />
+                      ) : (
+                        c.name?.charAt(0) || "?"
+                      )}
+                    </span>
+                    <span className="min-w-0">
+                      <strong className="block truncate">
+                        {c.name || "Client"}
+                      </strong>
+                      <span className="block text-sm text-muted-foreground truncate">
+                        {c.email || c.phone || "No contact details"}
+                      </span>
+                    </span>
+                  </button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Message ${c.name}`}
+                    disabled={chat.isPending}
+                    onClick={() =>
+                      chat.mutate({ clientId: c.id, artistId: user!.id })
+                    }
+                  >
+                    <MessageCircle />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`View ${c.name}`}
+                    onClick={() => setSelected(c.id)}
+                  >
+                    <ChevronRight />
+                  </Button>
+                </div>
+              ))}
+              {chat.error && <p role="alert">{chat.error.message}</p>}
+            </>
+          )}
         </div>
-      </ModalShell>
-
-      {/* Delete Confirmation Dialog */}
-      <ModalShell
-        isOpen={!!clientToDelete}
-        onClose={() => setClientToDelete(null)}
-        title="Delete Bookings"
-        description="Are you sure you want to delete all of this client's bookings? This action cannot be undone."
-        overlayName="Delete Bookings"
-        overlayId="clients.delete_bookings"
-        footer={
-          <div className="flex w-full justify-end gap-3">
-            <Button variant="outline" onClick={() => setClientToDelete(null)}>
-              No
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmDelete}
-              disabled={deleteBookingsMutation.isPending}
-            >
-              {deleteBookingsMutation.isPending
-                ? "Deleting..."
-                : "Yes, Delete All"}
-            </Button>
-          </div>
-        }
-      >
-        <div />
-      </ModalShell>
-
-      {/* Client Detail Bottom Sheet */}
+      </main>
       <ClientProfileSheet
-        isOpen={!!selectedClientId}
-        onClose={() => setSelectedClientId(null)}
-        clientId={selectedClientId}
+        isOpen={!!selected}
+        onClose={() => setSelected(null)}
+        clientId={selected}
       />
-    </div>
+      <SheetShell
+        isOpen={adding}
+        onClose={() => setAdding(false)}
+        title="Add client"
+      >
+        <form
+          className="space-y-4"
+          onSubmit={e => {
+            e.preventDefault();
+            create.mutate({
+              name: name.trim(),
+              email: email.trim() || null,
+              phone: phone.trim() || null,
+            });
+          }}
+        >
+          <div>
+            <Label htmlFor="client-name">Full name</Label>
+            <Input
+              id="client-name"
+              autoComplete="name"
+              required
+              value={name}
+              onChange={e => setName(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="client-email">Email (optional)</Label>
+            <Input
+              id="client-email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="client-phone">Phone (optional)</Label>
+            <Input
+              id="client-phone"
+              type="tel"
+              autoComplete="tel"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+            />
+          </div>
+          {create.error && <p role="alert">{create.error.message}</p>}
+          <Button
+            className="w-full"
+            disabled={!name.trim() || create.isPending}
+          >
+            {create.isPending ? "Adding…" : "Add client"}
+          </Button>
+        </form>
+      </SheetShell>
+    </PageShell>
   );
 }

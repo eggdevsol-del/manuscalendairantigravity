@@ -1,0 +1,1202 @@
+[
+  {
+    "device": "iphone-portrait",
+    "theme": "light",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 16,
+        "y": 146,
+        "right": 424,
+        "bottom": 215
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 854,
+      "width": 408,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "light",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 16,
+        "y": 118.82647705078125,
+        "right": 372,
+        "bottom": 166.82647705078125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 782.390625,
+      "width": 408,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "light",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 25,
+        "y": 190.3568115234375,
+        "right": 380,
+        "bottom": 246.3568115234375
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 25,
+      "y": 853.78125,
+      "width": 391,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "light",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 37,
+        "y": 99,
+        "right": 363,
+        "bottom": 155
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 37,
+      "y": 837,
+      "width": 366,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "dark",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 16,
+        "y": 146,
+        "right": 424,
+        "bottom": 215
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 854,
+      "width": 408,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "dark",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 16,
+        "y": 117.2740478515625,
+        "right": 372,
+        "bottom": 165.2740478515625
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 783.390625,
+      "width": 408,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "dark",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 25,
+        "y": 190.4320068359375,
+        "right": 380,
+        "bottom": 246.4320068359375
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 25,
+      "y": 853.78125,
+      "width": 391,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-portrait",
+    "theme": "dark",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 37,
+        "y": 99,
+        "right": 363,
+        "bottom": 155
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 37,
+      "y": 837,
+      "width": 366,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "light",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 86,
+        "y": 84,
+        "right": 870,
+        "bottom": 118.5
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 78,
+      "y": 351.5,
+      "width": 800,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "light",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 78.296875,
+        "y": 54.77928161621094,
+        "right": 705.109375,
+        "bottom": 83.57615661621094
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 222,
+      "y": 260,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "light",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 245,
+        "y": 82.58848571777344,
+        "right": 676,
+        "bottom": 138.58848571777344
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 245,
+      "y": 351.296875,
+      "width": 467,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "light",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 179,
+        "y": 37,
+        "right": 737,
+        "bottom": 65
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 179,
+      "y": 334,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "dark",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 86,
+        "y": 84,
+        "right": 870,
+        "bottom": 118.5
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 78,
+      "y": 351.5,
+      "width": 800,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "dark",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 79.8125,
+        "y": 54.736968994140625,
+        "right": 706.625,
+        "bottom": 83.53384399414062
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 222,
+      "y": 260,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "dark",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 245,
+        "y": 73.88858032226562,
+        "right": 676,
+        "bottom": 129.88858032226562
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 245,
+      "y": 351.296875,
+      "width": 467,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone-landscape",
+    "theme": "dark",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 179,
+        "y": 37,
+        "right": 737,
+        "bottom": 65
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 179,
+      "y": 334,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "light",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 108,
+        "right": 796,
+        "bottom": 142.5
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 1092.5,
+      "width": 788,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "light",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 104.7032470703125,
+        "right": 650.8125,
+        "bottom": 133.5001220703125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 154,
+      "y": 1002,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "light",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 134.234375,
+        "y": 178.86376953125,
+        "right": 650.765625,
+        "bottom": 206.86376953125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 115,
+      "y": 1092.109375,
+      "width": 591,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "light",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 111,
+        "y": 61,
+        "right": 669,
+        "bottom": 89
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 111,
+      "y": 1075,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "dark",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 108,
+        "right": 796,
+        "bottom": 142.5
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 1092.5,
+      "width": 788,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "dark",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 122.0941162109375,
+        "right": 650.8125,
+        "bottom": 150.8909912109375
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 154,
+      "y": 1002,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "dark",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 134.234375,
+        "y": 155.34368896484375,
+        "right": 650.765625,
+        "bottom": 183.34368896484375
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 115,
+      "y": 1092.109375,
+      "width": 591,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-portrait",
+    "theme": "dark",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 111,
+        "y": 61,
+        "right": 669,
+        "bottom": 89
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 111,
+      "y": 1075,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "light",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 108,
+        "right": 1156,
+        "bottom": 142.5
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 732.5,
+      "width": 1148,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "light",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 87.76626586914062,
+        "right": 650.8125,
+        "bottom": 116.56314086914062
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 334,
+      "y": 642,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "light",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 314.234375,
+        "y": 126.48284912109375,
+        "right": 830.765625,
+        "bottom": 154.48284912109375
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 295,
+      "y": 731.71875,
+      "width": 591,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "light",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 291,
+        "y": 61,
+        "right": 849,
+        "bottom": 89
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 291,
+      "y": 715,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "dark",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 108,
+        "right": 1156,
+        "bottom": 142.5
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 732.5,
+      "width": 1148,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "dark",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 99.8514404296875,
+        "right": 650.8125,
+        "bottom": 128.6483154296875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 334,
+      "y": 642,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "dark",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 314.234375,
+        "y": 142.55487060546875,
+        "right": 830.765625,
+        "bottom": 170.55487060546875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 295,
+      "y": 731.71875,
+      "width": 591,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-landscape",
+    "theme": "dark",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 291,
+        "y": 61,
+        "right": 849,
+        "bottom": 89
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 291,
+      "y": 715,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "light",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 108,
+        "right": 1000,
+        "bottom": 142.5
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 1278.5,
+      "width": 992,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "light",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 133.544189453125,
+        "right": 650.8125,
+        "bottom": 162.341064453125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 256,
+      "y": 1188.890625,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "light",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 236.234375,
+        "y": 170.2149658203125,
+        "right": 752.765625,
+        "bottom": 198.2149658203125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 217,
+      "y": 1278.3125,
+      "width": 591,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "light",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 213,
+        "y": 61,
+        "right": 771,
+        "bottom": 89
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 213,
+      "y": 1261,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "dark",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 108,
+        "right": 1000,
+        "bottom": 142.5
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 1278.5,
+      "width": 992,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "dark",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 24,
+        "y": 113.5289306640625,
+        "right": 650.8125,
+        "bottom": 142.3258056640625
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 256,
+      "y": 1188.890625,
+      "width": 512,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "dark",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 236.234375,
+        "y": 197.637451171875,
+        "right": 752.765625,
+        "bottom": 225.637451171875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 217,
+      "y": 1278.3125,
+      "width": 591,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad-large",
+    "theme": "dark",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 213,
+        "y": 61,
+        "right": 771,
+        "bottom": 89
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 213,
+      "y": 1261,
+      "width": 598,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "light",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 16,
+        "y": 108,
+        "right": 359,
+        "bottom": 211.5
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 936.5,
+      "width": 343,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "light",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 16,
+        "y": 102.86187744140625,
+        "right": 307,
+        "bottom": 150.86187744140625
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 846.59375,
+      "width": 343,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "light",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 25,
+        "y": 142.79718017578125,
+        "right": 315,
+        "bottom": 198.79718017578125
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 25,
+      "y": 935.90625,
+      "width": 326,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "light",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 37,
+        "y": 61,
+        "right": 298,
+        "bottom": 117
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 37,
+      "y": 919,
+      "width": 301,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "dark",
+    "kind": "page",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 16,
+        "y": 108,
+        "right": 359,
+        "bottom": 211.5
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 936.5,
+      "width": 343,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "dark",
+    "kind": "full",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 16,
+        "y": 87.85272216796875,
+        "right": 307,
+        "bottom": 135.85272216796875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 16,
+      "y": 846.59375,
+      "width": 343,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "dark",
+    "kind": "sheet",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 25,
+        "y": 142.86883544921875,
+        "right": 315,
+        "bottom": 198.86883544921875
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 25,
+      "y": 935.90625,
+      "width": 326,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "split-view",
+    "theme": "dark",
+    "kind": "modal",
+    "boxes": [
+      {
+        "text": "Booking review and payment details for a long project name",
+        "x": 37,
+        "y": 61,
+        "right": 298,
+        "bottom": 117
+      }
+    ],
+    "clipped": [],
+    "overflow": false,
+    "last": {
+      "x": 37,
+      "y": 919,
+      "width": 301,
+      "height": 52
+    },
+    "reachable": true,
+    "errors": [],
+    "pass": true
+  }
+]

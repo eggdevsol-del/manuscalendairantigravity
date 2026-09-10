@@ -434,9 +434,10 @@ function TaskRow({
 
 interface TodaySegmentProps {
   demoMode?: boolean;
+  tasksOnly?: boolean;
 }
 
-export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
+export function TodaySegment({ demoMode = false, tasksOnly = false }: TodaySegmentProps) {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
 
@@ -446,7 +447,7 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
 
   // Data
   const { data: overview, isLoading: overviewLoading, isError: overviewError, refetch: refetchOverview } = trpc.dashboard.getArtistOverview.useQuery(
-    undefined,
+    { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
     { enabled: !demoMode && (user?.role === "artist" || user?.role === "admin") }
   );
   const { tasks: rawTasks, isLoading: tasksLoading, actions: businessActions } = useBusinessTasks();
@@ -666,7 +667,7 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: DSpace[7] }}>
       {/* ── IN THE CHAIR TODAY ── */}
-      <div ref={demoSessionsRef}>
+      <div ref={demoSessionsRef} hidden={tasksOnly}>
         <SectionHeader label="IN THE CHAIR TODAY" />
         {isLoading ? (
           <div style={{

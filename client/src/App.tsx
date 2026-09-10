@@ -1,4 +1,5 @@
 import React, { Suspense } from "react";
+import { ActionPanel } from "@/components/ActionPanel";
 import { Toaster, TooltipProvider } from "@/components/ui";
 import { UIDebugProvider } from "@/_core/contexts/UIDebugContext";
 import { BottomNavProvider } from "@/contexts/BottomNavContext";
@@ -76,6 +77,10 @@ function GuardedShell() {
     // Using !loading alone creates a single-frame gap where loading=false
     // but user hasn't populated yet, causing a premature /login redirect.
     if (isSessionChecked && !loading && !user) {
+      sessionStorage.setItem(
+        "tattoi-return-to",
+        window.location.pathname + window.location.search
+      );
       setLocation("/login");
     }
   }, [user, loading, isSessionChecked, setLocation]);
@@ -99,6 +104,10 @@ function GuardedShell() {
 // Known first-segment app routes used by the shells.
 // Any path starting with one of these is an authenticated app route, not an artist slug.
 const KNOWN_APP_ROUTES = new Set([
+  "business",
+  "supplies",
+  "money",
+  "artist-profile",
   "calendar",
   "conversations",
   "chat",
@@ -257,11 +266,7 @@ function AuthOnlyBanners() {
 function RoleThemeWrapper({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const isClient = !user || user.role === "client";
-  return (
-    <ThemeProvider forceTheme={isClient ? "dark" : "light"}>
-      {children}
-    </ThemeProvider>
-  );
+  return <ThemeProvider forceTheme="light">{children}</ThemeProvider>;
 }
 
 function App() {
@@ -279,6 +284,7 @@ function App() {
                 <UpdateBanner />
                 <AuthOnlyBanners />
                 <TooltipOverlay />
+                <ActionPanel />
                 <ErrorBoundary boundary="app-root">
                   <Router />
                 </ErrorBoundary>

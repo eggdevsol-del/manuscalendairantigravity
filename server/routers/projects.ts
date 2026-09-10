@@ -20,6 +20,8 @@ export const projectsRouter = router({
         db
           .select({
             id: schema.appointments.id,
+            timeZone: schema.appointments.timeZone,
+            description: schema.appointments.description,
             title: schema.appointments.title,
             startsAt: schema.appointments.startTime,
             endsAt: schema.appointments.endTime,
@@ -57,7 +59,13 @@ export const projectsRouter = router({
           where: eq(schema.artistSettings.userId, conversation.artistId),
         }),
         db
-          .select({ paymentId: schema.leads.stripeCheckoutSessionId })
+          .select({
+            paymentId: schema.leads.stripeCheckoutSessionId,
+            id: schema.leads.id,
+            description: schema.leads.projectDescription,
+            placement: schema.leads.placement,
+            references: schema.leads.referenceImages,
+          })
           .from(schema.leads)
           .where(eq(schema.leads.conversationId, input.conversationId)),
       ]);
@@ -152,6 +160,18 @@ export const projectsRouter = router({
         })),
         history,
         forms,
+        briefs: leads.map(({ paymentId, references, ...lead }) => {
+          let images: string[] = [];
+          try {
+            const parsed = JSON.parse(references || "[]");
+            if (Array.isArray(parsed))
+              images = parsed.filter(
+                (url): url is string =>
+                  typeof url === "string" && /^https?:\/\//.test(url)
+              );
+          } catch {}
+          return { ...lead, images };
+        }),
       };
     }),
 });

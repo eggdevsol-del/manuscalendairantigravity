@@ -4,6 +4,10 @@ import SupplierOrderHistory from "@/features/dashboard/SupplierOrderHistory";
 import WaitlistPage from "@/features/bookings/WaitlistPage";
 import ProjectSummary from "@/features/bookings/ProjectSummary";
 import React from "react";
+import BusinessPage, {
+  MoneyPage,
+  SuppliesPage,
+} from "@/features/workspace/BusinessPage";
 import { Redirect, Route, Switch } from "wouter";
 import BottomNav from "@/components/BottomNav";
 
@@ -30,7 +34,7 @@ import { ArrivalToast } from "@/components/ArrivalToast";
 
 export default function ArtistShell() {
   return (
-    <div className="min-h-screen pb-16">
+    <div className="artist-workspace min-h-screen">
       <AnimatedSwitch>
         <Switch>
           <Route path="/studio">
@@ -43,6 +47,9 @@ export default function ArtistShell() {
             <Redirect to="/dashboard" />
           </Route>
           <Route path="/dashboard" component={Dashboard} />
+          <Route path="/business" component={BusinessPage} />
+          <Route path="/money" component={MoneyPage} />
+          <Route path="/supplies" component={SuppliesPage} />
           <Route path="/conversations" component={Conversations} />
           <Route path="/chat/:id" component={Chat} />
           <Route path="/projects/:id" component={ProjectSummary} />

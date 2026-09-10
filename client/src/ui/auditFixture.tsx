@@ -15,6 +15,7 @@ import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
 import { Button, Input } from "@/components/ui";
 import "@/index.css";
+import "@/features/workspace/workspace.css";
 const params = new URLSearchParams(location.search);
 const initialKind = params.get("kind") || "page";
 const title = "Booking review and payment details for a long project name";
@@ -71,8 +72,22 @@ function Content() {
 function Fixture() {
   const [kind, setKind] = React.useState(initialKind);
   const close = () => setKind(kind === "full" ? "sheet" : "page");
-  if (kind === "action") return <ActionSheet open onClose={close} title={title}><h2 className="text-xl font-semibold">{title}</h2><Content/></ActionSheet>;
-  if (kind === "bottom") return <BottomSheet open onClose={close} title={title}><PageHeader title={title} onBack={close}/><div className="flex-1 min-h-0 overflow-auto p-4"><Content/></div></BottomSheet>;
+  if (kind === "action")
+    return (
+      <ActionSheet open onClose={close} title={title}>
+        <h2 className="text-xl font-semibold">{title}</h2>
+        <Content />
+      </ActionSheet>
+    );
+  if (kind === "bottom")
+    return (
+      <BottomSheet open onClose={close} title={title}>
+        <PageHeader title={title} onBack={close} />
+        <div className="flex-1 min-h-0 overflow-auto p-4">
+          <Content />
+        </div>
+      </BottomSheet>
+    );
   if (kind === "full")
     return (
       <FullScreenSheet open onClose={close} title={title} contextTitle="Review">

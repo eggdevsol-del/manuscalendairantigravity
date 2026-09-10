@@ -1,0 +1,102 @@
+{
+  "results": [
+    {
+      "device": "iphone",
+      "role": "artist",
+      "path": "/calendar",
+      "errors": [],
+      "overflow": false,
+      "headers": [
+        {
+          "text": "Calendar",
+          "top": 146,
+          "right": 424
+        }
+      ],
+      "text": "TATTOI\nNew booking\nCalendar\nSeptember 2026\nM\n7\nT\n8\nW\n9\nT\n10\nF\n11\nS\n12\nS\n13\nTHURSDAY 10 SEPTEMBER\nToday\n10:00\nMia Chen\nBotanical sleeve\nConfirmed · Until 13:00\n14:00\nOliver James\nGeometric shoulder\nConfirmed · Until 16:00\nAdd booking\nToday\nInbox\nCalendar\nClients\nBooking\nQuick Book\nClient\nMia Chen\nChange\nService\nSelect a service...\nFull day — $600 (180min)\nDate\nStart Time\nDuration\n30 min\n1 hour\n1.5 hours\n2 hours\n3 hours\n4 hours\n6 hours\n8 hours\nPrice (per sitting)\nNotes (optional)\nSend Session Plan\nClose",
+      "file": "iphone-artist-_calendar.png"
+    },
+    {
+      "device": "ipad",
+      "role": "artist",
+      "path": "/calendar",
+      "errors": [],
+      "overflow": false,
+      "headers": [
+        {
+          "text": "Calendar",
+          "top": 104,
+          "right": 1156
+        }
+      ],
+      "text": "Calendar\nToday\n\n7 Sep–13 Sep 2026\n\nNew booking\nMon 7\nTue 8\nWed 9\nThu 10\nFri 11\nSat 12\nSun 13\n08:00\n09:00\n10:00\n11:00\n12:00\n13:00\n14:00\n15:00\n16:00\n17:00\nMia Chen\n10:00–13:00\nBotanical sleeve\nOliver James\n14:00–16:00\nGeometric shoulder\nMia Chen\n\nBotanical sleeve\n\nConfirmed\n\nThu, 10 Sep\n\n10:00–13:00\n\nAustralia/Brisbane\n\n$150.00 paid\n\nProcedure consent · pending\n\nBALANCE\n\n$450.00\nMessage clientOpen bookingForms & payment history\nTATTOI\nToday\nInbox\nCalendar\nClients\nBusiness\nBooking\nQuick Book\nClient\nMia Chen\nChange\nService\nSelect a service...\nFull day — $600 (180min)\nDate\nStart Time\nDuration\n30 min\n1 hour\n1.5 hours\n2 hours\n3 hours\n4 hours\n6 hours\n8 hours\nPrice (per sitting)\nNotes (optional)\nSend Session Plan\nClose",
+      "file": "ipad-artist-_calendar.png"
+    },
+    {
+      "device": "iphone",
+      "role": "artist",
+      "path": "/clients",
+      "errors": [],
+      "overflow": false,
+      "headers": [
+        {
+          "text": "Clients",
+          "top": 146,
+          "right": 424
+        }
+      ],
+      "text": "TATTOI\nAdd client\nClients\n\nYour people, their pieces, your shared history\n\nPeople\nSession history\nM\nMia Chen\nNo contact details\nToday\nInbox\nCalendar\nClients",
+      "file": "iphone-artist-_clients.png"
+    },
+    {
+      "device": "iphone",
+      "role": "client",
+      "path": "/projects/12",
+      "errors": [],
+      "overflow": false,
+      "headers": [
+        {
+          "text": "Botanical sleeve",
+          "top": 146,
+          "right": 424
+        }
+      ],
+      "text": "Botanical sleeve\n\nElla Morgan\n\nOverview\nFiles\nPayments\nMessages\nConfirm your appointment\n\nReview the dates, terms and deposit to secure your booking.\n\nReview $150.00 deposit\nConfirmed\n\nThu, 10 Sept, 10:00 am\n\nNorthside Studio, Brisbane\n\nTimes in Australia/Brisbane\n\nREADY FOR THE SESSION\n$150.00 payment received\nProcedure consent\npending\nComplete your consent forms\nDESIGN NOTES\n\nFine-line botanicals, extending the existing forearm piece.\n\nPlacement: Forearm\n\nPAYMENT · AUD\nSession estimate\n$600.00\nRecorded paid\n$150.00\nBalance\n$450.00\nReview balance\n\nFinal pricing follows your agreed design and session terms.\n\nMessage Ella Morgan\nWant an earlier appointment?\nBookings\nInbox\nProfile\nConsent forms\nPROCEDURE CONSENT\nSample form for layout testing only.\nPROCEED TO SIGNATURE\nClose",
+      "file": "iphone-client-_projects_12.png"
+    },
+    {
+      "device": "iphone",
+      "role": "client",
+      "path": "/bookings",
+      "errors": [],
+      "overflow": false,
+      "headers": [
+        {
+          "text": "Hi, Mia",
+          "top": 138,
+          "right": 424
+        }
+      ],
+      "text": "TATTOI\nHi, Mia\n\nYour tattoo bookings, all in one place\n\nUpcoming\nPast\nConfirm your appointment\nElla Morgan\n1 session\n\nDeposit and fee: AUD $155.10\n\nReview dates & pay deposit\nConfirmed\nBotanical sleeve\n\nElla Morgan · Session 2 of 3\n\nThu, 10 Sept, 10:00 am\n\nNorthside Studio\n\n$150.00 deposit paidManage booking\nMessage Ella Morgan\nMore options\nBookings\nInbox\nProfile\nReview your session plan\n\nYour dates, deposit and next steps in one place.\n\nEM\nDeposit · 1 session\nElla Morgan\nSession plan total\n$600.00\nSession 1 · 180 min\n10 Sept 2026, 10:00 am\n$150.00\nDeposit due now (non-refundable)\n$150.00\nPlatform fee\n$5.10\n\nEstimated remaining balance after this deposit: AUD $450.00\n\nTotal due today\n$155.10\n\nEach session's deposit is calculated separately and charged here as one payment. Confirmation secures these dates in Ella Morgan's calendar — the balance is requested after each session.\n\nContinue to secure checkout\nClose",
+      "file": "iphone-client-_bookings.png"
+    }
+  ],
+  "calls": [
+    "auth.me",
+    "studios.getCurrentStudio",
+    "appointments.getArtistCalendar",
+    "artistSettings.get",
+    "conversations.list",
+    "auth.refreshToken",
+    "conversations.getClients",
+    "artistSettings.getPublicByArtistId",
+    "booking.getCalendarIndicators",
+    "projects.summary",
+    "conversations.createClient",
+    "clientProfile.getMyPaymentRequests",
+    "forms.getPendingForms",
+    "sessionPlans.getByClient",
+    "appointments.getClientBookings",
+    "sessionPlans.getById"
+  ]
+}

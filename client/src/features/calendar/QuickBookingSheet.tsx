@@ -59,7 +59,11 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
   const [date, setDate] = useState(
     initialDate ? format(initialDate, "yyyy-MM-dd") : ""
   );
-  const [time, setTime] = useState("09:00");
+  const [time, setTime] = useState(
+    initialDate && initialDate.getHours() !== 0
+      ? format(initialDate, "HH:mm")
+      : "09:00"
+  );
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [price, setPrice] = useState<string>("");
   const [notes, setNotes] = useState("");
